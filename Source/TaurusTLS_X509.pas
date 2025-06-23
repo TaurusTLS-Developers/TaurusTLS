@@ -1134,6 +1134,7 @@ begin
   FreeAndNil(FFingerprints);
   FreeAndNil(FSigInfo);
   FreeAndNil(FAltSubjectNames);
+  FreeAndNil(FPublicKey);
   { If the X.509 certificate handle was obtained from a certificate
     store or from the SSL connection as a peer certificate, then DO NOT
     free it here!  The memory is owned by the TaurusTLS library and will
