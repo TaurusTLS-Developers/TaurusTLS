@@ -2360,11 +2360,15 @@ begin
           begin
             LX509_Cert := X509_STORE_CTX_get_current_cert(x509_ctx);
             LCertificate := TTaurusTLSX509.Create(LX509_Cert, False);
-            LDepth := X509_STORE_CTX_get_error_depth(x509_ctx);
-            LCertErr := X509_STORE_CTX_get_error(x509_ctx);
-            LMSg := AnsiStringToString(X509_verify_cert_error_string(LCertErr));
-            LDescr := CertErrorToLongDescr(LCertErr);
-            LHelper.VerifyCallback( preverify_ok, LCertificate, LDepth, LCertErr, LMsg, LDescr, LContinue );
+            try
+              LDepth := X509_STORE_CTX_get_error_depth(x509_ctx);
+              LCertErr := X509_STORE_CTX_get_error(x509_ctx);
+              LMSg := AnsiStringToString(X509_verify_cert_error_string(LCertErr));
+              LDescr := CertErrorToLongDescr(LCertErr);
+              LHelper.VerifyCallback( preverify_ok, LCertificate, LDepth, LCertErr, LMsg, LDescr, LContinue );
+            finally
+              FreeAndNil(LCertificate);
+            end;
             if not LContinue then
               Result := 0;
           end;
