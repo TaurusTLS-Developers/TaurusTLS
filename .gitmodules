@@ -1,3 +1,9 @@
 [submodule "submodules/DUnitX"]
 	path = submodules/DUnitX
-	url = https://github.com/VSoftTechnologies/DUnitX.git
+	url  = https://github.com/VSoftTechnologies/DUnitX.git
+[submodule "submodules/FastMM5"]
+	path = submodules/FastMM5
+	url = https://github.com/pleriche/FastMM5.git
+[submodule "submodules/Indy"]
+	path = submodules/Indy
+	url = https://github.com/IndySockets/Indy.git
