@@ -4625,12 +4625,26 @@ procedure TTaurusTLSSocket.Accept(const pHandle: TIdStackSocketHandle);
 // Accept and Connect have a lot of duplicated code
 var
   LRetCode: Integer;
+  LFunc: SSL_verify_cb;
   // LParentIO: TTaurusTLSIOHandlerSocket;
   // LHelper: ITaurusTLSCallbackHelper;
 begin
   Assert(fSSL = nil);
   Assert(fSSLContext <> nil);
   fSSL := SSL_new(fSSLContext.Context);
+
+  if fSSLContext.VerifyOn then
+  begin
+    LFunc := g_VerifyCallback;
+  end
+  else
+  begin
+    LFunc := nil;
+  end;
+  SSL_set_verify(fSSL, TranslateInternalVerifyToSSL
+    (fSSLContext.VerifyMode), LFunc);
+  SSL_set_verify_depth(fSSL, fSSLContext.VerifyDepth);
+
   if fSSL = nil then
   begin
     raise ETaurusTLSCreatingSessionError.Create(RSSSLCreatingSessionError);
