@@ -407,36 +407,54 @@ type
   /// </para>
   /// </summary>
   TTaurusTLSVerifyModeSet = set of TTaurusTLSVerifyMode;
-  /// <summary>
-  /// OpenSSL security level from <c>0</c> (permit anything) to <c>5</c> (most
-  /// restrictive)<para>
-  /// <c>0</c> Permit anything
-  /// </para>
-  /// <para>
-  /// <c>1</c> SSL 3.0 or later required. Cipher must have a minimum of 80
-  /// security bits.
-  /// </para>
-  /// <para>
-  /// <c>2</c> TLS 1.0 or later required. Cipher must have a minimum of 112
-  /// security bits. Compression is disabled.
-  /// </para>
-  /// <para>
-  /// <c>3</c> TLS 1.1 or later required. Cipher must have a minimum of 128
-  /// security bits. Session tickets are disabled.
-  /// </para>
-  /// <para>
-  /// <c>4</c> TLS 1.2 or later required. Cipher must have a minimum of 192
-  /// security bits.
-  /// </para>
-  /// <para>
-  /// <c>5</c> TLS 1.2 or later required. Cipher must have a minimum of 256
-  /// security bits.
-  /// </para>
-  /// </summary>
-  /// <seealso
-  /// href="https://docs.openssl.org/3.0/man3/SSL_CTX_set_security_level/#default-callback-behaviour">
-  /// default-callback-behaviour
-  /// </seealso>
+    /// <summary>
+    ///   OpenSSL security level from <c>0</c> (permit anything) to <c>5</c>
+    ///   (most restrictive). It may be one of the following values:<br />
+    ///   <para>
+    ///     <c>0</c> Permit anything This retains compatibility with previous
+    ///     versions of OpenSSL.
+    ///   </para>
+    ///   <para>
+    ///     <c>1</c> SSL 3.0 or later required. Cipher must have a minimum of 80
+    ///     security bits. As a result RSA, DSA and DH keys shorter than 1024
+    ///     bits and ECC keys shorter than 160 bits are prohibited. All export
+    ///     cipher suites are prohibited since they all offer less than 80 bits
+    ///     of security. Signatures using SHA1 and MD5 are also forbidden at
+    ///     this level as they have less than 80 security bits.
+    ///   </para>
+    ///   <para>
+    ///     <c>2</c> TLS 1.0 or later required. Cipher must have a minimum of
+    ///     112 security bits. As a result RSA, DSA and DH keys shorter than
+    ///     2048 bits and ECC keys shorter than 224 bits are prohibited. Any
+    ///     cipher suite using RC4 is also prohibited. Compression is disabled.
+    ///      <br />
+    ///   </para>
+    ///   <para>
+    ///     <c>3</c> TLS 1.1 or later required. Cipher must have a minimum of
+    ///     128 security bits. As a result RSA, DSA and DH keys shorter than
+    ///     3072 bits and ECC keys shorter than 256 bits are prohibited. Cipher
+    ///     suites not offering forward secrecy are prohibited. Compression is
+    ///     disabled. Session tickets are disabled. <br />
+    ///   </para>
+    ///   <para>
+    ///     <c>4</c> TLS 1.2 or later required. Cipher must have a minimum of
+    ///     192 security bits. As a result RSA, DSA and DH keys shorter than
+    ///     7680 bits and ECC keys shorter than 384 bits are prohibited. Cipher
+    ///     suites not offering forward secrecy are prohibited. Compression is
+    ///     disabled. Session tickets are disabled. <br />
+    ///   </para>
+    ///   <para>
+    ///     <c>5</c> TLS 1.2 or later required. Cipher must have a minimum of
+    ///     256 security bits. As a result RSA, DSA and DH keys shorter than
+    ///     15360 bits and ECC keys shorter than 512 bits are prohibited. Cipher
+    ///     suites not offering forward secrecy are prohibited. Compression is
+    ///     disabled. Session tickets are disabled.
+    ///   </para>
+    /// </summary>
+    /// <seealso
+    /// href="https://docs.openssl.org/3.0/man3/SSL_CTX_set_security_level/#default-callback-behaviour">
+    ///   default-callback-behaviour
+    /// </seealso>
   TTaurusTLSSecurityLevel = 0 .. 5;
 
 const
@@ -820,35 +838,52 @@ type
     property MinTLSVersion: TTaurusTLSSSLVersion read fMinTLSVersion
       write fMinTLSVersion default DEF_MIN_TLSVERSION;
     /// <summary>
-    /// OpenSSL security level from <c>0</c> (permit anything) to <c>5</c>
-    /// (most restrictive), It may be one of the following values: <br />
-    /// <para>
-    /// <c>0</c> Permit anything
-    /// </para>
-    /// <para>
-    /// <c>1</c> SSL 3.0 or later required. Cipher must have a minimum of 80
-    /// security bits.
-    /// </para>
-    /// <para>
-    /// <c>2</c> TLS 1.0 or later required. Cipher must have a minimum of
-    /// 112 security bits. Compression is disabled.
-    /// </para>
-    /// <para>
-    /// <c>3</c> TLS 1.1 or later required. Cipher must have a minimum of
-    /// 128 security bits. Session tickets are disabled.
-    /// </para>
-    /// <para>
-    /// <c>4</c> TLS 1.2 or later required. Cipher must have a minimum of
-    /// 192 security bits.
-    /// </para>
-    /// <para>
-    /// <c>5</c> TLS 1.2 or later required. Cipher must have a minimum of
-    /// 256 security bits.
-    /// </para>
+    ///   OpenSSL security level from <c>0</c> (permit anything) to <c>5</c>
+    ///   (most restrictive). It may be one of the following values:<br />
+    ///   <para>
+    ///     <c>0</c> Permit anything This retains compatibility with previous
+    ///     versions of OpenSSL.
+    ///   </para>
+    ///   <para>
+    ///     <c>1</c> SSL 3.0 or later required. Cipher must have a minimum of 80
+    ///     security bits. As a result RSA, DSA and DH keys shorter than 1024
+    ///     bits and ECC keys shorter than 160 bits are prohibited. All export
+    ///     cipher suites are prohibited since they all offer less than 80 bits
+    ///     of security. Signatures using SHA1 and MD5 are also forbidden at
+    ///     this level as they have less than 80 security bits.
+    ///   </para>
+    ///   <para>
+    ///     <c>2</c> TLS 1.0 or later required. Cipher must have a minimum of
+    ///     112 security bits. As a result RSA, DSA and DH keys shorter than
+    ///     2048 bits and ECC keys shorter than 224 bits are prohibited. Any
+    ///     cipher suite using RC4 is also prohibited. Compression is disabled.
+    ///      <br />
+    ///   </para>
+    ///   <para>
+    ///     <c>3</c> TLS 1.1 or later required. Cipher must have a minimum of
+    ///     128 security bits. As a result RSA, DSA and DH keys shorter than
+    ///     3072 bits and ECC keys shorter than 256 bits are prohibited. Cipher
+    ///     suites not offering forward secrecy are prohibited. Compression is
+    ///     disabled. Session tickets are disabled. <br />
+    ///   </para>
+    ///   <para>
+    ///     <c>4</c> TLS 1.2 or later required. Cipher must have a minimum of
+    ///     192 security bits. As a result RSA, DSA and DH keys shorter than
+    ///     7680 bits and ECC keys shorter than 384 bits are prohibited. Cipher
+    ///     suites not offering forward secrecy are prohibited. Compression is
+    ///     disabled. Session tickets are disabled. <br />
+    ///   </para>
+    ///   <para>
+    ///     <c>5</c> TLS 1.2 or later required. Cipher must have a minimum of
+    ///     256 security bits. As a result RSA, DSA and DH keys shorter than
+    ///     15360 bits and ECC keys shorter than 512 bits are prohibited. Cipher
+    ///     suites not offering forward secrecy are prohibited. Compression is
+    ///     disabled. Session tickets are disabled.
+    ///   </para>
     /// </summary>
     /// <seealso
     /// href="https://docs.openssl.org/3.0/man3/SSL_CTX_set_security_level/#default-callback-behaviour">
-    /// default-callback-behaviour
+    ///   default-callback-behaviour
     /// </seealso>
     property SecurityLevel: TTaurusTLSSecurityLevel read FSecurityLevel
       write SetSecurityLevel default DEF_SECURITY_LEVEL;
@@ -1022,35 +1057,52 @@ type
     /// </summary>
     property Mode: TTaurusTLSSSLMode read fMode write fMode;
     /// <summary>
-    /// OpenSSL security level from <c>0</c> (permit anything) to <c>5</c>
-    /// (most restrictive), It may be one of the following values: <br />
-    /// <para>
-    /// <c>0</c> Permit anything
-    /// </para>
-    /// <para>
-    /// <c>1</c> SSL 3.0 or later required. Cipher must have a minimum of 80
-    /// security bits.
-    /// </para>
-    /// <para>
-    /// <c>2</c> TLS 1.0 or later required. Cipher must have a minimum of
-    /// 112 security bits. Compression is disabled.
-    /// </para>
-    /// <para>
-    /// <c>3</c> TLS 1.1 or later required. Cipher must have a minimum of
-    /// 128 security bits. Session tickets are disabled.
-    /// </para>
-    /// <para>
-    /// <c>4</c> TLS 1.2 or later required. Cipher must have a minimum of
-    /// 192 security bits.
-    /// </para>
-    /// <para>
-    /// <c>5</c> TLS 1.2 or later required. Cipher must have a minimum of
-    /// 256 security bits.
-    /// </para>
+    ///   OpenSSL security level from <c>0</c> (permit anything) to <c>5</c>
+    ///   (most restrictive). It may be one of the following values:<br />
+    ///   <para>
+    ///     <c>0</c> Permit anything This retains compatibility with previous
+    ///     versions of OpenSSL.
+    ///   </para>
+    ///   <para>
+    ///     <c>1</c> SSL 3.0 or later required. Cipher must have a minimum of 80
+    ///     security bits. As a result RSA, DSA and DH keys shorter than 1024
+    ///     bits and ECC keys shorter than 160 bits are prohibited. All export
+    ///     cipher suites are prohibited since they all offer less than 80 bits
+    ///     of security. Signatures using SHA1 and MD5 are also forbidden at
+    ///     this level as they have less than 80 security bits.
+    ///   </para>
+    ///   <para>
+    ///     <c>2</c> TLS 1.0 or later required. Cipher must have a minimum of
+    ///     112 security bits. As a result RSA, DSA and DH keys shorter than
+    ///     2048 bits and ECC keys shorter than 224 bits are prohibited. Any
+    ///     cipher suite using RC4 is also prohibited. Compression is disabled.
+    ///      <br />
+    ///   </para>
+    ///   <para>
+    ///     <c>3</c> TLS 1.1 or later required. Cipher must have a minimum of
+    ///     128 security bits. As a result RSA, DSA and DH keys shorter than
+    ///     3072 bits and ECC keys shorter than 256 bits are prohibited. Cipher
+    ///     suites not offering forward secrecy are prohibited. Compression is
+    ///     disabled. Session tickets are disabled. <br />
+    ///   </para>
+    ///   <para>
+    ///     <c>4</c> TLS 1.2 or later required. Cipher must have a minimum of
+    ///     192 security bits. As a result RSA, DSA and DH keys shorter than
+    ///     7680 bits and ECC keys shorter than 384 bits are prohibited. Cipher
+    ///     suites not offering forward secrecy are prohibited. Compression is
+    ///     disabled. Session tickets are disabled. <br />
+    ///   </para>
+    ///   <para>
+    ///     <c>5</c> TLS 1.2 or later required. Cipher must have a minimum of
+    ///     256 security bits. As a result RSA, DSA and DH keys shorter than
+    ///     15360 bits and ECC keys shorter than 512 bits are prohibited. Cipher
+    ///     suites not offering forward secrecy are prohibited. Compression is
+    ///     disabled. Session tickets are disabled.
+    ///   </para>
     /// </summary>
     /// <seealso
     /// href="https://docs.openssl.org/3.0/man3/SSL_CTX_set_security_level/#default-callback-behaviour">
-    /// default-callback-behaviour
+    ///   default-callback-behaviour
     /// </seealso>
     property SecurityLevel: TTaurusTLSSecurityLevel read FSecurityLevel
       write SetSecurityLevel;
@@ -1147,6 +1199,9 @@ type
        default DEF_VERIFY_HOSTNAME;
   end;
 
+  /// <summary>
+  ///   Read status of TLS Connection.
+  /// </summary>
   TTaurusTLSReadStatus = (
     /// <summary>
     ///   if application data pending, or if it looks like we have disconnected
