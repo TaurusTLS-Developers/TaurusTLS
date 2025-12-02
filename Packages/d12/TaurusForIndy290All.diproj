@@ -1,13 +1,14 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <Project Version="1.0">
   <Title>TaurusTLS</Title>
-  <Summary>OpenSSL 1.1.1 and OpenSSL 3.x support for Indy - Internet Direct</Summary>
+  <Summary>OpenSSL OpenSSL 3.x support for Indy - Internet Direct</Summary>
   <Author>TaurusTLS Developers</Author>
   <Email>taurustls.developers@gmail.com</Email>
-  <Copyright>Copyright (c) 2025 TaurusTLS Developers,  All Rights Reserved,</Copyright>
-  <Comment>TaurusTLS provides OpenSSL 1.1 and 3.x support for Indy - Internet Direct.</Comment>
+  <Copyright>Copyright (c) 2025 TaurusTLS Developers,  All Rights Reserved</Copyright>
+  <Comment>TaurusTLS provides OpenSSL 3.x support for Indy - Internet Direct.</Comment>
   <Language>1033</Language>
   <Charset>1</Charset>
+  <Theme>Legacy</Theme>
   <HeaderHtml>&lt;%TopicTitle%&gt;</HeaderHtml>
   <FooterHtml>&lt;center&gt;&lt;b&gt;TaurusTLS&lt;/b&gt;&lt;br/&gt;
 &lt;%Copyright%&gt;&lt;br /&gt;
@@ -24,7 +25,7 @@ Powered by &lt;a href="https://devjetsoftware.com/products/documentation-insight
   <CompilerVersion>27</CompilerVersion>
   <TargetPlatform>0</TargetPlatform>
   <Sources>
-    <Source>.\TaurusTLS_RT.dpk</Source>
+    <Source>.\TaurusTLS_RTForIndy290.dpk</Source>
   </Sources>
   <Outputs>
     <Output Type="HTML">
