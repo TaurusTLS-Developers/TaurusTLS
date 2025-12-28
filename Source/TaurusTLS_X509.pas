@@ -322,18 +322,18 @@ type
     function GetExtensionByNid(const ANid: TIdC_INT): PX509_EXTENSION;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetCount: TIdC_INT; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetExtentionCritical(const AIndex: TIdC_INT): boolean;
+    function GetExtensionCritical(const AIndex: TIdC_INT): boolean;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetExtentionName(const AIndex: TIdC_INT): string;
+    function GetExtensionName(const AIndex: TIdC_INT): string;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetExtentionValues(const AIndex: TIdC_INT): string;
+    function GetExtensionValues(const AIndex: TIdC_INT): string;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
   public
     /// <summary>
-    ///   OpenSSL X509 Extention object by numeric identifier (NID).
+    ///   OpenSSL X509 Extension object by numeric identifier (NID).
     /// </summary>
     /// <param name="ANid">
-    ///   Numeric Identifier (NID) of the extention.
+    ///   Numeric Identifier (NID) of the extension.
     /// </param>
     property ExtensionByNid[const ANid: TIdC_INT]: PX509_EXTENSION
       read GetExtensionByNid;
@@ -343,31 +343,31 @@ type
     property Extensions[const AIndex: TIdC_INT]: PX509_EXTENSION
       read GetExtension; default;
     /// <summary>
-    ///   True if the extention is critical or False if it is not critical.
+    ///   True if the extension is critical or False if it is not critical.
     /// </summary>
     /// <param name="AIndex">
-    ///   Position of the extention in the list.
+    ///   Position of the extension in the list.
     /// </param>
-    property ExtentionCritical[const AIndex: TIdC_INT]: boolean
-      read GetExtentionCritical;
+    property ExtensionCritical[const AIndex: TIdC_INT]: boolean
+      read GetExtensionCritical;
     /// <summary>
-    ///   Extention name
+    ///   Extension name
     /// </summary>
     /// <param name="AIndex">
-    ///   Position of the extention in the list.
+    ///   Position of the extension in the list.
     /// </param>
-    property ExtentionName[const AIndex: TIdC_INT]: string
-      read GetExtentionName;
+    property ExtensionName[const AIndex: TIdC_INT]: string
+      read GetExtensionName;
     /// <summary>
     ///   Value of the extension expressed as a hexidecimal string.
     /// </summary>
     /// <param name="AIndex">
-    ///   Position of the extention in the list.
+    ///   Position of the extension in the list.
     /// </param>
-    property ExtentionValues[const AIndex: TIdC_INT]: string
-      read GetExtentionValues;
+    property ExtensionValues[const AIndex: TIdC_INT]: string
+      read GetExtensionValues;
     /// <summary>
-    ///   Number of X509 Extentions in Certificcate.
+    ///   Number of X509 Extensions in Certificcate.
     /// </summary>
     property Count: TIdC_INT read GetCount;
   end;
@@ -457,7 +457,7 @@ type
     /// <summary>
     ///   The certificate contains an unhandled critical extension.
     /// </summary>
-    property UnhandledCriticalExtention: Boolean
+    property UnhandledCriticalExtension: Boolean
       read GetUnhandledCriticalExtension;
   end;
 
@@ -659,9 +659,9 @@ type
     function GetDisplayInfo: TStrings;
     function GetSubjectKeyIdentifier: String; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetCertificateAuthorityFlag: Boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetExtentionName(const AIndex: TIdC_INT): string; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetExtentionCritical(const AIndex: TIdC_INT): Boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetExtentionValues(const AIndex: TIdC_INT): string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetExtensionName(const AIndex: TIdC_INT): string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetExtensionCritical(const AIndex: TIdC_INT): Boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetExtensionValues(const AIndex: TIdC_INT): string; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetKeyUsage: TTaurusTLSX509KeyUsage;
     function GetExtKeyUsage: TTaurusTLSX509ExtKeyUsage;
 
@@ -776,32 +776,32 @@ type
     property CertificateAuthorityPathLen: TIdC_LONG
       read GetCertificateAuthorityPathLen;
     /// <summary>
-    ///   Extention name
+    ///   Extension name
     /// </summary>
     /// <param name="AIndex">
-    ///   Position of the extention in the list.
+    ///   Position of the extension in the list.
     /// </param>
-    property ExtentionName[const AIndex: TIdC_INT]: string
-      read GetExtentionName;
+    property ExtensionName[const AIndex: TIdC_INT]: string
+      read GetExtensionName;
     /// <summary>
-    ///   True if the extention is critical or False if it is not critical.
+    ///   True if the extension is critical or False if it is not critical.
     /// </summary>
     /// <param name="AIndex">
-    ///   Position of the extention in the list.
+    ///   Position of the extension in the list.
     /// </param>
-    property ExtentionCritical[const AIndex: TIdC_INT]: Boolean
-      read GetExtentionCritical;
+    property ExtensionCritical[const AIndex: TIdC_INT]: Boolean
+      read GetExtensionCritical;
     /// <summary>
     ///   Value of the extension expressed as a hexidecimal string.
     /// </summary>
     /// <param name="AIndex">
-    ///   Position of the extention in the list.
+    ///   Position of the extension in the list.
     /// </param>
     property ExtensionValues[const AIndex: TIdC_INT]: string
-      read GetExtentionValues;
+      read GetExtensionValues;
     /// <summary>
     ///   The certificate has the Freshest Certificate Revocation List (CRL)
-    ///   extention.
+    ///   extension.
     /// </summary>
     property HasFreshestCRL: Boolean read GetHasFreshestCRL;
     /// <summary>
@@ -1202,7 +1202,7 @@ begin
   end;
 end;
 
-function TTaurusTLSX509Exts.GetExtentionCritical(
+function TTaurusTLSX509Exts.GetExtensionCritical(
   const AIndex: TIdC_INT): boolean;
 begin
   if AIndex < 0 then
@@ -1211,7 +1211,7 @@ begin
     Result := X509_EXTENSION_get_critical(X509_get_ext(FX509, AIndex)) > 0;
 end;
 
-function TTaurusTLSX509Exts.GetExtentionName(const AIndex: TIdC_INT): string;
+function TTaurusTLSX509Exts.GetExtensionName(const AIndex: TIdC_INT): string;
 begin
   if AIndex < 0 then
     Result := ''
@@ -1221,7 +1221,7 @@ begin
     );
 end;
 
-function TTaurusTLSX509Exts.GetExtentionValues(const AIndex: TIdC_INT): string;
+function TTaurusTLSX509Exts.GetExtensionValues(const AIndex: TIdC_INT): string;
 begin
   if AIndex < 0 then
     Result := ''
@@ -1381,19 +1381,19 @@ begin
   Result:=FExtensions;
 end;
 
-function TTaurusTLSX509.GetExtentionCritical(const AIndex: TIdC_INT): Boolean;
+function TTaurusTLSX509.GetExtensionCritical(const AIndex: TIdC_INT): Boolean;
 begin
-  Result:=Extensions.ExtentionCritical[AIndex];
+  Result:=Extensions.ExtensionCritical[AIndex];
 end;
 
-function TTaurusTLSX509.GetExtentionName(const AIndex: TIdC_INT): string;
+function TTaurusTLSX509.GetExtensionName(const AIndex: TIdC_INT): string;
 begin
-  Result:=Extensions.ExtentionName[AIndex];
+  Result:=Extensions.ExtensionName[AIndex];
 end;
 
-function TTaurusTLSX509.GetExtentionValues(const AIndex: TIdC_INT): string;
+function TTaurusTLSX509.GetExtensionValues(const AIndex: TIdC_INT): string;
 begin
-  Result:=Extensions.ExtentionValues[AIndex];
+  Result:=Extensions.ExtensionValues[AIndex];
 end;
 
 function TTaurusTLSX509.GetExtKeyUsage: TTaurusTLSX509ExtKeyUsage;
