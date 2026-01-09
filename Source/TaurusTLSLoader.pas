@@ -453,19 +453,6 @@ begin // FI:C101
       begin
         Result := not(FLibSSL = IdNilHandle);
       end;
-{$IFDEF WINDOWS}
-      if not Result then
-      begin
-        { try the legacy dll names }
-        FLibCrypto := FindLibrary(LegacyLibCrypto, '');
-        FLibSSL := FindLibrary(LegacyLibssl, '');
-        Result := not(FLibCrypto = IdNilHandle);
-        if Result then
-        begin
-          Result := not(FLibSSL = IdNilHandle);
-        end;
-      end;
-{$ENDIF}
       if not Result then
         Exit;
 
