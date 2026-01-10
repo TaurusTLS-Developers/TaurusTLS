@@ -21,7 +21,7 @@ resourcestring
   RSLicense = 'TaurusTLS is dual licensed. You can review which license ' +
     'better suits your needs, and use that license.  See LICENSE.md ' +
     'for details.';
-  RSCopyright = 'Copyright (c) 2025 TaurusTLS Developers.  All Rights Reserved.';
+  RSCopyright = 'Copyright (c) 2026 TaurusTLS Developers.  All Rights Reserved.';
   RSThirdPartyAcknowlegements = '&Third-Party Acknowlegements...';
   RSOk = 'OK';
 

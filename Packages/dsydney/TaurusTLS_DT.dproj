@@ -57,7 +57,7 @@
 		<DCC_ObjOutput>.\$(Platform)\$(Config)</DCC_ObjOutput>
 		<DCC_HppOutput>.\$(Platform)\$(Config)</DCC_HppOutput>
 		<DCC_BpiOutput>.\$(Platform)\$(Config)</DCC_BpiOutput>
-		<VerInfo_Keys>CompanyName=TaurusTLS Developers;FileDescription=$(MSBuildProjectName);FileVersion=1.0.2.39;InternalName=TaurusTLS_DT.bpl;LegalCopyright=Copyright (c) 2025 TaurusTLS Developers.  All Rights Reserved.;LegalTrademarks=;OriginalFilename=TaurusTLS_DT.bpl;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.2.39;Comments=</VerInfo_Keys>
+		<VerInfo_Keys>CompanyName=TaurusTLS Developers;FileDescription=$(MSBuildProjectName);FileVersion=1.0.2.39;InternalName=TaurusTLS_DT.bpl;LegalCopyright=Copyright (c) 2026 TaurusTLS Developers.  All Rights Reserved.;LegalTrademarks=;OriginalFilename=TaurusTLS_DT.bpl;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.2.39;Comments=</VerInfo_Keys>
 		<DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
 		<DCC_ExeOutput>.\$(Platform)\$(Config)</DCC_ExeOutput>
 		<DCC_E>false</DCC_E>
