@@ -131,6 +131,8 @@ type
 {$IF NOT DECLARED(PPPIdAnsiChar)}
   PPPIdAnsiChar = ^PPIdAnsiChar;
 {$IFEND}
+
+{$IF NOT DECLARED(TIdC_TM)}
   TIdC_TM = record
     tm_sec: TIdC_INT;         (* seconds,  range 0 to 59          *)
     tm_min: TIdC_INT;         (* minutes, range 0 to 59           *)
@@ -141,10 +143,20 @@ type
     tm_wday: TIdC_INT;        (* day of the week, range 0 to 6    *)
     tm_yday: TIdC_INT;        (* day in the year, range 0 to 365  *)
     tm_isdst: TIdC_INT;       (* daylight saving time             *)
+    {$IFDEF LINUX}
+    // glibc struct tm extension:
+    // ASN1_TIME_to_tm() writes a full glibc struct tm (tm_gmtoff, tm_zone).
+    // Without these fields TIdC_TM is too small, causing stack corruption
+    // (e.g. invalid X509 ValidFrom/ValidTo values) on Linux targets.
+    // This is especially visible with FPC cross-compilation to Linux/ARM
+    // (e.g. Raspberry Pi), where X509 ValidFrom/ValidTo values become invalid.
+    tm_gmtoff: TIdC_LONG;  // seconds east of UTC
+    tm_zone: PAnsiChar;    // timezone abbreviation
+    {$ENDIF}
   end;
   PIdC_TM = ^TIdC_TM;
   PPIdC_TM = ^PIdC_TM;
-
+  {$IFEND}
 // moved from unit "asn1" to prevent circular references
   asn1_string_st = record
     _length: TIdC_INT;
