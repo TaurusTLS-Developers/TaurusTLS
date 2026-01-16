@@ -45,8 +45,13 @@ const
     {$ENDIF}
     {$IFDEF WINDOWS}
       {$IFDEF CPU64}
+        {$IFDEF CPUARM64}
+        CLibCrypto = 'libcrypto-3-arm64.dll';
+        CLibSSL = 'libssl-3-arm64.dll';
+        {$ELSE}
         CLibCrypto = 'libcrypto-3-x64.dll';
         CLibSSL = 'libssl-3-x64.dll';
+        {$ENDIF}
       {$ENDIF}
       {$IFDEF CPU32}
         CLibCrypto = 'libcrypto-3.dll';
@@ -72,9 +77,12 @@ const
   {$IFDEF WINDOWS}
   DirListDelimiter = ';';
   LibSuffix = '';
-
     {$IFDEF CPU64}
+      {$IFDEF CPUARM64}
+    DefaultLibVersions = '-3-arm64;-1_1-arm64;-1-arm64;';
+      {$ELSE}
     DefaultLibVersions = '-3-x64;-1_1-x64;-1-x64;';
+      {$ENDIF}
     {$ENDIF}
     {$IFDEF CPU32}
     DefaultLibVersions = '-3;-1_1;-1;';
