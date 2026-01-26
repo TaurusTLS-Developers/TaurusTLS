@@ -1360,6 +1360,7 @@ type
     property VerifyHostname: Boolean read GetVerifyHostname
       write SetVerifyHostName;
   end;
+  TTaurusContextLoaderEvent = procedure (ASender:TObject; AContext:TTaurusTLSContext) of object;
 
   /// <summary>
   /// TTaurusTLSIOHandlerSocket and TTaurusTLSServerIOHandler common
@@ -1564,6 +1565,8 @@ type
     //channel SNI.
 {$IFDEF USE_STRICT_PRIVATE_PROTECTED} private fHostname : String;{$ENDIF}
   public
+    //20260116 xjikka: OnContextLoaderCustom Allows custom context loading (e.g. from TBytes/TStream)
+    OnContextLoaderCustom:TTaurusContextLoaderEvent;
     /// <summary>
     /// Frees resources and destroys the current instance.
     /// </summary>
@@ -1865,6 +1868,8 @@ type
     function GetIOHandlerSelf: TTaurusTLSIOHandlerSocket;
     function MakeDataChannelIOHandler: TTaurusTLSIOHandlerSocket;
   public
+    //20260116 xjikka: OnContextLoaderCustom Allows custom context loading (e.g. from TBytes/TStream)
+    OnContextLoaderCustom:TTaurusContextLoaderEvent;
     /// <summary>
     /// Called by Indy (Internet Direct) and makes a TTaurusTLSContext for
     /// this TTaurusTLSServerIOHandler.
@@ -3430,6 +3435,9 @@ begin
   fSSLContext.Mode := SSLOptions.Mode;
   fSSLContext.SecurityLevel := SSLOptions.SecurityLevel;
   fSSLContext.InitContext(sslCtxServer);
+  if assigned(OnContextLoaderCustom) then begin
+    OnContextLoaderCustom(self,fSSLContext);
+  end;
   // This must be after the Context is initialized so it does not AV.
   // It avs if the Context property is nil.
   if Certificates.Count > 0 then
@@ -3897,6 +3905,9 @@ begin
     fSSLContext.Mode := SSLOptions.Mode;
     fSSLContext.SecurityLevel := SSLOptions.SecurityLevel;
     fSSLContext.InitContext(sslCtxClient);
+    if assigned(OnContextLoaderCustom) then begin
+      OnContextLoaderCustom(self,fSSLContext);
+    end;
   end;
 end;
 
