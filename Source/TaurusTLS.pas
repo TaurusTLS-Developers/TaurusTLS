@@ -1360,6 +1360,18 @@ type
     property VerifyHostname: Boolean read GetVerifyHostname
       write SetVerifyHostName;
   end;
+    /// <summary>
+    ///   <see cref="TaurusTLS|TTaurusTLSIOHandlerSocket.OnContextLoaderCustom" />
+    ///   and <see
+    ///   cref="TaurusTLS|TTaurusTLSServerIOHandler.OnContextLoaderCustom" />
+    ///   events
+    /// </summary>
+    /// <param name="ASender">
+    ///   The object that triggers the event.
+    /// </param>
+    /// <param name="AContext">
+    ///   The Context object that was created.
+    /// </param>
   TTaurusContextLoaderEvent = procedure (ASender:TObject; AContext:TTaurusTLSContext) of object;
 
   /// <summary>
@@ -1519,6 +1531,8 @@ type
     fOnBeforeConnect: TOnIOHandlerNotify;
     FOnSSLNegotiated: TOnIOHandlerNotify;
     fOnVerifyCallback: TOnVerifyCallbackEvent;
+     //20260116 xjikka: OnContextLoaderCustom Allows custom context loading (e.g. from TBytes/TStream)
+    FOnContextLoaderCustom:TTaurusContextLoaderEvent;
     //This needs to be private, not strict private
     //so we can set it in the clone method for FTP data
     //channel SNI.
@@ -1565,8 +1579,7 @@ type
     //channel SNI.
 {$IFDEF USE_STRICT_PRIVATE_PROTECTED} private fHostname : String;{$ENDIF}
   public
-    //20260116 xjikka: OnContextLoaderCustom Allows custom context loading (e.g. from TBytes/TStream)
-    OnContextLoaderCustom:TTaurusContextLoaderEvent;
+
     /// <summary>
     /// Frees resources and destroys the current instance.
     /// </summary>
@@ -1825,6 +1838,18 @@ type
     /// </param>
     property OnVerifyCallback: TOnVerifyCallbackEvent read fOnVerifyCallback
       write fOnVerifyCallback;
+    /// <summary>
+    ///   The event provides access to the underlying SSL_CTX object during
+    ///   context initialization, enabling applications to plug in their own
+    ///   loading logic.
+    /// </summary>
+    /// <param name="ASender">
+    ///   The object that triggers the event.
+    /// </param>
+    /// <param name="AContext">
+    ///   The Context object that was created.
+    /// </param>
+    property OnContextLoaderCustom : TTaurusContextLoaderEvent read FOnContextLoaderCustom write FOnContextLoaderCustom;
   end;
 
   /// <summary>
@@ -1844,6 +1869,8 @@ type
     FOnDebugMessage: TOnDebugMessageEvent;
     fOnVerifyError: TOnVerifyErrorEvent;
     fOnVerifyCallback: TOnVerifyCallbackEvent;
+    //20260116 xjikka: OnContextLoaderCustom Allows custom context loading (e.g. from TBytes/TStream)
+    fOnContextLoaderCustom:TTaurusContextLoaderEvent;
     //
     // procedure CreateSSLContext(axMode: TTaurusTLSSSLMode);
     // procedure CreateSSLContext;
@@ -1868,8 +1895,7 @@ type
     function GetIOHandlerSelf: TTaurusTLSIOHandlerSocket;
     function MakeDataChannelIOHandler: TTaurusTLSIOHandlerSocket;
   public
-    //20260116 xjikka: OnContextLoaderCustom Allows custom context loading (e.g. from TBytes/TStream)
-    OnContextLoaderCustom:TTaurusContextLoaderEvent;
+
     /// <summary>
     /// Called by Indy (Internet Direct) and makes a TTaurusTLSContext for
     /// this TTaurusTLSServerIOHandler.
@@ -2131,6 +2157,18 @@ type
     /// </param>
     property OnVerifyCallback: TOnVerifyCallbackEvent read fOnVerifyCallback
       write fOnVerifyCallback;
+    /// <summary>
+    ///   The event provides access to the underlying SSL_CTX object during
+    ///   context initialization, enabling applications to plug in their own
+    ///   loading logic.
+    /// </summary>
+    /// <param name="ASender">
+    ///   The object that triggers the event.
+    /// </param>
+    /// <param name="AContext">
+    ///   The Context object that was created.
+    /// </param>
+    property OnContextLoaderCustom : TTaurusContextLoaderEvent read FOnContextLoaderCustom write FOnContextLoaderCustom;
   end;
 
   /// <summary>
@@ -3435,8 +3473,8 @@ begin
   fSSLContext.Mode := SSLOptions.Mode;
   fSSLContext.SecurityLevel := SSLOptions.SecurityLevel;
   fSSLContext.InitContext(sslCtxServer);
-  if assigned(OnContextLoaderCustom) then begin
-    OnContextLoaderCustom(self,fSSLContext);
+  if assigned(FOnContextLoaderCustom) then begin
+    FOnContextLoaderCustom(self,fSSLContext);
   end;
   // This must be after the Context is initialized so it does not AV.
   // It avs if the Context property is nil.
@@ -3905,8 +3943,8 @@ begin
     fSSLContext.Mode := SSLOptions.Mode;
     fSSLContext.SecurityLevel := SSLOptions.SecurityLevel;
     fSSLContext.InitContext(sslCtxClient);
-    if assigned(OnContextLoaderCustom) then begin
-      OnContextLoaderCustom(self,fSSLContext);
+    if assigned(FOnContextLoaderCustom) then begin
+      FOnContextLoaderCustom(self,fSSLContext);
     end;
   end;
 end;
