@@ -795,6 +795,26 @@ type
 
   end;
 
+  /// <summary>
+  ///   <see cref="TaurusTLS|TTaurusTLSOptions.OnContextLoaderCustom" />
+  ///   and
+  ///   <see cref="TaurusTLS|TTaurusTLSContext.OnContextLoaderCustom" />
+  ///   event.
+  /// </summary>
+  /// <param name="ASender">
+  ///   The object that triggers the event. Normally this is <c>TTaurusTLSContext.Parent</c>,
+  ///   which is typically an instance of <c>TTaurusTLSServerIOHandler</c> or
+  ///   <c>TTaurusTLSClientIOHandler</c>.
+  /// </param>
+  /// <param name="AContext">
+  ///   The Context object that was created.
+  /// </param>
+  /// <param name="ASkipDefaultLoader">
+  ///   Set to <c>True</c> to prevent execution of the default context loader.
+  ///   Use this when you fully handle context initialization in this event.
+  /// </param>
+  TTaurusContextLoaderEvent = procedure (ASender: TObject; AContext: TTaurusTLSContext;
+    var ASkipDefaultLoader: Boolean) of object;
   { TTaurusTLSOptions }
   /// <summary>
   /// Class that provides properties that effect TLS.
@@ -817,6 +837,15 @@ type
     procedure SetMinTLSVersion(const AValue: TTaurusTLSSSLVersion);
     procedure SetSecurityLevel(const AValue: TTaurusTLSSecurityLevel);
   public
+    //20260116 xjikka:
+    //  OnContextLoaderCustom allows custom TLS context initialization/loading
+    //  (e.g. loading certificates/keys from TBytes, TStream, or other custom sources).
+    //  Set ASkipDefaultLoader := True to prevent the default loader from running.
+    //
+    //  If TTaurusTLSOptions.OnContextLoaderCustom is assigned, it is propagated to
+    //  TTaurusTLSContext.OnContextLoaderCustom in TTaurusTLSServerIOHandler.Init
+    //  and TTaurusTLSIOHandlerSocket.Init after the TTaurusTLSContext instance is created.
+    OnContextLoaderCustom: TTaurusContextLoaderEvent;
     /// <summary>
     /// Creates a new instance of TTaurusTLSOptions.
     /// </summary>
@@ -1002,6 +1031,15 @@ type
     function GetSSLMethod: PSSL_METHOD;
     function GetVerifyMode: TTaurusTLSVerifyModeSet;
   public
+    //20260116 xjikka:
+    //  OnContextLoaderCustom allows custom TLS context initialization/loading
+    //  (e.g. loading certificates/keys from TBytes, TStream, or other custom sources).
+    //  Set ASkipDefaultLoader := True to prevent the default loader from running.
+    //
+    //  If TTaurusTLSOptions.OnContextLoaderCustom is assigned, it is propagated to
+    //  TTaurusTLSContext.OnContextLoaderCustom in TTaurusTLSServerIOHandler.Init
+    //  and TTaurusTLSIOHandlerSocket.Init after the TTaurusTLSContext instance is created.
+    OnContextLoaderCustom: TTaurusContextLoaderEvent;
     /// <summary>
     /// Creates a new instance of TTaurusTLSContext.
     /// </summary>
@@ -1360,19 +1398,6 @@ type
     property VerifyHostname: Boolean read GetVerifyHostname
       write SetVerifyHostName;
   end;
-    /// <summary>
-    ///   <see cref="TaurusTLS|TTaurusTLSIOHandlerSocket.OnContextLoaderCustom" />
-    ///   and <see
-    ///   cref="TaurusTLS|TTaurusTLSServerIOHandler.OnContextLoaderCustom" />
-    ///   events
-    /// </summary>
-    /// <param name="ASender">
-    ///   The object that triggers the event.
-    /// </param>
-    /// <param name="AContext">
-    ///   The Context object that was created.
-    /// </param>
-  TTaurusContextLoaderEvent = procedure (ASender:TObject; AContext:TTaurusTLSContext) of object;
 
   /// <summary>
   /// TTaurusTLSIOHandlerSocket and TTaurusTLSServerIOHandler common
@@ -1531,8 +1556,6 @@ type
     fOnBeforeConnect: TOnIOHandlerNotify;
     FOnSSLNegotiated: TOnIOHandlerNotify;
     fOnVerifyCallback: TOnVerifyCallbackEvent;
-     //20260116 xjikka: OnContextLoaderCustom Allows custom context loading (e.g. from TBytes/TStream)
-    FOnContextLoaderCustom:TTaurusContextLoaderEvent;
     //This needs to be private, not strict private
     //so we can set it in the clone method for FTP data
     //channel SNI.
@@ -1838,19 +1861,6 @@ type
     /// </param>
     property OnVerifyCallback: TOnVerifyCallbackEvent read fOnVerifyCallback
       write fOnVerifyCallback;
-    /// <summary>
-    ///   The event provides access to the underlying SSL_CTX object (<see
-    ///   cref="TaurusTLS|TTaurusTLSContext.Context" />) during context
-    ///   initialization, enabling applications to plug in their own loading
-    ///   logic.
-    /// </summary>
-    /// <param name="ASender">
-    ///   The object that triggers the event.
-    /// </param>
-    /// <param name="AContext">
-    ///   The Context object that was created.
-    /// </param>
-    property OnContextLoaderCustom : TTaurusContextLoaderEvent read FOnContextLoaderCustom write FOnContextLoaderCustom;
   end;
 
   /// <summary>
@@ -1870,8 +1880,6 @@ type
     FOnDebugMessage: TOnDebugMessageEvent;
     fOnVerifyError: TOnVerifyErrorEvent;
     fOnVerifyCallback: TOnVerifyCallbackEvent;
-    //20260116 xjikka: OnContextLoaderCustom Allows custom context loading (e.g. from TBytes/TStream)
-    fOnContextLoaderCustom:TTaurusContextLoaderEvent;
     //
     // procedure CreateSSLContext(axMode: TTaurusTLSSSLMode);
     // procedure CreateSSLContext;
@@ -2158,26 +2166,6 @@ type
     /// </param>
     property OnVerifyCallback: TOnVerifyCallbackEvent read fOnVerifyCallback
       write fOnVerifyCallback;
-    /// <summary>
-    ///   The event provides access to the underlying SSL_CTX object (<see
-    ///   cref="TaurusTLS|TTaurusTLSContext.Context" />) during context
-    ///   initialization, enabling applications to plug in their own loading
-    ///   logic.
-    /// </summary>
-    /// <param name="ASender">
-    ///   The object that triggers the event.
-    /// </param>
-    /// <param name="AContext">
-    ///   The Context object that was created.
-    /// </param>
-    /// <remarks>
-    ///   This event is triggered once for the <see
-    ///   cref="TaurusTLS|TTaurusTLSServerIOHandler.DefaultCert" /> and for each
-    ///   item in the <see
-    ///   cref="TaurusTLS|TTaurusTLSServerIOHandler.Certificates" />
-    ///   TCollection.
-    /// </remarks>
-    property OnContextLoaderCustom : TTaurusContextLoaderEvent read FOnContextLoaderCustom write FOnContextLoaderCustom;
   end;
 
   /// <summary>
@@ -3355,6 +3343,7 @@ begin
   FSecurityLevel := DEF_SECURITY_LEVEL;
   fVerifyDepth := DEFAULT_VERIFY_DEPTH;
   fVerifyHostname := DEF_VERIFY_HOSTNAME;
+  OnContextLoaderCustom := nil;
 end;
 
 procedure TTaurusTLSOptions.SetMinTLSVersion(const AValue
@@ -3450,10 +3439,8 @@ begin
     LContext.MinTLSVersion := SSLOptions.MinTLSVersion;
     LContext.Mode := SSLOptions.Mode;
     LContext.SecurityLevel := SSLOptions.SecurityLevel;
+    LContext.OnContextLoaderCustom:=SSLOptions.OnContextLoaderCustom;
     LContext.InitContext(sslCtxServer);
-    if assigned(FOnContextLoaderCustom) then begin
-      FOnContextLoaderCustom(self,LContext);
-    end;
   end;
 end;
 
@@ -3484,10 +3471,8 @@ begin
   fSSLContext.MinTLSVersion := SSLOptions.MinTLSVersion;
   fSSLContext.Mode := SSLOptions.Mode;
   fSSLContext.SecurityLevel := SSLOptions.SecurityLevel;
+  fSSLContext.OnContextLoaderCustom:=SSLOptions.OnContextLoaderCustom;
   fSSLContext.InitContext(sslCtxServer);
-  if assigned(FOnContextLoaderCustom) then begin
-    FOnContextLoaderCustom(self,fSSLContext);
-  end;
   // This must be after the Context is initialized so it does not AV.
   // It avs if the Context property is nil.
   if Certificates.Count > 0 then
@@ -3954,10 +3939,8 @@ begin
     fSSLContext.MinTLSVersion := SSLOptions.MinTLSVersion;
     fSSLContext.Mode := SSLOptions.Mode;
     fSSLContext.SecurityLevel := SSLOptions.SecurityLevel;
+    fSSLContext.OnContextLoaderCustom:=SSLOptions.OnContextLoaderCustom;
     fSSLContext.InitContext(sslCtxClient);
-    if assigned(FOnContextLoaderCustom) then begin
-      FOnContextLoaderCustom(self,fSSLContext);
-    end;
   end;
 end;
 
@@ -4250,6 +4233,7 @@ begin
   fMode := sslmUnassigned;
   fSessionId := 1;
   fUseSystemRootCACertificateStore := True;
+  OnContextLoaderCustom:=nil;
 end;
 
 destructor TTaurusTLSContext.Destroy;
@@ -4387,6 +4371,7 @@ var
 {$ENDIF}
   LRes: Boolean;
   LFunc:  SSL_verify_cb;
+  LSkipDefaultLoader: Boolean;
 begin
   // Destroy the context first
   DestroyContext;
@@ -4440,77 +4425,86 @@ begin
   SSL_CTX_set_default_passwd_cb(fContext, g_PasswordCallback);
   SSL_CTX_set_default_passwd_cb_userdata(fContext, Self);
   // end;
-  if fUseSystemRootCACertificateStore then
+
+  // allow custom loader
+  LSkipDefaultLoader:=false;
+  if assigned(OnContextLoaderCustom) then
+    OnContextLoaderCustom(Parent, Self, LSkipDefaultLoader);
+  // allow skip default loader and SSL_CTX_set_session_id_context
+  if not LSkipDefaultLoader then
   begin
+    if fUseSystemRootCACertificateStore then
+    begin
 {$IFDEF USE_WINDOWS_CERT_STORE}
-    LoadWindowsCertStore;
+      LoadWindowsCertStore;
 {$ELSE}
-    SSL_CTX_set_default_verify_paths(fContext);
+      SSL_CTX_set_default_verify_paths(fContext);
 {$ENDIF}
-  end;
-  // load key and certificate files
-  if (RootPublicKey <> '') or (VerifyDirs <> '') then
-  begin { Do not Localize }
-    if not TaurusTLS_SSL_CTX_load_verify_locations(fContext, RootPublicKey,
-      VerifyDirs) > 0 then
-    begin
-      ETaurusTLSLoadingRootCertError.RaiseWithMessage
-        (RSSSLLoadingRootCertError);
     end;
-  end;
+    // load key and certificate files
+    if (RootPublicKey <> '') or (VerifyDirs <> '') then
+    begin { Do not Localize }
+      if not TaurusTLS_SSL_CTX_load_verify_locations(fContext, RootPublicKey,
+        VerifyDirs) > 0 then
+      begin
+        ETaurusTLSLoadingRootCertError.RaiseWithMessage
+          (RSSSLLoadingRootCertError);
+      end;
+    end;
 
-  if PublicKey <> '' then
-  begin { Do not Localize }
+    if PublicKey <> '' then
+    begin { Do not Localize }
 
-    if PosInStrArray(ExtractFileExt(PublicKey), ['.p12', '.pfx'], False) <> -1
-    then
-    begin
-      LRes := TaurusTLS_SSL_CTX_use_certificate_file_PKCS12(fContext, PublicKey) > 0;
-    end
-    else
-    begin
-      // OpenSSL 1.0.2 has a new function, SSL_CTX_use_certificate_chain_file
-      // that handles a chain of certificates in a PEM file.  That is prefered.
+      if PosInStrArray(ExtractFileExt(PublicKey), ['.p12', '.pfx'], False) <> -1
+      then
+      begin
+        LRes := TaurusTLS_SSL_CTX_use_certificate_file_PKCS12(fContext, PublicKey) > 0;
+      end
+      else
+      begin
+        // OpenSSL 1.0.2 has a new function, SSL_CTX_use_certificate_chain_file
+        // that handles a chain of certificates in a PEM file.  That is prefered.
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-      LRes := TaurusTLS_SSL_CTX_use_certificate_chain_file(fContext, PublicKey) > 0;
+        LRes := TaurusTLS_SSL_CTX_use_certificate_chain_file(fContext, PublicKey) > 0;
 {$ELSE}
-      LRes := TaurusTLS_SSL_CTX_use_certificate_chain_file(fContext, PublicKey) > 0;
+        LRes := TaurusTLS_SSL_CTX_use_certificate_chain_file(fContext, PublicKey) > 0;
 {$ENDIF}
+      end;
+      if not LRes then
+      begin
+        ETaurusTLSLoadingCertError.RaiseWithMessage(RSSSLLoadingCertError);
+      end;
     end;
-    if not LRes then
-    begin
-      ETaurusTLSLoadingCertError.RaiseWithMessage(RSSSLLoadingCertError);
-    end;
-  end;
 
-  if PrivateKey <> '' then
-  begin { Do not Localize }
-    if PosInStrArray(ExtractFileExt(PrivateKey), ['.p12', '.pfx'], False) <> -1
-    then
-    begin
-      LRes := TaurusTLS_SSL_CTX_use_PrivateKey_file_PKCS12(fContext, PrivateKey) > 0;
-    end
-    else
-    begin
-      LRes := TaurusTLS_SSL_CTX_use_PrivateKey_file(fContext, PrivateKey,
-        SSL_FILETYPE_PEM) > 0;
+    if PrivateKey <> '' then
+    begin { Do not Localize }
+      if PosInStrArray(ExtractFileExt(PrivateKey), ['.p12', '.pfx'], False) <> -1
+      then
+      begin
+        LRes := TaurusTLS_SSL_CTX_use_PrivateKey_file_PKCS12(fContext, PrivateKey) > 0;
+      end
+      else
+      begin
+        LRes := TaurusTLS_SSL_CTX_use_PrivateKey_file(fContext, PrivateKey,
+          SSL_FILETYPE_PEM) > 0;
+      end;
+      if LRes then
+      begin
+        LRes := SSL_CTX_check_private_key(fContext) > 0;
+      end;
+      if not LRes then
+      begin
+        ETaurusTLSLoadingKeyError.RaiseWithMessage(RSSSLLoadingKeyError);
+      end;
     end;
-    if LRes then
-    begin
-      LRes := SSL_CTX_check_private_key(fContext) > 0;
-    end;
-    if not LRes then
-    begin
-      ETaurusTLSLoadingKeyError.RaiseWithMessage(RSSSLLoadingKeyError);
-    end;
-  end;
-  if DHParamsFile <> '' then
-  begin { Do not Localize }
-    if not TaurusTLS_SSL_CTX_use_DHparams_file(fContext, fsDHParamsFile,
-      SSL_FILETYPE_PEM) > 0 then
-    begin
-      ETaurusTLSLoadingDHParamsError.RaiseWithMessage
-        (RSSSLLoadingDHParamsError);
+    if DHParamsFile <> '' then
+    begin { Do not Localize }
+      if not TaurusTLS_SSL_CTX_use_DHparams_file(fContext, fsDHParamsFile,
+        SSL_FILETYPE_PEM) > 0 then
+      begin
+        ETaurusTLSLoadingDHParamsError.RaiseWithMessage
+          (RSSSLLoadingDHParamsError);
+      end;
     end;
   end;
 
@@ -4579,17 +4573,20 @@ begin
     SSL_CTX_set_verify_depth(fContext, fVerifyDepth);
   end;
 
-  if CtxMode = sslCtxServer then
-  begin
-    SSL_CTX_set_session_id_context(fContext, PByte(@fSessionId),
-      SizeOf(fSessionId));
+  // allow skip default loader and SSL_CTX_set_session_id_context
+  if not LSkipDefaultLoader then begin
+    if CtxMode = sslCtxServer then
+    begin
+      SSL_CTX_set_session_id_context(fContext, PByte(@fSessionId),
+        SizeOf(fSessionId));
+    end;
+    // CA list
+    if RootPublicKey <> '' then
+    begin { Do not Localize }
+      SSL_CTX_set_client_CA_list(fContext,
+        TaurusTLS_SSL_load_client_CA_file(RootPublicKey));
+    end
   end;
-  // CA list
-  if RootPublicKey <> '' then
-  begin { Do not Localize }
-    SSL_CTX_set_client_CA_list(fContext,
-      TaurusTLS_SSL_load_client_CA_file(RootPublicKey));
-  end
 
   // TODO: provide an event so users can apply their own settings as needed...
 end;
