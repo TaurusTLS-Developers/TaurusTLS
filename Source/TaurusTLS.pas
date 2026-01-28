@@ -1839,9 +1839,10 @@ type
     property OnVerifyCallback: TOnVerifyCallbackEvent read fOnVerifyCallback
       write fOnVerifyCallback;
     /// <summary>
-    ///   The event provides access to the underlying SSL_CTX object during
-    ///   context initialization, enabling applications to plug in their own
-    ///   loading logic.
+    ///   The event provides access to the underlying SSL_CTX object (<see
+    ///   cref="TaurusTLS|TTaurusTLSContext.Context" />) during context
+    ///   initialization, enabling applications to plug in their own loading
+    ///   logic.
     /// </summary>
     /// <param name="ASender">
     ///   The object that triggers the event.
@@ -2158,9 +2159,10 @@ type
     property OnVerifyCallback: TOnVerifyCallbackEvent read fOnVerifyCallback
       write fOnVerifyCallback;
     /// <summary>
-    ///   The event provides access to the underlying SSL_CTX object during
-    ///   context initialization, enabling applications to plug in their own
-    ///   loading logic.
+    ///   The event provides access to the underlying SSL_CTX object (<see
+    ///   cref="TaurusTLS|TTaurusTLSContext.Context" />) during context
+    ///   initialization, enabling applications to plug in their own loading
+    ///   logic.
     /// </summary>
     /// <param name="ASender">
     ///   The object that triggers the event.
@@ -2168,6 +2170,13 @@ type
     /// <param name="AContext">
     ///   The Context object that was created.
     /// </param>
+    /// <remarks>
+    ///   This event is triggered once for the <see
+    ///   cref="TaurusTLS|TTaurusTLSServerIOHandler.DefaultCert" /> and for each
+    ///   item in the <see
+    ///   cref="TaurusTLS|TTaurusTLSServerIOHandler.Certificates" />
+    ///   TCollection.
+    /// </remarks>
     property OnContextLoaderCustom : TTaurusContextLoaderEvent read FOnContextLoaderCustom write FOnContextLoaderCustom;
   end;
 
@@ -3442,6 +3451,9 @@ begin
     LContext.Mode := SSLOptions.Mode;
     LContext.SecurityLevel := SSLOptions.SecurityLevel;
     LContext.InitContext(sslCtxServer);
+    if assigned(FOnContextLoaderCustom) then begin
+      FOnContextLoaderCustom(self,LContext);
+    end;
   end;
 end;
 
