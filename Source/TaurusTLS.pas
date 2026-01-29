@@ -796,7 +796,9 @@ type
   end;
 
   /// <summary>
-  ///   <see cref="TaurusTLS|TTaurusTLSOptions.OnContextLoaderCustom" />
+  ///   <see cref="TaurusTLS|TTaurusTLSIOHandlerSocket.OnContextLoaderCustom" />
+  ///   and
+  ///   <see cref="TaurusTLS|TTaurusTLSServerIOHandler.OnContextLoaderCustom" />
   ///   and
   ///   <see cref="TaurusTLS|TTaurusTLSContext.OnContextLoaderCustom" />
   ///   event.
@@ -804,7 +806,7 @@ type
   /// <param name="ASender">
   ///   The object that triggers the event. Normally this is <c>TTaurusTLSContext.Parent</c>,
   ///   which is typically an instance of <c>TTaurusTLSServerIOHandler</c> or
-  ///   <c>TTaurusTLSClientIOHandler</c>.
+  ///   <c>TTaurusTLSIOHandlerSocket</c>.
   /// </param>
   /// <param name="AContext">
   ///   The Context object that was created.
@@ -833,15 +835,6 @@ type
     fVerifyDirs: String;
     fCipherList: String;
     fVerifyMode: TTaurusTLSVerifyModeSet;
-    //20260116 xjikka:
-    //  OnContextLoaderCustom allows custom TLS context initialization/loading
-    //  (e.g. loading certificates/keys from TBytes, TStream, or other custom sources).
-    //  Set ASkipDefaultLoader := True to prevent the default loader from running.
-    //
-    //  If TTaurusTLSOptions.OnContextLoaderCustom is assigned, it is propagated to
-    //  TTaurusTLSContext.OnContextLoaderCustom in TTaurusTLSServerIOHandler.Init
-    //  and TTaurusTLSIOHandlerSocket.Init after the TTaurusTLSContext instance is created.
-    fOnContextLoaderCustom: TTaurusContextLoaderEvent;
     procedure AssignTo(Destination: TPersistent); override;
     procedure SetMinTLSVersion(const AValue: TTaurusTLSSSLVersion);
     procedure SetSecurityLevel(const AValue: TTaurusTLSSecurityLevel);
@@ -994,24 +987,6 @@ type
     /// SSL_CTX_set_cipher_list
     /// </seealso>
     property CipherList: String read fCipherList write fCipherList;
-  /// <summary>
-  ///   This event is triggered when the context is initialized and permits you
-  ///   to customize the initialization behavior.
-  /// </summary>
-  /// <param name="ASender">
-  ///   The object that triggers the event. Normally this is <c>
-  ///   TTaurusTLSContext.Parent</c>, which is typically an instance of <c>
-  ///   TTaurusTLSServerIOHandler</c> or <c>TTaurusTLSClientIOHandler</c>.
-  /// </param>
-  /// <param name="AContext">
-  ///   The Context object that was created.
-  /// </param>
-  /// <param name="ASkipDefaultLoader">
-  ///   Set to <c>True</c> to prevent execution of the default context loader.
-  ///   Use this when you fully handle context initialization in this event.
-  /// </param>
-    property OnContextLoaderCustom: TTaurusContextLoaderEvent read  fOnContextLoaderCustom
-      write fOnContextLoaderCustom;
   end;
 
   /// <summary>
@@ -1047,7 +1022,8 @@ type
     //  (e.g. loading certificates/keys from TBytes, TStream, or other custom sources).
     //  Set ASkipDefaultLoader := True to prevent the default loader from running.
     //
-    //  If TTaurusTLSOptions.OnContextLoaderCustom is assigned, it is propagated to
+    //  If TTaurusTLSIOHandlerSocket.OnContextLoaderCustom
+    //  or TTaurusTLSServerIOHandler.OnContextLoaderCustom is assigned, it is propagated to
     //  TTaurusTLSContext.OnContextLoaderCustom in TTaurusTLSServerIOHandler.Init
     //  and TTaurusTLSIOHandlerSocket.Init after the TTaurusTLSContext instance is created.
     fOnContextLoaderCustom: TTaurusContextLoaderEvent;
@@ -1260,9 +1236,9 @@ type
   ///   to customize the initialization behavior.
   /// </summary>
   /// <param name="ASender">
-  ///   The object that triggers the event. Normally this is <c>
-  ///   TTaurusTLSContext.Parent</c>, which is typically an instance of <c>
-  ///   TTaurusTLSServerIOHandler</c> or <c>TTaurusTLSClientIOHandler</c>.
+  ///   The object that triggers the event. Normally this is <c>TTaurusTLSContext.Parent</c>,
+  ///   which is typically an instance of <c>TTaurusTLSServerIOHandler</c> or
+  ///   <c>TTaurusTLSIOHandlerSocket</c>.
   /// </param>
   /// <param name="AContext">
   ///   The Context object that was created.
@@ -1579,6 +1555,16 @@ type
   /// </summary>
   TTaurusTLSIOHandlerSocket = class(TIdSSLIOHandlerSocketBase,
     ITaurusTLSCallbackHelper)
+  private
+    //20260116 xjikka:
+    //  OnContextLoaderCustom allows custom TLS context initialization/loading
+    //  (e.g. loading certificates/keys from TBytes, TStream, or other custom sources).
+    //  Set ASkipDefaultLoader := True to prevent the default loader from running.
+    //
+    //  If TTaurusTLSIOHandlerSocket.OnContextLoaderCustom is assigned, it is propagated to
+    //  TTaurusTLSContext.OnContextLoaderCustom in TTaurusTLSIOHandlerSocket.Init
+    //  after the TTaurusTLSContext instance is created.
+    fOnContextLoaderCustom: TTaurusContextLoaderEvent;
 {$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} protected
     fClientCert: TTaurusTLSX509File;
     fSSLContext: TTaurusTLSContext;
@@ -1899,6 +1885,23 @@ type
     /// </param>
     property OnVerifyCallback: TOnVerifyCallbackEvent read fOnVerifyCallback
       write fOnVerifyCallback;
+    /// <summary>
+    ///   This event is triggered when the context is initialized and permits you
+    ///   to customize the initialization behavior.
+    /// </summary>
+    /// <param name="ASender">
+    ///   The object that triggers the event. Normally this is <c>TTaurusTLSContext.Parent</c>,
+    ///   which is typically this instance of <c>TTaurusTLSIOHandlerSocket</c>.
+    /// </param>
+    /// <param name="AContext">
+    ///   The Context object that was created.
+    /// </param>
+    /// <param name="ASkipDefaultLoader">
+    ///   Set to <c>True</c> to prevent execution of the default context loader.
+    ///   Use this when you fully handle context initialization in this event.
+    /// </param>
+    property OnContextLoaderCustom: TTaurusContextLoaderEvent read  fOnContextLoaderCustom
+      write fOnContextLoaderCustom;
   end;
 
   /// <summary>
@@ -1906,6 +1909,16 @@ type
   /// </summary>
   TTaurusTLSServerIOHandler = class(TIdServerIOHandlerSSLBase,
     ITaurusTLSCallbackHelper)
+  private
+    //20260116 xjikka:
+    //  OnContextLoaderCustom allows custom TLS context initialization/loading
+    //  (e.g. loading certificates/keys from TBytes, TStream, or other custom sources).
+    //  Set ASkipDefaultLoader := True to prevent the default loader from running.
+    //
+    //  If TTaurusTLSServerIOHandler.OnContextLoaderCustom is assigned, it is propagated to
+    //  TTaurusTLSContext.OnContextLoaderCustom in TTaurusTLSServerIOHandler.Init
+    //  and TTaurusTLSIOHandlerSocket.Init after the TTaurusTLSContext instance is created.
+    fOnContextLoaderCustom: TTaurusContextLoaderEvent;
 {$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} protected
     fCertificates: TTaurusTLSX509Files;
     fDefaultCert: TTaurusTLSX509File;
@@ -2204,6 +2217,23 @@ type
     /// </param>
     property OnVerifyCallback: TOnVerifyCallbackEvent read fOnVerifyCallback
       write fOnVerifyCallback;
+    /// <summary>
+    ///   This event is triggered when the context is initialized and permits you
+    ///   to customize the initialization behavior.
+    /// </summary>
+    /// <param name="ASender">
+    ///   The object that triggers the event. Normally this is <c>TTaurusTLSContext.Parent</c>,
+    ///   which is typically this instance of <c>TTaurusTLSServerIOHandler</c>.
+    /// </param>
+    /// <param name="AContext">
+    ///   The Context object that was created.
+    /// </param>
+    /// <param name="ASkipDefaultLoader">
+    ///   Set to <c>True</c> to prevent execution of the default context loader.
+    ///   Use this when you fully handle context initialization in this event.
+    /// </param>
+    property OnContextLoaderCustom: TTaurusContextLoaderEvent read  fOnContextLoaderCustom
+      write fOnContextLoaderCustom;
   end;
 
   /// <summary>
@@ -3381,7 +3411,6 @@ begin
   FSecurityLevel := DEF_SECURITY_LEVEL;
   fVerifyDepth := DEFAULT_VERIFY_DEPTH;
   fVerifyHostname := DEF_VERIFY_HOSTNAME;
-  fOnContextLoaderCustom := nil;
 end;
 
 procedure TTaurusTLSOptions.SetMinTLSVersion(const AValue
@@ -3428,6 +3457,7 @@ begin
   fSSLOptions.Parent := Self;
   fDefaultCert := TTaurusTLSX509File.Create(nil);
   fCertificates := TTaurusTLSX509Files.Create(Self);
+  fOnContextLoaderCustom := nil;
 end;
 
 destructor TTaurusTLSServerIOHandler.Destroy;
@@ -3477,7 +3507,7 @@ begin
     LContext.MinTLSVersion := SSLOptions.MinTLSVersion;
     LContext.Mode := SSLOptions.Mode;
     LContext.SecurityLevel := SSLOptions.SecurityLevel;
-    LContext.OnContextLoaderCustom:=SSLOptions.OnContextLoaderCustom;
+    LContext.OnContextLoaderCustom:=OnContextLoaderCustom;
     LContext.InitContext(sslCtxServer);
   end;
 end;
@@ -3509,7 +3539,7 @@ begin
   fSSLContext.MinTLSVersion := SSLOptions.MinTLSVersion;
   fSSLContext.Mode := SSLOptions.Mode;
   fSSLContext.SecurityLevel := SSLOptions.SecurityLevel;
-  fSSLContext.OnContextLoaderCustom:=SSLOptions.OnContextLoaderCustom;
+  fSSLContext.OnContextLoaderCustom:=self.OnContextLoaderCustom;
   fSSLContext.InitContext(sslCtxServer);
   // This must be after the Context is initialized so it does not AV.
   // It avs if the Context property is nil.
@@ -3751,6 +3781,7 @@ begin
   // fSSLLayerClosed := true;
   fSSLContext := nil;
   fHostname := '';
+  fOnContextLoaderCustom := nil;
 end;
 
 destructor TTaurusTLSIOHandlerSocket.Destroy;
@@ -3977,7 +4008,7 @@ begin
     fSSLContext.MinTLSVersion := SSLOptions.MinTLSVersion;
     fSSLContext.Mode := SSLOptions.Mode;
     fSSLContext.SecurityLevel := SSLOptions.SecurityLevel;
-    fSSLContext.OnContextLoaderCustom:=SSLOptions.OnContextLoaderCustom;
+    fSSLContext.OnContextLoaderCustom:=self.OnContextLoaderCustom;
     fSSLContext.InitContext(sslCtxClient);
   end;
 end;
