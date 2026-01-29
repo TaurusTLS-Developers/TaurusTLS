@@ -909,7 +909,11 @@ begin
   {$IFDEF WINDOWS}
   if Assigned(IdnToUnicode) then
   begin
+    {$IFDEF UNICODE}
     Result := PunnyCodeToIDN(GetStrByNID(NID_commonName));
+    {$ELSE}
+    Result := AnsiString(PunnyCodeToIDN(GetStrByNID(NID_commonName)));
+    {$ENDIF}
   end
   else
   begin
@@ -930,7 +934,11 @@ begin
 {$IFDEF WINDOWS}
   if Assigned(IdnToUnicode) then
   begin
+    {$IFDEF UNICODE}
     Result := PunnyCodeToIDN(GetStrByNID(NID_pkcs9_emailAddress));
+    {$ELSE}
+    Result := AnsiString(PunnyCodeToIDN(GetStrByNID(NID_pkcs9_emailAddress)));
+    {$ENDIF}
   end
   else
   begin
