@@ -679,6 +679,17 @@
   {.$ENDIF}
    {$DEFINE HAS_DIRECTIVE_PUSHPOP} // TODO: when was push/pop introduced?
    {$DEFINE USE_NORETURN} // TODO: when was noreturn introduced? Possibly after 2.6.x
+   {$IFDEF FPC}
+     {$IF FPC_FULLVERSION = 30301} // Known-bad: FPC 3.3.1 fpcupdeluxe (possibly other versions)
+       // xjikka 2026-01-29:
+       // Windows and Windows + cross-compile to Raspberry Pi: FPC 3.3.1 rejects "raise" inside
+       // routines declared as "noreturn" (even if "noreturn" is added consistently
+       // to both interface and implementation).
+       // Error:
+       //   "Raise in subroutines declared as noreturn is not allowed"
+       {$UNDEF USE_NORETURN}
+     {$IFEND}
+   {$ENDIF}
 {$ENDIF}
 
 // end FPC
