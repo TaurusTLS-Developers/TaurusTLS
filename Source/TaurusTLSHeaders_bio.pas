@@ -7943,7 +7943,7 @@ end;
 // WAS DECLARED AS:
 // function BIO_get_mem_ptr(b: PBIO; pp: Pointer): TIdC_INT;
 //# define BIO_get_mem_ptr(b,pp)   BIO_ctrl(b,BIO_C_GET_BUF_MEM_PTR,0,(char (pp))
-function BIO_get_mem_ptr(b: PBIO; var pp: PBUF_MEM): TIdC_INT;
+function BIO_get_mem_ptr(b: PBIO; out pp: PBUF_MEM): TIdC_INT;
 begin
   Result := BIO_ctrl(b, BIO_C_GET_BUF_MEM_PTR, 0, pp);
 end;
