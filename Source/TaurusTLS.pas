@@ -1556,6 +1556,7 @@ type
   TTaurusTLSIOHandlerSocket = class(TIdSSLIOHandlerSocketBase,
     ITaurusTLSCallbackHelper)
   private
+{$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} protected
     //20260116 xjikka:
     //  OnContextLoaderCustom allows custom TLS context initialization/loading
     //  (e.g. loading certificates/keys from TBytes, TStream, or other custom sources).
@@ -1565,7 +1566,6 @@ type
     //  TTaurusTLSContext.OnContextLoaderCustom in TTaurusTLSIOHandlerSocket.Init
     //  after the TTaurusTLSContext instance is created.
     fOnContextLoaderCustom: TTaurusContextLoaderEvent;
-{$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} protected
     fClientCert: TTaurusTLSX509File;
     fSSLContext: TTaurusTLSContext;
     fSSLOptions: TTaurusTLSOptions;
@@ -1910,6 +1910,7 @@ type
   TTaurusTLSServerIOHandler = class(TIdServerIOHandlerSSLBase,
     ITaurusTLSCallbackHelper)
   private
+{$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} protected
     //20260116 xjikka:
     //  OnContextLoaderCustom allows custom TLS context initialization/loading
     //  (e.g. loading certificates/keys from TBytes, TStream, or other custom sources).
@@ -1919,7 +1920,6 @@ type
     //  TTaurusTLSContext.OnContextLoaderCustom in TTaurusTLSServerIOHandler.Init
     //  and TTaurusTLSIOHandlerSocket.Init after the TTaurusTLSContext instance is created.
     fOnContextLoaderCustom: TTaurusContextLoaderEvent;
-{$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} protected
     fCertificates: TTaurusTLSX509Files;
     fDefaultCert: TTaurusTLSX509File;
     fSSLOptions: TTaurusTLSOptions;
