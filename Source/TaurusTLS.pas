@@ -2470,6 +2470,7 @@ uses
 {$IFDEF HAS_UNIT_Generics_Collections}
   System.Generics.Collections,
 {$ENDIF}
+ {$IFDEF HAS_AnsiStrings_StrLen} AnsiStrings,{$ENDIF}
 {$IFDEF USE_VCL_POSIX}
   Posix.SysTime,
   Posix.Time,
@@ -2903,10 +2904,8 @@ var
   i: Integer;
   LSSLIO: TTaurusTLSServerIOHandler;
   LX509: PX509;
-{$IFNDEF USE_INLINE_VAR}
-  LHostname: String;
-  LBHost: TIdBytes;
-{$ENDIF}
+  LPHost : PIdAnsiChar;
+
 begin
   LErr := GStack.WSGetLastError;
   try
@@ -2920,25 +2919,16 @@ begin
         if arg <> nil then
         begin
           LSSLIO := TTaurusTLSServerIOHandler(arg);
-{$IFDEF USE_INLINE_VAR}
-          var
-            LHostname: String;
-{$ENDIF}
-          LHostname := AnsiStringToString(SSL_get_servername(SSL,
-            TLSEXT_NAMETYPE_host_name));
-          if LHostname <> '' then
+
+          LPHost := SSL_get_servername(SSL, TLSEXT_NAMETYPE_host_name);
+          if Assigned(LPHost) then
           begin
             // indicate a fatal alert for hostname not found.
             Result := SSL_TLSEXT_ERR_ALERT_FATAL;
-{$IFDEF USE_INLINE_VAR}
-            var
-              LBHost: TIdBytes;
-{$ENDIF}
-            LBHost := ToBytes(LHostname);
             for i := 0 to LSSLIO.Certificates.Count - 1 do
             begin
               LX509 := LSSLIO.Certificates[i].x509;
-              if X509_check_host(LX509, @LBHost[0], Length(LBHost), 0, nil) = 1
+              if X509_check_host(LX509, LPHost, {$IFDEF HAS_AnsiStrings_StrLen}AnsiStrings.{$ENDIF}StrLen(LPHost), 0, nil) = 1
               then
               begin
                 // switch certificate we send to the client and indicate success.
@@ -2953,10 +2943,12 @@ begin
               LX509 := SSL_CTX_get0_certificate(LSSLIO.SSLContext.Context);
               if LX509 <> nil then
               begin
-                if X509_check_host(LX509, @LBHost[0], Length(LBHost), 0, nil) = 1
+                if X509_check_host(LX509, LPHost, {$IFDEF HAS_AnsiStrings_StrLen}AnsiStrings.{$ENDIF}StrLen(LPHost), 0, nil) = 1
                 then
                 begin
-                  Result := SSL_TLSEXT_ERR_NOACK;
+                  //no need to switch the certificates but good idea
+                  //to indicate a host match.
+                  Result := SSL_TLSEXT_ERR_OK;
                 end;
               end;
             end;
