@@ -3193,7 +3193,6 @@ begin
   try
     if SSLIsLoaded.Value then
     begin
-      SSL_load_error_strings;
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
       if Assigned(CRYPTO_set_locking_callback) then
 {$ENDIF}
