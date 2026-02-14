@@ -1,6 +1,6 @@
 # TaurusTLS
 
-Copyright (c) 2025 TaurusTLS Developers
+Copyright (c) 2026 TaurusTLS Developers
 All Rights Reserved
 
 ## General Information
@@ -100,9 +100,9 @@ The design-time package should depend upon the run-time package and include the 
 
 ## Deploying Your Applications
 
-TaurusTLS requires OpenSSL 1.1.1 or OpenSSL 3.x.
+You should install OpenSSL 3 since those versions have not reached their end-of-life.
 
-### Static Libraries (OpenSSL 3.x ONLY)
+### Static Libraries (OpenSSL 3 ONLY)
 
 Static libraries (`.a` files) can be used with Android, iOS and macOS. Precompiled versions of the libraries are available at: <https://github.com/TaurusTLS-Developers/OpenSSL-Distribution/releases> and <https://github.com/TurboPack/OpenSSL-Distribution/releases>.
 
@@ -112,31 +112,24 @@ On Linux, OpenSSL is usually installed by default.  We recommend that developers
 
 ### Windows
 
-On Windows, OpenSSL is not installed by default so you have to redistribute it along with your software by placing the library files in the same directory as your executable.   You can choose to either deploy OpenSSL 1.1.1 (not recommended) or an OpenSSL 3.x version.  As of this writing, the current OpenSSL 3.x versions are 3.0.19, 3.3.6, 3.4.6, 3.5.5, and 3.6.1.  Pre-compiled .DLL’s for these versions are available at <https://github.com/TaurusTLS-Developers/OpenSSL-Distribution/releases> and <https://github.com/TurboPack/OpenSSL-Distribution/releases>.  
+On Windows, OpenSSL is not installed by default so you have to redistribute it along with your software by placing the library files in the same directory as your executable.   We recommend installing an OpenSSL 3 version.  As of this writing, the current OpenSSL 3 versions are 3.0.19, 3.3.6, 3.4.6, 3.5.5, and 3.6.1.  Pre-compiled .DLL’s for these OpenSSL 3 are available at <https://github.com/TaurusTLS-Developers/OpenSSL-Distribution/releases> and <https://github.com/TurboPack/OpenSSL-Distribution/releases>.  
 
-For Win32 applications, you need to redistribute the following:
-
-OpenSSL 1.1.1  (not recommended because OpenSSL 1.1.1 has reached its end of life)
-
-- libcrypto-1_1.dll
-- libssl-1_1.dll
-
-OpenSSL 3.x
+For Win32 applications, you need to redistribute the following OpenSSL 3 files:
 
 - libcrypto-3.dll
 - libssl-3.dll
 
-For Win64 applications, you need to redistribute the following:
-
-OpenSSL 1.1.1  (not recommended because OpenSSL 1.1.1 has reached its end of life)
-
-- libcrypto-1_1-x64.dll
-- libssl-1_1-x64.dll
+For Win64 applications for x64, you need to redistribute the following OpenSSL 3 files:
 
 OpenSSL 3.x
 
 - libcrypto-3-x64.dll
 - libssl-3-x64.dll
+
+For Win64 applications for ARM64, you need to redistribute the following OpenSSL 3 files:
+
+- libcrypto-3-arm64.dll
+- libssl-3-arm64.dll
 
 We strongly urge you to redistribute the openssl.exe included with the .DLL's along with your program.  Some of your users may need it to:
 
