@@ -221,6 +221,10 @@ Analyzes source-code to find various types of potential issues.
 
 ## Credits
 
+### Alexander Tregubov
+
+for improving the buil workflows used to create OpenSSL binary releases as well as numerous bug fixes.
+
 ### Chad Z. Hower (Kudzu) and the Indy Pit Crew
 
 author of the original code that was modified to create TaurusTLS.
