@@ -121,8 +121,6 @@ For Win32 applications, you need to redistribute the following OpenSSL 3 files:
 
 For Win64 applications for x64, you need to redistribute the following OpenSSL 3 files:
 
-OpenSSL 3.x
-
 - libcrypto-3-x64.dll
 - libssl-3-x64.dll
 
