@@ -129,6 +129,8 @@ For Windows ARM64EC applications on Arm platform, you need to redistribute the f
 - libcrypto-3-arm64.dll
 - libssl-3-arm64.dll
 
+Note that the ARM64EC binaries are special compiles to follow the ARM64EC conventions and not compatible with the regular ARM64 binaries.  See: </https://github.com/openssl/openssl/issues/16482>
+
 We strongly urge you to redistribute the openssl.exe included with the .DLL's along with your program.  Some of your users may need it to:
 
 1. Generate keys
