@@ -56,5 +56,5 @@
 			<Version Value="2"/>
 			<UseFileFilters Value="True"/>
 		</PublishOptions>
-		<Version Major="1" Release="3" Build="41"/></Package>
+		<Version Major="1" Release="4" Build="41"/></Package>
 </CONFIG>

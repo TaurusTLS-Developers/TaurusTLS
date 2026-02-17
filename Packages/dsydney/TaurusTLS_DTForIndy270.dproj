@@ -71,7 +71,7 @@
 		<SanitizedProjectName>TaurusTLS_DTForIndy270</SanitizedProjectName>
 		<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
 		<VerInfo_Locale>1033</VerInfo_Locale>
-		<VerInfo_Keys>CompanyName=TaurusTLS Developers;FileDescription=$(MSBuildProjectName);FileVersion=1.0.3.41;InternalName=TaurusTLS_DTForIndy270.bpl;LegalCopyright=Copyright (c) 2026 TaurusTLS Developers.  All Rights Reserved.;LegalTrademarks=;OriginalFilename=TaurusTLS_DTForIndy270.bpl;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.3.41;Comments=</VerInfo_Keys>
+		<VerInfo_Keys>CompanyName=TaurusTLS Developers;FileDescription=$(MSBuildProjectName);FileVersion=1.0.4.41;InternalName=TaurusTLS_DTForIndy270.bpl;LegalCopyright=Copyright (c) 2026 TaurusTLS Developers.  All Rights Reserved.;LegalTrademarks=;OriginalFilename=TaurusTLS_DTForIndy270.bpl;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.4.41;Comments=</VerInfo_Keys>
 		<DesignOnlyPackage>true</DesignOnlyPackage>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Base_Android)'!=''">

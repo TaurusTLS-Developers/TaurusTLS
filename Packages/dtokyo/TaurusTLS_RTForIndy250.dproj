@@ -80,7 +80,7 @@
 		<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
 		<VerInfo_Build>41</VerInfo_Build>
 		<VerInfo_Locale>1033</VerInfo_Locale>
-		<VerInfo_Keys>CompanyName=TaurusTLS Developers;FileDescription=$(MSBuildProjectName);FileVersion=1.0.3.41;InternalName=TaurusTLS_RTForIndy250.bpl;LegalCopyright=Copyright (c) 2026 TaurusTLS Developers.  All Rights Reserved.;LegalTrademarks=;OriginalFilename=TaurusTLS_RTForIndy250.bpl;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.3.41;Comments=</VerInfo_Keys>
+		<VerInfo_Keys>CompanyName=TaurusTLS Developers;FileDescription=$(MSBuildProjectName);FileVersion=1.0.4.41;InternalName=TaurusTLS_RTForIndy250.bpl;LegalCopyright=Copyright (c) 2026 TaurusTLS Developers.  All Rights Reserved.;LegalTrademarks=;OriginalFilename=TaurusTLS_RTForIndy250.bpl;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.4.41;Comments=</VerInfo_Keys>
 		<RuntimeOnlyPackage>true</RuntimeOnlyPackage>
 		<DCC_UnitSearchPath>$(INDY_PATH)\Lib\System;$(INDY_PATH)\Lib\Core;$(INDY_PATH)\Lib\Protocols;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
 	</PropertyGroup>
