@@ -57,7 +57,7 @@
 	<PropertyGroup Condition="'$(Base)'!=''">
 		<DCC_ObjOutput>.\$(Platform)\$(Config)</DCC_ObjOutput>
 		<DCC_HppOutput>.\$(Platform)\$(Config)</DCC_HppOutput>
-		<VerInfo_Build>40</VerInfo_Build>
+		<VerInfo_Build>41</VerInfo_Build>
 		<DCC_BpiOutput>.\$(Platform)\$(Config)</DCC_BpiOutput>
 		<DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
 		<DCC_ExeOutput>.\$(Platform)\$(Config)</DCC_ExeOutput>
@@ -73,7 +73,7 @@
 		<SanitizedProjectName>TaurusTLS_DTForIndy250</SanitizedProjectName>
 		<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
 		<VerInfo_Locale>1033</VerInfo_Locale>
-		<VerInfo_Keys>CompanyName=TaurusTLS Developers;FileDescription=$(MSBuildProjectName);FileVersion=1.0.3.40;InternalName=TaurusTLS_DTForIndy250.bpl;LegalCopyright=Copyright (c) 2026 TaurusTLS Developers.  All Rights Reserved.;LegalTrademarks=;OriginalFilename=TaurusTLS_DTForIndy250.bpl;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.3.40;Comments=</VerInfo_Keys>
+		<VerInfo_Keys>CompanyName=TaurusTLS Developers;FileDescription=$(MSBuildProjectName);FileVersion=1.0.3.41;InternalName=TaurusTLS_DTForIndy250.bpl;LegalCopyright=Copyright (c) 2026 TaurusTLS Developers.  All Rights Reserved.;LegalTrademarks=;OriginalFilename=TaurusTLS_DTForIndy250.bpl;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.3.41;Comments=</VerInfo_Keys>
 		<DesignOnlyPackage>true</DesignOnlyPackage>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Base_Android)'!=''">
@@ -94,7 +94,7 @@
 	<PropertyGroup Condition="'$(Base_Win32)'!=''">
 		<DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
 		<BT_BuildType>Debug</BT_BuildType>
-		<VerInfo_Build>40</VerInfo_Build>
+		<VerInfo_Build>41</VerInfo_Build>
 		<DCC_UsePackage>rtl;IndyCore260;IndySystem260;IndyProtocols260;TaurusTLS_RTForIndy260;$(DCC_UsePackage)</DCC_UsePackage>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Base_Win64)'!=''">
@@ -110,7 +110,7 @@
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
 		<DCC_ObjOutput>.\$(Platform)\$(Config)</DCC_ObjOutput>
-		<VerInfo_Build>40</VerInfo_Build>
+		<VerInfo_Build>41</VerInfo_Build>
 		<DCC_BpiOutput>.\$(Platform)\$(Config)</DCC_BpiOutput>
 		<DCC_HppOutput>.\$(Platform)\$(Config)</DCC_HppOutput>
 		<DCC_RemoteDebug>false</DCC_RemoteDebug>

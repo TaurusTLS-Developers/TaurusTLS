@@ -451,5 +451,5 @@
 			<Version Value="2"/>
 			<UseFileFilters Value="True"/>
 		</PublishOptions>
-		<Version Major="1" Release="3" Build="40"/></Package>
+		<Version Major="1" Release="3" Build="41"/></Package>
 </CONFIG>
