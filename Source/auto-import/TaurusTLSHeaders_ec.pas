@@ -26,61 +26,43 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   Pec_method_st = ^Tec_method_st;
-  Tec_method_st = record end;
+  Tec_method_st =   record end;
   {$EXTERNALSYM Pec_method_st}
 
-  PEC_METHOD = ^TEC_METHOD;
-  TEC_METHOD = Tec_method_st;
-  {$EXTERNALSYM PEC_METHOD}
-
   Pec_group_st = ^Tec_group_st;
-  Tec_group_st = record end;
+  Tec_group_st =   record end;
   {$EXTERNALSYM Pec_group_st}
 
-  PEC_GROUP = ^TEC_GROUP;
-  TEC_GROUP = Tec_group_st;
-  {$EXTERNALSYM PEC_GROUP}
-
   Pec_point_st = ^Tec_point_st;
-  Tec_point_st = record end;
+  Tec_point_st =   record end;
   {$EXTERNALSYM Pec_point_st}
 
-  PEC_POINT = ^TEC_POINT;
-  TEC_POINT = Tec_point_st;
-  {$EXTERNALSYM PEC_POINT}
-
   Pecpk_parameters_st = ^Tecpk_parameters_st;
-  Tecpk_parameters_st = record end;
+  Tecpk_parameters_st =   record end;
   {$EXTERNALSYM Pecpk_parameters_st}
 
-  PECPKPARAMETERS = ^TECPKPARAMETERS;
-  TECPKPARAMETERS = Tecpk_parameters_st;
-  {$EXTERNALSYM PECPKPARAMETERS}
-
   Pec_parameters_st = ^Tec_parameters_st;
-  Tec_parameters_st = record end;
+  Tec_parameters_st =   record end;
   {$EXTERNALSYM Pec_parameters_st}
 
-  PECPARAMETERS = ^TECPARAMETERS;
-  TECPARAMETERS = Tec_parameters_st;
-  {$EXTERNALSYM PECPARAMETERS}
-
   PEC_builtin_curve = ^TEC_builtin_curve;
-  TEC_builtin_curve = record end;
+  TEC_builtin_curve =   record
+    nid: TIdC_INT;
+    comment: PIdAnsiChar;
+  end;
   {$EXTERNALSYM PEC_builtin_curve}
 
   PECDSA_SIG_st = ^TECDSA_SIG_st;
-  TECDSA_SIG_st = record end;
+  TECDSA_SIG_st =   record end;
   {$EXTERNALSYM PECDSA_SIG_st}
-
-  PECDSA_SIG = ^TECDSA_SIG;
-  TECDSA_SIG = TECDSA_SIG_st;
-  {$EXTERNALSYM PECDSA_SIG}
 
 
 // =============================================================================
@@ -99,19 +81,32 @@ type
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  TECDH_compute_key_KDF_cb = function(arg1: Pointer; arg2: TIdC_SIZET; arg3: Pointer; arg4: PIdC_SIZET): Pointer; cdecl;
-  TEC_KEY_METHOD_set_init_init_cb = function(arg1: PEC_KEY): TIdC_INT; cdecl;
-  TEC_KEY_METHOD_set_init_finish_cb = procedure(arg1: PEC_KEY); cdecl;
-  TEC_KEY_METHOD_set_init_copy_cb = function(arg1: PEC_KEY; arg2: PEC_KEY): TIdC_INT; cdecl;
-  TEC_KEY_METHOD_set_init_set_group_cb = function(arg1: PEC_KEY; arg2: PEC_GROUP): TIdC_INT; cdecl;
-  TEC_KEY_METHOD_set_init_set_private_cb = function(arg1: PEC_KEY; arg2: PBIGNUM): TIdC_INT; cdecl;
-  TEC_KEY_METHOD_set_init_set_public_cb = function(arg1: PEC_KEY; arg2: PEC_POINT): TIdC_INT; cdecl;
-  TEC_KEY_METHOD_set_compute_key_ckey_cb = function(arg1: PPIdAnsiChar; arg2: PIdC_SIZET; arg3: PEC_POINT; arg4: PEC_KEY): TIdC_INT; cdecl;
-  TEC_KEY_METHOD_set_sign_sign_cb = function(arg1: TIdC_INT; arg2: PIdAnsiChar; arg3: TIdC_INT; arg4: PIdAnsiChar; arg5: PIdC_UINT; arg6: PBIGNUM; arg7: PBIGNUM; arg8: PEC_KEY): TIdC_INT; cdecl;
-  TEC_KEY_METHOD_set_sign_sign_setup_cb = function(arg1: PEC_KEY; arg2: PBN_CTX; arg3: PPBIGNUM; arg4: PPBIGNUM): TIdC_INT; cdecl;
-  TEC_KEY_METHOD_set_sign_sign_sig_cb = function(arg1: PIdAnsiChar; arg2: TIdC_INT; arg3: PBIGNUM; arg4: PBIGNUM; arg5: PEC_KEY): PECDSA_SIG; cdecl;
-  TEC_KEY_METHOD_set_verify_verify_cb = function(arg1: TIdC_INT; arg2: PIdAnsiChar; arg3: TIdC_INT; arg4: PIdAnsiChar; arg5: TIdC_INT; arg6: PEC_KEY): TIdC_INT; cdecl;
-  TEC_KEY_METHOD_set_verify_verify_sig_cb = function(arg1: PIdAnsiChar; arg2: TIdC_INT; arg3: PECDSA_SIG; arg4: PEC_KEY): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // ECDH_compute_key_KDF_cb = function(_in: Pointer; inlen: TIdC_SIZET; _out: Pointer; outlen: PIdC_SIZET): Pointer; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // EC_KEY_METHOD_set_init_init_cb = function(key: PEC_KEY): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // EC_KEY_METHOD_set_init_finish_cb = function(key: PEC_KEY): void; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // EC_KEY_METHOD_set_init_copy_cb = function(dest: PEC_KEY; src: PEC_KEY): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // EC_KEY_METHOD_set_init_set_group_cb = function(key: PEC_KEY; grp: PEC_GROUP): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // EC_KEY_METHOD_set_init_set_private_cb = function(key: PEC_KEY; priv_key: PBIGNUM): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // EC_KEY_METHOD_set_init_set_public_cb = function(key: PEC_KEY; pub_key: PEC_POINT): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // EC_KEY_METHOD_set_compute_key_ckey_cb = function(psec: PPIdAnsiChar; pseclen: PIdC_SIZET; pub_key: PEC_POINT; ecdh: PEC_KEY): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // EC_KEY_METHOD_set_sign_sign_cb = function(_type: TIdC_INT; dgst: PIdAnsiChar; dlen: TIdC_INT; sig: PIdAnsiChar; siglen: PIdC_UINT; kinv: PBIGNUM; r: PBIGNUM; eckey: PEC_KEY): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // EC_KEY_METHOD_set_sign_sign_setup_cb = function(eckey: PEC_KEY; ctx_in: PBN_CTX; kinvp: PPBIGNUM; rp: PPBIGNUM): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // EC_KEY_METHOD_set_sign_sign_sig_cb = function(dgst: PIdAnsiChar; dgst_len: TIdC_INT; in_kinv: PBIGNUM; in_r: PBIGNUM; eckey: PEC_KEY): PECDSA_SIG; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // EC_KEY_METHOD_set_verify_verify_cb = function(_type: TIdC_INT; dgst: PIdAnsiChar; dgst_len: TIdC_INT; sigbuf: PIdAnsiChar; sig_len: TIdC_INT; eckey: PEC_KEY): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // EC_KEY_METHOD_set_verify_verify_sig_cb = function(dgst: PIdAnsiChar; dgst_len: TIdC_INT; sig: PECDSA_SIG; eckey: PEC_KEY): TIdC_INT; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -204,7 +199,7 @@ var
   EC_GROUP_new: function(meth: PEC_METHOD): PEC_GROUP; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_GROUP_new}
 
-  EC_GROUP_clear_free: procedure(group: PEC_GROUP); cdecl = nil; // Deprecated in 3_0_0
+  EC_GROUP_clear_free: function(group: PEC_GROUP): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_GROUP_clear_free}
 
   EC_GROUP_method_of: function(group: PEC_GROUP): PEC_METHOD; cdecl = nil; // Deprecated in 3_0_0
@@ -213,7 +208,7 @@ var
   EC_METHOD_get_field_type: function(meth: PEC_METHOD): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_METHOD_get_field_type}
 
-  EC_GROUP_free: procedure(group: PEC_GROUP); cdecl = nil;
+  EC_GROUP_free: function(group: PEC_GROUP): void; cdecl = nil;
   {$EXTERNALSYM EC_GROUP_free}
 
   EC_GROUP_copy: function(dst: PEC_GROUP; src: PEC_GROUP): TIdC_INT; cdecl = nil;
@@ -246,7 +241,7 @@ var
   EC_GROUP_get0_cofactor: function(group: PEC_GROUP): PBIGNUM; cdecl = nil;
   {$EXTERNALSYM EC_GROUP_get0_cofactor}
 
-  EC_GROUP_set_curve_name: procedure(group: PEC_GROUP; nid: TIdC_INT); cdecl = nil;
+  EC_GROUP_set_curve_name: function(group: PEC_GROUP; nid: TIdC_INT): void; cdecl = nil;
   {$EXTERNALSYM EC_GROUP_set_curve_name}
 
   EC_GROUP_get_curve_name: function(group: PEC_GROUP): TIdC_INT; cdecl = nil;
@@ -258,13 +253,13 @@ var
   EC_GROUP_get_field_type: function(group: PEC_GROUP): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EC_GROUP_get_field_type}
 
-  EC_GROUP_set_asn1_flag: procedure(group: PEC_GROUP; flag: TIdC_INT); cdecl = nil;
+  EC_GROUP_set_asn1_flag: function(group: PEC_GROUP; flag: TIdC_INT): void; cdecl = nil;
   {$EXTERNALSYM EC_GROUP_set_asn1_flag}
 
   EC_GROUP_get_asn1_flag: function(group: PEC_GROUP): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EC_GROUP_get_asn1_flag}
 
-  EC_GROUP_set_point_conversion_form: procedure(group: PEC_GROUP; form: Tpoint_conversion_form_t); cdecl = nil;
+  EC_GROUP_set_point_conversion_form: function(group: PEC_GROUP; form: Tpoint_conversion_form_t): void; cdecl = nil;
   {$EXTERNALSYM EC_GROUP_set_point_conversion_form}
 
   EC_GROUP_get_point_conversion_form: function(arg1: PEC_GROUP): Tpoint_conversion_form_t; cdecl = nil;
@@ -315,10 +310,10 @@ var
   EC_GROUP_new_curve_GF2m: function(p: PBIGNUM; a: PBIGNUM; b: PBIGNUM; ctx: PBN_CTX): PEC_GROUP; cdecl = nil;
   {$EXTERNALSYM EC_GROUP_new_curve_GF2m}
 
-  EC_GROUP_new_from_params: function(params: POSSL_PARAM_ARRAY; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PEC_GROUP; cdecl = nil;
+  EC_GROUP_new_from_params: function(params: POSSL_PARAM; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PEC_GROUP; cdecl = nil;
   {$EXTERNALSYM EC_GROUP_new_from_params}
 
-  EC_GROUP_to_params: function(group: PEC_GROUP; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; bnctx: PBN_CTX): POSSL_PARAM_ARRAY; cdecl = nil;
+  EC_GROUP_to_params: function(group: PEC_GROUP; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; bnctx: PBN_CTX): POSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM EC_GROUP_to_params}
 
   EC_GROUP_new_by_curve_name_ex: function(libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; nid: TIdC_INT): PEC_GROUP; cdecl = nil;
@@ -354,10 +349,10 @@ var
   EC_POINT_new: function(group: PEC_GROUP): PEC_POINT; cdecl = nil;
   {$EXTERNALSYM EC_POINT_new}
 
-  EC_POINT_free: procedure(point: PEC_POINT); cdecl = nil;
+  EC_POINT_free: function(point: PEC_POINT): void; cdecl = nil;
   {$EXTERNALSYM EC_POINT_free}
 
-  EC_POINT_clear_free: procedure(point: PEC_POINT); cdecl = nil;
+  EC_POINT_clear_free: function(point: PEC_POINT): void; cdecl = nil;
   {$EXTERNALSYM EC_POINT_clear_free}
 
   EC_POINT_copy: function(dst: PEC_POINT; src: PEC_POINT): TIdC_INT; cdecl = nil;
@@ -468,7 +463,7 @@ var
   ECPKPARAMETERS_new: function: PECPKPARAMETERS; cdecl = nil;
   {$EXTERNALSYM ECPKPARAMETERS_new}
 
-  ECPKPARAMETERS_free: procedure(a: PECPKPARAMETERS); cdecl = nil;
+  ECPKPARAMETERS_free: function(a: PECPKPARAMETERS): void; cdecl = nil;
   {$EXTERNALSYM ECPKPARAMETERS_free}
 
   ECPARAMETERS_it: function: PASN1_ITEM; cdecl = nil;
@@ -477,7 +472,7 @@ var
   ECPARAMETERS_new: function: PECPARAMETERS; cdecl = nil;
   {$EXTERNALSYM ECPARAMETERS_new}
 
-  ECPARAMETERS_free: procedure(a: PECPARAMETERS); cdecl = nil;
+  ECPARAMETERS_free: function(a: PECPARAMETERS): void; cdecl = nil;
   {$EXTERNALSYM ECPARAMETERS_free}
 
   EC_GROUP_get_basis_type: function(arg1: PEC_GROUP): TIdC_INT; cdecl = nil;
@@ -510,10 +505,10 @@ var
   EC_KEY_get_flags: function(key: PEC_KEY): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_get_flags}
 
-  EC_KEY_set_flags: procedure(key: PEC_KEY; flags: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  EC_KEY_set_flags: function(key: PEC_KEY; flags: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_set_flags}
 
-  EC_KEY_clear_flags: procedure(key: PEC_KEY; flags: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  EC_KEY_clear_flags: function(key: PEC_KEY; flags: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_clear_flags}
 
   EC_KEY_decoded_from_explicit_params: function(key: PEC_KEY): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -525,7 +520,7 @@ var
   EC_KEY_new_by_curve_name: function(nid: TIdC_INT): PEC_KEY; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_new_by_curve_name}
 
-  EC_KEY_free: procedure(key: PEC_KEY); cdecl = nil; // Deprecated in 3_0_0
+  EC_KEY_free: function(key: PEC_KEY): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_free}
 
   EC_KEY_copy: function(dst: PEC_KEY; src: PEC_KEY): PEC_KEY; cdecl = nil; // Deprecated in 3_0_0
@@ -561,13 +556,13 @@ var
   EC_KEY_get_enc_flags: function(key: PEC_KEY): TIdC_UINT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_get_enc_flags}
 
-  EC_KEY_set_enc_flags: procedure(eckey: PEC_KEY; flags: TIdC_UINT); cdecl = nil; // Deprecated in 3_0_0
+  EC_KEY_set_enc_flags: function(eckey: PEC_KEY; flags: TIdC_UINT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_set_enc_flags}
 
   EC_KEY_get_conv_form: function(key: PEC_KEY): Tpoint_conversion_form_t; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_get_conv_form}
 
-  EC_KEY_set_conv_form: procedure(eckey: PEC_KEY; cform: Tpoint_conversion_form_t); cdecl = nil; // Deprecated in 3_0_0
+  EC_KEY_set_conv_form: function(eckey: PEC_KEY; cform: Tpoint_conversion_form_t): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_set_conv_form}
 
   EC_KEY_set_ex_data: function(key: PEC_KEY; idx: TIdC_INT; arg: Pointer): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -576,7 +571,7 @@ var
   EC_KEY_get_ex_data: function(key: PEC_KEY; idx: TIdC_INT): Pointer; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_get_ex_data}
 
-  EC_KEY_set_asn1_flag: procedure(eckey: PEC_KEY; asn1_flag: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  EC_KEY_set_asn1_flag: function(eckey: PEC_KEY; asn1_flag: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_set_asn1_flag}
 
   EC_KEY_precompute_mult: function(key: PEC_KEY; ctx: PBN_CTX): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -645,7 +640,7 @@ var
   EC_KEY_get_default_method: function: PEC_KEY_METHOD; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_get_default_method}
 
-  EC_KEY_set_default_method: procedure(meth: PEC_KEY_METHOD); cdecl = nil; // Deprecated in 3_0_0
+  EC_KEY_set_default_method: function(meth: PEC_KEY_METHOD): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_set_default_method}
 
   EC_KEY_get_method: function(key: PEC_KEY): PEC_KEY_METHOD; cdecl = nil; // Deprecated in 3_0_0
@@ -666,7 +661,7 @@ var
   ECDSA_SIG_new: function: PECDSA_SIG; cdecl = nil;
   {$EXTERNALSYM ECDSA_SIG_new}
 
-  ECDSA_SIG_free: procedure(sig: PECDSA_SIG); cdecl = nil;
+  ECDSA_SIG_free: function(sig: PECDSA_SIG): void; cdecl = nil;
   {$EXTERNALSYM ECDSA_SIG_free}
 
   d2i_ECDSA_SIG: function(a: PPECDSA_SIG; _in: PPIdAnsiChar; len: TIdC_LONG): PECDSA_SIG; cdecl = nil;
@@ -675,7 +670,7 @@ var
   i2d_ECDSA_SIG: function(a: PECDSA_SIG; _out: PPIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM i2d_ECDSA_SIG}
 
-  ECDSA_SIG_get0: procedure(sig: PECDSA_SIG; pr: PPBIGNUM; ps: PPBIGNUM); cdecl = nil;
+  ECDSA_SIG_get0: function(sig: PECDSA_SIG; pr: PPBIGNUM; ps: PPBIGNUM): void; cdecl = nil;
   {$EXTERNALSYM ECDSA_SIG_get0}
 
   ECDSA_SIG_get0_r: function(sig: PECDSA_SIG): PBIGNUM; cdecl = nil;
@@ -714,37 +709,37 @@ var
   EC_KEY_METHOD_new: function(meth: PEC_KEY_METHOD): PEC_KEY_METHOD; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_METHOD_new}
 
-  EC_KEY_METHOD_free: procedure(meth: PEC_KEY_METHOD); cdecl = nil; // Deprecated in 3_0_0
+  EC_KEY_METHOD_free: function(meth: PEC_KEY_METHOD): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_METHOD_free}
 
-  EC_KEY_METHOD_set_init: procedure(meth: PEC_KEY_METHOD; init: TEC_KEY_METHOD_set_init_init_cb; finish: TEC_KEY_METHOD_set_init_finish_cb; copy: TEC_KEY_METHOD_set_init_copy_cb; set_group: TEC_KEY_METHOD_set_init_set_group_cb; set_private: TEC_KEY_METHOD_set_init_set_private_cb; set_public: TEC_KEY_METHOD_set_init_set_public_cb); cdecl = nil; // Deprecated in 3_0_0
+  EC_KEY_METHOD_set_init: function(meth: PEC_KEY_METHOD; init: TEC_KEY_METHOD_set_init_init_cb; finish: TEC_KEY_METHOD_set_init_finish_cb; copy: TEC_KEY_METHOD_set_init_copy_cb; set_group: TEC_KEY_METHOD_set_init_set_group_cb; set_private: TEC_KEY_METHOD_set_init_set_private_cb; set_public: TEC_KEY_METHOD_set_init_set_public_cb): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_METHOD_set_init}
 
-  EC_KEY_METHOD_set_keygen: procedure(meth: PEC_KEY_METHOD; keygen: TEC_KEY_METHOD_set_init_init_cb); cdecl = nil; // Deprecated in 3_0_0
+  EC_KEY_METHOD_set_keygen: function(meth: PEC_KEY_METHOD; keygen: TEC_KEY_METHOD_set_init_init_cb): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_METHOD_set_keygen}
 
-  EC_KEY_METHOD_set_compute_key: procedure(meth: PEC_KEY_METHOD; ckey: TEC_KEY_METHOD_set_compute_key_ckey_cb); cdecl = nil; // Deprecated in 3_0_0
+  EC_KEY_METHOD_set_compute_key: function(meth: PEC_KEY_METHOD; ckey: TEC_KEY_METHOD_set_compute_key_ckey_cb): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_METHOD_set_compute_key}
 
-  EC_KEY_METHOD_set_sign: procedure(meth: PEC_KEY_METHOD; sign: TEC_KEY_METHOD_set_sign_sign_cb; sign_setup: TEC_KEY_METHOD_set_sign_sign_setup_cb; sign_sig: TEC_KEY_METHOD_set_sign_sign_sig_cb); cdecl = nil; // Deprecated in 3_0_0
+  EC_KEY_METHOD_set_sign: function(meth: PEC_KEY_METHOD; sign: TEC_KEY_METHOD_set_sign_sign_cb; sign_setup: TEC_KEY_METHOD_set_sign_sign_setup_cb; sign_sig: TEC_KEY_METHOD_set_sign_sign_sig_cb): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_METHOD_set_sign}
 
-  EC_KEY_METHOD_set_verify: procedure(meth: PEC_KEY_METHOD; verify: TEC_KEY_METHOD_set_verify_verify_cb; verify_sig: TEC_KEY_METHOD_set_verify_verify_sig_cb); cdecl = nil; // Deprecated in 3_0_0
+  EC_KEY_METHOD_set_verify: function(meth: PEC_KEY_METHOD; verify: TEC_KEY_METHOD_set_verify_verify_cb; verify_sig: TEC_KEY_METHOD_set_verify_verify_sig_cb): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_METHOD_set_verify}
 
-  EC_KEY_METHOD_get_init: procedure(meth: PEC_KEY_METHOD; pinit: PPIdC_INT; pfinish: PPointer; pcopy: PPIdC_INT; pset_group: PPIdC_INT; pset_private: PPIdC_INT; pset_public: PPIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  EC_KEY_METHOD_get_init: function(meth: PEC_KEY_METHOD; pinit: PPIdC_INT; pfinish: PPointer; pcopy: PPIdC_INT; pset_group: PPIdC_INT; pset_private: PPIdC_INT; pset_public: PPIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_METHOD_get_init}
 
-  EC_KEY_METHOD_get_keygen: procedure(meth: PEC_KEY_METHOD; pkeygen: PPIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  EC_KEY_METHOD_get_keygen: function(meth: PEC_KEY_METHOD; pkeygen: PPIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_METHOD_get_keygen}
 
-  EC_KEY_METHOD_get_compute_key: procedure(meth: PEC_KEY_METHOD; pck: PPIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  EC_KEY_METHOD_get_compute_key: function(meth: PEC_KEY_METHOD; pck: PPIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_METHOD_get_compute_key}
 
-  EC_KEY_METHOD_get_sign: procedure(meth: PEC_KEY_METHOD; psign: PPIdC_INT; psign_setup: PPIdC_INT; psign_sig: PPECDSA_SIG); cdecl = nil; // Deprecated in 3_0_0
+  EC_KEY_METHOD_get_sign: function(meth: PEC_KEY_METHOD; psign: PPIdC_INT; psign_setup: PPIdC_INT; psign_sig: PPECDSA_SIG): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_METHOD_get_sign}
 
-  EC_KEY_METHOD_get_verify: procedure(meth: PEC_KEY_METHOD; pverify: PPIdC_INT; pverify_sig: PPIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  EC_KEY_METHOD_get_verify: function(meth: PEC_KEY_METHOD; pverify: PPIdC_INT; pverify_sig: PPIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EC_KEY_METHOD_get_verify}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -773,10 +768,10 @@ function EC_GFp_mont_method: PEC_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_GFp_nist_method: PEC_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_GF2m_simple_method: PEC_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_GROUP_new(meth: PEC_METHOD): PEC_GROUP; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure EC_GROUP_clear_free(group: PEC_GROUP); cdecl; deprecated 'In OpenSSL 3_0_0';
+function EC_GROUP_clear_free(group: PEC_GROUP): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_GROUP_method_of(group: PEC_GROUP): PEC_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_METHOD_get_field_type(meth: PEC_METHOD): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure EC_GROUP_free(group: PEC_GROUP); cdecl;
+function EC_GROUP_free(group: PEC_GROUP): void; cdecl;
 function EC_GROUP_copy(dst: PEC_GROUP; src: PEC_GROUP): TIdC_INT; cdecl;
 function EC_GROUP_dup(src: PEC_GROUP): PEC_GROUP; cdecl;
 function EC_GROUP_set_generator(group: PEC_GROUP; generator: PEC_POINT; order: PBIGNUM; cofactor: PBIGNUM): TIdC_INT; cdecl;
@@ -787,13 +782,13 @@ function EC_GROUP_get0_order(group: PEC_GROUP): PBIGNUM; cdecl;
 function EC_GROUP_order_bits(group: PEC_GROUP): TIdC_INT; cdecl;
 function EC_GROUP_get_cofactor(group: PEC_GROUP; cofactor: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl;
 function EC_GROUP_get0_cofactor(group: PEC_GROUP): PBIGNUM; cdecl;
-procedure EC_GROUP_set_curve_name(group: PEC_GROUP; nid: TIdC_INT); cdecl;
+function EC_GROUP_set_curve_name(group: PEC_GROUP; nid: TIdC_INT): void; cdecl;
 function EC_GROUP_get_curve_name(group: PEC_GROUP): TIdC_INT; cdecl;
 function EC_GROUP_get0_field(group: PEC_GROUP): PBIGNUM; cdecl;
 function EC_GROUP_get_field_type(group: PEC_GROUP): TIdC_INT; cdecl;
-procedure EC_GROUP_set_asn1_flag(group: PEC_GROUP; flag: TIdC_INT); cdecl;
+function EC_GROUP_set_asn1_flag(group: PEC_GROUP; flag: TIdC_INT): void; cdecl;
 function EC_GROUP_get_asn1_flag(group: PEC_GROUP): TIdC_INT; cdecl;
-procedure EC_GROUP_set_point_conversion_form(group: PEC_GROUP; form: Tpoint_conversion_form_t); cdecl;
+function EC_GROUP_set_point_conversion_form(group: PEC_GROUP; form: Tpoint_conversion_form_t): void; cdecl;
 function EC_GROUP_get_point_conversion_form(arg1: PEC_GROUP): Tpoint_conversion_form_t; cdecl;
 function EC_GROUP_get0_seed(x: PEC_GROUP): PIdAnsiChar; cdecl;
 function EC_GROUP_get_seed_len(arg1: PEC_GROUP): TIdC_SIZET; cdecl;
@@ -810,8 +805,8 @@ function EC_GROUP_check_discriminant(group: PEC_GROUP; ctx: PBN_CTX): TIdC_INT; 
 function EC_GROUP_cmp(a: PEC_GROUP; b: PEC_GROUP; ctx: PBN_CTX): TIdC_INT; cdecl;
 function EC_GROUP_new_curve_GFp(p: PBIGNUM; a: PBIGNUM; b: PBIGNUM; ctx: PBN_CTX): PEC_GROUP; cdecl;
 function EC_GROUP_new_curve_GF2m(p: PBIGNUM; a: PBIGNUM; b: PBIGNUM; ctx: PBN_CTX): PEC_GROUP; cdecl;
-function EC_GROUP_new_from_params(params: POSSL_PARAM_ARRAY; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PEC_GROUP; cdecl;
-function EC_GROUP_to_params(group: PEC_GROUP; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; bnctx: PBN_CTX): POSSL_PARAM_ARRAY; cdecl;
+function EC_GROUP_new_from_params(params: POSSL_PARAM; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PEC_GROUP; cdecl;
+function EC_GROUP_to_params(group: PEC_GROUP; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; bnctx: PBN_CTX): POSSL_PARAM; cdecl;
 function EC_GROUP_new_by_curve_name_ex(libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; nid: TIdC_INT): PEC_GROUP; cdecl;
 function EC_GROUP_new_by_curve_name(nid: TIdC_INT): PEC_GROUP; cdecl;
 function EC_GROUP_new_from_ecparameters(params: PECPARAMETERS): PEC_GROUP; cdecl;
@@ -823,8 +818,8 @@ function EC_curve_nid2nist(nid: TIdC_INT): PIdAnsiChar; cdecl;
 function EC_curve_nist2nid(name: PIdAnsiChar): TIdC_INT; cdecl;
 function EC_GROUP_check_named_curve(group: PEC_GROUP; nist_only: TIdC_INT; ctx: PBN_CTX): TIdC_INT; cdecl;
 function EC_POINT_new(group: PEC_GROUP): PEC_POINT; cdecl;
-procedure EC_POINT_free(point: PEC_POINT); cdecl;
-procedure EC_POINT_clear_free(point: PEC_POINT); cdecl;
+function EC_POINT_free(point: PEC_POINT): void; cdecl;
+function EC_POINT_clear_free(point: PEC_POINT): void; cdecl;
 function EC_POINT_copy(dst: PEC_POINT; src: PEC_POINT): TIdC_INT; cdecl;
 function EC_POINT_dup(src: PEC_POINT; group: PEC_GROUP): PEC_POINT; cdecl;
 function EC_POINT_set_to_infinity(group: PEC_GROUP; point: PEC_POINT): TIdC_INT; cdecl;
@@ -861,10 +856,10 @@ function EC_GROUP_precompute_mult(group: PEC_GROUP; ctx: PBN_CTX): TIdC_INT; cde
 function EC_GROUP_have_precompute_mult(group: PEC_GROUP): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ECPKPARAMETERS_it: PASN1_ITEM; cdecl;
 function ECPKPARAMETERS_new: PECPKPARAMETERS; cdecl;
-procedure ECPKPARAMETERS_free(a: PECPKPARAMETERS); cdecl;
+function ECPKPARAMETERS_free(a: PECPKPARAMETERS): void; cdecl;
 function ECPARAMETERS_it: PASN1_ITEM; cdecl;
 function ECPARAMETERS_new: PECPARAMETERS; cdecl;
-procedure ECPARAMETERS_free(a: PECPARAMETERS); cdecl;
+function ECPARAMETERS_free(a: PECPARAMETERS): void; cdecl;
 function EC_GROUP_get_basis_type(arg1: PEC_GROUP): TIdC_INT; cdecl;
 function EC_GROUP_get_trinomial_basis(arg1: PEC_GROUP; k: PIdC_UINT): TIdC_INT; cdecl;
 function EC_GROUP_get_pentanomial_basis(arg1: PEC_GROUP; k1: PIdC_UINT; k2: PIdC_UINT; k3: PIdC_UINT): TIdC_INT; cdecl;
@@ -875,12 +870,12 @@ function ECPKParameters_print_fp(fp: PFILE; x: PEC_GROUP; off: TIdC_INT): TIdC_I
 function EC_KEY_new_ex(ctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PEC_KEY; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_KEY_new: PEC_KEY; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_KEY_get_flags(key: PEC_KEY): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure EC_KEY_set_flags(key: PEC_KEY; flags: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure EC_KEY_clear_flags(key: PEC_KEY; flags: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+function EC_KEY_set_flags(key: PEC_KEY; flags: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function EC_KEY_clear_flags(key: PEC_KEY; flags: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_KEY_decoded_from_explicit_params(key: PEC_KEY): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_KEY_new_by_curve_name_ex(ctx: POSSL_LIB_CTX; propq: PIdAnsiChar; nid: TIdC_INT): PEC_KEY; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_KEY_new_by_curve_name(nid: TIdC_INT): PEC_KEY; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure EC_KEY_free(key: PEC_KEY); cdecl; deprecated 'In OpenSSL 3_0_0';
+function EC_KEY_free(key: PEC_KEY): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_KEY_copy(dst: PEC_KEY; src: PEC_KEY): PEC_KEY; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_KEY_dup(src: PEC_KEY): PEC_KEY; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_KEY_up_ref(key: PEC_KEY): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
@@ -892,12 +887,12 @@ function EC_KEY_set_private_key(key: PEC_KEY; prv: PBIGNUM): TIdC_INT; cdecl; de
 function EC_KEY_get0_public_key(key: PEC_KEY): PEC_POINT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_KEY_set_public_key(key: PEC_KEY; pub: PEC_POINT): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_KEY_get_enc_flags(key: PEC_KEY): TIdC_UINT; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure EC_KEY_set_enc_flags(eckey: PEC_KEY; flags: TIdC_UINT); cdecl; deprecated 'In OpenSSL 3_0_0';
+function EC_KEY_set_enc_flags(eckey: PEC_KEY; flags: TIdC_UINT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_KEY_get_conv_form(key: PEC_KEY): Tpoint_conversion_form_t; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure EC_KEY_set_conv_form(eckey: PEC_KEY; cform: Tpoint_conversion_form_t); cdecl; deprecated 'In OpenSSL 3_0_0';
+function EC_KEY_set_conv_form(eckey: PEC_KEY; cform: Tpoint_conversion_form_t): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_KEY_set_ex_data(key: PEC_KEY; idx: TIdC_INT; arg: Pointer): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_KEY_get_ex_data(key: PEC_KEY; idx: TIdC_INT): Pointer; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure EC_KEY_set_asn1_flag(eckey: PEC_KEY; asn1_flag: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+function EC_KEY_set_asn1_flag(eckey: PEC_KEY; asn1_flag: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_KEY_precompute_mult(key: PEC_KEY; ctx: PBN_CTX): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_KEY_generate_key(key: PEC_KEY): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_KEY_check_key(key: PEC_KEY): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
@@ -920,17 +915,17 @@ function ECParameters_print_fp(fp: PFILE; key: PEC_KEY): TIdC_INT; cdecl; deprec
 function EC_KEY_print_fp(fp: PFILE; key: PEC_KEY; off: TIdC_INT): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_KEY_OpenSSL: PEC_KEY_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_KEY_get_default_method: PEC_KEY_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure EC_KEY_set_default_method(meth: PEC_KEY_METHOD); cdecl; deprecated 'In OpenSSL 3_0_0';
+function EC_KEY_set_default_method(meth: PEC_KEY_METHOD): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_KEY_get_method(key: PEC_KEY): PEC_KEY_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_KEY_set_method(key: PEC_KEY; meth: PEC_KEY_METHOD): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_KEY_new_method(engine: PENGINE): PEC_KEY; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ECDH_KDF_X9_62(_out: PIdAnsiChar; outlen: TIdC_SIZET; Z: PIdAnsiChar; Zlen: TIdC_SIZET; sinfo: PIdAnsiChar; sinfolen: TIdC_SIZET; md: PEVP_MD): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ECDH_compute_key(_out: Pointer; outlen: TIdC_SIZET; pub_key: PEC_POINT; ecdh: PEC_KEY; KDF: TECDH_compute_key_KDF_cb): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ECDSA_SIG_new: PECDSA_SIG; cdecl;
-procedure ECDSA_SIG_free(sig: PECDSA_SIG); cdecl;
+function ECDSA_SIG_free(sig: PECDSA_SIG): void; cdecl;
 function d2i_ECDSA_SIG(a: PPECDSA_SIG; _in: PPIdAnsiChar; len: TIdC_LONG): PECDSA_SIG; cdecl;
 function i2d_ECDSA_SIG(a: PECDSA_SIG; _out: PPIdAnsiChar): TIdC_INT; cdecl;
-procedure ECDSA_SIG_get0(sig: PECDSA_SIG; pr: PPBIGNUM; ps: PPBIGNUM); cdecl;
+function ECDSA_SIG_get0(sig: PECDSA_SIG; pr: PPBIGNUM; ps: PPBIGNUM): void; cdecl;
 function ECDSA_SIG_get0_r(sig: PECDSA_SIG): PBIGNUM; cdecl;
 function ECDSA_SIG_get0_s(sig: PECDSA_SIG): PBIGNUM; cdecl;
 function ECDSA_SIG_set0(sig: PECDSA_SIG; r: PBIGNUM; s: PBIGNUM): TIdC_INT; cdecl;
@@ -943,25 +938,25 @@ function ECDSA_sign_ex(_type: TIdC_INT; dgst: PIdAnsiChar; dgstlen: TIdC_INT; si
 function ECDSA_verify(_type: TIdC_INT; dgst: PIdAnsiChar; dgstlen: TIdC_INT; sig: PIdAnsiChar; siglen: TIdC_INT; eckey: PEC_KEY): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ECDSA_size(eckey: PEC_KEY): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EC_KEY_METHOD_new(meth: PEC_KEY_METHOD): PEC_KEY_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure EC_KEY_METHOD_free(meth: PEC_KEY_METHOD); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure EC_KEY_METHOD_set_init(meth: PEC_KEY_METHOD; init: TEC_KEY_METHOD_set_init_init_cb; finish: TEC_KEY_METHOD_set_init_finish_cb; copy: TEC_KEY_METHOD_set_init_copy_cb; set_group: TEC_KEY_METHOD_set_init_set_group_cb; set_private: TEC_KEY_METHOD_set_init_set_private_cb; set_public: TEC_KEY_METHOD_set_init_set_public_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure EC_KEY_METHOD_set_keygen(meth: PEC_KEY_METHOD; keygen: TEC_KEY_METHOD_set_init_init_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure EC_KEY_METHOD_set_compute_key(meth: PEC_KEY_METHOD; ckey: TEC_KEY_METHOD_set_compute_key_ckey_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure EC_KEY_METHOD_set_sign(meth: PEC_KEY_METHOD; sign: TEC_KEY_METHOD_set_sign_sign_cb; sign_setup: TEC_KEY_METHOD_set_sign_sign_setup_cb; sign_sig: TEC_KEY_METHOD_set_sign_sign_sig_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure EC_KEY_METHOD_set_verify(meth: PEC_KEY_METHOD; verify: TEC_KEY_METHOD_set_verify_verify_cb; verify_sig: TEC_KEY_METHOD_set_verify_verify_sig_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure EC_KEY_METHOD_get_init(meth: PEC_KEY_METHOD; pinit: PPIdC_INT; pfinish: PPointer; pcopy: PPIdC_INT; pset_group: PPIdC_INT; pset_private: PPIdC_INT; pset_public: PPIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure EC_KEY_METHOD_get_keygen(meth: PEC_KEY_METHOD; pkeygen: PPIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure EC_KEY_METHOD_get_compute_key(meth: PEC_KEY_METHOD; pck: PPIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure EC_KEY_METHOD_get_sign(meth: PEC_KEY_METHOD; psign: PPIdC_INT; psign_setup: PPIdC_INT; psign_sig: PPECDSA_SIG); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure EC_KEY_METHOD_get_verify(meth: PEC_KEY_METHOD; pverify: PPIdC_INT; pverify_sig: PPIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+function EC_KEY_METHOD_free(meth: PEC_KEY_METHOD): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function EC_KEY_METHOD_set_init(meth: PEC_KEY_METHOD; init: TEC_KEY_METHOD_set_init_init_cb; finish: TEC_KEY_METHOD_set_init_finish_cb; copy: TEC_KEY_METHOD_set_init_copy_cb; set_group: TEC_KEY_METHOD_set_init_set_group_cb; set_private: TEC_KEY_METHOD_set_init_set_private_cb; set_public: TEC_KEY_METHOD_set_init_set_public_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function EC_KEY_METHOD_set_keygen(meth: PEC_KEY_METHOD; keygen: TEC_KEY_METHOD_set_init_init_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function EC_KEY_METHOD_set_compute_key(meth: PEC_KEY_METHOD; ckey: TEC_KEY_METHOD_set_compute_key_ckey_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function EC_KEY_METHOD_set_sign(meth: PEC_KEY_METHOD; sign: TEC_KEY_METHOD_set_sign_sign_cb; sign_setup: TEC_KEY_METHOD_set_sign_sign_setup_cb; sign_sig: TEC_KEY_METHOD_set_sign_sign_sig_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function EC_KEY_METHOD_set_verify(meth: PEC_KEY_METHOD; verify: TEC_KEY_METHOD_set_verify_verify_cb; verify_sig: TEC_KEY_METHOD_set_verify_verify_sig_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function EC_KEY_METHOD_get_init(meth: PEC_KEY_METHOD; pinit: PPIdC_INT; pfinish: PPointer; pcopy: PPIdC_INT; pset_group: PPIdC_INT; pset_private: PPIdC_INT; pset_public: PPIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function EC_KEY_METHOD_get_keygen(meth: PEC_KEY_METHOD; pkeygen: PPIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function EC_KEY_METHOD_get_compute_key(meth: PEC_KEY_METHOD; pck: PPIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function EC_KEY_METHOD_get_sign(meth: PEC_KEY_METHOD; psign: PPIdC_INT; psign_setup: PPIdC_INT; psign_sig: PPECDSA_SIG): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function EC_KEY_METHOD_get_verify(meth: PEC_KEY_METHOD; pverify: PPIdC_INT; pverify_sig: PPIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 // =============================================================================
 // INLINE OR MACRO ROUTINES
 // =============================================================================
 
-function EVP_EC_gen(curve: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function EVP_EC_gen(curve: Pointer): TIdC_INT; cdecl;
 
 
 implementation
@@ -998,10 +993,10 @@ function EC_GFp_mont_method: PEC_METHOD; cdecl external CLibCrypto name 'EC_GFp_
 function EC_GFp_nist_method: PEC_METHOD; cdecl external CLibCrypto name 'EC_GFp_nist_method';
 function EC_GF2m_simple_method: PEC_METHOD; cdecl external CLibCrypto name 'EC_GF2m_simple_method';
 function EC_GROUP_new(meth: PEC_METHOD): PEC_GROUP; cdecl external CLibCrypto name 'EC_GROUP_new';
-procedure EC_GROUP_clear_free(group: PEC_GROUP); cdecl external CLibCrypto name 'EC_GROUP_clear_free';
+function EC_GROUP_clear_free(group: PEC_GROUP): void; cdecl external CLibCrypto name 'EC_GROUP_clear_free';
 function EC_GROUP_method_of(group: PEC_GROUP): PEC_METHOD; cdecl external CLibCrypto name 'EC_GROUP_method_of';
 function EC_METHOD_get_field_type(meth: PEC_METHOD): TIdC_INT; cdecl external CLibCrypto name 'EC_METHOD_get_field_type';
-procedure EC_GROUP_free(group: PEC_GROUP); cdecl external CLibCrypto name 'EC_GROUP_free';
+function EC_GROUP_free(group: PEC_GROUP): void; cdecl external CLibCrypto name 'EC_GROUP_free';
 function EC_GROUP_copy(dst: PEC_GROUP; src: PEC_GROUP): TIdC_INT; cdecl external CLibCrypto name 'EC_GROUP_copy';
 function EC_GROUP_dup(src: PEC_GROUP): PEC_GROUP; cdecl external CLibCrypto name 'EC_GROUP_dup';
 function EC_GROUP_set_generator(group: PEC_GROUP; generator: PEC_POINT; order: PBIGNUM; cofactor: PBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'EC_GROUP_set_generator';
@@ -1012,13 +1007,13 @@ function EC_GROUP_get0_order(group: PEC_GROUP): PBIGNUM; cdecl external CLibCryp
 function EC_GROUP_order_bits(group: PEC_GROUP): TIdC_INT; cdecl external CLibCrypto name 'EC_GROUP_order_bits';
 function EC_GROUP_get_cofactor(group: PEC_GROUP; cofactor: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'EC_GROUP_get_cofactor';
 function EC_GROUP_get0_cofactor(group: PEC_GROUP): PBIGNUM; cdecl external CLibCrypto name 'EC_GROUP_get0_cofactor';
-procedure EC_GROUP_set_curve_name(group: PEC_GROUP; nid: TIdC_INT); cdecl external CLibCrypto name 'EC_GROUP_set_curve_name';
+function EC_GROUP_set_curve_name(group: PEC_GROUP; nid: TIdC_INT): void; cdecl external CLibCrypto name 'EC_GROUP_set_curve_name';
 function EC_GROUP_get_curve_name(group: PEC_GROUP): TIdC_INT; cdecl external CLibCrypto name 'EC_GROUP_get_curve_name';
 function EC_GROUP_get0_field(group: PEC_GROUP): PBIGNUM; cdecl external CLibCrypto name 'EC_GROUP_get0_field';
 function EC_GROUP_get_field_type(group: PEC_GROUP): TIdC_INT; cdecl external CLibCrypto name 'EC_GROUP_get_field_type';
-procedure EC_GROUP_set_asn1_flag(group: PEC_GROUP; flag: TIdC_INT); cdecl external CLibCrypto name 'EC_GROUP_set_asn1_flag';
+function EC_GROUP_set_asn1_flag(group: PEC_GROUP; flag: TIdC_INT): void; cdecl external CLibCrypto name 'EC_GROUP_set_asn1_flag';
 function EC_GROUP_get_asn1_flag(group: PEC_GROUP): TIdC_INT; cdecl external CLibCrypto name 'EC_GROUP_get_asn1_flag';
-procedure EC_GROUP_set_point_conversion_form(group: PEC_GROUP; form: Tpoint_conversion_form_t); cdecl external CLibCrypto name 'EC_GROUP_set_point_conversion_form';
+function EC_GROUP_set_point_conversion_form(group: PEC_GROUP; form: Tpoint_conversion_form_t): void; cdecl external CLibCrypto name 'EC_GROUP_set_point_conversion_form';
 function EC_GROUP_get_point_conversion_form(arg1: PEC_GROUP): Tpoint_conversion_form_t; cdecl external CLibCrypto name 'EC_GROUP_get_point_conversion_form';
 function EC_GROUP_get0_seed(x: PEC_GROUP): PIdAnsiChar; cdecl external CLibCrypto name 'EC_GROUP_get0_seed';
 function EC_GROUP_get_seed_len(arg1: PEC_GROUP): TIdC_SIZET; cdecl external CLibCrypto name 'EC_GROUP_get_seed_len';
@@ -1035,8 +1030,8 @@ function EC_GROUP_check_discriminant(group: PEC_GROUP; ctx: PBN_CTX): TIdC_INT; 
 function EC_GROUP_cmp(a: PEC_GROUP; b: PEC_GROUP; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'EC_GROUP_cmp';
 function EC_GROUP_new_curve_GFp(p: PBIGNUM; a: PBIGNUM; b: PBIGNUM; ctx: PBN_CTX): PEC_GROUP; cdecl external CLibCrypto name 'EC_GROUP_new_curve_GFp';
 function EC_GROUP_new_curve_GF2m(p: PBIGNUM; a: PBIGNUM; b: PBIGNUM; ctx: PBN_CTX): PEC_GROUP; cdecl external CLibCrypto name 'EC_GROUP_new_curve_GF2m';
-function EC_GROUP_new_from_params(params: POSSL_PARAM_ARRAY; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PEC_GROUP; cdecl external CLibCrypto name 'EC_GROUP_new_from_params';
-function EC_GROUP_to_params(group: PEC_GROUP; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; bnctx: PBN_CTX): POSSL_PARAM_ARRAY; cdecl external CLibCrypto name 'EC_GROUP_to_params';
+function EC_GROUP_new_from_params(params: POSSL_PARAM; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PEC_GROUP; cdecl external CLibCrypto name 'EC_GROUP_new_from_params';
+function EC_GROUP_to_params(group: PEC_GROUP; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; bnctx: PBN_CTX): POSSL_PARAM; cdecl external CLibCrypto name 'EC_GROUP_to_params';
 function EC_GROUP_new_by_curve_name_ex(libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; nid: TIdC_INT): PEC_GROUP; cdecl external CLibCrypto name 'EC_GROUP_new_by_curve_name_ex';
 function EC_GROUP_new_by_curve_name(nid: TIdC_INT): PEC_GROUP; cdecl external CLibCrypto name 'EC_GROUP_new_by_curve_name';
 function EC_GROUP_new_from_ecparameters(params: PECPARAMETERS): PEC_GROUP; cdecl external CLibCrypto name 'EC_GROUP_new_from_ecparameters';
@@ -1048,8 +1043,8 @@ function EC_curve_nid2nist(nid: TIdC_INT): PIdAnsiChar; cdecl external CLibCrypt
 function EC_curve_nist2nid(name: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'EC_curve_nist2nid';
 function EC_GROUP_check_named_curve(group: PEC_GROUP; nist_only: TIdC_INT; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'EC_GROUP_check_named_curve';
 function EC_POINT_new(group: PEC_GROUP): PEC_POINT; cdecl external CLibCrypto name 'EC_POINT_new';
-procedure EC_POINT_free(point: PEC_POINT); cdecl external CLibCrypto name 'EC_POINT_free';
-procedure EC_POINT_clear_free(point: PEC_POINT); cdecl external CLibCrypto name 'EC_POINT_clear_free';
+function EC_POINT_free(point: PEC_POINT): void; cdecl external CLibCrypto name 'EC_POINT_free';
+function EC_POINT_clear_free(point: PEC_POINT): void; cdecl external CLibCrypto name 'EC_POINT_clear_free';
 function EC_POINT_copy(dst: PEC_POINT; src: PEC_POINT): TIdC_INT; cdecl external CLibCrypto name 'EC_POINT_copy';
 function EC_POINT_dup(src: PEC_POINT; group: PEC_GROUP): PEC_POINT; cdecl external CLibCrypto name 'EC_POINT_dup';
 function EC_POINT_set_to_infinity(group: PEC_GROUP; point: PEC_POINT): TIdC_INT; cdecl external CLibCrypto name 'EC_POINT_set_to_infinity';
@@ -1086,10 +1081,10 @@ function EC_GROUP_precompute_mult(group: PEC_GROUP; ctx: PBN_CTX): TIdC_INT; cde
 function EC_GROUP_have_precompute_mult(group: PEC_GROUP): TIdC_INT; cdecl external CLibCrypto name 'EC_GROUP_have_precompute_mult';
 function ECPKPARAMETERS_it: PASN1_ITEM; cdecl external CLibCrypto name 'ECPKPARAMETERS_it';
 function ECPKPARAMETERS_new: PECPKPARAMETERS; cdecl external CLibCrypto name 'ECPKPARAMETERS_new';
-procedure ECPKPARAMETERS_free(a: PECPKPARAMETERS); cdecl external CLibCrypto name 'ECPKPARAMETERS_free';
+function ECPKPARAMETERS_free(a: PECPKPARAMETERS): void; cdecl external CLibCrypto name 'ECPKPARAMETERS_free';
 function ECPARAMETERS_it: PASN1_ITEM; cdecl external CLibCrypto name 'ECPARAMETERS_it';
 function ECPARAMETERS_new: PECPARAMETERS; cdecl external CLibCrypto name 'ECPARAMETERS_new';
-procedure ECPARAMETERS_free(a: PECPARAMETERS); cdecl external CLibCrypto name 'ECPARAMETERS_free';
+function ECPARAMETERS_free(a: PECPARAMETERS): void; cdecl external CLibCrypto name 'ECPARAMETERS_free';
 function EC_GROUP_get_basis_type(arg1: PEC_GROUP): TIdC_INT; cdecl external CLibCrypto name 'EC_GROUP_get_basis_type';
 function EC_GROUP_get_trinomial_basis(arg1: PEC_GROUP; k: PIdC_UINT): TIdC_INT; cdecl external CLibCrypto name 'EC_GROUP_get_trinomial_basis';
 function EC_GROUP_get_pentanomial_basis(arg1: PEC_GROUP; k1: PIdC_UINT; k2: PIdC_UINT; k3: PIdC_UINT): TIdC_INT; cdecl external CLibCrypto name 'EC_GROUP_get_pentanomial_basis';
@@ -1100,12 +1095,12 @@ function ECPKParameters_print_fp(fp: PFILE; x: PEC_GROUP; off: TIdC_INT): TIdC_I
 function EC_KEY_new_ex(ctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PEC_KEY; cdecl external CLibCrypto name 'EC_KEY_new_ex';
 function EC_KEY_new: PEC_KEY; cdecl external CLibCrypto name 'EC_KEY_new';
 function EC_KEY_get_flags(key: PEC_KEY): TIdC_INT; cdecl external CLibCrypto name 'EC_KEY_get_flags';
-procedure EC_KEY_set_flags(key: PEC_KEY; flags: TIdC_INT); cdecl external CLibCrypto name 'EC_KEY_set_flags';
-procedure EC_KEY_clear_flags(key: PEC_KEY; flags: TIdC_INT); cdecl external CLibCrypto name 'EC_KEY_clear_flags';
+function EC_KEY_set_flags(key: PEC_KEY; flags: TIdC_INT): void; cdecl external CLibCrypto name 'EC_KEY_set_flags';
+function EC_KEY_clear_flags(key: PEC_KEY; flags: TIdC_INT): void; cdecl external CLibCrypto name 'EC_KEY_clear_flags';
 function EC_KEY_decoded_from_explicit_params(key: PEC_KEY): TIdC_INT; cdecl external CLibCrypto name 'EC_KEY_decoded_from_explicit_params';
 function EC_KEY_new_by_curve_name_ex(ctx: POSSL_LIB_CTX; propq: PIdAnsiChar; nid: TIdC_INT): PEC_KEY; cdecl external CLibCrypto name 'EC_KEY_new_by_curve_name_ex';
 function EC_KEY_new_by_curve_name(nid: TIdC_INT): PEC_KEY; cdecl external CLibCrypto name 'EC_KEY_new_by_curve_name';
-procedure EC_KEY_free(key: PEC_KEY); cdecl external CLibCrypto name 'EC_KEY_free';
+function EC_KEY_free(key: PEC_KEY): void; cdecl external CLibCrypto name 'EC_KEY_free';
 function EC_KEY_copy(dst: PEC_KEY; src: PEC_KEY): PEC_KEY; cdecl external CLibCrypto name 'EC_KEY_copy';
 function EC_KEY_dup(src: PEC_KEY): PEC_KEY; cdecl external CLibCrypto name 'EC_KEY_dup';
 function EC_KEY_up_ref(key: PEC_KEY): TIdC_INT; cdecl external CLibCrypto name 'EC_KEY_up_ref';
@@ -1117,12 +1112,12 @@ function EC_KEY_set_private_key(key: PEC_KEY; prv: PBIGNUM): TIdC_INT; cdecl ext
 function EC_KEY_get0_public_key(key: PEC_KEY): PEC_POINT; cdecl external CLibCrypto name 'EC_KEY_get0_public_key';
 function EC_KEY_set_public_key(key: PEC_KEY; pub: PEC_POINT): TIdC_INT; cdecl external CLibCrypto name 'EC_KEY_set_public_key';
 function EC_KEY_get_enc_flags(key: PEC_KEY): TIdC_UINT; cdecl external CLibCrypto name 'EC_KEY_get_enc_flags';
-procedure EC_KEY_set_enc_flags(eckey: PEC_KEY; flags: TIdC_UINT); cdecl external CLibCrypto name 'EC_KEY_set_enc_flags';
+function EC_KEY_set_enc_flags(eckey: PEC_KEY; flags: TIdC_UINT): void; cdecl external CLibCrypto name 'EC_KEY_set_enc_flags';
 function EC_KEY_get_conv_form(key: PEC_KEY): Tpoint_conversion_form_t; cdecl external CLibCrypto name 'EC_KEY_get_conv_form';
-procedure EC_KEY_set_conv_form(eckey: PEC_KEY; cform: Tpoint_conversion_form_t); cdecl external CLibCrypto name 'EC_KEY_set_conv_form';
+function EC_KEY_set_conv_form(eckey: PEC_KEY; cform: Tpoint_conversion_form_t): void; cdecl external CLibCrypto name 'EC_KEY_set_conv_form';
 function EC_KEY_set_ex_data(key: PEC_KEY; idx: TIdC_INT; arg: Pointer): TIdC_INT; cdecl external CLibCrypto name 'EC_KEY_set_ex_data';
 function EC_KEY_get_ex_data(key: PEC_KEY; idx: TIdC_INT): Pointer; cdecl external CLibCrypto name 'EC_KEY_get_ex_data';
-procedure EC_KEY_set_asn1_flag(eckey: PEC_KEY; asn1_flag: TIdC_INT); cdecl external CLibCrypto name 'EC_KEY_set_asn1_flag';
+function EC_KEY_set_asn1_flag(eckey: PEC_KEY; asn1_flag: TIdC_INT): void; cdecl external CLibCrypto name 'EC_KEY_set_asn1_flag';
 function EC_KEY_precompute_mult(key: PEC_KEY; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'EC_KEY_precompute_mult';
 function EC_KEY_generate_key(key: PEC_KEY): TIdC_INT; cdecl external CLibCrypto name 'EC_KEY_generate_key';
 function EC_KEY_check_key(key: PEC_KEY): TIdC_INT; cdecl external CLibCrypto name 'EC_KEY_check_key';
@@ -1145,17 +1140,17 @@ function ECParameters_print_fp(fp: PFILE; key: PEC_KEY): TIdC_INT; cdecl externa
 function EC_KEY_print_fp(fp: PFILE; key: PEC_KEY; off: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EC_KEY_print_fp';
 function EC_KEY_OpenSSL: PEC_KEY_METHOD; cdecl external CLibCrypto name 'EC_KEY_OpenSSL';
 function EC_KEY_get_default_method: PEC_KEY_METHOD; cdecl external CLibCrypto name 'EC_KEY_get_default_method';
-procedure EC_KEY_set_default_method(meth: PEC_KEY_METHOD); cdecl external CLibCrypto name 'EC_KEY_set_default_method';
+function EC_KEY_set_default_method(meth: PEC_KEY_METHOD): void; cdecl external CLibCrypto name 'EC_KEY_set_default_method';
 function EC_KEY_get_method(key: PEC_KEY): PEC_KEY_METHOD; cdecl external CLibCrypto name 'EC_KEY_get_method';
 function EC_KEY_set_method(key: PEC_KEY; meth: PEC_KEY_METHOD): TIdC_INT; cdecl external CLibCrypto name 'EC_KEY_set_method';
 function EC_KEY_new_method(engine: PENGINE): PEC_KEY; cdecl external CLibCrypto name 'EC_KEY_new_method';
 function ECDH_KDF_X9_62(_out: PIdAnsiChar; outlen: TIdC_SIZET; Z: PIdAnsiChar; Zlen: TIdC_SIZET; sinfo: PIdAnsiChar; sinfolen: TIdC_SIZET; md: PEVP_MD): TIdC_INT; cdecl external CLibCrypto name 'ECDH_KDF_X9_62';
 function ECDH_compute_key(_out: Pointer; outlen: TIdC_SIZET; pub_key: PEC_POINT; ecdh: PEC_KEY; KDF: TECDH_compute_key_KDF_cb): TIdC_INT; cdecl external CLibCrypto name 'ECDH_compute_key';
 function ECDSA_SIG_new: PECDSA_SIG; cdecl external CLibCrypto name 'ECDSA_SIG_new';
-procedure ECDSA_SIG_free(sig: PECDSA_SIG); cdecl external CLibCrypto name 'ECDSA_SIG_free';
+function ECDSA_SIG_free(sig: PECDSA_SIG): void; cdecl external CLibCrypto name 'ECDSA_SIG_free';
 function d2i_ECDSA_SIG(a: PPECDSA_SIG; _in: PPIdAnsiChar; len: TIdC_LONG): PECDSA_SIG; cdecl external CLibCrypto name 'd2i_ECDSA_SIG';
 function i2d_ECDSA_SIG(a: PECDSA_SIG; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ECDSA_SIG';
-procedure ECDSA_SIG_get0(sig: PECDSA_SIG; pr: PPBIGNUM; ps: PPBIGNUM); cdecl external CLibCrypto name 'ECDSA_SIG_get0';
+function ECDSA_SIG_get0(sig: PECDSA_SIG; pr: PPBIGNUM; ps: PPBIGNUM): void; cdecl external CLibCrypto name 'ECDSA_SIG_get0';
 function ECDSA_SIG_get0_r(sig: PECDSA_SIG): PBIGNUM; cdecl external CLibCrypto name 'ECDSA_SIG_get0_r';
 function ECDSA_SIG_get0_s(sig: PECDSA_SIG): PBIGNUM; cdecl external CLibCrypto name 'ECDSA_SIG_get0_s';
 function ECDSA_SIG_set0(sig: PECDSA_SIG; r: PBIGNUM; s: PBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'ECDSA_SIG_set0';
@@ -1168,17 +1163,17 @@ function ECDSA_sign_ex(_type: TIdC_INT; dgst: PIdAnsiChar; dgstlen: TIdC_INT; si
 function ECDSA_verify(_type: TIdC_INT; dgst: PIdAnsiChar; dgstlen: TIdC_INT; sig: PIdAnsiChar; siglen: TIdC_INT; eckey: PEC_KEY): TIdC_INT; cdecl external CLibCrypto name 'ECDSA_verify';
 function ECDSA_size(eckey: PEC_KEY): TIdC_INT; cdecl external CLibCrypto name 'ECDSA_size';
 function EC_KEY_METHOD_new(meth: PEC_KEY_METHOD): PEC_KEY_METHOD; cdecl external CLibCrypto name 'EC_KEY_METHOD_new';
-procedure EC_KEY_METHOD_free(meth: PEC_KEY_METHOD); cdecl external CLibCrypto name 'EC_KEY_METHOD_free';
-procedure EC_KEY_METHOD_set_init(meth: PEC_KEY_METHOD; init: TEC_KEY_METHOD_set_init_init_cb; finish: TEC_KEY_METHOD_set_init_finish_cb; copy: TEC_KEY_METHOD_set_init_copy_cb; set_group: TEC_KEY_METHOD_set_init_set_group_cb; set_private: TEC_KEY_METHOD_set_init_set_private_cb; set_public: TEC_KEY_METHOD_set_init_set_public_cb); cdecl external CLibCrypto name 'EC_KEY_METHOD_set_init';
-procedure EC_KEY_METHOD_set_keygen(meth: PEC_KEY_METHOD; keygen: TEC_KEY_METHOD_set_init_init_cb); cdecl external CLibCrypto name 'EC_KEY_METHOD_set_keygen';
-procedure EC_KEY_METHOD_set_compute_key(meth: PEC_KEY_METHOD; ckey: TEC_KEY_METHOD_set_compute_key_ckey_cb); cdecl external CLibCrypto name 'EC_KEY_METHOD_set_compute_key';
-procedure EC_KEY_METHOD_set_sign(meth: PEC_KEY_METHOD; sign: TEC_KEY_METHOD_set_sign_sign_cb; sign_setup: TEC_KEY_METHOD_set_sign_sign_setup_cb; sign_sig: TEC_KEY_METHOD_set_sign_sign_sig_cb); cdecl external CLibCrypto name 'EC_KEY_METHOD_set_sign';
-procedure EC_KEY_METHOD_set_verify(meth: PEC_KEY_METHOD; verify: TEC_KEY_METHOD_set_verify_verify_cb; verify_sig: TEC_KEY_METHOD_set_verify_verify_sig_cb); cdecl external CLibCrypto name 'EC_KEY_METHOD_set_verify';
-procedure EC_KEY_METHOD_get_init(meth: PEC_KEY_METHOD; pinit: PPIdC_INT; pfinish: PPointer; pcopy: PPIdC_INT; pset_group: PPIdC_INT; pset_private: PPIdC_INT; pset_public: PPIdC_INT); cdecl external CLibCrypto name 'EC_KEY_METHOD_get_init';
-procedure EC_KEY_METHOD_get_keygen(meth: PEC_KEY_METHOD; pkeygen: PPIdC_INT); cdecl external CLibCrypto name 'EC_KEY_METHOD_get_keygen';
-procedure EC_KEY_METHOD_get_compute_key(meth: PEC_KEY_METHOD; pck: PPIdC_INT); cdecl external CLibCrypto name 'EC_KEY_METHOD_get_compute_key';
-procedure EC_KEY_METHOD_get_sign(meth: PEC_KEY_METHOD; psign: PPIdC_INT; psign_setup: PPIdC_INT; psign_sig: PPECDSA_SIG); cdecl external CLibCrypto name 'EC_KEY_METHOD_get_sign';
-procedure EC_KEY_METHOD_get_verify(meth: PEC_KEY_METHOD; pverify: PPIdC_INT; pverify_sig: PPIdC_INT); cdecl external CLibCrypto name 'EC_KEY_METHOD_get_verify';
+function EC_KEY_METHOD_free(meth: PEC_KEY_METHOD): void; cdecl external CLibCrypto name 'EC_KEY_METHOD_free';
+function EC_KEY_METHOD_set_init(meth: PEC_KEY_METHOD; init: TEC_KEY_METHOD_set_init_init_cb; finish: TEC_KEY_METHOD_set_init_finish_cb; copy: TEC_KEY_METHOD_set_init_copy_cb; set_group: TEC_KEY_METHOD_set_init_set_group_cb; set_private: TEC_KEY_METHOD_set_init_set_private_cb; set_public: TEC_KEY_METHOD_set_init_set_public_cb): void; cdecl external CLibCrypto name 'EC_KEY_METHOD_set_init';
+function EC_KEY_METHOD_set_keygen(meth: PEC_KEY_METHOD; keygen: TEC_KEY_METHOD_set_init_init_cb): void; cdecl external CLibCrypto name 'EC_KEY_METHOD_set_keygen';
+function EC_KEY_METHOD_set_compute_key(meth: PEC_KEY_METHOD; ckey: TEC_KEY_METHOD_set_compute_key_ckey_cb): void; cdecl external CLibCrypto name 'EC_KEY_METHOD_set_compute_key';
+function EC_KEY_METHOD_set_sign(meth: PEC_KEY_METHOD; sign: TEC_KEY_METHOD_set_sign_sign_cb; sign_setup: TEC_KEY_METHOD_set_sign_sign_setup_cb; sign_sig: TEC_KEY_METHOD_set_sign_sign_sig_cb): void; cdecl external CLibCrypto name 'EC_KEY_METHOD_set_sign';
+function EC_KEY_METHOD_set_verify(meth: PEC_KEY_METHOD; verify: TEC_KEY_METHOD_set_verify_verify_cb; verify_sig: TEC_KEY_METHOD_set_verify_verify_sig_cb): void; cdecl external CLibCrypto name 'EC_KEY_METHOD_set_verify';
+function EC_KEY_METHOD_get_init(meth: PEC_KEY_METHOD; pinit: PPIdC_INT; pfinish: PPointer; pcopy: PPIdC_INT; pset_group: PPIdC_INT; pset_private: PPIdC_INT; pset_public: PPIdC_INT): void; cdecl external CLibCrypto name 'EC_KEY_METHOD_get_init';
+function EC_KEY_METHOD_get_keygen(meth: PEC_KEY_METHOD; pkeygen: PPIdC_INT): void; cdecl external CLibCrypto name 'EC_KEY_METHOD_get_keygen';
+function EC_KEY_METHOD_get_compute_key(meth: PEC_KEY_METHOD; pck: PPIdC_INT): void; cdecl external CLibCrypto name 'EC_KEY_METHOD_get_compute_key';
+function EC_KEY_METHOD_get_sign(meth: PEC_KEY_METHOD; psign: PPIdC_INT; psign_setup: PPIdC_INT; psign_sig: PPECDSA_SIG): void; cdecl external CLibCrypto name 'EC_KEY_METHOD_get_sign';
+function EC_KEY_METHOD_get_verify(meth: PEC_KEY_METHOD; pverify: PPIdC_INT; pverify_sig: PPIdC_INT): void; cdecl external CLibCrypto name 'EC_KEY_METHOD_get_verify';
 {$ENDIF}
 
 // =============================================================================
@@ -2002,7 +1997,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_GROUP_new_procname);
 end;
 
-procedure ERR_EC_GROUP_clear_free(group: PEC_GROUP); cdecl
+function ERR_EC_GROUP_clear_free(group: PEC_GROUP): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_GROUP_clear_free_procname);
 end;
@@ -2017,7 +2012,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_METHOD_get_field_type_procname);
 end;
 
-procedure ERR_EC_GROUP_free(group: PEC_GROUP); cdecl
+function ERR_EC_GROUP_free(group: PEC_GROUP): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_GROUP_free_procname);
 end;
@@ -2072,7 +2067,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_GROUP_get0_cofactor_procname);
 end;
 
-procedure ERR_EC_GROUP_set_curve_name(group: PEC_GROUP; nid: TIdC_INT); cdecl
+function ERR_EC_GROUP_set_curve_name(group: PEC_GROUP; nid: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_GROUP_set_curve_name_procname);
 end;
@@ -2092,7 +2087,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_GROUP_get_field_type_procname);
 end;
 
-procedure ERR_EC_GROUP_set_asn1_flag(group: PEC_GROUP; flag: TIdC_INT); cdecl
+function ERR_EC_GROUP_set_asn1_flag(group: PEC_GROUP; flag: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_GROUP_set_asn1_flag_procname);
 end;
@@ -2102,7 +2097,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_GROUP_get_asn1_flag_procname);
 end;
 
-procedure ERR_EC_GROUP_set_point_conversion_form(group: PEC_GROUP; form: Tpoint_conversion_form_t); cdecl
+function ERR_EC_GROUP_set_point_conversion_form(group: PEC_GROUP; form: Tpoint_conversion_form_t): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_GROUP_set_point_conversion_form_procname);
 end;
@@ -2187,12 +2182,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_GROUP_new_curve_GF2m_procname);
 end;
 
-function ERR_EC_GROUP_new_from_params(params: POSSL_PARAM_ARRAY; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PEC_GROUP; cdecl
+function ERR_EC_GROUP_new_from_params(params: POSSL_PARAM; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PEC_GROUP; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_GROUP_new_from_params_procname);
 end;
 
-function ERR_EC_GROUP_to_params(group: PEC_GROUP; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; bnctx: PBN_CTX): POSSL_PARAM_ARRAY; cdecl
+function ERR_EC_GROUP_to_params(group: PEC_GROUP; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; bnctx: PBN_CTX): POSSL_PARAM; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_GROUP_to_params_procname);
 end;
@@ -2252,12 +2247,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_POINT_new_procname);
 end;
 
-procedure ERR_EC_POINT_free(point: PEC_POINT); cdecl
+function ERR_EC_POINT_free(point: PEC_POINT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_POINT_free_procname);
 end;
 
-procedure ERR_EC_POINT_clear_free(point: PEC_POINT); cdecl
+function ERR_EC_POINT_clear_free(point: PEC_POINT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_POINT_clear_free_procname);
 end;
@@ -2442,7 +2437,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ECPKPARAMETERS_new_procname);
 end;
 
-procedure ERR_ECPKPARAMETERS_free(a: PECPKPARAMETERS); cdecl
+function ERR_ECPKPARAMETERS_free(a: PECPKPARAMETERS): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ECPKPARAMETERS_free_procname);
 end;
@@ -2457,7 +2452,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ECPARAMETERS_new_procname);
 end;
 
-procedure ERR_ECPARAMETERS_free(a: PECPARAMETERS); cdecl
+function ERR_ECPARAMETERS_free(a: PECPARAMETERS): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ECPARAMETERS_free_procname);
 end;
@@ -2512,12 +2507,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_get_flags_procname);
 end;
 
-procedure ERR_EC_KEY_set_flags(key: PEC_KEY; flags: TIdC_INT); cdecl
+function ERR_EC_KEY_set_flags(key: PEC_KEY; flags: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_set_flags_procname);
 end;
 
-procedure ERR_EC_KEY_clear_flags(key: PEC_KEY; flags: TIdC_INT); cdecl
+function ERR_EC_KEY_clear_flags(key: PEC_KEY; flags: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_clear_flags_procname);
 end;
@@ -2537,7 +2532,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_new_by_curve_name_procname);
 end;
 
-procedure ERR_EC_KEY_free(key: PEC_KEY); cdecl
+function ERR_EC_KEY_free(key: PEC_KEY): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_free_procname);
 end;
@@ -2597,7 +2592,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_get_enc_flags_procname);
 end;
 
-procedure ERR_EC_KEY_set_enc_flags(eckey: PEC_KEY; flags: TIdC_UINT); cdecl
+function ERR_EC_KEY_set_enc_flags(eckey: PEC_KEY; flags: TIdC_UINT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_set_enc_flags_procname);
 end;
@@ -2607,7 +2602,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_get_conv_form_procname);
 end;
 
-procedure ERR_EC_KEY_set_conv_form(eckey: PEC_KEY; cform: Tpoint_conversion_form_t); cdecl
+function ERR_EC_KEY_set_conv_form(eckey: PEC_KEY; cform: Tpoint_conversion_form_t): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_set_conv_form_procname);
 end;
@@ -2622,7 +2617,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_get_ex_data_procname);
 end;
 
-procedure ERR_EC_KEY_set_asn1_flag(eckey: PEC_KEY; asn1_flag: TIdC_INT); cdecl
+function ERR_EC_KEY_set_asn1_flag(eckey: PEC_KEY; asn1_flag: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_set_asn1_flag_procname);
 end;
@@ -2737,7 +2732,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_get_default_method_procname);
 end;
 
-procedure ERR_EC_KEY_set_default_method(meth: PEC_KEY_METHOD); cdecl
+function ERR_EC_KEY_set_default_method(meth: PEC_KEY_METHOD): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_set_default_method_procname);
 end;
@@ -2772,7 +2767,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ECDSA_SIG_new_procname);
 end;
 
-procedure ERR_ECDSA_SIG_free(sig: PECDSA_SIG); cdecl
+function ERR_ECDSA_SIG_free(sig: PECDSA_SIG): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ECDSA_SIG_free_procname);
 end;
@@ -2787,7 +2782,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(i2d_ECDSA_SIG_procname);
 end;
 
-procedure ERR_ECDSA_SIG_get0(sig: PECDSA_SIG; pr: PPBIGNUM; ps: PPBIGNUM); cdecl
+function ERR_ECDSA_SIG_get0(sig: PECDSA_SIG; pr: PPBIGNUM; ps: PPBIGNUM): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ECDSA_SIG_get0_procname);
 end;
@@ -2852,57 +2847,57 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_METHOD_new_procname);
 end;
 
-procedure ERR_EC_KEY_METHOD_free(meth: PEC_KEY_METHOD); cdecl
+function ERR_EC_KEY_METHOD_free(meth: PEC_KEY_METHOD): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_METHOD_free_procname);
 end;
 
-procedure ERR_EC_KEY_METHOD_set_init(meth: PEC_KEY_METHOD; init: TEC_KEY_METHOD_set_init_init_cb; finish: TEC_KEY_METHOD_set_init_finish_cb; copy: TEC_KEY_METHOD_set_init_copy_cb; set_group: TEC_KEY_METHOD_set_init_set_group_cb; set_private: TEC_KEY_METHOD_set_init_set_private_cb; set_public: TEC_KEY_METHOD_set_init_set_public_cb); cdecl
+function ERR_EC_KEY_METHOD_set_init(meth: PEC_KEY_METHOD; init: TEC_KEY_METHOD_set_init_init_cb; finish: TEC_KEY_METHOD_set_init_finish_cb; copy: TEC_KEY_METHOD_set_init_copy_cb; set_group: TEC_KEY_METHOD_set_init_set_group_cb; set_private: TEC_KEY_METHOD_set_init_set_private_cb; set_public: TEC_KEY_METHOD_set_init_set_public_cb): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_METHOD_set_init_procname);
 end;
 
-procedure ERR_EC_KEY_METHOD_set_keygen(meth: PEC_KEY_METHOD; keygen: TEC_KEY_METHOD_set_init_init_cb); cdecl
+function ERR_EC_KEY_METHOD_set_keygen(meth: PEC_KEY_METHOD; keygen: TEC_KEY_METHOD_set_init_init_cb): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_METHOD_set_keygen_procname);
 end;
 
-procedure ERR_EC_KEY_METHOD_set_compute_key(meth: PEC_KEY_METHOD; ckey: TEC_KEY_METHOD_set_compute_key_ckey_cb); cdecl
+function ERR_EC_KEY_METHOD_set_compute_key(meth: PEC_KEY_METHOD; ckey: TEC_KEY_METHOD_set_compute_key_ckey_cb): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_METHOD_set_compute_key_procname);
 end;
 
-procedure ERR_EC_KEY_METHOD_set_sign(meth: PEC_KEY_METHOD; sign: TEC_KEY_METHOD_set_sign_sign_cb; sign_setup: TEC_KEY_METHOD_set_sign_sign_setup_cb; sign_sig: TEC_KEY_METHOD_set_sign_sign_sig_cb); cdecl
+function ERR_EC_KEY_METHOD_set_sign(meth: PEC_KEY_METHOD; sign: TEC_KEY_METHOD_set_sign_sign_cb; sign_setup: TEC_KEY_METHOD_set_sign_sign_setup_cb; sign_sig: TEC_KEY_METHOD_set_sign_sign_sig_cb): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_METHOD_set_sign_procname);
 end;
 
-procedure ERR_EC_KEY_METHOD_set_verify(meth: PEC_KEY_METHOD; verify: TEC_KEY_METHOD_set_verify_verify_cb; verify_sig: TEC_KEY_METHOD_set_verify_verify_sig_cb); cdecl
+function ERR_EC_KEY_METHOD_set_verify(meth: PEC_KEY_METHOD; verify: TEC_KEY_METHOD_set_verify_verify_cb; verify_sig: TEC_KEY_METHOD_set_verify_verify_sig_cb): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_METHOD_set_verify_procname);
 end;
 
-procedure ERR_EC_KEY_METHOD_get_init(meth: PEC_KEY_METHOD; pinit: PPIdC_INT; pfinish: PPointer; pcopy: PPIdC_INT; pset_group: PPIdC_INT; pset_private: PPIdC_INT; pset_public: PPIdC_INT); cdecl
+function ERR_EC_KEY_METHOD_get_init(meth: PEC_KEY_METHOD; pinit: PPIdC_INT; pfinish: PPointer; pcopy: PPIdC_INT; pset_group: PPIdC_INT; pset_private: PPIdC_INT; pset_public: PPIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_METHOD_get_init_procname);
 end;
 
-procedure ERR_EC_KEY_METHOD_get_keygen(meth: PEC_KEY_METHOD; pkeygen: PPIdC_INT); cdecl
+function ERR_EC_KEY_METHOD_get_keygen(meth: PEC_KEY_METHOD; pkeygen: PPIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_METHOD_get_keygen_procname);
 end;
 
-procedure ERR_EC_KEY_METHOD_get_compute_key(meth: PEC_KEY_METHOD; pck: PPIdC_INT); cdecl
+function ERR_EC_KEY_METHOD_get_compute_key(meth: PEC_KEY_METHOD; pck: PPIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_METHOD_get_compute_key_procname);
 end;
 
-procedure ERR_EC_KEY_METHOD_get_sign(meth: PEC_KEY_METHOD; psign: PPIdC_INT; psign_setup: PPIdC_INT; psign_sig: PPECDSA_SIG); cdecl
+function ERR_EC_KEY_METHOD_get_sign(meth: PEC_KEY_METHOD; psign: PPIdC_INT; psign_setup: PPIdC_INT; psign_sig: PPECDSA_SIG): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_METHOD_get_sign_procname);
 end;
 
-procedure ERR_EC_KEY_METHOD_get_verify(meth: PEC_KEY_METHOD; pverify: PPIdC_INT; pverify_sig: PPIdC_INT); cdecl
+function ERR_EC_KEY_METHOD_get_verify(meth: PEC_KEY_METHOD; pverify: PPIdC_INT; pverify_sig: PPIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EC_KEY_METHOD_get_verify_procname);
 end;

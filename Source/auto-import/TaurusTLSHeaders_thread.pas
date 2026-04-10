@@ -27,6 +27,9 @@ uses
   TaurusTLSHeaders_core;
 
 
+
+
+
 // =============================================================================
 // CONSTANTS DECLARATIONS
 // =============================================================================
@@ -41,13 +44,13 @@ const
 // =============================================================================
 var
 
-  OSSL_get_thread_support_flags: function: UInt32; cdecl = nil;
+  OSSL_get_thread_support_flags: function: TIdC_UINT32; cdecl = nil;
   {$EXTERNALSYM OSSL_get_thread_support_flags}
 
-  OSSL_set_max_threads: function(ctx: POSSL_LIB_CTX; max_threads: UInt64): TIdC_INT; cdecl = nil;
+  OSSL_set_max_threads: function(ctx: POSSL_LIB_CTX; max_threads: TIdC_UINT64): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_set_max_threads}
 
-  OSSL_get_max_threads: function(ctx: POSSL_LIB_CTX): UInt64; cdecl = nil;
+  OSSL_get_max_threads: function(ctx: POSSL_LIB_CTX): TIdC_UINT64; cdecl = nil;
   {$EXTERNALSYM OSSL_get_max_threads}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -58,9 +61,9 @@ var
 // STATIC BINDING ROUTINES
 // =============================================================================
 
-function OSSL_get_thread_support_flags: UInt32; cdecl;
-function OSSL_set_max_threads(ctx: POSSL_LIB_CTX; max_threads: UInt64): TIdC_INT; cdecl;
-function OSSL_get_max_threads(ctx: POSSL_LIB_CTX): UInt64; cdecl;
+function OSSL_get_thread_support_flags: TIdC_UINT32; cdecl;
+function OSSL_set_max_threads(ctx: POSSL_LIB_CTX; max_threads: TIdC_UINT64): TIdC_INT; cdecl;
+function OSSL_get_max_threads(ctx: POSSL_LIB_CTX): TIdC_UINT64; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 implementation
@@ -79,9 +82,9 @@ uses
 // STATIC BINDING ROUTINES IMPORTS
 // =============================================================================
 
-function OSSL_get_thread_support_flags: UInt32; cdecl external CLibCrypto name 'OSSL_get_thread_support_flags';
-function OSSL_set_max_threads(ctx: POSSL_LIB_CTX; max_threads: UInt64): TIdC_INT; cdecl external CLibCrypto name 'OSSL_set_max_threads';
-function OSSL_get_max_threads(ctx: POSSL_LIB_CTX): UInt64; cdecl external CLibCrypto name 'OSSL_get_max_threads';
+function OSSL_get_thread_support_flags: TIdC_UINT32; cdecl external CLibCrypto name 'OSSL_get_thread_support_flags';
+function OSSL_set_max_threads(ctx: POSSL_LIB_CTX; max_threads: TIdC_UINT64): TIdC_INT; cdecl external CLibCrypto name 'OSSL_set_max_threads';
+function OSSL_get_max_threads(ctx: POSSL_LIB_CTX): TIdC_UINT64; cdecl external CLibCrypto name 'OSSL_get_max_threads';
 {$ENDIF}
 
 // =============================================================================
@@ -111,17 +114,17 @@ const
 // ERRORS STUBS
 // =============================================================================
 
-function ERR_OSSL_get_thread_support_flags: UInt32; cdecl
+function ERR_OSSL_get_thread_support_flags: TIdC_UINT32; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_get_thread_support_flags_procname);
 end;
 
-function ERR_OSSL_set_max_threads(ctx: POSSL_LIB_CTX; max_threads: UInt64): TIdC_INT; cdecl
+function ERR_OSSL_set_max_threads(ctx: POSSL_LIB_CTX; max_threads: TIdC_UINT64): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_set_max_threads_procname);
 end;
 
-function ERR_OSSL_get_max_threads(ctx: POSSL_LIB_CTX): UInt64; cdecl
+function ERR_OSSL_get_max_threads(ctx: POSSL_LIB_CTX): TIdC_UINT64; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_get_max_threads_procname);
 end;

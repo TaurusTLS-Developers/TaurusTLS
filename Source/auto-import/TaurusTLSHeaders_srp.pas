@@ -26,68 +26,49 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   PSRP_gN_cache_st = ^TSRP_gN_cache_st;
-  TSRP_gN_cache_st = record end;
+  TSRP_gN_cache_st =   record
+    b64_bn: PIdAnsiChar;
+    bn: PBIGNUM;
+  end;
   {$EXTERNALSYM PSRP_gN_cache_st}
 
-  PSRP_gN_cache = ^TSRP_gN_cache;
-  TSRP_gN_cache = TSRP_gN_cache_st;
-  {$EXTERNALSYM PSRP_gN_cache}
-
-  Pstack_st_SRP_gN_cache = ^Tstack_st_SRP_gN_cache;
-  Tstack_st_SRP_gN_cache = record end;
-  {$EXTERNALSYM Pstack_st_SRP_gN_cache}
-
   PSRP_user_pwd_st = ^TSRP_user_pwd_st;
-  TSRP_user_pwd_st = record end;
+  TSRP_user_pwd_st =   record
+    id: PIdAnsiChar;
+    s: PBIGNUM;
+    v: PBIGNUM;
+    g: PBIGNUM;
+    N: PBIGNUM;
+    info: PIdAnsiChar;
+  end;
   {$EXTERNALSYM PSRP_user_pwd_st}
 
-  PSRP_user_pwd = ^TSRP_user_pwd;
-  TSRP_user_pwd = TSRP_user_pwd_st;
-  {$EXTERNALSYM PSRP_user_pwd}
-
-  Pstack_st_SRP_user_pwd = ^Tstack_st_SRP_user_pwd;
-  Tstack_st_SRP_user_pwd = record end;
-  {$EXTERNALSYM Pstack_st_SRP_user_pwd}
-
   PSRP_VBASE_st = ^TSRP_VBASE_st;
-  TSRP_VBASE_st = record end;
+  TSRP_VBASE_st =   record
+    users_pwd: Pstack_st_SRP_user_pwd;
+    gN_cache: Pstack_st_SRP_gN_cache;
+    seed_key: PIdAnsiChar;
+    default_g: PBIGNUM;
+    default_N: PBIGNUM;
+  end;
   {$EXTERNALSYM PSRP_VBASE_st}
 
-  PSRP_VBASE = ^TSRP_VBASE;
-  TSRP_VBASE = TSRP_VBASE_st;
-  {$EXTERNALSYM PSRP_VBASE}
-
   PSRP_gN_st = ^TSRP_gN_st;
-  TSRP_gN_st = record end;
+  TSRP_gN_st =   record
+    id: PIdAnsiChar;
+    g: PBIGNUM;
+    N: PBIGNUM;
+  end;
   {$EXTERNALSYM PSRP_gN_st}
 
-  PSRP_gN = ^TSRP_gN;
-  TSRP_gN = TSRP_gN_st;
-  {$EXTERNALSYM PSRP_gN}
-
-  Pstack_st_SRP_gN = ^Tstack_st_SRP_gN;
-  Tstack_st_SRP_gN = record end;
-  {$EXTERNALSYM Pstack_st_SRP_gN}
-
-
-// =============================================================================
-// CALLBACK TYPE DECLARATIONS
-// =============================================================================
-type
-  Tsk_SRP_gN_cache_compfunc_func_cb = function(arg1: PPSRP_gN_cache; arg2: PPSRP_gN_cache): TIdC_INT; cdecl;
-  Tsk_SRP_gN_cache_freefunc_func_cb = procedure(arg1: PSRP_gN_cache); cdecl;
-  Tsk_SRP_gN_cache_copyfunc_func_cb = function(arg1: PSRP_gN_cache): PSRP_gN_cache; cdecl;
-  Tsk_SRP_user_pwd_compfunc_func_cb = function(arg1: PPSRP_user_pwd; arg2: PPSRP_user_pwd): TIdC_INT; cdecl;
-  Tsk_SRP_user_pwd_freefunc_func_cb = procedure(arg1: PSRP_user_pwd); cdecl;
-  Tsk_SRP_user_pwd_copyfunc_func_cb = function(arg1: PSRP_user_pwd): PSRP_user_pwd; cdecl;
-  Tsk_SRP_gN_compfunc_func_cb = function(arg1: PPSRP_gN; arg2: PPSRP_gN): TIdC_INT; cdecl;
-  Tsk_SRP_gN_freefunc_func_cb = procedure(arg1: PSRP_gN); cdecl;
-  Tsk_SRP_gN_copyfunc_func_cb = function(arg1: PSRP_gN): PSRP_gN; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -121,10 +102,10 @@ var
   SRP_user_pwd_new: function: PSRP_user_pwd; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM SRP_user_pwd_new}
 
-  SRP_user_pwd_free: procedure(user_pwd: PSRP_user_pwd); cdecl = nil; // Deprecated in 3_0_0
+  SRP_user_pwd_free: function(user_pwd: PSRP_user_pwd): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM SRP_user_pwd_free}
 
-  SRP_user_pwd_set_gN: procedure(user_pwd: PSRP_user_pwd; g: PBIGNUM; N: PBIGNUM); cdecl = nil; // Deprecated in 3_0_0
+  SRP_user_pwd_set_gN: function(user_pwd: PSRP_user_pwd; g: PBIGNUM; N: PBIGNUM): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM SRP_user_pwd_set_gN}
 
   SRP_user_pwd_set1_ids: function(user_pwd: PSRP_user_pwd; id: PIdAnsiChar; info: PIdAnsiChar): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -136,7 +117,7 @@ var
   SRP_VBASE_new: function(seed_key: PIdAnsiChar): PSRP_VBASE; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM SRP_VBASE_new}
 
-  SRP_VBASE_free: procedure(vb: PSRP_VBASE); cdecl = nil; // Deprecated in 3_0_0
+  SRP_VBASE_free: function(vb: PSRP_VBASE): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM SRP_VBASE_free}
 
   SRP_VBASE_init: function(vb: PSRP_VBASE; verifier_file: PIdAnsiChar): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -211,12 +192,12 @@ var
 // =============================================================================
 
 function SRP_user_pwd_new: PSRP_user_pwd; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure SRP_user_pwd_free(user_pwd: PSRP_user_pwd); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure SRP_user_pwd_set_gN(user_pwd: PSRP_user_pwd; g: PBIGNUM; N: PBIGNUM); cdecl; deprecated 'In OpenSSL 3_0_0';
+function SRP_user_pwd_free(user_pwd: PSRP_user_pwd): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function SRP_user_pwd_set_gN(user_pwd: PSRP_user_pwd; g: PBIGNUM; N: PBIGNUM): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function SRP_user_pwd_set1_ids(user_pwd: PSRP_user_pwd; id: PIdAnsiChar; info: PIdAnsiChar): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function SRP_user_pwd_set0_sv(user_pwd: PSRP_user_pwd; s: PBIGNUM; v: PBIGNUM): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function SRP_VBASE_new(seed_key: PIdAnsiChar): PSRP_VBASE; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure SRP_VBASE_free(vb: PSRP_VBASE); cdecl; deprecated 'In OpenSSL 3_0_0';
+function SRP_VBASE_free(vb: PSRP_VBASE): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function SRP_VBASE_init(vb: PSRP_VBASE; verifier_file: PIdAnsiChar): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function SRP_VBASE_add0_user(vb: PSRP_VBASE; user_pwd: PSRP_user_pwd): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function SRP_VBASE_get1_by_user(vb: PSRP_VBASE; username: PIdAnsiChar): PSRP_user_pwd; cdecl; deprecated 'In OpenSSL 3_0_0';
@@ -240,6 +221,110 @@ function SRP_Calc_client_key(N: PBIGNUM; B: PBIGNUM; g: PBIGNUM; x: PBIGNUM; a: 
 function SRP_Verify_B_mod_N(B: PBIGNUM; N: PBIGNUM): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
+// =============================================================================
+// OPENSSL STACK DEFINITIONS
+// =============================================================================
+type
+  { TODO 1 -copenssl stack SRP_gN_cache definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_SRP_gN_cache = Pointer;
+  {$EXTERNALSYM PSTACK_OF_SRP_gN_cache}
+
+  { Original Stack Macros for SRP_gN_cache:
+    SKM_DEFINE_STACK_OF_INTERNAL(SRP_gN_cache, SRP_gN_cache, SRP_gN_cache)
+    sk_SRP_gN_cache_num(sk) OPENSSL_sk_num(ossl_check_const_SRP_gN_cache_sk_type(sk))
+    sk_SRP_gN_cache_value(sk, idx) ((SRP_gN_cache *)OPENSSL_sk_value(ossl_check_const_SRP_gN_cache_sk_type(sk), (idx)))
+    sk_SRP_gN_cache_new(cmp) ((STACK_OF(SRP_gN_cache) *)OPENSSL_sk_new(ossl_check_SRP_gN_cache_compfunc_type(cmp)))
+    sk_SRP_gN_cache_new_null() ((STACK_OF(SRP_gN_cache) *)OPENSSL_sk_new_null())
+    sk_SRP_gN_cache_new_reserve(cmp, n) ((STACK_OF(SRP_gN_cache) *)OPENSSL_sk_new_reserve(ossl_check_SRP_gN_cache_compfunc_type(cmp), (n)))
+    sk_SRP_gN_cache_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_SRP_gN_cache_sk_type(sk), (n))
+    sk_SRP_gN_cache_free(sk) OPENSSL_sk_free(ossl_check_SRP_gN_cache_sk_type(sk))
+    sk_SRP_gN_cache_zero(sk) OPENSSL_sk_zero(ossl_check_SRP_gN_cache_sk_type(sk))
+    sk_SRP_gN_cache_delete(sk, i) ((SRP_gN_cache *)OPENSSL_sk_delete(ossl_check_SRP_gN_cache_sk_type(sk), (i)))
+    sk_SRP_gN_cache_delete_ptr(sk, ptr) ((SRP_gN_cache *)OPENSSL_sk_delete_ptr(ossl_check_SRP_gN_cache_sk_type(sk), ossl_check_SRP_gN_cache_type(ptr)))
+    sk_SRP_gN_cache_push(sk, ptr) OPENSSL_sk_push(ossl_check_SRP_gN_cache_sk_type(sk), ossl_check_SRP_gN_cache_type(ptr))
+    sk_SRP_gN_cache_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_SRP_gN_cache_sk_type(sk), ossl_check_SRP_gN_cache_type(ptr))
+    sk_SRP_gN_cache_pop(sk) ((SRP_gN_cache *)OPENSSL_sk_pop(ossl_check_SRP_gN_cache_sk_type(sk)))
+    sk_SRP_gN_cache_shift(sk) ((SRP_gN_cache *)OPENSSL_sk_shift(ossl_check_SRP_gN_cache_sk_type(sk)))
+    sk_SRP_gN_cache_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_SRP_gN_cache_sk_type(sk), ossl_check_SRP_gN_cache_freefunc_type(freefunc))
+    sk_SRP_gN_cache_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_SRP_gN_cache_sk_type(sk), ossl_check_SRP_gN_cache_type(ptr), (idx))
+    sk_SRP_gN_cache_set(sk, idx, ptr) ((SRP_gN_cache *)OPENSSL_sk_set(ossl_check_SRP_gN_cache_sk_type(sk), (idx), ossl_check_SRP_gN_cache_type(ptr)))
+    sk_SRP_gN_cache_find(sk, ptr) OPENSSL_sk_find(ossl_check_SRP_gN_cache_sk_type(sk), ossl_check_SRP_gN_cache_type(ptr))
+    sk_SRP_gN_cache_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_SRP_gN_cache_sk_type(sk), ossl_check_SRP_gN_cache_type(ptr))
+    sk_SRP_gN_cache_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_SRP_gN_cache_sk_type(sk), ossl_check_SRP_gN_cache_type(ptr), pnum)
+    sk_SRP_gN_cache_sort(sk) OPENSSL_sk_sort(ossl_check_SRP_gN_cache_sk_type(sk))
+    sk_SRP_gN_cache_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_SRP_gN_cache_sk_type(sk))
+    sk_SRP_gN_cache_dup(sk) ((STACK_OF(SRP_gN_cache) *)OPENSSL_sk_dup(ossl_check_const_SRP_gN_cache_sk_type(sk)))
+    sk_SRP_gN_cache_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(SRP_gN_cache) *)OPENSSL_sk_deep_copy(ossl_check_const_SRP_gN_cache_sk_type(sk), ossl_check_SRP_gN_cache_copyfunc_type(copyfunc), ossl_check_SRP_gN_cache_freefunc_type(freefunc)))
+    sk_SRP_gN_cache_set_cmp_func(sk, cmp) ((sk_SRP_gN_cache_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_SRP_gN_cache_sk_type(sk), ossl_check_SRP_gN_cache_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack SRP_user_pwd definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_SRP_user_pwd = Pointer;
+  {$EXTERNALSYM PSTACK_OF_SRP_user_pwd}
+
+  { Original Stack Macros for SRP_user_pwd:
+    SKM_DEFINE_STACK_OF_INTERNAL(SRP_user_pwd, SRP_user_pwd, SRP_user_pwd)
+    sk_SRP_user_pwd_num(sk) OPENSSL_sk_num(ossl_check_const_SRP_user_pwd_sk_type(sk))
+    sk_SRP_user_pwd_value(sk, idx) ((SRP_user_pwd *)OPENSSL_sk_value(ossl_check_const_SRP_user_pwd_sk_type(sk), (idx)))
+    sk_SRP_user_pwd_new(cmp) ((STACK_OF(SRP_user_pwd) *)OPENSSL_sk_new(ossl_check_SRP_user_pwd_compfunc_type(cmp)))
+    sk_SRP_user_pwd_new_null() ((STACK_OF(SRP_user_pwd) *)OPENSSL_sk_new_null())
+    sk_SRP_user_pwd_new_reserve(cmp, n) ((STACK_OF(SRP_user_pwd) *)OPENSSL_sk_new_reserve(ossl_check_SRP_user_pwd_compfunc_type(cmp), (n)))
+    sk_SRP_user_pwd_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_SRP_user_pwd_sk_type(sk), (n))
+    sk_SRP_user_pwd_free(sk) OPENSSL_sk_free(ossl_check_SRP_user_pwd_sk_type(sk))
+    sk_SRP_user_pwd_zero(sk) OPENSSL_sk_zero(ossl_check_SRP_user_pwd_sk_type(sk))
+    sk_SRP_user_pwd_delete(sk, i) ((SRP_user_pwd *)OPENSSL_sk_delete(ossl_check_SRP_user_pwd_sk_type(sk), (i)))
+    sk_SRP_user_pwd_delete_ptr(sk, ptr) ((SRP_user_pwd *)OPENSSL_sk_delete_ptr(ossl_check_SRP_user_pwd_sk_type(sk), ossl_check_SRP_user_pwd_type(ptr)))
+    sk_SRP_user_pwd_push(sk, ptr) OPENSSL_sk_push(ossl_check_SRP_user_pwd_sk_type(sk), ossl_check_SRP_user_pwd_type(ptr))
+    sk_SRP_user_pwd_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_SRP_user_pwd_sk_type(sk), ossl_check_SRP_user_pwd_type(ptr))
+    sk_SRP_user_pwd_pop(sk) ((SRP_user_pwd *)OPENSSL_sk_pop(ossl_check_SRP_user_pwd_sk_type(sk)))
+    sk_SRP_user_pwd_shift(sk) ((SRP_user_pwd *)OPENSSL_sk_shift(ossl_check_SRP_user_pwd_sk_type(sk)))
+    sk_SRP_user_pwd_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_SRP_user_pwd_sk_type(sk), ossl_check_SRP_user_pwd_freefunc_type(freefunc))
+    sk_SRP_user_pwd_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_SRP_user_pwd_sk_type(sk), ossl_check_SRP_user_pwd_type(ptr), (idx))
+    sk_SRP_user_pwd_set(sk, idx, ptr) ((SRP_user_pwd *)OPENSSL_sk_set(ossl_check_SRP_user_pwd_sk_type(sk), (idx), ossl_check_SRP_user_pwd_type(ptr)))
+    sk_SRP_user_pwd_find(sk, ptr) OPENSSL_sk_find(ossl_check_SRP_user_pwd_sk_type(sk), ossl_check_SRP_user_pwd_type(ptr))
+    sk_SRP_user_pwd_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_SRP_user_pwd_sk_type(sk), ossl_check_SRP_user_pwd_type(ptr))
+    sk_SRP_user_pwd_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_SRP_user_pwd_sk_type(sk), ossl_check_SRP_user_pwd_type(ptr), pnum)
+    sk_SRP_user_pwd_sort(sk) OPENSSL_sk_sort(ossl_check_SRP_user_pwd_sk_type(sk))
+    sk_SRP_user_pwd_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_SRP_user_pwd_sk_type(sk))
+    sk_SRP_user_pwd_dup(sk) ((STACK_OF(SRP_user_pwd) *)OPENSSL_sk_dup(ossl_check_const_SRP_user_pwd_sk_type(sk)))
+    sk_SRP_user_pwd_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(SRP_user_pwd) *)OPENSSL_sk_deep_copy(ossl_check_const_SRP_user_pwd_sk_type(sk), ossl_check_SRP_user_pwd_copyfunc_type(copyfunc), ossl_check_SRP_user_pwd_freefunc_type(freefunc)))
+    sk_SRP_user_pwd_set_cmp_func(sk, cmp) ((sk_SRP_user_pwd_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_SRP_user_pwd_sk_type(sk), ossl_check_SRP_user_pwd_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack SRP_gN definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_SRP_gN = Pointer;
+  {$EXTERNALSYM PSTACK_OF_SRP_gN}
+
+  { Original Stack Macros for SRP_gN:
+    SKM_DEFINE_STACK_OF_INTERNAL(SRP_gN, SRP_gN, SRP_gN)
+    sk_SRP_gN_num(sk) OPENSSL_sk_num(ossl_check_const_SRP_gN_sk_type(sk))
+    sk_SRP_gN_value(sk, idx) ((SRP_gN *)OPENSSL_sk_value(ossl_check_const_SRP_gN_sk_type(sk), (idx)))
+    sk_SRP_gN_new(cmp) ((STACK_OF(SRP_gN) *)OPENSSL_sk_new(ossl_check_SRP_gN_compfunc_type(cmp)))
+    sk_SRP_gN_new_null() ((STACK_OF(SRP_gN) *)OPENSSL_sk_new_null())
+    sk_SRP_gN_new_reserve(cmp, n) ((STACK_OF(SRP_gN) *)OPENSSL_sk_new_reserve(ossl_check_SRP_gN_compfunc_type(cmp), (n)))
+    sk_SRP_gN_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_SRP_gN_sk_type(sk), (n))
+    sk_SRP_gN_free(sk) OPENSSL_sk_free(ossl_check_SRP_gN_sk_type(sk))
+    sk_SRP_gN_zero(sk) OPENSSL_sk_zero(ossl_check_SRP_gN_sk_type(sk))
+    sk_SRP_gN_delete(sk, i) ((SRP_gN *)OPENSSL_sk_delete(ossl_check_SRP_gN_sk_type(sk), (i)))
+    sk_SRP_gN_delete_ptr(sk, ptr) ((SRP_gN *)OPENSSL_sk_delete_ptr(ossl_check_SRP_gN_sk_type(sk), ossl_check_SRP_gN_type(ptr)))
+    sk_SRP_gN_push(sk, ptr) OPENSSL_sk_push(ossl_check_SRP_gN_sk_type(sk), ossl_check_SRP_gN_type(ptr))
+    sk_SRP_gN_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_SRP_gN_sk_type(sk), ossl_check_SRP_gN_type(ptr))
+    sk_SRP_gN_pop(sk) ((SRP_gN *)OPENSSL_sk_pop(ossl_check_SRP_gN_sk_type(sk)))
+    sk_SRP_gN_shift(sk) ((SRP_gN *)OPENSSL_sk_shift(ossl_check_SRP_gN_sk_type(sk)))
+    sk_SRP_gN_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_SRP_gN_sk_type(sk), ossl_check_SRP_gN_freefunc_type(freefunc))
+    sk_SRP_gN_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_SRP_gN_sk_type(sk), ossl_check_SRP_gN_type(ptr), (idx))
+    sk_SRP_gN_set(sk, idx, ptr) ((SRP_gN *)OPENSSL_sk_set(ossl_check_SRP_gN_sk_type(sk), (idx), ossl_check_SRP_gN_type(ptr)))
+    sk_SRP_gN_find(sk, ptr) OPENSSL_sk_find(ossl_check_SRP_gN_sk_type(sk), ossl_check_SRP_gN_type(ptr))
+    sk_SRP_gN_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_SRP_gN_sk_type(sk), ossl_check_SRP_gN_type(ptr))
+    sk_SRP_gN_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_SRP_gN_sk_type(sk), ossl_check_SRP_gN_type(ptr), pnum)
+    sk_SRP_gN_sort(sk) OPENSSL_sk_sort(ossl_check_SRP_gN_sk_type(sk))
+    sk_SRP_gN_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_SRP_gN_sk_type(sk))
+    sk_SRP_gN_dup(sk) ((STACK_OF(SRP_gN) *)OPENSSL_sk_dup(ossl_check_const_SRP_gN_sk_type(sk)))
+    sk_SRP_gN_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(SRP_gN) *)OPENSSL_sk_deep_copy(ossl_check_const_SRP_gN_sk_type(sk), ossl_check_SRP_gN_copyfunc_type(copyfunc), ossl_check_SRP_gN_freefunc_type(freefunc)))
+    sk_SRP_gN_set_cmp_func(sk, cmp) ((sk_SRP_gN_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_SRP_gN_sk_type(sk), ossl_check_SRP_gN_compfunc_type(cmp)))
+  }
+
+
 implementation
 
 uses
@@ -257,12 +342,12 @@ uses
 // =============================================================================
 
 function SRP_user_pwd_new: PSRP_user_pwd; cdecl external CLibCrypto name 'SRP_user_pwd_new';
-procedure SRP_user_pwd_free(user_pwd: PSRP_user_pwd); cdecl external CLibCrypto name 'SRP_user_pwd_free';
-procedure SRP_user_pwd_set_gN(user_pwd: PSRP_user_pwd; g: PBIGNUM; N: PBIGNUM); cdecl external CLibCrypto name 'SRP_user_pwd_set_gN';
+function SRP_user_pwd_free(user_pwd: PSRP_user_pwd): void; cdecl external CLibCrypto name 'SRP_user_pwd_free';
+function SRP_user_pwd_set_gN(user_pwd: PSRP_user_pwd; g: PBIGNUM; N: PBIGNUM): void; cdecl external CLibCrypto name 'SRP_user_pwd_set_gN';
 function SRP_user_pwd_set1_ids(user_pwd: PSRP_user_pwd; id: PIdAnsiChar; info: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'SRP_user_pwd_set1_ids';
 function SRP_user_pwd_set0_sv(user_pwd: PSRP_user_pwd; s: PBIGNUM; v: PBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'SRP_user_pwd_set0_sv';
 function SRP_VBASE_new(seed_key: PIdAnsiChar): PSRP_VBASE; cdecl external CLibCrypto name 'SRP_VBASE_new';
-procedure SRP_VBASE_free(vb: PSRP_VBASE); cdecl external CLibCrypto name 'SRP_VBASE_free';
+function SRP_VBASE_free(vb: PSRP_VBASE): void; cdecl external CLibCrypto name 'SRP_VBASE_free';
 function SRP_VBASE_init(vb: PSRP_VBASE; verifier_file: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'SRP_VBASE_init';
 function SRP_VBASE_add0_user(vb: PSRP_VBASE; user_pwd: PSRP_user_pwd): TIdC_INT; cdecl external CLibCrypto name 'SRP_VBASE_add0_user';
 function SRP_VBASE_get1_by_user(vb: PSRP_VBASE; username: PIdAnsiChar): PSRP_user_pwd; cdecl external CLibCrypto name 'SRP_VBASE_get1_by_user';
@@ -410,12 +495,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SRP_user_pwd_new_procname);
 end;
 
-procedure ERR_SRP_user_pwd_free(user_pwd: PSRP_user_pwd); cdecl
+function ERR_SRP_user_pwd_free(user_pwd: PSRP_user_pwd): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SRP_user_pwd_free_procname);
 end;
 
-procedure ERR_SRP_user_pwd_set_gN(user_pwd: PSRP_user_pwd; g: PBIGNUM; N: PBIGNUM); cdecl
+function ERR_SRP_user_pwd_set_gN(user_pwd: PSRP_user_pwd; g: PBIGNUM; N: PBIGNUM): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SRP_user_pwd_set_gN_procname);
 end;
@@ -435,7 +520,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SRP_VBASE_new_procname);
 end;
 
-procedure ERR_SRP_VBASE_free(vb: PSRP_VBASE); cdecl
+function ERR_SRP_VBASE_free(vb: PSRP_VBASE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SRP_VBASE_free_procname);
 end;

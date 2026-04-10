@@ -27,11 +27,14 @@ uses
   TaurusTLSHeaders_core;
 
 
+
+
+
 // =============================================================================
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  TOSSL_HTTP_bio_cb_t_func_cb = function(arg1: PBIO; arg2: Pointer; arg3: TIdC_INT; arg4: TIdC_INT): PBIO; cdecl;
+  TOSSL_HTTP_bio_cb_t = function(bio: PBIO; arg: Pointer; connect: TIdC_INT; detail: TIdC_INT): Pbio_st; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -39,8 +42,8 @@ type
 const
   OSSL_HTTP_NAME = 'http';
   OSSL_HTTPS_NAME = 'https';
-  OSSL_HTTP_PREFIX = OSSL_HTTP_NAME'://';
-  OSSL_HTTPS_PREFIX = OSSL_HTTPS_NAME'://';
+  OSSL_HTTP_PREFIX = OSSL_HTTP_NAME':;
+  OSSL_HTTPS_PREFIX = OSSL_HTTPS_NAME':;
   OSSL_HTTP_PORT = '80';
   OSSL_HTTPS_PORT = '443';
   OPENSSL_NO_PROXY = 'NO_PROXY';
@@ -64,7 +67,7 @@ var
   OSSL_HTTP_REQ_CTX_new: function(wbio: PBIO; rbio: PBIO; buf_size: TIdC_INT): POSSL_HTTP_REQ_CTX; cdecl = nil;
   {$EXTERNALSYM OSSL_HTTP_REQ_CTX_new}
 
-  OSSL_HTTP_REQ_CTX_free: procedure(rctx: POSSL_HTTP_REQ_CTX); cdecl = nil;
+  OSSL_HTTP_REQ_CTX_free: function(rctx: POSSL_HTTP_REQ_CTX): void; cdecl = nil;
   {$EXTERNALSYM OSSL_HTTP_REQ_CTX_free}
 
   OSSL_HTTP_REQ_CTX_set_request_line: function(rctx: POSSL_HTTP_REQ_CTX; method_POST: TIdC_INT; server: PIdAnsiChar; port: PIdAnsiChar; path: PIdAnsiChar): TIdC_INT; cdecl = nil;
@@ -94,16 +97,16 @@ var
   OSSL_HTTP_REQ_CTX_get_resp_len: function(rctx: POSSL_HTTP_REQ_CTX): TIdC_SIZET; cdecl = nil;
   {$EXTERNALSYM OSSL_HTTP_REQ_CTX_get_resp_len}
 
-  OSSL_HTTP_REQ_CTX_set_max_response_length: procedure(rctx: POSSL_HTTP_REQ_CTX; len: TIdC_ULONG); cdecl = nil;
+  OSSL_HTTP_REQ_CTX_set_max_response_length: function(rctx: POSSL_HTTP_REQ_CTX; len: TIdC_ULONG): void; cdecl = nil;
   {$EXTERNALSYM OSSL_HTTP_REQ_CTX_set_max_response_length}
 
-  OSSL_HTTP_REQ_CTX_set_max_response_hdr_lines: procedure(rctx: POSSL_HTTP_REQ_CTX; count: TIdC_SIZET); cdecl = nil;
+  OSSL_HTTP_REQ_CTX_set_max_response_hdr_lines: function(rctx: POSSL_HTTP_REQ_CTX; count: TIdC_SIZET): void; cdecl = nil;
   {$EXTERNALSYM OSSL_HTTP_REQ_CTX_set_max_response_hdr_lines}
 
   OSSL_HTTP_is_alive: function(rctx: POSSL_HTTP_REQ_CTX): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_HTTP_is_alive}
 
-  OSSL_HTTP_open: function(server: PIdAnsiChar; port: PIdAnsiChar; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; use_ssl: TIdC_INT; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t_func_cb; arg: Pointer; buf_size: TIdC_INT; overall_timeout: TIdC_INT): POSSL_HTTP_REQ_CTX; cdecl = nil;
+  OSSL_HTTP_open: function(server: PIdAnsiChar; port: PIdAnsiChar; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; use_ssl: TIdC_INT; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t; arg: Pointer; buf_size: TIdC_INT; overall_timeout: TIdC_INT): POSSL_HTTP_REQ_CTX; cdecl = nil;
   {$EXTERNALSYM OSSL_HTTP_open}
 
   OSSL_HTTP_proxy_connect: function(bio: PBIO; server: PIdAnsiChar; port: PIdAnsiChar; proxyuser: PIdAnsiChar; proxypass: PIdAnsiChar; timeout: TIdC_INT; bio_err: PBIO; prog: PIdAnsiChar): TIdC_INT; cdecl = nil;
@@ -115,10 +118,10 @@ var
   OSSL_HTTP_exchange: function(rctx: POSSL_HTTP_REQ_CTX; redirection_url: PPIdAnsiChar): PBIO; cdecl = nil;
   {$EXTERNALSYM OSSL_HTTP_exchange}
 
-  OSSL_HTTP_get: function(url: PIdAnsiChar; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t_func_cb; arg: Pointer; buf_size: TIdC_INT; headers: Pstack_st_CONF_VALUE; expected_content_type: PIdAnsiChar; expect_asn1: TIdC_INT; max_resp_len: TIdC_SIZET; timeout: TIdC_INT): PBIO; cdecl = nil;
+  OSSL_HTTP_get: function(url: PIdAnsiChar; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t; arg: Pointer; buf_size: TIdC_INT; headers: Pstack_st_CONF_VALUE; expected_content_type: PIdAnsiChar; expect_asn1: TIdC_INT; max_resp_len: TIdC_SIZET; timeout: TIdC_INT): PBIO; cdecl = nil;
   {$EXTERNALSYM OSSL_HTTP_get}
 
-  OSSL_HTTP_transfer: function(prctx: PPOSSL_HTTP_REQ_CTX; server: PIdAnsiChar; port: PIdAnsiChar; path: PIdAnsiChar; use_ssl: TIdC_INT; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t_func_cb; arg: Pointer; buf_size: TIdC_INT; headers: Pstack_st_CONF_VALUE; content_type: PIdAnsiChar; req: PBIO; expected_content_type: PIdAnsiChar; expect_asn1: TIdC_INT; max_resp_len: TIdC_SIZET; timeout: TIdC_INT; keep_alive: TIdC_INT): PBIO; cdecl = nil;
+  OSSL_HTTP_transfer: function(prctx: PPOSSL_HTTP_REQ_CTX; server: PIdAnsiChar; port: PIdAnsiChar; path: PIdAnsiChar; use_ssl: TIdC_INT; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t; arg: Pointer; buf_size: TIdC_INT; headers: Pstack_st_CONF_VALUE; content_type: PIdAnsiChar; req: PBIO; expected_content_type: PIdAnsiChar; expect_asn1: TIdC_INT; max_resp_len: TIdC_SIZET; timeout: TIdC_INT; keep_alive: TIdC_INT): PBIO; cdecl = nil;
   {$EXTERNALSYM OSSL_HTTP_transfer}
 
   OSSL_HTTP_close: function(rctx: POSSL_HTTP_REQ_CTX; ok: TIdC_INT): TIdC_INT; cdecl = nil;
@@ -140,7 +143,7 @@ var
 
 function OSSL_parse_url(url: PIdAnsiChar; pscheme: PPIdAnsiChar; puser: PPIdAnsiChar; phost: PPIdAnsiChar; pport: PPIdAnsiChar; pport_num: PIdC_INT; ppath: PPIdAnsiChar; pquery: PPIdAnsiChar; pfrag: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_HTTP_REQ_CTX_new(wbio: PBIO; rbio: PBIO; buf_size: TIdC_INT): POSSL_HTTP_REQ_CTX; cdecl;
-procedure OSSL_HTTP_REQ_CTX_free(rctx: POSSL_HTTP_REQ_CTX); cdecl;
+function OSSL_HTTP_REQ_CTX_free(rctx: POSSL_HTTP_REQ_CTX): void; cdecl;
 function OSSL_HTTP_REQ_CTX_set_request_line(rctx: POSSL_HTTP_REQ_CTX; method_POST: TIdC_INT; server: PIdAnsiChar; port: PIdAnsiChar; path: PIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_HTTP_REQ_CTX_add1_header(rctx: POSSL_HTTP_REQ_CTX; name: PIdAnsiChar; value: PIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_HTTP_REQ_CTX_set_expected(rctx: POSSL_HTTP_REQ_CTX; content_type: PIdAnsiChar; asn1: TIdC_INT; timeout: TIdC_INT; keep_alive: TIdC_INT): TIdC_INT; cdecl;
@@ -150,15 +153,15 @@ function OSSL_HTTP_REQ_CTX_nbio_d2i(rctx: POSSL_HTTP_REQ_CTX; pval: PPASN1_VALUE
 function OSSL_HTTP_REQ_CTX_exchange(rctx: POSSL_HTTP_REQ_CTX): PBIO; cdecl;
 function OSSL_HTTP_REQ_CTX_get0_mem_bio(rctx: POSSL_HTTP_REQ_CTX): PBIO; cdecl;
 function OSSL_HTTP_REQ_CTX_get_resp_len(rctx: POSSL_HTTP_REQ_CTX): TIdC_SIZET; cdecl;
-procedure OSSL_HTTP_REQ_CTX_set_max_response_length(rctx: POSSL_HTTP_REQ_CTX; len: TIdC_ULONG); cdecl;
-procedure OSSL_HTTP_REQ_CTX_set_max_response_hdr_lines(rctx: POSSL_HTTP_REQ_CTX; count: TIdC_SIZET); cdecl;
+function OSSL_HTTP_REQ_CTX_set_max_response_length(rctx: POSSL_HTTP_REQ_CTX; len: TIdC_ULONG): void; cdecl;
+function OSSL_HTTP_REQ_CTX_set_max_response_hdr_lines(rctx: POSSL_HTTP_REQ_CTX; count: TIdC_SIZET): void; cdecl;
 function OSSL_HTTP_is_alive(rctx: POSSL_HTTP_REQ_CTX): TIdC_INT; cdecl;
-function OSSL_HTTP_open(server: PIdAnsiChar; port: PIdAnsiChar; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; use_ssl: TIdC_INT; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t_func_cb; arg: Pointer; buf_size: TIdC_INT; overall_timeout: TIdC_INT): POSSL_HTTP_REQ_CTX; cdecl;
+function OSSL_HTTP_open(server: PIdAnsiChar; port: PIdAnsiChar; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; use_ssl: TIdC_INT; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t; arg: Pointer; buf_size: TIdC_INT; overall_timeout: TIdC_INT): POSSL_HTTP_REQ_CTX; cdecl;
 function OSSL_HTTP_proxy_connect(bio: PBIO; server: PIdAnsiChar; port: PIdAnsiChar; proxyuser: PIdAnsiChar; proxypass: PIdAnsiChar; timeout: TIdC_INT; bio_err: PBIO; prog: PIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_HTTP_set1_request(rctx: POSSL_HTTP_REQ_CTX; path: PIdAnsiChar; headers: Pstack_st_CONF_VALUE; content_type: PIdAnsiChar; req: PBIO; expected_content_type: PIdAnsiChar; expect_asn1: TIdC_INT; max_resp_len: TIdC_SIZET; timeout: TIdC_INT; keep_alive: TIdC_INT): TIdC_INT; cdecl;
 function OSSL_HTTP_exchange(rctx: POSSL_HTTP_REQ_CTX; redirection_url: PPIdAnsiChar): PBIO; cdecl;
-function OSSL_HTTP_get(url: PIdAnsiChar; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t_func_cb; arg: Pointer; buf_size: TIdC_INT; headers: Pstack_st_CONF_VALUE; expected_content_type: PIdAnsiChar; expect_asn1: TIdC_INT; max_resp_len: TIdC_SIZET; timeout: TIdC_INT): PBIO; cdecl;
-function OSSL_HTTP_transfer(prctx: PPOSSL_HTTP_REQ_CTX; server: PIdAnsiChar; port: PIdAnsiChar; path: PIdAnsiChar; use_ssl: TIdC_INT; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t_func_cb; arg: Pointer; buf_size: TIdC_INT; headers: Pstack_st_CONF_VALUE; content_type: PIdAnsiChar; req: PBIO; expected_content_type: PIdAnsiChar; expect_asn1: TIdC_INT; max_resp_len: TIdC_SIZET; timeout: TIdC_INT; keep_alive: TIdC_INT): PBIO; cdecl;
+function OSSL_HTTP_get(url: PIdAnsiChar; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t; arg: Pointer; buf_size: TIdC_INT; headers: Pstack_st_CONF_VALUE; expected_content_type: PIdAnsiChar; expect_asn1: TIdC_INT; max_resp_len: TIdC_SIZET; timeout: TIdC_INT): PBIO; cdecl;
+function OSSL_HTTP_transfer(prctx: PPOSSL_HTTP_REQ_CTX; server: PIdAnsiChar; port: PIdAnsiChar; path: PIdAnsiChar; use_ssl: TIdC_INT; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t; arg: Pointer; buf_size: TIdC_INT; headers: Pstack_st_CONF_VALUE; content_type: PIdAnsiChar; req: PBIO; expected_content_type: PIdAnsiChar; expect_asn1: TIdC_INT; max_resp_len: TIdC_SIZET; timeout: TIdC_INT; keep_alive: TIdC_INT): PBIO; cdecl;
 function OSSL_HTTP_close(rctx: POSSL_HTTP_REQ_CTX; ok: TIdC_INT): TIdC_INT; cdecl;
 function OSSL_HTTP_parse_url(url: PIdAnsiChar; pssl: PIdC_INT; puser: PPIdAnsiChar; phost: PPIdAnsiChar; pport: PPIdAnsiChar; pport_num: PIdC_INT; ppath: PPIdAnsiChar; pquery: PPIdAnsiChar; pfrag: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_HTTP_adapt_proxy(proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; server: PIdAnsiChar; use_ssl: TIdC_INT): PIdAnsiChar; cdecl;
@@ -182,7 +185,7 @@ uses
 
 function OSSL_parse_url(url: PIdAnsiChar; pscheme: PPIdAnsiChar; puser: PPIdAnsiChar; phost: PPIdAnsiChar; pport: PPIdAnsiChar; pport_num: PIdC_INT; ppath: PPIdAnsiChar; pquery: PPIdAnsiChar; pfrag: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_parse_url';
 function OSSL_HTTP_REQ_CTX_new(wbio: PBIO; rbio: PBIO; buf_size: TIdC_INT): POSSL_HTTP_REQ_CTX; cdecl external CLibCrypto name 'OSSL_HTTP_REQ_CTX_new';
-procedure OSSL_HTTP_REQ_CTX_free(rctx: POSSL_HTTP_REQ_CTX); cdecl external CLibCrypto name 'OSSL_HTTP_REQ_CTX_free';
+function OSSL_HTTP_REQ_CTX_free(rctx: POSSL_HTTP_REQ_CTX): void; cdecl external CLibCrypto name 'OSSL_HTTP_REQ_CTX_free';
 function OSSL_HTTP_REQ_CTX_set_request_line(rctx: POSSL_HTTP_REQ_CTX; method_POST: TIdC_INT; server: PIdAnsiChar; port: PIdAnsiChar; path: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HTTP_REQ_CTX_set_request_line';
 function OSSL_HTTP_REQ_CTX_add1_header(rctx: POSSL_HTTP_REQ_CTX; name: PIdAnsiChar; value: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HTTP_REQ_CTX_add1_header';
 function OSSL_HTTP_REQ_CTX_set_expected(rctx: POSSL_HTTP_REQ_CTX; content_type: PIdAnsiChar; asn1: TIdC_INT; timeout: TIdC_INT; keep_alive: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HTTP_REQ_CTX_set_expected';
@@ -192,15 +195,15 @@ function OSSL_HTTP_REQ_CTX_nbio_d2i(rctx: POSSL_HTTP_REQ_CTX; pval: PPASN1_VALUE
 function OSSL_HTTP_REQ_CTX_exchange(rctx: POSSL_HTTP_REQ_CTX): PBIO; cdecl external CLibCrypto name 'OSSL_HTTP_REQ_CTX_exchange';
 function OSSL_HTTP_REQ_CTX_get0_mem_bio(rctx: POSSL_HTTP_REQ_CTX): PBIO; cdecl external CLibCrypto name 'OSSL_HTTP_REQ_CTX_get0_mem_bio';
 function OSSL_HTTP_REQ_CTX_get_resp_len(rctx: POSSL_HTTP_REQ_CTX): TIdC_SIZET; cdecl external CLibCrypto name 'OSSL_HTTP_REQ_CTX_get_resp_len';
-procedure OSSL_HTTP_REQ_CTX_set_max_response_length(rctx: POSSL_HTTP_REQ_CTX; len: TIdC_ULONG); cdecl external CLibCrypto name 'OSSL_HTTP_REQ_CTX_set_max_response_length';
-procedure OSSL_HTTP_REQ_CTX_set_max_response_hdr_lines(rctx: POSSL_HTTP_REQ_CTX; count: TIdC_SIZET); cdecl external CLibCrypto name 'OSSL_HTTP_REQ_CTX_set_max_response_hdr_lines';
+function OSSL_HTTP_REQ_CTX_set_max_response_length(rctx: POSSL_HTTP_REQ_CTX; len: TIdC_ULONG): void; cdecl external CLibCrypto name 'OSSL_HTTP_REQ_CTX_set_max_response_length';
+function OSSL_HTTP_REQ_CTX_set_max_response_hdr_lines(rctx: POSSL_HTTP_REQ_CTX; count: TIdC_SIZET): void; cdecl external CLibCrypto name 'OSSL_HTTP_REQ_CTX_set_max_response_hdr_lines';
 function OSSL_HTTP_is_alive(rctx: POSSL_HTTP_REQ_CTX): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HTTP_is_alive';
-function OSSL_HTTP_open(server: PIdAnsiChar; port: PIdAnsiChar; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; use_ssl: TIdC_INT; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t_func_cb; arg: Pointer; buf_size: TIdC_INT; overall_timeout: TIdC_INT): POSSL_HTTP_REQ_CTX; cdecl external CLibCrypto name 'OSSL_HTTP_open';
+function OSSL_HTTP_open(server: PIdAnsiChar; port: PIdAnsiChar; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; use_ssl: TIdC_INT; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t; arg: Pointer; buf_size: TIdC_INT; overall_timeout: TIdC_INT): POSSL_HTTP_REQ_CTX; cdecl external CLibCrypto name 'OSSL_HTTP_open';
 function OSSL_HTTP_proxy_connect(bio: PBIO; server: PIdAnsiChar; port: PIdAnsiChar; proxyuser: PIdAnsiChar; proxypass: PIdAnsiChar; timeout: TIdC_INT; bio_err: PBIO; prog: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HTTP_proxy_connect';
 function OSSL_HTTP_set1_request(rctx: POSSL_HTTP_REQ_CTX; path: PIdAnsiChar; headers: Pstack_st_CONF_VALUE; content_type: PIdAnsiChar; req: PBIO; expected_content_type: PIdAnsiChar; expect_asn1: TIdC_INT; max_resp_len: TIdC_SIZET; timeout: TIdC_INT; keep_alive: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HTTP_set1_request';
 function OSSL_HTTP_exchange(rctx: POSSL_HTTP_REQ_CTX; redirection_url: PPIdAnsiChar): PBIO; cdecl external CLibCrypto name 'OSSL_HTTP_exchange';
-function OSSL_HTTP_get(url: PIdAnsiChar; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t_func_cb; arg: Pointer; buf_size: TIdC_INT; headers: Pstack_st_CONF_VALUE; expected_content_type: PIdAnsiChar; expect_asn1: TIdC_INT; max_resp_len: TIdC_SIZET; timeout: TIdC_INT): PBIO; cdecl external CLibCrypto name 'OSSL_HTTP_get';
-function OSSL_HTTP_transfer(prctx: PPOSSL_HTTP_REQ_CTX; server: PIdAnsiChar; port: PIdAnsiChar; path: PIdAnsiChar; use_ssl: TIdC_INT; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t_func_cb; arg: Pointer; buf_size: TIdC_INT; headers: Pstack_st_CONF_VALUE; content_type: PIdAnsiChar; req: PBIO; expected_content_type: PIdAnsiChar; expect_asn1: TIdC_INT; max_resp_len: TIdC_SIZET; timeout: TIdC_INT; keep_alive: TIdC_INT): PBIO; cdecl external CLibCrypto name 'OSSL_HTTP_transfer';
+function OSSL_HTTP_get(url: PIdAnsiChar; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t; arg: Pointer; buf_size: TIdC_INT; headers: Pstack_st_CONF_VALUE; expected_content_type: PIdAnsiChar; expect_asn1: TIdC_INT; max_resp_len: TIdC_SIZET; timeout: TIdC_INT): PBIO; cdecl external CLibCrypto name 'OSSL_HTTP_get';
+function OSSL_HTTP_transfer(prctx: PPOSSL_HTTP_REQ_CTX; server: PIdAnsiChar; port: PIdAnsiChar; path: PIdAnsiChar; use_ssl: TIdC_INT; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t; arg: Pointer; buf_size: TIdC_INT; headers: Pstack_st_CONF_VALUE; content_type: PIdAnsiChar; req: PBIO; expected_content_type: PIdAnsiChar; expect_asn1: TIdC_INT; max_resp_len: TIdC_SIZET; timeout: TIdC_INT; keep_alive: TIdC_INT): PBIO; cdecl external CLibCrypto name 'OSSL_HTTP_transfer';
 function OSSL_HTTP_close(rctx: POSSL_HTTP_REQ_CTX; ok: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HTTP_close';
 function OSSL_HTTP_parse_url(url: PIdAnsiChar; pssl: PIdC_INT; puser: PPIdAnsiChar; phost: PPIdAnsiChar; pport: PPIdAnsiChar; pport_num: PIdC_INT; ppath: PPIdAnsiChar; pquery: PPIdAnsiChar; pfrag: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HTTP_parse_url';
 function OSSL_HTTP_adapt_proxy(proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; server: PIdAnsiChar; use_ssl: TIdC_INT): PIdAnsiChar; cdecl external CLibCrypto name 'OSSL_HTTP_adapt_proxy';
@@ -306,7 +309,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_HTTP_REQ_CTX_new_procname);
 end;
 
-procedure ERR_OSSL_HTTP_REQ_CTX_free(rctx: POSSL_HTTP_REQ_CTX); cdecl
+function ERR_OSSL_HTTP_REQ_CTX_free(rctx: POSSL_HTTP_REQ_CTX): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_HTTP_REQ_CTX_free_procname);
 end;
@@ -356,12 +359,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_HTTP_REQ_CTX_get_resp_len_procname);
 end;
 
-procedure ERR_OSSL_HTTP_REQ_CTX_set_max_response_length(rctx: POSSL_HTTP_REQ_CTX; len: TIdC_ULONG); cdecl
+function ERR_OSSL_HTTP_REQ_CTX_set_max_response_length(rctx: POSSL_HTTP_REQ_CTX; len: TIdC_ULONG): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_HTTP_REQ_CTX_set_max_response_length_procname);
 end;
 
-procedure ERR_OSSL_HTTP_REQ_CTX_set_max_response_hdr_lines(rctx: POSSL_HTTP_REQ_CTX; count: TIdC_SIZET); cdecl
+function ERR_OSSL_HTTP_REQ_CTX_set_max_response_hdr_lines(rctx: POSSL_HTTP_REQ_CTX; count: TIdC_SIZET): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_HTTP_REQ_CTX_set_max_response_hdr_lines_procname);
 end;
@@ -371,7 +374,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_HTTP_is_alive_procname);
 end;
 
-function ERR_OSSL_HTTP_open(server: PIdAnsiChar; port: PIdAnsiChar; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; use_ssl: TIdC_INT; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t_func_cb; arg: Pointer; buf_size: TIdC_INT; overall_timeout: TIdC_INT): POSSL_HTTP_REQ_CTX; cdecl
+function ERR_OSSL_HTTP_open(server: PIdAnsiChar; port: PIdAnsiChar; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; use_ssl: TIdC_INT; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t; arg: Pointer; buf_size: TIdC_INT; overall_timeout: TIdC_INT): POSSL_HTTP_REQ_CTX; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_HTTP_open_procname);
 end;
@@ -391,12 +394,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_HTTP_exchange_procname);
 end;
 
-function ERR_OSSL_HTTP_get(url: PIdAnsiChar; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t_func_cb; arg: Pointer; buf_size: TIdC_INT; headers: Pstack_st_CONF_VALUE; expected_content_type: PIdAnsiChar; expect_asn1: TIdC_INT; max_resp_len: TIdC_SIZET; timeout: TIdC_INT): PBIO; cdecl
+function ERR_OSSL_HTTP_get(url: PIdAnsiChar; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t; arg: Pointer; buf_size: TIdC_INT; headers: Pstack_st_CONF_VALUE; expected_content_type: PIdAnsiChar; expect_asn1: TIdC_INT; max_resp_len: TIdC_SIZET; timeout: TIdC_INT): PBIO; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_HTTP_get_procname);
 end;
 
-function ERR_OSSL_HTTP_transfer(prctx: PPOSSL_HTTP_REQ_CTX; server: PIdAnsiChar; port: PIdAnsiChar; path: PIdAnsiChar; use_ssl: TIdC_INT; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t_func_cb; arg: Pointer; buf_size: TIdC_INT; headers: Pstack_st_CONF_VALUE; content_type: PIdAnsiChar; req: PBIO; expected_content_type: PIdAnsiChar; expect_asn1: TIdC_INT; max_resp_len: TIdC_SIZET; timeout: TIdC_INT; keep_alive: TIdC_INT): PBIO; cdecl
+function ERR_OSSL_HTTP_transfer(prctx: PPOSSL_HTTP_REQ_CTX; server: PIdAnsiChar; port: PIdAnsiChar; path: PIdAnsiChar; use_ssl: TIdC_INT; proxy: PIdAnsiChar; no_proxy: PIdAnsiChar; bio: PBIO; rbio: PBIO; bio_update_fn: TOSSL_HTTP_bio_cb_t; arg: Pointer; buf_size: TIdC_INT; headers: Pstack_st_CONF_VALUE; content_type: PIdAnsiChar; req: PBIO; expected_content_type: PIdAnsiChar; expect_asn1: TIdC_INT; max_resp_len: TIdC_SIZET; timeout: TIdC_INT; keep_alive: TIdC_INT): PBIO; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_HTTP_transfer_procname);
 end;

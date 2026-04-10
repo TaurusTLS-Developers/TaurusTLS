@@ -26,37 +26,37 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
-  POPENSSL_PSTRING = ^TOPENSSL_PSTRING;
-  TOPENSSL_PSTRING = POPENSSL_STRING;
-  {$EXTERNALSYM POPENSSL_PSTRING}
-
-  Pstack_st_OPENSSL_PSTRING = ^Tstack_st_OPENSSL_PSTRING;
-  Tstack_st_OPENSSL_PSTRING = record end;
-  {$EXTERNALSYM Pstack_st_OPENSSL_PSTRING}
-
   Ptxt_db_st = ^Ttxt_db_st;
-  Ttxt_db_st = record end;
+  Ttxt_db_st =   record
+    num_fields: TIdC_INT;
+    data: Pstack_st_OPENSSL_PSTRING;
+    index: PPlhash_st_OPENSSL_STRING;
+    qual: PPIdC_INT;
+    error: TIdC_LONG;
+    arg1: TIdC_LONG;
+    arg2: TIdC_LONG;
+    arg_row: POPENSSL_STRING;
+  end;
   {$EXTERNALSYM Ptxt_db_st}
-
-  PXT_DB = ^TXT_DB;
-  TXT_DB = Ttxt_db_st;
-  {$EXTERNALSYM PXT_DB}
 
 
 // =============================================================================
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  Tsk_OPENSSL_PSTRING_compfunc_func_cb = function(arg1: PPOPENSSL_STRING; arg2: PPOPENSSL_STRING): TIdC_INT; cdecl;
-  Tsk_OPENSSL_PSTRING_freefunc_func_cb = procedure(arg1: POPENSSL_STRING); cdecl;
-  Tsk_OPENSSL_PSTRING_copyfunc_func_cb = function(arg1: POPENSSL_STRING): POPENSSL_STRING; cdecl;
-  TXT_DB_create_index_qual_cb = function(arg1: POPENSSL_STRING): TIdC_INT; cdecl;
-  TXT_DB_create_index_hash_cb = function: T; cdecl;
-  TXT_DB_create_index_cmp_cb = function: T; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // TXT_DB_create_index_qual_cb = function(arg1: POPENSSL_STRING): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // TXT_DB_create_index_hash_cb = function(arg1: Pointer): TIdC_ULONG; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // TXT_DB_create_index_cmp_cb = function(arg1: Pointer; arg2: Pointer): TIdC_INT; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -86,7 +86,7 @@ var
   TXT_DB_create_index: function(db: PXT_DB; field: TIdC_INT; qual: TXT_DB_create_index_qual_cb; hash: TXT_DB_create_index_hash_cb; cmp: TXT_DB_create_index_cmp_cb): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM TXT_DB_create_index}
 
-  TXT_DB_free: procedure(db: PXT_DB); cdecl = nil;
+  TXT_DB_free: function(db: PXT_DB): void; cdecl = nil;
   {$EXTERNALSYM TXT_DB_free}
 
   TXT_DB_get_by_index: function(db: PXT_DB; idx: TIdC_INT; value: POPENSSL_STRING): POPENSSL_STRING; cdecl = nil;
@@ -106,10 +106,23 @@ var
 function TXT_DB_read(_in: PBIO; num: TIdC_INT): PXT_DB; cdecl;
 function TXT_DB_write(_out: PBIO; db: PXT_DB): TIdC_LONG; cdecl;
 function TXT_DB_create_index(db: PXT_DB; field: TIdC_INT; qual: TXT_DB_create_index_qual_cb; hash: TXT_DB_create_index_hash_cb; cmp: TXT_DB_create_index_cmp_cb): TIdC_INT; cdecl;
-procedure TXT_DB_free(db: PXT_DB); cdecl;
+function TXT_DB_free(db: PXT_DB): void; cdecl;
 function TXT_DB_get_by_index(db: PXT_DB; idx: TIdC_INT; value: POPENSSL_STRING): POPENSSL_STRING; cdecl;
 function TXT_DB_insert(db: PXT_DB; value: POPENSSL_STRING): TIdC_INT; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
+
+// =============================================================================
+// OPENSSL STACK DEFINITIONS
+// =============================================================================
+type
+  { TODO 1 -copenssl stack OPENSSL_PSTRING definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_OPENSSL_PSTRING = Pointer;
+  {$EXTERNALSYM PSTACK_OF_OPENSSL_PSTRING}
+
+  { Original Stack Macros for OPENSSL_PSTRING:
+    DEFINE_SPECIAL_STACK_OF(OPENSSL_PSTRING, OPENSSL_STRING)
+  }
+
 
 implementation
 
@@ -130,7 +143,7 @@ uses
 function TXT_DB_read(_in: PBIO; num: TIdC_INT): PXT_DB; cdecl external CLibCrypto name 'TXT_DB_read';
 function TXT_DB_write(_out: PBIO; db: PXT_DB): TIdC_LONG; cdecl external CLibCrypto name 'TXT_DB_write';
 function TXT_DB_create_index(db: PXT_DB; field: TIdC_INT; qual: TXT_DB_create_index_qual_cb; hash: TXT_DB_create_index_hash_cb; cmp: TXT_DB_create_index_cmp_cb): TIdC_INT; cdecl external CLibCrypto name 'TXT_DB_create_index';
-procedure TXT_DB_free(db: PXT_DB); cdecl external CLibCrypto name 'TXT_DB_free';
+function TXT_DB_free(db: PXT_DB): void; cdecl external CLibCrypto name 'TXT_DB_free';
 function TXT_DB_get_by_index(db: PXT_DB; idx: TIdC_INT; value: POPENSSL_STRING): POPENSSL_STRING; cdecl external CLibCrypto name 'TXT_DB_get_by_index';
 function TXT_DB_insert(db: PXT_DB; value: POPENSSL_STRING): TIdC_INT; cdecl external CLibCrypto name 'TXT_DB_insert';
 {$ENDIF}
@@ -186,7 +199,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TXT_DB_create_index_procname);
 end;
 
-procedure ERR_TXT_DB_free(db: PXT_DB); cdecl
+function ERR_TXT_DB_free(db: PXT_DB): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TXT_DB_free_procname);
 end;

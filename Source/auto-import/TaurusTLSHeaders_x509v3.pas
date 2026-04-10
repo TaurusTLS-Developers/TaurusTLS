@@ -26,808 +26,559 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   Pv3_ext_method = ^Tv3_ext_method;
-  Tv3_ext_method = record end;
+  Tv3_ext_method =   record end;
   {$EXTERNALSYM Pv3_ext_method}
 
   Pv3_ext_ctx = ^Tv3_ext_ctx;
-  Tv3_ext_ctx = record end;
+  Tv3_ext_ctx =   record end;
   {$EXTERNALSYM Pv3_ext_ctx}
 
   PX509V3_CONF_METHOD_st = ^TX509V3_CONF_METHOD_st;
-  TX509V3_CONF_METHOD_st = record end;
+  TX509V3_CONF_METHOD_st =   record
+    get_string: TX509V3_EXT_R2I_func_cb;
+    get_section: TX509V3_EXT_R2I_func_cb;
+    free_string: TX509V3_EXT_R2I_func_cb;
+    free_section: TX509V3_EXT_R2I_func_cb;
+  end;
   {$EXTERNALSYM PX509V3_CONF_METHOD_st}
 
-  PX509V3_CONF_METHOD = ^TX509V3_CONF_METHOD;
-  TX509V3_CONF_METHOD = TX509V3_CONF_METHOD_st;
-  {$EXTERNALSYM PX509V3_CONF_METHOD}
-
-  PX509V3_EXT_METHOD = ^TX509V3_EXT_METHOD;
-  TX509V3_EXT_METHOD = Tv3_ext_method;
-  {$EXTERNALSYM PX509V3_EXT_METHOD}
-
-  Pstack_st_X509V3_EXT_METHOD = ^Tstack_st_X509V3_EXT_METHOD;
-  Tstack_st_X509V3_EXT_METHOD = record end;
-  {$EXTERNALSYM Pstack_st_X509V3_EXT_METHOD}
-
-  PENUMERATED_NAMES = ^TENUMERATED_NAMES;
-  TENUMERATED_NAMES = TBIT_STRING_BITNAME;
-  {$EXTERNALSYM PENUMERATED_NAMES}
-
   PBASIC_CONSTRAINTS_st = ^TBASIC_CONSTRAINTS_st;
-  TBASIC_CONSTRAINTS_st = record end;
+  TBASIC_CONSTRAINTS_st =   record
+    ca: TIdC_INT;
+    pathlen: PASN1_INTEGER;
+  end;
   {$EXTERNALSYM PBASIC_CONSTRAINTS_st}
 
-  PBASIC_CONSTRAINTS = ^TBASIC_CONSTRAINTS;
-  TBASIC_CONSTRAINTS = TBASIC_CONSTRAINTS_st;
-  {$EXTERNALSYM PBASIC_CONSTRAINTS}
-
   POSSL_BASIC_ATTR_CONSTRAINTS_st = ^TOSSL_BASIC_ATTR_CONSTRAINTS_st;
-  TOSSL_BASIC_ATTR_CONSTRAINTS_st = record end;
+  TOSSL_BASIC_ATTR_CONSTRAINTS_st =   record
+    authority: TIdC_INT;
+    pathlen: PASN1_INTEGER;
+  end;
   {$EXTERNALSYM POSSL_BASIC_ATTR_CONSTRAINTS_st}
 
-  POSSL_BASIC_ATTR_CONSTRAINTS = ^TOSSL_BASIC_ATTR_CONSTRAINTS;
-  TOSSL_BASIC_ATTR_CONSTRAINTS = TOSSL_BASIC_ATTR_CONSTRAINTS_st;
-  {$EXTERNALSYM POSSL_BASIC_ATTR_CONSTRAINTS}
-
   PPKEY_USAGE_PERIOD_st = ^TPKEY_USAGE_PERIOD_st;
-  TPKEY_USAGE_PERIOD_st = record end;
+  TPKEY_USAGE_PERIOD_st =   record
+    notBefore: PASN1_GENERALIZEDTIME;
+    notAfter: PASN1_GENERALIZEDTIME;
+  end;
   {$EXTERNALSYM PPKEY_USAGE_PERIOD_st}
 
-  PPKEY_USAGE_PERIOD = ^TPKEY_USAGE_PERIOD;
-  TPKEY_USAGE_PERIOD = TPKEY_USAGE_PERIOD_st;
-  {$EXTERNALSYM PPKEY_USAGE_PERIOD}
-
   PotherName_st = ^TotherName_st;
-  TotherName_st = record end;
+  TotherName_st =   record
+    type_id: PASN1_OBJECT;
+    value: PASN1_TYPE;
+  end;
   {$EXTERNALSYM PotherName_st}
 
-  POTHERNAME = ^TOTHERNAME;
-  TOTHERNAME = TotherName_st;
-  {$EXTERNALSYM POTHERNAME}
-
   PEDIPartyName_st = ^TEDIPartyName_st;
-  TEDIPartyName_st = record end;
+  TEDIPartyName_st =   record
+    nameAssigner: PASN1_STRING;
+    partyName: PASN1_STRING;
+  end;
   {$EXTERNALSYM PEDIPartyName_st}
 
-  PEDIPARTYNAME = ^TEDIPARTYNAME;
-  TEDIPARTYNAME = TEDIPartyName_st;
-  {$EXTERNALSYM PEDIPARTYNAME}
-
-  PGENERAL_NAME_st = ^TGENERAL_NAME_st;
-  TGENERAL_NAME_st = record end;
-  {$EXTERNALSYM PGENERAL_NAME_st}
-
-  Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:186:5) = ^Tunion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:186:5);
-  {$EXTERNALSYM Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:186:5)}
-
-  PGENERAL_NAME = ^TGENERAL_NAME;
-  TGENERAL_NAME = TGENERAL_NAME_st;
-  {$EXTERNALSYM PGENERAL_NAME}
+  { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
+  // struct GENERAL_NAME_st {
+  // #define GEN_OTHERNAME 0
+  // #define GEN_EMAIL 1
+  // #define GEN_DNS 2
+  // #define GEN_X400 3
+  // #define GEN_DIRNAME 4
+  // #define GEN_EDIPARTY 5
+  // #define GEN_URI 6
+  // #define GEN_IPADD 7
+  // #define GEN_RID 8
+  //     int type;
+  //     union {
+  //         char *ptr;
+  //         OTHERNAME *otherName; /* otherName */
+  //         ASN1_IA5STRING *rfc822Name;
+  //         ASN1_IA5STRING *dNSName;
+  //         ASN1_STRING *x400Address;
+  //         X509_NAME *directoryName;
+  //         EDIPARTYNAME *ediPartyName;
+  //         ASN1_IA5STRING *uniformResourceIdentifier;
+  //         ASN1_OCTET_STRING *iPAddress;
+  //         ASN1_OBJECT *registeredID;
+  //         /* Old names */
+  //         ASN1_OCTET_STRING *ip; /* iPAddress */
+  //         X509_NAME *dirn; /* dirn */
+  //         ASN1_IA5STRING *ia5; /* rfc822Name, dNSName,
+  //                               * uniformResourceIdentifier */
+  //         ASN1_OBJECT *rid; /* registeredID */
+  //         ASN1_TYPE *other; /* x400Address */
+  //     } d;
+  // }
 
   PACCESS_DESCRIPTION_st = ^TACCESS_DESCRIPTION_st;
-  TACCESS_DESCRIPTION_st = record end;
+  TACCESS_DESCRIPTION_st =   record
+    method: PASN1_OBJECT;
+    location: PGENERAL_NAME;
+  end;
   {$EXTERNALSYM PACCESS_DESCRIPTION_st}
 
-  PACCESS_DESCRIPTION = ^TACCESS_DESCRIPTION;
-  TACCESS_DESCRIPTION = TACCESS_DESCRIPTION_st;
-  {$EXTERNALSYM PACCESS_DESCRIPTION}
-
-  Pstack_st_ACCESS_DESCRIPTION = ^Tstack_st_ACCESS_DESCRIPTION;
-  Tstack_st_ACCESS_DESCRIPTION = record end;
-  {$EXTERNALSYM Pstack_st_ACCESS_DESCRIPTION}
-
-  Pstack_st_GENERAL_NAME = ^Tstack_st_GENERAL_NAME;
-  Tstack_st_GENERAL_NAME = record end;
-  {$EXTERNALSYM Pstack_st_GENERAL_NAME}
-
-  PAUTHORITY_INFO_ACCESS = ^TAUTHORITY_INFO_ACCESS;
-  TAUTHORITY_INFO_ACCESS = Tstack_st_ACCESS_DESCRIPTION;
-  {$EXTERNALSYM PAUTHORITY_INFO_ACCESS}
-
-  PEXTENDED_KEY_USAGE = ^TEXTENDED_KEY_USAGE;
-  TEXTENDED_KEY_USAGE = Tstack_st_ASN1_OBJECT;
-  {$EXTERNALSYM PEXTENDED_KEY_USAGE}
-
-  PLS_FEATURE = ^TLS_FEATURE;
-  TLS_FEATURE = Tstack_st_ASN1_INTEGER;
-  {$EXTERNALSYM PLS_FEATURE}
-
-  PGENERAL_NAMES = ^TGENERAL_NAMES;
-  TGENERAL_NAMES = Tstack_st_GENERAL_NAME;
-  {$EXTERNALSYM PGENERAL_NAMES}
-
-  Pstack_st_GENERAL_NAMES = ^Tstack_st_GENERAL_NAMES;
-  Tstack_st_GENERAL_NAMES = record end;
-  {$EXTERNALSYM Pstack_st_GENERAL_NAMES}
-
-  PDIST_POINT_NAME_st = ^TDIST_POINT_NAME_st;
-  TDIST_POINT_NAME_st = record end;
-  {$EXTERNALSYM PDIST_POINT_NAME_st}
-
-  Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:307:5) = ^Tunion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:307:5);
-  {$EXTERNALSYM Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:307:5)}
-
-  PDIST_POINT_NAME = ^TDIST_POINT_NAME;
-  TDIST_POINT_NAME = TDIST_POINT_NAME_st;
-  {$EXTERNALSYM PDIST_POINT_NAME}
+  { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
+  // struct DIST_POINT_NAME_st {
+  //     int type;
+  //     union {
+  //         GENERAL_NAMES *fullname;
+  //         STACK_OF(X509_NAME_ENTRY) *relativename;
+  //     } name;
+  //     /* If relativename then this contains the full distribution point name */
+  //     X509_NAME *dpname;
+  // }
 
   PDIST_POINT_st = ^TDIST_POINT_st;
-  TDIST_POINT_st = record end;
+  TDIST_POINT_st =   record
+    distpoint: PDIST_POINT_NAME;
+    reasons: PASN1_BIT_STRING;
+    CRLissuer: PGENERAL_NAMES;
+    dp_reasons: TIdC_INT;
+  end;
   {$EXTERNALSYM PDIST_POINT_st}
 
-  Pstack_st_DIST_POINT = ^Tstack_st_DIST_POINT;
-  Tstack_st_DIST_POINT = record end;
-  {$EXTERNALSYM Pstack_st_DIST_POINT}
-
-  PCRL_DIST_POINTS = ^TCRL_DIST_POINTS;
-  TCRL_DIST_POINTS = Tstack_st_DIST_POINT;
-  {$EXTERNALSYM PCRL_DIST_POINTS}
-
   PAUTHORITY_KEYID_st = ^TAUTHORITY_KEYID_st;
-  TAUTHORITY_KEYID_st = record end;
+  TAUTHORITY_KEYID_st =   record
+    keyid: PASN1_OCTET_STRING;
+    issuer: PGENERAL_NAMES;
+    serial: PASN1_INTEGER;
+  end;
   {$EXTERNALSYM PAUTHORITY_KEYID_st}
 
   PSXNET_ID_st = ^TSXNET_ID_st;
-  TSXNET_ID_st = record end;
+  TSXNET_ID_st =   record
+    zone: PASN1_INTEGER;
+    user: PASN1_OCTET_STRING;
+  end;
   {$EXTERNALSYM PSXNET_ID_st}
 
-  PSXNETID = ^TSXNETID;
-  TSXNETID = TSXNET_ID_st;
-  {$EXTERNALSYM PSXNETID}
-
-  Pstack_st_SXNETID = ^Tstack_st_SXNETID;
-  Tstack_st_SXNETID = record end;
-  {$EXTERNALSYM Pstack_st_SXNETID}
-
   PSXNET_st = ^TSXNET_st;
-  TSXNET_st = record end;
+  TSXNET_st =   record
+    version: PASN1_INTEGER;
+    ids: Pstack_st_SXNETID;
+  end;
   {$EXTERNALSYM PSXNET_st}
 
-  PSXNET = ^TSXNET;
-  TSXNET = TSXNET_st;
-  {$EXTERNALSYM PSXNET}
-
   PISSUER_SIGN_TOOL_st = ^TISSUER_SIGN_TOOL_st;
-  TISSUER_SIGN_TOOL_st = record end;
+  TISSUER_SIGN_TOOL_st =   record
+    signTool: PASN1_UTF8STRING;
+    cATool: PASN1_UTF8STRING;
+    signToolCert: PASN1_UTF8STRING;
+    cAToolCert: PASN1_UTF8STRING;
+  end;
   {$EXTERNALSYM PISSUER_SIGN_TOOL_st}
 
-  PISSUER_SIGN_TOOL = ^TISSUER_SIGN_TOOL;
-  TISSUER_SIGN_TOOL = TISSUER_SIGN_TOOL_st;
-  {$EXTERNALSYM PISSUER_SIGN_TOOL}
-
   PNOTICEREF_st = ^TNOTICEREF_st;
-  TNOTICEREF_st = record end;
+  TNOTICEREF_st =   record
+    organization: PASN1_STRING;
+    noticenos: Pstack_st_ASN1_INTEGER;
+  end;
   {$EXTERNALSYM PNOTICEREF_st}
 
-  PNOTICEREF = ^TNOTICEREF;
-  TNOTICEREF = TNOTICEREF_st;
-  {$EXTERNALSYM PNOTICEREF}
-
   PUSERNOTICE_st = ^TUSERNOTICE_st;
-  TUSERNOTICE_st = record end;
+  TUSERNOTICE_st =   record
+    noticeref: PNOTICEREF;
+    exptext: PASN1_STRING;
+  end;
   {$EXTERNALSYM PUSERNOTICE_st}
 
-  PUSERNOTICE = ^TUSERNOTICE;
-  TUSERNOTICE = TUSERNOTICE_st;
-  {$EXTERNALSYM PUSERNOTICE}
-
-  PPOLICYQUALINFO_st = ^TPOLICYQUALINFO_st;
-  TPOLICYQUALINFO_st = record end;
-  {$EXTERNALSYM PPOLICYQUALINFO_st}
-
-  Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:436:5) = ^Tunion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:436:5);
-  {$EXTERNALSYM Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:436:5)}
-
-  PPOLICYQUALINFO = ^TPOLICYQUALINFO;
-  TPOLICYQUALINFO = TPOLICYQUALINFO_st;
-  {$EXTERNALSYM PPOLICYQUALINFO}
-
-  Pstack_st_POLICYQUALINFO = ^Tstack_st_POLICYQUALINFO;
-  Tstack_st_POLICYQUALINFO = record end;
-  {$EXTERNALSYM Pstack_st_POLICYQUALINFO}
+  { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
+  // struct POLICYQUALINFO_st {
+  //     ASN1_OBJECT *pqualid;
+  //     union {
+  //         ASN1_IA5STRING *cpsuri;
+  //         USERNOTICE *usernotice;
+  //         ASN1_TYPE *other;
+  //     } d;
+  // }
 
   PPOLICYINFO_st = ^TPOLICYINFO_st;
-  TPOLICYINFO_st = record end;
+  TPOLICYINFO_st =   record
+    policyid: PASN1_OBJECT;
+    qualifiers: Pstack_st_POLICYQUALINFO;
+  end;
   {$EXTERNALSYM PPOLICYINFO_st}
 
-  PPOLICYINFO = ^TPOLICYINFO;
-  TPOLICYINFO = TPOLICYINFO_st;
-  {$EXTERNALSYM PPOLICYINFO}
-
-  Pstack_st_POLICYINFO = ^Tstack_st_POLICYINFO;
-  Tstack_st_POLICYINFO = record end;
-  {$EXTERNALSYM Pstack_st_POLICYINFO}
-
-  PCERTIFICATEPOLICIES = ^TCERTIFICATEPOLICIES;
-  TCERTIFICATEPOLICIES = Tstack_st_POLICYINFO;
-  {$EXTERNALSYM PCERTIFICATEPOLICIES}
-
   PPOLICY_MAPPING_st = ^TPOLICY_MAPPING_st;
-  TPOLICY_MAPPING_st = record end;
+  TPOLICY_MAPPING_st =   record
+    issuerDomainPolicy: PASN1_OBJECT;
+    subjectDomainPolicy: PASN1_OBJECT;
+  end;
   {$EXTERNALSYM PPOLICY_MAPPING_st}
 
-  PPOLICY_MAPPING = ^TPOLICY_MAPPING;
-  TPOLICY_MAPPING = TPOLICY_MAPPING_st;
-  {$EXTERNALSYM PPOLICY_MAPPING}
-
-  Pstack_st_POLICY_MAPPING = ^Tstack_st_POLICY_MAPPING;
-  Tstack_st_POLICY_MAPPING = record end;
-  {$EXTERNALSYM Pstack_st_POLICY_MAPPING}
-
-  PPOLICY_MAPPINGS = ^TPOLICY_MAPPINGS;
-  TPOLICY_MAPPINGS = Tstack_st_POLICY_MAPPING;
-  {$EXTERNALSYM PPOLICY_MAPPINGS}
-
   PGENERAL_SUBTREE_st = ^TGENERAL_SUBTREE_st;
-  TGENERAL_SUBTREE_st = record end;
+  TGENERAL_SUBTREE_st =   record
+    base: PGENERAL_NAME;
+    minimum: PASN1_INTEGER;
+    maximum: PASN1_INTEGER;
+  end;
   {$EXTERNALSYM PGENERAL_SUBTREE_st}
 
-  PGENERAL_SUBTREE = ^TGENERAL_SUBTREE;
-  TGENERAL_SUBTREE = TGENERAL_SUBTREE_st;
-  {$EXTERNALSYM PGENERAL_SUBTREE}
-
-  Pstack_st_GENERAL_SUBTREE = ^Tstack_st_GENERAL_SUBTREE;
-  Tstack_st_GENERAL_SUBTREE = record end;
-  {$EXTERNALSYM Pstack_st_GENERAL_SUBTREE}
-
   PNAME_CONSTRAINTS_st = ^TNAME_CONSTRAINTS_st;
-  TNAME_CONSTRAINTS_st = record end;
+  TNAME_CONSTRAINTS_st =   record
+    permittedSubtrees: Pstack_st_GENERAL_SUBTREE;
+    excludedSubtrees: Pstack_st_GENERAL_SUBTREE;
+  end;
   {$EXTERNALSYM PNAME_CONSTRAINTS_st}
 
   PPOLICY_CONSTRAINTS_st = ^TPOLICY_CONSTRAINTS_st;
-  TPOLICY_CONSTRAINTS_st = record end;
+  TPOLICY_CONSTRAINTS_st =   record
+    requireExplicitPolicy: PASN1_INTEGER;
+    inhibitPolicyMapping: PASN1_INTEGER;
+  end;
   {$EXTERNALSYM PPOLICY_CONSTRAINTS_st}
 
-  PPOLICY_CONSTRAINTS = ^TPOLICY_CONSTRAINTS;
-  TPOLICY_CONSTRAINTS = TPOLICY_CONSTRAINTS_st;
-  {$EXTERNALSYM PPOLICY_CONSTRAINTS}
-
   PPROXY_POLICY_st = ^TPROXY_POLICY_st;
-  TPROXY_POLICY_st = record end;
+  TPROXY_POLICY_st =   record
+    policyLanguage: PASN1_OBJECT;
+    policy: PASN1_OCTET_STRING;
+  end;
   {$EXTERNALSYM PPROXY_POLICY_st}
 
-  PPROXY_POLICY = ^TPROXY_POLICY;
-  TPROXY_POLICY = TPROXY_POLICY_st;
-  {$EXTERNALSYM PPROXY_POLICY}
-
   PPROXY_CERT_INFO_EXTENSION_st = ^TPROXY_CERT_INFO_EXTENSION_st;
-  TPROXY_CERT_INFO_EXTENSION_st = record end;
+  TPROXY_CERT_INFO_EXTENSION_st =   record
+    pcPathLengthConstraint: PASN1_INTEGER;
+    proxyPolicy: PPROXY_POLICY;
+  end;
   {$EXTERNALSYM PPROXY_CERT_INFO_EXTENSION_st}
 
-  PPROXY_CERT_INFO_EXTENSION = ^TPROXY_CERT_INFO_EXTENSION;
-  TPROXY_CERT_INFO_EXTENSION = TPROXY_CERT_INFO_EXTENSION_st;
-  {$EXTERNALSYM PPROXY_CERT_INFO_EXTENSION}
-
   PISSUING_DIST_POINT_st = ^TISSUING_DIST_POINT_st;
-  TISSUING_DIST_POINT_st = record end;
+  TISSUING_DIST_POINT_st =   record
+    distpoint: PDIST_POINT_NAME;
+    onlyuser: TIdC_INT;
+    onlyCA: TIdC_INT;
+    onlysomereasons: PASN1_BIT_STRING;
+    indirectCRL: TIdC_INT;
+    onlyattr: TIdC_INT;
+  end;
   {$EXTERNALSYM PISSUING_DIST_POINT_st}
 
   Px509_purpose_st = ^Tx509_purpose_st;
-  Tx509_purpose_st = record end;
+  Tx509_purpose_st =   record
+    purpose: TIdC_INT;
+    trust: TIdC_INT;
+    flags: TIdC_INT;
+    check_purpose: TPROXY_CERT_INFO_EXTENSION_it_func_cb;
+    name: PIdAnsiChar;
+    sname: PIdAnsiChar;
+    usr_data: Pointer;
+  end;
   {$EXTERNALSYM Px509_purpose_st}
 
-  PX509_PURPOSE = ^TX509_PURPOSE;
-  TX509_PURPOSE = Tx509_purpose_st;
-  {$EXTERNALSYM PX509_PURPOSE}
-
-  Pstack_st_X509_PURPOSE = ^Tstack_st_X509_PURPOSE;
-  Tstack_st_X509_PURPOSE = record end;
-  {$EXTERNALSYM Pstack_st_X509_PURPOSE}
-
-  Pstack_st_X509_POLICY_NODE = ^Tstack_st_X509_POLICY_NODE;
-  Tstack_st_X509_POLICY_NODE = record end;
-  {$EXTERNALSYM Pstack_st_X509_POLICY_NODE}
-
   PASRange_st = ^TASRange_st;
-  TASRange_st = record end;
+  TASRange_st =   record
+    min: PASN1_INTEGER;
+    max: PASN1_INTEGER;
+  end;
   {$EXTERNALSYM PASRange_st}
 
-  PASRange = ^TASRange;
-  TASRange = TASRange_st;
-  {$EXTERNALSYM PASRange}
+  { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
+  // struct ASIdOrRange_st {
+  //     int type;
+  //     union {
+  //         ASN1_INTEGER *id;
+  //         ASRange *range;
+  //     } u;
+  // }
 
-  PASIdOrRange_st = ^TASIdOrRange_st;
-  TASIdOrRange_st = record end;
-  {$EXTERNALSYM PASIdOrRange_st}
-
-  Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1126:5) = ^Tunion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1126:5);
-  {$EXTERNALSYM Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1126:5)}
-
-  PASIdOrRange = ^TASIdOrRange;
-  TASIdOrRange = TASIdOrRange_st;
-  {$EXTERNALSYM PASIdOrRange}
-
-  Pstack_st_ASIdOrRange = ^Tstack_st_ASIdOrRange;
-  Tstack_st_ASIdOrRange = record end;
-  {$EXTERNALSYM Pstack_st_ASIdOrRange}
-
-  PASIdOrRanges = ^TASIdOrRanges;
-  TASIdOrRanges = Tstack_st_ASIdOrRange;
-  {$EXTERNALSYM PASIdOrRanges}
-
-  PASIdentifierChoice_st = ^TASIdentifierChoice_st;
-  TASIdentifierChoice_st = record end;
-  {$EXTERNALSYM PASIdentifierChoice_st}
-
-  Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1169:5) = ^Tunion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1169:5);
-  {$EXTERNALSYM Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1169:5)}
-
-  PASIdentifierChoice = ^TASIdentifierChoice;
-  TASIdentifierChoice = TASIdentifierChoice_st;
-  {$EXTERNALSYM PASIdentifierChoice}
+  { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
+  // struct ASIdentifierChoice_st {
+  //     int type;
+  //     union {
+  //         ASN1_NULL *inherit;
+  //         ASIdOrRanges *asIdsOrRanges;
+  //     } u;
+  // }
 
   PASIdentifiers_st = ^TASIdentifiers_st;
-  TASIdentifiers_st = record end;
+  TASIdentifiers_st =   record
+    asnum: PASIdentifierChoice;
+    rdi: PASIdentifierChoice;
+  end;
   {$EXTERNALSYM PASIdentifiers_st}
 
-  PASIdentifiers = ^TASIdentifiers;
-  TASIdentifiers = TASIdentifiers_st;
-  {$EXTERNALSYM PASIdentifiers}
-
   PIPAddressRange_st = ^TIPAddressRange_st;
-  TIPAddressRange_st = record end;
+  TIPAddressRange_st =   record
+    min: PASN1_BIT_STRING;
+    max: PASN1_BIT_STRING;
+  end;
   {$EXTERNALSYM PIPAddressRange_st}
 
-  PIPAddressRange = ^TIPAddressRange;
-  TIPAddressRange = TIPAddressRange_st;
-  {$EXTERNALSYM PIPAddressRange}
+  { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
+  // struct IPAddressOrRange_st {
+  //     int type;
+  //     union {
+  //         ASN1_BIT_STRING *addressPrefix;
+  //         IPAddressRange *addressRange;
+  //     } u;
+  // }
 
-  PIPAddressOrRange_st = ^TIPAddressOrRange_st;
-  TIPAddressOrRange_st = record end;
-  {$EXTERNALSYM PIPAddressOrRange_st}
-
-  Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1193:5) = ^Tunion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1193:5);
-  {$EXTERNALSYM Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1193:5)}
-
-  PIPAddressOrRange = ^TIPAddressOrRange;
-  TIPAddressOrRange = TIPAddressOrRange_st;
-  {$EXTERNALSYM PIPAddressOrRange}
-
-  Pstack_st_IPAddressOrRange = ^Tstack_st_IPAddressOrRange;
-  Tstack_st_IPAddressOrRange = record end;
-  {$EXTERNALSYM Pstack_st_IPAddressOrRange}
-
-  PIPAddressOrRanges = ^TIPAddressOrRanges;
-  TIPAddressOrRanges = Tstack_st_IPAddressOrRange;
-  {$EXTERNALSYM PIPAddressOrRanges}
-
-  PIPAddressChoice_st = ^TIPAddressChoice_st;
-  TIPAddressChoice_st = record end;
-  {$EXTERNALSYM PIPAddressChoice_st}
-
-  Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1236:5) = ^Tunion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1236:5);
-  {$EXTERNALSYM Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1236:5)}
-
-  PIPAddressChoice = ^TIPAddressChoice;
-  TIPAddressChoice = TIPAddressChoice_st;
-  {$EXTERNALSYM PIPAddressChoice}
+  { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
+  // struct IPAddressChoice_st {
+  //     int type;
+  //     union {
+  //         ASN1_NULL *inherit;
+  //         IPAddressOrRanges *addressesOrRanges;
+  //     } u;
+  // }
 
   PIPAddressFamily_st = ^TIPAddressFamily_st;
-  TIPAddressFamily_st = record end;
+  TIPAddressFamily_st =   record
+    addressFamily: PASN1_OCTET_STRING;
+    ipAddressChoice: PIPAddressChoice;
+  end;
   {$EXTERNALSYM PIPAddressFamily_st}
 
-  PIPAddressFamily = ^TIPAddressFamily;
-  TIPAddressFamily = TIPAddressFamily_st;
-  {$EXTERNALSYM PIPAddressFamily}
-
-  Pstack_st_IPAddressFamily = ^Tstack_st_IPAddressFamily;
-  Tstack_st_IPAddressFamily = record end;
-  {$EXTERNALSYM Pstack_st_IPAddressFamily}
-
-  PIPAddrBlocks = ^TIPAddrBlocks;
-  TIPAddrBlocks = Tstack_st_IPAddressFamily;
-  {$EXTERNALSYM PIPAddrBlocks}
-
-  Pstack_st_ASN1_STRING = ^Tstack_st_ASN1_STRING;
-  Tstack_st_ASN1_STRING = record end;
-  {$EXTERNALSYM Pstack_st_ASN1_STRING}
-
   PNamingAuthority_st = ^TNamingAuthority_st;
-  TNamingAuthority_st = record end;
+  TNamingAuthority_st =   record end;
   {$EXTERNALSYM PNamingAuthority_st}
 
-  PNAMING_AUTHORITY = ^TNAMING_AUTHORITY;
-  TNAMING_AUTHORITY = TNamingAuthority_st;
-  {$EXTERNALSYM PNAMING_AUTHORITY}
-
   PProfessionInfo_st = ^TProfessionInfo_st;
-  TProfessionInfo_st = record end;
+  TProfessionInfo_st =   record end;
   {$EXTERNALSYM PProfessionInfo_st}
 
-  PPROFESSION_INFO = ^TPROFESSION_INFO;
-  TPROFESSION_INFO = TProfessionInfo_st;
-  {$EXTERNALSYM PPROFESSION_INFO}
-
   PAdmissions_st = ^TAdmissions_st;
-  TAdmissions_st = record end;
+  TAdmissions_st =   record end;
   {$EXTERNALSYM PAdmissions_st}
 
-  PADMISSIONS = ^TADMISSIONS;
-  TADMISSIONS = TAdmissions_st;
-  {$EXTERNALSYM PADMISSIONS}
-
   PAdmissionSyntax_st = ^TAdmissionSyntax_st;
-  TAdmissionSyntax_st = record end;
+  TAdmissionSyntax_st =   record end;
   {$EXTERNALSYM PAdmissionSyntax_st}
 
-  PADMISSION_SYNTAX = ^TADMISSION_SYNTAX;
-  TADMISSION_SYNTAX = TAdmissionSyntax_st;
-  {$EXTERNALSYM PADMISSION_SYNTAX}
-
-  Pstack_st_PROFESSION_INFO = ^Tstack_st_PROFESSION_INFO;
-  Tstack_st_PROFESSION_INFO = record end;
-  {$EXTERNALSYM Pstack_st_PROFESSION_INFO}
-
-  Pstack_st_ADMISSIONS = ^Tstack_st_ADMISSIONS;
-  Tstack_st_ADMISSIONS = record end;
-  {$EXTERNALSYM Pstack_st_ADMISSIONS}
-
-  PPROFESSION_INFOS = ^TPROFESSION_INFOS;
-  TPROFESSION_INFOS = Tstack_st_PROFESSION_INFO;
-  {$EXTERNALSYM PPROFESSION_INFOS}
-
-  POSSL_ATTRIBUTES_SYNTAX = ^TOSSL_ATTRIBUTES_SYNTAX;
-  TOSSL_ATTRIBUTES_SYNTAX = Tstack_st_X509_ATTRIBUTE;
-  {$EXTERNALSYM POSSL_ATTRIBUTES_SYNTAX}
-
-  Pstack_st_USERNOTICE = ^Tstack_st_USERNOTICE;
-  Tstack_st_USERNOTICE = record end;
-  {$EXTERNALSYM Pstack_st_USERNOTICE}
-
-  POSSL_USER_NOTICE_SYNTAX = ^TOSSL_USER_NOTICE_SYNTAX;
-  TOSSL_USER_NOTICE_SYNTAX = Tstack_st_USERNOTICE;
-  {$EXTERNALSYM POSSL_USER_NOTICE_SYNTAX}
-
   POSSL_ROLE_SPEC_CERT_ID_st = ^TOSSL_ROLE_SPEC_CERT_ID_st;
-  TOSSL_ROLE_SPEC_CERT_ID_st = record end;
+  TOSSL_ROLE_SPEC_CERT_ID_st =   record
+    roleName: PGENERAL_NAME;
+    roleCertIssuer: PGENERAL_NAME;
+    roleCertSerialNumber: PASN1_INTEGER;
+    roleCertLocator: PGENERAL_NAMES;
+  end;
   {$EXTERNALSYM POSSL_ROLE_SPEC_CERT_ID_st}
 
-  POSSL_ROLE_SPEC_CERT_ID = ^TOSSL_ROLE_SPEC_CERT_ID;
-  TOSSL_ROLE_SPEC_CERT_ID = TOSSL_ROLE_SPEC_CERT_ID_st;
-  {$EXTERNALSYM POSSL_ROLE_SPEC_CERT_ID}
-
-  Pstack_st_OSSL_ROLE_SPEC_CERT_ID = ^Tstack_st_OSSL_ROLE_SPEC_CERT_ID;
-  Tstack_st_OSSL_ROLE_SPEC_CERT_ID = record end;
-  {$EXTERNALSYM Pstack_st_OSSL_ROLE_SPEC_CERT_ID}
-
-  POSSL_ROLE_SPEC_CERT_ID_SYNTAX = ^TOSSL_ROLE_SPEC_CERT_ID_SYNTAX;
-  TOSSL_ROLE_SPEC_CERT_ID_SYNTAX = Tstack_st_OSSL_ROLE_SPEC_CERT_ID;
-  {$EXTERNALSYM POSSL_ROLE_SPEC_CERT_ID_SYNTAX}
-
   POSSL_HASH_st = ^TOSSL_HASH_st;
-  TOSSL_HASH_st = record end;
+  TOSSL_HASH_st =   record
+    algorithmIdentifier: PX509_ALGOR;
+    hashValue: PASN1_BIT_STRING;
+  end;
   {$EXTERNALSYM POSSL_HASH_st}
 
-  POSSL_HASH = ^TOSSL_HASH;
-  TOSSL_HASH = TOSSL_HASH_st;
-  {$EXTERNALSYM POSSL_HASH}
-
   POSSL_INFO_SYNTAX_POINTER_st = ^TOSSL_INFO_SYNTAX_POINTER_st;
-  TOSSL_INFO_SYNTAX_POINTER_st = record end;
+  TOSSL_INFO_SYNTAX_POINTER_st =   record
+    name: PGENERAL_NAMES;
+    hash: POSSL_HASH;
+  end;
   {$EXTERNALSYM POSSL_INFO_SYNTAX_POINTER_st}
 
-  POSSL_INFO_SYNTAX_POINTER = ^TOSSL_INFO_SYNTAX_POINTER;
-  TOSSL_INFO_SYNTAX_POINTER = TOSSL_INFO_SYNTAX_POINTER_st;
-  {$EXTERNALSYM POSSL_INFO_SYNTAX_POINTER}
-
-  POSSL_INFO_SYNTAX_st = ^TOSSL_INFO_SYNTAX_st;
-  TOSSL_INFO_SYNTAX_st = record end;
-  {$EXTERNALSYM POSSL_INFO_SYNTAX_st}
-
-  Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1590:5) = ^Tunion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1590:5);
-  {$EXTERNALSYM Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1590:5)}
-
-  POSSL_INFO_SYNTAX = ^TOSSL_INFO_SYNTAX;
-  TOSSL_INFO_SYNTAX = TOSSL_INFO_SYNTAX_st;
-  {$EXTERNALSYM POSSL_INFO_SYNTAX}
+  { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
+  // struct OSSL_INFO_SYNTAX_st {
+  //     int type;
+  //     union {
+  //         ASN1_STRING *content;
+  //         OSSL_INFO_SYNTAX_POINTER *pointer;
+  //     } choice;
+  // }
 
   POSSL_PRIVILEGE_POLICY_ID_st = ^TOSSL_PRIVILEGE_POLICY_ID_st;
-  TOSSL_PRIVILEGE_POLICY_ID_st = record end;
+  TOSSL_PRIVILEGE_POLICY_ID_st =   record
+    privilegePolicy: PASN1_OBJECT;
+    privPolSyntax: POSSL_INFO_SYNTAX;
+  end;
   {$EXTERNALSYM POSSL_PRIVILEGE_POLICY_ID_st}
 
-  POSSL_PRIVILEGE_POLICY_ID = ^TOSSL_PRIVILEGE_POLICY_ID;
-  TOSSL_PRIVILEGE_POLICY_ID = TOSSL_PRIVILEGE_POLICY_ID_st;
-  {$EXTERNALSYM POSSL_PRIVILEGE_POLICY_ID}
-
   POSSL_ATTRIBUTE_DESCRIPTOR_st = ^TOSSL_ATTRIBUTE_DESCRIPTOR_st;
-  TOSSL_ATTRIBUTE_DESCRIPTOR_st = record end;
+  TOSSL_ATTRIBUTE_DESCRIPTOR_st =   record
+    identifier: PASN1_OBJECT;
+    attributeSyntax: PASN1_STRING;
+    name: PASN1_UTF8STRING;
+    description: PASN1_UTF8STRING;
+    dominationRule: POSSL_PRIVILEGE_POLICY_ID;
+  end;
   {$EXTERNALSYM POSSL_ATTRIBUTE_DESCRIPTOR_st}
 
-  POSSL_ATTRIBUTE_DESCRIPTOR = ^TOSSL_ATTRIBUTE_DESCRIPTOR;
-  TOSSL_ATTRIBUTE_DESCRIPTOR = TOSSL_ATTRIBUTE_DESCRIPTOR_st;
-  {$EXTERNALSYM POSSL_ATTRIBUTE_DESCRIPTOR}
-
   POSSL_TIME_SPEC_ABSOLUTE_st = ^TOSSL_TIME_SPEC_ABSOLUTE_st;
-  TOSSL_TIME_SPEC_ABSOLUTE_st = record end;
+  TOSSL_TIME_SPEC_ABSOLUTE_st =   record
+    startTime: PASN1_GENERALIZEDTIME;
+    endTime: PASN1_GENERALIZEDTIME;
+  end;
   {$EXTERNALSYM POSSL_TIME_SPEC_ABSOLUTE_st}
 
-  POSSL_TIME_SPEC_ABSOLUTE = ^TOSSL_TIME_SPEC_ABSOLUTE;
-  TOSSL_TIME_SPEC_ABSOLUTE = TOSSL_TIME_SPEC_ABSOLUTE_st;
-  {$EXTERNALSYM POSSL_TIME_SPEC_ABSOLUTE}
-
   POSSL_DAY_TIME_st = ^TOSSL_DAY_TIME_st;
-  TOSSL_DAY_TIME_st = record end;
+  TOSSL_DAY_TIME_st =   record
+    hour: PASN1_INTEGER;
+    minute: PASN1_INTEGER;
+    second: PASN1_INTEGER;
+  end;
   {$EXTERNALSYM POSSL_DAY_TIME_st}
 
-  POSSL_DAY_TIME = ^TOSSL_DAY_TIME;
-  TOSSL_DAY_TIME = TOSSL_DAY_TIME_st;
-  {$EXTERNALSYM POSSL_DAY_TIME}
-
   POSSL_DAY_TIME_BAND_st = ^TOSSL_DAY_TIME_BAND_st;
-  TOSSL_DAY_TIME_BAND_st = record end;
+  TOSSL_DAY_TIME_BAND_st =   record
+    startDayTime: POSSL_DAY_TIME;
+    endDayTime: POSSL_DAY_TIME;
+  end;
   {$EXTERNALSYM POSSL_DAY_TIME_BAND_st}
 
-  POSSL_DAY_TIME_BAND = ^TOSSL_DAY_TIME_BAND;
-  TOSSL_DAY_TIME_BAND = TOSSL_DAY_TIME_BAND_st;
-  {$EXTERNALSYM POSSL_DAY_TIME_BAND}
+  { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
+  // struct OSSL_NAMED_DAY_st {
+  //     int type;
+  //     union {
+  //         ASN1_INTEGER *intNamedDays;
+  //         ASN1_BIT_STRING *bitNamedDays;
+  //     } choice;
+  // }
 
-  POSSL_NAMED_DAY_st = ^TOSSL_NAMED_DAY_st;
-  TOSSL_NAMED_DAY_st = record end;
-  {$EXTERNALSYM POSSL_NAMED_DAY_st}
+  { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
+  // struct OSSL_TIME_SPEC_X_DAY_OF_st {
+  //     int type;
+  //     union {
+  //         OSSL_NAMED_DAY *first;
+  //         OSSL_NAMED_DAY *second;
+  //         OSSL_NAMED_DAY *third;
+  //         OSSL_NAMED_DAY *fourth;
+  //         OSSL_NAMED_DAY *fifth;
+  //     } choice;
+  // }
 
-  Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1650:5) = ^Tunion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1650:5);
-  {$EXTERNALSYM Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1650:5)}
+  { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
+  // struct OSSL_TIME_SPEC_DAY_st {
+  //     int type;
+  //     union {
+  //         STACK_OF(ASN1_INTEGER) *intDay;
+  //         ASN1_BIT_STRING *bitDay;
+  //         OSSL_TIME_SPEC_X_DAY_OF *dayOf;
+  //     } choice;
+  // }
 
-  POSSL_NAMED_DAY = ^TOSSL_NAMED_DAY;
-  TOSSL_NAMED_DAY = TOSSL_NAMED_DAY_st;
-  {$EXTERNALSYM POSSL_NAMED_DAY}
+  { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
+  // struct OSSL_TIME_SPEC_WEEKS_st {
+  //     int type;
+  //     union {
+  //         ASN1_NULL *allWeeks;
+  //         STACK_OF(ASN1_INTEGER) *intWeek;
+  //         ASN1_BIT_STRING *bitWeek;
+  //     } choice;
+  // }
 
-  POSSL_TIME_SPEC_X_DAY_OF_st = ^TOSSL_TIME_SPEC_X_DAY_OF_st;
-  TOSSL_TIME_SPEC_X_DAY_OF_st = record end;
-  {$EXTERNALSYM POSSL_TIME_SPEC_X_DAY_OF_st}
-
-  Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1664:5) = ^Tunion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1664:5);
-  {$EXTERNALSYM Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1664:5)}
-
-  POSSL_TIME_SPEC_X_DAY_OF = ^TOSSL_TIME_SPEC_X_DAY_OF;
-  TOSSL_TIME_SPEC_X_DAY_OF = TOSSL_TIME_SPEC_X_DAY_OF_st;
-  {$EXTERNALSYM POSSL_TIME_SPEC_X_DAY_OF}
-
-  POSSL_TIME_SPEC_DAY_st = ^TOSSL_TIME_SPEC_DAY_st;
-  TOSSL_TIME_SPEC_DAY_st = record end;
-  {$EXTERNALSYM POSSL_TIME_SPEC_DAY_st}
-
-  Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1693:5) = ^Tunion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1693:5);
-  {$EXTERNALSYM Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1693:5)}
-
-  POSSL_TIME_SPEC_DAY = ^TOSSL_TIME_SPEC_DAY;
-  TOSSL_TIME_SPEC_DAY = TOSSL_TIME_SPEC_DAY_st;
-  {$EXTERNALSYM POSSL_TIME_SPEC_DAY}
-
-  POSSL_TIME_SPEC_WEEKS_st = ^TOSSL_TIME_SPEC_WEEKS_st;
-  TOSSL_TIME_SPEC_WEEKS_st = record end;
-  {$EXTERNALSYM POSSL_TIME_SPEC_WEEKS_st}
-
-  Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1711:5) = ^Tunion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1711:5);
-  {$EXTERNALSYM Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1711:5)}
-
-  POSSL_TIME_SPEC_WEEKS = ^TOSSL_TIME_SPEC_WEEKS;
-  TOSSL_TIME_SPEC_WEEKS = TOSSL_TIME_SPEC_WEEKS_st;
-  {$EXTERNALSYM POSSL_TIME_SPEC_WEEKS}
-
-  POSSL_TIME_SPEC_MONTH_st = ^TOSSL_TIME_SPEC_MONTH_st;
-  TOSSL_TIME_SPEC_MONTH_st = record end;
-  {$EXTERNALSYM POSSL_TIME_SPEC_MONTH_st}
-
-  Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1748:5) = ^Tunion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1748:5);
-  {$EXTERNALSYM Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1748:5)}
-
-  POSSL_TIME_SPEC_MONTH = ^TOSSL_TIME_SPEC_MONTH;
-  TOSSL_TIME_SPEC_MONTH = TOSSL_TIME_SPEC_MONTH_st;
-  {$EXTERNALSYM POSSL_TIME_SPEC_MONTH}
+  { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
+  // struct OSSL_TIME_SPEC_MONTH_st {
+  //     int type;
+  //     union {
+  //         ASN1_NULL *allMonths;
+  //         STACK_OF(ASN1_INTEGER) *intMonth;
+  //         ASN1_BIT_STRING *bitMonth;
+  //     } choice;
+  // }
 
   POSSL_TIME_PERIOD_st = ^TOSSL_TIME_PERIOD_st;
-  TOSSL_TIME_PERIOD_st = record end;
+  TOSSL_TIME_PERIOD_st =   record
+    timesOfDay: Pstack_st_OSSL_DAY_TIME_BAND;
+    days: POSSL_TIME_SPEC_DAY;
+    weeks: POSSL_TIME_SPEC_WEEKS;
+    months: POSSL_TIME_SPEC_MONTH;
+    years: Pstack_st_ASN1_INTEGER;
+  end;
   {$EXTERNALSYM POSSL_TIME_PERIOD_st}
 
-  Pstack_st_OSSL_DAY_TIME_BAND = ^Tstack_st_OSSL_DAY_TIME_BAND;
-  Tstack_st_OSSL_DAY_TIME_BAND = record end;
-  {$EXTERNALSYM Pstack_st_OSSL_DAY_TIME_BAND}
-
-  POSSL_TIME_PERIOD = ^TOSSL_TIME_PERIOD;
-  TOSSL_TIME_PERIOD = TOSSL_TIME_PERIOD_st;
-  {$EXTERNALSYM POSSL_TIME_PERIOD}
-
-  POSSL_TIME_SPEC_TIME_st = ^TOSSL_TIME_SPEC_TIME_st;
-  TOSSL_TIME_SPEC_TIME_st = record end;
-  {$EXTERNALSYM POSSL_TIME_SPEC_TIME_st}
-
-  Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1768:5) = ^Tunion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1768:5);
-  {$EXTERNALSYM Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1768:5)}
-
-  Pstack_st_OSSL_TIME_PERIOD = ^Tstack_st_OSSL_TIME_PERIOD;
-  Tstack_st_OSSL_TIME_PERIOD = record end;
-  {$EXTERNALSYM Pstack_st_OSSL_TIME_PERIOD}
-
-  POSSL_TIME_SPEC_TIME = ^TOSSL_TIME_SPEC_TIME;
-  TOSSL_TIME_SPEC_TIME = TOSSL_TIME_SPEC_TIME_st;
-  {$EXTERNALSYM POSSL_TIME_SPEC_TIME}
+  { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
+  // struct OSSL_TIME_SPEC_TIME_st {
+  //     int type;
+  //     union {
+  //         OSSL_TIME_SPEC_ABSOLUTE *absolute;
+  //         STACK_OF(OSSL_TIME_PERIOD) *periodic;
+  //     } choice;
+  // }
 
   POSSL_TIME_SPEC_st = ^TOSSL_TIME_SPEC_st;
-  TOSSL_TIME_SPEC_st = record end;
+  TOSSL_TIME_SPEC_st =   record
+    time: POSSL_TIME_SPEC_TIME;
+    notThisTime: TASN1_BOOLEAN;
+    timeZone: PASN1_INTEGER;
+  end;
   {$EXTERNALSYM POSSL_TIME_SPEC_st}
 
-  POSSL_TIME_SPEC = ^TOSSL_TIME_SPEC;
-  TOSSL_TIME_SPEC = TOSSL_TIME_SPEC_st;
-  {$EXTERNALSYM POSSL_TIME_SPEC}
-
   Patav_st = ^Tatav_st;
-  Tatav_st = record end;
+  Tatav_st =   record
+    _type: PASN1_OBJECT;
+    value: PASN1_TYPE;
+  end;
   {$EXTERNALSYM Patav_st}
 
-  POSSL_ATAV = ^TOSSL_ATAV;
-  TOSSL_ATAV = Tatav_st;
-  {$EXTERNALSYM POSSL_ATAV}
-
   PATTRIBUTE_TYPE_MAPPING_st = ^TATTRIBUTE_TYPE_MAPPING_st;
-  TATTRIBUTE_TYPE_MAPPING_st = record end;
+  TATTRIBUTE_TYPE_MAPPING_st =   record
+    local: PASN1_OBJECT;
+    remote: PASN1_OBJECT;
+  end;
   {$EXTERNALSYM PATTRIBUTE_TYPE_MAPPING_st}
 
-  POSSL_ATTRIBUTE_TYPE_MAPPING = ^TOSSL_ATTRIBUTE_TYPE_MAPPING;
-  TOSSL_ATTRIBUTE_TYPE_MAPPING = TATTRIBUTE_TYPE_MAPPING_st;
-  {$EXTERNALSYM POSSL_ATTRIBUTE_TYPE_MAPPING}
-
   PATTRIBUTE_VALUE_MAPPING_st = ^TATTRIBUTE_VALUE_MAPPING_st;
-  TATTRIBUTE_VALUE_MAPPING_st = record end;
+  TATTRIBUTE_VALUE_MAPPING_st =   record
+    local: POSSL_ATAV;
+    remote: POSSL_ATAV;
+  end;
   {$EXTERNALSYM PATTRIBUTE_VALUE_MAPPING_st}
 
-  POSSL_ATTRIBUTE_VALUE_MAPPING = ^TOSSL_ATTRIBUTE_VALUE_MAPPING;
-  TOSSL_ATTRIBUTE_VALUE_MAPPING = TATTRIBUTE_VALUE_MAPPING_st;
-  {$EXTERNALSYM POSSL_ATTRIBUTE_VALUE_MAPPING}
+  { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
+  // struct ATTRIBUTE_MAPPING_st {
+  //     int type;
+  //     union {
+  //         OSSL_ATTRIBUTE_TYPE_MAPPING *typeMappings;
+  //         OSSL_ATTRIBUTE_VALUE_MAPPING *typeValueMappings;
+  //     } choice;
+  // }
 
-  PATTRIBUTE_MAPPING_st = ^TATTRIBUTE_MAPPING_st;
-  TATTRIBUTE_MAPPING_st = record end;
-  {$EXTERNALSYM PATTRIBUTE_MAPPING_st}
-
-  Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1873:5) = ^Tunion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1873:5);
-  {$EXTERNALSYM Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1873:5)}
-
-  POSSL_ATTRIBUTE_MAPPING = ^TOSSL_ATTRIBUTE_MAPPING;
-  TOSSL_ATTRIBUTE_MAPPING = TATTRIBUTE_MAPPING_st;
-  {$EXTERNALSYM POSSL_ATTRIBUTE_MAPPING}
-
-  Pstack_st_OSSL_ATTRIBUTE_MAPPING = ^Tstack_st_OSSL_ATTRIBUTE_MAPPING;
-  Tstack_st_OSSL_ATTRIBUTE_MAPPING = record end;
-  {$EXTERNALSYM Pstack_st_OSSL_ATTRIBUTE_MAPPING}
-
-  POSSL_ATTRIBUTE_MAPPINGS = ^TOSSL_ATTRIBUTE_MAPPINGS;
-  TOSSL_ATTRIBUTE_MAPPINGS = Tstack_st_OSSL_ATTRIBUTE_MAPPING;
-  {$EXTERNALSYM POSSL_ATTRIBUTE_MAPPINGS}
-
-  PALLOWED_ATTRIBUTES_CHOICE_st = ^TALLOWED_ATTRIBUTES_CHOICE_st;
-  TALLOWED_ATTRIBUTES_CHOICE_st = record end;
-  {$EXTERNALSYM PALLOWED_ATTRIBUTES_CHOICE_st}
-
-  Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1921:5) = ^Tunion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1921:5);
-  {$EXTERNALSYM Punion (unnamed at /home/sasha/dev/openssl/include/openssl/x509v3.h:1921:5)}
-
-  POSSL_ALLOWED_ATTRIBUTES_CHOICE = ^TOSSL_ALLOWED_ATTRIBUTES_CHOICE;
-  TOSSL_ALLOWED_ATTRIBUTES_CHOICE = TALLOWED_ATTRIBUTES_CHOICE_st;
-  {$EXTERNALSYM POSSL_ALLOWED_ATTRIBUTES_CHOICE}
+  { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
+  // struct ALLOWED_ATTRIBUTES_CHOICE_st {
+  //     int type;
+  //     union {
+  //         ASN1_OBJECT *attributeType;
+  //         X509_ATTRIBUTE *attributeTypeandValues;
+  //     } choice;
+  // }
 
   PALLOWED_ATTRIBUTES_ITEM_st = ^TALLOWED_ATTRIBUTES_ITEM_st;
-  TALLOWED_ATTRIBUTES_ITEM_st = record end;
+  TALLOWED_ATTRIBUTES_ITEM_st =   record
+    attributes: Pstack_st_OSSL_ALLOWED_ATTRIBUTES_CHOICE;
+    holderDomain: PGENERAL_NAME;
+  end;
   {$EXTERNALSYM PALLOWED_ATTRIBUTES_ITEM_st}
 
-  Pstack_st_OSSL_ALLOWED_ATTRIBUTES_CHOICE = ^Tstack_st_OSSL_ALLOWED_ATTRIBUTES_CHOICE;
-  Tstack_st_OSSL_ALLOWED_ATTRIBUTES_CHOICE = record end;
-  {$EXTERNALSYM Pstack_st_OSSL_ALLOWED_ATTRIBUTES_CHOICE}
-
-  POSSL_ALLOWED_ATTRIBUTES_ITEM = ^TOSSL_ALLOWED_ATTRIBUTES_ITEM;
-  TOSSL_ALLOWED_ATTRIBUTES_ITEM = TALLOWED_ATTRIBUTES_ITEM_st;
-  {$EXTERNALSYM POSSL_ALLOWED_ATTRIBUTES_ITEM}
-
-  Pstack_st_OSSL_ALLOWED_ATTRIBUTES_ITEM = ^Tstack_st_OSSL_ALLOWED_ATTRIBUTES_ITEM;
-  Tstack_st_OSSL_ALLOWED_ATTRIBUTES_ITEM = record end;
-  {$EXTERNALSYM Pstack_st_OSSL_ALLOWED_ATTRIBUTES_ITEM}
-
-  POSSL_ALLOWED_ATTRIBUTES_SYNTAX = ^TOSSL_ALLOWED_ATTRIBUTES_SYNTAX;
-  TOSSL_ALLOWED_ATTRIBUTES_SYNTAX = Tstack_st_OSSL_ALLOWED_ATTRIBUTES_ITEM;
-  {$EXTERNALSYM POSSL_ALLOWED_ATTRIBUTES_SYNTAX}
-
   PAA_DIST_POINT_st = ^TAA_DIST_POINT_st;
-  TAA_DIST_POINT_st = record end;
+  TAA_DIST_POINT_st =   record
+    distpoint: PDIST_POINT_NAME;
+    reasons: PASN1_BIT_STRING;
+    dp_reasons: TIdC_INT;
+    indirectCRL: TASN1_BOOLEAN;
+    containsUserAttributeCerts: TASN1_BOOLEAN;
+    containsAACerts: TASN1_BOOLEAN;
+    containsSOAPublicKeyCerts: TASN1_BOOLEAN;
+  end;
   {$EXTERNALSYM PAA_DIST_POINT_st}
-
-  POSSL_AA_DIST_POINT = ^TOSSL_AA_DIST_POINT;
-  TOSSL_AA_DIST_POINT = TAA_DIST_POINT_st;
-  {$EXTERNALSYM POSSL_AA_DIST_POINT}
 
 
 // =============================================================================
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  TX509V3_EXT_NEW_func_cb = function: Pointer; cdecl;
-  TX509V3_EXT_FREE_func_cb = procedure(arg1: Pointer); cdecl;
-  TX509V3_EXT_D2I_func_cb = function(arg1: Pointer; arg2: PPIdAnsiChar; arg3: TIdC_LONG): Pointer; cdecl;
-  TX509V3_EXT_I2D_func_cb = function(arg1: Pointer; arg2: PPIdAnsiChar): TIdC_INT; cdecl;
-  TX509V3_EXT_I2V_func_cb = function(arg1: Pv3_ext_method; arg2: Pointer; arg3: Pstack_st_CONF_VALUE): Pstack_st_CONF_VALUE; cdecl;
-  TX509V3_EXT_V2I_func_cb = function(arg1: Pv3_ext_method; arg2: Pv3_ext_ctx; arg3: Pstack_st_CONF_VALUE): Pointer; cdecl;
-  TX509V3_EXT_I2S_func_cb = function(arg1: Pv3_ext_method; arg2: Pointer): PIdAnsiChar; cdecl;
-  TX509V3_EXT_S2I_func_cb = function(arg1: Pv3_ext_method; arg2: Pv3_ext_ctx; arg3: PIdAnsiChar): Pointer; cdecl;
-  TX509V3_EXT_I2R_func_cb = function(arg1: Pv3_ext_method; arg2: Pointer; arg3: PBIO; arg4: TIdC_INT): TIdC_INT; cdecl;
-  Tsk_X509V3_EXT_METHOD_compfunc_func_cb = function(arg1: PPX509V3_EXT_METHOD; arg2: PPX509V3_EXT_METHOD): TIdC_INT; cdecl;
-  Tsk_X509V3_EXT_METHOD_freefunc_func_cb = procedure(arg1: PX509V3_EXT_METHOD); cdecl;
-  Tsk_X509V3_EXT_METHOD_copyfunc_func_cb = function(arg1: PX509V3_EXT_METHOD): PX509V3_EXT_METHOD; cdecl;
-  Tsk_ACCESS_DESCRIPTION_compfunc_func_cb = function(arg1: PPACCESS_DESCRIPTION; arg2: PPACCESS_DESCRIPTION): TIdC_INT; cdecl;
-  Tsk_ACCESS_DESCRIPTION_freefunc_func_cb = procedure(arg1: PACCESS_DESCRIPTION); cdecl;
-  Tsk_ACCESS_DESCRIPTION_copyfunc_func_cb = function(arg1: PACCESS_DESCRIPTION): PACCESS_DESCRIPTION; cdecl;
-  Tsk_GENERAL_NAME_compfunc_func_cb = function(arg1: PPGENERAL_NAME; arg2: PPGENERAL_NAME): TIdC_INT; cdecl;
-  Tsk_GENERAL_NAME_freefunc_func_cb = procedure(arg1: PGENERAL_NAME); cdecl;
-  Tsk_GENERAL_NAME_copyfunc_func_cb = function(arg1: PGENERAL_NAME): PGENERAL_NAME; cdecl;
-  Tsk_GENERAL_NAMES_compfunc_func_cb = function(arg1: PPGENERAL_NAMES; arg2: PPGENERAL_NAMES): TIdC_INT; cdecl;
-  Tsk_GENERAL_NAMES_freefunc_func_cb = procedure(arg1: PGENERAL_NAMES); cdecl;
-  Tsk_GENERAL_NAMES_copyfunc_func_cb = function(arg1: PGENERAL_NAMES): PGENERAL_NAMES; cdecl;
-  Tsk_DIST_POINT_compfunc_func_cb = function(arg1: PPDIST_POINT; arg2: PPDIST_POINT): TIdC_INT; cdecl;
-  Tsk_DIST_POINT_freefunc_func_cb = procedure(arg1: PDIST_POINT); cdecl;
-  Tsk_DIST_POINT_copyfunc_func_cb = function(arg1: PDIST_POINT): PDIST_POINT; cdecl;
-  Tsk_SXNETID_compfunc_func_cb = function(arg1: PPSXNETID; arg2: PPSXNETID): TIdC_INT; cdecl;
-  Tsk_SXNETID_freefunc_func_cb = procedure(arg1: PSXNETID); cdecl;
-  Tsk_SXNETID_copyfunc_func_cb = function(arg1: PSXNETID): PSXNETID; cdecl;
-  Tsk_POLICYQUALINFO_compfunc_func_cb = function(arg1: PPPOLICYQUALINFO; arg2: PPPOLICYQUALINFO): TIdC_INT; cdecl;
-  Tsk_POLICYQUALINFO_freefunc_func_cb = procedure(arg1: PPOLICYQUALINFO); cdecl;
-  Tsk_POLICYQUALINFO_copyfunc_func_cb = function(arg1: PPOLICYQUALINFO): PPOLICYQUALINFO; cdecl;
-  Tsk_POLICYINFO_compfunc_func_cb = function(arg1: PPPOLICYINFO; arg2: PPPOLICYINFO): TIdC_INT; cdecl;
-  Tsk_POLICYINFO_freefunc_func_cb = procedure(arg1: PPOLICYINFO); cdecl;
-  Tsk_POLICYINFO_copyfunc_func_cb = function(arg1: PPOLICYINFO): PPOLICYINFO; cdecl;
-  Tsk_POLICY_MAPPING_compfunc_func_cb = function(arg1: PPPOLICY_MAPPING; arg2: PPPOLICY_MAPPING): TIdC_INT; cdecl;
-  Tsk_POLICY_MAPPING_freefunc_func_cb = procedure(arg1: PPOLICY_MAPPING); cdecl;
-  Tsk_POLICY_MAPPING_copyfunc_func_cb = function(arg1: PPOLICY_MAPPING): PPOLICY_MAPPING; cdecl;
-  Tsk_GENERAL_SUBTREE_compfunc_func_cb = function(arg1: PPGENERAL_SUBTREE; arg2: PPGENERAL_SUBTREE): TIdC_INT; cdecl;
-  Tsk_GENERAL_SUBTREE_freefunc_func_cb = procedure(arg1: PGENERAL_SUBTREE); cdecl;
-  Tsk_GENERAL_SUBTREE_copyfunc_func_cb = function(arg1: PGENERAL_SUBTREE): PGENERAL_SUBTREE; cdecl;
-  Tsk_X509_PURPOSE_compfunc_func_cb = function(arg1: PPX509_PURPOSE; arg2: PPX509_PURPOSE): TIdC_INT; cdecl;
-  Tsk_X509_PURPOSE_freefunc_func_cb = procedure(arg1: PX509_PURPOSE); cdecl;
-  Tsk_X509_PURPOSE_copyfunc_func_cb = function(arg1: PX509_PURPOSE): PX509_PURPOSE; cdecl;
-  TX509_PURPOSE_add_ck_cb = function(arg1: PX509_PURPOSE; arg2: PX509; arg3: TIdC_INT): TIdC_INT; cdecl;
-  Tsk_X509_POLICY_NODE_compfunc_func_cb = function(arg1: PPX509_POLICY_NODE; arg2: PPX509_POLICY_NODE): TIdC_INT; cdecl;
-  Tsk_X509_POLICY_NODE_freefunc_func_cb = procedure(arg1: PX509_POLICY_NODE); cdecl;
-  Tsk_X509_POLICY_NODE_copyfunc_func_cb = function(arg1: PX509_POLICY_NODE): PX509_POLICY_NODE; cdecl;
-  Tsk_ASIdOrRange_compfunc_func_cb = function(arg1: PPASIdOrRange; arg2: PPASIdOrRange): TIdC_INT; cdecl;
-  Tsk_ASIdOrRange_freefunc_func_cb = procedure(arg1: PASIdOrRange); cdecl;
-  Tsk_ASIdOrRange_copyfunc_func_cb = function(arg1: PASIdOrRange): PASIdOrRange; cdecl;
-  Tsk_IPAddressOrRange_compfunc_func_cb = function(arg1: PPIPAddressOrRange; arg2: PPIPAddressOrRange): TIdC_INT; cdecl;
-  Tsk_IPAddressOrRange_freefunc_func_cb = procedure(arg1: PIPAddressOrRange); cdecl;
-  Tsk_IPAddressOrRange_copyfunc_func_cb = function(arg1: PIPAddressOrRange): PIPAddressOrRange; cdecl;
-  Tsk_IPAddressFamily_compfunc_func_cb = function(arg1: PPIPAddressFamily; arg2: PPIPAddressFamily): TIdC_INT; cdecl;
-  Tsk_IPAddressFamily_freefunc_func_cb = procedure(arg1: PIPAddressFamily); cdecl;
-  Tsk_IPAddressFamily_copyfunc_func_cb = function(arg1: PIPAddressFamily): PIPAddressFamily; cdecl;
-  Tsk_ASN1_STRING_compfunc_func_cb = function(arg1: PPASN1_STRING; arg2: PPASN1_STRING): TIdC_INT; cdecl;
-  Tsk_ASN1_STRING_freefunc_func_cb = procedure(arg1: PASN1_STRING); cdecl;
-  Tsk_ASN1_STRING_copyfunc_func_cb = function(arg1: PASN1_STRING): PASN1_STRING; cdecl;
-  Tsk_PROFESSION_INFO_compfunc_func_cb = function(arg1: PPPROFESSION_INFO; arg2: PPPROFESSION_INFO): TIdC_INT; cdecl;
-  Tsk_PROFESSION_INFO_freefunc_func_cb = procedure(arg1: PPROFESSION_INFO); cdecl;
-  Tsk_PROFESSION_INFO_copyfunc_func_cb = function(arg1: PPROFESSION_INFO): PPROFESSION_INFO; cdecl;
-  Tsk_ADMISSIONS_compfunc_func_cb = function(arg1: PPADMISSIONS; arg2: PPADMISSIONS): TIdC_INT; cdecl;
-  Tsk_ADMISSIONS_freefunc_func_cb = procedure(arg1: PADMISSIONS); cdecl;
-  Tsk_ADMISSIONS_copyfunc_func_cb = function(arg1: PADMISSIONS): PADMISSIONS; cdecl;
-  Tsk_USERNOTICE_compfunc_func_cb = function(arg1: PPUSERNOTICE; arg2: PPUSERNOTICE): TIdC_INT; cdecl;
-  Tsk_USERNOTICE_freefunc_func_cb = procedure(arg1: PUSERNOTICE); cdecl;
-  Tsk_USERNOTICE_copyfunc_func_cb = function(arg1: PUSERNOTICE): PUSERNOTICE; cdecl;
-  Tsk_OSSL_ROLE_SPEC_CERT_ID_compfunc_func_cb = function(arg1: PPOSSL_ROLE_SPEC_CERT_ID; arg2: PPOSSL_ROLE_SPEC_CERT_ID): TIdC_INT; cdecl;
-  Tsk_OSSL_ROLE_SPEC_CERT_ID_freefunc_func_cb = procedure(arg1: POSSL_ROLE_SPEC_CERT_ID); cdecl;
-  Tsk_OSSL_ROLE_SPEC_CERT_ID_copyfunc_func_cb = function(arg1: POSSL_ROLE_SPEC_CERT_ID): POSSL_ROLE_SPEC_CERT_ID; cdecl;
-  Tsk_OSSL_TIME_PERIOD_compfunc_func_cb = function(arg1: PPOSSL_TIME_PERIOD; arg2: PPOSSL_TIME_PERIOD): TIdC_INT; cdecl;
-  Tsk_OSSL_TIME_PERIOD_freefunc_func_cb = procedure(arg1: POSSL_TIME_PERIOD); cdecl;
-  Tsk_OSSL_TIME_PERIOD_copyfunc_func_cb = function(arg1: POSSL_TIME_PERIOD): POSSL_TIME_PERIOD; cdecl;
-  Tsk_OSSL_DAY_TIME_BAND_compfunc_func_cb = function(arg1: PPOSSL_DAY_TIME_BAND; arg2: PPOSSL_DAY_TIME_BAND): TIdC_INT; cdecl;
-  Tsk_OSSL_DAY_TIME_BAND_freefunc_func_cb = procedure(arg1: POSSL_DAY_TIME_BAND); cdecl;
-  Tsk_OSSL_DAY_TIME_BAND_copyfunc_func_cb = function(arg1: POSSL_DAY_TIME_BAND): POSSL_DAY_TIME_BAND; cdecl;
-  Tsk_OSSL_ATTRIBUTE_MAPPING_compfunc_func_cb = function(arg1: PPOSSL_ATTRIBUTE_MAPPING; arg2: PPOSSL_ATTRIBUTE_MAPPING): TIdC_INT; cdecl;
-  Tsk_OSSL_ATTRIBUTE_MAPPING_freefunc_func_cb = procedure(arg1: POSSL_ATTRIBUTE_MAPPING); cdecl;
-  Tsk_OSSL_ATTRIBUTE_MAPPING_copyfunc_func_cb = function(arg1: POSSL_ATTRIBUTE_MAPPING): POSSL_ATTRIBUTE_MAPPING; cdecl;
-  Tsk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_compfunc_func_cb = function(arg1: PPOSSL_ALLOWED_ATTRIBUTES_CHOICE; arg2: PPOSSL_ALLOWED_ATTRIBUTES_CHOICE): TIdC_INT; cdecl;
-  Tsk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_freefunc_func_cb = procedure(arg1: POSSL_ALLOWED_ATTRIBUTES_CHOICE); cdecl;
-  Tsk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_copyfunc_func_cb = function(arg1: POSSL_ALLOWED_ATTRIBUTES_CHOICE): POSSL_ALLOWED_ATTRIBUTES_CHOICE; cdecl;
-  Tsk_OSSL_ALLOWED_ATTRIBUTES_ITEM_compfunc_func_cb = function(arg1: PPOSSL_ALLOWED_ATTRIBUTES_ITEM; arg2: PPOSSL_ALLOWED_ATTRIBUTES_ITEM): TIdC_INT; cdecl;
-  Tsk_OSSL_ALLOWED_ATTRIBUTES_ITEM_freefunc_func_cb = procedure(arg1: POSSL_ALLOWED_ATTRIBUTES_ITEM); cdecl;
-  Tsk_OSSL_ALLOWED_ATTRIBUTES_ITEM_copyfunc_func_cb = function(arg1: POSSL_ALLOWED_ATTRIBUTES_ITEM): POSSL_ALLOWED_ATTRIBUTES_ITEM; cdecl;
+  TX509V3_EXT_NEW = function: Pointer; cdecl;
+  TX509V3_EXT_FREE = function(arg1: Pointer): void; cdecl;
+  TX509V3_EXT_D2I = function(arg1: Pointer; arg2: PPIdAnsiChar; arg3: TIdC_LONG): Pointer; cdecl;
+  TX509V3_EXT_I2D = function(arg1: Pointer; arg2: PPIdAnsiChar): TIdC_INT; cdecl;
+  TX509V3_EXT_I2V = function(method: Pv3_ext_method; ext: Pointer; extlist: Pstack_st_CONF_VALUE): Pstack_st_CONF_VALUE; cdecl;
+  TX509V3_EXT_V2I = function(method: Pv3_ext_method; ctx: Pv3_ext_ctx; values: Pstack_st_CONF_VALUE): Pointer; cdecl;
+  TX509V3_EXT_I2S = function(method: Pv3_ext_method; ext: Pointer): PIdAnsiChar; cdecl;
+  TX509V3_EXT_S2I = function(method: Pv3_ext_method; ctx: Pv3_ext_ctx; str: PIdAnsiChar): Pointer; cdecl;
+  TX509V3_EXT_I2R = function(method: Pv3_ext_method; ext: Pointer; _out: PBIO; indent: TIdC_INT): TIdC_INT; cdecl;
+  TX509V3_EXT_R2I = function(method: Pv3_ext_method; ctx: Pv3_ext_ctx; str: PIdAnsiChar): Pointer; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // X509V3_EXT_R2I_func_cb = function(db: Pointer; section: PIdAnsiChar; value: PIdAnsiChar): PIdAnsiChar; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // PROXY_CERT_INFO_EXTENSION_it_func_cb = function(arg1: Px509_purpose_st; arg2: PX509; arg3: TIdC_INT): TIdC_INT; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -1060,7 +811,7 @@ var
   PROXY_POLICY_new: function: PPROXY_POLICY; cdecl = nil;
   {$EXTERNALSYM PROXY_POLICY_new}
 
-  PROXY_POLICY_free: procedure(a: PPROXY_POLICY); cdecl = nil;
+  PROXY_POLICY_free: function(a: PPROXY_POLICY): void; cdecl = nil;
   {$EXTERNALSYM PROXY_POLICY_free}
 
   d2i_PROXY_POLICY: function(a: PPPROXY_POLICY; _in: PPIdAnsiChar; len: TIdC_LONG): PPROXY_POLICY; cdecl = nil;
@@ -1075,7 +826,7 @@ var
   PROXY_CERT_INFO_EXTENSION_new: function: PPROXY_CERT_INFO_EXTENSION; cdecl = nil;
   {$EXTERNALSYM PROXY_CERT_INFO_EXTENSION_new}
 
-  PROXY_CERT_INFO_EXTENSION_free: procedure(a: PPROXY_CERT_INFO_EXTENSION); cdecl = nil;
+  PROXY_CERT_INFO_EXTENSION_free: function(a: PPROXY_CERT_INFO_EXTENSION): void; cdecl = nil;
   {$EXTERNALSYM PROXY_CERT_INFO_EXTENSION_free}
 
   d2i_PROXY_CERT_INFO_EXTENSION: function(a: PPPROXY_CERT_INFO_EXTENSION; _in: PPIdAnsiChar; len: TIdC_LONG): PPROXY_CERT_INFO_EXTENSION; cdecl = nil;
@@ -1090,7 +841,7 @@ var
   BASIC_CONSTRAINTS_new: function: PBASIC_CONSTRAINTS; cdecl = nil;
   {$EXTERNALSYM BASIC_CONSTRAINTS_new}
 
-  BASIC_CONSTRAINTS_free: procedure(a: PBASIC_CONSTRAINTS); cdecl = nil;
+  BASIC_CONSTRAINTS_free: function(a: PBASIC_CONSTRAINTS): void; cdecl = nil;
   {$EXTERNALSYM BASIC_CONSTRAINTS_free}
 
   d2i_BASIC_CONSTRAINTS: function(a: PPBASIC_CONSTRAINTS; _in: PPIdAnsiChar; len: TIdC_LONG): PBASIC_CONSTRAINTS; cdecl = nil;
@@ -1105,7 +856,7 @@ var
   OSSL_BASIC_ATTR_CONSTRAINTS_new: function: POSSL_BASIC_ATTR_CONSTRAINTS; cdecl = nil;
   {$EXTERNALSYM OSSL_BASIC_ATTR_CONSTRAINTS_new}
 
-  OSSL_BASIC_ATTR_CONSTRAINTS_free: procedure(a: POSSL_BASIC_ATTR_CONSTRAINTS); cdecl = nil;
+  OSSL_BASIC_ATTR_CONSTRAINTS_free: function(a: POSSL_BASIC_ATTR_CONSTRAINTS): void; cdecl = nil;
   {$EXTERNALSYM OSSL_BASIC_ATTR_CONSTRAINTS_free}
 
   d2i_OSSL_BASIC_ATTR_CONSTRAINTS: function(a: PPOSSL_BASIC_ATTR_CONSTRAINTS; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_BASIC_ATTR_CONSTRAINTS; cdecl = nil;
@@ -1120,7 +871,7 @@ var
   SXNET_new: function: PSXNET; cdecl = nil;
   {$EXTERNALSYM SXNET_new}
 
-  SXNET_free: procedure(a: PSXNET); cdecl = nil;
+  SXNET_free: function(a: PSXNET): void; cdecl = nil;
   {$EXTERNALSYM SXNET_free}
 
   d2i_SXNET: function(a: PPSXNET; _in: PPIdAnsiChar; len: TIdC_LONG): PSXNET; cdecl = nil;
@@ -1135,7 +886,7 @@ var
   SXNETID_new: function: PSXNETID; cdecl = nil;
   {$EXTERNALSYM SXNETID_new}
 
-  SXNETID_free: procedure(a: PSXNETID); cdecl = nil;
+  SXNETID_free: function(a: PSXNETID): void; cdecl = nil;
   {$EXTERNALSYM SXNETID_free}
 
   d2i_SXNETID: function(a: PPSXNETID; _in: PPIdAnsiChar; len: TIdC_LONG): PSXNETID; cdecl = nil;
@@ -1150,7 +901,7 @@ var
   ISSUER_SIGN_TOOL_new: function: PISSUER_SIGN_TOOL; cdecl = nil;
   {$EXTERNALSYM ISSUER_SIGN_TOOL_new}
 
-  ISSUER_SIGN_TOOL_free: procedure(a: PISSUER_SIGN_TOOL); cdecl = nil;
+  ISSUER_SIGN_TOOL_free: function(a: PISSUER_SIGN_TOOL): void; cdecl = nil;
   {$EXTERNALSYM ISSUER_SIGN_TOOL_free}
 
   d2i_ISSUER_SIGN_TOOL: function(a: PPISSUER_SIGN_TOOL; _in: PPIdAnsiChar; len: TIdC_LONG): PISSUER_SIGN_TOOL; cdecl = nil;
@@ -1183,7 +934,7 @@ var
   AUTHORITY_KEYID_new: function: PAUTHORITY_KEYID; cdecl = nil;
   {$EXTERNALSYM AUTHORITY_KEYID_new}
 
-  AUTHORITY_KEYID_free: procedure(a: PAUTHORITY_KEYID); cdecl = nil;
+  AUTHORITY_KEYID_free: function(a: PAUTHORITY_KEYID): void; cdecl = nil;
   {$EXTERNALSYM AUTHORITY_KEYID_free}
 
   d2i_AUTHORITY_KEYID: function(a: PPAUTHORITY_KEYID; _in: PPIdAnsiChar; len: TIdC_LONG): PAUTHORITY_KEYID; cdecl = nil;
@@ -1198,7 +949,7 @@ var
   PKEY_USAGE_PERIOD_new: function: PPKEY_USAGE_PERIOD; cdecl = nil;
   {$EXTERNALSYM PKEY_USAGE_PERIOD_new}
 
-  PKEY_USAGE_PERIOD_free: procedure(a: PPKEY_USAGE_PERIOD); cdecl = nil;
+  PKEY_USAGE_PERIOD_free: function(a: PPKEY_USAGE_PERIOD): void; cdecl = nil;
   {$EXTERNALSYM PKEY_USAGE_PERIOD_free}
 
   d2i_PKEY_USAGE_PERIOD: function(a: PPPKEY_USAGE_PERIOD; _in: PPIdAnsiChar; len: TIdC_LONG): PPKEY_USAGE_PERIOD; cdecl = nil;
@@ -1213,7 +964,7 @@ var
   GENERAL_NAME_new: function: PGENERAL_NAME; cdecl = nil;
   {$EXTERNALSYM GENERAL_NAME_new}
 
-  GENERAL_NAME_free: procedure(a: PGENERAL_NAME); cdecl = nil;
+  GENERAL_NAME_free: function(a: PGENERAL_NAME): void; cdecl = nil;
   {$EXTERNALSYM GENERAL_NAME_free}
 
   d2i_GENERAL_NAME: function(a: PPGENERAL_NAME; _in: PPIdAnsiChar; len: TIdC_LONG): PGENERAL_NAME; cdecl = nil;
@@ -1258,7 +1009,7 @@ var
   GENERAL_NAMES_new: function: PGENERAL_NAMES; cdecl = nil;
   {$EXTERNALSYM GENERAL_NAMES_new}
 
-  GENERAL_NAMES_free: procedure(a: PGENERAL_NAMES); cdecl = nil;
+  GENERAL_NAMES_free: function(a: PGENERAL_NAMES): void; cdecl = nil;
   {$EXTERNALSYM GENERAL_NAMES_free}
 
   d2i_GENERAL_NAMES: function(a: PPGENERAL_NAMES; _in: PPIdAnsiChar; len: TIdC_LONG): PGENERAL_NAMES; cdecl = nil;
@@ -1279,7 +1030,7 @@ var
   OTHERNAME_new: function: POTHERNAME; cdecl = nil;
   {$EXTERNALSYM OTHERNAME_new}
 
-  OTHERNAME_free: procedure(a: POTHERNAME); cdecl = nil;
+  OTHERNAME_free: function(a: POTHERNAME): void; cdecl = nil;
   {$EXTERNALSYM OTHERNAME_free}
 
   d2i_OTHERNAME: function(a: PPOTHERNAME; _in: PPIdAnsiChar; len: TIdC_LONG): POTHERNAME; cdecl = nil;
@@ -1294,7 +1045,7 @@ var
   EDIPARTYNAME_new: function: PEDIPARTYNAME; cdecl = nil;
   {$EXTERNALSYM EDIPARTYNAME_new}
 
-  EDIPARTYNAME_free: procedure(a: PEDIPARTYNAME); cdecl = nil;
+  EDIPARTYNAME_free: function(a: PEDIPARTYNAME): void; cdecl = nil;
   {$EXTERNALSYM EDIPARTYNAME_free}
 
   d2i_EDIPARTYNAME: function(a: PPEDIPARTYNAME; _in: PPIdAnsiChar; len: TIdC_LONG): PEDIPARTYNAME; cdecl = nil;
@@ -1309,7 +1060,7 @@ var
   OTHERNAME_cmp: function(a: POTHERNAME; b: POTHERNAME): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OTHERNAME_cmp}
 
-  GENERAL_NAME_set0_value: procedure(a: PGENERAL_NAME; _type: TIdC_INT; value: Pointer); cdecl = nil;
+  GENERAL_NAME_set0_value: function(a: PGENERAL_NAME; _type: TIdC_INT; value: Pointer): void; cdecl = nil;
   {$EXTERNALSYM GENERAL_NAME_set0_value}
 
   GENERAL_NAME_get0_value: function(a: PGENERAL_NAME; ptype: PIdC_INT): Pointer; cdecl = nil;
@@ -1330,7 +1081,7 @@ var
   EXTENDED_KEY_USAGE_new: function: PEXTENDED_KEY_USAGE; cdecl = nil;
   {$EXTERNALSYM EXTENDED_KEY_USAGE_new}
 
-  EXTENDED_KEY_USAGE_free: procedure(a: PEXTENDED_KEY_USAGE); cdecl = nil;
+  EXTENDED_KEY_USAGE_free: function(a: PEXTENDED_KEY_USAGE): void; cdecl = nil;
   {$EXTERNALSYM EXTENDED_KEY_USAGE_free}
 
   d2i_EXTENDED_KEY_USAGE: function(a: PPEXTENDED_KEY_USAGE; _in: PPIdAnsiChar; len: TIdC_LONG): PEXTENDED_KEY_USAGE; cdecl = nil;
@@ -1348,13 +1099,13 @@ var
   TLS_FEATURE_new: function: PLS_FEATURE; cdecl = nil;
   {$EXTERNALSYM TLS_FEATURE_new}
 
-  TLS_FEATURE_free: procedure(a: PLS_FEATURE); cdecl = nil;
+  TLS_FEATURE_free: function(a: PLS_FEATURE): void; cdecl = nil;
   {$EXTERNALSYM TLS_FEATURE_free}
 
   CERTIFICATEPOLICIES_new: function: PCERTIFICATEPOLICIES; cdecl = nil;
   {$EXTERNALSYM CERTIFICATEPOLICIES_new}
 
-  CERTIFICATEPOLICIES_free: procedure(a: PCERTIFICATEPOLICIES); cdecl = nil;
+  CERTIFICATEPOLICIES_free: function(a: PCERTIFICATEPOLICIES): void; cdecl = nil;
   {$EXTERNALSYM CERTIFICATEPOLICIES_free}
 
   d2i_CERTIFICATEPOLICIES: function(a: PPCERTIFICATEPOLICIES; _in: PPIdAnsiChar; len: TIdC_LONG): PCERTIFICATEPOLICIES; cdecl = nil;
@@ -1369,7 +1120,7 @@ var
   POLICYINFO_new: function: PPOLICYINFO; cdecl = nil;
   {$EXTERNALSYM POLICYINFO_new}
 
-  POLICYINFO_free: procedure(a: PPOLICYINFO); cdecl = nil;
+  POLICYINFO_free: function(a: PPOLICYINFO): void; cdecl = nil;
   {$EXTERNALSYM POLICYINFO_free}
 
   d2i_POLICYINFO: function(a: PPPOLICYINFO; _in: PPIdAnsiChar; len: TIdC_LONG): PPOLICYINFO; cdecl = nil;
@@ -1384,7 +1135,7 @@ var
   POLICYQUALINFO_new: function: PPOLICYQUALINFO; cdecl = nil;
   {$EXTERNALSYM POLICYQUALINFO_new}
 
-  POLICYQUALINFO_free: procedure(a: PPOLICYQUALINFO); cdecl = nil;
+  POLICYQUALINFO_free: function(a: PPOLICYQUALINFO): void; cdecl = nil;
   {$EXTERNALSYM POLICYQUALINFO_free}
 
   d2i_POLICYQUALINFO: function(a: PPPOLICYQUALINFO; _in: PPIdAnsiChar; len: TIdC_LONG): PPOLICYQUALINFO; cdecl = nil;
@@ -1399,7 +1150,7 @@ var
   USERNOTICE_new: function: PUSERNOTICE; cdecl = nil;
   {$EXTERNALSYM USERNOTICE_new}
 
-  USERNOTICE_free: procedure(a: PUSERNOTICE); cdecl = nil;
+  USERNOTICE_free: function(a: PUSERNOTICE): void; cdecl = nil;
   {$EXTERNALSYM USERNOTICE_free}
 
   d2i_USERNOTICE: function(a: PPUSERNOTICE; _in: PPIdAnsiChar; len: TIdC_LONG): PUSERNOTICE; cdecl = nil;
@@ -1414,7 +1165,7 @@ var
   NOTICEREF_new: function: PNOTICEREF; cdecl = nil;
   {$EXTERNALSYM NOTICEREF_new}
 
-  NOTICEREF_free: procedure(a: PNOTICEREF); cdecl = nil;
+  NOTICEREF_free: function(a: PNOTICEREF): void; cdecl = nil;
   {$EXTERNALSYM NOTICEREF_free}
 
   d2i_NOTICEREF: function(a: PPNOTICEREF; _in: PPIdAnsiChar; len: TIdC_LONG): PNOTICEREF; cdecl = nil;
@@ -1429,7 +1180,7 @@ var
   CRL_DIST_POINTS_new: function: PCRL_DIST_POINTS; cdecl = nil;
   {$EXTERNALSYM CRL_DIST_POINTS_new}
 
-  CRL_DIST_POINTS_free: procedure(a: PCRL_DIST_POINTS); cdecl = nil;
+  CRL_DIST_POINTS_free: function(a: PCRL_DIST_POINTS): void; cdecl = nil;
   {$EXTERNALSYM CRL_DIST_POINTS_free}
 
   d2i_CRL_DIST_POINTS: function(a: PPCRL_DIST_POINTS; _in: PPIdAnsiChar; len: TIdC_LONG): PCRL_DIST_POINTS; cdecl = nil;
@@ -1444,7 +1195,7 @@ var
   DIST_POINT_new: function: PDIST_POINT; cdecl = nil;
   {$EXTERNALSYM DIST_POINT_new}
 
-  DIST_POINT_free: procedure(a: PDIST_POINT); cdecl = nil;
+  DIST_POINT_free: function(a: PDIST_POINT): void; cdecl = nil;
   {$EXTERNALSYM DIST_POINT_free}
 
   d2i_DIST_POINT: function(a: PPDIST_POINT; _in: PPIdAnsiChar; len: TIdC_LONG): PDIST_POINT; cdecl = nil;
@@ -1459,7 +1210,7 @@ var
   DIST_POINT_NAME_new: function: PDIST_POINT_NAME; cdecl = nil;
   {$EXTERNALSYM DIST_POINT_NAME_new}
 
-  DIST_POINT_NAME_free: procedure(a: PDIST_POINT_NAME); cdecl = nil;
+  DIST_POINT_NAME_free: function(a: PDIST_POINT_NAME): void; cdecl = nil;
   {$EXTERNALSYM DIST_POINT_NAME_free}
 
   d2i_DIST_POINT_NAME: function(a: PPDIST_POINT_NAME; _in: PPIdAnsiChar; len: TIdC_LONG): PDIST_POINT_NAME; cdecl = nil;
@@ -1474,7 +1225,7 @@ var
   ISSUING_DIST_POINT_new: function: PISSUING_DIST_POINT; cdecl = nil;
   {$EXTERNALSYM ISSUING_DIST_POINT_new}
 
-  ISSUING_DIST_POINT_free: procedure(a: PISSUING_DIST_POINT); cdecl = nil;
+  ISSUING_DIST_POINT_free: function(a: PISSUING_DIST_POINT): void; cdecl = nil;
   {$EXTERNALSYM ISSUING_DIST_POINT_free}
 
   d2i_ISSUING_DIST_POINT: function(a: PPISSUING_DIST_POINT; _in: PPIdAnsiChar; len: TIdC_LONG): PISSUING_DIST_POINT; cdecl = nil;
@@ -1498,7 +1249,7 @@ var
   ACCESS_DESCRIPTION_new: function: PACCESS_DESCRIPTION; cdecl = nil;
   {$EXTERNALSYM ACCESS_DESCRIPTION_new}
 
-  ACCESS_DESCRIPTION_free: procedure(a: PACCESS_DESCRIPTION); cdecl = nil;
+  ACCESS_DESCRIPTION_free: function(a: PACCESS_DESCRIPTION): void; cdecl = nil;
   {$EXTERNALSYM ACCESS_DESCRIPTION_free}
 
   d2i_ACCESS_DESCRIPTION: function(a: PPACCESS_DESCRIPTION; _in: PPIdAnsiChar; len: TIdC_LONG): PACCESS_DESCRIPTION; cdecl = nil;
@@ -1513,7 +1264,7 @@ var
   AUTHORITY_INFO_ACCESS_new: function: PAUTHORITY_INFO_ACCESS; cdecl = nil;
   {$EXTERNALSYM AUTHORITY_INFO_ACCESS_new}
 
-  AUTHORITY_INFO_ACCESS_free: procedure(a: PAUTHORITY_INFO_ACCESS); cdecl = nil;
+  AUTHORITY_INFO_ACCESS_free: function(a: PAUTHORITY_INFO_ACCESS): void; cdecl = nil;
   {$EXTERNALSYM AUTHORITY_INFO_ACCESS_free}
 
   d2i_AUTHORITY_INFO_ACCESS: function(a: PPAUTHORITY_INFO_ACCESS; _in: PPIdAnsiChar; len: TIdC_LONG): PAUTHORITY_INFO_ACCESS; cdecl = nil;
@@ -1531,7 +1282,7 @@ var
   POLICY_MAPPING_new: function: PPOLICY_MAPPING; cdecl = nil;
   {$EXTERNALSYM POLICY_MAPPING_new}
 
-  POLICY_MAPPING_free: procedure(a: PPOLICY_MAPPING); cdecl = nil;
+  POLICY_MAPPING_free: function(a: PPOLICY_MAPPING): void; cdecl = nil;
   {$EXTERNALSYM POLICY_MAPPING_free}
 
   POLICY_MAPPINGS_it: function: PASN1_ITEM; cdecl = nil;
@@ -1543,7 +1294,7 @@ var
   GENERAL_SUBTREE_new: function: PGENERAL_SUBTREE; cdecl = nil;
   {$EXTERNALSYM GENERAL_SUBTREE_new}
 
-  GENERAL_SUBTREE_free: procedure(a: PGENERAL_SUBTREE); cdecl = nil;
+  GENERAL_SUBTREE_free: function(a: PGENERAL_SUBTREE): void; cdecl = nil;
   {$EXTERNALSYM GENERAL_SUBTREE_free}
 
   NAME_CONSTRAINTS_it: function: PASN1_ITEM; cdecl = nil;
@@ -1552,13 +1303,13 @@ var
   NAME_CONSTRAINTS_new: function: PNAME_CONSTRAINTS; cdecl = nil;
   {$EXTERNALSYM NAME_CONSTRAINTS_new}
 
-  NAME_CONSTRAINTS_free: procedure(a: PNAME_CONSTRAINTS); cdecl = nil;
+  NAME_CONSTRAINTS_free: function(a: PNAME_CONSTRAINTS): void; cdecl = nil;
   {$EXTERNALSYM NAME_CONSTRAINTS_free}
 
   POLICY_CONSTRAINTS_new: function: PPOLICY_CONSTRAINTS; cdecl = nil;
   {$EXTERNALSYM POLICY_CONSTRAINTS_new}
 
-  POLICY_CONSTRAINTS_free: procedure(a: PPOLICY_CONSTRAINTS); cdecl = nil;
+  POLICY_CONSTRAINTS_free: function(a: PPOLICY_CONSTRAINTS): void; cdecl = nil;
   {$EXTERNALSYM POLICY_CONSTRAINTS_free}
 
   POLICY_CONSTRAINTS_it: function: PASN1_ITEM; cdecl = nil;
@@ -1573,7 +1324,7 @@ var
   v2i_GENERAL_NAME_ex: function(_out: PGENERAL_NAME; method: PX509V3_EXT_METHOD; ctx: PX509V3_CTX; cnf: PCONF_VALUE; is_nc: TIdC_INT): PGENERAL_NAME; cdecl = nil;
   {$EXTERNALSYM v2i_GENERAL_NAME_ex}
 
-  X509V3_conf_free: procedure(val: PCONF_VALUE); cdecl = nil;
+  X509V3_conf_free: function(val: PCONF_VALUE): void; cdecl = nil;
   {$EXTERNALSYM X509V3_conf_free}
 
   X509V3_EXT_nconf_nid: function(conf: PCONF; ctx: PX509V3_CTX; ext_nid: TIdC_INT; value: PIdAnsiChar): PX509_EXTENSION; cdecl = nil;
@@ -1618,10 +1369,10 @@ var
   X509V3_get_value_int: function(value: PCONF_VALUE; aint: PPASN1_INTEGER): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM X509V3_get_value_int}
 
-  X509V3_set_nconf: procedure(ctx: PX509V3_CTX; conf: PCONF); cdecl = nil;
+  X509V3_set_nconf: function(ctx: PX509V3_CTX; conf: PCONF): void; cdecl = nil;
   {$EXTERNALSYM X509V3_set_nconf}
 
-  X509V3_set_conf_lhash: procedure(ctx: PX509V3_CTX; lhash: Plhash_st_CONF_VALUE); cdecl = nil;
+  X509V3_set_conf_lhash: function(ctx: PX509V3_CTX; lhash: Plhash_st_CONF_VALUE): void; cdecl = nil;
   {$EXTERNALSYM X509V3_set_conf_lhash}
 
   X509V3_get_string: function(ctx: PX509V3_CTX; name: PIdAnsiChar; section: PIdAnsiChar): PIdAnsiChar; cdecl = nil;
@@ -1630,13 +1381,13 @@ var
   X509V3_get_section: function(ctx: PX509V3_CTX; section: PIdAnsiChar): Pstack_st_CONF_VALUE; cdecl = nil;
   {$EXTERNALSYM X509V3_get_section}
 
-  X509V3_string_free: procedure(ctx: PX509V3_CTX; str: PIdAnsiChar); cdecl = nil;
+  X509V3_string_free: function(ctx: PX509V3_CTX; str: PIdAnsiChar): void; cdecl = nil;
   {$EXTERNALSYM X509V3_string_free}
 
-  X509V3_section_free: procedure(ctx: PX509V3_CTX; section: Pstack_st_CONF_VALUE); cdecl = nil;
+  X509V3_section_free: function(ctx: PX509V3_CTX; section: Pstack_st_CONF_VALUE): void; cdecl = nil;
   {$EXTERNALSYM X509V3_section_free}
 
-  X509V3_set_ctx: procedure(ctx: PX509V3_CTX; issuer: PX509; subject: PX509; req: PX509_REQ; crl: PX509_CRL; flags: TIdC_INT); cdecl = nil;
+  X509V3_set_ctx: function(ctx: PX509V3_CTX; issuer: PX509; subject: PX509; req: PX509_REQ; crl: PX509_CRL; flags: TIdC_INT): void; cdecl = nil;
   {$EXTERNALSYM X509V3_set_ctx}
 
   X509V3_set_issuer_pkey: function(ctx: PX509V3_CTX; pkey: PEVP_PKEY): TIdC_INT; cdecl = nil;
@@ -1675,7 +1426,7 @@ var
   X509V3_EXT_add_alias: function(nid_to: TIdC_INT; nid_from: TIdC_INT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM X509V3_EXT_add_alias}
 
-  X509V3_EXT_cleanup: procedure; cdecl = nil;
+  X509V3_EXT_cleanup: function: void; cdecl = nil;
   {$EXTERNALSYM X509V3_EXT_cleanup}
 
   X509V3_EXT_get: function(ext: PX509_EXTENSION): PX509V3_EXT_METHOD; cdecl = nil;
@@ -1702,7 +1453,7 @@ var
   X509V3_add1_i2d: function(x: PPstack_st_X509_EXTENSION; nid: TIdC_INT; value: Pointer; crit: TIdC_INT; flags: TIdC_ULONG): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM X509V3_add1_i2d}
 
-  X509V3_EXT_val_prn: procedure(_out: PBIO; val: Pstack_st_CONF_VALUE; indent: TIdC_INT; ml: TIdC_INT); cdecl = nil;
+  X509V3_EXT_val_prn: function(_out: PBIO; val: Pstack_st_CONF_VALUE; indent: TIdC_INT; ml: TIdC_INT): void; cdecl = nil;
   {$EXTERNALSYM X509V3_EXT_val_prn}
 
   X509V3_EXT_print: function(_out: PBIO; ext: PX509_EXTENSION; flag: TIdC_ULONG; indent: TIdC_INT): TIdC_INT; cdecl = nil;
@@ -1729,22 +1480,22 @@ var
   X509_check_akid: function(issuer: PX509; akid: PAUTHORITY_KEYID): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM X509_check_akid}
 
-  X509_set_proxy_flag: procedure(x: PX509); cdecl = nil;
+  X509_set_proxy_flag: function(x: PX509): void; cdecl = nil;
   {$EXTERNALSYM X509_set_proxy_flag}
 
-  X509_set_proxy_pathlen: procedure(x: PX509; l: TIdC_LONG); cdecl = nil;
+  X509_set_proxy_pathlen: function(x: PX509; l: TIdC_LONG): void; cdecl = nil;
   {$EXTERNALSYM X509_set_proxy_pathlen}
 
   X509_get_proxy_pathlen: function(x: PX509): TIdC_LONG; cdecl = nil;
   {$EXTERNALSYM X509_get_proxy_pathlen}
 
-  X509_get_extension_flags: function(x: PX509): UInt32; cdecl = nil;
+  X509_get_extension_flags: function(x: PX509): TIdC_UINT32; cdecl = nil;
   {$EXTERNALSYM X509_get_extension_flags}
 
-  X509_get_key_usage: function(x: PX509): UInt32; cdecl = nil;
+  X509_get_key_usage: function(x: PX509): TIdC_UINT32; cdecl = nil;
   {$EXTERNALSYM X509_get_key_usage}
 
-  X509_get_extended_key_usage: function(x: PX509): UInt32; cdecl = nil;
+  X509_get_extended_key_usage: function(x: PX509): TIdC_UINT32; cdecl = nil;
   {$EXTERNALSYM X509_get_extended_key_usage}
 
   X509_get0_subject_key_id: function(x: PX509): PASN1_OCTET_STRING; cdecl = nil;
@@ -1771,10 +1522,10 @@ var
   X509_PURPOSE_get_by_id: function(id: TIdC_INT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM X509_PURPOSE_get_by_id}
 
-  X509_PURPOSE_add: function(id: TIdC_INT; trust: TIdC_INT; flags: TIdC_INT; ck: TX509_PURPOSE_add_ck_cb; name: PIdAnsiChar; sname: PIdAnsiChar; arg: Pointer): TIdC_INT; cdecl = nil;
+  X509_PURPOSE_add: function(id: TIdC_INT; trust: TIdC_INT; flags: TIdC_INT; ck: TPROXY_CERT_INFO_EXTENSION_it_func_cb; name: PIdAnsiChar; sname: PIdAnsiChar; arg: Pointer): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM X509_PURPOSE_add}
 
-  X509_PURPOSE_cleanup: procedure; cdecl = nil;
+  X509_PURPOSE_cleanup: function: void; cdecl = nil;
   {$EXTERNALSYM X509_PURPOSE_cleanup}
 
   X509_PURPOSE_get0: function(idx: TIdC_INT): PX509_PURPOSE; cdecl = nil;
@@ -1801,7 +1552,7 @@ var
   X509_REQ_get1_email: function(x: PX509_REQ): Pstack_st_OPENSSL_STRING; cdecl = nil;
   {$EXTERNALSYM X509_REQ_get1_email}
 
-  X509_email_free: procedure(sk: Pstack_st_OPENSSL_STRING); cdecl = nil;
+  X509_email_free: function(sk: Pstack_st_OPENSSL_STRING): void; cdecl = nil;
   {$EXTERNALSYM X509_email_free}
 
   X509_get1_ocsp: function(x: PX509): Pstack_st_OPENSSL_STRING; cdecl = nil;
@@ -1828,13 +1579,13 @@ var
   X509V3_NAME_from_section: function(nm: PX509_NAME; dn_sk: Pstack_st_CONF_VALUE; chtype: TIdC_ULONG): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM X509V3_NAME_from_section}
 
-  X509_POLICY_NODE_print: procedure(_out: PBIO; node: PX509_POLICY_NODE; indent: TIdC_INT); cdecl = nil;
+  X509_POLICY_NODE_print: function(_out: PBIO; node: PX509_POLICY_NODE; indent: TIdC_INT): void; cdecl = nil;
   {$EXTERNALSYM X509_POLICY_NODE_print}
 
   ASRange_new: function: PASRange; cdecl = nil;
   {$EXTERNALSYM ASRange_new}
 
-  ASRange_free: procedure(a: PASRange); cdecl = nil;
+  ASRange_free: function(a: PASRange): void; cdecl = nil;
   {$EXTERNALSYM ASRange_free}
 
   d2i_ASRange: function(a: PPASRange; _in: PPIdAnsiChar; len: TIdC_LONG): PASRange; cdecl = nil;
@@ -1849,7 +1600,7 @@ var
   ASIdOrRange_new: function: PASIdOrRange; cdecl = nil;
   {$EXTERNALSYM ASIdOrRange_new}
 
-  ASIdOrRange_free: procedure(a: PASIdOrRange); cdecl = nil;
+  ASIdOrRange_free: function(a: PASIdOrRange): void; cdecl = nil;
   {$EXTERNALSYM ASIdOrRange_free}
 
   d2i_ASIdOrRange: function(a: PPASIdOrRange; _in: PPIdAnsiChar; len: TIdC_LONG): PASIdOrRange; cdecl = nil;
@@ -1864,7 +1615,7 @@ var
   ASIdentifierChoice_new: function: PASIdentifierChoice; cdecl = nil;
   {$EXTERNALSYM ASIdentifierChoice_new}
 
-  ASIdentifierChoice_free: procedure(a: PASIdentifierChoice); cdecl = nil;
+  ASIdentifierChoice_free: function(a: PASIdentifierChoice): void; cdecl = nil;
   {$EXTERNALSYM ASIdentifierChoice_free}
 
   d2i_ASIdentifierChoice: function(a: PPASIdentifierChoice; _in: PPIdAnsiChar; len: TIdC_LONG): PASIdentifierChoice; cdecl = nil;
@@ -1879,7 +1630,7 @@ var
   ASIdentifiers_new: function: PASIdentifiers; cdecl = nil;
   {$EXTERNALSYM ASIdentifiers_new}
 
-  ASIdentifiers_free: procedure(a: PASIdentifiers); cdecl = nil;
+  ASIdentifiers_free: function(a: PASIdentifiers): void; cdecl = nil;
   {$EXTERNALSYM ASIdentifiers_free}
 
   d2i_ASIdentifiers: function(a: PPASIdentifiers; _in: PPIdAnsiChar; len: TIdC_LONG): PASIdentifiers; cdecl = nil;
@@ -1894,7 +1645,7 @@ var
   IPAddressRange_new: function: PIPAddressRange; cdecl = nil;
   {$EXTERNALSYM IPAddressRange_new}
 
-  IPAddressRange_free: procedure(a: PIPAddressRange); cdecl = nil;
+  IPAddressRange_free: function(a: PIPAddressRange): void; cdecl = nil;
   {$EXTERNALSYM IPAddressRange_free}
 
   d2i_IPAddressRange: function(a: PPIPAddressRange; _in: PPIdAnsiChar; len: TIdC_LONG): PIPAddressRange; cdecl = nil;
@@ -1909,7 +1660,7 @@ var
   IPAddressOrRange_new: function: PIPAddressOrRange; cdecl = nil;
   {$EXTERNALSYM IPAddressOrRange_new}
 
-  IPAddressOrRange_free: procedure(a: PIPAddressOrRange); cdecl = nil;
+  IPAddressOrRange_free: function(a: PIPAddressOrRange): void; cdecl = nil;
   {$EXTERNALSYM IPAddressOrRange_free}
 
   d2i_IPAddressOrRange: function(a: PPIPAddressOrRange; _in: PPIdAnsiChar; len: TIdC_LONG): PIPAddressOrRange; cdecl = nil;
@@ -1924,7 +1675,7 @@ var
   IPAddressChoice_new: function: PIPAddressChoice; cdecl = nil;
   {$EXTERNALSYM IPAddressChoice_new}
 
-  IPAddressChoice_free: procedure(a: PIPAddressChoice); cdecl = nil;
+  IPAddressChoice_free: function(a: PIPAddressChoice): void; cdecl = nil;
   {$EXTERNALSYM IPAddressChoice_free}
 
   d2i_IPAddressChoice: function(a: PPIPAddressChoice; _in: PPIdAnsiChar; len: TIdC_LONG): PIPAddressChoice; cdecl = nil;
@@ -1939,7 +1690,7 @@ var
   IPAddressFamily_new: function: PIPAddressFamily; cdecl = nil;
   {$EXTERNALSYM IPAddressFamily_new}
 
-  IPAddressFamily_free: procedure(a: PIPAddressFamily); cdecl = nil;
+  IPAddressFamily_free: function(a: PIPAddressFamily): void; cdecl = nil;
   {$EXTERNALSYM IPAddressFamily_free}
 
   d2i_IPAddressFamily: function(a: PPIPAddressFamily; _in: PPIdAnsiChar; len: TIdC_LONG): PIPAddressFamily; cdecl = nil;
@@ -2011,7 +1762,7 @@ var
   NAMING_AUTHORITY_new: function: PNAMING_AUTHORITY; cdecl = nil;
   {$EXTERNALSYM NAMING_AUTHORITY_new}
 
-  NAMING_AUTHORITY_free: procedure(a: PNAMING_AUTHORITY); cdecl = nil;
+  NAMING_AUTHORITY_free: function(a: PNAMING_AUTHORITY): void; cdecl = nil;
   {$EXTERNALSYM NAMING_AUTHORITY_free}
 
   d2i_NAMING_AUTHORITY: function(a: PPNAMING_AUTHORITY; _in: PPIdAnsiChar; len: TIdC_LONG): PNAMING_AUTHORITY; cdecl = nil;
@@ -2026,7 +1777,7 @@ var
   PROFESSION_INFO_new: function: PPROFESSION_INFO; cdecl = nil;
   {$EXTERNALSYM PROFESSION_INFO_new}
 
-  PROFESSION_INFO_free: procedure(a: PPROFESSION_INFO); cdecl = nil;
+  PROFESSION_INFO_free: function(a: PPROFESSION_INFO): void; cdecl = nil;
   {$EXTERNALSYM PROFESSION_INFO_free}
 
   d2i_PROFESSION_INFO: function(a: PPPROFESSION_INFO; _in: PPIdAnsiChar; len: TIdC_LONG): PPROFESSION_INFO; cdecl = nil;
@@ -2041,7 +1792,7 @@ var
   ADMISSIONS_new: function: PADMISSIONS; cdecl = nil;
   {$EXTERNALSYM ADMISSIONS_new}
 
-  ADMISSIONS_free: procedure(a: PADMISSIONS); cdecl = nil;
+  ADMISSIONS_free: function(a: PADMISSIONS): void; cdecl = nil;
   {$EXTERNALSYM ADMISSIONS_free}
 
   d2i_ADMISSIONS: function(a: PPADMISSIONS; _in: PPIdAnsiChar; len: TIdC_LONG): PADMISSIONS; cdecl = nil;
@@ -2056,7 +1807,7 @@ var
   ADMISSION_SYNTAX_new: function: PADMISSION_SYNTAX; cdecl = nil;
   {$EXTERNALSYM ADMISSION_SYNTAX_new}
 
-  ADMISSION_SYNTAX_free: procedure(a: PADMISSION_SYNTAX); cdecl = nil;
+  ADMISSION_SYNTAX_free: function(a: PADMISSION_SYNTAX): void; cdecl = nil;
   {$EXTERNALSYM ADMISSION_SYNTAX_free}
 
   d2i_ADMISSION_SYNTAX: function(a: PPADMISSION_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): PADMISSION_SYNTAX; cdecl = nil;
@@ -2077,73 +1828,73 @@ var
   NAMING_AUTHORITY_get0_authorityText: function(n: PNAMING_AUTHORITY): PASN1_STRING; cdecl = nil;
   {$EXTERNALSYM NAMING_AUTHORITY_get0_authorityText}
 
-  NAMING_AUTHORITY_set0_authorityId: procedure(n: PNAMING_AUTHORITY; namingAuthorityId: PASN1_OBJECT); cdecl = nil;
+  NAMING_AUTHORITY_set0_authorityId: function(n: PNAMING_AUTHORITY; namingAuthorityId: PASN1_OBJECT): void; cdecl = nil;
   {$EXTERNALSYM NAMING_AUTHORITY_set0_authorityId}
 
-  NAMING_AUTHORITY_set0_authorityURL: procedure(n: PNAMING_AUTHORITY; namingAuthorityUrl: PASN1_IA5STRING); cdecl = nil;
+  NAMING_AUTHORITY_set0_authorityURL: function(n: PNAMING_AUTHORITY; namingAuthorityUrl: PASN1_IA5STRING): void; cdecl = nil;
   {$EXTERNALSYM NAMING_AUTHORITY_set0_authorityURL}
 
-  NAMING_AUTHORITY_set0_authorityText: procedure(n: PNAMING_AUTHORITY; namingAuthorityText: PASN1_STRING); cdecl = nil;
+  NAMING_AUTHORITY_set0_authorityText: function(n: PNAMING_AUTHORITY; namingAuthorityText: PASN1_STRING): void; cdecl = nil;
   {$EXTERNALSYM NAMING_AUTHORITY_set0_authorityText}
 
   ADMISSION_SYNTAX_get0_admissionAuthority: function(_as: PADMISSION_SYNTAX): PGENERAL_NAME; cdecl = nil;
   {$EXTERNALSYM ADMISSION_SYNTAX_get0_admissionAuthority}
 
-  ADMISSION_SYNTAX_set0_admissionAuthority: procedure(_as: PADMISSION_SYNTAX; aa: PGENERAL_NAME); cdecl = nil;
+  ADMISSION_SYNTAX_set0_admissionAuthority: function(_as: PADMISSION_SYNTAX; aa: PGENERAL_NAME): void; cdecl = nil;
   {$EXTERNALSYM ADMISSION_SYNTAX_set0_admissionAuthority}
 
   ADMISSION_SYNTAX_get0_contentsOfAdmissions: function(_as: PADMISSION_SYNTAX): Pstack_st_ADMISSIONS; cdecl = nil;
   {$EXTERNALSYM ADMISSION_SYNTAX_get0_contentsOfAdmissions}
 
-  ADMISSION_SYNTAX_set0_contentsOfAdmissions: procedure(_as: PADMISSION_SYNTAX; a: Pstack_st_ADMISSIONS); cdecl = nil;
+  ADMISSION_SYNTAX_set0_contentsOfAdmissions: function(_as: PADMISSION_SYNTAX; a: Pstack_st_ADMISSIONS): void; cdecl = nil;
   {$EXTERNALSYM ADMISSION_SYNTAX_set0_contentsOfAdmissions}
 
   ADMISSIONS_get0_admissionAuthority: function(a: PADMISSIONS): PGENERAL_NAME; cdecl = nil;
   {$EXTERNALSYM ADMISSIONS_get0_admissionAuthority}
 
-  ADMISSIONS_set0_admissionAuthority: procedure(a: PADMISSIONS; aa: PGENERAL_NAME); cdecl = nil;
+  ADMISSIONS_set0_admissionAuthority: function(a: PADMISSIONS; aa: PGENERAL_NAME): void; cdecl = nil;
   {$EXTERNALSYM ADMISSIONS_set0_admissionAuthority}
 
   ADMISSIONS_get0_namingAuthority: function(a: PADMISSIONS): PNAMING_AUTHORITY; cdecl = nil;
   {$EXTERNALSYM ADMISSIONS_get0_namingAuthority}
 
-  ADMISSIONS_set0_namingAuthority: procedure(a: PADMISSIONS; na: PNAMING_AUTHORITY); cdecl = nil;
+  ADMISSIONS_set0_namingAuthority: function(a: PADMISSIONS; na: PNAMING_AUTHORITY): void; cdecl = nil;
   {$EXTERNALSYM ADMISSIONS_set0_namingAuthority}
 
   ADMISSIONS_get0_professionInfos: function(a: PADMISSIONS): PPROFESSION_INFOS; cdecl = nil;
   {$EXTERNALSYM ADMISSIONS_get0_professionInfos}
 
-  ADMISSIONS_set0_professionInfos: procedure(a: PADMISSIONS; pi: PPROFESSION_INFOS); cdecl = nil;
+  ADMISSIONS_set0_professionInfos: function(a: PADMISSIONS; pi: PPROFESSION_INFOS): void; cdecl = nil;
   {$EXTERNALSYM ADMISSIONS_set0_professionInfos}
 
   PROFESSION_INFO_get0_addProfessionInfo: function(pi: PPROFESSION_INFO): PASN1_OCTET_STRING; cdecl = nil;
   {$EXTERNALSYM PROFESSION_INFO_get0_addProfessionInfo}
 
-  PROFESSION_INFO_set0_addProfessionInfo: procedure(pi: PPROFESSION_INFO; aos: PASN1_OCTET_STRING); cdecl = nil;
+  PROFESSION_INFO_set0_addProfessionInfo: function(pi: PPROFESSION_INFO; aos: PASN1_OCTET_STRING): void; cdecl = nil;
   {$EXTERNALSYM PROFESSION_INFO_set0_addProfessionInfo}
 
   PROFESSION_INFO_get0_namingAuthority: function(pi: PPROFESSION_INFO): PNAMING_AUTHORITY; cdecl = nil;
   {$EXTERNALSYM PROFESSION_INFO_get0_namingAuthority}
 
-  PROFESSION_INFO_set0_namingAuthority: procedure(pi: PPROFESSION_INFO; na: PNAMING_AUTHORITY); cdecl = nil;
+  PROFESSION_INFO_set0_namingAuthority: function(pi: PPROFESSION_INFO; na: PNAMING_AUTHORITY): void; cdecl = nil;
   {$EXTERNALSYM PROFESSION_INFO_set0_namingAuthority}
 
   PROFESSION_INFO_get0_professionItems: function(pi: PPROFESSION_INFO): Pstack_st_ASN1_STRING; cdecl = nil;
   {$EXTERNALSYM PROFESSION_INFO_get0_professionItems}
 
-  PROFESSION_INFO_set0_professionItems: procedure(pi: PPROFESSION_INFO; _as: Pstack_st_ASN1_STRING); cdecl = nil;
+  PROFESSION_INFO_set0_professionItems: function(pi: PPROFESSION_INFO; _as: Pstack_st_ASN1_STRING): void; cdecl = nil;
   {$EXTERNALSYM PROFESSION_INFO_set0_professionItems}
 
   PROFESSION_INFO_get0_professionOIDs: function(pi: PPROFESSION_INFO): Pstack_st_ASN1_OBJECT; cdecl = nil;
   {$EXTERNALSYM PROFESSION_INFO_get0_professionOIDs}
 
-  PROFESSION_INFO_set0_professionOIDs: procedure(pi: PPROFESSION_INFO; po: Pstack_st_ASN1_OBJECT); cdecl = nil;
+  PROFESSION_INFO_set0_professionOIDs: function(pi: PPROFESSION_INFO; po: Pstack_st_ASN1_OBJECT): void; cdecl = nil;
   {$EXTERNALSYM PROFESSION_INFO_set0_professionOIDs}
 
   PROFESSION_INFO_get0_registrationNumber: function(pi: PPROFESSION_INFO): PASN1_PRINTABLESTRING; cdecl = nil;
   {$EXTERNALSYM PROFESSION_INFO_get0_registrationNumber}
 
-  PROFESSION_INFO_set0_registrationNumber: procedure(pi: PPROFESSION_INFO; rn: PASN1_PRINTABLESTRING); cdecl = nil;
+  PROFESSION_INFO_set0_registrationNumber: function(pi: PPROFESSION_INFO; rn: PASN1_PRINTABLESTRING): void; cdecl = nil;
   {$EXTERNALSYM PROFESSION_INFO_set0_registrationNumber}
 
   OSSL_GENERAL_NAMES_print: function(_out: PBIO; gens: PGENERAL_NAMES; indent: TIdC_INT): TIdC_INT; cdecl = nil;
@@ -2152,7 +1903,7 @@ var
   OSSL_ATTRIBUTES_SYNTAX_new: function: POSSL_ATTRIBUTES_SYNTAX; cdecl = nil;
   {$EXTERNALSYM OSSL_ATTRIBUTES_SYNTAX_new}
 
-  OSSL_ATTRIBUTES_SYNTAX_free: procedure(a: POSSL_ATTRIBUTES_SYNTAX); cdecl = nil;
+  OSSL_ATTRIBUTES_SYNTAX_free: function(a: POSSL_ATTRIBUTES_SYNTAX): void; cdecl = nil;
   {$EXTERNALSYM OSSL_ATTRIBUTES_SYNTAX_free}
 
   d2i_OSSL_ATTRIBUTES_SYNTAX: function(a: PPOSSL_ATTRIBUTES_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ATTRIBUTES_SYNTAX; cdecl = nil;
@@ -2167,7 +1918,7 @@ var
   OSSL_USER_NOTICE_SYNTAX_new: function: POSSL_USER_NOTICE_SYNTAX; cdecl = nil;
   {$EXTERNALSYM OSSL_USER_NOTICE_SYNTAX_new}
 
-  OSSL_USER_NOTICE_SYNTAX_free: procedure(a: POSSL_USER_NOTICE_SYNTAX); cdecl = nil;
+  OSSL_USER_NOTICE_SYNTAX_free: function(a: POSSL_USER_NOTICE_SYNTAX): void; cdecl = nil;
   {$EXTERNALSYM OSSL_USER_NOTICE_SYNTAX_free}
 
   d2i_OSSL_USER_NOTICE_SYNTAX: function(a: PPOSSL_USER_NOTICE_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_USER_NOTICE_SYNTAX; cdecl = nil;
@@ -2182,7 +1933,7 @@ var
   OSSL_ROLE_SPEC_CERT_ID_new: function: POSSL_ROLE_SPEC_CERT_ID; cdecl = nil;
   {$EXTERNALSYM OSSL_ROLE_SPEC_CERT_ID_new}
 
-  OSSL_ROLE_SPEC_CERT_ID_free: procedure(a: POSSL_ROLE_SPEC_CERT_ID); cdecl = nil;
+  OSSL_ROLE_SPEC_CERT_ID_free: function(a: POSSL_ROLE_SPEC_CERT_ID): void; cdecl = nil;
   {$EXTERNALSYM OSSL_ROLE_SPEC_CERT_ID_free}
 
   d2i_OSSL_ROLE_SPEC_CERT_ID: function(a: PPOSSL_ROLE_SPEC_CERT_ID; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ROLE_SPEC_CERT_ID; cdecl = nil;
@@ -2197,7 +1948,7 @@ var
   OSSL_ROLE_SPEC_CERT_ID_SYNTAX_new: function: POSSL_ROLE_SPEC_CERT_ID_SYNTAX; cdecl = nil;
   {$EXTERNALSYM OSSL_ROLE_SPEC_CERT_ID_SYNTAX_new}
 
-  OSSL_ROLE_SPEC_CERT_ID_SYNTAX_free: procedure(a: POSSL_ROLE_SPEC_CERT_ID_SYNTAX); cdecl = nil;
+  OSSL_ROLE_SPEC_CERT_ID_SYNTAX_free: function(a: POSSL_ROLE_SPEC_CERT_ID_SYNTAX): void; cdecl = nil;
   {$EXTERNALSYM OSSL_ROLE_SPEC_CERT_ID_SYNTAX_free}
 
   d2i_OSSL_ROLE_SPEC_CERT_ID_SYNTAX: function(a: PPOSSL_ROLE_SPEC_CERT_ID_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ROLE_SPEC_CERT_ID_SYNTAX; cdecl = nil;
@@ -2212,7 +1963,7 @@ var
   OSSL_HASH_new: function: POSSL_HASH; cdecl = nil;
   {$EXTERNALSYM OSSL_HASH_new}
 
-  OSSL_HASH_free: procedure(a: POSSL_HASH); cdecl = nil;
+  OSSL_HASH_free: function(a: POSSL_HASH): void; cdecl = nil;
   {$EXTERNALSYM OSSL_HASH_free}
 
   d2i_OSSL_HASH: function(a: PPOSSL_HASH; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_HASH; cdecl = nil;
@@ -2227,7 +1978,7 @@ var
   OSSL_INFO_SYNTAX_new: function: POSSL_INFO_SYNTAX; cdecl = nil;
   {$EXTERNALSYM OSSL_INFO_SYNTAX_new}
 
-  OSSL_INFO_SYNTAX_free: procedure(a: POSSL_INFO_SYNTAX); cdecl = nil;
+  OSSL_INFO_SYNTAX_free: function(a: POSSL_INFO_SYNTAX): void; cdecl = nil;
   {$EXTERNALSYM OSSL_INFO_SYNTAX_free}
 
   d2i_OSSL_INFO_SYNTAX: function(a: PPOSSL_INFO_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_INFO_SYNTAX; cdecl = nil;
@@ -2242,7 +1993,7 @@ var
   OSSL_INFO_SYNTAX_POINTER_new: function: POSSL_INFO_SYNTAX_POINTER; cdecl = nil;
   {$EXTERNALSYM OSSL_INFO_SYNTAX_POINTER_new}
 
-  OSSL_INFO_SYNTAX_POINTER_free: procedure(a: POSSL_INFO_SYNTAX_POINTER); cdecl = nil;
+  OSSL_INFO_SYNTAX_POINTER_free: function(a: POSSL_INFO_SYNTAX_POINTER): void; cdecl = nil;
   {$EXTERNALSYM OSSL_INFO_SYNTAX_POINTER_free}
 
   d2i_OSSL_INFO_SYNTAX_POINTER: function(a: PPOSSL_INFO_SYNTAX_POINTER; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_INFO_SYNTAX_POINTER; cdecl = nil;
@@ -2257,7 +2008,7 @@ var
   OSSL_PRIVILEGE_POLICY_ID_new: function: POSSL_PRIVILEGE_POLICY_ID; cdecl = nil;
   {$EXTERNALSYM OSSL_PRIVILEGE_POLICY_ID_new}
 
-  OSSL_PRIVILEGE_POLICY_ID_free: procedure(a: POSSL_PRIVILEGE_POLICY_ID); cdecl = nil;
+  OSSL_PRIVILEGE_POLICY_ID_free: function(a: POSSL_PRIVILEGE_POLICY_ID): void; cdecl = nil;
   {$EXTERNALSYM OSSL_PRIVILEGE_POLICY_ID_free}
 
   d2i_OSSL_PRIVILEGE_POLICY_ID: function(a: PPOSSL_PRIVILEGE_POLICY_ID; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_PRIVILEGE_POLICY_ID; cdecl = nil;
@@ -2272,7 +2023,7 @@ var
   OSSL_ATTRIBUTE_DESCRIPTOR_new: function: POSSL_ATTRIBUTE_DESCRIPTOR; cdecl = nil;
   {$EXTERNALSYM OSSL_ATTRIBUTE_DESCRIPTOR_new}
 
-  OSSL_ATTRIBUTE_DESCRIPTOR_free: procedure(a: POSSL_ATTRIBUTE_DESCRIPTOR); cdecl = nil;
+  OSSL_ATTRIBUTE_DESCRIPTOR_free: function(a: POSSL_ATTRIBUTE_DESCRIPTOR): void; cdecl = nil;
   {$EXTERNALSYM OSSL_ATTRIBUTE_DESCRIPTOR_free}
 
   d2i_OSSL_ATTRIBUTE_DESCRIPTOR: function(a: PPOSSL_ATTRIBUTE_DESCRIPTOR; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ATTRIBUTE_DESCRIPTOR; cdecl = nil;
@@ -2287,7 +2038,7 @@ var
   OSSL_DAY_TIME_new: function: POSSL_DAY_TIME; cdecl = nil;
   {$EXTERNALSYM OSSL_DAY_TIME_new}
 
-  OSSL_DAY_TIME_free: procedure(a: POSSL_DAY_TIME); cdecl = nil;
+  OSSL_DAY_TIME_free: function(a: POSSL_DAY_TIME): void; cdecl = nil;
   {$EXTERNALSYM OSSL_DAY_TIME_free}
 
   d2i_OSSL_DAY_TIME: function(a: PPOSSL_DAY_TIME; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_DAY_TIME; cdecl = nil;
@@ -2302,7 +2053,7 @@ var
   OSSL_DAY_TIME_BAND_new: function: POSSL_DAY_TIME_BAND; cdecl = nil;
   {$EXTERNALSYM OSSL_DAY_TIME_BAND_new}
 
-  OSSL_DAY_TIME_BAND_free: procedure(a: POSSL_DAY_TIME_BAND); cdecl = nil;
+  OSSL_DAY_TIME_BAND_free: function(a: POSSL_DAY_TIME_BAND): void; cdecl = nil;
   {$EXTERNALSYM OSSL_DAY_TIME_BAND_free}
 
   d2i_OSSL_DAY_TIME_BAND: function(a: PPOSSL_DAY_TIME_BAND; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_DAY_TIME_BAND; cdecl = nil;
@@ -2317,7 +2068,7 @@ var
   OSSL_TIME_SPEC_DAY_new: function: POSSL_TIME_SPEC_DAY; cdecl = nil;
   {$EXTERNALSYM OSSL_TIME_SPEC_DAY_new}
 
-  OSSL_TIME_SPEC_DAY_free: procedure(a: POSSL_TIME_SPEC_DAY); cdecl = nil;
+  OSSL_TIME_SPEC_DAY_free: function(a: POSSL_TIME_SPEC_DAY): void; cdecl = nil;
   {$EXTERNALSYM OSSL_TIME_SPEC_DAY_free}
 
   d2i_OSSL_TIME_SPEC_DAY: function(a: PPOSSL_TIME_SPEC_DAY; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_SPEC_DAY; cdecl = nil;
@@ -2332,7 +2083,7 @@ var
   OSSL_TIME_SPEC_WEEKS_new: function: POSSL_TIME_SPEC_WEEKS; cdecl = nil;
   {$EXTERNALSYM OSSL_TIME_SPEC_WEEKS_new}
 
-  OSSL_TIME_SPEC_WEEKS_free: procedure(a: POSSL_TIME_SPEC_WEEKS); cdecl = nil;
+  OSSL_TIME_SPEC_WEEKS_free: function(a: POSSL_TIME_SPEC_WEEKS): void; cdecl = nil;
   {$EXTERNALSYM OSSL_TIME_SPEC_WEEKS_free}
 
   d2i_OSSL_TIME_SPEC_WEEKS: function(a: PPOSSL_TIME_SPEC_WEEKS; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_SPEC_WEEKS; cdecl = nil;
@@ -2347,7 +2098,7 @@ var
   OSSL_TIME_SPEC_MONTH_new: function: POSSL_TIME_SPEC_MONTH; cdecl = nil;
   {$EXTERNALSYM OSSL_TIME_SPEC_MONTH_new}
 
-  OSSL_TIME_SPEC_MONTH_free: procedure(a: POSSL_TIME_SPEC_MONTH); cdecl = nil;
+  OSSL_TIME_SPEC_MONTH_free: function(a: POSSL_TIME_SPEC_MONTH): void; cdecl = nil;
   {$EXTERNALSYM OSSL_TIME_SPEC_MONTH_free}
 
   d2i_OSSL_TIME_SPEC_MONTH: function(a: PPOSSL_TIME_SPEC_MONTH; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_SPEC_MONTH; cdecl = nil;
@@ -2362,7 +2113,7 @@ var
   OSSL_NAMED_DAY_new: function: POSSL_NAMED_DAY; cdecl = nil;
   {$EXTERNALSYM OSSL_NAMED_DAY_new}
 
-  OSSL_NAMED_DAY_free: procedure(a: POSSL_NAMED_DAY); cdecl = nil;
+  OSSL_NAMED_DAY_free: function(a: POSSL_NAMED_DAY): void; cdecl = nil;
   {$EXTERNALSYM OSSL_NAMED_DAY_free}
 
   d2i_OSSL_NAMED_DAY: function(a: PPOSSL_NAMED_DAY; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_NAMED_DAY; cdecl = nil;
@@ -2377,7 +2128,7 @@ var
   OSSL_TIME_SPEC_X_DAY_OF_new: function: POSSL_TIME_SPEC_X_DAY_OF; cdecl = nil;
   {$EXTERNALSYM OSSL_TIME_SPEC_X_DAY_OF_new}
 
-  OSSL_TIME_SPEC_X_DAY_OF_free: procedure(a: POSSL_TIME_SPEC_X_DAY_OF); cdecl = nil;
+  OSSL_TIME_SPEC_X_DAY_OF_free: function(a: POSSL_TIME_SPEC_X_DAY_OF): void; cdecl = nil;
   {$EXTERNALSYM OSSL_TIME_SPEC_X_DAY_OF_free}
 
   d2i_OSSL_TIME_SPEC_X_DAY_OF: function(a: PPOSSL_TIME_SPEC_X_DAY_OF; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_SPEC_X_DAY_OF; cdecl = nil;
@@ -2392,7 +2143,7 @@ var
   OSSL_TIME_SPEC_ABSOLUTE_new: function: POSSL_TIME_SPEC_ABSOLUTE; cdecl = nil;
   {$EXTERNALSYM OSSL_TIME_SPEC_ABSOLUTE_new}
 
-  OSSL_TIME_SPEC_ABSOLUTE_free: procedure(a: POSSL_TIME_SPEC_ABSOLUTE); cdecl = nil;
+  OSSL_TIME_SPEC_ABSOLUTE_free: function(a: POSSL_TIME_SPEC_ABSOLUTE): void; cdecl = nil;
   {$EXTERNALSYM OSSL_TIME_SPEC_ABSOLUTE_free}
 
   d2i_OSSL_TIME_SPEC_ABSOLUTE: function(a: PPOSSL_TIME_SPEC_ABSOLUTE; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_SPEC_ABSOLUTE; cdecl = nil;
@@ -2407,7 +2158,7 @@ var
   OSSL_TIME_SPEC_TIME_new: function: POSSL_TIME_SPEC_TIME; cdecl = nil;
   {$EXTERNALSYM OSSL_TIME_SPEC_TIME_new}
 
-  OSSL_TIME_SPEC_TIME_free: procedure(a: POSSL_TIME_SPEC_TIME); cdecl = nil;
+  OSSL_TIME_SPEC_TIME_free: function(a: POSSL_TIME_SPEC_TIME): void; cdecl = nil;
   {$EXTERNALSYM OSSL_TIME_SPEC_TIME_free}
 
   d2i_OSSL_TIME_SPEC_TIME: function(a: PPOSSL_TIME_SPEC_TIME; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_SPEC_TIME; cdecl = nil;
@@ -2422,7 +2173,7 @@ var
   OSSL_TIME_SPEC_new: function: POSSL_TIME_SPEC; cdecl = nil;
   {$EXTERNALSYM OSSL_TIME_SPEC_new}
 
-  OSSL_TIME_SPEC_free: procedure(a: POSSL_TIME_SPEC); cdecl = nil;
+  OSSL_TIME_SPEC_free: function(a: POSSL_TIME_SPEC): void; cdecl = nil;
   {$EXTERNALSYM OSSL_TIME_SPEC_free}
 
   d2i_OSSL_TIME_SPEC: function(a: PPOSSL_TIME_SPEC; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_SPEC; cdecl = nil;
@@ -2437,7 +2188,7 @@ var
   OSSL_TIME_PERIOD_new: function: POSSL_TIME_PERIOD; cdecl = nil;
   {$EXTERNALSYM OSSL_TIME_PERIOD_new}
 
-  OSSL_TIME_PERIOD_free: procedure(a: POSSL_TIME_PERIOD); cdecl = nil;
+  OSSL_TIME_PERIOD_free: function(a: POSSL_TIME_PERIOD): void; cdecl = nil;
   {$EXTERNALSYM OSSL_TIME_PERIOD_free}
 
   d2i_OSSL_TIME_PERIOD: function(a: PPOSSL_TIME_PERIOD; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_PERIOD; cdecl = nil;
@@ -2452,7 +2203,7 @@ var
   OSSL_ATAV_new: function: POSSL_ATAV; cdecl = nil;
   {$EXTERNALSYM OSSL_ATAV_new}
 
-  OSSL_ATAV_free: procedure(a: POSSL_ATAV); cdecl = nil;
+  OSSL_ATAV_free: function(a: POSSL_ATAV): void; cdecl = nil;
   {$EXTERNALSYM OSSL_ATAV_free}
 
   d2i_OSSL_ATAV: function(a: PPOSSL_ATAV; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ATAV; cdecl = nil;
@@ -2467,7 +2218,7 @@ var
   OSSL_ATTRIBUTE_TYPE_MAPPING_new: function: POSSL_ATTRIBUTE_TYPE_MAPPING; cdecl = nil;
   {$EXTERNALSYM OSSL_ATTRIBUTE_TYPE_MAPPING_new}
 
-  OSSL_ATTRIBUTE_TYPE_MAPPING_free: procedure(a: POSSL_ATTRIBUTE_TYPE_MAPPING); cdecl = nil;
+  OSSL_ATTRIBUTE_TYPE_MAPPING_free: function(a: POSSL_ATTRIBUTE_TYPE_MAPPING): void; cdecl = nil;
   {$EXTERNALSYM OSSL_ATTRIBUTE_TYPE_MAPPING_free}
 
   d2i_OSSL_ATTRIBUTE_TYPE_MAPPING: function(a: PPOSSL_ATTRIBUTE_TYPE_MAPPING; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ATTRIBUTE_TYPE_MAPPING; cdecl = nil;
@@ -2482,7 +2233,7 @@ var
   OSSL_ATTRIBUTE_VALUE_MAPPING_new: function: POSSL_ATTRIBUTE_VALUE_MAPPING; cdecl = nil;
   {$EXTERNALSYM OSSL_ATTRIBUTE_VALUE_MAPPING_new}
 
-  OSSL_ATTRIBUTE_VALUE_MAPPING_free: procedure(a: POSSL_ATTRIBUTE_VALUE_MAPPING); cdecl = nil;
+  OSSL_ATTRIBUTE_VALUE_MAPPING_free: function(a: POSSL_ATTRIBUTE_VALUE_MAPPING): void; cdecl = nil;
   {$EXTERNALSYM OSSL_ATTRIBUTE_VALUE_MAPPING_free}
 
   d2i_OSSL_ATTRIBUTE_VALUE_MAPPING: function(a: PPOSSL_ATTRIBUTE_VALUE_MAPPING; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ATTRIBUTE_VALUE_MAPPING; cdecl = nil;
@@ -2497,7 +2248,7 @@ var
   OSSL_ATTRIBUTE_MAPPING_new: function: POSSL_ATTRIBUTE_MAPPING; cdecl = nil;
   {$EXTERNALSYM OSSL_ATTRIBUTE_MAPPING_new}
 
-  OSSL_ATTRIBUTE_MAPPING_free: procedure(a: POSSL_ATTRIBUTE_MAPPING); cdecl = nil;
+  OSSL_ATTRIBUTE_MAPPING_free: function(a: POSSL_ATTRIBUTE_MAPPING): void; cdecl = nil;
   {$EXTERNALSYM OSSL_ATTRIBUTE_MAPPING_free}
 
   d2i_OSSL_ATTRIBUTE_MAPPING: function(a: PPOSSL_ATTRIBUTE_MAPPING; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ATTRIBUTE_MAPPING; cdecl = nil;
@@ -2512,7 +2263,7 @@ var
   OSSL_ATTRIBUTE_MAPPINGS_new: function: POSSL_ATTRIBUTE_MAPPINGS; cdecl = nil;
   {$EXTERNALSYM OSSL_ATTRIBUTE_MAPPINGS_new}
 
-  OSSL_ATTRIBUTE_MAPPINGS_free: procedure(a: POSSL_ATTRIBUTE_MAPPINGS); cdecl = nil;
+  OSSL_ATTRIBUTE_MAPPINGS_free: function(a: POSSL_ATTRIBUTE_MAPPINGS): void; cdecl = nil;
   {$EXTERNALSYM OSSL_ATTRIBUTE_MAPPINGS_free}
 
   d2i_OSSL_ATTRIBUTE_MAPPINGS: function(a: PPOSSL_ATTRIBUTE_MAPPINGS; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ATTRIBUTE_MAPPINGS; cdecl = nil;
@@ -2527,7 +2278,7 @@ var
   OSSL_ALLOWED_ATTRIBUTES_CHOICE_new: function: POSSL_ALLOWED_ATTRIBUTES_CHOICE; cdecl = nil;
   {$EXTERNALSYM OSSL_ALLOWED_ATTRIBUTES_CHOICE_new}
 
-  OSSL_ALLOWED_ATTRIBUTES_CHOICE_free: procedure(a: POSSL_ALLOWED_ATTRIBUTES_CHOICE); cdecl = nil;
+  OSSL_ALLOWED_ATTRIBUTES_CHOICE_free: function(a: POSSL_ALLOWED_ATTRIBUTES_CHOICE): void; cdecl = nil;
   {$EXTERNALSYM OSSL_ALLOWED_ATTRIBUTES_CHOICE_free}
 
   d2i_OSSL_ALLOWED_ATTRIBUTES_CHOICE: function(a: PPOSSL_ALLOWED_ATTRIBUTES_CHOICE; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ALLOWED_ATTRIBUTES_CHOICE; cdecl = nil;
@@ -2542,7 +2293,7 @@ var
   OSSL_ALLOWED_ATTRIBUTES_ITEM_new: function: POSSL_ALLOWED_ATTRIBUTES_ITEM; cdecl = nil;
   {$EXTERNALSYM OSSL_ALLOWED_ATTRIBUTES_ITEM_new}
 
-  OSSL_ALLOWED_ATTRIBUTES_ITEM_free: procedure(a: POSSL_ALLOWED_ATTRIBUTES_ITEM); cdecl = nil;
+  OSSL_ALLOWED_ATTRIBUTES_ITEM_free: function(a: POSSL_ALLOWED_ATTRIBUTES_ITEM): void; cdecl = nil;
   {$EXTERNALSYM OSSL_ALLOWED_ATTRIBUTES_ITEM_free}
 
   d2i_OSSL_ALLOWED_ATTRIBUTES_ITEM: function(a: PPOSSL_ALLOWED_ATTRIBUTES_ITEM; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ALLOWED_ATTRIBUTES_ITEM; cdecl = nil;
@@ -2557,7 +2308,7 @@ var
   OSSL_ALLOWED_ATTRIBUTES_SYNTAX_new: function: POSSL_ALLOWED_ATTRIBUTES_SYNTAX; cdecl = nil;
   {$EXTERNALSYM OSSL_ALLOWED_ATTRIBUTES_SYNTAX_new}
 
-  OSSL_ALLOWED_ATTRIBUTES_SYNTAX_free: procedure(a: POSSL_ALLOWED_ATTRIBUTES_SYNTAX); cdecl = nil;
+  OSSL_ALLOWED_ATTRIBUTES_SYNTAX_free: function(a: POSSL_ALLOWED_ATTRIBUTES_SYNTAX): void; cdecl = nil;
   {$EXTERNALSYM OSSL_ALLOWED_ATTRIBUTES_SYNTAX_free}
 
   d2i_OSSL_ALLOWED_ATTRIBUTES_SYNTAX: function(a: PPOSSL_ALLOWED_ATTRIBUTES_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ALLOWED_ATTRIBUTES_SYNTAX; cdecl = nil;
@@ -2572,7 +2323,7 @@ var
   OSSL_AA_DIST_POINT_new: function: POSSL_AA_DIST_POINT; cdecl = nil;
   {$EXTERNALSYM OSSL_AA_DIST_POINT_new}
 
-  OSSL_AA_DIST_POINT_free: procedure(a: POSSL_AA_DIST_POINT); cdecl = nil;
+  OSSL_AA_DIST_POINT_free: function(a: POSSL_AA_DIST_POINT): void; cdecl = nil;
   {$EXTERNALSYM OSSL_AA_DIST_POINT_free}
 
   d2i_OSSL_AA_DIST_POINT: function(a: PPOSSL_AA_DIST_POINT; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_AA_DIST_POINT; cdecl = nil;
@@ -2595,37 +2346,37 @@ var
 function GENERAL_NAME_set1_X509_NAME(tgt: PPGENERAL_NAME; src: PX509_NAME): TIdC_INT; cdecl;
 function DIST_POINT_NAME_dup(a: PDIST_POINT_NAME): PDIST_POINT_NAME; cdecl;
 function PROXY_POLICY_new: PPROXY_POLICY; cdecl;
-procedure PROXY_POLICY_free(a: PPROXY_POLICY); cdecl;
+function PROXY_POLICY_free(a: PPROXY_POLICY): void; cdecl;
 function d2i_PROXY_POLICY(a: PPPROXY_POLICY; _in: PPIdAnsiChar; len: TIdC_LONG): PPROXY_POLICY; cdecl;
 function i2d_PROXY_POLICY(a: PPROXY_POLICY; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function PROXY_POLICY_it: PASN1_ITEM; cdecl;
 function PROXY_CERT_INFO_EXTENSION_new: PPROXY_CERT_INFO_EXTENSION; cdecl;
-procedure PROXY_CERT_INFO_EXTENSION_free(a: PPROXY_CERT_INFO_EXTENSION); cdecl;
+function PROXY_CERT_INFO_EXTENSION_free(a: PPROXY_CERT_INFO_EXTENSION): void; cdecl;
 function d2i_PROXY_CERT_INFO_EXTENSION(a: PPPROXY_CERT_INFO_EXTENSION; _in: PPIdAnsiChar; len: TIdC_LONG): PPROXY_CERT_INFO_EXTENSION; cdecl;
 function i2d_PROXY_CERT_INFO_EXTENSION(a: PPROXY_CERT_INFO_EXTENSION; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function PROXY_CERT_INFO_EXTENSION_it: PASN1_ITEM; cdecl;
 function BASIC_CONSTRAINTS_new: PBASIC_CONSTRAINTS; cdecl;
-procedure BASIC_CONSTRAINTS_free(a: PBASIC_CONSTRAINTS); cdecl;
+function BASIC_CONSTRAINTS_free(a: PBASIC_CONSTRAINTS): void; cdecl;
 function d2i_BASIC_CONSTRAINTS(a: PPBASIC_CONSTRAINTS; _in: PPIdAnsiChar; len: TIdC_LONG): PBASIC_CONSTRAINTS; cdecl;
 function i2d_BASIC_CONSTRAINTS(a: PBASIC_CONSTRAINTS; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function BASIC_CONSTRAINTS_it: PASN1_ITEM; cdecl;
 function OSSL_BASIC_ATTR_CONSTRAINTS_new: POSSL_BASIC_ATTR_CONSTRAINTS; cdecl;
-procedure OSSL_BASIC_ATTR_CONSTRAINTS_free(a: POSSL_BASIC_ATTR_CONSTRAINTS); cdecl;
+function OSSL_BASIC_ATTR_CONSTRAINTS_free(a: POSSL_BASIC_ATTR_CONSTRAINTS): void; cdecl;
 function d2i_OSSL_BASIC_ATTR_CONSTRAINTS(a: PPOSSL_BASIC_ATTR_CONSTRAINTS; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_BASIC_ATTR_CONSTRAINTS; cdecl;
 function i2d_OSSL_BASIC_ATTR_CONSTRAINTS(a: POSSL_BASIC_ATTR_CONSTRAINTS; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_BASIC_ATTR_CONSTRAINTS_it: PASN1_ITEM; cdecl;
 function SXNET_new: PSXNET; cdecl;
-procedure SXNET_free(a: PSXNET); cdecl;
+function SXNET_free(a: PSXNET): void; cdecl;
 function d2i_SXNET(a: PPSXNET; _in: PPIdAnsiChar; len: TIdC_LONG): PSXNET; cdecl;
 function i2d_SXNET(a: PSXNET; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function SXNET_it: PASN1_ITEM; cdecl;
 function SXNETID_new: PSXNETID; cdecl;
-procedure SXNETID_free(a: PSXNETID); cdecl;
+function SXNETID_free(a: PSXNETID): void; cdecl;
 function d2i_SXNETID(a: PPSXNETID; _in: PPIdAnsiChar; len: TIdC_LONG): PSXNETID; cdecl;
 function i2d_SXNETID(a: PSXNETID; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function SXNETID_it: PASN1_ITEM; cdecl;
 function ISSUER_SIGN_TOOL_new: PISSUER_SIGN_TOOL; cdecl;
-procedure ISSUER_SIGN_TOOL_free(a: PISSUER_SIGN_TOOL); cdecl;
+function ISSUER_SIGN_TOOL_free(a: PISSUER_SIGN_TOOL): void; cdecl;
 function d2i_ISSUER_SIGN_TOOL(a: PPISSUER_SIGN_TOOL; _in: PPIdAnsiChar; len: TIdC_LONG): PISSUER_SIGN_TOOL; cdecl;
 function i2d_ISSUER_SIGN_TOOL(a: PISSUER_SIGN_TOOL; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ISSUER_SIGN_TOOL_it: PASN1_ITEM; cdecl;
@@ -2636,17 +2387,17 @@ function SXNET_get_id_asc(sx: PSXNET; zone: PIdAnsiChar): PASN1_OCTET_STRING; cd
 function SXNET_get_id_ulong(sx: PSXNET; lzone: TIdC_ULONG): PASN1_OCTET_STRING; cdecl;
 function SXNET_get_id_INTEGER(sx: PSXNET; zone: PASN1_INTEGER): PASN1_OCTET_STRING; cdecl;
 function AUTHORITY_KEYID_new: PAUTHORITY_KEYID; cdecl;
-procedure AUTHORITY_KEYID_free(a: PAUTHORITY_KEYID); cdecl;
+function AUTHORITY_KEYID_free(a: PAUTHORITY_KEYID): void; cdecl;
 function d2i_AUTHORITY_KEYID(a: PPAUTHORITY_KEYID; _in: PPIdAnsiChar; len: TIdC_LONG): PAUTHORITY_KEYID; cdecl;
 function i2d_AUTHORITY_KEYID(a: PAUTHORITY_KEYID; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function AUTHORITY_KEYID_it: PASN1_ITEM; cdecl;
 function PKEY_USAGE_PERIOD_new: PPKEY_USAGE_PERIOD; cdecl;
-procedure PKEY_USAGE_PERIOD_free(a: PPKEY_USAGE_PERIOD); cdecl;
+function PKEY_USAGE_PERIOD_free(a: PPKEY_USAGE_PERIOD): void; cdecl;
 function d2i_PKEY_USAGE_PERIOD(a: PPPKEY_USAGE_PERIOD; _in: PPIdAnsiChar; len: TIdC_LONG): PPKEY_USAGE_PERIOD; cdecl;
 function i2d_PKEY_USAGE_PERIOD(a: PPKEY_USAGE_PERIOD; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function PKEY_USAGE_PERIOD_it: PASN1_ITEM; cdecl;
 function GENERAL_NAME_new: PGENERAL_NAME; cdecl;
-procedure GENERAL_NAME_free(a: PGENERAL_NAME); cdecl;
+function GENERAL_NAME_free(a: PGENERAL_NAME): void; cdecl;
 function d2i_GENERAL_NAME(a: PPGENERAL_NAME; _in: PPIdAnsiChar; len: TIdC_LONG): PGENERAL_NAME; cdecl;
 function i2d_GENERAL_NAME(a: PGENERAL_NAME; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function GENERAL_NAME_it: PASN1_ITEM; cdecl;
@@ -2661,79 +2412,79 @@ function s2i_ASN1_UTF8STRING(method: PX509V3_EXT_METHOD; ctx: PX509V3_CTX; str: 
 function i2v_GENERAL_NAME(method: PX509V3_EXT_METHOD; gen: PGENERAL_NAME; ret: Pstack_st_CONF_VALUE): Pstack_st_CONF_VALUE; cdecl;
 function GENERAL_NAME_print(_out: PBIO; gen: PGENERAL_NAME): TIdC_INT; cdecl;
 function GENERAL_NAMES_new: PGENERAL_NAMES; cdecl;
-procedure GENERAL_NAMES_free(a: PGENERAL_NAMES); cdecl;
+function GENERAL_NAMES_free(a: PGENERAL_NAMES): void; cdecl;
 function d2i_GENERAL_NAMES(a: PPGENERAL_NAMES; _in: PPIdAnsiChar; len: TIdC_LONG): PGENERAL_NAMES; cdecl;
 function i2d_GENERAL_NAMES(a: PGENERAL_NAMES; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function GENERAL_NAMES_it: PASN1_ITEM; cdecl;
 function i2v_GENERAL_NAMES(method: PX509V3_EXT_METHOD; gen: PGENERAL_NAMES; extlist: Pstack_st_CONF_VALUE): Pstack_st_CONF_VALUE; cdecl;
 function v2i_GENERAL_NAMES(method: PX509V3_EXT_METHOD; ctx: PX509V3_CTX; nval: Pstack_st_CONF_VALUE): PGENERAL_NAMES; cdecl;
 function OTHERNAME_new: POTHERNAME; cdecl;
-procedure OTHERNAME_free(a: POTHERNAME); cdecl;
+function OTHERNAME_free(a: POTHERNAME): void; cdecl;
 function d2i_OTHERNAME(a: PPOTHERNAME; _in: PPIdAnsiChar; len: TIdC_LONG): POTHERNAME; cdecl;
 function i2d_OTHERNAME(a: POTHERNAME; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OTHERNAME_it: PASN1_ITEM; cdecl;
 function EDIPARTYNAME_new: PEDIPARTYNAME; cdecl;
-procedure EDIPARTYNAME_free(a: PEDIPARTYNAME); cdecl;
+function EDIPARTYNAME_free(a: PEDIPARTYNAME): void; cdecl;
 function d2i_EDIPARTYNAME(a: PPEDIPARTYNAME; _in: PPIdAnsiChar; len: TIdC_LONG): PEDIPARTYNAME; cdecl;
 function i2d_EDIPARTYNAME(a: PEDIPARTYNAME; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function EDIPARTYNAME_it: PASN1_ITEM; cdecl;
 function OTHERNAME_cmp(a: POTHERNAME; b: POTHERNAME): TIdC_INT; cdecl;
-procedure GENERAL_NAME_set0_value(a: PGENERAL_NAME; _type: TIdC_INT; value: Pointer); cdecl;
+function GENERAL_NAME_set0_value(a: PGENERAL_NAME; _type: TIdC_INT; value: Pointer): void; cdecl;
 function GENERAL_NAME_get0_value(a: PGENERAL_NAME; ptype: PIdC_INT): Pointer; cdecl;
 function GENERAL_NAME_set0_othername(gen: PGENERAL_NAME; oid: PASN1_OBJECT; value: PASN1_TYPE): TIdC_INT; cdecl;
 function GENERAL_NAME_get0_otherName(gen: PGENERAL_NAME; poid: PPASN1_OBJECT; pvalue: PPASN1_TYPE): TIdC_INT; cdecl;
 function i2s_ASN1_OCTET_STRING(method: PX509V3_EXT_METHOD; ia5: PASN1_OCTET_STRING): PIdAnsiChar; cdecl;
 function s2i_ASN1_OCTET_STRING(method: PX509V3_EXT_METHOD; ctx: PX509V3_CTX; str: PIdAnsiChar): PASN1_OCTET_STRING; cdecl;
 function EXTENDED_KEY_USAGE_new: PEXTENDED_KEY_USAGE; cdecl;
-procedure EXTENDED_KEY_USAGE_free(a: PEXTENDED_KEY_USAGE); cdecl;
+function EXTENDED_KEY_USAGE_free(a: PEXTENDED_KEY_USAGE): void; cdecl;
 function d2i_EXTENDED_KEY_USAGE(a: PPEXTENDED_KEY_USAGE; _in: PPIdAnsiChar; len: TIdC_LONG): PEXTENDED_KEY_USAGE; cdecl;
 function i2d_EXTENDED_KEY_USAGE(a: PEXTENDED_KEY_USAGE; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function EXTENDED_KEY_USAGE_it: PASN1_ITEM; cdecl;
 function i2a_ACCESS_DESCRIPTION(bp: PBIO; a: PACCESS_DESCRIPTION): TIdC_INT; cdecl;
 function TLS_FEATURE_new: PLS_FEATURE; cdecl;
-procedure TLS_FEATURE_free(a: PLS_FEATURE); cdecl;
+function TLS_FEATURE_free(a: PLS_FEATURE): void; cdecl;
 function CERTIFICATEPOLICIES_new: PCERTIFICATEPOLICIES; cdecl;
-procedure CERTIFICATEPOLICIES_free(a: PCERTIFICATEPOLICIES); cdecl;
+function CERTIFICATEPOLICIES_free(a: PCERTIFICATEPOLICIES): void; cdecl;
 function d2i_CERTIFICATEPOLICIES(a: PPCERTIFICATEPOLICIES; _in: PPIdAnsiChar; len: TIdC_LONG): PCERTIFICATEPOLICIES; cdecl;
 function i2d_CERTIFICATEPOLICIES(a: PCERTIFICATEPOLICIES; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function CERTIFICATEPOLICIES_it: PASN1_ITEM; cdecl;
 function POLICYINFO_new: PPOLICYINFO; cdecl;
-procedure POLICYINFO_free(a: PPOLICYINFO); cdecl;
+function POLICYINFO_free(a: PPOLICYINFO): void; cdecl;
 function d2i_POLICYINFO(a: PPPOLICYINFO; _in: PPIdAnsiChar; len: TIdC_LONG): PPOLICYINFO; cdecl;
 function i2d_POLICYINFO(a: PPOLICYINFO; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function POLICYINFO_it: PASN1_ITEM; cdecl;
 function POLICYQUALINFO_new: PPOLICYQUALINFO; cdecl;
-procedure POLICYQUALINFO_free(a: PPOLICYQUALINFO); cdecl;
+function POLICYQUALINFO_free(a: PPOLICYQUALINFO): void; cdecl;
 function d2i_POLICYQUALINFO(a: PPPOLICYQUALINFO; _in: PPIdAnsiChar; len: TIdC_LONG): PPOLICYQUALINFO; cdecl;
 function i2d_POLICYQUALINFO(a: PPOLICYQUALINFO; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function POLICYQUALINFO_it: PASN1_ITEM; cdecl;
 function USERNOTICE_new: PUSERNOTICE; cdecl;
-procedure USERNOTICE_free(a: PUSERNOTICE); cdecl;
+function USERNOTICE_free(a: PUSERNOTICE): void; cdecl;
 function d2i_USERNOTICE(a: PPUSERNOTICE; _in: PPIdAnsiChar; len: TIdC_LONG): PUSERNOTICE; cdecl;
 function i2d_USERNOTICE(a: PUSERNOTICE; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function USERNOTICE_it: PASN1_ITEM; cdecl;
 function NOTICEREF_new: PNOTICEREF; cdecl;
-procedure NOTICEREF_free(a: PNOTICEREF); cdecl;
+function NOTICEREF_free(a: PNOTICEREF): void; cdecl;
 function d2i_NOTICEREF(a: PPNOTICEREF; _in: PPIdAnsiChar; len: TIdC_LONG): PNOTICEREF; cdecl;
 function i2d_NOTICEREF(a: PNOTICEREF; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function NOTICEREF_it: PASN1_ITEM; cdecl;
 function CRL_DIST_POINTS_new: PCRL_DIST_POINTS; cdecl;
-procedure CRL_DIST_POINTS_free(a: PCRL_DIST_POINTS); cdecl;
+function CRL_DIST_POINTS_free(a: PCRL_DIST_POINTS): void; cdecl;
 function d2i_CRL_DIST_POINTS(a: PPCRL_DIST_POINTS; _in: PPIdAnsiChar; len: TIdC_LONG): PCRL_DIST_POINTS; cdecl;
 function i2d_CRL_DIST_POINTS(a: PCRL_DIST_POINTS; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function CRL_DIST_POINTS_it: PASN1_ITEM; cdecl;
 function DIST_POINT_new: PDIST_POINT; cdecl;
-procedure DIST_POINT_free(a: PDIST_POINT); cdecl;
+function DIST_POINT_free(a: PDIST_POINT): void; cdecl;
 function d2i_DIST_POINT(a: PPDIST_POINT; _in: PPIdAnsiChar; len: TIdC_LONG): PDIST_POINT; cdecl;
 function i2d_DIST_POINT(a: PDIST_POINT; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function DIST_POINT_it: PASN1_ITEM; cdecl;
 function DIST_POINT_NAME_new: PDIST_POINT_NAME; cdecl;
-procedure DIST_POINT_NAME_free(a: PDIST_POINT_NAME); cdecl;
+function DIST_POINT_NAME_free(a: PDIST_POINT_NAME): void; cdecl;
 function d2i_DIST_POINT_NAME(a: PPDIST_POINT_NAME; _in: PPIdAnsiChar; len: TIdC_LONG): PDIST_POINT_NAME; cdecl;
 function i2d_DIST_POINT_NAME(a: PDIST_POINT_NAME; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function DIST_POINT_NAME_it: PASN1_ITEM; cdecl;
 function ISSUING_DIST_POINT_new: PISSUING_DIST_POINT; cdecl;
-procedure ISSUING_DIST_POINT_free(a: PISSUING_DIST_POINT); cdecl;
+function ISSUING_DIST_POINT_free(a: PISSUING_DIST_POINT): void; cdecl;
 function d2i_ISSUING_DIST_POINT(a: PPISSUING_DIST_POINT; _in: PPIdAnsiChar; len: TIdC_LONG): PISSUING_DIST_POINT; cdecl;
 function i2d_ISSUING_DIST_POINT(a: PISSUING_DIST_POINT; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ISSUING_DIST_POINT_it: PASN1_ITEM; cdecl;
@@ -2741,32 +2492,32 @@ function DIST_POINT_set_dpname(dpn: PDIST_POINT_NAME; iname: PX509_NAME): TIdC_I
 function NAME_CONSTRAINTS_check(x: PX509; nc: PNAME_CONSTRAINTS): TIdC_INT; cdecl;
 function NAME_CONSTRAINTS_check_CN(x: PX509; nc: PNAME_CONSTRAINTS): TIdC_INT; cdecl;
 function ACCESS_DESCRIPTION_new: PACCESS_DESCRIPTION; cdecl;
-procedure ACCESS_DESCRIPTION_free(a: PACCESS_DESCRIPTION); cdecl;
+function ACCESS_DESCRIPTION_free(a: PACCESS_DESCRIPTION): void; cdecl;
 function d2i_ACCESS_DESCRIPTION(a: PPACCESS_DESCRIPTION; _in: PPIdAnsiChar; len: TIdC_LONG): PACCESS_DESCRIPTION; cdecl;
 function i2d_ACCESS_DESCRIPTION(a: PACCESS_DESCRIPTION; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ACCESS_DESCRIPTION_it: PASN1_ITEM; cdecl;
 function AUTHORITY_INFO_ACCESS_new: PAUTHORITY_INFO_ACCESS; cdecl;
-procedure AUTHORITY_INFO_ACCESS_free(a: PAUTHORITY_INFO_ACCESS); cdecl;
+function AUTHORITY_INFO_ACCESS_free(a: PAUTHORITY_INFO_ACCESS): void; cdecl;
 function d2i_AUTHORITY_INFO_ACCESS(a: PPAUTHORITY_INFO_ACCESS; _in: PPIdAnsiChar; len: TIdC_LONG): PAUTHORITY_INFO_ACCESS; cdecl;
 function i2d_AUTHORITY_INFO_ACCESS(a: PAUTHORITY_INFO_ACCESS; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function AUTHORITY_INFO_ACCESS_it: PASN1_ITEM; cdecl;
 function POLICY_MAPPING_it: PASN1_ITEM; cdecl;
 function POLICY_MAPPING_new: PPOLICY_MAPPING; cdecl;
-procedure POLICY_MAPPING_free(a: PPOLICY_MAPPING); cdecl;
+function POLICY_MAPPING_free(a: PPOLICY_MAPPING): void; cdecl;
 function POLICY_MAPPINGS_it: PASN1_ITEM; cdecl;
 function GENERAL_SUBTREE_it: PASN1_ITEM; cdecl;
 function GENERAL_SUBTREE_new: PGENERAL_SUBTREE; cdecl;
-procedure GENERAL_SUBTREE_free(a: PGENERAL_SUBTREE); cdecl;
+function GENERAL_SUBTREE_free(a: PGENERAL_SUBTREE): void; cdecl;
 function NAME_CONSTRAINTS_it: PASN1_ITEM; cdecl;
 function NAME_CONSTRAINTS_new: PNAME_CONSTRAINTS; cdecl;
-procedure NAME_CONSTRAINTS_free(a: PNAME_CONSTRAINTS); cdecl;
+function NAME_CONSTRAINTS_free(a: PNAME_CONSTRAINTS): void; cdecl;
 function POLICY_CONSTRAINTS_new: PPOLICY_CONSTRAINTS; cdecl;
-procedure POLICY_CONSTRAINTS_free(a: PPOLICY_CONSTRAINTS); cdecl;
+function POLICY_CONSTRAINTS_free(a: PPOLICY_CONSTRAINTS): void; cdecl;
 function POLICY_CONSTRAINTS_it: PASN1_ITEM; cdecl;
 function a2i_GENERAL_NAME(_out: PGENERAL_NAME; method: PX509V3_EXT_METHOD; ctx: PX509V3_CTX; gen_type: TIdC_INT; value: PIdAnsiChar; is_nc: TIdC_INT): PGENERAL_NAME; cdecl;
 function v2i_GENERAL_NAME(method: PX509V3_EXT_METHOD; ctx: PX509V3_CTX; cnf: PCONF_VALUE): PGENERAL_NAME; cdecl;
 function v2i_GENERAL_NAME_ex(_out: PGENERAL_NAME; method: PX509V3_EXT_METHOD; ctx: PX509V3_CTX; cnf: PCONF_VALUE; is_nc: TIdC_INT): PGENERAL_NAME; cdecl;
-procedure X509V3_conf_free(val: PCONF_VALUE); cdecl;
+function X509V3_conf_free(val: PCONF_VALUE): void; cdecl;
 function X509V3_EXT_nconf_nid(conf: PCONF; ctx: PX509V3_CTX; ext_nid: TIdC_INT; value: PIdAnsiChar): PX509_EXTENSION; cdecl;
 function X509V3_EXT_nconf(conf: PCONF; ctx: PX509V3_CTX; name: PIdAnsiChar; value: PIdAnsiChar): PX509_EXTENSION; cdecl;
 function X509V3_EXT_add_nconf_sk(conf: PCONF; ctx: PX509V3_CTX; section: PIdAnsiChar; sk: PPstack_st_X509_EXTENSION): TIdC_INT; cdecl;
@@ -2781,13 +2532,13 @@ function X509V3_EXT_CRL_add_conf(conf: Plhash_st_CONF_VALUE; ctx: PX509V3_CTX; s
 function X509V3_add_value_bool_nf(name: PIdAnsiChar; asn1_bool: TIdC_INT; extlist: PPstack_st_CONF_VALUE): TIdC_INT; cdecl;
 function X509V3_get_value_bool(value: PCONF_VALUE; asn1_bool: PIdC_INT): TIdC_INT; cdecl;
 function X509V3_get_value_int(value: PCONF_VALUE; aint: PPASN1_INTEGER): TIdC_INT; cdecl;
-procedure X509V3_set_nconf(ctx: PX509V3_CTX; conf: PCONF); cdecl;
-procedure X509V3_set_conf_lhash(ctx: PX509V3_CTX; lhash: Plhash_st_CONF_VALUE); cdecl;
+function X509V3_set_nconf(ctx: PX509V3_CTX; conf: PCONF): void; cdecl;
+function X509V3_set_conf_lhash(ctx: PX509V3_CTX; lhash: Plhash_st_CONF_VALUE): void; cdecl;
 function X509V3_get_string(ctx: PX509V3_CTX; name: PIdAnsiChar; section: PIdAnsiChar): PIdAnsiChar; cdecl;
 function X509V3_get_section(ctx: PX509V3_CTX; section: PIdAnsiChar): Pstack_st_CONF_VALUE; cdecl;
-procedure X509V3_string_free(ctx: PX509V3_CTX; str: PIdAnsiChar); cdecl;
-procedure X509V3_section_free(ctx: PX509V3_CTX; section: Pstack_st_CONF_VALUE); cdecl;
-procedure X509V3_set_ctx(ctx: PX509V3_CTX; issuer: PX509; subject: PX509; req: PX509_REQ; crl: PX509_CRL; flags: TIdC_INT); cdecl;
+function X509V3_string_free(ctx: PX509V3_CTX; str: PIdAnsiChar): void; cdecl;
+function X509V3_section_free(ctx: PX509V3_CTX; section: Pstack_st_CONF_VALUE): void; cdecl;
+function X509V3_set_ctx(ctx: PX509V3_CTX; issuer: PX509; subject: PX509; req: PX509_REQ; crl: PX509_CRL; flags: TIdC_INT): void; cdecl;
 function X509V3_set_issuer_pkey(ctx: PX509V3_CTX; pkey: PEVP_PKEY): TIdC_INT; cdecl;
 function X509V3_add_value(name: PIdAnsiChar; value: PIdAnsiChar; extlist: PPstack_st_CONF_VALUE): TIdC_INT; cdecl;
 function X509V3_add_value_uchar(name: PIdAnsiChar; value: PIdAnsiChar; extlist: PPstack_st_CONF_VALUE): TIdC_INT; cdecl;
@@ -2800,7 +2551,7 @@ function i2s_ASN1_ENUMERATED_TABLE(meth: PX509V3_EXT_METHOD; aint: PASN1_ENUMERA
 function X509V3_EXT_add(ext: PX509V3_EXT_METHOD): TIdC_INT; cdecl;
 function X509V3_EXT_add_list(extlist: PX509V3_EXT_METHOD): TIdC_INT; cdecl;
 function X509V3_EXT_add_alias(nid_to: TIdC_INT; nid_from: TIdC_INT): TIdC_INT; cdecl;
-procedure X509V3_EXT_cleanup; cdecl;
+function X509V3_EXT_cleanup: void; cdecl;
 function X509V3_EXT_get(ext: PX509_EXTENSION): PX509V3_EXT_METHOD; cdecl;
 function X509V3_EXT_get_nid(nid: TIdC_INT): PX509V3_EXT_METHOD; cdecl;
 function X509V3_add_standard_extensions: TIdC_INT; cdecl;
@@ -2809,7 +2560,7 @@ function X509V3_EXT_d2i(ext: PX509_EXTENSION): Pointer; cdecl;
 function X509V3_get_d2i(x: Pstack_st_X509_EXTENSION; nid: TIdC_INT; crit: PIdC_INT; idx: PIdC_INT): Pointer; cdecl;
 function X509V3_EXT_i2d(ext_nid: TIdC_INT; crit: TIdC_INT; ext_struc: Pointer): PX509_EXTENSION; cdecl;
 function X509V3_add1_i2d(x: PPstack_st_X509_EXTENSION; nid: TIdC_INT; value: Pointer; crit: TIdC_INT; flags: TIdC_ULONG): TIdC_INT; cdecl;
-procedure X509V3_EXT_val_prn(_out: PBIO; val: Pstack_st_CONF_VALUE; indent: TIdC_INT; ml: TIdC_INT); cdecl;
+function X509V3_EXT_val_prn(_out: PBIO; val: Pstack_st_CONF_VALUE; indent: TIdC_INT; ml: TIdC_INT): void; cdecl;
 function X509V3_EXT_print(_out: PBIO; ext: PX509_EXTENSION; flag: TIdC_ULONG; indent: TIdC_INT): TIdC_INT; cdecl;
 function X509V3_EXT_print_fp(_out: PFILE; ext: PX509_EXTENSION; flag: TIdC_INT; indent: TIdC_INT): TIdC_INT; cdecl;
 function X509V3_extensions_print(_out: PBIO; title: PIdAnsiChar; exts: Pstack_st_X509_EXTENSION; flag: TIdC_ULONG; indent: TIdC_INT): TIdC_INT; cdecl;
@@ -2818,12 +2569,12 @@ function X509_check_purpose(x: PX509; id: TIdC_INT; ca: TIdC_INT): TIdC_INT; cde
 function X509_supported_extension(ex: PX509_EXTENSION): TIdC_INT; cdecl;
 function X509_check_issued(issuer: PX509; subject: PX509): TIdC_INT; cdecl;
 function X509_check_akid(issuer: PX509; akid: PAUTHORITY_KEYID): TIdC_INT; cdecl;
-procedure X509_set_proxy_flag(x: PX509); cdecl;
-procedure X509_set_proxy_pathlen(x: PX509; l: TIdC_LONG); cdecl;
+function X509_set_proxy_flag(x: PX509): void; cdecl;
+function X509_set_proxy_pathlen(x: PX509; l: TIdC_LONG): void; cdecl;
 function X509_get_proxy_pathlen(x: PX509): TIdC_LONG; cdecl;
-function X509_get_extension_flags(x: PX509): UInt32; cdecl;
-function X509_get_key_usage(x: PX509): UInt32; cdecl;
-function X509_get_extended_key_usage(x: PX509): UInt32; cdecl;
+function X509_get_extension_flags(x: PX509): TIdC_UINT32; cdecl;
+function X509_get_key_usage(x: PX509): TIdC_UINT32; cdecl;
+function X509_get_extended_key_usage(x: PX509): TIdC_UINT32; cdecl;
 function X509_get0_subject_key_id(x: PX509): PASN1_OCTET_STRING; cdecl;
 function X509_get0_authority_key_id(x: PX509): PASN1_OCTET_STRING; cdecl;
 function X509_get0_authority_issuer(x: PX509): PGENERAL_NAMES; cdecl;
@@ -2832,8 +2583,8 @@ function X509_PURPOSE_get_count: TIdC_INT; cdecl;
 function X509_PURPOSE_get_unused_id(libctx: POSSL_LIB_CTX): TIdC_INT; cdecl;
 function X509_PURPOSE_get_by_sname(sname: PIdAnsiChar): TIdC_INT; cdecl;
 function X509_PURPOSE_get_by_id(id: TIdC_INT): TIdC_INT; cdecl;
-function X509_PURPOSE_add(id: TIdC_INT; trust: TIdC_INT; flags: TIdC_INT; ck: TX509_PURPOSE_add_ck_cb; name: PIdAnsiChar; sname: PIdAnsiChar; arg: Pointer): TIdC_INT; cdecl;
-procedure X509_PURPOSE_cleanup; cdecl;
+function X509_PURPOSE_add(id: TIdC_INT; trust: TIdC_INT; flags: TIdC_INT; ck: TPROXY_CERT_INFO_EXTENSION_it_func_cb; name: PIdAnsiChar; sname: PIdAnsiChar; arg: Pointer): TIdC_INT; cdecl;
+function X509_PURPOSE_cleanup: void; cdecl;
 function X509_PURPOSE_get0(idx: TIdC_INT): PX509_PURPOSE; cdecl;
 function X509_PURPOSE_get_id(arg1: PX509_PURPOSE): TIdC_INT; cdecl;
 function X509_PURPOSE_get0_name(xp: PX509_PURPOSE): PIdAnsiChar; cdecl;
@@ -2842,7 +2593,7 @@ function X509_PURPOSE_get_trust(xp: PX509_PURPOSE): TIdC_INT; cdecl;
 function X509_PURPOSE_set(p: PIdC_INT; purpose: TIdC_INT): TIdC_INT; cdecl;
 function X509_get1_email(x: PX509): Pstack_st_OPENSSL_STRING; cdecl;
 function X509_REQ_get1_email(x: PX509_REQ): Pstack_st_OPENSSL_STRING; cdecl;
-procedure X509_email_free(sk: Pstack_st_OPENSSL_STRING); cdecl;
+function X509_email_free(sk: Pstack_st_OPENSSL_STRING): void; cdecl;
 function X509_get1_ocsp(x: PX509): Pstack_st_OPENSSL_STRING; cdecl;
 function X509_check_host(x: PX509; chk: PIdAnsiChar; chklen: TIdC_SIZET; flags: TIdC_UINT; peername: PPIdAnsiChar): TIdC_INT; cdecl;
 function X509_check_email(x: PX509; chk: PIdAnsiChar; chklen: TIdC_SIZET; flags: TIdC_UINT): TIdC_INT; cdecl;
@@ -2851,44 +2602,44 @@ function X509_check_ip_asc(x: PX509; ipasc: PIdAnsiChar; flags: TIdC_UINT): TIdC
 function a2i_IPADDRESS(ipasc: PIdAnsiChar): PASN1_OCTET_STRING; cdecl;
 function a2i_IPADDRESS_NC(ipasc: PIdAnsiChar): PASN1_OCTET_STRING; cdecl;
 function X509V3_NAME_from_section(nm: PX509_NAME; dn_sk: Pstack_st_CONF_VALUE; chtype: TIdC_ULONG): TIdC_INT; cdecl;
-procedure X509_POLICY_NODE_print(_out: PBIO; node: PX509_POLICY_NODE; indent: TIdC_INT); cdecl;
+function X509_POLICY_NODE_print(_out: PBIO; node: PX509_POLICY_NODE; indent: TIdC_INT): void; cdecl;
 function ASRange_new: PASRange; cdecl;
-procedure ASRange_free(a: PASRange); cdecl;
+function ASRange_free(a: PASRange): void; cdecl;
 function d2i_ASRange(a: PPASRange; _in: PPIdAnsiChar; len: TIdC_LONG): PASRange; cdecl;
 function i2d_ASRange(a: PASRange; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASRange_it: PASN1_ITEM; cdecl;
 function ASIdOrRange_new: PASIdOrRange; cdecl;
-procedure ASIdOrRange_free(a: PASIdOrRange); cdecl;
+function ASIdOrRange_free(a: PASIdOrRange): void; cdecl;
 function d2i_ASIdOrRange(a: PPASIdOrRange; _in: PPIdAnsiChar; len: TIdC_LONG): PASIdOrRange; cdecl;
 function i2d_ASIdOrRange(a: PASIdOrRange; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASIdOrRange_it: PASN1_ITEM; cdecl;
 function ASIdentifierChoice_new: PASIdentifierChoice; cdecl;
-procedure ASIdentifierChoice_free(a: PASIdentifierChoice); cdecl;
+function ASIdentifierChoice_free(a: PASIdentifierChoice): void; cdecl;
 function d2i_ASIdentifierChoice(a: PPASIdentifierChoice; _in: PPIdAnsiChar; len: TIdC_LONG): PASIdentifierChoice; cdecl;
 function i2d_ASIdentifierChoice(a: PASIdentifierChoice; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASIdentifierChoice_it: PASN1_ITEM; cdecl;
 function ASIdentifiers_new: PASIdentifiers; cdecl;
-procedure ASIdentifiers_free(a: PASIdentifiers); cdecl;
+function ASIdentifiers_free(a: PASIdentifiers): void; cdecl;
 function d2i_ASIdentifiers(a: PPASIdentifiers; _in: PPIdAnsiChar; len: TIdC_LONG): PASIdentifiers; cdecl;
 function i2d_ASIdentifiers(a: PASIdentifiers; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASIdentifiers_it: PASN1_ITEM; cdecl;
 function IPAddressRange_new: PIPAddressRange; cdecl;
-procedure IPAddressRange_free(a: PIPAddressRange); cdecl;
+function IPAddressRange_free(a: PIPAddressRange): void; cdecl;
 function d2i_IPAddressRange(a: PPIPAddressRange; _in: PPIdAnsiChar; len: TIdC_LONG): PIPAddressRange; cdecl;
 function i2d_IPAddressRange(a: PIPAddressRange; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function IPAddressRange_it: PASN1_ITEM; cdecl;
 function IPAddressOrRange_new: PIPAddressOrRange; cdecl;
-procedure IPAddressOrRange_free(a: PIPAddressOrRange); cdecl;
+function IPAddressOrRange_free(a: PIPAddressOrRange): void; cdecl;
 function d2i_IPAddressOrRange(a: PPIPAddressOrRange; _in: PPIdAnsiChar; len: TIdC_LONG): PIPAddressOrRange; cdecl;
 function i2d_IPAddressOrRange(a: PIPAddressOrRange; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function IPAddressOrRange_it: PASN1_ITEM; cdecl;
 function IPAddressChoice_new: PIPAddressChoice; cdecl;
-procedure IPAddressChoice_free(a: PIPAddressChoice); cdecl;
+function IPAddressChoice_free(a: PIPAddressChoice): void; cdecl;
 function d2i_IPAddressChoice(a: PPIPAddressChoice; _in: PPIdAnsiChar; len: TIdC_LONG): PIPAddressChoice; cdecl;
 function i2d_IPAddressChoice(a: PIPAddressChoice; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function IPAddressChoice_it: PASN1_ITEM; cdecl;
 function IPAddressFamily_new: PIPAddressFamily; cdecl;
-procedure IPAddressFamily_free(a: PIPAddressFamily); cdecl;
+function IPAddressFamily_free(a: PIPAddressFamily): void; cdecl;
 function d2i_IPAddressFamily(a: PPIPAddressFamily; _in: PPIdAnsiChar; len: TIdC_LONG): PIPAddressFamily; cdecl;
 function i2d_IPAddressFamily(a: PIPAddressFamily; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function IPAddressFamily_it: PASN1_ITEM; cdecl;
@@ -2912,194 +2663,194 @@ function X509v3_addr_validate_path(arg1: PX509_STORE_CTX): TIdC_INT; cdecl;
 function X509v3_asid_validate_resource_set(chain: Pstack_st_X509; ext: PASIdentifiers; allow_inheritance: TIdC_INT): TIdC_INT; cdecl;
 function X509v3_addr_validate_resource_set(chain: Pstack_st_X509; ext: PIPAddrBlocks; allow_inheritance: TIdC_INT): TIdC_INT; cdecl;
 function NAMING_AUTHORITY_new: PNAMING_AUTHORITY; cdecl;
-procedure NAMING_AUTHORITY_free(a: PNAMING_AUTHORITY); cdecl;
+function NAMING_AUTHORITY_free(a: PNAMING_AUTHORITY): void; cdecl;
 function d2i_NAMING_AUTHORITY(a: PPNAMING_AUTHORITY; _in: PPIdAnsiChar; len: TIdC_LONG): PNAMING_AUTHORITY; cdecl;
 function i2d_NAMING_AUTHORITY(a: PNAMING_AUTHORITY; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function NAMING_AUTHORITY_it: PASN1_ITEM; cdecl;
 function PROFESSION_INFO_new: PPROFESSION_INFO; cdecl;
-procedure PROFESSION_INFO_free(a: PPROFESSION_INFO); cdecl;
+function PROFESSION_INFO_free(a: PPROFESSION_INFO): void; cdecl;
 function d2i_PROFESSION_INFO(a: PPPROFESSION_INFO; _in: PPIdAnsiChar; len: TIdC_LONG): PPROFESSION_INFO; cdecl;
 function i2d_PROFESSION_INFO(a: PPROFESSION_INFO; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function PROFESSION_INFO_it: PASN1_ITEM; cdecl;
 function ADMISSIONS_new: PADMISSIONS; cdecl;
-procedure ADMISSIONS_free(a: PADMISSIONS); cdecl;
+function ADMISSIONS_free(a: PADMISSIONS): void; cdecl;
 function d2i_ADMISSIONS(a: PPADMISSIONS; _in: PPIdAnsiChar; len: TIdC_LONG): PADMISSIONS; cdecl;
 function i2d_ADMISSIONS(a: PADMISSIONS; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ADMISSIONS_it: PASN1_ITEM; cdecl;
 function ADMISSION_SYNTAX_new: PADMISSION_SYNTAX; cdecl;
-procedure ADMISSION_SYNTAX_free(a: PADMISSION_SYNTAX); cdecl;
+function ADMISSION_SYNTAX_free(a: PADMISSION_SYNTAX): void; cdecl;
 function d2i_ADMISSION_SYNTAX(a: PPADMISSION_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): PADMISSION_SYNTAX; cdecl;
 function i2d_ADMISSION_SYNTAX(a: PADMISSION_SYNTAX; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ADMISSION_SYNTAX_it: PASN1_ITEM; cdecl;
 function NAMING_AUTHORITY_get0_authorityId(n: PNAMING_AUTHORITY): PASN1_OBJECT; cdecl;
 function NAMING_AUTHORITY_get0_authorityURL(n: PNAMING_AUTHORITY): PASN1_IA5STRING; cdecl;
 function NAMING_AUTHORITY_get0_authorityText(n: PNAMING_AUTHORITY): PASN1_STRING; cdecl;
-procedure NAMING_AUTHORITY_set0_authorityId(n: PNAMING_AUTHORITY; namingAuthorityId: PASN1_OBJECT); cdecl;
-procedure NAMING_AUTHORITY_set0_authorityURL(n: PNAMING_AUTHORITY; namingAuthorityUrl: PASN1_IA5STRING); cdecl;
-procedure NAMING_AUTHORITY_set0_authorityText(n: PNAMING_AUTHORITY; namingAuthorityText: PASN1_STRING); cdecl;
+function NAMING_AUTHORITY_set0_authorityId(n: PNAMING_AUTHORITY; namingAuthorityId: PASN1_OBJECT): void; cdecl;
+function NAMING_AUTHORITY_set0_authorityURL(n: PNAMING_AUTHORITY; namingAuthorityUrl: PASN1_IA5STRING): void; cdecl;
+function NAMING_AUTHORITY_set0_authorityText(n: PNAMING_AUTHORITY; namingAuthorityText: PASN1_STRING): void; cdecl;
 function ADMISSION_SYNTAX_get0_admissionAuthority(_as: PADMISSION_SYNTAX): PGENERAL_NAME; cdecl;
-procedure ADMISSION_SYNTAX_set0_admissionAuthority(_as: PADMISSION_SYNTAX; aa: PGENERAL_NAME); cdecl;
+function ADMISSION_SYNTAX_set0_admissionAuthority(_as: PADMISSION_SYNTAX; aa: PGENERAL_NAME): void; cdecl;
 function ADMISSION_SYNTAX_get0_contentsOfAdmissions(_as: PADMISSION_SYNTAX): Pstack_st_ADMISSIONS; cdecl;
-procedure ADMISSION_SYNTAX_set0_contentsOfAdmissions(_as: PADMISSION_SYNTAX; a: Pstack_st_ADMISSIONS); cdecl;
+function ADMISSION_SYNTAX_set0_contentsOfAdmissions(_as: PADMISSION_SYNTAX; a: Pstack_st_ADMISSIONS): void; cdecl;
 function ADMISSIONS_get0_admissionAuthority(a: PADMISSIONS): PGENERAL_NAME; cdecl;
-procedure ADMISSIONS_set0_admissionAuthority(a: PADMISSIONS; aa: PGENERAL_NAME); cdecl;
+function ADMISSIONS_set0_admissionAuthority(a: PADMISSIONS; aa: PGENERAL_NAME): void; cdecl;
 function ADMISSIONS_get0_namingAuthority(a: PADMISSIONS): PNAMING_AUTHORITY; cdecl;
-procedure ADMISSIONS_set0_namingAuthority(a: PADMISSIONS; na: PNAMING_AUTHORITY); cdecl;
+function ADMISSIONS_set0_namingAuthority(a: PADMISSIONS; na: PNAMING_AUTHORITY): void; cdecl;
 function ADMISSIONS_get0_professionInfos(a: PADMISSIONS): PPROFESSION_INFOS; cdecl;
-procedure ADMISSIONS_set0_professionInfos(a: PADMISSIONS; pi: PPROFESSION_INFOS); cdecl;
+function ADMISSIONS_set0_professionInfos(a: PADMISSIONS; pi: PPROFESSION_INFOS): void; cdecl;
 function PROFESSION_INFO_get0_addProfessionInfo(pi: PPROFESSION_INFO): PASN1_OCTET_STRING; cdecl;
-procedure PROFESSION_INFO_set0_addProfessionInfo(pi: PPROFESSION_INFO; aos: PASN1_OCTET_STRING); cdecl;
+function PROFESSION_INFO_set0_addProfessionInfo(pi: PPROFESSION_INFO; aos: PASN1_OCTET_STRING): void; cdecl;
 function PROFESSION_INFO_get0_namingAuthority(pi: PPROFESSION_INFO): PNAMING_AUTHORITY; cdecl;
-procedure PROFESSION_INFO_set0_namingAuthority(pi: PPROFESSION_INFO; na: PNAMING_AUTHORITY); cdecl;
+function PROFESSION_INFO_set0_namingAuthority(pi: PPROFESSION_INFO; na: PNAMING_AUTHORITY): void; cdecl;
 function PROFESSION_INFO_get0_professionItems(pi: PPROFESSION_INFO): Pstack_st_ASN1_STRING; cdecl;
-procedure PROFESSION_INFO_set0_professionItems(pi: PPROFESSION_INFO; _as: Pstack_st_ASN1_STRING); cdecl;
+function PROFESSION_INFO_set0_professionItems(pi: PPROFESSION_INFO; _as: Pstack_st_ASN1_STRING): void; cdecl;
 function PROFESSION_INFO_get0_professionOIDs(pi: PPROFESSION_INFO): Pstack_st_ASN1_OBJECT; cdecl;
-procedure PROFESSION_INFO_set0_professionOIDs(pi: PPROFESSION_INFO; po: Pstack_st_ASN1_OBJECT); cdecl;
+function PROFESSION_INFO_set0_professionOIDs(pi: PPROFESSION_INFO; po: Pstack_st_ASN1_OBJECT): void; cdecl;
 function PROFESSION_INFO_get0_registrationNumber(pi: PPROFESSION_INFO): PASN1_PRINTABLESTRING; cdecl;
-procedure PROFESSION_INFO_set0_registrationNumber(pi: PPROFESSION_INFO; rn: PASN1_PRINTABLESTRING); cdecl;
+function PROFESSION_INFO_set0_registrationNumber(pi: PPROFESSION_INFO; rn: PASN1_PRINTABLESTRING): void; cdecl;
 function OSSL_GENERAL_NAMES_print(_out: PBIO; gens: PGENERAL_NAMES; indent: TIdC_INT): TIdC_INT; cdecl;
 function OSSL_ATTRIBUTES_SYNTAX_new: POSSL_ATTRIBUTES_SYNTAX; cdecl;
-procedure OSSL_ATTRIBUTES_SYNTAX_free(a: POSSL_ATTRIBUTES_SYNTAX); cdecl;
+function OSSL_ATTRIBUTES_SYNTAX_free(a: POSSL_ATTRIBUTES_SYNTAX): void; cdecl;
 function d2i_OSSL_ATTRIBUTES_SYNTAX(a: PPOSSL_ATTRIBUTES_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ATTRIBUTES_SYNTAX; cdecl;
 function i2d_OSSL_ATTRIBUTES_SYNTAX(a: POSSL_ATTRIBUTES_SYNTAX; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_ATTRIBUTES_SYNTAX_it: PASN1_ITEM; cdecl;
 function OSSL_USER_NOTICE_SYNTAX_new: POSSL_USER_NOTICE_SYNTAX; cdecl;
-procedure OSSL_USER_NOTICE_SYNTAX_free(a: POSSL_USER_NOTICE_SYNTAX); cdecl;
+function OSSL_USER_NOTICE_SYNTAX_free(a: POSSL_USER_NOTICE_SYNTAX): void; cdecl;
 function d2i_OSSL_USER_NOTICE_SYNTAX(a: PPOSSL_USER_NOTICE_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_USER_NOTICE_SYNTAX; cdecl;
 function i2d_OSSL_USER_NOTICE_SYNTAX(a: POSSL_USER_NOTICE_SYNTAX; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_USER_NOTICE_SYNTAX_it: PASN1_ITEM; cdecl;
 function OSSL_ROLE_SPEC_CERT_ID_new: POSSL_ROLE_SPEC_CERT_ID; cdecl;
-procedure OSSL_ROLE_SPEC_CERT_ID_free(a: POSSL_ROLE_SPEC_CERT_ID); cdecl;
+function OSSL_ROLE_SPEC_CERT_ID_free(a: POSSL_ROLE_SPEC_CERT_ID): void; cdecl;
 function d2i_OSSL_ROLE_SPEC_CERT_ID(a: PPOSSL_ROLE_SPEC_CERT_ID; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ROLE_SPEC_CERT_ID; cdecl;
 function i2d_OSSL_ROLE_SPEC_CERT_ID(a: POSSL_ROLE_SPEC_CERT_ID; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_ROLE_SPEC_CERT_ID_it: PASN1_ITEM; cdecl;
 function OSSL_ROLE_SPEC_CERT_ID_SYNTAX_new: POSSL_ROLE_SPEC_CERT_ID_SYNTAX; cdecl;
-procedure OSSL_ROLE_SPEC_CERT_ID_SYNTAX_free(a: POSSL_ROLE_SPEC_CERT_ID_SYNTAX); cdecl;
+function OSSL_ROLE_SPEC_CERT_ID_SYNTAX_free(a: POSSL_ROLE_SPEC_CERT_ID_SYNTAX): void; cdecl;
 function d2i_OSSL_ROLE_SPEC_CERT_ID_SYNTAX(a: PPOSSL_ROLE_SPEC_CERT_ID_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ROLE_SPEC_CERT_ID_SYNTAX; cdecl;
 function i2d_OSSL_ROLE_SPEC_CERT_ID_SYNTAX(a: POSSL_ROLE_SPEC_CERT_ID_SYNTAX; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_ROLE_SPEC_CERT_ID_SYNTAX_it: PASN1_ITEM; cdecl;
 function OSSL_HASH_new: POSSL_HASH; cdecl;
-procedure OSSL_HASH_free(a: POSSL_HASH); cdecl;
+function OSSL_HASH_free(a: POSSL_HASH): void; cdecl;
 function d2i_OSSL_HASH(a: PPOSSL_HASH; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_HASH; cdecl;
 function i2d_OSSL_HASH(a: POSSL_HASH; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_HASH_it: PASN1_ITEM; cdecl;
 function OSSL_INFO_SYNTAX_new: POSSL_INFO_SYNTAX; cdecl;
-procedure OSSL_INFO_SYNTAX_free(a: POSSL_INFO_SYNTAX); cdecl;
+function OSSL_INFO_SYNTAX_free(a: POSSL_INFO_SYNTAX): void; cdecl;
 function d2i_OSSL_INFO_SYNTAX(a: PPOSSL_INFO_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_INFO_SYNTAX; cdecl;
 function i2d_OSSL_INFO_SYNTAX(a: POSSL_INFO_SYNTAX; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_INFO_SYNTAX_it: PASN1_ITEM; cdecl;
 function OSSL_INFO_SYNTAX_POINTER_new: POSSL_INFO_SYNTAX_POINTER; cdecl;
-procedure OSSL_INFO_SYNTAX_POINTER_free(a: POSSL_INFO_SYNTAX_POINTER); cdecl;
+function OSSL_INFO_SYNTAX_POINTER_free(a: POSSL_INFO_SYNTAX_POINTER): void; cdecl;
 function d2i_OSSL_INFO_SYNTAX_POINTER(a: PPOSSL_INFO_SYNTAX_POINTER; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_INFO_SYNTAX_POINTER; cdecl;
 function i2d_OSSL_INFO_SYNTAX_POINTER(a: POSSL_INFO_SYNTAX_POINTER; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_INFO_SYNTAX_POINTER_it: PASN1_ITEM; cdecl;
 function OSSL_PRIVILEGE_POLICY_ID_new: POSSL_PRIVILEGE_POLICY_ID; cdecl;
-procedure OSSL_PRIVILEGE_POLICY_ID_free(a: POSSL_PRIVILEGE_POLICY_ID); cdecl;
+function OSSL_PRIVILEGE_POLICY_ID_free(a: POSSL_PRIVILEGE_POLICY_ID): void; cdecl;
 function d2i_OSSL_PRIVILEGE_POLICY_ID(a: PPOSSL_PRIVILEGE_POLICY_ID; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_PRIVILEGE_POLICY_ID; cdecl;
 function i2d_OSSL_PRIVILEGE_POLICY_ID(a: POSSL_PRIVILEGE_POLICY_ID; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_PRIVILEGE_POLICY_ID_it: PASN1_ITEM; cdecl;
 function OSSL_ATTRIBUTE_DESCRIPTOR_new: POSSL_ATTRIBUTE_DESCRIPTOR; cdecl;
-procedure OSSL_ATTRIBUTE_DESCRIPTOR_free(a: POSSL_ATTRIBUTE_DESCRIPTOR); cdecl;
+function OSSL_ATTRIBUTE_DESCRIPTOR_free(a: POSSL_ATTRIBUTE_DESCRIPTOR): void; cdecl;
 function d2i_OSSL_ATTRIBUTE_DESCRIPTOR(a: PPOSSL_ATTRIBUTE_DESCRIPTOR; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ATTRIBUTE_DESCRIPTOR; cdecl;
 function i2d_OSSL_ATTRIBUTE_DESCRIPTOR(a: POSSL_ATTRIBUTE_DESCRIPTOR; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_ATTRIBUTE_DESCRIPTOR_it: PASN1_ITEM; cdecl;
 function OSSL_DAY_TIME_new: POSSL_DAY_TIME; cdecl;
-procedure OSSL_DAY_TIME_free(a: POSSL_DAY_TIME); cdecl;
+function OSSL_DAY_TIME_free(a: POSSL_DAY_TIME): void; cdecl;
 function d2i_OSSL_DAY_TIME(a: PPOSSL_DAY_TIME; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_DAY_TIME; cdecl;
 function i2d_OSSL_DAY_TIME(a: POSSL_DAY_TIME; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_DAY_TIME_it: PASN1_ITEM; cdecl;
 function OSSL_DAY_TIME_BAND_new: POSSL_DAY_TIME_BAND; cdecl;
-procedure OSSL_DAY_TIME_BAND_free(a: POSSL_DAY_TIME_BAND); cdecl;
+function OSSL_DAY_TIME_BAND_free(a: POSSL_DAY_TIME_BAND): void; cdecl;
 function d2i_OSSL_DAY_TIME_BAND(a: PPOSSL_DAY_TIME_BAND; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_DAY_TIME_BAND; cdecl;
 function i2d_OSSL_DAY_TIME_BAND(a: POSSL_DAY_TIME_BAND; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_DAY_TIME_BAND_it: PASN1_ITEM; cdecl;
 function OSSL_TIME_SPEC_DAY_new: POSSL_TIME_SPEC_DAY; cdecl;
-procedure OSSL_TIME_SPEC_DAY_free(a: POSSL_TIME_SPEC_DAY); cdecl;
+function OSSL_TIME_SPEC_DAY_free(a: POSSL_TIME_SPEC_DAY): void; cdecl;
 function d2i_OSSL_TIME_SPEC_DAY(a: PPOSSL_TIME_SPEC_DAY; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_SPEC_DAY; cdecl;
 function i2d_OSSL_TIME_SPEC_DAY(a: POSSL_TIME_SPEC_DAY; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_TIME_SPEC_DAY_it: PASN1_ITEM; cdecl;
 function OSSL_TIME_SPEC_WEEKS_new: POSSL_TIME_SPEC_WEEKS; cdecl;
-procedure OSSL_TIME_SPEC_WEEKS_free(a: POSSL_TIME_SPEC_WEEKS); cdecl;
+function OSSL_TIME_SPEC_WEEKS_free(a: POSSL_TIME_SPEC_WEEKS): void; cdecl;
 function d2i_OSSL_TIME_SPEC_WEEKS(a: PPOSSL_TIME_SPEC_WEEKS; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_SPEC_WEEKS; cdecl;
 function i2d_OSSL_TIME_SPEC_WEEKS(a: POSSL_TIME_SPEC_WEEKS; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_TIME_SPEC_WEEKS_it: PASN1_ITEM; cdecl;
 function OSSL_TIME_SPEC_MONTH_new: POSSL_TIME_SPEC_MONTH; cdecl;
-procedure OSSL_TIME_SPEC_MONTH_free(a: POSSL_TIME_SPEC_MONTH); cdecl;
+function OSSL_TIME_SPEC_MONTH_free(a: POSSL_TIME_SPEC_MONTH): void; cdecl;
 function d2i_OSSL_TIME_SPEC_MONTH(a: PPOSSL_TIME_SPEC_MONTH; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_SPEC_MONTH; cdecl;
 function i2d_OSSL_TIME_SPEC_MONTH(a: POSSL_TIME_SPEC_MONTH; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_TIME_SPEC_MONTH_it: PASN1_ITEM; cdecl;
 function OSSL_NAMED_DAY_new: POSSL_NAMED_DAY; cdecl;
-procedure OSSL_NAMED_DAY_free(a: POSSL_NAMED_DAY); cdecl;
+function OSSL_NAMED_DAY_free(a: POSSL_NAMED_DAY): void; cdecl;
 function d2i_OSSL_NAMED_DAY(a: PPOSSL_NAMED_DAY; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_NAMED_DAY; cdecl;
 function i2d_OSSL_NAMED_DAY(a: POSSL_NAMED_DAY; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_NAMED_DAY_it: PASN1_ITEM; cdecl;
 function OSSL_TIME_SPEC_X_DAY_OF_new: POSSL_TIME_SPEC_X_DAY_OF; cdecl;
-procedure OSSL_TIME_SPEC_X_DAY_OF_free(a: POSSL_TIME_SPEC_X_DAY_OF); cdecl;
+function OSSL_TIME_SPEC_X_DAY_OF_free(a: POSSL_TIME_SPEC_X_DAY_OF): void; cdecl;
 function d2i_OSSL_TIME_SPEC_X_DAY_OF(a: PPOSSL_TIME_SPEC_X_DAY_OF; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_SPEC_X_DAY_OF; cdecl;
 function i2d_OSSL_TIME_SPEC_X_DAY_OF(a: POSSL_TIME_SPEC_X_DAY_OF; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_TIME_SPEC_X_DAY_OF_it: PASN1_ITEM; cdecl;
 function OSSL_TIME_SPEC_ABSOLUTE_new: POSSL_TIME_SPEC_ABSOLUTE; cdecl;
-procedure OSSL_TIME_SPEC_ABSOLUTE_free(a: POSSL_TIME_SPEC_ABSOLUTE); cdecl;
+function OSSL_TIME_SPEC_ABSOLUTE_free(a: POSSL_TIME_SPEC_ABSOLUTE): void; cdecl;
 function d2i_OSSL_TIME_SPEC_ABSOLUTE(a: PPOSSL_TIME_SPEC_ABSOLUTE; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_SPEC_ABSOLUTE; cdecl;
 function i2d_OSSL_TIME_SPEC_ABSOLUTE(a: POSSL_TIME_SPEC_ABSOLUTE; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_TIME_SPEC_ABSOLUTE_it: PASN1_ITEM; cdecl;
 function OSSL_TIME_SPEC_TIME_new: POSSL_TIME_SPEC_TIME; cdecl;
-procedure OSSL_TIME_SPEC_TIME_free(a: POSSL_TIME_SPEC_TIME); cdecl;
+function OSSL_TIME_SPEC_TIME_free(a: POSSL_TIME_SPEC_TIME): void; cdecl;
 function d2i_OSSL_TIME_SPEC_TIME(a: PPOSSL_TIME_SPEC_TIME; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_SPEC_TIME; cdecl;
 function i2d_OSSL_TIME_SPEC_TIME(a: POSSL_TIME_SPEC_TIME; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_TIME_SPEC_TIME_it: PASN1_ITEM; cdecl;
 function OSSL_TIME_SPEC_new: POSSL_TIME_SPEC; cdecl;
-procedure OSSL_TIME_SPEC_free(a: POSSL_TIME_SPEC); cdecl;
+function OSSL_TIME_SPEC_free(a: POSSL_TIME_SPEC): void; cdecl;
 function d2i_OSSL_TIME_SPEC(a: PPOSSL_TIME_SPEC; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_SPEC; cdecl;
 function i2d_OSSL_TIME_SPEC(a: POSSL_TIME_SPEC; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_TIME_SPEC_it: PASN1_ITEM; cdecl;
 function OSSL_TIME_PERIOD_new: POSSL_TIME_PERIOD; cdecl;
-procedure OSSL_TIME_PERIOD_free(a: POSSL_TIME_PERIOD); cdecl;
+function OSSL_TIME_PERIOD_free(a: POSSL_TIME_PERIOD): void; cdecl;
 function d2i_OSSL_TIME_PERIOD(a: PPOSSL_TIME_PERIOD; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_PERIOD; cdecl;
 function i2d_OSSL_TIME_PERIOD(a: POSSL_TIME_PERIOD; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_TIME_PERIOD_it: PASN1_ITEM; cdecl;
 function OSSL_ATAV_new: POSSL_ATAV; cdecl;
-procedure OSSL_ATAV_free(a: POSSL_ATAV); cdecl;
+function OSSL_ATAV_free(a: POSSL_ATAV): void; cdecl;
 function d2i_OSSL_ATAV(a: PPOSSL_ATAV; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ATAV; cdecl;
 function i2d_OSSL_ATAV(a: POSSL_ATAV; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_ATAV_it: PASN1_ITEM; cdecl;
 function OSSL_ATTRIBUTE_TYPE_MAPPING_new: POSSL_ATTRIBUTE_TYPE_MAPPING; cdecl;
-procedure OSSL_ATTRIBUTE_TYPE_MAPPING_free(a: POSSL_ATTRIBUTE_TYPE_MAPPING); cdecl;
+function OSSL_ATTRIBUTE_TYPE_MAPPING_free(a: POSSL_ATTRIBUTE_TYPE_MAPPING): void; cdecl;
 function d2i_OSSL_ATTRIBUTE_TYPE_MAPPING(a: PPOSSL_ATTRIBUTE_TYPE_MAPPING; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ATTRIBUTE_TYPE_MAPPING; cdecl;
 function i2d_OSSL_ATTRIBUTE_TYPE_MAPPING(a: POSSL_ATTRIBUTE_TYPE_MAPPING; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_ATTRIBUTE_TYPE_MAPPING_it: PASN1_ITEM; cdecl;
 function OSSL_ATTRIBUTE_VALUE_MAPPING_new: POSSL_ATTRIBUTE_VALUE_MAPPING; cdecl;
-procedure OSSL_ATTRIBUTE_VALUE_MAPPING_free(a: POSSL_ATTRIBUTE_VALUE_MAPPING); cdecl;
+function OSSL_ATTRIBUTE_VALUE_MAPPING_free(a: POSSL_ATTRIBUTE_VALUE_MAPPING): void; cdecl;
 function d2i_OSSL_ATTRIBUTE_VALUE_MAPPING(a: PPOSSL_ATTRIBUTE_VALUE_MAPPING; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ATTRIBUTE_VALUE_MAPPING; cdecl;
 function i2d_OSSL_ATTRIBUTE_VALUE_MAPPING(a: POSSL_ATTRIBUTE_VALUE_MAPPING; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_ATTRIBUTE_VALUE_MAPPING_it: PASN1_ITEM; cdecl;
 function OSSL_ATTRIBUTE_MAPPING_new: POSSL_ATTRIBUTE_MAPPING; cdecl;
-procedure OSSL_ATTRIBUTE_MAPPING_free(a: POSSL_ATTRIBUTE_MAPPING); cdecl;
+function OSSL_ATTRIBUTE_MAPPING_free(a: POSSL_ATTRIBUTE_MAPPING): void; cdecl;
 function d2i_OSSL_ATTRIBUTE_MAPPING(a: PPOSSL_ATTRIBUTE_MAPPING; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ATTRIBUTE_MAPPING; cdecl;
 function i2d_OSSL_ATTRIBUTE_MAPPING(a: POSSL_ATTRIBUTE_MAPPING; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_ATTRIBUTE_MAPPING_it: PASN1_ITEM; cdecl;
 function OSSL_ATTRIBUTE_MAPPINGS_new: POSSL_ATTRIBUTE_MAPPINGS; cdecl;
-procedure OSSL_ATTRIBUTE_MAPPINGS_free(a: POSSL_ATTRIBUTE_MAPPINGS); cdecl;
+function OSSL_ATTRIBUTE_MAPPINGS_free(a: POSSL_ATTRIBUTE_MAPPINGS): void; cdecl;
 function d2i_OSSL_ATTRIBUTE_MAPPINGS(a: PPOSSL_ATTRIBUTE_MAPPINGS; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ATTRIBUTE_MAPPINGS; cdecl;
 function i2d_OSSL_ATTRIBUTE_MAPPINGS(a: POSSL_ATTRIBUTE_MAPPINGS; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_ATTRIBUTE_MAPPINGS_it: PASN1_ITEM; cdecl;
 function OSSL_ALLOWED_ATTRIBUTES_CHOICE_new: POSSL_ALLOWED_ATTRIBUTES_CHOICE; cdecl;
-procedure OSSL_ALLOWED_ATTRIBUTES_CHOICE_free(a: POSSL_ALLOWED_ATTRIBUTES_CHOICE); cdecl;
+function OSSL_ALLOWED_ATTRIBUTES_CHOICE_free(a: POSSL_ALLOWED_ATTRIBUTES_CHOICE): void; cdecl;
 function d2i_OSSL_ALLOWED_ATTRIBUTES_CHOICE(a: PPOSSL_ALLOWED_ATTRIBUTES_CHOICE; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ALLOWED_ATTRIBUTES_CHOICE; cdecl;
 function i2d_OSSL_ALLOWED_ATTRIBUTES_CHOICE(a: POSSL_ALLOWED_ATTRIBUTES_CHOICE; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_ALLOWED_ATTRIBUTES_CHOICE_it: PASN1_ITEM; cdecl;
 function OSSL_ALLOWED_ATTRIBUTES_ITEM_new: POSSL_ALLOWED_ATTRIBUTES_ITEM; cdecl;
-procedure OSSL_ALLOWED_ATTRIBUTES_ITEM_free(a: POSSL_ALLOWED_ATTRIBUTES_ITEM); cdecl;
+function OSSL_ALLOWED_ATTRIBUTES_ITEM_free(a: POSSL_ALLOWED_ATTRIBUTES_ITEM): void; cdecl;
 function d2i_OSSL_ALLOWED_ATTRIBUTES_ITEM(a: PPOSSL_ALLOWED_ATTRIBUTES_ITEM; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ALLOWED_ATTRIBUTES_ITEM; cdecl;
 function i2d_OSSL_ALLOWED_ATTRIBUTES_ITEM(a: POSSL_ALLOWED_ATTRIBUTES_ITEM; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_ALLOWED_ATTRIBUTES_ITEM_it: PASN1_ITEM; cdecl;
 function OSSL_ALLOWED_ATTRIBUTES_SYNTAX_new: POSSL_ALLOWED_ATTRIBUTES_SYNTAX; cdecl;
-procedure OSSL_ALLOWED_ATTRIBUTES_SYNTAX_free(a: POSSL_ALLOWED_ATTRIBUTES_SYNTAX); cdecl;
+function OSSL_ALLOWED_ATTRIBUTES_SYNTAX_free(a: POSSL_ALLOWED_ATTRIBUTES_SYNTAX): void; cdecl;
 function d2i_OSSL_ALLOWED_ATTRIBUTES_SYNTAX(a: PPOSSL_ALLOWED_ATTRIBUTES_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ALLOWED_ATTRIBUTES_SYNTAX; cdecl;
 function i2d_OSSL_ALLOWED_ATTRIBUTES_SYNTAX(a: POSSL_ALLOWED_ATTRIBUTES_SYNTAX; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_ALLOWED_ATTRIBUTES_SYNTAX_it: PASN1_ITEM; cdecl;
 function OSSL_AA_DIST_POINT_new: POSSL_AA_DIST_POINT; cdecl;
-procedure OSSL_AA_DIST_POINT_free(a: POSSL_AA_DIST_POINT); cdecl;
+function OSSL_AA_DIST_POINT_free(a: POSSL_AA_DIST_POINT): void; cdecl;
 function d2i_OSSL_AA_DIST_POINT(a: PPOSSL_AA_DIST_POINT; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_AA_DIST_POINT; cdecl;
 function i2d_OSSL_AA_DIST_POINT(a: POSSL_AA_DIST_POINT; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_AA_DIST_POINT_it: PASN1_ITEM; cdecl;
@@ -3109,8 +2860,838 @@ function OSSL_AA_DIST_POINT_it: PASN1_ITEM; cdecl;
 // INLINE OR MACRO ROUTINES
 // =============================================================================
 
-function EXT_UTF8STRING(nid: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function EXT_UTF8STRING(nid: Pointer): TIdC_INT; cdecl;
+
+
+// =============================================================================
+// OPENSSL STACK DEFINITIONS
+// =============================================================================
+type
+  { TODO 1 -copenssl stack X509V3_EXT_METHOD definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_X509V3_EXT_METHOD = Pointer;
+  {$EXTERNALSYM PSTACK_OF_X509V3_EXT_METHOD}
+
+  { Original Stack Macros for X509V3_EXT_METHOD:
+    SKM_DEFINE_STACK_OF_INTERNAL(X509V3_EXT_METHOD, X509V3_EXT_METHOD, X509V3_EXT_METHOD)
+    sk_X509V3_EXT_METHOD_num(sk) OPENSSL_sk_num(ossl_check_const_X509V3_EXT_METHOD_sk_type(sk))
+    sk_X509V3_EXT_METHOD_value(sk, idx) ((X509V3_EXT_METHOD *)OPENSSL_sk_value(ossl_check_const_X509V3_EXT_METHOD_sk_type(sk), (idx)))
+    sk_X509V3_EXT_METHOD_new(cmp) ((STACK_OF(X509V3_EXT_METHOD) *)OPENSSL_sk_new(ossl_check_X509V3_EXT_METHOD_compfunc_type(cmp)))
+    sk_X509V3_EXT_METHOD_new_null() ((STACK_OF(X509V3_EXT_METHOD) *)OPENSSL_sk_new_null())
+    sk_X509V3_EXT_METHOD_new_reserve(cmp, n) ((STACK_OF(X509V3_EXT_METHOD) *)OPENSSL_sk_new_reserve(ossl_check_X509V3_EXT_METHOD_compfunc_type(cmp), (n)))
+    sk_X509V3_EXT_METHOD_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_X509V3_EXT_METHOD_sk_type(sk), (n))
+    sk_X509V3_EXT_METHOD_free(sk) OPENSSL_sk_free(ossl_check_X509V3_EXT_METHOD_sk_type(sk))
+    sk_X509V3_EXT_METHOD_zero(sk) OPENSSL_sk_zero(ossl_check_X509V3_EXT_METHOD_sk_type(sk))
+    sk_X509V3_EXT_METHOD_delete(sk, i) ((X509V3_EXT_METHOD *)OPENSSL_sk_delete(ossl_check_X509V3_EXT_METHOD_sk_type(sk), (i)))
+    sk_X509V3_EXT_METHOD_delete_ptr(sk, ptr) ((X509V3_EXT_METHOD *)OPENSSL_sk_delete_ptr(ossl_check_X509V3_EXT_METHOD_sk_type(sk), ossl_check_X509V3_EXT_METHOD_type(ptr)))
+    sk_X509V3_EXT_METHOD_push(sk, ptr) OPENSSL_sk_push(ossl_check_X509V3_EXT_METHOD_sk_type(sk), ossl_check_X509V3_EXT_METHOD_type(ptr))
+    sk_X509V3_EXT_METHOD_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_X509V3_EXT_METHOD_sk_type(sk), ossl_check_X509V3_EXT_METHOD_type(ptr))
+    sk_X509V3_EXT_METHOD_pop(sk) ((X509V3_EXT_METHOD *)OPENSSL_sk_pop(ossl_check_X509V3_EXT_METHOD_sk_type(sk)))
+    sk_X509V3_EXT_METHOD_shift(sk) ((X509V3_EXT_METHOD *)OPENSSL_sk_shift(ossl_check_X509V3_EXT_METHOD_sk_type(sk)))
+    sk_X509V3_EXT_METHOD_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_X509V3_EXT_METHOD_sk_type(sk), ossl_check_X509V3_EXT_METHOD_freefunc_type(freefunc))
+    sk_X509V3_EXT_METHOD_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_X509V3_EXT_METHOD_sk_type(sk), ossl_check_X509V3_EXT_METHOD_type(ptr), (idx))
+    sk_X509V3_EXT_METHOD_set(sk, idx, ptr) ((X509V3_EXT_METHOD *)OPENSSL_sk_set(ossl_check_X509V3_EXT_METHOD_sk_type(sk), (idx), ossl_check_X509V3_EXT_METHOD_type(ptr)))
+    sk_X509V3_EXT_METHOD_find(sk, ptr) OPENSSL_sk_find(ossl_check_X509V3_EXT_METHOD_sk_type(sk), ossl_check_X509V3_EXT_METHOD_type(ptr))
+    sk_X509V3_EXT_METHOD_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_X509V3_EXT_METHOD_sk_type(sk), ossl_check_X509V3_EXT_METHOD_type(ptr))
+    sk_X509V3_EXT_METHOD_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_X509V3_EXT_METHOD_sk_type(sk), ossl_check_X509V3_EXT_METHOD_type(ptr), pnum)
+    sk_X509V3_EXT_METHOD_sort(sk) OPENSSL_sk_sort(ossl_check_X509V3_EXT_METHOD_sk_type(sk))
+    sk_X509V3_EXT_METHOD_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_X509V3_EXT_METHOD_sk_type(sk))
+    sk_X509V3_EXT_METHOD_dup(sk) ((STACK_OF(X509V3_EXT_METHOD) *)OPENSSL_sk_dup(ossl_check_const_X509V3_EXT_METHOD_sk_type(sk)))
+    sk_X509V3_EXT_METHOD_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(X509V3_EXT_METHOD) *)OPENSSL_sk_deep_copy(ossl_check_const_X509V3_EXT_METHOD_sk_type(sk), ossl_check_X509V3_EXT_METHOD_copyfunc_type(copyfunc), ossl_check_X509V3_EXT_METHOD_freefunc_type(freefunc)))
+    sk_X509V3_EXT_METHOD_set_cmp_func(sk, cmp) ((sk_X509V3_EXT_METHOD_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_X509V3_EXT_METHOD_sk_type(sk), ossl_check_X509V3_EXT_METHOD_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack ACCESS_DESCRIPTION definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_ACCESS_DESCRIPTION = Pointer;
+  {$EXTERNALSYM PSTACK_OF_ACCESS_DESCRIPTION}
+
+  { Original Stack Macros for ACCESS_DESCRIPTION:
+    SKM_DEFINE_STACK_OF_INTERNAL(ACCESS_DESCRIPTION, ACCESS_DESCRIPTION, ACCESS_DESCRIPTION)
+    sk_ACCESS_DESCRIPTION_num(sk) OPENSSL_sk_num(ossl_check_const_ACCESS_DESCRIPTION_sk_type(sk))
+    sk_ACCESS_DESCRIPTION_value(sk, idx) ((ACCESS_DESCRIPTION *)OPENSSL_sk_value(ossl_check_const_ACCESS_DESCRIPTION_sk_type(sk), (idx)))
+    sk_ACCESS_DESCRIPTION_new(cmp) ((STACK_OF(ACCESS_DESCRIPTION) *)OPENSSL_sk_new(ossl_check_ACCESS_DESCRIPTION_compfunc_type(cmp)))
+    sk_ACCESS_DESCRIPTION_new_null() ((STACK_OF(ACCESS_DESCRIPTION) *)OPENSSL_sk_new_null())
+    sk_ACCESS_DESCRIPTION_new_reserve(cmp, n) ((STACK_OF(ACCESS_DESCRIPTION) *)OPENSSL_sk_new_reserve(ossl_check_ACCESS_DESCRIPTION_compfunc_type(cmp), (n)))
+    sk_ACCESS_DESCRIPTION_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_ACCESS_DESCRIPTION_sk_type(sk), (n))
+    sk_ACCESS_DESCRIPTION_free(sk) OPENSSL_sk_free(ossl_check_ACCESS_DESCRIPTION_sk_type(sk))
+    sk_ACCESS_DESCRIPTION_zero(sk) OPENSSL_sk_zero(ossl_check_ACCESS_DESCRIPTION_sk_type(sk))
+    sk_ACCESS_DESCRIPTION_delete(sk, i) ((ACCESS_DESCRIPTION *)OPENSSL_sk_delete(ossl_check_ACCESS_DESCRIPTION_sk_type(sk), (i)))
+    sk_ACCESS_DESCRIPTION_delete_ptr(sk, ptr) ((ACCESS_DESCRIPTION *)OPENSSL_sk_delete_ptr(ossl_check_ACCESS_DESCRIPTION_sk_type(sk), ossl_check_ACCESS_DESCRIPTION_type(ptr)))
+    sk_ACCESS_DESCRIPTION_push(sk, ptr) OPENSSL_sk_push(ossl_check_ACCESS_DESCRIPTION_sk_type(sk), ossl_check_ACCESS_DESCRIPTION_type(ptr))
+    sk_ACCESS_DESCRIPTION_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_ACCESS_DESCRIPTION_sk_type(sk), ossl_check_ACCESS_DESCRIPTION_type(ptr))
+    sk_ACCESS_DESCRIPTION_pop(sk) ((ACCESS_DESCRIPTION *)OPENSSL_sk_pop(ossl_check_ACCESS_DESCRIPTION_sk_type(sk)))
+    sk_ACCESS_DESCRIPTION_shift(sk) ((ACCESS_DESCRIPTION *)OPENSSL_sk_shift(ossl_check_ACCESS_DESCRIPTION_sk_type(sk)))
+    sk_ACCESS_DESCRIPTION_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_ACCESS_DESCRIPTION_sk_type(sk), ossl_check_ACCESS_DESCRIPTION_freefunc_type(freefunc))
+    sk_ACCESS_DESCRIPTION_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_ACCESS_DESCRIPTION_sk_type(sk), ossl_check_ACCESS_DESCRIPTION_type(ptr), (idx))
+    sk_ACCESS_DESCRIPTION_set(sk, idx, ptr) ((ACCESS_DESCRIPTION *)OPENSSL_sk_set(ossl_check_ACCESS_DESCRIPTION_sk_type(sk), (idx), ossl_check_ACCESS_DESCRIPTION_type(ptr)))
+    sk_ACCESS_DESCRIPTION_find(sk, ptr) OPENSSL_sk_find(ossl_check_ACCESS_DESCRIPTION_sk_type(sk), ossl_check_ACCESS_DESCRIPTION_type(ptr))
+    sk_ACCESS_DESCRIPTION_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_ACCESS_DESCRIPTION_sk_type(sk), ossl_check_ACCESS_DESCRIPTION_type(ptr))
+    sk_ACCESS_DESCRIPTION_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_ACCESS_DESCRIPTION_sk_type(sk), ossl_check_ACCESS_DESCRIPTION_type(ptr), pnum)
+    sk_ACCESS_DESCRIPTION_sort(sk) OPENSSL_sk_sort(ossl_check_ACCESS_DESCRIPTION_sk_type(sk))
+    sk_ACCESS_DESCRIPTION_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_ACCESS_DESCRIPTION_sk_type(sk))
+    sk_ACCESS_DESCRIPTION_dup(sk) ((STACK_OF(ACCESS_DESCRIPTION) *)OPENSSL_sk_dup(ossl_check_const_ACCESS_DESCRIPTION_sk_type(sk)))
+    sk_ACCESS_DESCRIPTION_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(ACCESS_DESCRIPTION) *)OPENSSL_sk_deep_copy(ossl_check_const_ACCESS_DESCRIPTION_sk_type(sk), ossl_check_ACCESS_DESCRIPTION_copyfunc_type(copyfunc), ossl_check_ACCESS_DESCRIPTION_freefunc_type(freefunc)))
+    sk_ACCESS_DESCRIPTION_set_cmp_func(sk, cmp) ((sk_ACCESS_DESCRIPTION_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_ACCESS_DESCRIPTION_sk_type(sk), ossl_check_ACCESS_DESCRIPTION_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack GENERAL_NAME definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_GENERAL_NAME = Pointer;
+  {$EXTERNALSYM PSTACK_OF_GENERAL_NAME}
+
+  { Original Stack Macros for GENERAL_NAME:
+    SKM_DEFINE_STACK_OF_INTERNAL(GENERAL_NAME, GENERAL_NAME, GENERAL_NAME)
+    sk_GENERAL_NAME_num(sk) OPENSSL_sk_num(ossl_check_const_GENERAL_NAME_sk_type(sk))
+    sk_GENERAL_NAME_value(sk, idx) ((GENERAL_NAME *)OPENSSL_sk_value(ossl_check_const_GENERAL_NAME_sk_type(sk), (idx)))
+    sk_GENERAL_NAME_new(cmp) ((STACK_OF(GENERAL_NAME) *)OPENSSL_sk_new(ossl_check_GENERAL_NAME_compfunc_type(cmp)))
+    sk_GENERAL_NAME_new_null() ((STACK_OF(GENERAL_NAME) *)OPENSSL_sk_new_null())
+    sk_GENERAL_NAME_new_reserve(cmp, n) ((STACK_OF(GENERAL_NAME) *)OPENSSL_sk_new_reserve(ossl_check_GENERAL_NAME_compfunc_type(cmp), (n)))
+    sk_GENERAL_NAME_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_GENERAL_NAME_sk_type(sk), (n))
+    sk_GENERAL_NAME_free(sk) OPENSSL_sk_free(ossl_check_GENERAL_NAME_sk_type(sk))
+    sk_GENERAL_NAME_zero(sk) OPENSSL_sk_zero(ossl_check_GENERAL_NAME_sk_type(sk))
+    sk_GENERAL_NAME_delete(sk, i) ((GENERAL_NAME *)OPENSSL_sk_delete(ossl_check_GENERAL_NAME_sk_type(sk), (i)))
+    sk_GENERAL_NAME_delete_ptr(sk, ptr) ((GENERAL_NAME *)OPENSSL_sk_delete_ptr(ossl_check_GENERAL_NAME_sk_type(sk), ossl_check_GENERAL_NAME_type(ptr)))
+    sk_GENERAL_NAME_push(sk, ptr) OPENSSL_sk_push(ossl_check_GENERAL_NAME_sk_type(sk), ossl_check_GENERAL_NAME_type(ptr))
+    sk_GENERAL_NAME_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_GENERAL_NAME_sk_type(sk), ossl_check_GENERAL_NAME_type(ptr))
+    sk_GENERAL_NAME_pop(sk) ((GENERAL_NAME *)OPENSSL_sk_pop(ossl_check_GENERAL_NAME_sk_type(sk)))
+    sk_GENERAL_NAME_shift(sk) ((GENERAL_NAME *)OPENSSL_sk_shift(ossl_check_GENERAL_NAME_sk_type(sk)))
+    sk_GENERAL_NAME_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_GENERAL_NAME_sk_type(sk), ossl_check_GENERAL_NAME_freefunc_type(freefunc))
+    sk_GENERAL_NAME_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_GENERAL_NAME_sk_type(sk), ossl_check_GENERAL_NAME_type(ptr), (idx))
+    sk_GENERAL_NAME_set(sk, idx, ptr) ((GENERAL_NAME *)OPENSSL_sk_set(ossl_check_GENERAL_NAME_sk_type(sk), (idx), ossl_check_GENERAL_NAME_type(ptr)))
+    sk_GENERAL_NAME_find(sk, ptr) OPENSSL_sk_find(ossl_check_GENERAL_NAME_sk_type(sk), ossl_check_GENERAL_NAME_type(ptr))
+    sk_GENERAL_NAME_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_GENERAL_NAME_sk_type(sk), ossl_check_GENERAL_NAME_type(ptr))
+    sk_GENERAL_NAME_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_GENERAL_NAME_sk_type(sk), ossl_check_GENERAL_NAME_type(ptr), pnum)
+    sk_GENERAL_NAME_sort(sk) OPENSSL_sk_sort(ossl_check_GENERAL_NAME_sk_type(sk))
+    sk_GENERAL_NAME_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_GENERAL_NAME_sk_type(sk))
+    sk_GENERAL_NAME_dup(sk) ((STACK_OF(GENERAL_NAME) *)OPENSSL_sk_dup(ossl_check_const_GENERAL_NAME_sk_type(sk)))
+    sk_GENERAL_NAME_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(GENERAL_NAME) *)OPENSSL_sk_deep_copy(ossl_check_const_GENERAL_NAME_sk_type(sk), ossl_check_GENERAL_NAME_copyfunc_type(copyfunc), ossl_check_GENERAL_NAME_freefunc_type(freefunc)))
+    sk_GENERAL_NAME_set_cmp_func(sk, cmp) ((sk_GENERAL_NAME_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_GENERAL_NAME_sk_type(sk), ossl_check_GENERAL_NAME_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack GENERAL_NAMES definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_GENERAL_NAMES = Pointer;
+  {$EXTERNALSYM PSTACK_OF_GENERAL_NAMES}
+
+  { Original Stack Macros for GENERAL_NAMES:
+    SKM_DEFINE_STACK_OF_INTERNAL(GENERAL_NAMES, GENERAL_NAMES, GENERAL_NAMES)
+    sk_GENERAL_NAMES_num(sk) OPENSSL_sk_num(ossl_check_const_GENERAL_NAMES_sk_type(sk))
+    sk_GENERAL_NAMES_value(sk, idx) ((GENERAL_NAMES *)OPENSSL_sk_value(ossl_check_const_GENERAL_NAMES_sk_type(sk), (idx)))
+    sk_GENERAL_NAMES_new(cmp) ((STACK_OF(GENERAL_NAMES) *)OPENSSL_sk_new(ossl_check_GENERAL_NAMES_compfunc_type(cmp)))
+    sk_GENERAL_NAMES_new_null() ((STACK_OF(GENERAL_NAMES) *)OPENSSL_sk_new_null())
+    sk_GENERAL_NAMES_new_reserve(cmp, n) ((STACK_OF(GENERAL_NAMES) *)OPENSSL_sk_new_reserve(ossl_check_GENERAL_NAMES_compfunc_type(cmp), (n)))
+    sk_GENERAL_NAMES_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_GENERAL_NAMES_sk_type(sk), (n))
+    sk_GENERAL_NAMES_free(sk) OPENSSL_sk_free(ossl_check_GENERAL_NAMES_sk_type(sk))
+    sk_GENERAL_NAMES_zero(sk) OPENSSL_sk_zero(ossl_check_GENERAL_NAMES_sk_type(sk))
+    sk_GENERAL_NAMES_delete(sk, i) ((GENERAL_NAMES *)OPENSSL_sk_delete(ossl_check_GENERAL_NAMES_sk_type(sk), (i)))
+    sk_GENERAL_NAMES_delete_ptr(sk, ptr) ((GENERAL_NAMES *)OPENSSL_sk_delete_ptr(ossl_check_GENERAL_NAMES_sk_type(sk), ossl_check_GENERAL_NAMES_type(ptr)))
+    sk_GENERAL_NAMES_push(sk, ptr) OPENSSL_sk_push(ossl_check_GENERAL_NAMES_sk_type(sk), ossl_check_GENERAL_NAMES_type(ptr))
+    sk_GENERAL_NAMES_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_GENERAL_NAMES_sk_type(sk), ossl_check_GENERAL_NAMES_type(ptr))
+    sk_GENERAL_NAMES_pop(sk) ((GENERAL_NAMES *)OPENSSL_sk_pop(ossl_check_GENERAL_NAMES_sk_type(sk)))
+    sk_GENERAL_NAMES_shift(sk) ((GENERAL_NAMES *)OPENSSL_sk_shift(ossl_check_GENERAL_NAMES_sk_type(sk)))
+    sk_GENERAL_NAMES_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_GENERAL_NAMES_sk_type(sk), ossl_check_GENERAL_NAMES_freefunc_type(freefunc))
+    sk_GENERAL_NAMES_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_GENERAL_NAMES_sk_type(sk), ossl_check_GENERAL_NAMES_type(ptr), (idx))
+    sk_GENERAL_NAMES_set(sk, idx, ptr) ((GENERAL_NAMES *)OPENSSL_sk_set(ossl_check_GENERAL_NAMES_sk_type(sk), (idx), ossl_check_GENERAL_NAMES_type(ptr)))
+    sk_GENERAL_NAMES_find(sk, ptr) OPENSSL_sk_find(ossl_check_GENERAL_NAMES_sk_type(sk), ossl_check_GENERAL_NAMES_type(ptr))
+    sk_GENERAL_NAMES_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_GENERAL_NAMES_sk_type(sk), ossl_check_GENERAL_NAMES_type(ptr))
+    sk_GENERAL_NAMES_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_GENERAL_NAMES_sk_type(sk), ossl_check_GENERAL_NAMES_type(ptr), pnum)
+    sk_GENERAL_NAMES_sort(sk) OPENSSL_sk_sort(ossl_check_GENERAL_NAMES_sk_type(sk))
+    sk_GENERAL_NAMES_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_GENERAL_NAMES_sk_type(sk))
+    sk_GENERAL_NAMES_dup(sk) ((STACK_OF(GENERAL_NAMES) *)OPENSSL_sk_dup(ossl_check_const_GENERAL_NAMES_sk_type(sk)))
+    sk_GENERAL_NAMES_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(GENERAL_NAMES) *)OPENSSL_sk_deep_copy(ossl_check_const_GENERAL_NAMES_sk_type(sk), ossl_check_GENERAL_NAMES_copyfunc_type(copyfunc), ossl_check_GENERAL_NAMES_freefunc_type(freefunc)))
+    sk_GENERAL_NAMES_set_cmp_func(sk, cmp) ((sk_GENERAL_NAMES_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_GENERAL_NAMES_sk_type(sk), ossl_check_GENERAL_NAMES_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack DIST_POINT definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_DIST_POINT = Pointer;
+  {$EXTERNALSYM PSTACK_OF_DIST_POINT}
+
+  { Original Stack Macros for DIST_POINT:
+    SKM_DEFINE_STACK_OF_INTERNAL(DIST_POINT, DIST_POINT, DIST_POINT)
+    sk_DIST_POINT_num(sk) OPENSSL_sk_num(ossl_check_const_DIST_POINT_sk_type(sk))
+    sk_DIST_POINT_value(sk, idx) ((DIST_POINT *)OPENSSL_sk_value(ossl_check_const_DIST_POINT_sk_type(sk), (idx)))
+    sk_DIST_POINT_new(cmp) ((STACK_OF(DIST_POINT) *)OPENSSL_sk_new(ossl_check_DIST_POINT_compfunc_type(cmp)))
+    sk_DIST_POINT_new_null() ((STACK_OF(DIST_POINT) *)OPENSSL_sk_new_null())
+    sk_DIST_POINT_new_reserve(cmp, n) ((STACK_OF(DIST_POINT) *)OPENSSL_sk_new_reserve(ossl_check_DIST_POINT_compfunc_type(cmp), (n)))
+    sk_DIST_POINT_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_DIST_POINT_sk_type(sk), (n))
+    sk_DIST_POINT_free(sk) OPENSSL_sk_free(ossl_check_DIST_POINT_sk_type(sk))
+    sk_DIST_POINT_zero(sk) OPENSSL_sk_zero(ossl_check_DIST_POINT_sk_type(sk))
+    sk_DIST_POINT_delete(sk, i) ((DIST_POINT *)OPENSSL_sk_delete(ossl_check_DIST_POINT_sk_type(sk), (i)))
+    sk_DIST_POINT_delete_ptr(sk, ptr) ((DIST_POINT *)OPENSSL_sk_delete_ptr(ossl_check_DIST_POINT_sk_type(sk), ossl_check_DIST_POINT_type(ptr)))
+    sk_DIST_POINT_push(sk, ptr) OPENSSL_sk_push(ossl_check_DIST_POINT_sk_type(sk), ossl_check_DIST_POINT_type(ptr))
+    sk_DIST_POINT_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_DIST_POINT_sk_type(sk), ossl_check_DIST_POINT_type(ptr))
+    sk_DIST_POINT_pop(sk) ((DIST_POINT *)OPENSSL_sk_pop(ossl_check_DIST_POINT_sk_type(sk)))
+    sk_DIST_POINT_shift(sk) ((DIST_POINT *)OPENSSL_sk_shift(ossl_check_DIST_POINT_sk_type(sk)))
+    sk_DIST_POINT_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_DIST_POINT_sk_type(sk), ossl_check_DIST_POINT_freefunc_type(freefunc))
+    sk_DIST_POINT_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_DIST_POINT_sk_type(sk), ossl_check_DIST_POINT_type(ptr), (idx))
+    sk_DIST_POINT_set(sk, idx, ptr) ((DIST_POINT *)OPENSSL_sk_set(ossl_check_DIST_POINT_sk_type(sk), (idx), ossl_check_DIST_POINT_type(ptr)))
+    sk_DIST_POINT_find(sk, ptr) OPENSSL_sk_find(ossl_check_DIST_POINT_sk_type(sk), ossl_check_DIST_POINT_type(ptr))
+    sk_DIST_POINT_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_DIST_POINT_sk_type(sk), ossl_check_DIST_POINT_type(ptr))
+    sk_DIST_POINT_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_DIST_POINT_sk_type(sk), ossl_check_DIST_POINT_type(ptr), pnum)
+    sk_DIST_POINT_sort(sk) OPENSSL_sk_sort(ossl_check_DIST_POINT_sk_type(sk))
+    sk_DIST_POINT_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_DIST_POINT_sk_type(sk))
+    sk_DIST_POINT_dup(sk) ((STACK_OF(DIST_POINT) *)OPENSSL_sk_dup(ossl_check_const_DIST_POINT_sk_type(sk)))
+    sk_DIST_POINT_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(DIST_POINT) *)OPENSSL_sk_deep_copy(ossl_check_const_DIST_POINT_sk_type(sk), ossl_check_DIST_POINT_copyfunc_type(copyfunc), ossl_check_DIST_POINT_freefunc_type(freefunc)))
+    sk_DIST_POINT_set_cmp_func(sk, cmp) ((sk_DIST_POINT_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_DIST_POINT_sk_type(sk), ossl_check_DIST_POINT_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack SXNETID definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_SXNETID = Pointer;
+  {$EXTERNALSYM PSTACK_OF_SXNETID}
+
+  { Original Stack Macros for SXNETID:
+    SKM_DEFINE_STACK_OF_INTERNAL(SXNETID, SXNETID, SXNETID)
+    sk_SXNETID_num(sk) OPENSSL_sk_num(ossl_check_const_SXNETID_sk_type(sk))
+    sk_SXNETID_value(sk, idx) ((SXNETID *)OPENSSL_sk_value(ossl_check_const_SXNETID_sk_type(sk), (idx)))
+    sk_SXNETID_new(cmp) ((STACK_OF(SXNETID) *)OPENSSL_sk_new(ossl_check_SXNETID_compfunc_type(cmp)))
+    sk_SXNETID_new_null() ((STACK_OF(SXNETID) *)OPENSSL_sk_new_null())
+    sk_SXNETID_new_reserve(cmp, n) ((STACK_OF(SXNETID) *)OPENSSL_sk_new_reserve(ossl_check_SXNETID_compfunc_type(cmp), (n)))
+    sk_SXNETID_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_SXNETID_sk_type(sk), (n))
+    sk_SXNETID_free(sk) OPENSSL_sk_free(ossl_check_SXNETID_sk_type(sk))
+    sk_SXNETID_zero(sk) OPENSSL_sk_zero(ossl_check_SXNETID_sk_type(sk))
+    sk_SXNETID_delete(sk, i) ((SXNETID *)OPENSSL_sk_delete(ossl_check_SXNETID_sk_type(sk), (i)))
+    sk_SXNETID_delete_ptr(sk, ptr) ((SXNETID *)OPENSSL_sk_delete_ptr(ossl_check_SXNETID_sk_type(sk), ossl_check_SXNETID_type(ptr)))
+    sk_SXNETID_push(sk, ptr) OPENSSL_sk_push(ossl_check_SXNETID_sk_type(sk), ossl_check_SXNETID_type(ptr))
+    sk_SXNETID_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_SXNETID_sk_type(sk), ossl_check_SXNETID_type(ptr))
+    sk_SXNETID_pop(sk) ((SXNETID *)OPENSSL_sk_pop(ossl_check_SXNETID_sk_type(sk)))
+    sk_SXNETID_shift(sk) ((SXNETID *)OPENSSL_sk_shift(ossl_check_SXNETID_sk_type(sk)))
+    sk_SXNETID_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_SXNETID_sk_type(sk), ossl_check_SXNETID_freefunc_type(freefunc))
+    sk_SXNETID_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_SXNETID_sk_type(sk), ossl_check_SXNETID_type(ptr), (idx))
+    sk_SXNETID_set(sk, idx, ptr) ((SXNETID *)OPENSSL_sk_set(ossl_check_SXNETID_sk_type(sk), (idx), ossl_check_SXNETID_type(ptr)))
+    sk_SXNETID_find(sk, ptr) OPENSSL_sk_find(ossl_check_SXNETID_sk_type(sk), ossl_check_SXNETID_type(ptr))
+    sk_SXNETID_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_SXNETID_sk_type(sk), ossl_check_SXNETID_type(ptr))
+    sk_SXNETID_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_SXNETID_sk_type(sk), ossl_check_SXNETID_type(ptr), pnum)
+    sk_SXNETID_sort(sk) OPENSSL_sk_sort(ossl_check_SXNETID_sk_type(sk))
+    sk_SXNETID_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_SXNETID_sk_type(sk))
+    sk_SXNETID_dup(sk) ((STACK_OF(SXNETID) *)OPENSSL_sk_dup(ossl_check_const_SXNETID_sk_type(sk)))
+    sk_SXNETID_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(SXNETID) *)OPENSSL_sk_deep_copy(ossl_check_const_SXNETID_sk_type(sk), ossl_check_SXNETID_copyfunc_type(copyfunc), ossl_check_SXNETID_freefunc_type(freefunc)))
+    sk_SXNETID_set_cmp_func(sk, cmp) ((sk_SXNETID_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_SXNETID_sk_type(sk), ossl_check_SXNETID_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack POLICYQUALINFO definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_POLICYQUALINFO = Pointer;
+  {$EXTERNALSYM PSTACK_OF_POLICYQUALINFO}
+
+  { Original Stack Macros for POLICYQUALINFO:
+    SKM_DEFINE_STACK_OF_INTERNAL(POLICYQUALINFO, POLICYQUALINFO, POLICYQUALINFO)
+    sk_POLICYQUALINFO_num(sk) OPENSSL_sk_num(ossl_check_const_POLICYQUALINFO_sk_type(sk))
+    sk_POLICYQUALINFO_value(sk, idx) ((POLICYQUALINFO *)OPENSSL_sk_value(ossl_check_const_POLICYQUALINFO_sk_type(sk), (idx)))
+    sk_POLICYQUALINFO_new(cmp) ((STACK_OF(POLICYQUALINFO) *)OPENSSL_sk_new(ossl_check_POLICYQUALINFO_compfunc_type(cmp)))
+    sk_POLICYQUALINFO_new_null() ((STACK_OF(POLICYQUALINFO) *)OPENSSL_sk_new_null())
+    sk_POLICYQUALINFO_new_reserve(cmp, n) ((STACK_OF(POLICYQUALINFO) *)OPENSSL_sk_new_reserve(ossl_check_POLICYQUALINFO_compfunc_type(cmp), (n)))
+    sk_POLICYQUALINFO_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_POLICYQUALINFO_sk_type(sk), (n))
+    sk_POLICYQUALINFO_free(sk) OPENSSL_sk_free(ossl_check_POLICYQUALINFO_sk_type(sk))
+    sk_POLICYQUALINFO_zero(sk) OPENSSL_sk_zero(ossl_check_POLICYQUALINFO_sk_type(sk))
+    sk_POLICYQUALINFO_delete(sk, i) ((POLICYQUALINFO *)OPENSSL_sk_delete(ossl_check_POLICYQUALINFO_sk_type(sk), (i)))
+    sk_POLICYQUALINFO_delete_ptr(sk, ptr) ((POLICYQUALINFO *)OPENSSL_sk_delete_ptr(ossl_check_POLICYQUALINFO_sk_type(sk), ossl_check_POLICYQUALINFO_type(ptr)))
+    sk_POLICYQUALINFO_push(sk, ptr) OPENSSL_sk_push(ossl_check_POLICYQUALINFO_sk_type(sk), ossl_check_POLICYQUALINFO_type(ptr))
+    sk_POLICYQUALINFO_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_POLICYQUALINFO_sk_type(sk), ossl_check_POLICYQUALINFO_type(ptr))
+    sk_POLICYQUALINFO_pop(sk) ((POLICYQUALINFO *)OPENSSL_sk_pop(ossl_check_POLICYQUALINFO_sk_type(sk)))
+    sk_POLICYQUALINFO_shift(sk) ((POLICYQUALINFO *)OPENSSL_sk_shift(ossl_check_POLICYQUALINFO_sk_type(sk)))
+    sk_POLICYQUALINFO_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_POLICYQUALINFO_sk_type(sk), ossl_check_POLICYQUALINFO_freefunc_type(freefunc))
+    sk_POLICYQUALINFO_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_POLICYQUALINFO_sk_type(sk), ossl_check_POLICYQUALINFO_type(ptr), (idx))
+    sk_POLICYQUALINFO_set(sk, idx, ptr) ((POLICYQUALINFO *)OPENSSL_sk_set(ossl_check_POLICYQUALINFO_sk_type(sk), (idx), ossl_check_POLICYQUALINFO_type(ptr)))
+    sk_POLICYQUALINFO_find(sk, ptr) OPENSSL_sk_find(ossl_check_POLICYQUALINFO_sk_type(sk), ossl_check_POLICYQUALINFO_type(ptr))
+    sk_POLICYQUALINFO_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_POLICYQUALINFO_sk_type(sk), ossl_check_POLICYQUALINFO_type(ptr))
+    sk_POLICYQUALINFO_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_POLICYQUALINFO_sk_type(sk), ossl_check_POLICYQUALINFO_type(ptr), pnum)
+    sk_POLICYQUALINFO_sort(sk) OPENSSL_sk_sort(ossl_check_POLICYQUALINFO_sk_type(sk))
+    sk_POLICYQUALINFO_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_POLICYQUALINFO_sk_type(sk))
+    sk_POLICYQUALINFO_dup(sk) ((STACK_OF(POLICYQUALINFO) *)OPENSSL_sk_dup(ossl_check_const_POLICYQUALINFO_sk_type(sk)))
+    sk_POLICYQUALINFO_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(POLICYQUALINFO) *)OPENSSL_sk_deep_copy(ossl_check_const_POLICYQUALINFO_sk_type(sk), ossl_check_POLICYQUALINFO_copyfunc_type(copyfunc), ossl_check_POLICYQUALINFO_freefunc_type(freefunc)))
+    sk_POLICYQUALINFO_set_cmp_func(sk, cmp) ((sk_POLICYQUALINFO_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_POLICYQUALINFO_sk_type(sk), ossl_check_POLICYQUALINFO_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack POLICYINFO definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_POLICYINFO = Pointer;
+  {$EXTERNALSYM PSTACK_OF_POLICYINFO}
+
+  { Original Stack Macros for POLICYINFO:
+    SKM_DEFINE_STACK_OF_INTERNAL(POLICYINFO, POLICYINFO, POLICYINFO)
+    sk_POLICYINFO_num(sk) OPENSSL_sk_num(ossl_check_const_POLICYINFO_sk_type(sk))
+    sk_POLICYINFO_value(sk, idx) ((POLICYINFO *)OPENSSL_sk_value(ossl_check_const_POLICYINFO_sk_type(sk), (idx)))
+    sk_POLICYINFO_new(cmp) ((STACK_OF(POLICYINFO) *)OPENSSL_sk_new(ossl_check_POLICYINFO_compfunc_type(cmp)))
+    sk_POLICYINFO_new_null() ((STACK_OF(POLICYINFO) *)OPENSSL_sk_new_null())
+    sk_POLICYINFO_new_reserve(cmp, n) ((STACK_OF(POLICYINFO) *)OPENSSL_sk_new_reserve(ossl_check_POLICYINFO_compfunc_type(cmp), (n)))
+    sk_POLICYINFO_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_POLICYINFO_sk_type(sk), (n))
+    sk_POLICYINFO_free(sk) OPENSSL_sk_free(ossl_check_POLICYINFO_sk_type(sk))
+    sk_POLICYINFO_zero(sk) OPENSSL_sk_zero(ossl_check_POLICYINFO_sk_type(sk))
+    sk_POLICYINFO_delete(sk, i) ((POLICYINFO *)OPENSSL_sk_delete(ossl_check_POLICYINFO_sk_type(sk), (i)))
+    sk_POLICYINFO_delete_ptr(sk, ptr) ((POLICYINFO *)OPENSSL_sk_delete_ptr(ossl_check_POLICYINFO_sk_type(sk), ossl_check_POLICYINFO_type(ptr)))
+    sk_POLICYINFO_push(sk, ptr) OPENSSL_sk_push(ossl_check_POLICYINFO_sk_type(sk), ossl_check_POLICYINFO_type(ptr))
+    sk_POLICYINFO_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_POLICYINFO_sk_type(sk), ossl_check_POLICYINFO_type(ptr))
+    sk_POLICYINFO_pop(sk) ((POLICYINFO *)OPENSSL_sk_pop(ossl_check_POLICYINFO_sk_type(sk)))
+    sk_POLICYINFO_shift(sk) ((POLICYINFO *)OPENSSL_sk_shift(ossl_check_POLICYINFO_sk_type(sk)))
+    sk_POLICYINFO_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_POLICYINFO_sk_type(sk), ossl_check_POLICYINFO_freefunc_type(freefunc))
+    sk_POLICYINFO_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_POLICYINFO_sk_type(sk), ossl_check_POLICYINFO_type(ptr), (idx))
+    sk_POLICYINFO_set(sk, idx, ptr) ((POLICYINFO *)OPENSSL_sk_set(ossl_check_POLICYINFO_sk_type(sk), (idx), ossl_check_POLICYINFO_type(ptr)))
+    sk_POLICYINFO_find(sk, ptr) OPENSSL_sk_find(ossl_check_POLICYINFO_sk_type(sk), ossl_check_POLICYINFO_type(ptr))
+    sk_POLICYINFO_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_POLICYINFO_sk_type(sk), ossl_check_POLICYINFO_type(ptr))
+    sk_POLICYINFO_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_POLICYINFO_sk_type(sk), ossl_check_POLICYINFO_type(ptr), pnum)
+    sk_POLICYINFO_sort(sk) OPENSSL_sk_sort(ossl_check_POLICYINFO_sk_type(sk))
+    sk_POLICYINFO_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_POLICYINFO_sk_type(sk))
+    sk_POLICYINFO_dup(sk) ((STACK_OF(POLICYINFO) *)OPENSSL_sk_dup(ossl_check_const_POLICYINFO_sk_type(sk)))
+    sk_POLICYINFO_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(POLICYINFO) *)OPENSSL_sk_deep_copy(ossl_check_const_POLICYINFO_sk_type(sk), ossl_check_POLICYINFO_copyfunc_type(copyfunc), ossl_check_POLICYINFO_freefunc_type(freefunc)))
+    sk_POLICYINFO_set_cmp_func(sk, cmp) ((sk_POLICYINFO_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_POLICYINFO_sk_type(sk), ossl_check_POLICYINFO_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack POLICY_MAPPING definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_POLICY_MAPPING = Pointer;
+  {$EXTERNALSYM PSTACK_OF_POLICY_MAPPING}
+
+  { Original Stack Macros for POLICY_MAPPING:
+    SKM_DEFINE_STACK_OF_INTERNAL(POLICY_MAPPING, POLICY_MAPPING, POLICY_MAPPING)
+    sk_POLICY_MAPPING_num(sk) OPENSSL_sk_num(ossl_check_const_POLICY_MAPPING_sk_type(sk))
+    sk_POLICY_MAPPING_value(sk, idx) ((POLICY_MAPPING *)OPENSSL_sk_value(ossl_check_const_POLICY_MAPPING_sk_type(sk), (idx)))
+    sk_POLICY_MAPPING_new(cmp) ((STACK_OF(POLICY_MAPPING) *)OPENSSL_sk_new(ossl_check_POLICY_MAPPING_compfunc_type(cmp)))
+    sk_POLICY_MAPPING_new_null() ((STACK_OF(POLICY_MAPPING) *)OPENSSL_sk_new_null())
+    sk_POLICY_MAPPING_new_reserve(cmp, n) ((STACK_OF(POLICY_MAPPING) *)OPENSSL_sk_new_reserve(ossl_check_POLICY_MAPPING_compfunc_type(cmp), (n)))
+    sk_POLICY_MAPPING_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_POLICY_MAPPING_sk_type(sk), (n))
+    sk_POLICY_MAPPING_free(sk) OPENSSL_sk_free(ossl_check_POLICY_MAPPING_sk_type(sk))
+    sk_POLICY_MAPPING_zero(sk) OPENSSL_sk_zero(ossl_check_POLICY_MAPPING_sk_type(sk))
+    sk_POLICY_MAPPING_delete(sk, i) ((POLICY_MAPPING *)OPENSSL_sk_delete(ossl_check_POLICY_MAPPING_sk_type(sk), (i)))
+    sk_POLICY_MAPPING_delete_ptr(sk, ptr) ((POLICY_MAPPING *)OPENSSL_sk_delete_ptr(ossl_check_POLICY_MAPPING_sk_type(sk), ossl_check_POLICY_MAPPING_type(ptr)))
+    sk_POLICY_MAPPING_push(sk, ptr) OPENSSL_sk_push(ossl_check_POLICY_MAPPING_sk_type(sk), ossl_check_POLICY_MAPPING_type(ptr))
+    sk_POLICY_MAPPING_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_POLICY_MAPPING_sk_type(sk), ossl_check_POLICY_MAPPING_type(ptr))
+    sk_POLICY_MAPPING_pop(sk) ((POLICY_MAPPING *)OPENSSL_sk_pop(ossl_check_POLICY_MAPPING_sk_type(sk)))
+    sk_POLICY_MAPPING_shift(sk) ((POLICY_MAPPING *)OPENSSL_sk_shift(ossl_check_POLICY_MAPPING_sk_type(sk)))
+    sk_POLICY_MAPPING_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_POLICY_MAPPING_sk_type(sk), ossl_check_POLICY_MAPPING_freefunc_type(freefunc))
+    sk_POLICY_MAPPING_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_POLICY_MAPPING_sk_type(sk), ossl_check_POLICY_MAPPING_type(ptr), (idx))
+    sk_POLICY_MAPPING_set(sk, idx, ptr) ((POLICY_MAPPING *)OPENSSL_sk_set(ossl_check_POLICY_MAPPING_sk_type(sk), (idx), ossl_check_POLICY_MAPPING_type(ptr)))
+    sk_POLICY_MAPPING_find(sk, ptr) OPENSSL_sk_find(ossl_check_POLICY_MAPPING_sk_type(sk), ossl_check_POLICY_MAPPING_type(ptr))
+    sk_POLICY_MAPPING_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_POLICY_MAPPING_sk_type(sk), ossl_check_POLICY_MAPPING_type(ptr))
+    sk_POLICY_MAPPING_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_POLICY_MAPPING_sk_type(sk), ossl_check_POLICY_MAPPING_type(ptr), pnum)
+    sk_POLICY_MAPPING_sort(sk) OPENSSL_sk_sort(ossl_check_POLICY_MAPPING_sk_type(sk))
+    sk_POLICY_MAPPING_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_POLICY_MAPPING_sk_type(sk))
+    sk_POLICY_MAPPING_dup(sk) ((STACK_OF(POLICY_MAPPING) *)OPENSSL_sk_dup(ossl_check_const_POLICY_MAPPING_sk_type(sk)))
+    sk_POLICY_MAPPING_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(POLICY_MAPPING) *)OPENSSL_sk_deep_copy(ossl_check_const_POLICY_MAPPING_sk_type(sk), ossl_check_POLICY_MAPPING_copyfunc_type(copyfunc), ossl_check_POLICY_MAPPING_freefunc_type(freefunc)))
+    sk_POLICY_MAPPING_set_cmp_func(sk, cmp) ((sk_POLICY_MAPPING_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_POLICY_MAPPING_sk_type(sk), ossl_check_POLICY_MAPPING_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack GENERAL_SUBTREE definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_GENERAL_SUBTREE = Pointer;
+  {$EXTERNALSYM PSTACK_OF_GENERAL_SUBTREE}
+
+  { Original Stack Macros for GENERAL_SUBTREE:
+    SKM_DEFINE_STACK_OF_INTERNAL(GENERAL_SUBTREE, GENERAL_SUBTREE, GENERAL_SUBTREE)
+    sk_GENERAL_SUBTREE_num(sk) OPENSSL_sk_num(ossl_check_const_GENERAL_SUBTREE_sk_type(sk))
+    sk_GENERAL_SUBTREE_value(sk, idx) ((GENERAL_SUBTREE *)OPENSSL_sk_value(ossl_check_const_GENERAL_SUBTREE_sk_type(sk), (idx)))
+    sk_GENERAL_SUBTREE_new(cmp) ((STACK_OF(GENERAL_SUBTREE) *)OPENSSL_sk_new(ossl_check_GENERAL_SUBTREE_compfunc_type(cmp)))
+    sk_GENERAL_SUBTREE_new_null() ((STACK_OF(GENERAL_SUBTREE) *)OPENSSL_sk_new_null())
+    sk_GENERAL_SUBTREE_new_reserve(cmp, n) ((STACK_OF(GENERAL_SUBTREE) *)OPENSSL_sk_new_reserve(ossl_check_GENERAL_SUBTREE_compfunc_type(cmp), (n)))
+    sk_GENERAL_SUBTREE_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_GENERAL_SUBTREE_sk_type(sk), (n))
+    sk_GENERAL_SUBTREE_free(sk) OPENSSL_sk_free(ossl_check_GENERAL_SUBTREE_sk_type(sk))
+    sk_GENERAL_SUBTREE_zero(sk) OPENSSL_sk_zero(ossl_check_GENERAL_SUBTREE_sk_type(sk))
+    sk_GENERAL_SUBTREE_delete(sk, i) ((GENERAL_SUBTREE *)OPENSSL_sk_delete(ossl_check_GENERAL_SUBTREE_sk_type(sk), (i)))
+    sk_GENERAL_SUBTREE_delete_ptr(sk, ptr) ((GENERAL_SUBTREE *)OPENSSL_sk_delete_ptr(ossl_check_GENERAL_SUBTREE_sk_type(sk), ossl_check_GENERAL_SUBTREE_type(ptr)))
+    sk_GENERAL_SUBTREE_push(sk, ptr) OPENSSL_sk_push(ossl_check_GENERAL_SUBTREE_sk_type(sk), ossl_check_GENERAL_SUBTREE_type(ptr))
+    sk_GENERAL_SUBTREE_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_GENERAL_SUBTREE_sk_type(sk), ossl_check_GENERAL_SUBTREE_type(ptr))
+    sk_GENERAL_SUBTREE_pop(sk) ((GENERAL_SUBTREE *)OPENSSL_sk_pop(ossl_check_GENERAL_SUBTREE_sk_type(sk)))
+    sk_GENERAL_SUBTREE_shift(sk) ((GENERAL_SUBTREE *)OPENSSL_sk_shift(ossl_check_GENERAL_SUBTREE_sk_type(sk)))
+    sk_GENERAL_SUBTREE_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_GENERAL_SUBTREE_sk_type(sk), ossl_check_GENERAL_SUBTREE_freefunc_type(freefunc))
+    sk_GENERAL_SUBTREE_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_GENERAL_SUBTREE_sk_type(sk), ossl_check_GENERAL_SUBTREE_type(ptr), (idx))
+    sk_GENERAL_SUBTREE_set(sk, idx, ptr) ((GENERAL_SUBTREE *)OPENSSL_sk_set(ossl_check_GENERAL_SUBTREE_sk_type(sk), (idx), ossl_check_GENERAL_SUBTREE_type(ptr)))
+    sk_GENERAL_SUBTREE_find(sk, ptr) OPENSSL_sk_find(ossl_check_GENERAL_SUBTREE_sk_type(sk), ossl_check_GENERAL_SUBTREE_type(ptr))
+    sk_GENERAL_SUBTREE_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_GENERAL_SUBTREE_sk_type(sk), ossl_check_GENERAL_SUBTREE_type(ptr))
+    sk_GENERAL_SUBTREE_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_GENERAL_SUBTREE_sk_type(sk), ossl_check_GENERAL_SUBTREE_type(ptr), pnum)
+    sk_GENERAL_SUBTREE_sort(sk) OPENSSL_sk_sort(ossl_check_GENERAL_SUBTREE_sk_type(sk))
+    sk_GENERAL_SUBTREE_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_GENERAL_SUBTREE_sk_type(sk))
+    sk_GENERAL_SUBTREE_dup(sk) ((STACK_OF(GENERAL_SUBTREE) *)OPENSSL_sk_dup(ossl_check_const_GENERAL_SUBTREE_sk_type(sk)))
+    sk_GENERAL_SUBTREE_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(GENERAL_SUBTREE) *)OPENSSL_sk_deep_copy(ossl_check_const_GENERAL_SUBTREE_sk_type(sk), ossl_check_GENERAL_SUBTREE_copyfunc_type(copyfunc), ossl_check_GENERAL_SUBTREE_freefunc_type(freefunc)))
+    sk_GENERAL_SUBTREE_set_cmp_func(sk, cmp) ((sk_GENERAL_SUBTREE_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_GENERAL_SUBTREE_sk_type(sk), ossl_check_GENERAL_SUBTREE_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack X509_PURPOSE definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_X509_PURPOSE = Pointer;
+  {$EXTERNALSYM PSTACK_OF_X509_PURPOSE}
+
+  { Original Stack Macros for X509_PURPOSE:
+    SKM_DEFINE_STACK_OF_INTERNAL(X509_PURPOSE, X509_PURPOSE, X509_PURPOSE)
+    sk_X509_PURPOSE_num(sk) OPENSSL_sk_num(ossl_check_const_X509_PURPOSE_sk_type(sk))
+    sk_X509_PURPOSE_value(sk, idx) ((X509_PURPOSE *)OPENSSL_sk_value(ossl_check_const_X509_PURPOSE_sk_type(sk), (idx)))
+    sk_X509_PURPOSE_new(cmp) ((STACK_OF(X509_PURPOSE) *)OPENSSL_sk_new(ossl_check_X509_PURPOSE_compfunc_type(cmp)))
+    sk_X509_PURPOSE_new_null() ((STACK_OF(X509_PURPOSE) *)OPENSSL_sk_new_null())
+    sk_X509_PURPOSE_new_reserve(cmp, n) ((STACK_OF(X509_PURPOSE) *)OPENSSL_sk_new_reserve(ossl_check_X509_PURPOSE_compfunc_type(cmp), (n)))
+    sk_X509_PURPOSE_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_X509_PURPOSE_sk_type(sk), (n))
+    sk_X509_PURPOSE_free(sk) OPENSSL_sk_free(ossl_check_X509_PURPOSE_sk_type(sk))
+    sk_X509_PURPOSE_zero(sk) OPENSSL_sk_zero(ossl_check_X509_PURPOSE_sk_type(sk))
+    sk_X509_PURPOSE_delete(sk, i) ((X509_PURPOSE *)OPENSSL_sk_delete(ossl_check_X509_PURPOSE_sk_type(sk), (i)))
+    sk_X509_PURPOSE_delete_ptr(sk, ptr) ((X509_PURPOSE *)OPENSSL_sk_delete_ptr(ossl_check_X509_PURPOSE_sk_type(sk), ossl_check_X509_PURPOSE_type(ptr)))
+    sk_X509_PURPOSE_push(sk, ptr) OPENSSL_sk_push(ossl_check_X509_PURPOSE_sk_type(sk), ossl_check_X509_PURPOSE_type(ptr))
+    sk_X509_PURPOSE_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_X509_PURPOSE_sk_type(sk), ossl_check_X509_PURPOSE_type(ptr))
+    sk_X509_PURPOSE_pop(sk) ((X509_PURPOSE *)OPENSSL_sk_pop(ossl_check_X509_PURPOSE_sk_type(sk)))
+    sk_X509_PURPOSE_shift(sk) ((X509_PURPOSE *)OPENSSL_sk_shift(ossl_check_X509_PURPOSE_sk_type(sk)))
+    sk_X509_PURPOSE_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_X509_PURPOSE_sk_type(sk), ossl_check_X509_PURPOSE_freefunc_type(freefunc))
+    sk_X509_PURPOSE_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_X509_PURPOSE_sk_type(sk), ossl_check_X509_PURPOSE_type(ptr), (idx))
+    sk_X509_PURPOSE_set(sk, idx, ptr) ((X509_PURPOSE *)OPENSSL_sk_set(ossl_check_X509_PURPOSE_sk_type(sk), (idx), ossl_check_X509_PURPOSE_type(ptr)))
+    sk_X509_PURPOSE_find(sk, ptr) OPENSSL_sk_find(ossl_check_X509_PURPOSE_sk_type(sk), ossl_check_X509_PURPOSE_type(ptr))
+    sk_X509_PURPOSE_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_X509_PURPOSE_sk_type(sk), ossl_check_X509_PURPOSE_type(ptr))
+    sk_X509_PURPOSE_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_X509_PURPOSE_sk_type(sk), ossl_check_X509_PURPOSE_type(ptr), pnum)
+    sk_X509_PURPOSE_sort(sk) OPENSSL_sk_sort(ossl_check_X509_PURPOSE_sk_type(sk))
+    sk_X509_PURPOSE_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_X509_PURPOSE_sk_type(sk))
+    sk_X509_PURPOSE_dup(sk) ((STACK_OF(X509_PURPOSE) *)OPENSSL_sk_dup(ossl_check_const_X509_PURPOSE_sk_type(sk)))
+    sk_X509_PURPOSE_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(X509_PURPOSE) *)OPENSSL_sk_deep_copy(ossl_check_const_X509_PURPOSE_sk_type(sk), ossl_check_X509_PURPOSE_copyfunc_type(copyfunc), ossl_check_X509_PURPOSE_freefunc_type(freefunc)))
+    sk_X509_PURPOSE_set_cmp_func(sk, cmp) ((sk_X509_PURPOSE_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_X509_PURPOSE_sk_type(sk), ossl_check_X509_PURPOSE_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack X509_POLICY_NODE definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_X509_POLICY_NODE = Pointer;
+  {$EXTERNALSYM PSTACK_OF_X509_POLICY_NODE}
+
+  { Original Stack Macros for X509_POLICY_NODE:
+    SKM_DEFINE_STACK_OF_INTERNAL(X509_POLICY_NODE, X509_POLICY_NODE, X509_POLICY_NODE)
+    sk_X509_POLICY_NODE_num(sk) OPENSSL_sk_num(ossl_check_const_X509_POLICY_NODE_sk_type(sk))
+    sk_X509_POLICY_NODE_value(sk, idx) ((X509_POLICY_NODE *)OPENSSL_sk_value(ossl_check_const_X509_POLICY_NODE_sk_type(sk), (idx)))
+    sk_X509_POLICY_NODE_new(cmp) ((STACK_OF(X509_POLICY_NODE) *)OPENSSL_sk_new(ossl_check_X509_POLICY_NODE_compfunc_type(cmp)))
+    sk_X509_POLICY_NODE_new_null() ((STACK_OF(X509_POLICY_NODE) *)OPENSSL_sk_new_null())
+    sk_X509_POLICY_NODE_new_reserve(cmp, n) ((STACK_OF(X509_POLICY_NODE) *)OPENSSL_sk_new_reserve(ossl_check_X509_POLICY_NODE_compfunc_type(cmp), (n)))
+    sk_X509_POLICY_NODE_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_X509_POLICY_NODE_sk_type(sk), (n))
+    sk_X509_POLICY_NODE_free(sk) OPENSSL_sk_free(ossl_check_X509_POLICY_NODE_sk_type(sk))
+    sk_X509_POLICY_NODE_zero(sk) OPENSSL_sk_zero(ossl_check_X509_POLICY_NODE_sk_type(sk))
+    sk_X509_POLICY_NODE_delete(sk, i) ((X509_POLICY_NODE *)OPENSSL_sk_delete(ossl_check_X509_POLICY_NODE_sk_type(sk), (i)))
+    sk_X509_POLICY_NODE_delete_ptr(sk, ptr) ((X509_POLICY_NODE *)OPENSSL_sk_delete_ptr(ossl_check_X509_POLICY_NODE_sk_type(sk), ossl_check_X509_POLICY_NODE_type(ptr)))
+    sk_X509_POLICY_NODE_push(sk, ptr) OPENSSL_sk_push(ossl_check_X509_POLICY_NODE_sk_type(sk), ossl_check_X509_POLICY_NODE_type(ptr))
+    sk_X509_POLICY_NODE_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_X509_POLICY_NODE_sk_type(sk), ossl_check_X509_POLICY_NODE_type(ptr))
+    sk_X509_POLICY_NODE_pop(sk) ((X509_POLICY_NODE *)OPENSSL_sk_pop(ossl_check_X509_POLICY_NODE_sk_type(sk)))
+    sk_X509_POLICY_NODE_shift(sk) ((X509_POLICY_NODE *)OPENSSL_sk_shift(ossl_check_X509_POLICY_NODE_sk_type(sk)))
+    sk_X509_POLICY_NODE_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_X509_POLICY_NODE_sk_type(sk), ossl_check_X509_POLICY_NODE_freefunc_type(freefunc))
+    sk_X509_POLICY_NODE_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_X509_POLICY_NODE_sk_type(sk), ossl_check_X509_POLICY_NODE_type(ptr), (idx))
+    sk_X509_POLICY_NODE_set(sk, idx, ptr) ((X509_POLICY_NODE *)OPENSSL_sk_set(ossl_check_X509_POLICY_NODE_sk_type(sk), (idx), ossl_check_X509_POLICY_NODE_type(ptr)))
+    sk_X509_POLICY_NODE_find(sk, ptr) OPENSSL_sk_find(ossl_check_X509_POLICY_NODE_sk_type(sk), ossl_check_X509_POLICY_NODE_type(ptr))
+    sk_X509_POLICY_NODE_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_X509_POLICY_NODE_sk_type(sk), ossl_check_X509_POLICY_NODE_type(ptr))
+    sk_X509_POLICY_NODE_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_X509_POLICY_NODE_sk_type(sk), ossl_check_X509_POLICY_NODE_type(ptr), pnum)
+    sk_X509_POLICY_NODE_sort(sk) OPENSSL_sk_sort(ossl_check_X509_POLICY_NODE_sk_type(sk))
+    sk_X509_POLICY_NODE_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_X509_POLICY_NODE_sk_type(sk))
+    sk_X509_POLICY_NODE_dup(sk) ((STACK_OF(X509_POLICY_NODE) *)OPENSSL_sk_dup(ossl_check_const_X509_POLICY_NODE_sk_type(sk)))
+    sk_X509_POLICY_NODE_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(X509_POLICY_NODE) *)OPENSSL_sk_deep_copy(ossl_check_const_X509_POLICY_NODE_sk_type(sk), ossl_check_X509_POLICY_NODE_copyfunc_type(copyfunc), ossl_check_X509_POLICY_NODE_freefunc_type(freefunc)))
+    sk_X509_POLICY_NODE_set_cmp_func(sk, cmp) ((sk_X509_POLICY_NODE_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_X509_POLICY_NODE_sk_type(sk), ossl_check_X509_POLICY_NODE_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack ASIdOrRange definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_ASIdOrRange = Pointer;
+  {$EXTERNALSYM PSTACK_OF_ASIdOrRange}
+
+  { Original Stack Macros for ASIdOrRange:
+    SKM_DEFINE_STACK_OF_INTERNAL(ASIdOrRange, ASIdOrRange, ASIdOrRange)
+    sk_ASIdOrRange_num(sk) OPENSSL_sk_num(ossl_check_const_ASIdOrRange_sk_type(sk))
+    sk_ASIdOrRange_value(sk, idx) ((ASIdOrRange *)OPENSSL_sk_value(ossl_check_const_ASIdOrRange_sk_type(sk), (idx)))
+    sk_ASIdOrRange_new(cmp) ((STACK_OF(ASIdOrRange) *)OPENSSL_sk_new(ossl_check_ASIdOrRange_compfunc_type(cmp)))
+    sk_ASIdOrRange_new_null() ((STACK_OF(ASIdOrRange) *)OPENSSL_sk_new_null())
+    sk_ASIdOrRange_new_reserve(cmp, n) ((STACK_OF(ASIdOrRange) *)OPENSSL_sk_new_reserve(ossl_check_ASIdOrRange_compfunc_type(cmp), (n)))
+    sk_ASIdOrRange_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_ASIdOrRange_sk_type(sk), (n))
+    sk_ASIdOrRange_free(sk) OPENSSL_sk_free(ossl_check_ASIdOrRange_sk_type(sk))
+    sk_ASIdOrRange_zero(sk) OPENSSL_sk_zero(ossl_check_ASIdOrRange_sk_type(sk))
+    sk_ASIdOrRange_delete(sk, i) ((ASIdOrRange *)OPENSSL_sk_delete(ossl_check_ASIdOrRange_sk_type(sk), (i)))
+    sk_ASIdOrRange_delete_ptr(sk, ptr) ((ASIdOrRange *)OPENSSL_sk_delete_ptr(ossl_check_ASIdOrRange_sk_type(sk), ossl_check_ASIdOrRange_type(ptr)))
+    sk_ASIdOrRange_push(sk, ptr) OPENSSL_sk_push(ossl_check_ASIdOrRange_sk_type(sk), ossl_check_ASIdOrRange_type(ptr))
+    sk_ASIdOrRange_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_ASIdOrRange_sk_type(sk), ossl_check_ASIdOrRange_type(ptr))
+    sk_ASIdOrRange_pop(sk) ((ASIdOrRange *)OPENSSL_sk_pop(ossl_check_ASIdOrRange_sk_type(sk)))
+    sk_ASIdOrRange_shift(sk) ((ASIdOrRange *)OPENSSL_sk_shift(ossl_check_ASIdOrRange_sk_type(sk)))
+    sk_ASIdOrRange_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_ASIdOrRange_sk_type(sk), ossl_check_ASIdOrRange_freefunc_type(freefunc))
+    sk_ASIdOrRange_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_ASIdOrRange_sk_type(sk), ossl_check_ASIdOrRange_type(ptr), (idx))
+    sk_ASIdOrRange_set(sk, idx, ptr) ((ASIdOrRange *)OPENSSL_sk_set(ossl_check_ASIdOrRange_sk_type(sk), (idx), ossl_check_ASIdOrRange_type(ptr)))
+    sk_ASIdOrRange_find(sk, ptr) OPENSSL_sk_find(ossl_check_ASIdOrRange_sk_type(sk), ossl_check_ASIdOrRange_type(ptr))
+    sk_ASIdOrRange_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_ASIdOrRange_sk_type(sk), ossl_check_ASIdOrRange_type(ptr))
+    sk_ASIdOrRange_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_ASIdOrRange_sk_type(sk), ossl_check_ASIdOrRange_type(ptr), pnum)
+    sk_ASIdOrRange_sort(sk) OPENSSL_sk_sort(ossl_check_ASIdOrRange_sk_type(sk))
+    sk_ASIdOrRange_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_ASIdOrRange_sk_type(sk))
+    sk_ASIdOrRange_dup(sk) ((STACK_OF(ASIdOrRange) *)OPENSSL_sk_dup(ossl_check_const_ASIdOrRange_sk_type(sk)))
+    sk_ASIdOrRange_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(ASIdOrRange) *)OPENSSL_sk_deep_copy(ossl_check_const_ASIdOrRange_sk_type(sk), ossl_check_ASIdOrRange_copyfunc_type(copyfunc), ossl_check_ASIdOrRange_freefunc_type(freefunc)))
+    sk_ASIdOrRange_set_cmp_func(sk, cmp) ((sk_ASIdOrRange_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_ASIdOrRange_sk_type(sk), ossl_check_ASIdOrRange_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack IPAddressOrRange definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_IPAddressOrRange = Pointer;
+  {$EXTERNALSYM PSTACK_OF_IPAddressOrRange}
+
+  { Original Stack Macros for IPAddressOrRange:
+    SKM_DEFINE_STACK_OF_INTERNAL(IPAddressOrRange, IPAddressOrRange, IPAddressOrRange)
+    sk_IPAddressOrRange_num(sk) OPENSSL_sk_num(ossl_check_const_IPAddressOrRange_sk_type(sk))
+    sk_IPAddressOrRange_value(sk, idx) ((IPAddressOrRange *)OPENSSL_sk_value(ossl_check_const_IPAddressOrRange_sk_type(sk), (idx)))
+    sk_IPAddressOrRange_new(cmp) ((STACK_OF(IPAddressOrRange) *)OPENSSL_sk_new(ossl_check_IPAddressOrRange_compfunc_type(cmp)))
+    sk_IPAddressOrRange_new_null() ((STACK_OF(IPAddressOrRange) *)OPENSSL_sk_new_null())
+    sk_IPAddressOrRange_new_reserve(cmp, n) ((STACK_OF(IPAddressOrRange) *)OPENSSL_sk_new_reserve(ossl_check_IPAddressOrRange_compfunc_type(cmp), (n)))
+    sk_IPAddressOrRange_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_IPAddressOrRange_sk_type(sk), (n))
+    sk_IPAddressOrRange_free(sk) OPENSSL_sk_free(ossl_check_IPAddressOrRange_sk_type(sk))
+    sk_IPAddressOrRange_zero(sk) OPENSSL_sk_zero(ossl_check_IPAddressOrRange_sk_type(sk))
+    sk_IPAddressOrRange_delete(sk, i) ((IPAddressOrRange *)OPENSSL_sk_delete(ossl_check_IPAddressOrRange_sk_type(sk), (i)))
+    sk_IPAddressOrRange_delete_ptr(sk, ptr) ((IPAddressOrRange *)OPENSSL_sk_delete_ptr(ossl_check_IPAddressOrRange_sk_type(sk), ossl_check_IPAddressOrRange_type(ptr)))
+    sk_IPAddressOrRange_push(sk, ptr) OPENSSL_sk_push(ossl_check_IPAddressOrRange_sk_type(sk), ossl_check_IPAddressOrRange_type(ptr))
+    sk_IPAddressOrRange_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_IPAddressOrRange_sk_type(sk), ossl_check_IPAddressOrRange_type(ptr))
+    sk_IPAddressOrRange_pop(sk) ((IPAddressOrRange *)OPENSSL_sk_pop(ossl_check_IPAddressOrRange_sk_type(sk)))
+    sk_IPAddressOrRange_shift(sk) ((IPAddressOrRange *)OPENSSL_sk_shift(ossl_check_IPAddressOrRange_sk_type(sk)))
+    sk_IPAddressOrRange_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_IPAddressOrRange_sk_type(sk), ossl_check_IPAddressOrRange_freefunc_type(freefunc))
+    sk_IPAddressOrRange_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_IPAddressOrRange_sk_type(sk), ossl_check_IPAddressOrRange_type(ptr), (idx))
+    sk_IPAddressOrRange_set(sk, idx, ptr) ((IPAddressOrRange *)OPENSSL_sk_set(ossl_check_IPAddressOrRange_sk_type(sk), (idx), ossl_check_IPAddressOrRange_type(ptr)))
+    sk_IPAddressOrRange_find(sk, ptr) OPENSSL_sk_find(ossl_check_IPAddressOrRange_sk_type(sk), ossl_check_IPAddressOrRange_type(ptr))
+    sk_IPAddressOrRange_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_IPAddressOrRange_sk_type(sk), ossl_check_IPAddressOrRange_type(ptr))
+    sk_IPAddressOrRange_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_IPAddressOrRange_sk_type(sk), ossl_check_IPAddressOrRange_type(ptr), pnum)
+    sk_IPAddressOrRange_sort(sk) OPENSSL_sk_sort(ossl_check_IPAddressOrRange_sk_type(sk))
+    sk_IPAddressOrRange_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_IPAddressOrRange_sk_type(sk))
+    sk_IPAddressOrRange_dup(sk) ((STACK_OF(IPAddressOrRange) *)OPENSSL_sk_dup(ossl_check_const_IPAddressOrRange_sk_type(sk)))
+    sk_IPAddressOrRange_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(IPAddressOrRange) *)OPENSSL_sk_deep_copy(ossl_check_const_IPAddressOrRange_sk_type(sk), ossl_check_IPAddressOrRange_copyfunc_type(copyfunc), ossl_check_IPAddressOrRange_freefunc_type(freefunc)))
+    sk_IPAddressOrRange_set_cmp_func(sk, cmp) ((sk_IPAddressOrRange_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_IPAddressOrRange_sk_type(sk), ossl_check_IPAddressOrRange_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack IPAddressFamily definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_IPAddressFamily = Pointer;
+  {$EXTERNALSYM PSTACK_OF_IPAddressFamily}
+
+  { Original Stack Macros for IPAddressFamily:
+    SKM_DEFINE_STACK_OF_INTERNAL(IPAddressFamily, IPAddressFamily, IPAddressFamily)
+    sk_IPAddressFamily_num(sk) OPENSSL_sk_num(ossl_check_const_IPAddressFamily_sk_type(sk))
+    sk_IPAddressFamily_value(sk, idx) ((IPAddressFamily *)OPENSSL_sk_value(ossl_check_const_IPAddressFamily_sk_type(sk), (idx)))
+    sk_IPAddressFamily_new(cmp) ((STACK_OF(IPAddressFamily) *)OPENSSL_sk_new(ossl_check_IPAddressFamily_compfunc_type(cmp)))
+    sk_IPAddressFamily_new_null() ((STACK_OF(IPAddressFamily) *)OPENSSL_sk_new_null())
+    sk_IPAddressFamily_new_reserve(cmp, n) ((STACK_OF(IPAddressFamily) *)OPENSSL_sk_new_reserve(ossl_check_IPAddressFamily_compfunc_type(cmp), (n)))
+    sk_IPAddressFamily_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_IPAddressFamily_sk_type(sk), (n))
+    sk_IPAddressFamily_free(sk) OPENSSL_sk_free(ossl_check_IPAddressFamily_sk_type(sk))
+    sk_IPAddressFamily_zero(sk) OPENSSL_sk_zero(ossl_check_IPAddressFamily_sk_type(sk))
+    sk_IPAddressFamily_delete(sk, i) ((IPAddressFamily *)OPENSSL_sk_delete(ossl_check_IPAddressFamily_sk_type(sk), (i)))
+    sk_IPAddressFamily_delete_ptr(sk, ptr) ((IPAddressFamily *)OPENSSL_sk_delete_ptr(ossl_check_IPAddressFamily_sk_type(sk), ossl_check_IPAddressFamily_type(ptr)))
+    sk_IPAddressFamily_push(sk, ptr) OPENSSL_sk_push(ossl_check_IPAddressFamily_sk_type(sk), ossl_check_IPAddressFamily_type(ptr))
+    sk_IPAddressFamily_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_IPAddressFamily_sk_type(sk), ossl_check_IPAddressFamily_type(ptr))
+    sk_IPAddressFamily_pop(sk) ((IPAddressFamily *)OPENSSL_sk_pop(ossl_check_IPAddressFamily_sk_type(sk)))
+    sk_IPAddressFamily_shift(sk) ((IPAddressFamily *)OPENSSL_sk_shift(ossl_check_IPAddressFamily_sk_type(sk)))
+    sk_IPAddressFamily_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_IPAddressFamily_sk_type(sk), ossl_check_IPAddressFamily_freefunc_type(freefunc))
+    sk_IPAddressFamily_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_IPAddressFamily_sk_type(sk), ossl_check_IPAddressFamily_type(ptr), (idx))
+    sk_IPAddressFamily_set(sk, idx, ptr) ((IPAddressFamily *)OPENSSL_sk_set(ossl_check_IPAddressFamily_sk_type(sk), (idx), ossl_check_IPAddressFamily_type(ptr)))
+    sk_IPAddressFamily_find(sk, ptr) OPENSSL_sk_find(ossl_check_IPAddressFamily_sk_type(sk), ossl_check_IPAddressFamily_type(ptr))
+    sk_IPAddressFamily_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_IPAddressFamily_sk_type(sk), ossl_check_IPAddressFamily_type(ptr))
+    sk_IPAddressFamily_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_IPAddressFamily_sk_type(sk), ossl_check_IPAddressFamily_type(ptr), pnum)
+    sk_IPAddressFamily_sort(sk) OPENSSL_sk_sort(ossl_check_IPAddressFamily_sk_type(sk))
+    sk_IPAddressFamily_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_IPAddressFamily_sk_type(sk))
+    sk_IPAddressFamily_dup(sk) ((STACK_OF(IPAddressFamily) *)OPENSSL_sk_dup(ossl_check_const_IPAddressFamily_sk_type(sk)))
+    sk_IPAddressFamily_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(IPAddressFamily) *)OPENSSL_sk_deep_copy(ossl_check_const_IPAddressFamily_sk_type(sk), ossl_check_IPAddressFamily_copyfunc_type(copyfunc), ossl_check_IPAddressFamily_freefunc_type(freefunc)))
+    sk_IPAddressFamily_set_cmp_func(sk, cmp) ((sk_IPAddressFamily_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_IPAddressFamily_sk_type(sk), ossl_check_IPAddressFamily_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack ASN1_STRING definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_ASN1_STRING = Pointer;
+  {$EXTERNALSYM PSTACK_OF_ASN1_STRING}
+
+  { Original Stack Macros for ASN1_STRING:
+    SKM_DEFINE_STACK_OF_INTERNAL(ASN1_STRING, ASN1_STRING, ASN1_STRING)
+    sk_ASN1_STRING_num(sk) OPENSSL_sk_num(ossl_check_const_ASN1_STRING_sk_type(sk))
+    sk_ASN1_STRING_value(sk, idx) ((ASN1_STRING *)OPENSSL_sk_value(ossl_check_const_ASN1_STRING_sk_type(sk), (idx)))
+    sk_ASN1_STRING_new(cmp) ((STACK_OF(ASN1_STRING) *)OPENSSL_sk_new(ossl_check_ASN1_STRING_compfunc_type(cmp)))
+    sk_ASN1_STRING_new_null() ((STACK_OF(ASN1_STRING) *)OPENSSL_sk_new_null())
+    sk_ASN1_STRING_new_reserve(cmp, n) ((STACK_OF(ASN1_STRING) *)OPENSSL_sk_new_reserve(ossl_check_ASN1_STRING_compfunc_type(cmp), (n)))
+    sk_ASN1_STRING_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_ASN1_STRING_sk_type(sk), (n))
+    sk_ASN1_STRING_free(sk) OPENSSL_sk_free(ossl_check_ASN1_STRING_sk_type(sk))
+    sk_ASN1_STRING_zero(sk) OPENSSL_sk_zero(ossl_check_ASN1_STRING_sk_type(sk))
+    sk_ASN1_STRING_delete(sk, i) ((ASN1_STRING *)OPENSSL_sk_delete(ossl_check_ASN1_STRING_sk_type(sk), (i)))
+    sk_ASN1_STRING_delete_ptr(sk, ptr) ((ASN1_STRING *)OPENSSL_sk_delete_ptr(ossl_check_ASN1_STRING_sk_type(sk), ossl_check_ASN1_STRING_type(ptr)))
+    sk_ASN1_STRING_push(sk, ptr) OPENSSL_sk_push(ossl_check_ASN1_STRING_sk_type(sk), ossl_check_ASN1_STRING_type(ptr))
+    sk_ASN1_STRING_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_ASN1_STRING_sk_type(sk), ossl_check_ASN1_STRING_type(ptr))
+    sk_ASN1_STRING_pop(sk) ((ASN1_STRING *)OPENSSL_sk_pop(ossl_check_ASN1_STRING_sk_type(sk)))
+    sk_ASN1_STRING_shift(sk) ((ASN1_STRING *)OPENSSL_sk_shift(ossl_check_ASN1_STRING_sk_type(sk)))
+    sk_ASN1_STRING_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_ASN1_STRING_sk_type(sk), ossl_check_ASN1_STRING_freefunc_type(freefunc))
+    sk_ASN1_STRING_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_ASN1_STRING_sk_type(sk), ossl_check_ASN1_STRING_type(ptr), (idx))
+    sk_ASN1_STRING_set(sk, idx, ptr) ((ASN1_STRING *)OPENSSL_sk_set(ossl_check_ASN1_STRING_sk_type(sk), (idx), ossl_check_ASN1_STRING_type(ptr)))
+    sk_ASN1_STRING_find(sk, ptr) OPENSSL_sk_find(ossl_check_ASN1_STRING_sk_type(sk), ossl_check_ASN1_STRING_type(ptr))
+    sk_ASN1_STRING_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_ASN1_STRING_sk_type(sk), ossl_check_ASN1_STRING_type(ptr))
+    sk_ASN1_STRING_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_ASN1_STRING_sk_type(sk), ossl_check_ASN1_STRING_type(ptr), pnum)
+    sk_ASN1_STRING_sort(sk) OPENSSL_sk_sort(ossl_check_ASN1_STRING_sk_type(sk))
+    sk_ASN1_STRING_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_ASN1_STRING_sk_type(sk))
+    sk_ASN1_STRING_dup(sk) ((STACK_OF(ASN1_STRING) *)OPENSSL_sk_dup(ossl_check_const_ASN1_STRING_sk_type(sk)))
+    sk_ASN1_STRING_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(ASN1_STRING) *)OPENSSL_sk_deep_copy(ossl_check_const_ASN1_STRING_sk_type(sk), ossl_check_ASN1_STRING_copyfunc_type(copyfunc), ossl_check_ASN1_STRING_freefunc_type(freefunc)))
+    sk_ASN1_STRING_set_cmp_func(sk, cmp) ((sk_ASN1_STRING_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_ASN1_STRING_sk_type(sk), ossl_check_ASN1_STRING_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack PROFESSION_INFO definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_PROFESSION_INFO = Pointer;
+  {$EXTERNALSYM PSTACK_OF_PROFESSION_INFO}
+
+  { Original Stack Macros for PROFESSION_INFO:
+    SKM_DEFINE_STACK_OF_INTERNAL(PROFESSION_INFO, PROFESSION_INFO, PROFESSION_INFO)
+    sk_PROFESSION_INFO_num(sk) OPENSSL_sk_num(ossl_check_const_PROFESSION_INFO_sk_type(sk))
+    sk_PROFESSION_INFO_value(sk, idx) ((PROFESSION_INFO *)OPENSSL_sk_value(ossl_check_const_PROFESSION_INFO_sk_type(sk), (idx)))
+    sk_PROFESSION_INFO_new(cmp) ((STACK_OF(PROFESSION_INFO) *)OPENSSL_sk_new(ossl_check_PROFESSION_INFO_compfunc_type(cmp)))
+    sk_PROFESSION_INFO_new_null() ((STACK_OF(PROFESSION_INFO) *)OPENSSL_sk_new_null())
+    sk_PROFESSION_INFO_new_reserve(cmp, n) ((STACK_OF(PROFESSION_INFO) *)OPENSSL_sk_new_reserve(ossl_check_PROFESSION_INFO_compfunc_type(cmp), (n)))
+    sk_PROFESSION_INFO_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_PROFESSION_INFO_sk_type(sk), (n))
+    sk_PROFESSION_INFO_free(sk) OPENSSL_sk_free(ossl_check_PROFESSION_INFO_sk_type(sk))
+    sk_PROFESSION_INFO_zero(sk) OPENSSL_sk_zero(ossl_check_PROFESSION_INFO_sk_type(sk))
+    sk_PROFESSION_INFO_delete(sk, i) ((PROFESSION_INFO *)OPENSSL_sk_delete(ossl_check_PROFESSION_INFO_sk_type(sk), (i)))
+    sk_PROFESSION_INFO_delete_ptr(sk, ptr) ((PROFESSION_INFO *)OPENSSL_sk_delete_ptr(ossl_check_PROFESSION_INFO_sk_type(sk), ossl_check_PROFESSION_INFO_type(ptr)))
+    sk_PROFESSION_INFO_push(sk, ptr) OPENSSL_sk_push(ossl_check_PROFESSION_INFO_sk_type(sk), ossl_check_PROFESSION_INFO_type(ptr))
+    sk_PROFESSION_INFO_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_PROFESSION_INFO_sk_type(sk), ossl_check_PROFESSION_INFO_type(ptr))
+    sk_PROFESSION_INFO_pop(sk) ((PROFESSION_INFO *)OPENSSL_sk_pop(ossl_check_PROFESSION_INFO_sk_type(sk)))
+    sk_PROFESSION_INFO_shift(sk) ((PROFESSION_INFO *)OPENSSL_sk_shift(ossl_check_PROFESSION_INFO_sk_type(sk)))
+    sk_PROFESSION_INFO_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_PROFESSION_INFO_sk_type(sk), ossl_check_PROFESSION_INFO_freefunc_type(freefunc))
+    sk_PROFESSION_INFO_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_PROFESSION_INFO_sk_type(sk), ossl_check_PROFESSION_INFO_type(ptr), (idx))
+    sk_PROFESSION_INFO_set(sk, idx, ptr) ((PROFESSION_INFO *)OPENSSL_sk_set(ossl_check_PROFESSION_INFO_sk_type(sk), (idx), ossl_check_PROFESSION_INFO_type(ptr)))
+    sk_PROFESSION_INFO_find(sk, ptr) OPENSSL_sk_find(ossl_check_PROFESSION_INFO_sk_type(sk), ossl_check_PROFESSION_INFO_type(ptr))
+    sk_PROFESSION_INFO_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_PROFESSION_INFO_sk_type(sk), ossl_check_PROFESSION_INFO_type(ptr))
+    sk_PROFESSION_INFO_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_PROFESSION_INFO_sk_type(sk), ossl_check_PROFESSION_INFO_type(ptr), pnum)
+    sk_PROFESSION_INFO_sort(sk) OPENSSL_sk_sort(ossl_check_PROFESSION_INFO_sk_type(sk))
+    sk_PROFESSION_INFO_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_PROFESSION_INFO_sk_type(sk))
+    sk_PROFESSION_INFO_dup(sk) ((STACK_OF(PROFESSION_INFO) *)OPENSSL_sk_dup(ossl_check_const_PROFESSION_INFO_sk_type(sk)))
+    sk_PROFESSION_INFO_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(PROFESSION_INFO) *)OPENSSL_sk_deep_copy(ossl_check_const_PROFESSION_INFO_sk_type(sk), ossl_check_PROFESSION_INFO_copyfunc_type(copyfunc), ossl_check_PROFESSION_INFO_freefunc_type(freefunc)))
+    sk_PROFESSION_INFO_set_cmp_func(sk, cmp) ((sk_PROFESSION_INFO_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_PROFESSION_INFO_sk_type(sk), ossl_check_PROFESSION_INFO_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack ADMISSIONS definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_ADMISSIONS = Pointer;
+  {$EXTERNALSYM PSTACK_OF_ADMISSIONS}
+
+  { Original Stack Macros for ADMISSIONS:
+    SKM_DEFINE_STACK_OF_INTERNAL(ADMISSIONS, ADMISSIONS, ADMISSIONS)
+    sk_ADMISSIONS_num(sk) OPENSSL_sk_num(ossl_check_const_ADMISSIONS_sk_type(sk))
+    sk_ADMISSIONS_value(sk, idx) ((ADMISSIONS *)OPENSSL_sk_value(ossl_check_const_ADMISSIONS_sk_type(sk), (idx)))
+    sk_ADMISSIONS_new(cmp) ((STACK_OF(ADMISSIONS) *)OPENSSL_sk_new(ossl_check_ADMISSIONS_compfunc_type(cmp)))
+    sk_ADMISSIONS_new_null() ((STACK_OF(ADMISSIONS) *)OPENSSL_sk_new_null())
+    sk_ADMISSIONS_new_reserve(cmp, n) ((STACK_OF(ADMISSIONS) *)OPENSSL_sk_new_reserve(ossl_check_ADMISSIONS_compfunc_type(cmp), (n)))
+    sk_ADMISSIONS_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_ADMISSIONS_sk_type(sk), (n))
+    sk_ADMISSIONS_free(sk) OPENSSL_sk_free(ossl_check_ADMISSIONS_sk_type(sk))
+    sk_ADMISSIONS_zero(sk) OPENSSL_sk_zero(ossl_check_ADMISSIONS_sk_type(sk))
+    sk_ADMISSIONS_delete(sk, i) ((ADMISSIONS *)OPENSSL_sk_delete(ossl_check_ADMISSIONS_sk_type(sk), (i)))
+    sk_ADMISSIONS_delete_ptr(sk, ptr) ((ADMISSIONS *)OPENSSL_sk_delete_ptr(ossl_check_ADMISSIONS_sk_type(sk), ossl_check_ADMISSIONS_type(ptr)))
+    sk_ADMISSIONS_push(sk, ptr) OPENSSL_sk_push(ossl_check_ADMISSIONS_sk_type(sk), ossl_check_ADMISSIONS_type(ptr))
+    sk_ADMISSIONS_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_ADMISSIONS_sk_type(sk), ossl_check_ADMISSIONS_type(ptr))
+    sk_ADMISSIONS_pop(sk) ((ADMISSIONS *)OPENSSL_sk_pop(ossl_check_ADMISSIONS_sk_type(sk)))
+    sk_ADMISSIONS_shift(sk) ((ADMISSIONS *)OPENSSL_sk_shift(ossl_check_ADMISSIONS_sk_type(sk)))
+    sk_ADMISSIONS_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_ADMISSIONS_sk_type(sk), ossl_check_ADMISSIONS_freefunc_type(freefunc))
+    sk_ADMISSIONS_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_ADMISSIONS_sk_type(sk), ossl_check_ADMISSIONS_type(ptr), (idx))
+    sk_ADMISSIONS_set(sk, idx, ptr) ((ADMISSIONS *)OPENSSL_sk_set(ossl_check_ADMISSIONS_sk_type(sk), (idx), ossl_check_ADMISSIONS_type(ptr)))
+    sk_ADMISSIONS_find(sk, ptr) OPENSSL_sk_find(ossl_check_ADMISSIONS_sk_type(sk), ossl_check_ADMISSIONS_type(ptr))
+    sk_ADMISSIONS_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_ADMISSIONS_sk_type(sk), ossl_check_ADMISSIONS_type(ptr))
+    sk_ADMISSIONS_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_ADMISSIONS_sk_type(sk), ossl_check_ADMISSIONS_type(ptr), pnum)
+    sk_ADMISSIONS_sort(sk) OPENSSL_sk_sort(ossl_check_ADMISSIONS_sk_type(sk))
+    sk_ADMISSIONS_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_ADMISSIONS_sk_type(sk))
+    sk_ADMISSIONS_dup(sk) ((STACK_OF(ADMISSIONS) *)OPENSSL_sk_dup(ossl_check_const_ADMISSIONS_sk_type(sk)))
+    sk_ADMISSIONS_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(ADMISSIONS) *)OPENSSL_sk_deep_copy(ossl_check_const_ADMISSIONS_sk_type(sk), ossl_check_ADMISSIONS_copyfunc_type(copyfunc), ossl_check_ADMISSIONS_freefunc_type(freefunc)))
+    sk_ADMISSIONS_set_cmp_func(sk, cmp) ((sk_ADMISSIONS_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_ADMISSIONS_sk_type(sk), ossl_check_ADMISSIONS_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack USERNOTICE definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_USERNOTICE = Pointer;
+  {$EXTERNALSYM PSTACK_OF_USERNOTICE}
+
+  { Original Stack Macros for USERNOTICE:
+    SKM_DEFINE_STACK_OF_INTERNAL(USERNOTICE, USERNOTICE, USERNOTICE)
+    sk_USERNOTICE_num(sk) OPENSSL_sk_num(ossl_check_const_USERNOTICE_sk_type(sk))
+    sk_USERNOTICE_value(sk, idx) ((USERNOTICE *)OPENSSL_sk_value(ossl_check_const_USERNOTICE_sk_type(sk), (idx)))
+    sk_USERNOTICE_new(cmp) ((STACK_OF(USERNOTICE) *)OPENSSL_sk_new(ossl_check_USERNOTICE_compfunc_type(cmp)))
+    sk_USERNOTICE_new_null() ((STACK_OF(USERNOTICE) *)OPENSSL_sk_new_null())
+    sk_USERNOTICE_new_reserve(cmp, n) ((STACK_OF(USERNOTICE) *)OPENSSL_sk_new_reserve(ossl_check_USERNOTICE_compfunc_type(cmp), (n)))
+    sk_USERNOTICE_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_USERNOTICE_sk_type(sk), (n))
+    sk_USERNOTICE_free(sk) OPENSSL_sk_free(ossl_check_USERNOTICE_sk_type(sk))
+    sk_USERNOTICE_zero(sk) OPENSSL_sk_zero(ossl_check_USERNOTICE_sk_type(sk))
+    sk_USERNOTICE_delete(sk, i) ((USERNOTICE *)OPENSSL_sk_delete(ossl_check_USERNOTICE_sk_type(sk), (i)))
+    sk_USERNOTICE_delete_ptr(sk, ptr) ((USERNOTICE *)OPENSSL_sk_delete_ptr(ossl_check_USERNOTICE_sk_type(sk), ossl_check_USERNOTICE_type(ptr)))
+    sk_USERNOTICE_push(sk, ptr) OPENSSL_sk_push(ossl_check_USERNOTICE_sk_type(sk), ossl_check_USERNOTICE_type(ptr))
+    sk_USERNOTICE_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_USERNOTICE_sk_type(sk), ossl_check_USERNOTICE_type(ptr))
+    sk_USERNOTICE_pop(sk) ((USERNOTICE *)OPENSSL_sk_pop(ossl_check_USERNOTICE_sk_type(sk)))
+    sk_USERNOTICE_shift(sk) ((USERNOTICE *)OPENSSL_sk_shift(ossl_check_USERNOTICE_sk_type(sk)))
+    sk_USERNOTICE_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_USERNOTICE_sk_type(sk), ossl_check_USERNOTICE_freefunc_type(freefunc))
+    sk_USERNOTICE_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_USERNOTICE_sk_type(sk), ossl_check_USERNOTICE_type(ptr), (idx))
+    sk_USERNOTICE_set(sk, idx, ptr) ((USERNOTICE *)OPENSSL_sk_set(ossl_check_USERNOTICE_sk_type(sk), (idx), ossl_check_USERNOTICE_type(ptr)))
+    sk_USERNOTICE_find(sk, ptr) OPENSSL_sk_find(ossl_check_USERNOTICE_sk_type(sk), ossl_check_USERNOTICE_type(ptr))
+    sk_USERNOTICE_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_USERNOTICE_sk_type(sk), ossl_check_USERNOTICE_type(ptr))
+    sk_USERNOTICE_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_USERNOTICE_sk_type(sk), ossl_check_USERNOTICE_type(ptr), pnum)
+    sk_USERNOTICE_sort(sk) OPENSSL_sk_sort(ossl_check_USERNOTICE_sk_type(sk))
+    sk_USERNOTICE_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_USERNOTICE_sk_type(sk))
+    sk_USERNOTICE_dup(sk) ((STACK_OF(USERNOTICE) *)OPENSSL_sk_dup(ossl_check_const_USERNOTICE_sk_type(sk)))
+    sk_USERNOTICE_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(USERNOTICE) *)OPENSSL_sk_deep_copy(ossl_check_const_USERNOTICE_sk_type(sk), ossl_check_USERNOTICE_copyfunc_type(copyfunc), ossl_check_USERNOTICE_freefunc_type(freefunc)))
+    sk_USERNOTICE_set_cmp_func(sk, cmp) ((sk_USERNOTICE_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_USERNOTICE_sk_type(sk), ossl_check_USERNOTICE_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack OSSL_ROLE_SPEC_CERT_ID definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_OSSL_ROLE_SPEC_CERT_ID = Pointer;
+  {$EXTERNALSYM PSTACK_OF_OSSL_ROLE_SPEC_CERT_ID}
+
+  { Original Stack Macros for OSSL_ROLE_SPEC_CERT_ID:
+    SKM_DEFINE_STACK_OF_INTERNAL(OSSL_ROLE_SPEC_CERT_ID, OSSL_ROLE_SPEC_CERT_ID, OSSL_ROLE_SPEC_CERT_ID)
+    sk_OSSL_ROLE_SPEC_CERT_ID_num(sk) OPENSSL_sk_num(ossl_check_const_OSSL_ROLE_SPEC_CERT_ID_sk_type(sk))
+    sk_OSSL_ROLE_SPEC_CERT_ID_value(sk, idx) ((OSSL_ROLE_SPEC_CERT_ID *)OPENSSL_sk_value(ossl_check_const_OSSL_ROLE_SPEC_CERT_ID_sk_type(sk), (idx)))
+    sk_OSSL_ROLE_SPEC_CERT_ID_new(cmp) ((STACK_OF(OSSL_ROLE_SPEC_CERT_ID) *)OPENSSL_sk_new(ossl_check_OSSL_ROLE_SPEC_CERT_ID_compfunc_type(cmp)))
+    sk_OSSL_ROLE_SPEC_CERT_ID_new_null() ((STACK_OF(OSSL_ROLE_SPEC_CERT_ID) *)OPENSSL_sk_new_null())
+    sk_OSSL_ROLE_SPEC_CERT_ID_new_reserve(cmp, n) ((STACK_OF(OSSL_ROLE_SPEC_CERT_ID) *)OPENSSL_sk_new_reserve(ossl_check_OSSL_ROLE_SPEC_CERT_ID_compfunc_type(cmp), (n)))
+    sk_OSSL_ROLE_SPEC_CERT_ID_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_OSSL_ROLE_SPEC_CERT_ID_sk_type(sk), (n))
+    sk_OSSL_ROLE_SPEC_CERT_ID_free(sk) OPENSSL_sk_free(ossl_check_OSSL_ROLE_SPEC_CERT_ID_sk_type(sk))
+    sk_OSSL_ROLE_SPEC_CERT_ID_zero(sk) OPENSSL_sk_zero(ossl_check_OSSL_ROLE_SPEC_CERT_ID_sk_type(sk))
+    sk_OSSL_ROLE_SPEC_CERT_ID_delete(sk, i) ((OSSL_ROLE_SPEC_CERT_ID *)OPENSSL_sk_delete(ossl_check_OSSL_ROLE_SPEC_CERT_ID_sk_type(sk), (i)))
+    sk_OSSL_ROLE_SPEC_CERT_ID_delete_ptr(sk, ptr) ((OSSL_ROLE_SPEC_CERT_ID *)OPENSSL_sk_delete_ptr(ossl_check_OSSL_ROLE_SPEC_CERT_ID_sk_type(sk), ossl_check_OSSL_ROLE_SPEC_CERT_ID_type(ptr)))
+    sk_OSSL_ROLE_SPEC_CERT_ID_push(sk, ptr) OPENSSL_sk_push(ossl_check_OSSL_ROLE_SPEC_CERT_ID_sk_type(sk), ossl_check_OSSL_ROLE_SPEC_CERT_ID_type(ptr))
+    sk_OSSL_ROLE_SPEC_CERT_ID_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_OSSL_ROLE_SPEC_CERT_ID_sk_type(sk), ossl_check_OSSL_ROLE_SPEC_CERT_ID_type(ptr))
+    sk_OSSL_ROLE_SPEC_CERT_ID_pop(sk) ((OSSL_ROLE_SPEC_CERT_ID *)OPENSSL_sk_pop(ossl_check_OSSL_ROLE_SPEC_CERT_ID_sk_type(sk)))
+    sk_OSSL_ROLE_SPEC_CERT_ID_shift(sk) ((OSSL_ROLE_SPEC_CERT_ID *)OPENSSL_sk_shift(ossl_check_OSSL_ROLE_SPEC_CERT_ID_sk_type(sk)))
+    sk_OSSL_ROLE_SPEC_CERT_ID_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_OSSL_ROLE_SPEC_CERT_ID_sk_type(sk), ossl_check_OSSL_ROLE_SPEC_CERT_ID_freefunc_type(freefunc))
+    sk_OSSL_ROLE_SPEC_CERT_ID_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_OSSL_ROLE_SPEC_CERT_ID_sk_type(sk), ossl_check_OSSL_ROLE_SPEC_CERT_ID_type(ptr), (idx))
+    sk_OSSL_ROLE_SPEC_CERT_ID_set(sk, idx, ptr) ((OSSL_ROLE_SPEC_CERT_ID *)OPENSSL_sk_set(ossl_check_OSSL_ROLE_SPEC_CERT_ID_sk_type(sk), (idx), ossl_check_OSSL_ROLE_SPEC_CERT_ID_type(ptr)))
+    sk_OSSL_ROLE_SPEC_CERT_ID_find(sk, ptr) OPENSSL_sk_find(ossl_check_OSSL_ROLE_SPEC_CERT_ID_sk_type(sk), ossl_check_OSSL_ROLE_SPEC_CERT_ID_type(ptr))
+    sk_OSSL_ROLE_SPEC_CERT_ID_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_OSSL_ROLE_SPEC_CERT_ID_sk_type(sk), ossl_check_OSSL_ROLE_SPEC_CERT_ID_type(ptr))
+    sk_OSSL_ROLE_SPEC_CERT_ID_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_OSSL_ROLE_SPEC_CERT_ID_sk_type(sk), ossl_check_OSSL_ROLE_SPEC_CERT_ID_type(ptr), pnum)
+    sk_OSSL_ROLE_SPEC_CERT_ID_sort(sk) OPENSSL_sk_sort(ossl_check_OSSL_ROLE_SPEC_CERT_ID_sk_type(sk))
+    sk_OSSL_ROLE_SPEC_CERT_ID_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_OSSL_ROLE_SPEC_CERT_ID_sk_type(sk))
+    sk_OSSL_ROLE_SPEC_CERT_ID_dup(sk) ((STACK_OF(OSSL_ROLE_SPEC_CERT_ID) *)OPENSSL_sk_dup(ossl_check_const_OSSL_ROLE_SPEC_CERT_ID_sk_type(sk)))
+    sk_OSSL_ROLE_SPEC_CERT_ID_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(OSSL_ROLE_SPEC_CERT_ID) *)OPENSSL_sk_deep_copy(ossl_check_const_OSSL_ROLE_SPEC_CERT_ID_sk_type(sk), ossl_check_OSSL_ROLE_SPEC_CERT_ID_copyfunc_type(copyfunc), ossl_check_OSSL_ROLE_SPEC_CERT_ID_freefunc_type(freefunc)))
+    sk_OSSL_ROLE_SPEC_CERT_ID_set_cmp_func(sk, cmp) ((sk_OSSL_ROLE_SPEC_CERT_ID_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_OSSL_ROLE_SPEC_CERT_ID_sk_type(sk), ossl_check_OSSL_ROLE_SPEC_CERT_ID_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack OSSL_TIME_PERIOD definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_OSSL_TIME_PERIOD = Pointer;
+  {$EXTERNALSYM PSTACK_OF_OSSL_TIME_PERIOD}
+
+  { Original Stack Macros for OSSL_TIME_PERIOD:
+    SKM_DEFINE_STACK_OF_INTERNAL(OSSL_TIME_PERIOD, OSSL_TIME_PERIOD, OSSL_TIME_PERIOD)
+    sk_OSSL_TIME_PERIOD_num(sk) OPENSSL_sk_num(ossl_check_const_OSSL_TIME_PERIOD_sk_type(sk))
+    sk_OSSL_TIME_PERIOD_value(sk, idx) ((OSSL_TIME_PERIOD *)OPENSSL_sk_value(ossl_check_const_OSSL_TIME_PERIOD_sk_type(sk), (idx)))
+    sk_OSSL_TIME_PERIOD_new(cmp) ((STACK_OF(OSSL_TIME_PERIOD) *)OPENSSL_sk_new(ossl_check_OSSL_TIME_PERIOD_compfunc_type(cmp)))
+    sk_OSSL_TIME_PERIOD_new_null() ((STACK_OF(OSSL_TIME_PERIOD) *)OPENSSL_sk_new_null())
+    sk_OSSL_TIME_PERIOD_new_reserve(cmp, n) ((STACK_OF(OSSL_TIME_PERIOD) *)OPENSSL_sk_new_reserve(ossl_check_OSSL_TIME_PERIOD_compfunc_type(cmp), (n)))
+    sk_OSSL_TIME_PERIOD_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_OSSL_TIME_PERIOD_sk_type(sk), (n))
+    sk_OSSL_TIME_PERIOD_free(sk) OPENSSL_sk_free(ossl_check_OSSL_TIME_PERIOD_sk_type(sk))
+    sk_OSSL_TIME_PERIOD_zero(sk) OPENSSL_sk_zero(ossl_check_OSSL_TIME_PERIOD_sk_type(sk))
+    sk_OSSL_TIME_PERIOD_delete(sk, i) ((OSSL_TIME_PERIOD *)OPENSSL_sk_delete(ossl_check_OSSL_TIME_PERIOD_sk_type(sk), (i)))
+    sk_OSSL_TIME_PERIOD_delete_ptr(sk, ptr) ((OSSL_TIME_PERIOD *)OPENSSL_sk_delete_ptr(ossl_check_OSSL_TIME_PERIOD_sk_type(sk), ossl_check_OSSL_TIME_PERIOD_type(ptr)))
+    sk_OSSL_TIME_PERIOD_push(sk, ptr) OPENSSL_sk_push(ossl_check_OSSL_TIME_PERIOD_sk_type(sk), ossl_check_OSSL_TIME_PERIOD_type(ptr))
+    sk_OSSL_TIME_PERIOD_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_OSSL_TIME_PERIOD_sk_type(sk), ossl_check_OSSL_TIME_PERIOD_type(ptr))
+    sk_OSSL_TIME_PERIOD_pop(sk) ((OSSL_TIME_PERIOD *)OPENSSL_sk_pop(ossl_check_OSSL_TIME_PERIOD_sk_type(sk)))
+    sk_OSSL_TIME_PERIOD_shift(sk) ((OSSL_TIME_PERIOD *)OPENSSL_sk_shift(ossl_check_OSSL_TIME_PERIOD_sk_type(sk)))
+    sk_OSSL_TIME_PERIOD_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_OSSL_TIME_PERIOD_sk_type(sk), ossl_check_OSSL_TIME_PERIOD_freefunc_type(freefunc))
+    sk_OSSL_TIME_PERIOD_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_OSSL_TIME_PERIOD_sk_type(sk), ossl_check_OSSL_TIME_PERIOD_type(ptr), (idx))
+    sk_OSSL_TIME_PERIOD_set(sk, idx, ptr) ((OSSL_TIME_PERIOD *)OPENSSL_sk_set(ossl_check_OSSL_TIME_PERIOD_sk_type(sk), (idx), ossl_check_OSSL_TIME_PERIOD_type(ptr)))
+    sk_OSSL_TIME_PERIOD_find(sk, ptr) OPENSSL_sk_find(ossl_check_OSSL_TIME_PERIOD_sk_type(sk), ossl_check_OSSL_TIME_PERIOD_type(ptr))
+    sk_OSSL_TIME_PERIOD_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_OSSL_TIME_PERIOD_sk_type(sk), ossl_check_OSSL_TIME_PERIOD_type(ptr))
+    sk_OSSL_TIME_PERIOD_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_OSSL_TIME_PERIOD_sk_type(sk), ossl_check_OSSL_TIME_PERIOD_type(ptr), pnum)
+    sk_OSSL_TIME_PERIOD_sort(sk) OPENSSL_sk_sort(ossl_check_OSSL_TIME_PERIOD_sk_type(sk))
+    sk_OSSL_TIME_PERIOD_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_OSSL_TIME_PERIOD_sk_type(sk))
+    sk_OSSL_TIME_PERIOD_dup(sk) ((STACK_OF(OSSL_TIME_PERIOD) *)OPENSSL_sk_dup(ossl_check_const_OSSL_TIME_PERIOD_sk_type(sk)))
+    sk_OSSL_TIME_PERIOD_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(OSSL_TIME_PERIOD) *)OPENSSL_sk_deep_copy(ossl_check_const_OSSL_TIME_PERIOD_sk_type(sk), ossl_check_OSSL_TIME_PERIOD_copyfunc_type(copyfunc), ossl_check_OSSL_TIME_PERIOD_freefunc_type(freefunc)))
+    sk_OSSL_TIME_PERIOD_set_cmp_func(sk, cmp) ((sk_OSSL_TIME_PERIOD_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_OSSL_TIME_PERIOD_sk_type(sk), ossl_check_OSSL_TIME_PERIOD_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack OSSL_DAY_TIME_BAND definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_OSSL_DAY_TIME_BAND = Pointer;
+  {$EXTERNALSYM PSTACK_OF_OSSL_DAY_TIME_BAND}
+
+  { Original Stack Macros for OSSL_DAY_TIME_BAND:
+    SKM_DEFINE_STACK_OF_INTERNAL(OSSL_DAY_TIME_BAND, OSSL_DAY_TIME_BAND, OSSL_DAY_TIME_BAND)
+    sk_OSSL_DAY_TIME_BAND_num(sk) OPENSSL_sk_num(ossl_check_const_OSSL_DAY_TIME_BAND_sk_type(sk))
+    sk_OSSL_DAY_TIME_BAND_value(sk, idx) ((OSSL_DAY_TIME_BAND *)OPENSSL_sk_value(ossl_check_const_OSSL_DAY_TIME_BAND_sk_type(sk), (idx)))
+    sk_OSSL_DAY_TIME_BAND_new(cmp) ((STACK_OF(OSSL_DAY_TIME_BAND) *)OPENSSL_sk_new(ossl_check_OSSL_DAY_TIME_BAND_compfunc_type(cmp)))
+    sk_OSSL_DAY_TIME_BAND_new_null() ((STACK_OF(OSSL_DAY_TIME_BAND) *)OPENSSL_sk_new_null())
+    sk_OSSL_DAY_TIME_BAND_new_reserve(cmp, n) ((STACK_OF(OSSL_DAY_TIME_BAND) *)OPENSSL_sk_new_reserve(ossl_check_OSSL_DAY_TIME_BAND_compfunc_type(cmp), (n)))
+    sk_OSSL_DAY_TIME_BAND_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_OSSL_DAY_TIME_BAND_sk_type(sk), (n))
+    sk_OSSL_DAY_TIME_BAND_free(sk) OPENSSL_sk_free(ossl_check_OSSL_DAY_TIME_BAND_sk_type(sk))
+    sk_OSSL_DAY_TIME_BAND_zero(sk) OPENSSL_sk_zero(ossl_check_OSSL_DAY_TIME_BAND_sk_type(sk))
+    sk_OSSL_DAY_TIME_BAND_delete(sk, i) ((OSSL_DAY_TIME_BAND *)OPENSSL_sk_delete(ossl_check_OSSL_DAY_TIME_BAND_sk_type(sk), (i)))
+    sk_OSSL_DAY_TIME_BAND_delete_ptr(sk, ptr) ((OSSL_DAY_TIME_BAND *)OPENSSL_sk_delete_ptr(ossl_check_OSSL_DAY_TIME_BAND_sk_type(sk), ossl_check_OSSL_DAY_TIME_BAND_type(ptr)))
+    sk_OSSL_DAY_TIME_BAND_push(sk, ptr) OPENSSL_sk_push(ossl_check_OSSL_DAY_TIME_BAND_sk_type(sk), ossl_check_OSSL_DAY_TIME_BAND_type(ptr))
+    sk_OSSL_DAY_TIME_BAND_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_OSSL_DAY_TIME_BAND_sk_type(sk), ossl_check_OSSL_DAY_TIME_BAND_type(ptr))
+    sk_OSSL_DAY_TIME_BAND_pop(sk) ((OSSL_DAY_TIME_BAND *)OPENSSL_sk_pop(ossl_check_OSSL_DAY_TIME_BAND_sk_type(sk)))
+    sk_OSSL_DAY_TIME_BAND_shift(sk) ((OSSL_DAY_TIME_BAND *)OPENSSL_sk_shift(ossl_check_OSSL_DAY_TIME_BAND_sk_type(sk)))
+    sk_OSSL_DAY_TIME_BAND_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_OSSL_DAY_TIME_BAND_sk_type(sk), ossl_check_OSSL_DAY_TIME_BAND_freefunc_type(freefunc))
+    sk_OSSL_DAY_TIME_BAND_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_OSSL_DAY_TIME_BAND_sk_type(sk), ossl_check_OSSL_DAY_TIME_BAND_type(ptr), (idx))
+    sk_OSSL_DAY_TIME_BAND_set(sk, idx, ptr) ((OSSL_DAY_TIME_BAND *)OPENSSL_sk_set(ossl_check_OSSL_DAY_TIME_BAND_sk_type(sk), (idx), ossl_check_OSSL_DAY_TIME_BAND_type(ptr)))
+    sk_OSSL_DAY_TIME_BAND_find(sk, ptr) OPENSSL_sk_find(ossl_check_OSSL_DAY_TIME_BAND_sk_type(sk), ossl_check_OSSL_DAY_TIME_BAND_type(ptr))
+    sk_OSSL_DAY_TIME_BAND_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_OSSL_DAY_TIME_BAND_sk_type(sk), ossl_check_OSSL_DAY_TIME_BAND_type(ptr))
+    sk_OSSL_DAY_TIME_BAND_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_OSSL_DAY_TIME_BAND_sk_type(sk), ossl_check_OSSL_DAY_TIME_BAND_type(ptr), pnum)
+    sk_OSSL_DAY_TIME_BAND_sort(sk) OPENSSL_sk_sort(ossl_check_OSSL_DAY_TIME_BAND_sk_type(sk))
+    sk_OSSL_DAY_TIME_BAND_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_OSSL_DAY_TIME_BAND_sk_type(sk))
+    sk_OSSL_DAY_TIME_BAND_dup(sk) ((STACK_OF(OSSL_DAY_TIME_BAND) *)OPENSSL_sk_dup(ossl_check_const_OSSL_DAY_TIME_BAND_sk_type(sk)))
+    sk_OSSL_DAY_TIME_BAND_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(OSSL_DAY_TIME_BAND) *)OPENSSL_sk_deep_copy(ossl_check_const_OSSL_DAY_TIME_BAND_sk_type(sk), ossl_check_OSSL_DAY_TIME_BAND_copyfunc_type(copyfunc), ossl_check_OSSL_DAY_TIME_BAND_freefunc_type(freefunc)))
+    sk_OSSL_DAY_TIME_BAND_set_cmp_func(sk, cmp) ((sk_OSSL_DAY_TIME_BAND_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_OSSL_DAY_TIME_BAND_sk_type(sk), ossl_check_OSSL_DAY_TIME_BAND_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack OSSL_ATTRIBUTE_MAPPING definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_OSSL_ATTRIBUTE_MAPPING = Pointer;
+  {$EXTERNALSYM PSTACK_OF_OSSL_ATTRIBUTE_MAPPING}
+
+  { Original Stack Macros for OSSL_ATTRIBUTE_MAPPING:
+    SKM_DEFINE_STACK_OF_INTERNAL(OSSL_ATTRIBUTE_MAPPING, OSSL_ATTRIBUTE_MAPPING, OSSL_ATTRIBUTE_MAPPING)
+    sk_OSSL_ATTRIBUTE_MAPPING_num(sk) OPENSSL_sk_num(ossl_check_const_OSSL_ATTRIBUTE_MAPPING_sk_type(sk))
+    sk_OSSL_ATTRIBUTE_MAPPING_value(sk, idx) ((OSSL_ATTRIBUTE_MAPPING *)OPENSSL_sk_value(ossl_check_const_OSSL_ATTRIBUTE_MAPPING_sk_type(sk), (idx)))
+    sk_OSSL_ATTRIBUTE_MAPPING_new(cmp) ((STACK_OF(OSSL_ATTRIBUTE_MAPPING) *)OPENSSL_sk_new(ossl_check_OSSL_ATTRIBUTE_MAPPING_compfunc_type(cmp)))
+    sk_OSSL_ATTRIBUTE_MAPPING_new_null() ((STACK_OF(OSSL_ATTRIBUTE_MAPPING) *)OPENSSL_sk_new_null())
+    sk_OSSL_ATTRIBUTE_MAPPING_new_reserve(cmp, n) ((STACK_OF(OSSL_ATTRIBUTE_MAPPING) *)OPENSSL_sk_new_reserve(ossl_check_OSSL_ATTRIBUTE_MAPPING_compfunc_type(cmp), (n)))
+    sk_OSSL_ATTRIBUTE_MAPPING_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_OSSL_ATTRIBUTE_MAPPING_sk_type(sk), (n))
+    sk_OSSL_ATTRIBUTE_MAPPING_free(sk) OPENSSL_sk_free(ossl_check_OSSL_ATTRIBUTE_MAPPING_sk_type(sk))
+    sk_OSSL_ATTRIBUTE_MAPPING_zero(sk) OPENSSL_sk_zero(ossl_check_OSSL_ATTRIBUTE_MAPPING_sk_type(sk))
+    sk_OSSL_ATTRIBUTE_MAPPING_delete(sk, i) ((OSSL_ATTRIBUTE_MAPPING *)OPENSSL_sk_delete(ossl_check_OSSL_ATTRIBUTE_MAPPING_sk_type(sk), (i)))
+    sk_OSSL_ATTRIBUTE_MAPPING_delete_ptr(sk, ptr) ((OSSL_ATTRIBUTE_MAPPING *)OPENSSL_sk_delete_ptr(ossl_check_OSSL_ATTRIBUTE_MAPPING_sk_type(sk), ossl_check_OSSL_ATTRIBUTE_MAPPING_type(ptr)))
+    sk_OSSL_ATTRIBUTE_MAPPING_push(sk, ptr) OPENSSL_sk_push(ossl_check_OSSL_ATTRIBUTE_MAPPING_sk_type(sk), ossl_check_OSSL_ATTRIBUTE_MAPPING_type(ptr))
+    sk_OSSL_ATTRIBUTE_MAPPING_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_OSSL_ATTRIBUTE_MAPPING_sk_type(sk), ossl_check_OSSL_ATTRIBUTE_MAPPING_type(ptr))
+    sk_OSSL_ATTRIBUTE_MAPPING_pop(sk) ((OSSL_ATTRIBUTE_MAPPING *)OPENSSL_sk_pop(ossl_check_OSSL_ATTRIBUTE_MAPPING_sk_type(sk)))
+    sk_OSSL_ATTRIBUTE_MAPPING_shift(sk) ((OSSL_ATTRIBUTE_MAPPING *)OPENSSL_sk_shift(ossl_check_OSSL_ATTRIBUTE_MAPPING_sk_type(sk)))
+    sk_OSSL_ATTRIBUTE_MAPPING_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_OSSL_ATTRIBUTE_MAPPING_sk_type(sk), ossl_check_OSSL_ATTRIBUTE_MAPPING_freefunc_type(freefunc))
+    sk_OSSL_ATTRIBUTE_MAPPING_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_OSSL_ATTRIBUTE_MAPPING_sk_type(sk), ossl_check_OSSL_ATTRIBUTE_MAPPING_type(ptr), (idx))
+    sk_OSSL_ATTRIBUTE_MAPPING_set(sk, idx, ptr) ((OSSL_ATTRIBUTE_MAPPING *)OPENSSL_sk_set(ossl_check_OSSL_ATTRIBUTE_MAPPING_sk_type(sk), (idx), ossl_check_OSSL_ATTRIBUTE_MAPPING_type(ptr)))
+    sk_OSSL_ATTRIBUTE_MAPPING_find(sk, ptr) OPENSSL_sk_find(ossl_check_OSSL_ATTRIBUTE_MAPPING_sk_type(sk), ossl_check_OSSL_ATTRIBUTE_MAPPING_type(ptr))
+    sk_OSSL_ATTRIBUTE_MAPPING_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_OSSL_ATTRIBUTE_MAPPING_sk_type(sk), ossl_check_OSSL_ATTRIBUTE_MAPPING_type(ptr))
+    sk_OSSL_ATTRIBUTE_MAPPING_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_OSSL_ATTRIBUTE_MAPPING_sk_type(sk), ossl_check_OSSL_ATTRIBUTE_MAPPING_type(ptr), pnum)
+    sk_OSSL_ATTRIBUTE_MAPPING_sort(sk) OPENSSL_sk_sort(ossl_check_OSSL_ATTRIBUTE_MAPPING_sk_type(sk))
+    sk_OSSL_ATTRIBUTE_MAPPING_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_OSSL_ATTRIBUTE_MAPPING_sk_type(sk))
+    sk_OSSL_ATTRIBUTE_MAPPING_dup(sk) ((STACK_OF(OSSL_ATTRIBUTE_MAPPING) *)OPENSSL_sk_dup(ossl_check_const_OSSL_ATTRIBUTE_MAPPING_sk_type(sk)))
+    sk_OSSL_ATTRIBUTE_MAPPING_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(OSSL_ATTRIBUTE_MAPPING) *)OPENSSL_sk_deep_copy(ossl_check_const_OSSL_ATTRIBUTE_MAPPING_sk_type(sk), ossl_check_OSSL_ATTRIBUTE_MAPPING_copyfunc_type(copyfunc), ossl_check_OSSL_ATTRIBUTE_MAPPING_freefunc_type(freefunc)))
+    sk_OSSL_ATTRIBUTE_MAPPING_set_cmp_func(sk, cmp) ((sk_OSSL_ATTRIBUTE_MAPPING_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_OSSL_ATTRIBUTE_MAPPING_sk_type(sk), ossl_check_OSSL_ATTRIBUTE_MAPPING_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack OSSL_ALLOWED_ATTRIBUTES_CHOICE definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_OSSL_ALLOWED_ATTRIBUTES_CHOICE = Pointer;
+  {$EXTERNALSYM PSTACK_OF_OSSL_ALLOWED_ATTRIBUTES_CHOICE}
+
+  { Original Stack Macros for OSSL_ALLOWED_ATTRIBUTES_CHOICE:
+    SKM_DEFINE_STACK_OF_INTERNAL(OSSL_ALLOWED_ATTRIBUTES_CHOICE, OSSL_ALLOWED_ATTRIBUTES_CHOICE, OSSL_ALLOWED_ATTRIBUTES_CHOICE)
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_num(sk) OPENSSL_sk_num(ossl_check_const_OSSL_ALLOWED_ATTRIBUTES_CHOICE_sk_type(sk))
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_value(sk, idx) ((OSSL_ALLOWED_ATTRIBUTES_CHOICE *)OPENSSL_sk_value(ossl_check_const_OSSL_ALLOWED_ATTRIBUTES_CHOICE_sk_type(sk), (idx)))
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_new(cmp) ((STACK_OF(OSSL_ALLOWED_ATTRIBUTES_CHOICE) *)OPENSSL_sk_new(ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_compfunc_type(cmp)))
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_new_null() ((STACK_OF(OSSL_ALLOWED_ATTRIBUTES_CHOICE) *)OPENSSL_sk_new_null())
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_new_reserve(cmp, n) ((STACK_OF(OSSL_ALLOWED_ATTRIBUTES_CHOICE) *)OPENSSL_sk_new_reserve(ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_compfunc_type(cmp), (n)))
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_sk_type(sk), (n))
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_free(sk) OPENSSL_sk_free(ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_sk_type(sk))
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_zero(sk) OPENSSL_sk_zero(ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_sk_type(sk))
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_delete(sk, i) ((OSSL_ALLOWED_ATTRIBUTES_CHOICE *)OPENSSL_sk_delete(ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_sk_type(sk), (i)))
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_delete_ptr(sk, ptr) ((OSSL_ALLOWED_ATTRIBUTES_CHOICE *)OPENSSL_sk_delete_ptr(ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_sk_type(sk), ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_type(ptr)))
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_push(sk, ptr) OPENSSL_sk_push(ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_sk_type(sk), ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_type(ptr))
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_sk_type(sk), ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_type(ptr))
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_pop(sk) ((OSSL_ALLOWED_ATTRIBUTES_CHOICE *)OPENSSL_sk_pop(ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_sk_type(sk)))
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_shift(sk) ((OSSL_ALLOWED_ATTRIBUTES_CHOICE *)OPENSSL_sk_shift(ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_sk_type(sk)))
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_sk_type(sk), ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_freefunc_type(freefunc))
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_sk_type(sk), ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_type(ptr), (idx))
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_set(sk, idx, ptr) ((OSSL_ALLOWED_ATTRIBUTES_CHOICE *)OPENSSL_sk_set(ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_sk_type(sk), (idx), ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_type(ptr)))
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_find(sk, ptr) OPENSSL_sk_find(ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_sk_type(sk), ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_type(ptr))
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_sk_type(sk), ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_type(ptr))
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_sk_type(sk), ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_type(ptr), pnum)
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_sort(sk) OPENSSL_sk_sort(ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_sk_type(sk))
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_OSSL_ALLOWED_ATTRIBUTES_CHOICE_sk_type(sk))
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_dup(sk) ((STACK_OF(OSSL_ALLOWED_ATTRIBUTES_CHOICE) *)OPENSSL_sk_dup(ossl_check_const_OSSL_ALLOWED_ATTRIBUTES_CHOICE_sk_type(sk)))
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(OSSL_ALLOWED_ATTRIBUTES_CHOICE) *)OPENSSL_sk_deep_copy(ossl_check_const_OSSL_ALLOWED_ATTRIBUTES_CHOICE_sk_type(sk), ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_copyfunc_type(copyfunc), ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_freefunc_type(freefunc)))
+    sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_set_cmp_func(sk, cmp) ((sk_OSSL_ALLOWED_ATTRIBUTES_CHOICE_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_sk_type(sk), ossl_check_OSSL_ALLOWED_ATTRIBUTES_CHOICE_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack OSSL_ALLOWED_ATTRIBUTES_ITEM definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_OSSL_ALLOWED_ATTRIBUTES_ITEM = Pointer;
+  {$EXTERNALSYM PSTACK_OF_OSSL_ALLOWED_ATTRIBUTES_ITEM}
+
+  { Original Stack Macros for OSSL_ALLOWED_ATTRIBUTES_ITEM:
+    SKM_DEFINE_STACK_OF_INTERNAL(OSSL_ALLOWED_ATTRIBUTES_ITEM, OSSL_ALLOWED_ATTRIBUTES_ITEM, OSSL_ALLOWED_ATTRIBUTES_ITEM)
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_num(sk) OPENSSL_sk_num(ossl_check_const_OSSL_ALLOWED_ATTRIBUTES_ITEM_sk_type(sk))
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_value(sk, idx) ((OSSL_ALLOWED_ATTRIBUTES_ITEM *)OPENSSL_sk_value(ossl_check_const_OSSL_ALLOWED_ATTRIBUTES_ITEM_sk_type(sk), (idx)))
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_new(cmp) ((STACK_OF(OSSL_ALLOWED_ATTRIBUTES_ITEM) *)OPENSSL_sk_new(ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_compfunc_type(cmp)))
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_new_null() ((STACK_OF(OSSL_ALLOWED_ATTRIBUTES_ITEM) *)OPENSSL_sk_new_null())
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_new_reserve(cmp, n) ((STACK_OF(OSSL_ALLOWED_ATTRIBUTES_ITEM) *)OPENSSL_sk_new_reserve(ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_compfunc_type(cmp), (n)))
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_sk_type(sk), (n))
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_free(sk) OPENSSL_sk_free(ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_sk_type(sk))
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_zero(sk) OPENSSL_sk_zero(ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_sk_type(sk))
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_delete(sk, i) ((OSSL_ALLOWED_ATTRIBUTES_ITEM *)OPENSSL_sk_delete(ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_sk_type(sk), (i)))
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_delete_ptr(sk, ptr) ((OSSL_ALLOWED_ATTRIBUTES_ITEM *)OPENSSL_sk_delete_ptr(ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_sk_type(sk), ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_type(ptr)))
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_push(sk, ptr) OPENSSL_sk_push(ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_sk_type(sk), ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_type(ptr))
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_sk_type(sk), ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_type(ptr))
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_pop(sk) ((OSSL_ALLOWED_ATTRIBUTES_ITEM *)OPENSSL_sk_pop(ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_sk_type(sk)))
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_shift(sk) ((OSSL_ALLOWED_ATTRIBUTES_ITEM *)OPENSSL_sk_shift(ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_sk_type(sk)))
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_sk_type(sk), ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_freefunc_type(freefunc))
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_sk_type(sk), ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_type(ptr), (idx))
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_set(sk, idx, ptr) ((OSSL_ALLOWED_ATTRIBUTES_ITEM *)OPENSSL_sk_set(ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_sk_type(sk), (idx), ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_type(ptr)))
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_find(sk, ptr) OPENSSL_sk_find(ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_sk_type(sk), ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_type(ptr))
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_sk_type(sk), ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_type(ptr))
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_sk_type(sk), ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_type(ptr), pnum)
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_sort(sk) OPENSSL_sk_sort(ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_sk_type(sk))
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_OSSL_ALLOWED_ATTRIBUTES_ITEM_sk_type(sk))
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_dup(sk) ((STACK_OF(OSSL_ALLOWED_ATTRIBUTES_ITEM) *)OPENSSL_sk_dup(ossl_check_const_OSSL_ALLOWED_ATTRIBUTES_ITEM_sk_type(sk)))
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(OSSL_ALLOWED_ATTRIBUTES_ITEM) *)OPENSSL_sk_deep_copy(ossl_check_const_OSSL_ALLOWED_ATTRIBUTES_ITEM_sk_type(sk), ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_copyfunc_type(copyfunc), ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_freefunc_type(freefunc)))
+    sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_set_cmp_func(sk, cmp) ((sk_OSSL_ALLOWED_ATTRIBUTES_ITEM_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_sk_type(sk), ossl_check_OSSL_ALLOWED_ATTRIBUTES_ITEM_compfunc_type(cmp)))
+  }
 
 
 implementation
@@ -3132,37 +3713,37 @@ uses
 function GENERAL_NAME_set1_X509_NAME(tgt: PPGENERAL_NAME; src: PX509_NAME): TIdC_INT; cdecl external CLibCrypto name 'GENERAL_NAME_set1_X509_NAME';
 function DIST_POINT_NAME_dup(a: PDIST_POINT_NAME): PDIST_POINT_NAME; cdecl external CLibCrypto name 'DIST_POINT_NAME_dup';
 function PROXY_POLICY_new: PPROXY_POLICY; cdecl external CLibCrypto name 'PROXY_POLICY_new';
-procedure PROXY_POLICY_free(a: PPROXY_POLICY); cdecl external CLibCrypto name 'PROXY_POLICY_free';
+function PROXY_POLICY_free(a: PPROXY_POLICY): void; cdecl external CLibCrypto name 'PROXY_POLICY_free';
 function d2i_PROXY_POLICY(a: PPPROXY_POLICY; _in: PPIdAnsiChar; len: TIdC_LONG): PPROXY_POLICY; cdecl external CLibCrypto name 'd2i_PROXY_POLICY';
 function i2d_PROXY_POLICY(a: PPROXY_POLICY; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_PROXY_POLICY';
 function PROXY_POLICY_it: PASN1_ITEM; cdecl external CLibCrypto name 'PROXY_POLICY_it';
 function PROXY_CERT_INFO_EXTENSION_new: PPROXY_CERT_INFO_EXTENSION; cdecl external CLibCrypto name 'PROXY_CERT_INFO_EXTENSION_new';
-procedure PROXY_CERT_INFO_EXTENSION_free(a: PPROXY_CERT_INFO_EXTENSION); cdecl external CLibCrypto name 'PROXY_CERT_INFO_EXTENSION_free';
+function PROXY_CERT_INFO_EXTENSION_free(a: PPROXY_CERT_INFO_EXTENSION): void; cdecl external CLibCrypto name 'PROXY_CERT_INFO_EXTENSION_free';
 function d2i_PROXY_CERT_INFO_EXTENSION(a: PPPROXY_CERT_INFO_EXTENSION; _in: PPIdAnsiChar; len: TIdC_LONG): PPROXY_CERT_INFO_EXTENSION; cdecl external CLibCrypto name 'd2i_PROXY_CERT_INFO_EXTENSION';
 function i2d_PROXY_CERT_INFO_EXTENSION(a: PPROXY_CERT_INFO_EXTENSION; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_PROXY_CERT_INFO_EXTENSION';
 function PROXY_CERT_INFO_EXTENSION_it: PASN1_ITEM; cdecl external CLibCrypto name 'PROXY_CERT_INFO_EXTENSION_it';
 function BASIC_CONSTRAINTS_new: PBASIC_CONSTRAINTS; cdecl external CLibCrypto name 'BASIC_CONSTRAINTS_new';
-procedure BASIC_CONSTRAINTS_free(a: PBASIC_CONSTRAINTS); cdecl external CLibCrypto name 'BASIC_CONSTRAINTS_free';
+function BASIC_CONSTRAINTS_free(a: PBASIC_CONSTRAINTS): void; cdecl external CLibCrypto name 'BASIC_CONSTRAINTS_free';
 function d2i_BASIC_CONSTRAINTS(a: PPBASIC_CONSTRAINTS; _in: PPIdAnsiChar; len: TIdC_LONG): PBASIC_CONSTRAINTS; cdecl external CLibCrypto name 'd2i_BASIC_CONSTRAINTS';
 function i2d_BASIC_CONSTRAINTS(a: PBASIC_CONSTRAINTS; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_BASIC_CONSTRAINTS';
 function BASIC_CONSTRAINTS_it: PASN1_ITEM; cdecl external CLibCrypto name 'BASIC_CONSTRAINTS_it';
 function OSSL_BASIC_ATTR_CONSTRAINTS_new: POSSL_BASIC_ATTR_CONSTRAINTS; cdecl external CLibCrypto name 'OSSL_BASIC_ATTR_CONSTRAINTS_new';
-procedure OSSL_BASIC_ATTR_CONSTRAINTS_free(a: POSSL_BASIC_ATTR_CONSTRAINTS); cdecl external CLibCrypto name 'OSSL_BASIC_ATTR_CONSTRAINTS_free';
+function OSSL_BASIC_ATTR_CONSTRAINTS_free(a: POSSL_BASIC_ATTR_CONSTRAINTS): void; cdecl external CLibCrypto name 'OSSL_BASIC_ATTR_CONSTRAINTS_free';
 function d2i_OSSL_BASIC_ATTR_CONSTRAINTS(a: PPOSSL_BASIC_ATTR_CONSTRAINTS; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_BASIC_ATTR_CONSTRAINTS; cdecl external CLibCrypto name 'd2i_OSSL_BASIC_ATTR_CONSTRAINTS';
 function i2d_OSSL_BASIC_ATTR_CONSTRAINTS(a: POSSL_BASIC_ATTR_CONSTRAINTS; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_BASIC_ATTR_CONSTRAINTS';
 function OSSL_BASIC_ATTR_CONSTRAINTS_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_BASIC_ATTR_CONSTRAINTS_it';
 function SXNET_new: PSXNET; cdecl external CLibCrypto name 'SXNET_new';
-procedure SXNET_free(a: PSXNET); cdecl external CLibCrypto name 'SXNET_free';
+function SXNET_free(a: PSXNET): void; cdecl external CLibCrypto name 'SXNET_free';
 function d2i_SXNET(a: PPSXNET; _in: PPIdAnsiChar; len: TIdC_LONG): PSXNET; cdecl external CLibCrypto name 'd2i_SXNET';
 function i2d_SXNET(a: PSXNET; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_SXNET';
 function SXNET_it: PASN1_ITEM; cdecl external CLibCrypto name 'SXNET_it';
 function SXNETID_new: PSXNETID; cdecl external CLibCrypto name 'SXNETID_new';
-procedure SXNETID_free(a: PSXNETID); cdecl external CLibCrypto name 'SXNETID_free';
+function SXNETID_free(a: PSXNETID): void; cdecl external CLibCrypto name 'SXNETID_free';
 function d2i_SXNETID(a: PPSXNETID; _in: PPIdAnsiChar; len: TIdC_LONG): PSXNETID; cdecl external CLibCrypto name 'd2i_SXNETID';
 function i2d_SXNETID(a: PSXNETID; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_SXNETID';
 function SXNETID_it: PASN1_ITEM; cdecl external CLibCrypto name 'SXNETID_it';
 function ISSUER_SIGN_TOOL_new: PISSUER_SIGN_TOOL; cdecl external CLibCrypto name 'ISSUER_SIGN_TOOL_new';
-procedure ISSUER_SIGN_TOOL_free(a: PISSUER_SIGN_TOOL); cdecl external CLibCrypto name 'ISSUER_SIGN_TOOL_free';
+function ISSUER_SIGN_TOOL_free(a: PISSUER_SIGN_TOOL): void; cdecl external CLibCrypto name 'ISSUER_SIGN_TOOL_free';
 function d2i_ISSUER_SIGN_TOOL(a: PPISSUER_SIGN_TOOL; _in: PPIdAnsiChar; len: TIdC_LONG): PISSUER_SIGN_TOOL; cdecl external CLibCrypto name 'd2i_ISSUER_SIGN_TOOL';
 function i2d_ISSUER_SIGN_TOOL(a: PISSUER_SIGN_TOOL; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ISSUER_SIGN_TOOL';
 function ISSUER_SIGN_TOOL_it: PASN1_ITEM; cdecl external CLibCrypto name 'ISSUER_SIGN_TOOL_it';
@@ -3173,17 +3754,17 @@ function SXNET_get_id_asc(sx: PSXNET; zone: PIdAnsiChar): PASN1_OCTET_STRING; cd
 function SXNET_get_id_ulong(sx: PSXNET; lzone: TIdC_ULONG): PASN1_OCTET_STRING; cdecl external CLibCrypto name 'SXNET_get_id_ulong';
 function SXNET_get_id_INTEGER(sx: PSXNET; zone: PASN1_INTEGER): PASN1_OCTET_STRING; cdecl external CLibCrypto name 'SXNET_get_id_INTEGER';
 function AUTHORITY_KEYID_new: PAUTHORITY_KEYID; cdecl external CLibCrypto name 'AUTHORITY_KEYID_new';
-procedure AUTHORITY_KEYID_free(a: PAUTHORITY_KEYID); cdecl external CLibCrypto name 'AUTHORITY_KEYID_free';
+function AUTHORITY_KEYID_free(a: PAUTHORITY_KEYID): void; cdecl external CLibCrypto name 'AUTHORITY_KEYID_free';
 function d2i_AUTHORITY_KEYID(a: PPAUTHORITY_KEYID; _in: PPIdAnsiChar; len: TIdC_LONG): PAUTHORITY_KEYID; cdecl external CLibCrypto name 'd2i_AUTHORITY_KEYID';
 function i2d_AUTHORITY_KEYID(a: PAUTHORITY_KEYID; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_AUTHORITY_KEYID';
 function AUTHORITY_KEYID_it: PASN1_ITEM; cdecl external CLibCrypto name 'AUTHORITY_KEYID_it';
 function PKEY_USAGE_PERIOD_new: PPKEY_USAGE_PERIOD; cdecl external CLibCrypto name 'PKEY_USAGE_PERIOD_new';
-procedure PKEY_USAGE_PERIOD_free(a: PPKEY_USAGE_PERIOD); cdecl external CLibCrypto name 'PKEY_USAGE_PERIOD_free';
+function PKEY_USAGE_PERIOD_free(a: PPKEY_USAGE_PERIOD): void; cdecl external CLibCrypto name 'PKEY_USAGE_PERIOD_free';
 function d2i_PKEY_USAGE_PERIOD(a: PPPKEY_USAGE_PERIOD; _in: PPIdAnsiChar; len: TIdC_LONG): PPKEY_USAGE_PERIOD; cdecl external CLibCrypto name 'd2i_PKEY_USAGE_PERIOD';
 function i2d_PKEY_USAGE_PERIOD(a: PPKEY_USAGE_PERIOD; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_PKEY_USAGE_PERIOD';
 function PKEY_USAGE_PERIOD_it: PASN1_ITEM; cdecl external CLibCrypto name 'PKEY_USAGE_PERIOD_it';
 function GENERAL_NAME_new: PGENERAL_NAME; cdecl external CLibCrypto name 'GENERAL_NAME_new';
-procedure GENERAL_NAME_free(a: PGENERAL_NAME); cdecl external CLibCrypto name 'GENERAL_NAME_free';
+function GENERAL_NAME_free(a: PGENERAL_NAME): void; cdecl external CLibCrypto name 'GENERAL_NAME_free';
 function d2i_GENERAL_NAME(a: PPGENERAL_NAME; _in: PPIdAnsiChar; len: TIdC_LONG): PGENERAL_NAME; cdecl external CLibCrypto name 'd2i_GENERAL_NAME';
 function i2d_GENERAL_NAME(a: PGENERAL_NAME; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_GENERAL_NAME';
 function GENERAL_NAME_it: PASN1_ITEM; cdecl external CLibCrypto name 'GENERAL_NAME_it';
@@ -3198,79 +3779,79 @@ function s2i_ASN1_UTF8STRING(method: PX509V3_EXT_METHOD; ctx: PX509V3_CTX; str: 
 function i2v_GENERAL_NAME(method: PX509V3_EXT_METHOD; gen: PGENERAL_NAME; ret: Pstack_st_CONF_VALUE): Pstack_st_CONF_VALUE; cdecl external CLibCrypto name 'i2v_GENERAL_NAME';
 function GENERAL_NAME_print(_out: PBIO; gen: PGENERAL_NAME): TIdC_INT; cdecl external CLibCrypto name 'GENERAL_NAME_print';
 function GENERAL_NAMES_new: PGENERAL_NAMES; cdecl external CLibCrypto name 'GENERAL_NAMES_new';
-procedure GENERAL_NAMES_free(a: PGENERAL_NAMES); cdecl external CLibCrypto name 'GENERAL_NAMES_free';
+function GENERAL_NAMES_free(a: PGENERAL_NAMES): void; cdecl external CLibCrypto name 'GENERAL_NAMES_free';
 function d2i_GENERAL_NAMES(a: PPGENERAL_NAMES; _in: PPIdAnsiChar; len: TIdC_LONG): PGENERAL_NAMES; cdecl external CLibCrypto name 'd2i_GENERAL_NAMES';
 function i2d_GENERAL_NAMES(a: PGENERAL_NAMES; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_GENERAL_NAMES';
 function GENERAL_NAMES_it: PASN1_ITEM; cdecl external CLibCrypto name 'GENERAL_NAMES_it';
 function i2v_GENERAL_NAMES(method: PX509V3_EXT_METHOD; gen: PGENERAL_NAMES; extlist: Pstack_st_CONF_VALUE): Pstack_st_CONF_VALUE; cdecl external CLibCrypto name 'i2v_GENERAL_NAMES';
 function v2i_GENERAL_NAMES(method: PX509V3_EXT_METHOD; ctx: PX509V3_CTX; nval: Pstack_st_CONF_VALUE): PGENERAL_NAMES; cdecl external CLibCrypto name 'v2i_GENERAL_NAMES';
 function OTHERNAME_new: POTHERNAME; cdecl external CLibCrypto name 'OTHERNAME_new';
-procedure OTHERNAME_free(a: POTHERNAME); cdecl external CLibCrypto name 'OTHERNAME_free';
+function OTHERNAME_free(a: POTHERNAME): void; cdecl external CLibCrypto name 'OTHERNAME_free';
 function d2i_OTHERNAME(a: PPOTHERNAME; _in: PPIdAnsiChar; len: TIdC_LONG): POTHERNAME; cdecl external CLibCrypto name 'd2i_OTHERNAME';
 function i2d_OTHERNAME(a: POTHERNAME; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OTHERNAME';
 function OTHERNAME_it: PASN1_ITEM; cdecl external CLibCrypto name 'OTHERNAME_it';
 function EDIPARTYNAME_new: PEDIPARTYNAME; cdecl external CLibCrypto name 'EDIPARTYNAME_new';
-procedure EDIPARTYNAME_free(a: PEDIPARTYNAME); cdecl external CLibCrypto name 'EDIPARTYNAME_free';
+function EDIPARTYNAME_free(a: PEDIPARTYNAME): void; cdecl external CLibCrypto name 'EDIPARTYNAME_free';
 function d2i_EDIPARTYNAME(a: PPEDIPARTYNAME; _in: PPIdAnsiChar; len: TIdC_LONG): PEDIPARTYNAME; cdecl external CLibCrypto name 'd2i_EDIPARTYNAME';
 function i2d_EDIPARTYNAME(a: PEDIPARTYNAME; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_EDIPARTYNAME';
 function EDIPARTYNAME_it: PASN1_ITEM; cdecl external CLibCrypto name 'EDIPARTYNAME_it';
 function OTHERNAME_cmp(a: POTHERNAME; b: POTHERNAME): TIdC_INT; cdecl external CLibCrypto name 'OTHERNAME_cmp';
-procedure GENERAL_NAME_set0_value(a: PGENERAL_NAME; _type: TIdC_INT; value: Pointer); cdecl external CLibCrypto name 'GENERAL_NAME_set0_value';
+function GENERAL_NAME_set0_value(a: PGENERAL_NAME; _type: TIdC_INT; value: Pointer): void; cdecl external CLibCrypto name 'GENERAL_NAME_set0_value';
 function GENERAL_NAME_get0_value(a: PGENERAL_NAME; ptype: PIdC_INT): Pointer; cdecl external CLibCrypto name 'GENERAL_NAME_get0_value';
 function GENERAL_NAME_set0_othername(gen: PGENERAL_NAME; oid: PASN1_OBJECT; value: PASN1_TYPE): TIdC_INT; cdecl external CLibCrypto name 'GENERAL_NAME_set0_othername';
 function GENERAL_NAME_get0_otherName(gen: PGENERAL_NAME; poid: PPASN1_OBJECT; pvalue: PPASN1_TYPE): TIdC_INT; cdecl external CLibCrypto name 'GENERAL_NAME_get0_otherName';
 function i2s_ASN1_OCTET_STRING(method: PX509V3_EXT_METHOD; ia5: PASN1_OCTET_STRING): PIdAnsiChar; cdecl external CLibCrypto name 'i2s_ASN1_OCTET_STRING';
 function s2i_ASN1_OCTET_STRING(method: PX509V3_EXT_METHOD; ctx: PX509V3_CTX; str: PIdAnsiChar): PASN1_OCTET_STRING; cdecl external CLibCrypto name 's2i_ASN1_OCTET_STRING';
 function EXTENDED_KEY_USAGE_new: PEXTENDED_KEY_USAGE; cdecl external CLibCrypto name 'EXTENDED_KEY_USAGE_new';
-procedure EXTENDED_KEY_USAGE_free(a: PEXTENDED_KEY_USAGE); cdecl external CLibCrypto name 'EXTENDED_KEY_USAGE_free';
+function EXTENDED_KEY_USAGE_free(a: PEXTENDED_KEY_USAGE): void; cdecl external CLibCrypto name 'EXTENDED_KEY_USAGE_free';
 function d2i_EXTENDED_KEY_USAGE(a: PPEXTENDED_KEY_USAGE; _in: PPIdAnsiChar; len: TIdC_LONG): PEXTENDED_KEY_USAGE; cdecl external CLibCrypto name 'd2i_EXTENDED_KEY_USAGE';
 function i2d_EXTENDED_KEY_USAGE(a: PEXTENDED_KEY_USAGE; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_EXTENDED_KEY_USAGE';
 function EXTENDED_KEY_USAGE_it: PASN1_ITEM; cdecl external CLibCrypto name 'EXTENDED_KEY_USAGE_it';
 function i2a_ACCESS_DESCRIPTION(bp: PBIO; a: PACCESS_DESCRIPTION): TIdC_INT; cdecl external CLibCrypto name 'i2a_ACCESS_DESCRIPTION';
 function TLS_FEATURE_new: PLS_FEATURE; cdecl external CLibCrypto name 'TLS_FEATURE_new';
-procedure TLS_FEATURE_free(a: PLS_FEATURE); cdecl external CLibCrypto name 'TLS_FEATURE_free';
+function TLS_FEATURE_free(a: PLS_FEATURE): void; cdecl external CLibCrypto name 'TLS_FEATURE_free';
 function CERTIFICATEPOLICIES_new: PCERTIFICATEPOLICIES; cdecl external CLibCrypto name 'CERTIFICATEPOLICIES_new';
-procedure CERTIFICATEPOLICIES_free(a: PCERTIFICATEPOLICIES); cdecl external CLibCrypto name 'CERTIFICATEPOLICIES_free';
+function CERTIFICATEPOLICIES_free(a: PCERTIFICATEPOLICIES): void; cdecl external CLibCrypto name 'CERTIFICATEPOLICIES_free';
 function d2i_CERTIFICATEPOLICIES(a: PPCERTIFICATEPOLICIES; _in: PPIdAnsiChar; len: TIdC_LONG): PCERTIFICATEPOLICIES; cdecl external CLibCrypto name 'd2i_CERTIFICATEPOLICIES';
 function i2d_CERTIFICATEPOLICIES(a: PCERTIFICATEPOLICIES; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_CERTIFICATEPOLICIES';
 function CERTIFICATEPOLICIES_it: PASN1_ITEM; cdecl external CLibCrypto name 'CERTIFICATEPOLICIES_it';
 function POLICYINFO_new: PPOLICYINFO; cdecl external CLibCrypto name 'POLICYINFO_new';
-procedure POLICYINFO_free(a: PPOLICYINFO); cdecl external CLibCrypto name 'POLICYINFO_free';
+function POLICYINFO_free(a: PPOLICYINFO): void; cdecl external CLibCrypto name 'POLICYINFO_free';
 function d2i_POLICYINFO(a: PPPOLICYINFO; _in: PPIdAnsiChar; len: TIdC_LONG): PPOLICYINFO; cdecl external CLibCrypto name 'd2i_POLICYINFO';
 function i2d_POLICYINFO(a: PPOLICYINFO; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_POLICYINFO';
 function POLICYINFO_it: PASN1_ITEM; cdecl external CLibCrypto name 'POLICYINFO_it';
 function POLICYQUALINFO_new: PPOLICYQUALINFO; cdecl external CLibCrypto name 'POLICYQUALINFO_new';
-procedure POLICYQUALINFO_free(a: PPOLICYQUALINFO); cdecl external CLibCrypto name 'POLICYQUALINFO_free';
+function POLICYQUALINFO_free(a: PPOLICYQUALINFO): void; cdecl external CLibCrypto name 'POLICYQUALINFO_free';
 function d2i_POLICYQUALINFO(a: PPPOLICYQUALINFO; _in: PPIdAnsiChar; len: TIdC_LONG): PPOLICYQUALINFO; cdecl external CLibCrypto name 'd2i_POLICYQUALINFO';
 function i2d_POLICYQUALINFO(a: PPOLICYQUALINFO; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_POLICYQUALINFO';
 function POLICYQUALINFO_it: PASN1_ITEM; cdecl external CLibCrypto name 'POLICYQUALINFO_it';
 function USERNOTICE_new: PUSERNOTICE; cdecl external CLibCrypto name 'USERNOTICE_new';
-procedure USERNOTICE_free(a: PUSERNOTICE); cdecl external CLibCrypto name 'USERNOTICE_free';
+function USERNOTICE_free(a: PUSERNOTICE): void; cdecl external CLibCrypto name 'USERNOTICE_free';
 function d2i_USERNOTICE(a: PPUSERNOTICE; _in: PPIdAnsiChar; len: TIdC_LONG): PUSERNOTICE; cdecl external CLibCrypto name 'd2i_USERNOTICE';
 function i2d_USERNOTICE(a: PUSERNOTICE; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_USERNOTICE';
 function USERNOTICE_it: PASN1_ITEM; cdecl external CLibCrypto name 'USERNOTICE_it';
 function NOTICEREF_new: PNOTICEREF; cdecl external CLibCrypto name 'NOTICEREF_new';
-procedure NOTICEREF_free(a: PNOTICEREF); cdecl external CLibCrypto name 'NOTICEREF_free';
+function NOTICEREF_free(a: PNOTICEREF): void; cdecl external CLibCrypto name 'NOTICEREF_free';
 function d2i_NOTICEREF(a: PPNOTICEREF; _in: PPIdAnsiChar; len: TIdC_LONG): PNOTICEREF; cdecl external CLibCrypto name 'd2i_NOTICEREF';
 function i2d_NOTICEREF(a: PNOTICEREF; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_NOTICEREF';
 function NOTICEREF_it: PASN1_ITEM; cdecl external CLibCrypto name 'NOTICEREF_it';
 function CRL_DIST_POINTS_new: PCRL_DIST_POINTS; cdecl external CLibCrypto name 'CRL_DIST_POINTS_new';
-procedure CRL_DIST_POINTS_free(a: PCRL_DIST_POINTS); cdecl external CLibCrypto name 'CRL_DIST_POINTS_free';
+function CRL_DIST_POINTS_free(a: PCRL_DIST_POINTS): void; cdecl external CLibCrypto name 'CRL_DIST_POINTS_free';
 function d2i_CRL_DIST_POINTS(a: PPCRL_DIST_POINTS; _in: PPIdAnsiChar; len: TIdC_LONG): PCRL_DIST_POINTS; cdecl external CLibCrypto name 'd2i_CRL_DIST_POINTS';
 function i2d_CRL_DIST_POINTS(a: PCRL_DIST_POINTS; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_CRL_DIST_POINTS';
 function CRL_DIST_POINTS_it: PASN1_ITEM; cdecl external CLibCrypto name 'CRL_DIST_POINTS_it';
 function DIST_POINT_new: PDIST_POINT; cdecl external CLibCrypto name 'DIST_POINT_new';
-procedure DIST_POINT_free(a: PDIST_POINT); cdecl external CLibCrypto name 'DIST_POINT_free';
+function DIST_POINT_free(a: PDIST_POINT): void; cdecl external CLibCrypto name 'DIST_POINT_free';
 function d2i_DIST_POINT(a: PPDIST_POINT; _in: PPIdAnsiChar; len: TIdC_LONG): PDIST_POINT; cdecl external CLibCrypto name 'd2i_DIST_POINT';
 function i2d_DIST_POINT(a: PDIST_POINT; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_DIST_POINT';
 function DIST_POINT_it: PASN1_ITEM; cdecl external CLibCrypto name 'DIST_POINT_it';
 function DIST_POINT_NAME_new: PDIST_POINT_NAME; cdecl external CLibCrypto name 'DIST_POINT_NAME_new';
-procedure DIST_POINT_NAME_free(a: PDIST_POINT_NAME); cdecl external CLibCrypto name 'DIST_POINT_NAME_free';
+function DIST_POINT_NAME_free(a: PDIST_POINT_NAME): void; cdecl external CLibCrypto name 'DIST_POINT_NAME_free';
 function d2i_DIST_POINT_NAME(a: PPDIST_POINT_NAME; _in: PPIdAnsiChar; len: TIdC_LONG): PDIST_POINT_NAME; cdecl external CLibCrypto name 'd2i_DIST_POINT_NAME';
 function i2d_DIST_POINT_NAME(a: PDIST_POINT_NAME; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_DIST_POINT_NAME';
 function DIST_POINT_NAME_it: PASN1_ITEM; cdecl external CLibCrypto name 'DIST_POINT_NAME_it';
 function ISSUING_DIST_POINT_new: PISSUING_DIST_POINT; cdecl external CLibCrypto name 'ISSUING_DIST_POINT_new';
-procedure ISSUING_DIST_POINT_free(a: PISSUING_DIST_POINT); cdecl external CLibCrypto name 'ISSUING_DIST_POINT_free';
+function ISSUING_DIST_POINT_free(a: PISSUING_DIST_POINT): void; cdecl external CLibCrypto name 'ISSUING_DIST_POINT_free';
 function d2i_ISSUING_DIST_POINT(a: PPISSUING_DIST_POINT; _in: PPIdAnsiChar; len: TIdC_LONG): PISSUING_DIST_POINT; cdecl external CLibCrypto name 'd2i_ISSUING_DIST_POINT';
 function i2d_ISSUING_DIST_POINT(a: PISSUING_DIST_POINT; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ISSUING_DIST_POINT';
 function ISSUING_DIST_POINT_it: PASN1_ITEM; cdecl external CLibCrypto name 'ISSUING_DIST_POINT_it';
@@ -3278,32 +3859,32 @@ function DIST_POINT_set_dpname(dpn: PDIST_POINT_NAME; iname: PX509_NAME): TIdC_I
 function NAME_CONSTRAINTS_check(x: PX509; nc: PNAME_CONSTRAINTS): TIdC_INT; cdecl external CLibCrypto name 'NAME_CONSTRAINTS_check';
 function NAME_CONSTRAINTS_check_CN(x: PX509; nc: PNAME_CONSTRAINTS): TIdC_INT; cdecl external CLibCrypto name 'NAME_CONSTRAINTS_check_CN';
 function ACCESS_DESCRIPTION_new: PACCESS_DESCRIPTION; cdecl external CLibCrypto name 'ACCESS_DESCRIPTION_new';
-procedure ACCESS_DESCRIPTION_free(a: PACCESS_DESCRIPTION); cdecl external CLibCrypto name 'ACCESS_DESCRIPTION_free';
+function ACCESS_DESCRIPTION_free(a: PACCESS_DESCRIPTION): void; cdecl external CLibCrypto name 'ACCESS_DESCRIPTION_free';
 function d2i_ACCESS_DESCRIPTION(a: PPACCESS_DESCRIPTION; _in: PPIdAnsiChar; len: TIdC_LONG): PACCESS_DESCRIPTION; cdecl external CLibCrypto name 'd2i_ACCESS_DESCRIPTION';
 function i2d_ACCESS_DESCRIPTION(a: PACCESS_DESCRIPTION; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ACCESS_DESCRIPTION';
 function ACCESS_DESCRIPTION_it: PASN1_ITEM; cdecl external CLibCrypto name 'ACCESS_DESCRIPTION_it';
 function AUTHORITY_INFO_ACCESS_new: PAUTHORITY_INFO_ACCESS; cdecl external CLibCrypto name 'AUTHORITY_INFO_ACCESS_new';
-procedure AUTHORITY_INFO_ACCESS_free(a: PAUTHORITY_INFO_ACCESS); cdecl external CLibCrypto name 'AUTHORITY_INFO_ACCESS_free';
+function AUTHORITY_INFO_ACCESS_free(a: PAUTHORITY_INFO_ACCESS): void; cdecl external CLibCrypto name 'AUTHORITY_INFO_ACCESS_free';
 function d2i_AUTHORITY_INFO_ACCESS(a: PPAUTHORITY_INFO_ACCESS; _in: PPIdAnsiChar; len: TIdC_LONG): PAUTHORITY_INFO_ACCESS; cdecl external CLibCrypto name 'd2i_AUTHORITY_INFO_ACCESS';
 function i2d_AUTHORITY_INFO_ACCESS(a: PAUTHORITY_INFO_ACCESS; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_AUTHORITY_INFO_ACCESS';
 function AUTHORITY_INFO_ACCESS_it: PASN1_ITEM; cdecl external CLibCrypto name 'AUTHORITY_INFO_ACCESS_it';
 function POLICY_MAPPING_it: PASN1_ITEM; cdecl external CLibCrypto name 'POLICY_MAPPING_it';
 function POLICY_MAPPING_new: PPOLICY_MAPPING; cdecl external CLibCrypto name 'POLICY_MAPPING_new';
-procedure POLICY_MAPPING_free(a: PPOLICY_MAPPING); cdecl external CLibCrypto name 'POLICY_MAPPING_free';
+function POLICY_MAPPING_free(a: PPOLICY_MAPPING): void; cdecl external CLibCrypto name 'POLICY_MAPPING_free';
 function POLICY_MAPPINGS_it: PASN1_ITEM; cdecl external CLibCrypto name 'POLICY_MAPPINGS_it';
 function GENERAL_SUBTREE_it: PASN1_ITEM; cdecl external CLibCrypto name 'GENERAL_SUBTREE_it';
 function GENERAL_SUBTREE_new: PGENERAL_SUBTREE; cdecl external CLibCrypto name 'GENERAL_SUBTREE_new';
-procedure GENERAL_SUBTREE_free(a: PGENERAL_SUBTREE); cdecl external CLibCrypto name 'GENERAL_SUBTREE_free';
+function GENERAL_SUBTREE_free(a: PGENERAL_SUBTREE): void; cdecl external CLibCrypto name 'GENERAL_SUBTREE_free';
 function NAME_CONSTRAINTS_it: PASN1_ITEM; cdecl external CLibCrypto name 'NAME_CONSTRAINTS_it';
 function NAME_CONSTRAINTS_new: PNAME_CONSTRAINTS; cdecl external CLibCrypto name 'NAME_CONSTRAINTS_new';
-procedure NAME_CONSTRAINTS_free(a: PNAME_CONSTRAINTS); cdecl external CLibCrypto name 'NAME_CONSTRAINTS_free';
+function NAME_CONSTRAINTS_free(a: PNAME_CONSTRAINTS): void; cdecl external CLibCrypto name 'NAME_CONSTRAINTS_free';
 function POLICY_CONSTRAINTS_new: PPOLICY_CONSTRAINTS; cdecl external CLibCrypto name 'POLICY_CONSTRAINTS_new';
-procedure POLICY_CONSTRAINTS_free(a: PPOLICY_CONSTRAINTS); cdecl external CLibCrypto name 'POLICY_CONSTRAINTS_free';
+function POLICY_CONSTRAINTS_free(a: PPOLICY_CONSTRAINTS): void; cdecl external CLibCrypto name 'POLICY_CONSTRAINTS_free';
 function POLICY_CONSTRAINTS_it: PASN1_ITEM; cdecl external CLibCrypto name 'POLICY_CONSTRAINTS_it';
 function a2i_GENERAL_NAME(_out: PGENERAL_NAME; method: PX509V3_EXT_METHOD; ctx: PX509V3_CTX; gen_type: TIdC_INT; value: PIdAnsiChar; is_nc: TIdC_INT): PGENERAL_NAME; cdecl external CLibCrypto name 'a2i_GENERAL_NAME';
 function v2i_GENERAL_NAME(method: PX509V3_EXT_METHOD; ctx: PX509V3_CTX; cnf: PCONF_VALUE): PGENERAL_NAME; cdecl external CLibCrypto name 'v2i_GENERAL_NAME';
 function v2i_GENERAL_NAME_ex(_out: PGENERAL_NAME; method: PX509V3_EXT_METHOD; ctx: PX509V3_CTX; cnf: PCONF_VALUE; is_nc: TIdC_INT): PGENERAL_NAME; cdecl external CLibCrypto name 'v2i_GENERAL_NAME_ex';
-procedure X509V3_conf_free(val: PCONF_VALUE); cdecl external CLibCrypto name 'X509V3_conf_free';
+function X509V3_conf_free(val: PCONF_VALUE): void; cdecl external CLibCrypto name 'X509V3_conf_free';
 function X509V3_EXT_nconf_nid(conf: PCONF; ctx: PX509V3_CTX; ext_nid: TIdC_INT; value: PIdAnsiChar): PX509_EXTENSION; cdecl external CLibCrypto name 'X509V3_EXT_nconf_nid';
 function X509V3_EXT_nconf(conf: PCONF; ctx: PX509V3_CTX; name: PIdAnsiChar; value: PIdAnsiChar): PX509_EXTENSION; cdecl external CLibCrypto name 'X509V3_EXT_nconf';
 function X509V3_EXT_add_nconf_sk(conf: PCONF; ctx: PX509V3_CTX; section: PIdAnsiChar; sk: PPstack_st_X509_EXTENSION): TIdC_INT; cdecl external CLibCrypto name 'X509V3_EXT_add_nconf_sk';
@@ -3318,13 +3899,13 @@ function X509V3_EXT_CRL_add_conf(conf: Plhash_st_CONF_VALUE; ctx: PX509V3_CTX; s
 function X509V3_add_value_bool_nf(name: PIdAnsiChar; asn1_bool: TIdC_INT; extlist: PPstack_st_CONF_VALUE): TIdC_INT; cdecl external CLibCrypto name 'X509V3_add_value_bool_nf';
 function X509V3_get_value_bool(value: PCONF_VALUE; asn1_bool: PIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'X509V3_get_value_bool';
 function X509V3_get_value_int(value: PCONF_VALUE; aint: PPASN1_INTEGER): TIdC_INT; cdecl external CLibCrypto name 'X509V3_get_value_int';
-procedure X509V3_set_nconf(ctx: PX509V3_CTX; conf: PCONF); cdecl external CLibCrypto name 'X509V3_set_nconf';
-procedure X509V3_set_conf_lhash(ctx: PX509V3_CTX; lhash: Plhash_st_CONF_VALUE); cdecl external CLibCrypto name 'X509V3_set_conf_lhash';
+function X509V3_set_nconf(ctx: PX509V3_CTX; conf: PCONF): void; cdecl external CLibCrypto name 'X509V3_set_nconf';
+function X509V3_set_conf_lhash(ctx: PX509V3_CTX; lhash: Plhash_st_CONF_VALUE): void; cdecl external CLibCrypto name 'X509V3_set_conf_lhash';
 function X509V3_get_string(ctx: PX509V3_CTX; name: PIdAnsiChar; section: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'X509V3_get_string';
 function X509V3_get_section(ctx: PX509V3_CTX; section: PIdAnsiChar): Pstack_st_CONF_VALUE; cdecl external CLibCrypto name 'X509V3_get_section';
-procedure X509V3_string_free(ctx: PX509V3_CTX; str: PIdAnsiChar); cdecl external CLibCrypto name 'X509V3_string_free';
-procedure X509V3_section_free(ctx: PX509V3_CTX; section: Pstack_st_CONF_VALUE); cdecl external CLibCrypto name 'X509V3_section_free';
-procedure X509V3_set_ctx(ctx: PX509V3_CTX; issuer: PX509; subject: PX509; req: PX509_REQ; crl: PX509_CRL; flags: TIdC_INT); cdecl external CLibCrypto name 'X509V3_set_ctx';
+function X509V3_string_free(ctx: PX509V3_CTX; str: PIdAnsiChar): void; cdecl external CLibCrypto name 'X509V3_string_free';
+function X509V3_section_free(ctx: PX509V3_CTX; section: Pstack_st_CONF_VALUE): void; cdecl external CLibCrypto name 'X509V3_section_free';
+function X509V3_set_ctx(ctx: PX509V3_CTX; issuer: PX509; subject: PX509; req: PX509_REQ; crl: PX509_CRL; flags: TIdC_INT): void; cdecl external CLibCrypto name 'X509V3_set_ctx';
 function X509V3_set_issuer_pkey(ctx: PX509V3_CTX; pkey: PEVP_PKEY): TIdC_INT; cdecl external CLibCrypto name 'X509V3_set_issuer_pkey';
 function X509V3_add_value(name: PIdAnsiChar; value: PIdAnsiChar; extlist: PPstack_st_CONF_VALUE): TIdC_INT; cdecl external CLibCrypto name 'X509V3_add_value';
 function X509V3_add_value_uchar(name: PIdAnsiChar; value: PIdAnsiChar; extlist: PPstack_st_CONF_VALUE): TIdC_INT; cdecl external CLibCrypto name 'X509V3_add_value_uchar';
@@ -3337,7 +3918,7 @@ function i2s_ASN1_ENUMERATED_TABLE(meth: PX509V3_EXT_METHOD; aint: PASN1_ENUMERA
 function X509V3_EXT_add(ext: PX509V3_EXT_METHOD): TIdC_INT; cdecl external CLibCrypto name 'X509V3_EXT_add';
 function X509V3_EXT_add_list(extlist: PX509V3_EXT_METHOD): TIdC_INT; cdecl external CLibCrypto name 'X509V3_EXT_add_list';
 function X509V3_EXT_add_alias(nid_to: TIdC_INT; nid_from: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'X509V3_EXT_add_alias';
-procedure X509V3_EXT_cleanup; cdecl external CLibCrypto name 'X509V3_EXT_cleanup';
+function X509V3_EXT_cleanup: void; cdecl external CLibCrypto name 'X509V3_EXT_cleanup';
 function X509V3_EXT_get(ext: PX509_EXTENSION): PX509V3_EXT_METHOD; cdecl external CLibCrypto name 'X509V3_EXT_get';
 function X509V3_EXT_get_nid(nid: TIdC_INT): PX509V3_EXT_METHOD; cdecl external CLibCrypto name 'X509V3_EXT_get_nid';
 function X509V3_add_standard_extensions: TIdC_INT; cdecl external CLibCrypto name 'X509V3_add_standard_extensions';
@@ -3346,7 +3927,7 @@ function X509V3_EXT_d2i(ext: PX509_EXTENSION): Pointer; cdecl external CLibCrypt
 function X509V3_get_d2i(x: Pstack_st_X509_EXTENSION; nid: TIdC_INT; crit: PIdC_INT; idx: PIdC_INT): Pointer; cdecl external CLibCrypto name 'X509V3_get_d2i';
 function X509V3_EXT_i2d(ext_nid: TIdC_INT; crit: TIdC_INT; ext_struc: Pointer): PX509_EXTENSION; cdecl external CLibCrypto name 'X509V3_EXT_i2d';
 function X509V3_add1_i2d(x: PPstack_st_X509_EXTENSION; nid: TIdC_INT; value: Pointer; crit: TIdC_INT; flags: TIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'X509V3_add1_i2d';
-procedure X509V3_EXT_val_prn(_out: PBIO; val: Pstack_st_CONF_VALUE; indent: TIdC_INT; ml: TIdC_INT); cdecl external CLibCrypto name 'X509V3_EXT_val_prn';
+function X509V3_EXT_val_prn(_out: PBIO; val: Pstack_st_CONF_VALUE; indent: TIdC_INT; ml: TIdC_INT): void; cdecl external CLibCrypto name 'X509V3_EXT_val_prn';
 function X509V3_EXT_print(_out: PBIO; ext: PX509_EXTENSION; flag: TIdC_ULONG; indent: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'X509V3_EXT_print';
 function X509V3_EXT_print_fp(_out: PFILE; ext: PX509_EXTENSION; flag: TIdC_INT; indent: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'X509V3_EXT_print_fp';
 function X509V3_extensions_print(_out: PBIO; title: PIdAnsiChar; exts: Pstack_st_X509_EXTENSION; flag: TIdC_ULONG; indent: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'X509V3_extensions_print';
@@ -3355,12 +3936,12 @@ function X509_check_purpose(x: PX509; id: TIdC_INT; ca: TIdC_INT): TIdC_INT; cde
 function X509_supported_extension(ex: PX509_EXTENSION): TIdC_INT; cdecl external CLibCrypto name 'X509_supported_extension';
 function X509_check_issued(issuer: PX509; subject: PX509): TIdC_INT; cdecl external CLibCrypto name 'X509_check_issued';
 function X509_check_akid(issuer: PX509; akid: PAUTHORITY_KEYID): TIdC_INT; cdecl external CLibCrypto name 'X509_check_akid';
-procedure X509_set_proxy_flag(x: PX509); cdecl external CLibCrypto name 'X509_set_proxy_flag';
-procedure X509_set_proxy_pathlen(x: PX509; l: TIdC_LONG); cdecl external CLibCrypto name 'X509_set_proxy_pathlen';
+function X509_set_proxy_flag(x: PX509): void; cdecl external CLibCrypto name 'X509_set_proxy_flag';
+function X509_set_proxy_pathlen(x: PX509; l: TIdC_LONG): void; cdecl external CLibCrypto name 'X509_set_proxy_pathlen';
 function X509_get_proxy_pathlen(x: PX509): TIdC_LONG; cdecl external CLibCrypto name 'X509_get_proxy_pathlen';
-function X509_get_extension_flags(x: PX509): UInt32; cdecl external CLibCrypto name 'X509_get_extension_flags';
-function X509_get_key_usage(x: PX509): UInt32; cdecl external CLibCrypto name 'X509_get_key_usage';
-function X509_get_extended_key_usage(x: PX509): UInt32; cdecl external CLibCrypto name 'X509_get_extended_key_usage';
+function X509_get_extension_flags(x: PX509): TIdC_UINT32; cdecl external CLibCrypto name 'X509_get_extension_flags';
+function X509_get_key_usage(x: PX509): TIdC_UINT32; cdecl external CLibCrypto name 'X509_get_key_usage';
+function X509_get_extended_key_usage(x: PX509): TIdC_UINT32; cdecl external CLibCrypto name 'X509_get_extended_key_usage';
 function X509_get0_subject_key_id(x: PX509): PASN1_OCTET_STRING; cdecl external CLibCrypto name 'X509_get0_subject_key_id';
 function X509_get0_authority_key_id(x: PX509): PASN1_OCTET_STRING; cdecl external CLibCrypto name 'X509_get0_authority_key_id';
 function X509_get0_authority_issuer(x: PX509): PGENERAL_NAMES; cdecl external CLibCrypto name 'X509_get0_authority_issuer';
@@ -3369,8 +3950,8 @@ function X509_PURPOSE_get_count: TIdC_INT; cdecl external CLibCrypto name 'X509_
 function X509_PURPOSE_get_unused_id(libctx: POSSL_LIB_CTX): TIdC_INT; cdecl external CLibCrypto name 'X509_PURPOSE_get_unused_id';
 function X509_PURPOSE_get_by_sname(sname: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'X509_PURPOSE_get_by_sname';
 function X509_PURPOSE_get_by_id(id: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'X509_PURPOSE_get_by_id';
-function X509_PURPOSE_add(id: TIdC_INT; trust: TIdC_INT; flags: TIdC_INT; ck: TX509_PURPOSE_add_ck_cb; name: PIdAnsiChar; sname: PIdAnsiChar; arg: Pointer): TIdC_INT; cdecl external CLibCrypto name 'X509_PURPOSE_add';
-procedure X509_PURPOSE_cleanup; cdecl external CLibCrypto name 'X509_PURPOSE_cleanup';
+function X509_PURPOSE_add(id: TIdC_INT; trust: TIdC_INT; flags: TIdC_INT; ck: TPROXY_CERT_INFO_EXTENSION_it_func_cb; name: PIdAnsiChar; sname: PIdAnsiChar; arg: Pointer): TIdC_INT; cdecl external CLibCrypto name 'X509_PURPOSE_add';
+function X509_PURPOSE_cleanup: void; cdecl external CLibCrypto name 'X509_PURPOSE_cleanup';
 function X509_PURPOSE_get0(idx: TIdC_INT): PX509_PURPOSE; cdecl external CLibCrypto name 'X509_PURPOSE_get0';
 function X509_PURPOSE_get_id(arg1: PX509_PURPOSE): TIdC_INT; cdecl external CLibCrypto name 'X509_PURPOSE_get_id';
 function X509_PURPOSE_get0_name(xp: PX509_PURPOSE): PIdAnsiChar; cdecl external CLibCrypto name 'X509_PURPOSE_get0_name';
@@ -3379,7 +3960,7 @@ function X509_PURPOSE_get_trust(xp: PX509_PURPOSE): TIdC_INT; cdecl external CLi
 function X509_PURPOSE_set(p: PIdC_INT; purpose: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'X509_PURPOSE_set';
 function X509_get1_email(x: PX509): Pstack_st_OPENSSL_STRING; cdecl external CLibCrypto name 'X509_get1_email';
 function X509_REQ_get1_email(x: PX509_REQ): Pstack_st_OPENSSL_STRING; cdecl external CLibCrypto name 'X509_REQ_get1_email';
-procedure X509_email_free(sk: Pstack_st_OPENSSL_STRING); cdecl external CLibCrypto name 'X509_email_free';
+function X509_email_free(sk: Pstack_st_OPENSSL_STRING): void; cdecl external CLibCrypto name 'X509_email_free';
 function X509_get1_ocsp(x: PX509): Pstack_st_OPENSSL_STRING; cdecl external CLibCrypto name 'X509_get1_ocsp';
 function X509_check_host(x: PX509; chk: PIdAnsiChar; chklen: TIdC_SIZET; flags: TIdC_UINT; peername: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'X509_check_host';
 function X509_check_email(x: PX509; chk: PIdAnsiChar; chklen: TIdC_SIZET; flags: TIdC_UINT): TIdC_INT; cdecl external CLibCrypto name 'X509_check_email';
@@ -3388,44 +3969,44 @@ function X509_check_ip_asc(x: PX509; ipasc: PIdAnsiChar; flags: TIdC_UINT): TIdC
 function a2i_IPADDRESS(ipasc: PIdAnsiChar): PASN1_OCTET_STRING; cdecl external CLibCrypto name 'a2i_IPADDRESS';
 function a2i_IPADDRESS_NC(ipasc: PIdAnsiChar): PASN1_OCTET_STRING; cdecl external CLibCrypto name 'a2i_IPADDRESS_NC';
 function X509V3_NAME_from_section(nm: PX509_NAME; dn_sk: Pstack_st_CONF_VALUE; chtype: TIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'X509V3_NAME_from_section';
-procedure X509_POLICY_NODE_print(_out: PBIO; node: PX509_POLICY_NODE; indent: TIdC_INT); cdecl external CLibCrypto name 'X509_POLICY_NODE_print';
+function X509_POLICY_NODE_print(_out: PBIO; node: PX509_POLICY_NODE; indent: TIdC_INT): void; cdecl external CLibCrypto name 'X509_POLICY_NODE_print';
 function ASRange_new: PASRange; cdecl external CLibCrypto name 'ASRange_new';
-procedure ASRange_free(a: PASRange); cdecl external CLibCrypto name 'ASRange_free';
+function ASRange_free(a: PASRange): void; cdecl external CLibCrypto name 'ASRange_free';
 function d2i_ASRange(a: PPASRange; _in: PPIdAnsiChar; len: TIdC_LONG): PASRange; cdecl external CLibCrypto name 'd2i_ASRange';
 function i2d_ASRange(a: PASRange; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASRange';
 function ASRange_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASRange_it';
 function ASIdOrRange_new: PASIdOrRange; cdecl external CLibCrypto name 'ASIdOrRange_new';
-procedure ASIdOrRange_free(a: PASIdOrRange); cdecl external CLibCrypto name 'ASIdOrRange_free';
+function ASIdOrRange_free(a: PASIdOrRange): void; cdecl external CLibCrypto name 'ASIdOrRange_free';
 function d2i_ASIdOrRange(a: PPASIdOrRange; _in: PPIdAnsiChar; len: TIdC_LONG): PASIdOrRange; cdecl external CLibCrypto name 'd2i_ASIdOrRange';
 function i2d_ASIdOrRange(a: PASIdOrRange; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASIdOrRange';
 function ASIdOrRange_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASIdOrRange_it';
 function ASIdentifierChoice_new: PASIdentifierChoice; cdecl external CLibCrypto name 'ASIdentifierChoice_new';
-procedure ASIdentifierChoice_free(a: PASIdentifierChoice); cdecl external CLibCrypto name 'ASIdentifierChoice_free';
+function ASIdentifierChoice_free(a: PASIdentifierChoice): void; cdecl external CLibCrypto name 'ASIdentifierChoice_free';
 function d2i_ASIdentifierChoice(a: PPASIdentifierChoice; _in: PPIdAnsiChar; len: TIdC_LONG): PASIdentifierChoice; cdecl external CLibCrypto name 'd2i_ASIdentifierChoice';
 function i2d_ASIdentifierChoice(a: PASIdentifierChoice; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASIdentifierChoice';
 function ASIdentifierChoice_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASIdentifierChoice_it';
 function ASIdentifiers_new: PASIdentifiers; cdecl external CLibCrypto name 'ASIdentifiers_new';
-procedure ASIdentifiers_free(a: PASIdentifiers); cdecl external CLibCrypto name 'ASIdentifiers_free';
+function ASIdentifiers_free(a: PASIdentifiers): void; cdecl external CLibCrypto name 'ASIdentifiers_free';
 function d2i_ASIdentifiers(a: PPASIdentifiers; _in: PPIdAnsiChar; len: TIdC_LONG): PASIdentifiers; cdecl external CLibCrypto name 'd2i_ASIdentifiers';
 function i2d_ASIdentifiers(a: PASIdentifiers; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASIdentifiers';
 function ASIdentifiers_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASIdentifiers_it';
 function IPAddressRange_new: PIPAddressRange; cdecl external CLibCrypto name 'IPAddressRange_new';
-procedure IPAddressRange_free(a: PIPAddressRange); cdecl external CLibCrypto name 'IPAddressRange_free';
+function IPAddressRange_free(a: PIPAddressRange): void; cdecl external CLibCrypto name 'IPAddressRange_free';
 function d2i_IPAddressRange(a: PPIPAddressRange; _in: PPIdAnsiChar; len: TIdC_LONG): PIPAddressRange; cdecl external CLibCrypto name 'd2i_IPAddressRange';
 function i2d_IPAddressRange(a: PIPAddressRange; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_IPAddressRange';
 function IPAddressRange_it: PASN1_ITEM; cdecl external CLibCrypto name 'IPAddressRange_it';
 function IPAddressOrRange_new: PIPAddressOrRange; cdecl external CLibCrypto name 'IPAddressOrRange_new';
-procedure IPAddressOrRange_free(a: PIPAddressOrRange); cdecl external CLibCrypto name 'IPAddressOrRange_free';
+function IPAddressOrRange_free(a: PIPAddressOrRange): void; cdecl external CLibCrypto name 'IPAddressOrRange_free';
 function d2i_IPAddressOrRange(a: PPIPAddressOrRange; _in: PPIdAnsiChar; len: TIdC_LONG): PIPAddressOrRange; cdecl external CLibCrypto name 'd2i_IPAddressOrRange';
 function i2d_IPAddressOrRange(a: PIPAddressOrRange; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_IPAddressOrRange';
 function IPAddressOrRange_it: PASN1_ITEM; cdecl external CLibCrypto name 'IPAddressOrRange_it';
 function IPAddressChoice_new: PIPAddressChoice; cdecl external CLibCrypto name 'IPAddressChoice_new';
-procedure IPAddressChoice_free(a: PIPAddressChoice); cdecl external CLibCrypto name 'IPAddressChoice_free';
+function IPAddressChoice_free(a: PIPAddressChoice): void; cdecl external CLibCrypto name 'IPAddressChoice_free';
 function d2i_IPAddressChoice(a: PPIPAddressChoice; _in: PPIdAnsiChar; len: TIdC_LONG): PIPAddressChoice; cdecl external CLibCrypto name 'd2i_IPAddressChoice';
 function i2d_IPAddressChoice(a: PIPAddressChoice; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_IPAddressChoice';
 function IPAddressChoice_it: PASN1_ITEM; cdecl external CLibCrypto name 'IPAddressChoice_it';
 function IPAddressFamily_new: PIPAddressFamily; cdecl external CLibCrypto name 'IPAddressFamily_new';
-procedure IPAddressFamily_free(a: PIPAddressFamily); cdecl external CLibCrypto name 'IPAddressFamily_free';
+function IPAddressFamily_free(a: PIPAddressFamily): void; cdecl external CLibCrypto name 'IPAddressFamily_free';
 function d2i_IPAddressFamily(a: PPIPAddressFamily; _in: PPIdAnsiChar; len: TIdC_LONG): PIPAddressFamily; cdecl external CLibCrypto name 'd2i_IPAddressFamily';
 function i2d_IPAddressFamily(a: PIPAddressFamily; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_IPAddressFamily';
 function IPAddressFamily_it: PASN1_ITEM; cdecl external CLibCrypto name 'IPAddressFamily_it';
@@ -3449,194 +4030,194 @@ function X509v3_addr_validate_path(arg1: PX509_STORE_CTX): TIdC_INT; cdecl exter
 function X509v3_asid_validate_resource_set(chain: Pstack_st_X509; ext: PASIdentifiers; allow_inheritance: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'X509v3_asid_validate_resource_set';
 function X509v3_addr_validate_resource_set(chain: Pstack_st_X509; ext: PIPAddrBlocks; allow_inheritance: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'X509v3_addr_validate_resource_set';
 function NAMING_AUTHORITY_new: PNAMING_AUTHORITY; cdecl external CLibCrypto name 'NAMING_AUTHORITY_new';
-procedure NAMING_AUTHORITY_free(a: PNAMING_AUTHORITY); cdecl external CLibCrypto name 'NAMING_AUTHORITY_free';
+function NAMING_AUTHORITY_free(a: PNAMING_AUTHORITY): void; cdecl external CLibCrypto name 'NAMING_AUTHORITY_free';
 function d2i_NAMING_AUTHORITY(a: PPNAMING_AUTHORITY; _in: PPIdAnsiChar; len: TIdC_LONG): PNAMING_AUTHORITY; cdecl external CLibCrypto name 'd2i_NAMING_AUTHORITY';
 function i2d_NAMING_AUTHORITY(a: PNAMING_AUTHORITY; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_NAMING_AUTHORITY';
 function NAMING_AUTHORITY_it: PASN1_ITEM; cdecl external CLibCrypto name 'NAMING_AUTHORITY_it';
 function PROFESSION_INFO_new: PPROFESSION_INFO; cdecl external CLibCrypto name 'PROFESSION_INFO_new';
-procedure PROFESSION_INFO_free(a: PPROFESSION_INFO); cdecl external CLibCrypto name 'PROFESSION_INFO_free';
+function PROFESSION_INFO_free(a: PPROFESSION_INFO): void; cdecl external CLibCrypto name 'PROFESSION_INFO_free';
 function d2i_PROFESSION_INFO(a: PPPROFESSION_INFO; _in: PPIdAnsiChar; len: TIdC_LONG): PPROFESSION_INFO; cdecl external CLibCrypto name 'd2i_PROFESSION_INFO';
 function i2d_PROFESSION_INFO(a: PPROFESSION_INFO; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_PROFESSION_INFO';
 function PROFESSION_INFO_it: PASN1_ITEM; cdecl external CLibCrypto name 'PROFESSION_INFO_it';
 function ADMISSIONS_new: PADMISSIONS; cdecl external CLibCrypto name 'ADMISSIONS_new';
-procedure ADMISSIONS_free(a: PADMISSIONS); cdecl external CLibCrypto name 'ADMISSIONS_free';
+function ADMISSIONS_free(a: PADMISSIONS): void; cdecl external CLibCrypto name 'ADMISSIONS_free';
 function d2i_ADMISSIONS(a: PPADMISSIONS; _in: PPIdAnsiChar; len: TIdC_LONG): PADMISSIONS; cdecl external CLibCrypto name 'd2i_ADMISSIONS';
 function i2d_ADMISSIONS(a: PADMISSIONS; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ADMISSIONS';
 function ADMISSIONS_it: PASN1_ITEM; cdecl external CLibCrypto name 'ADMISSIONS_it';
 function ADMISSION_SYNTAX_new: PADMISSION_SYNTAX; cdecl external CLibCrypto name 'ADMISSION_SYNTAX_new';
-procedure ADMISSION_SYNTAX_free(a: PADMISSION_SYNTAX); cdecl external CLibCrypto name 'ADMISSION_SYNTAX_free';
+function ADMISSION_SYNTAX_free(a: PADMISSION_SYNTAX): void; cdecl external CLibCrypto name 'ADMISSION_SYNTAX_free';
 function d2i_ADMISSION_SYNTAX(a: PPADMISSION_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): PADMISSION_SYNTAX; cdecl external CLibCrypto name 'd2i_ADMISSION_SYNTAX';
 function i2d_ADMISSION_SYNTAX(a: PADMISSION_SYNTAX; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ADMISSION_SYNTAX';
 function ADMISSION_SYNTAX_it: PASN1_ITEM; cdecl external CLibCrypto name 'ADMISSION_SYNTAX_it';
 function NAMING_AUTHORITY_get0_authorityId(n: PNAMING_AUTHORITY): PASN1_OBJECT; cdecl external CLibCrypto name 'NAMING_AUTHORITY_get0_authorityId';
 function NAMING_AUTHORITY_get0_authorityURL(n: PNAMING_AUTHORITY): PASN1_IA5STRING; cdecl external CLibCrypto name 'NAMING_AUTHORITY_get0_authorityURL';
 function NAMING_AUTHORITY_get0_authorityText(n: PNAMING_AUTHORITY): PASN1_STRING; cdecl external CLibCrypto name 'NAMING_AUTHORITY_get0_authorityText';
-procedure NAMING_AUTHORITY_set0_authorityId(n: PNAMING_AUTHORITY; namingAuthorityId: PASN1_OBJECT); cdecl external CLibCrypto name 'NAMING_AUTHORITY_set0_authorityId';
-procedure NAMING_AUTHORITY_set0_authorityURL(n: PNAMING_AUTHORITY; namingAuthorityUrl: PASN1_IA5STRING); cdecl external CLibCrypto name 'NAMING_AUTHORITY_set0_authorityURL';
-procedure NAMING_AUTHORITY_set0_authorityText(n: PNAMING_AUTHORITY; namingAuthorityText: PASN1_STRING); cdecl external CLibCrypto name 'NAMING_AUTHORITY_set0_authorityText';
+function NAMING_AUTHORITY_set0_authorityId(n: PNAMING_AUTHORITY; namingAuthorityId: PASN1_OBJECT): void; cdecl external CLibCrypto name 'NAMING_AUTHORITY_set0_authorityId';
+function NAMING_AUTHORITY_set0_authorityURL(n: PNAMING_AUTHORITY; namingAuthorityUrl: PASN1_IA5STRING): void; cdecl external CLibCrypto name 'NAMING_AUTHORITY_set0_authorityURL';
+function NAMING_AUTHORITY_set0_authorityText(n: PNAMING_AUTHORITY; namingAuthorityText: PASN1_STRING): void; cdecl external CLibCrypto name 'NAMING_AUTHORITY_set0_authorityText';
 function ADMISSION_SYNTAX_get0_admissionAuthority(_as: PADMISSION_SYNTAX): PGENERAL_NAME; cdecl external CLibCrypto name 'ADMISSION_SYNTAX_get0_admissionAuthority';
-procedure ADMISSION_SYNTAX_set0_admissionAuthority(_as: PADMISSION_SYNTAX; aa: PGENERAL_NAME); cdecl external CLibCrypto name 'ADMISSION_SYNTAX_set0_admissionAuthority';
+function ADMISSION_SYNTAX_set0_admissionAuthority(_as: PADMISSION_SYNTAX; aa: PGENERAL_NAME): void; cdecl external CLibCrypto name 'ADMISSION_SYNTAX_set0_admissionAuthority';
 function ADMISSION_SYNTAX_get0_contentsOfAdmissions(_as: PADMISSION_SYNTAX): Pstack_st_ADMISSIONS; cdecl external CLibCrypto name 'ADMISSION_SYNTAX_get0_contentsOfAdmissions';
-procedure ADMISSION_SYNTAX_set0_contentsOfAdmissions(_as: PADMISSION_SYNTAX; a: Pstack_st_ADMISSIONS); cdecl external CLibCrypto name 'ADMISSION_SYNTAX_set0_contentsOfAdmissions';
+function ADMISSION_SYNTAX_set0_contentsOfAdmissions(_as: PADMISSION_SYNTAX; a: Pstack_st_ADMISSIONS): void; cdecl external CLibCrypto name 'ADMISSION_SYNTAX_set0_contentsOfAdmissions';
 function ADMISSIONS_get0_admissionAuthority(a: PADMISSIONS): PGENERAL_NAME; cdecl external CLibCrypto name 'ADMISSIONS_get0_admissionAuthority';
-procedure ADMISSIONS_set0_admissionAuthority(a: PADMISSIONS; aa: PGENERAL_NAME); cdecl external CLibCrypto name 'ADMISSIONS_set0_admissionAuthority';
+function ADMISSIONS_set0_admissionAuthority(a: PADMISSIONS; aa: PGENERAL_NAME): void; cdecl external CLibCrypto name 'ADMISSIONS_set0_admissionAuthority';
 function ADMISSIONS_get0_namingAuthority(a: PADMISSIONS): PNAMING_AUTHORITY; cdecl external CLibCrypto name 'ADMISSIONS_get0_namingAuthority';
-procedure ADMISSIONS_set0_namingAuthority(a: PADMISSIONS; na: PNAMING_AUTHORITY); cdecl external CLibCrypto name 'ADMISSIONS_set0_namingAuthority';
+function ADMISSIONS_set0_namingAuthority(a: PADMISSIONS; na: PNAMING_AUTHORITY): void; cdecl external CLibCrypto name 'ADMISSIONS_set0_namingAuthority';
 function ADMISSIONS_get0_professionInfos(a: PADMISSIONS): PPROFESSION_INFOS; cdecl external CLibCrypto name 'ADMISSIONS_get0_professionInfos';
-procedure ADMISSIONS_set0_professionInfos(a: PADMISSIONS; pi: PPROFESSION_INFOS); cdecl external CLibCrypto name 'ADMISSIONS_set0_professionInfos';
+function ADMISSIONS_set0_professionInfos(a: PADMISSIONS; pi: PPROFESSION_INFOS): void; cdecl external CLibCrypto name 'ADMISSIONS_set0_professionInfos';
 function PROFESSION_INFO_get0_addProfessionInfo(pi: PPROFESSION_INFO): PASN1_OCTET_STRING; cdecl external CLibCrypto name 'PROFESSION_INFO_get0_addProfessionInfo';
-procedure PROFESSION_INFO_set0_addProfessionInfo(pi: PPROFESSION_INFO; aos: PASN1_OCTET_STRING); cdecl external CLibCrypto name 'PROFESSION_INFO_set0_addProfessionInfo';
+function PROFESSION_INFO_set0_addProfessionInfo(pi: PPROFESSION_INFO; aos: PASN1_OCTET_STRING): void; cdecl external CLibCrypto name 'PROFESSION_INFO_set0_addProfessionInfo';
 function PROFESSION_INFO_get0_namingAuthority(pi: PPROFESSION_INFO): PNAMING_AUTHORITY; cdecl external CLibCrypto name 'PROFESSION_INFO_get0_namingAuthority';
-procedure PROFESSION_INFO_set0_namingAuthority(pi: PPROFESSION_INFO; na: PNAMING_AUTHORITY); cdecl external CLibCrypto name 'PROFESSION_INFO_set0_namingAuthority';
+function PROFESSION_INFO_set0_namingAuthority(pi: PPROFESSION_INFO; na: PNAMING_AUTHORITY): void; cdecl external CLibCrypto name 'PROFESSION_INFO_set0_namingAuthority';
 function PROFESSION_INFO_get0_professionItems(pi: PPROFESSION_INFO): Pstack_st_ASN1_STRING; cdecl external CLibCrypto name 'PROFESSION_INFO_get0_professionItems';
-procedure PROFESSION_INFO_set0_professionItems(pi: PPROFESSION_INFO; _as: Pstack_st_ASN1_STRING); cdecl external CLibCrypto name 'PROFESSION_INFO_set0_professionItems';
+function PROFESSION_INFO_set0_professionItems(pi: PPROFESSION_INFO; _as: Pstack_st_ASN1_STRING): void; cdecl external CLibCrypto name 'PROFESSION_INFO_set0_professionItems';
 function PROFESSION_INFO_get0_professionOIDs(pi: PPROFESSION_INFO): Pstack_st_ASN1_OBJECT; cdecl external CLibCrypto name 'PROFESSION_INFO_get0_professionOIDs';
-procedure PROFESSION_INFO_set0_professionOIDs(pi: PPROFESSION_INFO; po: Pstack_st_ASN1_OBJECT); cdecl external CLibCrypto name 'PROFESSION_INFO_set0_professionOIDs';
+function PROFESSION_INFO_set0_professionOIDs(pi: PPROFESSION_INFO; po: Pstack_st_ASN1_OBJECT): void; cdecl external CLibCrypto name 'PROFESSION_INFO_set0_professionOIDs';
 function PROFESSION_INFO_get0_registrationNumber(pi: PPROFESSION_INFO): PASN1_PRINTABLESTRING; cdecl external CLibCrypto name 'PROFESSION_INFO_get0_registrationNumber';
-procedure PROFESSION_INFO_set0_registrationNumber(pi: PPROFESSION_INFO; rn: PASN1_PRINTABLESTRING); cdecl external CLibCrypto name 'PROFESSION_INFO_set0_registrationNumber';
+function PROFESSION_INFO_set0_registrationNumber(pi: PPROFESSION_INFO; rn: PASN1_PRINTABLESTRING): void; cdecl external CLibCrypto name 'PROFESSION_INFO_set0_registrationNumber';
 function OSSL_GENERAL_NAMES_print(_out: PBIO; gens: PGENERAL_NAMES; indent: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_GENERAL_NAMES_print';
 function OSSL_ATTRIBUTES_SYNTAX_new: POSSL_ATTRIBUTES_SYNTAX; cdecl external CLibCrypto name 'OSSL_ATTRIBUTES_SYNTAX_new';
-procedure OSSL_ATTRIBUTES_SYNTAX_free(a: POSSL_ATTRIBUTES_SYNTAX); cdecl external CLibCrypto name 'OSSL_ATTRIBUTES_SYNTAX_free';
+function OSSL_ATTRIBUTES_SYNTAX_free(a: POSSL_ATTRIBUTES_SYNTAX): void; cdecl external CLibCrypto name 'OSSL_ATTRIBUTES_SYNTAX_free';
 function d2i_OSSL_ATTRIBUTES_SYNTAX(a: PPOSSL_ATTRIBUTES_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ATTRIBUTES_SYNTAX; cdecl external CLibCrypto name 'd2i_OSSL_ATTRIBUTES_SYNTAX';
 function i2d_OSSL_ATTRIBUTES_SYNTAX(a: POSSL_ATTRIBUTES_SYNTAX; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_ATTRIBUTES_SYNTAX';
 function OSSL_ATTRIBUTES_SYNTAX_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_ATTRIBUTES_SYNTAX_it';
 function OSSL_USER_NOTICE_SYNTAX_new: POSSL_USER_NOTICE_SYNTAX; cdecl external CLibCrypto name 'OSSL_USER_NOTICE_SYNTAX_new';
-procedure OSSL_USER_NOTICE_SYNTAX_free(a: POSSL_USER_NOTICE_SYNTAX); cdecl external CLibCrypto name 'OSSL_USER_NOTICE_SYNTAX_free';
+function OSSL_USER_NOTICE_SYNTAX_free(a: POSSL_USER_NOTICE_SYNTAX): void; cdecl external CLibCrypto name 'OSSL_USER_NOTICE_SYNTAX_free';
 function d2i_OSSL_USER_NOTICE_SYNTAX(a: PPOSSL_USER_NOTICE_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_USER_NOTICE_SYNTAX; cdecl external CLibCrypto name 'd2i_OSSL_USER_NOTICE_SYNTAX';
 function i2d_OSSL_USER_NOTICE_SYNTAX(a: POSSL_USER_NOTICE_SYNTAX; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_USER_NOTICE_SYNTAX';
 function OSSL_USER_NOTICE_SYNTAX_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_USER_NOTICE_SYNTAX_it';
 function OSSL_ROLE_SPEC_CERT_ID_new: POSSL_ROLE_SPEC_CERT_ID; cdecl external CLibCrypto name 'OSSL_ROLE_SPEC_CERT_ID_new';
-procedure OSSL_ROLE_SPEC_CERT_ID_free(a: POSSL_ROLE_SPEC_CERT_ID); cdecl external CLibCrypto name 'OSSL_ROLE_SPEC_CERT_ID_free';
+function OSSL_ROLE_SPEC_CERT_ID_free(a: POSSL_ROLE_SPEC_CERT_ID): void; cdecl external CLibCrypto name 'OSSL_ROLE_SPEC_CERT_ID_free';
 function d2i_OSSL_ROLE_SPEC_CERT_ID(a: PPOSSL_ROLE_SPEC_CERT_ID; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ROLE_SPEC_CERT_ID; cdecl external CLibCrypto name 'd2i_OSSL_ROLE_SPEC_CERT_ID';
 function i2d_OSSL_ROLE_SPEC_CERT_ID(a: POSSL_ROLE_SPEC_CERT_ID; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_ROLE_SPEC_CERT_ID';
 function OSSL_ROLE_SPEC_CERT_ID_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_ROLE_SPEC_CERT_ID_it';
 function OSSL_ROLE_SPEC_CERT_ID_SYNTAX_new: POSSL_ROLE_SPEC_CERT_ID_SYNTAX; cdecl external CLibCrypto name 'OSSL_ROLE_SPEC_CERT_ID_SYNTAX_new';
-procedure OSSL_ROLE_SPEC_CERT_ID_SYNTAX_free(a: POSSL_ROLE_SPEC_CERT_ID_SYNTAX); cdecl external CLibCrypto name 'OSSL_ROLE_SPEC_CERT_ID_SYNTAX_free';
+function OSSL_ROLE_SPEC_CERT_ID_SYNTAX_free(a: POSSL_ROLE_SPEC_CERT_ID_SYNTAX): void; cdecl external CLibCrypto name 'OSSL_ROLE_SPEC_CERT_ID_SYNTAX_free';
 function d2i_OSSL_ROLE_SPEC_CERT_ID_SYNTAX(a: PPOSSL_ROLE_SPEC_CERT_ID_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ROLE_SPEC_CERT_ID_SYNTAX; cdecl external CLibCrypto name 'd2i_OSSL_ROLE_SPEC_CERT_ID_SYNTAX';
 function i2d_OSSL_ROLE_SPEC_CERT_ID_SYNTAX(a: POSSL_ROLE_SPEC_CERT_ID_SYNTAX; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_ROLE_SPEC_CERT_ID_SYNTAX';
 function OSSL_ROLE_SPEC_CERT_ID_SYNTAX_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_ROLE_SPEC_CERT_ID_SYNTAX_it';
 function OSSL_HASH_new: POSSL_HASH; cdecl external CLibCrypto name 'OSSL_HASH_new';
-procedure OSSL_HASH_free(a: POSSL_HASH); cdecl external CLibCrypto name 'OSSL_HASH_free';
+function OSSL_HASH_free(a: POSSL_HASH): void; cdecl external CLibCrypto name 'OSSL_HASH_free';
 function d2i_OSSL_HASH(a: PPOSSL_HASH; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_HASH; cdecl external CLibCrypto name 'd2i_OSSL_HASH';
 function i2d_OSSL_HASH(a: POSSL_HASH; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_HASH';
 function OSSL_HASH_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_HASH_it';
 function OSSL_INFO_SYNTAX_new: POSSL_INFO_SYNTAX; cdecl external CLibCrypto name 'OSSL_INFO_SYNTAX_new';
-procedure OSSL_INFO_SYNTAX_free(a: POSSL_INFO_SYNTAX); cdecl external CLibCrypto name 'OSSL_INFO_SYNTAX_free';
+function OSSL_INFO_SYNTAX_free(a: POSSL_INFO_SYNTAX): void; cdecl external CLibCrypto name 'OSSL_INFO_SYNTAX_free';
 function d2i_OSSL_INFO_SYNTAX(a: PPOSSL_INFO_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_INFO_SYNTAX; cdecl external CLibCrypto name 'd2i_OSSL_INFO_SYNTAX';
 function i2d_OSSL_INFO_SYNTAX(a: POSSL_INFO_SYNTAX; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_INFO_SYNTAX';
 function OSSL_INFO_SYNTAX_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_INFO_SYNTAX_it';
 function OSSL_INFO_SYNTAX_POINTER_new: POSSL_INFO_SYNTAX_POINTER; cdecl external CLibCrypto name 'OSSL_INFO_SYNTAX_POINTER_new';
-procedure OSSL_INFO_SYNTAX_POINTER_free(a: POSSL_INFO_SYNTAX_POINTER); cdecl external CLibCrypto name 'OSSL_INFO_SYNTAX_POINTER_free';
+function OSSL_INFO_SYNTAX_POINTER_free(a: POSSL_INFO_SYNTAX_POINTER): void; cdecl external CLibCrypto name 'OSSL_INFO_SYNTAX_POINTER_free';
 function d2i_OSSL_INFO_SYNTAX_POINTER(a: PPOSSL_INFO_SYNTAX_POINTER; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_INFO_SYNTAX_POINTER; cdecl external CLibCrypto name 'd2i_OSSL_INFO_SYNTAX_POINTER';
 function i2d_OSSL_INFO_SYNTAX_POINTER(a: POSSL_INFO_SYNTAX_POINTER; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_INFO_SYNTAX_POINTER';
 function OSSL_INFO_SYNTAX_POINTER_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_INFO_SYNTAX_POINTER_it';
 function OSSL_PRIVILEGE_POLICY_ID_new: POSSL_PRIVILEGE_POLICY_ID; cdecl external CLibCrypto name 'OSSL_PRIVILEGE_POLICY_ID_new';
-procedure OSSL_PRIVILEGE_POLICY_ID_free(a: POSSL_PRIVILEGE_POLICY_ID); cdecl external CLibCrypto name 'OSSL_PRIVILEGE_POLICY_ID_free';
+function OSSL_PRIVILEGE_POLICY_ID_free(a: POSSL_PRIVILEGE_POLICY_ID): void; cdecl external CLibCrypto name 'OSSL_PRIVILEGE_POLICY_ID_free';
 function d2i_OSSL_PRIVILEGE_POLICY_ID(a: PPOSSL_PRIVILEGE_POLICY_ID; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_PRIVILEGE_POLICY_ID; cdecl external CLibCrypto name 'd2i_OSSL_PRIVILEGE_POLICY_ID';
 function i2d_OSSL_PRIVILEGE_POLICY_ID(a: POSSL_PRIVILEGE_POLICY_ID; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_PRIVILEGE_POLICY_ID';
 function OSSL_PRIVILEGE_POLICY_ID_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_PRIVILEGE_POLICY_ID_it';
 function OSSL_ATTRIBUTE_DESCRIPTOR_new: POSSL_ATTRIBUTE_DESCRIPTOR; cdecl external CLibCrypto name 'OSSL_ATTRIBUTE_DESCRIPTOR_new';
-procedure OSSL_ATTRIBUTE_DESCRIPTOR_free(a: POSSL_ATTRIBUTE_DESCRIPTOR); cdecl external CLibCrypto name 'OSSL_ATTRIBUTE_DESCRIPTOR_free';
+function OSSL_ATTRIBUTE_DESCRIPTOR_free(a: POSSL_ATTRIBUTE_DESCRIPTOR): void; cdecl external CLibCrypto name 'OSSL_ATTRIBUTE_DESCRIPTOR_free';
 function d2i_OSSL_ATTRIBUTE_DESCRIPTOR(a: PPOSSL_ATTRIBUTE_DESCRIPTOR; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ATTRIBUTE_DESCRIPTOR; cdecl external CLibCrypto name 'd2i_OSSL_ATTRIBUTE_DESCRIPTOR';
 function i2d_OSSL_ATTRIBUTE_DESCRIPTOR(a: POSSL_ATTRIBUTE_DESCRIPTOR; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_ATTRIBUTE_DESCRIPTOR';
 function OSSL_ATTRIBUTE_DESCRIPTOR_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_ATTRIBUTE_DESCRIPTOR_it';
 function OSSL_DAY_TIME_new: POSSL_DAY_TIME; cdecl external CLibCrypto name 'OSSL_DAY_TIME_new';
-procedure OSSL_DAY_TIME_free(a: POSSL_DAY_TIME); cdecl external CLibCrypto name 'OSSL_DAY_TIME_free';
+function OSSL_DAY_TIME_free(a: POSSL_DAY_TIME): void; cdecl external CLibCrypto name 'OSSL_DAY_TIME_free';
 function d2i_OSSL_DAY_TIME(a: PPOSSL_DAY_TIME; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_DAY_TIME; cdecl external CLibCrypto name 'd2i_OSSL_DAY_TIME';
 function i2d_OSSL_DAY_TIME(a: POSSL_DAY_TIME; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_DAY_TIME';
 function OSSL_DAY_TIME_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_DAY_TIME_it';
 function OSSL_DAY_TIME_BAND_new: POSSL_DAY_TIME_BAND; cdecl external CLibCrypto name 'OSSL_DAY_TIME_BAND_new';
-procedure OSSL_DAY_TIME_BAND_free(a: POSSL_DAY_TIME_BAND); cdecl external CLibCrypto name 'OSSL_DAY_TIME_BAND_free';
+function OSSL_DAY_TIME_BAND_free(a: POSSL_DAY_TIME_BAND): void; cdecl external CLibCrypto name 'OSSL_DAY_TIME_BAND_free';
 function d2i_OSSL_DAY_TIME_BAND(a: PPOSSL_DAY_TIME_BAND; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_DAY_TIME_BAND; cdecl external CLibCrypto name 'd2i_OSSL_DAY_TIME_BAND';
 function i2d_OSSL_DAY_TIME_BAND(a: POSSL_DAY_TIME_BAND; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_DAY_TIME_BAND';
 function OSSL_DAY_TIME_BAND_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_DAY_TIME_BAND_it';
 function OSSL_TIME_SPEC_DAY_new: POSSL_TIME_SPEC_DAY; cdecl external CLibCrypto name 'OSSL_TIME_SPEC_DAY_new';
-procedure OSSL_TIME_SPEC_DAY_free(a: POSSL_TIME_SPEC_DAY); cdecl external CLibCrypto name 'OSSL_TIME_SPEC_DAY_free';
+function OSSL_TIME_SPEC_DAY_free(a: POSSL_TIME_SPEC_DAY): void; cdecl external CLibCrypto name 'OSSL_TIME_SPEC_DAY_free';
 function d2i_OSSL_TIME_SPEC_DAY(a: PPOSSL_TIME_SPEC_DAY; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_SPEC_DAY; cdecl external CLibCrypto name 'd2i_OSSL_TIME_SPEC_DAY';
 function i2d_OSSL_TIME_SPEC_DAY(a: POSSL_TIME_SPEC_DAY; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_TIME_SPEC_DAY';
 function OSSL_TIME_SPEC_DAY_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_TIME_SPEC_DAY_it';
 function OSSL_TIME_SPEC_WEEKS_new: POSSL_TIME_SPEC_WEEKS; cdecl external CLibCrypto name 'OSSL_TIME_SPEC_WEEKS_new';
-procedure OSSL_TIME_SPEC_WEEKS_free(a: POSSL_TIME_SPEC_WEEKS); cdecl external CLibCrypto name 'OSSL_TIME_SPEC_WEEKS_free';
+function OSSL_TIME_SPEC_WEEKS_free(a: POSSL_TIME_SPEC_WEEKS): void; cdecl external CLibCrypto name 'OSSL_TIME_SPEC_WEEKS_free';
 function d2i_OSSL_TIME_SPEC_WEEKS(a: PPOSSL_TIME_SPEC_WEEKS; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_SPEC_WEEKS; cdecl external CLibCrypto name 'd2i_OSSL_TIME_SPEC_WEEKS';
 function i2d_OSSL_TIME_SPEC_WEEKS(a: POSSL_TIME_SPEC_WEEKS; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_TIME_SPEC_WEEKS';
 function OSSL_TIME_SPEC_WEEKS_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_TIME_SPEC_WEEKS_it';
 function OSSL_TIME_SPEC_MONTH_new: POSSL_TIME_SPEC_MONTH; cdecl external CLibCrypto name 'OSSL_TIME_SPEC_MONTH_new';
-procedure OSSL_TIME_SPEC_MONTH_free(a: POSSL_TIME_SPEC_MONTH); cdecl external CLibCrypto name 'OSSL_TIME_SPEC_MONTH_free';
+function OSSL_TIME_SPEC_MONTH_free(a: POSSL_TIME_SPEC_MONTH): void; cdecl external CLibCrypto name 'OSSL_TIME_SPEC_MONTH_free';
 function d2i_OSSL_TIME_SPEC_MONTH(a: PPOSSL_TIME_SPEC_MONTH; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_SPEC_MONTH; cdecl external CLibCrypto name 'd2i_OSSL_TIME_SPEC_MONTH';
 function i2d_OSSL_TIME_SPEC_MONTH(a: POSSL_TIME_SPEC_MONTH; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_TIME_SPEC_MONTH';
 function OSSL_TIME_SPEC_MONTH_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_TIME_SPEC_MONTH_it';
 function OSSL_NAMED_DAY_new: POSSL_NAMED_DAY; cdecl external CLibCrypto name 'OSSL_NAMED_DAY_new';
-procedure OSSL_NAMED_DAY_free(a: POSSL_NAMED_DAY); cdecl external CLibCrypto name 'OSSL_NAMED_DAY_free';
+function OSSL_NAMED_DAY_free(a: POSSL_NAMED_DAY): void; cdecl external CLibCrypto name 'OSSL_NAMED_DAY_free';
 function d2i_OSSL_NAMED_DAY(a: PPOSSL_NAMED_DAY; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_NAMED_DAY; cdecl external CLibCrypto name 'd2i_OSSL_NAMED_DAY';
 function i2d_OSSL_NAMED_DAY(a: POSSL_NAMED_DAY; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_NAMED_DAY';
 function OSSL_NAMED_DAY_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_NAMED_DAY_it';
 function OSSL_TIME_SPEC_X_DAY_OF_new: POSSL_TIME_SPEC_X_DAY_OF; cdecl external CLibCrypto name 'OSSL_TIME_SPEC_X_DAY_OF_new';
-procedure OSSL_TIME_SPEC_X_DAY_OF_free(a: POSSL_TIME_SPEC_X_DAY_OF); cdecl external CLibCrypto name 'OSSL_TIME_SPEC_X_DAY_OF_free';
+function OSSL_TIME_SPEC_X_DAY_OF_free(a: POSSL_TIME_SPEC_X_DAY_OF): void; cdecl external CLibCrypto name 'OSSL_TIME_SPEC_X_DAY_OF_free';
 function d2i_OSSL_TIME_SPEC_X_DAY_OF(a: PPOSSL_TIME_SPEC_X_DAY_OF; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_SPEC_X_DAY_OF; cdecl external CLibCrypto name 'd2i_OSSL_TIME_SPEC_X_DAY_OF';
 function i2d_OSSL_TIME_SPEC_X_DAY_OF(a: POSSL_TIME_SPEC_X_DAY_OF; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_TIME_SPEC_X_DAY_OF';
 function OSSL_TIME_SPEC_X_DAY_OF_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_TIME_SPEC_X_DAY_OF_it';
 function OSSL_TIME_SPEC_ABSOLUTE_new: POSSL_TIME_SPEC_ABSOLUTE; cdecl external CLibCrypto name 'OSSL_TIME_SPEC_ABSOLUTE_new';
-procedure OSSL_TIME_SPEC_ABSOLUTE_free(a: POSSL_TIME_SPEC_ABSOLUTE); cdecl external CLibCrypto name 'OSSL_TIME_SPEC_ABSOLUTE_free';
+function OSSL_TIME_SPEC_ABSOLUTE_free(a: POSSL_TIME_SPEC_ABSOLUTE): void; cdecl external CLibCrypto name 'OSSL_TIME_SPEC_ABSOLUTE_free';
 function d2i_OSSL_TIME_SPEC_ABSOLUTE(a: PPOSSL_TIME_SPEC_ABSOLUTE; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_SPEC_ABSOLUTE; cdecl external CLibCrypto name 'd2i_OSSL_TIME_SPEC_ABSOLUTE';
 function i2d_OSSL_TIME_SPEC_ABSOLUTE(a: POSSL_TIME_SPEC_ABSOLUTE; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_TIME_SPEC_ABSOLUTE';
 function OSSL_TIME_SPEC_ABSOLUTE_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_TIME_SPEC_ABSOLUTE_it';
 function OSSL_TIME_SPEC_TIME_new: POSSL_TIME_SPEC_TIME; cdecl external CLibCrypto name 'OSSL_TIME_SPEC_TIME_new';
-procedure OSSL_TIME_SPEC_TIME_free(a: POSSL_TIME_SPEC_TIME); cdecl external CLibCrypto name 'OSSL_TIME_SPEC_TIME_free';
+function OSSL_TIME_SPEC_TIME_free(a: POSSL_TIME_SPEC_TIME): void; cdecl external CLibCrypto name 'OSSL_TIME_SPEC_TIME_free';
 function d2i_OSSL_TIME_SPEC_TIME(a: PPOSSL_TIME_SPEC_TIME; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_SPEC_TIME; cdecl external CLibCrypto name 'd2i_OSSL_TIME_SPEC_TIME';
 function i2d_OSSL_TIME_SPEC_TIME(a: POSSL_TIME_SPEC_TIME; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_TIME_SPEC_TIME';
 function OSSL_TIME_SPEC_TIME_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_TIME_SPEC_TIME_it';
 function OSSL_TIME_SPEC_new: POSSL_TIME_SPEC; cdecl external CLibCrypto name 'OSSL_TIME_SPEC_new';
-procedure OSSL_TIME_SPEC_free(a: POSSL_TIME_SPEC); cdecl external CLibCrypto name 'OSSL_TIME_SPEC_free';
+function OSSL_TIME_SPEC_free(a: POSSL_TIME_SPEC): void; cdecl external CLibCrypto name 'OSSL_TIME_SPEC_free';
 function d2i_OSSL_TIME_SPEC(a: PPOSSL_TIME_SPEC; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_SPEC; cdecl external CLibCrypto name 'd2i_OSSL_TIME_SPEC';
 function i2d_OSSL_TIME_SPEC(a: POSSL_TIME_SPEC; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_TIME_SPEC';
 function OSSL_TIME_SPEC_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_TIME_SPEC_it';
 function OSSL_TIME_PERIOD_new: POSSL_TIME_PERIOD; cdecl external CLibCrypto name 'OSSL_TIME_PERIOD_new';
-procedure OSSL_TIME_PERIOD_free(a: POSSL_TIME_PERIOD); cdecl external CLibCrypto name 'OSSL_TIME_PERIOD_free';
+function OSSL_TIME_PERIOD_free(a: POSSL_TIME_PERIOD): void; cdecl external CLibCrypto name 'OSSL_TIME_PERIOD_free';
 function d2i_OSSL_TIME_PERIOD(a: PPOSSL_TIME_PERIOD; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TIME_PERIOD; cdecl external CLibCrypto name 'd2i_OSSL_TIME_PERIOD';
 function i2d_OSSL_TIME_PERIOD(a: POSSL_TIME_PERIOD; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_TIME_PERIOD';
 function OSSL_TIME_PERIOD_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_TIME_PERIOD_it';
 function OSSL_ATAV_new: POSSL_ATAV; cdecl external CLibCrypto name 'OSSL_ATAV_new';
-procedure OSSL_ATAV_free(a: POSSL_ATAV); cdecl external CLibCrypto name 'OSSL_ATAV_free';
+function OSSL_ATAV_free(a: POSSL_ATAV): void; cdecl external CLibCrypto name 'OSSL_ATAV_free';
 function d2i_OSSL_ATAV(a: PPOSSL_ATAV; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ATAV; cdecl external CLibCrypto name 'd2i_OSSL_ATAV';
 function i2d_OSSL_ATAV(a: POSSL_ATAV; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_ATAV';
 function OSSL_ATAV_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_ATAV_it';
 function OSSL_ATTRIBUTE_TYPE_MAPPING_new: POSSL_ATTRIBUTE_TYPE_MAPPING; cdecl external CLibCrypto name 'OSSL_ATTRIBUTE_TYPE_MAPPING_new';
-procedure OSSL_ATTRIBUTE_TYPE_MAPPING_free(a: POSSL_ATTRIBUTE_TYPE_MAPPING); cdecl external CLibCrypto name 'OSSL_ATTRIBUTE_TYPE_MAPPING_free';
+function OSSL_ATTRIBUTE_TYPE_MAPPING_free(a: POSSL_ATTRIBUTE_TYPE_MAPPING): void; cdecl external CLibCrypto name 'OSSL_ATTRIBUTE_TYPE_MAPPING_free';
 function d2i_OSSL_ATTRIBUTE_TYPE_MAPPING(a: PPOSSL_ATTRIBUTE_TYPE_MAPPING; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ATTRIBUTE_TYPE_MAPPING; cdecl external CLibCrypto name 'd2i_OSSL_ATTRIBUTE_TYPE_MAPPING';
 function i2d_OSSL_ATTRIBUTE_TYPE_MAPPING(a: POSSL_ATTRIBUTE_TYPE_MAPPING; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_ATTRIBUTE_TYPE_MAPPING';
 function OSSL_ATTRIBUTE_TYPE_MAPPING_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_ATTRIBUTE_TYPE_MAPPING_it';
 function OSSL_ATTRIBUTE_VALUE_MAPPING_new: POSSL_ATTRIBUTE_VALUE_MAPPING; cdecl external CLibCrypto name 'OSSL_ATTRIBUTE_VALUE_MAPPING_new';
-procedure OSSL_ATTRIBUTE_VALUE_MAPPING_free(a: POSSL_ATTRIBUTE_VALUE_MAPPING); cdecl external CLibCrypto name 'OSSL_ATTRIBUTE_VALUE_MAPPING_free';
+function OSSL_ATTRIBUTE_VALUE_MAPPING_free(a: POSSL_ATTRIBUTE_VALUE_MAPPING): void; cdecl external CLibCrypto name 'OSSL_ATTRIBUTE_VALUE_MAPPING_free';
 function d2i_OSSL_ATTRIBUTE_VALUE_MAPPING(a: PPOSSL_ATTRIBUTE_VALUE_MAPPING; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ATTRIBUTE_VALUE_MAPPING; cdecl external CLibCrypto name 'd2i_OSSL_ATTRIBUTE_VALUE_MAPPING';
 function i2d_OSSL_ATTRIBUTE_VALUE_MAPPING(a: POSSL_ATTRIBUTE_VALUE_MAPPING; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_ATTRIBUTE_VALUE_MAPPING';
 function OSSL_ATTRIBUTE_VALUE_MAPPING_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_ATTRIBUTE_VALUE_MAPPING_it';
 function OSSL_ATTRIBUTE_MAPPING_new: POSSL_ATTRIBUTE_MAPPING; cdecl external CLibCrypto name 'OSSL_ATTRIBUTE_MAPPING_new';
-procedure OSSL_ATTRIBUTE_MAPPING_free(a: POSSL_ATTRIBUTE_MAPPING); cdecl external CLibCrypto name 'OSSL_ATTRIBUTE_MAPPING_free';
+function OSSL_ATTRIBUTE_MAPPING_free(a: POSSL_ATTRIBUTE_MAPPING): void; cdecl external CLibCrypto name 'OSSL_ATTRIBUTE_MAPPING_free';
 function d2i_OSSL_ATTRIBUTE_MAPPING(a: PPOSSL_ATTRIBUTE_MAPPING; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ATTRIBUTE_MAPPING; cdecl external CLibCrypto name 'd2i_OSSL_ATTRIBUTE_MAPPING';
 function i2d_OSSL_ATTRIBUTE_MAPPING(a: POSSL_ATTRIBUTE_MAPPING; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_ATTRIBUTE_MAPPING';
 function OSSL_ATTRIBUTE_MAPPING_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_ATTRIBUTE_MAPPING_it';
 function OSSL_ATTRIBUTE_MAPPINGS_new: POSSL_ATTRIBUTE_MAPPINGS; cdecl external CLibCrypto name 'OSSL_ATTRIBUTE_MAPPINGS_new';
-procedure OSSL_ATTRIBUTE_MAPPINGS_free(a: POSSL_ATTRIBUTE_MAPPINGS); cdecl external CLibCrypto name 'OSSL_ATTRIBUTE_MAPPINGS_free';
+function OSSL_ATTRIBUTE_MAPPINGS_free(a: POSSL_ATTRIBUTE_MAPPINGS): void; cdecl external CLibCrypto name 'OSSL_ATTRIBUTE_MAPPINGS_free';
 function d2i_OSSL_ATTRIBUTE_MAPPINGS(a: PPOSSL_ATTRIBUTE_MAPPINGS; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ATTRIBUTE_MAPPINGS; cdecl external CLibCrypto name 'd2i_OSSL_ATTRIBUTE_MAPPINGS';
 function i2d_OSSL_ATTRIBUTE_MAPPINGS(a: POSSL_ATTRIBUTE_MAPPINGS; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_ATTRIBUTE_MAPPINGS';
 function OSSL_ATTRIBUTE_MAPPINGS_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_ATTRIBUTE_MAPPINGS_it';
 function OSSL_ALLOWED_ATTRIBUTES_CHOICE_new: POSSL_ALLOWED_ATTRIBUTES_CHOICE; cdecl external CLibCrypto name 'OSSL_ALLOWED_ATTRIBUTES_CHOICE_new';
-procedure OSSL_ALLOWED_ATTRIBUTES_CHOICE_free(a: POSSL_ALLOWED_ATTRIBUTES_CHOICE); cdecl external CLibCrypto name 'OSSL_ALLOWED_ATTRIBUTES_CHOICE_free';
+function OSSL_ALLOWED_ATTRIBUTES_CHOICE_free(a: POSSL_ALLOWED_ATTRIBUTES_CHOICE): void; cdecl external CLibCrypto name 'OSSL_ALLOWED_ATTRIBUTES_CHOICE_free';
 function d2i_OSSL_ALLOWED_ATTRIBUTES_CHOICE(a: PPOSSL_ALLOWED_ATTRIBUTES_CHOICE; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ALLOWED_ATTRIBUTES_CHOICE; cdecl external CLibCrypto name 'd2i_OSSL_ALLOWED_ATTRIBUTES_CHOICE';
 function i2d_OSSL_ALLOWED_ATTRIBUTES_CHOICE(a: POSSL_ALLOWED_ATTRIBUTES_CHOICE; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_ALLOWED_ATTRIBUTES_CHOICE';
 function OSSL_ALLOWED_ATTRIBUTES_CHOICE_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_ALLOWED_ATTRIBUTES_CHOICE_it';
 function OSSL_ALLOWED_ATTRIBUTES_ITEM_new: POSSL_ALLOWED_ATTRIBUTES_ITEM; cdecl external CLibCrypto name 'OSSL_ALLOWED_ATTRIBUTES_ITEM_new';
-procedure OSSL_ALLOWED_ATTRIBUTES_ITEM_free(a: POSSL_ALLOWED_ATTRIBUTES_ITEM); cdecl external CLibCrypto name 'OSSL_ALLOWED_ATTRIBUTES_ITEM_free';
+function OSSL_ALLOWED_ATTRIBUTES_ITEM_free(a: POSSL_ALLOWED_ATTRIBUTES_ITEM): void; cdecl external CLibCrypto name 'OSSL_ALLOWED_ATTRIBUTES_ITEM_free';
 function d2i_OSSL_ALLOWED_ATTRIBUTES_ITEM(a: PPOSSL_ALLOWED_ATTRIBUTES_ITEM; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ALLOWED_ATTRIBUTES_ITEM; cdecl external CLibCrypto name 'd2i_OSSL_ALLOWED_ATTRIBUTES_ITEM';
 function i2d_OSSL_ALLOWED_ATTRIBUTES_ITEM(a: POSSL_ALLOWED_ATTRIBUTES_ITEM; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_ALLOWED_ATTRIBUTES_ITEM';
 function OSSL_ALLOWED_ATTRIBUTES_ITEM_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_ALLOWED_ATTRIBUTES_ITEM_it';
 function OSSL_ALLOWED_ATTRIBUTES_SYNTAX_new: POSSL_ALLOWED_ATTRIBUTES_SYNTAX; cdecl external CLibCrypto name 'OSSL_ALLOWED_ATTRIBUTES_SYNTAX_new';
-procedure OSSL_ALLOWED_ATTRIBUTES_SYNTAX_free(a: POSSL_ALLOWED_ATTRIBUTES_SYNTAX); cdecl external CLibCrypto name 'OSSL_ALLOWED_ATTRIBUTES_SYNTAX_free';
+function OSSL_ALLOWED_ATTRIBUTES_SYNTAX_free(a: POSSL_ALLOWED_ATTRIBUTES_SYNTAX): void; cdecl external CLibCrypto name 'OSSL_ALLOWED_ATTRIBUTES_SYNTAX_free';
 function d2i_OSSL_ALLOWED_ATTRIBUTES_SYNTAX(a: PPOSSL_ALLOWED_ATTRIBUTES_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_ALLOWED_ATTRIBUTES_SYNTAX; cdecl external CLibCrypto name 'd2i_OSSL_ALLOWED_ATTRIBUTES_SYNTAX';
 function i2d_OSSL_ALLOWED_ATTRIBUTES_SYNTAX(a: POSSL_ALLOWED_ATTRIBUTES_SYNTAX; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_ALLOWED_ATTRIBUTES_SYNTAX';
 function OSSL_ALLOWED_ATTRIBUTES_SYNTAX_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_ALLOWED_ATTRIBUTES_SYNTAX_it';
 function OSSL_AA_DIST_POINT_new: POSSL_AA_DIST_POINT; cdecl external CLibCrypto name 'OSSL_AA_DIST_POINT_new';
-procedure OSSL_AA_DIST_POINT_free(a: POSSL_AA_DIST_POINT); cdecl external CLibCrypto name 'OSSL_AA_DIST_POINT_free';
+function OSSL_AA_DIST_POINT_free(a: POSSL_AA_DIST_POINT): void; cdecl external CLibCrypto name 'OSSL_AA_DIST_POINT_free';
 function d2i_OSSL_AA_DIST_POINT(a: PPOSSL_AA_DIST_POINT; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_AA_DIST_POINT; cdecl external CLibCrypto name 'd2i_OSSL_AA_DIST_POINT';
 function i2d_OSSL_AA_DIST_POINT(a: POSSL_AA_DIST_POINT; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_AA_DIST_POINT';
 function OSSL_AA_DIST_POINT_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_AA_DIST_POINT_it';
@@ -5226,7 +5807,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PROXY_POLICY_new_procname);
 end;
 
-procedure ERR_PROXY_POLICY_free(a: PPROXY_POLICY); cdecl
+function ERR_PROXY_POLICY_free(a: PPROXY_POLICY): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PROXY_POLICY_free_procname);
 end;
@@ -5251,7 +5832,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PROXY_CERT_INFO_EXTENSION_new_procname);
 end;
 
-procedure ERR_PROXY_CERT_INFO_EXTENSION_free(a: PPROXY_CERT_INFO_EXTENSION); cdecl
+function ERR_PROXY_CERT_INFO_EXTENSION_free(a: PPROXY_CERT_INFO_EXTENSION): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PROXY_CERT_INFO_EXTENSION_free_procname);
 end;
@@ -5276,7 +5857,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BASIC_CONSTRAINTS_new_procname);
 end;
 
-procedure ERR_BASIC_CONSTRAINTS_free(a: PBASIC_CONSTRAINTS); cdecl
+function ERR_BASIC_CONSTRAINTS_free(a: PBASIC_CONSTRAINTS): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BASIC_CONSTRAINTS_free_procname);
 end;
@@ -5301,7 +5882,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_BASIC_ATTR_CONSTRAINTS_new_procname);
 end;
 
-procedure ERR_OSSL_BASIC_ATTR_CONSTRAINTS_free(a: POSSL_BASIC_ATTR_CONSTRAINTS); cdecl
+function ERR_OSSL_BASIC_ATTR_CONSTRAINTS_free(a: POSSL_BASIC_ATTR_CONSTRAINTS): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_BASIC_ATTR_CONSTRAINTS_free_procname);
 end;
@@ -5326,7 +5907,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SXNET_new_procname);
 end;
 
-procedure ERR_SXNET_free(a: PSXNET); cdecl
+function ERR_SXNET_free(a: PSXNET): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SXNET_free_procname);
 end;
@@ -5351,7 +5932,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SXNETID_new_procname);
 end;
 
-procedure ERR_SXNETID_free(a: PSXNETID); cdecl
+function ERR_SXNETID_free(a: PSXNETID): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SXNETID_free_procname);
 end;
@@ -5376,7 +5957,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ISSUER_SIGN_TOOL_new_procname);
 end;
 
-procedure ERR_ISSUER_SIGN_TOOL_free(a: PISSUER_SIGN_TOOL); cdecl
+function ERR_ISSUER_SIGN_TOOL_free(a: PISSUER_SIGN_TOOL): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ISSUER_SIGN_TOOL_free_procname);
 end;
@@ -5431,7 +6012,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(AUTHORITY_KEYID_new_procname);
 end;
 
-procedure ERR_AUTHORITY_KEYID_free(a: PAUTHORITY_KEYID); cdecl
+function ERR_AUTHORITY_KEYID_free(a: PAUTHORITY_KEYID): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(AUTHORITY_KEYID_free_procname);
 end;
@@ -5456,7 +6037,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKEY_USAGE_PERIOD_new_procname);
 end;
 
-procedure ERR_PKEY_USAGE_PERIOD_free(a: PPKEY_USAGE_PERIOD); cdecl
+function ERR_PKEY_USAGE_PERIOD_free(a: PPKEY_USAGE_PERIOD): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKEY_USAGE_PERIOD_free_procname);
 end;
@@ -5481,7 +6062,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(GENERAL_NAME_new_procname);
 end;
 
-procedure ERR_GENERAL_NAME_free(a: PGENERAL_NAME); cdecl
+function ERR_GENERAL_NAME_free(a: PGENERAL_NAME): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(GENERAL_NAME_free_procname);
 end;
@@ -5556,7 +6137,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(GENERAL_NAMES_new_procname);
 end;
 
-procedure ERR_GENERAL_NAMES_free(a: PGENERAL_NAMES); cdecl
+function ERR_GENERAL_NAMES_free(a: PGENERAL_NAMES): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(GENERAL_NAMES_free_procname);
 end;
@@ -5591,7 +6172,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OTHERNAME_new_procname);
 end;
 
-procedure ERR_OTHERNAME_free(a: POTHERNAME); cdecl
+function ERR_OTHERNAME_free(a: POTHERNAME): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OTHERNAME_free_procname);
 end;
@@ -5616,7 +6197,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EDIPARTYNAME_new_procname);
 end;
 
-procedure ERR_EDIPARTYNAME_free(a: PEDIPARTYNAME); cdecl
+function ERR_EDIPARTYNAME_free(a: PEDIPARTYNAME): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EDIPARTYNAME_free_procname);
 end;
@@ -5641,7 +6222,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OTHERNAME_cmp_procname);
 end;
 
-procedure ERR_GENERAL_NAME_set0_value(a: PGENERAL_NAME; _type: TIdC_INT; value: Pointer); cdecl
+function ERR_GENERAL_NAME_set0_value(a: PGENERAL_NAME; _type: TIdC_INT; value: Pointer): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(GENERAL_NAME_set0_value_procname);
 end;
@@ -5676,7 +6257,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EXTENDED_KEY_USAGE_new_procname);
 end;
 
-procedure ERR_EXTENDED_KEY_USAGE_free(a: PEXTENDED_KEY_USAGE); cdecl
+function ERR_EXTENDED_KEY_USAGE_free(a: PEXTENDED_KEY_USAGE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EXTENDED_KEY_USAGE_free_procname);
 end;
@@ -5706,7 +6287,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TLS_FEATURE_new_procname);
 end;
 
-procedure ERR_TLS_FEATURE_free(a: PLS_FEATURE); cdecl
+function ERR_TLS_FEATURE_free(a: PLS_FEATURE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TLS_FEATURE_free_procname);
 end;
@@ -5716,7 +6297,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CERTIFICATEPOLICIES_new_procname);
 end;
 
-procedure ERR_CERTIFICATEPOLICIES_free(a: PCERTIFICATEPOLICIES); cdecl
+function ERR_CERTIFICATEPOLICIES_free(a: PCERTIFICATEPOLICIES): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CERTIFICATEPOLICIES_free_procname);
 end;
@@ -5741,7 +6322,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(POLICYINFO_new_procname);
 end;
 
-procedure ERR_POLICYINFO_free(a: PPOLICYINFO); cdecl
+function ERR_POLICYINFO_free(a: PPOLICYINFO): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(POLICYINFO_free_procname);
 end;
@@ -5766,7 +6347,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(POLICYQUALINFO_new_procname);
 end;
 
-procedure ERR_POLICYQUALINFO_free(a: PPOLICYQUALINFO); cdecl
+function ERR_POLICYQUALINFO_free(a: PPOLICYQUALINFO): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(POLICYQUALINFO_free_procname);
 end;
@@ -5791,7 +6372,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(USERNOTICE_new_procname);
 end;
 
-procedure ERR_USERNOTICE_free(a: PUSERNOTICE); cdecl
+function ERR_USERNOTICE_free(a: PUSERNOTICE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(USERNOTICE_free_procname);
 end;
@@ -5816,7 +6397,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(NOTICEREF_new_procname);
 end;
 
-procedure ERR_NOTICEREF_free(a: PNOTICEREF); cdecl
+function ERR_NOTICEREF_free(a: PNOTICEREF): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(NOTICEREF_free_procname);
 end;
@@ -5841,7 +6422,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRL_DIST_POINTS_new_procname);
 end;
 
-procedure ERR_CRL_DIST_POINTS_free(a: PCRL_DIST_POINTS); cdecl
+function ERR_CRL_DIST_POINTS_free(a: PCRL_DIST_POINTS): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRL_DIST_POINTS_free_procname);
 end;
@@ -5866,7 +6447,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DIST_POINT_new_procname);
 end;
 
-procedure ERR_DIST_POINT_free(a: PDIST_POINT); cdecl
+function ERR_DIST_POINT_free(a: PDIST_POINT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DIST_POINT_free_procname);
 end;
@@ -5891,7 +6472,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DIST_POINT_NAME_new_procname);
 end;
 
-procedure ERR_DIST_POINT_NAME_free(a: PDIST_POINT_NAME); cdecl
+function ERR_DIST_POINT_NAME_free(a: PDIST_POINT_NAME): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DIST_POINT_NAME_free_procname);
 end;
@@ -5916,7 +6497,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ISSUING_DIST_POINT_new_procname);
 end;
 
-procedure ERR_ISSUING_DIST_POINT_free(a: PISSUING_DIST_POINT); cdecl
+function ERR_ISSUING_DIST_POINT_free(a: PISSUING_DIST_POINT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ISSUING_DIST_POINT_free_procname);
 end;
@@ -5956,7 +6537,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ACCESS_DESCRIPTION_new_procname);
 end;
 
-procedure ERR_ACCESS_DESCRIPTION_free(a: PACCESS_DESCRIPTION); cdecl
+function ERR_ACCESS_DESCRIPTION_free(a: PACCESS_DESCRIPTION): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ACCESS_DESCRIPTION_free_procname);
 end;
@@ -5981,7 +6562,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(AUTHORITY_INFO_ACCESS_new_procname);
 end;
 
-procedure ERR_AUTHORITY_INFO_ACCESS_free(a: PAUTHORITY_INFO_ACCESS); cdecl
+function ERR_AUTHORITY_INFO_ACCESS_free(a: PAUTHORITY_INFO_ACCESS): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(AUTHORITY_INFO_ACCESS_free_procname);
 end;
@@ -6011,7 +6592,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(POLICY_MAPPING_new_procname);
 end;
 
-procedure ERR_POLICY_MAPPING_free(a: PPOLICY_MAPPING); cdecl
+function ERR_POLICY_MAPPING_free(a: PPOLICY_MAPPING): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(POLICY_MAPPING_free_procname);
 end;
@@ -6031,7 +6612,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(GENERAL_SUBTREE_new_procname);
 end;
 
-procedure ERR_GENERAL_SUBTREE_free(a: PGENERAL_SUBTREE); cdecl
+function ERR_GENERAL_SUBTREE_free(a: PGENERAL_SUBTREE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(GENERAL_SUBTREE_free_procname);
 end;
@@ -6046,7 +6627,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(NAME_CONSTRAINTS_new_procname);
 end;
 
-procedure ERR_NAME_CONSTRAINTS_free(a: PNAME_CONSTRAINTS); cdecl
+function ERR_NAME_CONSTRAINTS_free(a: PNAME_CONSTRAINTS): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(NAME_CONSTRAINTS_free_procname);
 end;
@@ -6056,7 +6637,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(POLICY_CONSTRAINTS_new_procname);
 end;
 
-procedure ERR_POLICY_CONSTRAINTS_free(a: PPOLICY_CONSTRAINTS); cdecl
+function ERR_POLICY_CONSTRAINTS_free(a: PPOLICY_CONSTRAINTS): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(POLICY_CONSTRAINTS_free_procname);
 end;
@@ -6081,7 +6662,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(v2i_GENERAL_NAME_ex_procname);
 end;
 
-procedure ERR_X509V3_conf_free(val: PCONF_VALUE); cdecl
+function ERR_X509V3_conf_free(val: PCONF_VALUE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509V3_conf_free_procname);
 end;
@@ -6156,12 +6737,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509V3_get_value_int_procname);
 end;
 
-procedure ERR_X509V3_set_nconf(ctx: PX509V3_CTX; conf: PCONF); cdecl
+function ERR_X509V3_set_nconf(ctx: PX509V3_CTX; conf: PCONF): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509V3_set_nconf_procname);
 end;
 
-procedure ERR_X509V3_set_conf_lhash(ctx: PX509V3_CTX; lhash: Plhash_st_CONF_VALUE); cdecl
+function ERR_X509V3_set_conf_lhash(ctx: PX509V3_CTX; lhash: Plhash_st_CONF_VALUE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509V3_set_conf_lhash_procname);
 end;
@@ -6176,17 +6757,17 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509V3_get_section_procname);
 end;
 
-procedure ERR_X509V3_string_free(ctx: PX509V3_CTX; str: PIdAnsiChar); cdecl
+function ERR_X509V3_string_free(ctx: PX509V3_CTX; str: PIdAnsiChar): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509V3_string_free_procname);
 end;
 
-procedure ERR_X509V3_section_free(ctx: PX509V3_CTX; section: Pstack_st_CONF_VALUE); cdecl
+function ERR_X509V3_section_free(ctx: PX509V3_CTX; section: Pstack_st_CONF_VALUE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509V3_section_free_procname);
 end;
 
-procedure ERR_X509V3_set_ctx(ctx: PX509V3_CTX; issuer: PX509; subject: PX509; req: PX509_REQ; crl: PX509_CRL; flags: TIdC_INT); cdecl
+function ERR_X509V3_set_ctx(ctx: PX509V3_CTX; issuer: PX509; subject: PX509; req: PX509_REQ; crl: PX509_CRL; flags: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509V3_set_ctx_procname);
 end;
@@ -6251,7 +6832,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509V3_EXT_add_alias_procname);
 end;
 
-procedure ERR_X509V3_EXT_cleanup; cdecl
+function ERR_X509V3_EXT_cleanup: void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509V3_EXT_cleanup_procname);
 end;
@@ -6296,7 +6877,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509V3_add1_i2d_procname);
 end;
 
-procedure ERR_X509V3_EXT_val_prn(_out: PBIO; val: Pstack_st_CONF_VALUE; indent: TIdC_INT; ml: TIdC_INT); cdecl
+function ERR_X509V3_EXT_val_prn(_out: PBIO; val: Pstack_st_CONF_VALUE; indent: TIdC_INT; ml: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509V3_EXT_val_prn_procname);
 end;
@@ -6341,12 +6922,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_check_akid_procname);
 end;
 
-procedure ERR_X509_set_proxy_flag(x: PX509); cdecl
+function ERR_X509_set_proxy_flag(x: PX509): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_set_proxy_flag_procname);
 end;
 
-procedure ERR_X509_set_proxy_pathlen(x: PX509; l: TIdC_LONG); cdecl
+function ERR_X509_set_proxy_pathlen(x: PX509; l: TIdC_LONG): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_set_proxy_pathlen_procname);
 end;
@@ -6356,17 +6937,17 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_get_proxy_pathlen_procname);
 end;
 
-function ERR_X509_get_extension_flags(x: PX509): UInt32; cdecl
+function ERR_X509_get_extension_flags(x: PX509): TIdC_UINT32; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_get_extension_flags_procname);
 end;
 
-function ERR_X509_get_key_usage(x: PX509): UInt32; cdecl
+function ERR_X509_get_key_usage(x: PX509): TIdC_UINT32; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_get_key_usage_procname);
 end;
 
-function ERR_X509_get_extended_key_usage(x: PX509): UInt32; cdecl
+function ERR_X509_get_extended_key_usage(x: PX509): TIdC_UINT32; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_get_extended_key_usage_procname);
 end;
@@ -6411,12 +6992,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_PURPOSE_get_by_id_procname);
 end;
 
-function ERR_X509_PURPOSE_add(id: TIdC_INT; trust: TIdC_INT; flags: TIdC_INT; ck: TX509_PURPOSE_add_ck_cb; name: PIdAnsiChar; sname: PIdAnsiChar; arg: Pointer): TIdC_INT; cdecl
+function ERR_X509_PURPOSE_add(id: TIdC_INT; trust: TIdC_INT; flags: TIdC_INT; ck: TPROXY_CERT_INFO_EXTENSION_it_func_cb; name: PIdAnsiChar; sname: PIdAnsiChar; arg: Pointer): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_PURPOSE_add_procname);
 end;
 
-procedure ERR_X509_PURPOSE_cleanup; cdecl
+function ERR_X509_PURPOSE_cleanup: void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_PURPOSE_cleanup_procname);
 end;
@@ -6461,7 +7042,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_REQ_get1_email_procname);
 end;
 
-procedure ERR_X509_email_free(sk: Pstack_st_OPENSSL_STRING); cdecl
+function ERR_X509_email_free(sk: Pstack_st_OPENSSL_STRING): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_email_free_procname);
 end;
@@ -6506,7 +7087,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509V3_NAME_from_section_procname);
 end;
 
-procedure ERR_X509_POLICY_NODE_print(_out: PBIO; node: PX509_POLICY_NODE; indent: TIdC_INT); cdecl
+function ERR_X509_POLICY_NODE_print(_out: PBIO; node: PX509_POLICY_NODE; indent: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_POLICY_NODE_print_procname);
 end;
@@ -6516,7 +7097,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASRange_new_procname);
 end;
 
-procedure ERR_ASRange_free(a: PASRange); cdecl
+function ERR_ASRange_free(a: PASRange): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASRange_free_procname);
 end;
@@ -6541,7 +7122,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASIdOrRange_new_procname);
 end;
 
-procedure ERR_ASIdOrRange_free(a: PASIdOrRange); cdecl
+function ERR_ASIdOrRange_free(a: PASIdOrRange): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASIdOrRange_free_procname);
 end;
@@ -6566,7 +7147,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASIdentifierChoice_new_procname);
 end;
 
-procedure ERR_ASIdentifierChoice_free(a: PASIdentifierChoice); cdecl
+function ERR_ASIdentifierChoice_free(a: PASIdentifierChoice): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASIdentifierChoice_free_procname);
 end;
@@ -6591,7 +7172,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASIdentifiers_new_procname);
 end;
 
-procedure ERR_ASIdentifiers_free(a: PASIdentifiers); cdecl
+function ERR_ASIdentifiers_free(a: PASIdentifiers): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASIdentifiers_free_procname);
 end;
@@ -6616,7 +7197,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(IPAddressRange_new_procname);
 end;
 
-procedure ERR_IPAddressRange_free(a: PIPAddressRange); cdecl
+function ERR_IPAddressRange_free(a: PIPAddressRange): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(IPAddressRange_free_procname);
 end;
@@ -6641,7 +7222,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(IPAddressOrRange_new_procname);
 end;
 
-procedure ERR_IPAddressOrRange_free(a: PIPAddressOrRange); cdecl
+function ERR_IPAddressOrRange_free(a: PIPAddressOrRange): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(IPAddressOrRange_free_procname);
 end;
@@ -6666,7 +7247,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(IPAddressChoice_new_procname);
 end;
 
-procedure ERR_IPAddressChoice_free(a: PIPAddressChoice); cdecl
+function ERR_IPAddressChoice_free(a: PIPAddressChoice): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(IPAddressChoice_free_procname);
 end;
@@ -6691,7 +7272,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(IPAddressFamily_new_procname);
 end;
 
-procedure ERR_IPAddressFamily_free(a: PIPAddressFamily); cdecl
+function ERR_IPAddressFamily_free(a: PIPAddressFamily): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(IPAddressFamily_free_procname);
 end;
@@ -6811,7 +7392,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(NAMING_AUTHORITY_new_procname);
 end;
 
-procedure ERR_NAMING_AUTHORITY_free(a: PNAMING_AUTHORITY); cdecl
+function ERR_NAMING_AUTHORITY_free(a: PNAMING_AUTHORITY): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(NAMING_AUTHORITY_free_procname);
 end;
@@ -6836,7 +7417,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PROFESSION_INFO_new_procname);
 end;
 
-procedure ERR_PROFESSION_INFO_free(a: PPROFESSION_INFO); cdecl
+function ERR_PROFESSION_INFO_free(a: PPROFESSION_INFO): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PROFESSION_INFO_free_procname);
 end;
@@ -6861,7 +7442,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ADMISSIONS_new_procname);
 end;
 
-procedure ERR_ADMISSIONS_free(a: PADMISSIONS); cdecl
+function ERR_ADMISSIONS_free(a: PADMISSIONS): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ADMISSIONS_free_procname);
 end;
@@ -6886,7 +7467,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ADMISSION_SYNTAX_new_procname);
 end;
 
-procedure ERR_ADMISSION_SYNTAX_free(a: PADMISSION_SYNTAX); cdecl
+function ERR_ADMISSION_SYNTAX_free(a: PADMISSION_SYNTAX): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ADMISSION_SYNTAX_free_procname);
 end;
@@ -6921,17 +7502,17 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(NAMING_AUTHORITY_get0_authorityText_procname);
 end;
 
-procedure ERR_NAMING_AUTHORITY_set0_authorityId(n: PNAMING_AUTHORITY; namingAuthorityId: PASN1_OBJECT); cdecl
+function ERR_NAMING_AUTHORITY_set0_authorityId(n: PNAMING_AUTHORITY; namingAuthorityId: PASN1_OBJECT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(NAMING_AUTHORITY_set0_authorityId_procname);
 end;
 
-procedure ERR_NAMING_AUTHORITY_set0_authorityURL(n: PNAMING_AUTHORITY; namingAuthorityUrl: PASN1_IA5STRING); cdecl
+function ERR_NAMING_AUTHORITY_set0_authorityURL(n: PNAMING_AUTHORITY; namingAuthorityUrl: PASN1_IA5STRING): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(NAMING_AUTHORITY_set0_authorityURL_procname);
 end;
 
-procedure ERR_NAMING_AUTHORITY_set0_authorityText(n: PNAMING_AUTHORITY; namingAuthorityText: PASN1_STRING); cdecl
+function ERR_NAMING_AUTHORITY_set0_authorityText(n: PNAMING_AUTHORITY; namingAuthorityText: PASN1_STRING): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(NAMING_AUTHORITY_set0_authorityText_procname);
 end;
@@ -6941,7 +7522,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ADMISSION_SYNTAX_get0_admissionAuthority_procname);
 end;
 
-procedure ERR_ADMISSION_SYNTAX_set0_admissionAuthority(_as: PADMISSION_SYNTAX; aa: PGENERAL_NAME); cdecl
+function ERR_ADMISSION_SYNTAX_set0_admissionAuthority(_as: PADMISSION_SYNTAX; aa: PGENERAL_NAME): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ADMISSION_SYNTAX_set0_admissionAuthority_procname);
 end;
@@ -6951,7 +7532,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ADMISSION_SYNTAX_get0_contentsOfAdmissions_procname);
 end;
 
-procedure ERR_ADMISSION_SYNTAX_set0_contentsOfAdmissions(_as: PADMISSION_SYNTAX; a: Pstack_st_ADMISSIONS); cdecl
+function ERR_ADMISSION_SYNTAX_set0_contentsOfAdmissions(_as: PADMISSION_SYNTAX; a: Pstack_st_ADMISSIONS): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ADMISSION_SYNTAX_set0_contentsOfAdmissions_procname);
 end;
@@ -6961,7 +7542,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ADMISSIONS_get0_admissionAuthority_procname);
 end;
 
-procedure ERR_ADMISSIONS_set0_admissionAuthority(a: PADMISSIONS; aa: PGENERAL_NAME); cdecl
+function ERR_ADMISSIONS_set0_admissionAuthority(a: PADMISSIONS; aa: PGENERAL_NAME): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ADMISSIONS_set0_admissionAuthority_procname);
 end;
@@ -6971,7 +7552,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ADMISSIONS_get0_namingAuthority_procname);
 end;
 
-procedure ERR_ADMISSIONS_set0_namingAuthority(a: PADMISSIONS; na: PNAMING_AUTHORITY); cdecl
+function ERR_ADMISSIONS_set0_namingAuthority(a: PADMISSIONS; na: PNAMING_AUTHORITY): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ADMISSIONS_set0_namingAuthority_procname);
 end;
@@ -6981,7 +7562,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ADMISSIONS_get0_professionInfos_procname);
 end;
 
-procedure ERR_ADMISSIONS_set0_professionInfos(a: PADMISSIONS; pi: PPROFESSION_INFOS); cdecl
+function ERR_ADMISSIONS_set0_professionInfos(a: PADMISSIONS; pi: PPROFESSION_INFOS): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ADMISSIONS_set0_professionInfos_procname);
 end;
@@ -6991,7 +7572,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PROFESSION_INFO_get0_addProfessionInfo_procname);
 end;
 
-procedure ERR_PROFESSION_INFO_set0_addProfessionInfo(pi: PPROFESSION_INFO; aos: PASN1_OCTET_STRING); cdecl
+function ERR_PROFESSION_INFO_set0_addProfessionInfo(pi: PPROFESSION_INFO; aos: PASN1_OCTET_STRING): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PROFESSION_INFO_set0_addProfessionInfo_procname);
 end;
@@ -7001,7 +7582,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PROFESSION_INFO_get0_namingAuthority_procname);
 end;
 
-procedure ERR_PROFESSION_INFO_set0_namingAuthority(pi: PPROFESSION_INFO; na: PNAMING_AUTHORITY); cdecl
+function ERR_PROFESSION_INFO_set0_namingAuthority(pi: PPROFESSION_INFO; na: PNAMING_AUTHORITY): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PROFESSION_INFO_set0_namingAuthority_procname);
 end;
@@ -7011,7 +7592,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PROFESSION_INFO_get0_professionItems_procname);
 end;
 
-procedure ERR_PROFESSION_INFO_set0_professionItems(pi: PPROFESSION_INFO; _as: Pstack_st_ASN1_STRING); cdecl
+function ERR_PROFESSION_INFO_set0_professionItems(pi: PPROFESSION_INFO; _as: Pstack_st_ASN1_STRING): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PROFESSION_INFO_set0_professionItems_procname);
 end;
@@ -7021,7 +7602,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PROFESSION_INFO_get0_professionOIDs_procname);
 end;
 
-procedure ERR_PROFESSION_INFO_set0_professionOIDs(pi: PPROFESSION_INFO; po: Pstack_st_ASN1_OBJECT); cdecl
+function ERR_PROFESSION_INFO_set0_professionOIDs(pi: PPROFESSION_INFO; po: Pstack_st_ASN1_OBJECT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PROFESSION_INFO_set0_professionOIDs_procname);
 end;
@@ -7031,7 +7612,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PROFESSION_INFO_get0_registrationNumber_procname);
 end;
 
-procedure ERR_PROFESSION_INFO_set0_registrationNumber(pi: PPROFESSION_INFO; rn: PASN1_PRINTABLESTRING); cdecl
+function ERR_PROFESSION_INFO_set0_registrationNumber(pi: PPROFESSION_INFO; rn: PASN1_PRINTABLESTRING): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PROFESSION_INFO_set0_registrationNumber_procname);
 end;
@@ -7046,7 +7627,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ATTRIBUTES_SYNTAX_new_procname);
 end;
 
-procedure ERR_OSSL_ATTRIBUTES_SYNTAX_free(a: POSSL_ATTRIBUTES_SYNTAX); cdecl
+function ERR_OSSL_ATTRIBUTES_SYNTAX_free(a: POSSL_ATTRIBUTES_SYNTAX): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ATTRIBUTES_SYNTAX_free_procname);
 end;
@@ -7071,7 +7652,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_USER_NOTICE_SYNTAX_new_procname);
 end;
 
-procedure ERR_OSSL_USER_NOTICE_SYNTAX_free(a: POSSL_USER_NOTICE_SYNTAX); cdecl
+function ERR_OSSL_USER_NOTICE_SYNTAX_free(a: POSSL_USER_NOTICE_SYNTAX): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_USER_NOTICE_SYNTAX_free_procname);
 end;
@@ -7096,7 +7677,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ROLE_SPEC_CERT_ID_new_procname);
 end;
 
-procedure ERR_OSSL_ROLE_SPEC_CERT_ID_free(a: POSSL_ROLE_SPEC_CERT_ID); cdecl
+function ERR_OSSL_ROLE_SPEC_CERT_ID_free(a: POSSL_ROLE_SPEC_CERT_ID): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ROLE_SPEC_CERT_ID_free_procname);
 end;
@@ -7121,7 +7702,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ROLE_SPEC_CERT_ID_SYNTAX_new_procname);
 end;
 
-procedure ERR_OSSL_ROLE_SPEC_CERT_ID_SYNTAX_free(a: POSSL_ROLE_SPEC_CERT_ID_SYNTAX); cdecl
+function ERR_OSSL_ROLE_SPEC_CERT_ID_SYNTAX_free(a: POSSL_ROLE_SPEC_CERT_ID_SYNTAX): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ROLE_SPEC_CERT_ID_SYNTAX_free_procname);
 end;
@@ -7146,7 +7727,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_HASH_new_procname);
 end;
 
-procedure ERR_OSSL_HASH_free(a: POSSL_HASH); cdecl
+function ERR_OSSL_HASH_free(a: POSSL_HASH): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_HASH_free_procname);
 end;
@@ -7171,7 +7752,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_INFO_SYNTAX_new_procname);
 end;
 
-procedure ERR_OSSL_INFO_SYNTAX_free(a: POSSL_INFO_SYNTAX); cdecl
+function ERR_OSSL_INFO_SYNTAX_free(a: POSSL_INFO_SYNTAX): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_INFO_SYNTAX_free_procname);
 end;
@@ -7196,7 +7777,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_INFO_SYNTAX_POINTER_new_procname);
 end;
 
-procedure ERR_OSSL_INFO_SYNTAX_POINTER_free(a: POSSL_INFO_SYNTAX_POINTER); cdecl
+function ERR_OSSL_INFO_SYNTAX_POINTER_free(a: POSSL_INFO_SYNTAX_POINTER): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_INFO_SYNTAX_POINTER_free_procname);
 end;
@@ -7221,7 +7802,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PRIVILEGE_POLICY_ID_new_procname);
 end;
 
-procedure ERR_OSSL_PRIVILEGE_POLICY_ID_free(a: POSSL_PRIVILEGE_POLICY_ID); cdecl
+function ERR_OSSL_PRIVILEGE_POLICY_ID_free(a: POSSL_PRIVILEGE_POLICY_ID): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PRIVILEGE_POLICY_ID_free_procname);
 end;
@@ -7246,7 +7827,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ATTRIBUTE_DESCRIPTOR_new_procname);
 end;
 
-procedure ERR_OSSL_ATTRIBUTE_DESCRIPTOR_free(a: POSSL_ATTRIBUTE_DESCRIPTOR); cdecl
+function ERR_OSSL_ATTRIBUTE_DESCRIPTOR_free(a: POSSL_ATTRIBUTE_DESCRIPTOR): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ATTRIBUTE_DESCRIPTOR_free_procname);
 end;
@@ -7271,7 +7852,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_DAY_TIME_new_procname);
 end;
 
-procedure ERR_OSSL_DAY_TIME_free(a: POSSL_DAY_TIME); cdecl
+function ERR_OSSL_DAY_TIME_free(a: POSSL_DAY_TIME): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_DAY_TIME_free_procname);
 end;
@@ -7296,7 +7877,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_DAY_TIME_BAND_new_procname);
 end;
 
-procedure ERR_OSSL_DAY_TIME_BAND_free(a: POSSL_DAY_TIME_BAND); cdecl
+function ERR_OSSL_DAY_TIME_BAND_free(a: POSSL_DAY_TIME_BAND): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_DAY_TIME_BAND_free_procname);
 end;
@@ -7321,7 +7902,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_TIME_SPEC_DAY_new_procname);
 end;
 
-procedure ERR_OSSL_TIME_SPEC_DAY_free(a: POSSL_TIME_SPEC_DAY); cdecl
+function ERR_OSSL_TIME_SPEC_DAY_free(a: POSSL_TIME_SPEC_DAY): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_TIME_SPEC_DAY_free_procname);
 end;
@@ -7346,7 +7927,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_TIME_SPEC_WEEKS_new_procname);
 end;
 
-procedure ERR_OSSL_TIME_SPEC_WEEKS_free(a: POSSL_TIME_SPEC_WEEKS); cdecl
+function ERR_OSSL_TIME_SPEC_WEEKS_free(a: POSSL_TIME_SPEC_WEEKS): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_TIME_SPEC_WEEKS_free_procname);
 end;
@@ -7371,7 +7952,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_TIME_SPEC_MONTH_new_procname);
 end;
 
-procedure ERR_OSSL_TIME_SPEC_MONTH_free(a: POSSL_TIME_SPEC_MONTH); cdecl
+function ERR_OSSL_TIME_SPEC_MONTH_free(a: POSSL_TIME_SPEC_MONTH): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_TIME_SPEC_MONTH_free_procname);
 end;
@@ -7396,7 +7977,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_NAMED_DAY_new_procname);
 end;
 
-procedure ERR_OSSL_NAMED_DAY_free(a: POSSL_NAMED_DAY); cdecl
+function ERR_OSSL_NAMED_DAY_free(a: POSSL_NAMED_DAY): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_NAMED_DAY_free_procname);
 end;
@@ -7421,7 +8002,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_TIME_SPEC_X_DAY_OF_new_procname);
 end;
 
-procedure ERR_OSSL_TIME_SPEC_X_DAY_OF_free(a: POSSL_TIME_SPEC_X_DAY_OF); cdecl
+function ERR_OSSL_TIME_SPEC_X_DAY_OF_free(a: POSSL_TIME_SPEC_X_DAY_OF): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_TIME_SPEC_X_DAY_OF_free_procname);
 end;
@@ -7446,7 +8027,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_TIME_SPEC_ABSOLUTE_new_procname);
 end;
 
-procedure ERR_OSSL_TIME_SPEC_ABSOLUTE_free(a: POSSL_TIME_SPEC_ABSOLUTE); cdecl
+function ERR_OSSL_TIME_SPEC_ABSOLUTE_free(a: POSSL_TIME_SPEC_ABSOLUTE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_TIME_SPEC_ABSOLUTE_free_procname);
 end;
@@ -7471,7 +8052,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_TIME_SPEC_TIME_new_procname);
 end;
 
-procedure ERR_OSSL_TIME_SPEC_TIME_free(a: POSSL_TIME_SPEC_TIME); cdecl
+function ERR_OSSL_TIME_SPEC_TIME_free(a: POSSL_TIME_SPEC_TIME): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_TIME_SPEC_TIME_free_procname);
 end;
@@ -7496,7 +8077,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_TIME_SPEC_new_procname);
 end;
 
-procedure ERR_OSSL_TIME_SPEC_free(a: POSSL_TIME_SPEC); cdecl
+function ERR_OSSL_TIME_SPEC_free(a: POSSL_TIME_SPEC): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_TIME_SPEC_free_procname);
 end;
@@ -7521,7 +8102,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_TIME_PERIOD_new_procname);
 end;
 
-procedure ERR_OSSL_TIME_PERIOD_free(a: POSSL_TIME_PERIOD); cdecl
+function ERR_OSSL_TIME_PERIOD_free(a: POSSL_TIME_PERIOD): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_TIME_PERIOD_free_procname);
 end;
@@ -7546,7 +8127,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ATAV_new_procname);
 end;
 
-procedure ERR_OSSL_ATAV_free(a: POSSL_ATAV); cdecl
+function ERR_OSSL_ATAV_free(a: POSSL_ATAV): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ATAV_free_procname);
 end;
@@ -7571,7 +8152,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ATTRIBUTE_TYPE_MAPPING_new_procname);
 end;
 
-procedure ERR_OSSL_ATTRIBUTE_TYPE_MAPPING_free(a: POSSL_ATTRIBUTE_TYPE_MAPPING); cdecl
+function ERR_OSSL_ATTRIBUTE_TYPE_MAPPING_free(a: POSSL_ATTRIBUTE_TYPE_MAPPING): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ATTRIBUTE_TYPE_MAPPING_free_procname);
 end;
@@ -7596,7 +8177,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ATTRIBUTE_VALUE_MAPPING_new_procname);
 end;
 
-procedure ERR_OSSL_ATTRIBUTE_VALUE_MAPPING_free(a: POSSL_ATTRIBUTE_VALUE_MAPPING); cdecl
+function ERR_OSSL_ATTRIBUTE_VALUE_MAPPING_free(a: POSSL_ATTRIBUTE_VALUE_MAPPING): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ATTRIBUTE_VALUE_MAPPING_free_procname);
 end;
@@ -7621,7 +8202,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ATTRIBUTE_MAPPING_new_procname);
 end;
 
-procedure ERR_OSSL_ATTRIBUTE_MAPPING_free(a: POSSL_ATTRIBUTE_MAPPING); cdecl
+function ERR_OSSL_ATTRIBUTE_MAPPING_free(a: POSSL_ATTRIBUTE_MAPPING): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ATTRIBUTE_MAPPING_free_procname);
 end;
@@ -7646,7 +8227,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ATTRIBUTE_MAPPINGS_new_procname);
 end;
 
-procedure ERR_OSSL_ATTRIBUTE_MAPPINGS_free(a: POSSL_ATTRIBUTE_MAPPINGS); cdecl
+function ERR_OSSL_ATTRIBUTE_MAPPINGS_free(a: POSSL_ATTRIBUTE_MAPPINGS): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ATTRIBUTE_MAPPINGS_free_procname);
 end;
@@ -7671,7 +8252,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ALLOWED_ATTRIBUTES_CHOICE_new_procname);
 end;
 
-procedure ERR_OSSL_ALLOWED_ATTRIBUTES_CHOICE_free(a: POSSL_ALLOWED_ATTRIBUTES_CHOICE); cdecl
+function ERR_OSSL_ALLOWED_ATTRIBUTES_CHOICE_free(a: POSSL_ALLOWED_ATTRIBUTES_CHOICE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ALLOWED_ATTRIBUTES_CHOICE_free_procname);
 end;
@@ -7696,7 +8277,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ALLOWED_ATTRIBUTES_ITEM_new_procname);
 end;
 
-procedure ERR_OSSL_ALLOWED_ATTRIBUTES_ITEM_free(a: POSSL_ALLOWED_ATTRIBUTES_ITEM); cdecl
+function ERR_OSSL_ALLOWED_ATTRIBUTES_ITEM_free(a: POSSL_ALLOWED_ATTRIBUTES_ITEM): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ALLOWED_ATTRIBUTES_ITEM_free_procname);
 end;
@@ -7721,7 +8302,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ALLOWED_ATTRIBUTES_SYNTAX_new_procname);
 end;
 
-procedure ERR_OSSL_ALLOWED_ATTRIBUTES_SYNTAX_free(a: POSSL_ALLOWED_ATTRIBUTES_SYNTAX); cdecl
+function ERR_OSSL_ALLOWED_ATTRIBUTES_SYNTAX_free(a: POSSL_ALLOWED_ATTRIBUTES_SYNTAX): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ALLOWED_ATTRIBUTES_SYNTAX_free_procname);
 end;
@@ -7746,7 +8327,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_AA_DIST_POINT_new_procname);
 end;
 
-procedure ERR_OSSL_AA_DIST_POINT_free(a: POSSL_AA_DIST_POINT); cdecl
+function ERR_OSSL_AA_DIST_POINT_free(a: POSSL_AA_DIST_POINT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_AA_DIST_POINT_free_procname);
 end;

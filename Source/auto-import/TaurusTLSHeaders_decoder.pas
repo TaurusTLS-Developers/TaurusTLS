@@ -26,30 +26,34 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   Possl_decoder_instance_st = ^Tossl_decoder_instance_st;
-  Tossl_decoder_instance_st = record end;
+  Tossl_decoder_instance_st =   record end;
   {$EXTERNALSYM Possl_decoder_instance_st}
-
-  POSSL_DECODER_INSTANCE = ^TOSSL_DECODER_INSTANCE;
-  TOSSL_DECODER_INSTANCE = Tossl_decoder_instance_st;
-  {$EXTERNALSYM POSSL_DECODER_INSTANCE}
 
 
 // =============================================================================
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  TOSSL_DECODER_do_all_provided_fn_cb = procedure(arg1: POSSL_DECODER; arg2: Pointer); cdecl;
-  TOSSL_DECODER_names_do_all_fn_cb = procedure(arg1: PIdAnsiChar; arg2: Pointer); cdecl;
-  TOSSL_DECODER_CTX_set_pem_password_cb_cb_cb = function: TIdC_INT; cdecl;
-  TOSSL_DECODER_CTX_set_passphrase_cb_cb_cb = function: TIdC_INT; cdecl;
-  TOSSL_DECODER_CONSTRUCT_func_cb = function(arg1: POSSL_DECODER_INSTANCE; arg2: POSSL_PARAM_ARRAY; arg3: Pointer): TIdC_INT; cdecl;
-  TOSSL_DECODER_CLEANUP_func_cb = procedure(arg1: Pointer); cdecl;
-  TOSSL_DECODER_export_export_cb_cb = function: TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // OSSL_DECODER_do_all_provided_fn_cb = function(encoder: POSSL_DECODER; arg: Pointer): void; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // OSSL_DECODER_names_do_all_fn_cb = function(name: PIdAnsiChar; data: Pointer): void; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // OSSL_DECODER_CTX_set_pem_password_cb_cb_cb = function(arg1: PIdAnsiChar; arg2: TIdC_INT; arg3: TIdC_INT; arg4: Pointer): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // OSSL_DECODER_CTX_set_passphrase_cb_cb_cb = function(arg1: PIdAnsiChar; arg2: TIdC_ULONG; arg3: PIdC_ULONG; arg4: Possl_param_st; arg5: Pointer): TIdC_INT; cdecl;
+  TOSSL_DECODER_CONSTRUCT = function(decoder_inst: POSSL_DECODER_INSTANCE; params: POSSL_PARAM; construct_data: Pointer): TIdC_INT; cdecl;
+  TOSSL_DECODER_CLEANUP = function(construct_data: Pointer): void; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // OSSL_DECODER_export_export_cb_cb = function(arg1: Possl_param_st; arg2: Pointer): TIdC_INT; cdecl;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 
@@ -64,7 +68,7 @@ var
   OSSL_DECODER_up_ref: function(encoder: POSSL_DECODER): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_DECODER_up_ref}
 
-  OSSL_DECODER_free: procedure(encoder: POSSL_DECODER); cdecl = nil;
+  OSSL_DECODER_free: function(encoder: POSSL_DECODER): void; cdecl = nil;
   {$EXTERNALSYM OSSL_DECODER_free}
 
   OSSL_DECODER_get0_provider: function(encoder: POSSL_DECODER): POSSL_PROVIDER; cdecl = nil;
@@ -82,28 +86,28 @@ var
   OSSL_DECODER_is_a: function(encoder: POSSL_DECODER; name: PIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_DECODER_is_a}
 
-  OSSL_DECODER_do_all_provided: procedure(libctx: POSSL_LIB_CTX; fn: TOSSL_DECODER_do_all_provided_fn_cb; arg: Pointer); cdecl = nil;
+  OSSL_DECODER_do_all_provided: function(libctx: POSSL_LIB_CTX; fn: TOSSL_DECODER_do_all_provided_fn_cb; arg: Pointer): void; cdecl = nil;
   {$EXTERNALSYM OSSL_DECODER_do_all_provided}
 
   OSSL_DECODER_names_do_all: function(encoder: POSSL_DECODER; fn: TOSSL_DECODER_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_DECODER_names_do_all}
 
-  OSSL_DECODER_gettable_params: function(decoder: POSSL_DECODER): POSSL_PARAM_ARRAY; cdecl = nil;
+  OSSL_DECODER_gettable_params: function(decoder: POSSL_DECODER): POSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM OSSL_DECODER_gettable_params}
 
-  OSSL_DECODER_get_params: function(decoder: POSSL_DECODER; params: POSSL_PARAM_ARRAY): TIdC_INT; cdecl = nil;
+  OSSL_DECODER_get_params: function(decoder: POSSL_DECODER; params: POSSL_PARAM): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_DECODER_get_params}
 
-  OSSL_DECODER_settable_ctx_params: function(encoder: POSSL_DECODER): POSSL_PARAM_ARRAY; cdecl = nil;
+  OSSL_DECODER_settable_ctx_params: function(encoder: POSSL_DECODER): POSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM OSSL_DECODER_settable_ctx_params}
 
   OSSL_DECODER_CTX_new: function: POSSL_DECODER_CTX; cdecl = nil;
   {$EXTERNALSYM OSSL_DECODER_CTX_new}
 
-  OSSL_DECODER_CTX_set_params: function(ctx: POSSL_DECODER_CTX; params: POSSL_PARAM_ARRAY): TIdC_INT; cdecl = nil;
+  OSSL_DECODER_CTX_set_params: function(ctx: POSSL_DECODER_CTX; params: POSSL_PARAM): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_DECODER_CTX_set_params}
 
-  OSSL_DECODER_CTX_free: procedure(ctx: POSSL_DECODER_CTX); cdecl = nil;
+  OSSL_DECODER_CTX_free: function(ctx: POSSL_DECODER_CTX): void; cdecl = nil;
   {$EXTERNALSYM OSSL_DECODER_CTX_free}
 
   OSSL_DECODER_CTX_set_passphrase: function(ctx: POSSL_DECODER_CTX; kstr: PIdAnsiChar; klen: TIdC_SIZET): TIdC_INT; cdecl = nil;
@@ -148,22 +152,22 @@ var
   OSSL_DECODER_INSTANCE_get_input_structure: function(decoder_inst: POSSL_DECODER_INSTANCE; was_set: PIdC_INT): PIdAnsiChar; cdecl = nil;
   {$EXTERNALSYM OSSL_DECODER_INSTANCE_get_input_structure}
 
-  OSSL_DECODER_CTX_set_construct: function(ctx: POSSL_DECODER_CTX; construct: TOSSL_DECODER_CONSTRUCT_func_cb): TIdC_INT; cdecl = nil;
+  OSSL_DECODER_CTX_set_construct: function(ctx: POSSL_DECODER_CTX; construct: TOSSL_DECODER_CONSTRUCT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_DECODER_CTX_set_construct}
 
   OSSL_DECODER_CTX_set_construct_data: function(ctx: POSSL_DECODER_CTX; construct_data: Pointer): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_DECODER_CTX_set_construct_data}
 
-  OSSL_DECODER_CTX_set_cleanup: function(ctx: POSSL_DECODER_CTX; cleanup: TOSSL_DECODER_CLEANUP_func_cb): TIdC_INT; cdecl = nil;
+  OSSL_DECODER_CTX_set_cleanup: function(ctx: POSSL_DECODER_CTX; cleanup: TOSSL_DECODER_CLEANUP): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_DECODER_CTX_set_cleanup}
 
-  OSSL_DECODER_CTX_get_construct: function(ctx: POSSL_DECODER_CTX): TOSSL_DECODER_CONSTRUCT_func_cb; cdecl = nil;
+  OSSL_DECODER_CTX_get_construct: function(ctx: POSSL_DECODER_CTX): TOSSL_DECODER_CONSTRUCT; cdecl = nil;
   {$EXTERNALSYM OSSL_DECODER_CTX_get_construct}
 
   OSSL_DECODER_CTX_get_construct_data: function(ctx: POSSL_DECODER_CTX): Pointer; cdecl = nil;
   {$EXTERNALSYM OSSL_DECODER_CTX_get_construct_data}
 
-  OSSL_DECODER_CTX_get_cleanup: function(ctx: POSSL_DECODER_CTX): TOSSL_DECODER_CLEANUP_func_cb; cdecl = nil;
+  OSSL_DECODER_CTX_get_cleanup: function(ctx: POSSL_DECODER_CTX): TOSSL_DECODER_CLEANUP; cdecl = nil;
   {$EXTERNALSYM OSSL_DECODER_CTX_get_cleanup}
 
   OSSL_DECODER_export: function(decoder_inst: POSSL_DECODER_INSTANCE; reference: Pointer; reference_sz: TIdC_SIZET; export_cb: TOSSL_DECODER_export_export_cb_cb; export_cbarg: Pointer): TIdC_INT; cdecl = nil;
@@ -191,20 +195,20 @@ var
 
 function OSSL_DECODER_fetch(libctx: POSSL_LIB_CTX; name: PIdAnsiChar; properties: PIdAnsiChar): POSSL_DECODER; cdecl;
 function OSSL_DECODER_up_ref(encoder: POSSL_DECODER): TIdC_INT; cdecl;
-procedure OSSL_DECODER_free(encoder: POSSL_DECODER); cdecl;
+function OSSL_DECODER_free(encoder: POSSL_DECODER): void; cdecl;
 function OSSL_DECODER_get0_provider(encoder: POSSL_DECODER): POSSL_PROVIDER; cdecl;
 function OSSL_DECODER_get0_properties(encoder: POSSL_DECODER): PIdAnsiChar; cdecl;
 function OSSL_DECODER_get0_name(decoder: POSSL_DECODER): PIdAnsiChar; cdecl;
 function OSSL_DECODER_get0_description(decoder: POSSL_DECODER): PIdAnsiChar; cdecl;
 function OSSL_DECODER_is_a(encoder: POSSL_DECODER; name: PIdAnsiChar): TIdC_INT; cdecl;
-procedure OSSL_DECODER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TOSSL_DECODER_do_all_provided_fn_cb; arg: Pointer); cdecl;
+function OSSL_DECODER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TOSSL_DECODER_do_all_provided_fn_cb; arg: Pointer): void; cdecl;
 function OSSL_DECODER_names_do_all(encoder: POSSL_DECODER; fn: TOSSL_DECODER_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl;
-function OSSL_DECODER_gettable_params(decoder: POSSL_DECODER): POSSL_PARAM_ARRAY; cdecl;
-function OSSL_DECODER_get_params(decoder: POSSL_DECODER; params: POSSL_PARAM_ARRAY): TIdC_INT; cdecl;
-function OSSL_DECODER_settable_ctx_params(encoder: POSSL_DECODER): POSSL_PARAM_ARRAY; cdecl;
+function OSSL_DECODER_gettable_params(decoder: POSSL_DECODER): POSSL_PARAM; cdecl;
+function OSSL_DECODER_get_params(decoder: POSSL_DECODER; params: POSSL_PARAM): TIdC_INT; cdecl;
+function OSSL_DECODER_settable_ctx_params(encoder: POSSL_DECODER): POSSL_PARAM; cdecl;
 function OSSL_DECODER_CTX_new: POSSL_DECODER_CTX; cdecl;
-function OSSL_DECODER_CTX_set_params(ctx: POSSL_DECODER_CTX; params: POSSL_PARAM_ARRAY): TIdC_INT; cdecl;
-procedure OSSL_DECODER_CTX_free(ctx: POSSL_DECODER_CTX); cdecl;
+function OSSL_DECODER_CTX_set_params(ctx: POSSL_DECODER_CTX; params: POSSL_PARAM): TIdC_INT; cdecl;
+function OSSL_DECODER_CTX_free(ctx: POSSL_DECODER_CTX): void; cdecl;
 function OSSL_DECODER_CTX_set_passphrase(ctx: POSSL_DECODER_CTX; kstr: PIdAnsiChar; klen: TIdC_SIZET): TIdC_INT; cdecl;
 function OSSL_DECODER_CTX_set_pem_password_cb(ctx: POSSL_DECODER_CTX; cb: TOSSL_DECODER_CTX_set_pem_password_cb_cb_cb; cbarg: Pointer): TIdC_INT; cdecl;
 function OSSL_DECODER_CTX_set_passphrase_cb(ctx: POSSL_DECODER_CTX; cb: TOSSL_DECODER_CTX_set_passphrase_cb_cb_cb; cbarg: Pointer): TIdC_INT; cdecl;
@@ -219,12 +223,12 @@ function OSSL_DECODER_INSTANCE_get_decoder(decoder_inst: POSSL_DECODER_INSTANCE)
 function OSSL_DECODER_INSTANCE_get_decoder_ctx(decoder_inst: POSSL_DECODER_INSTANCE): Pointer; cdecl;
 function OSSL_DECODER_INSTANCE_get_input_type(decoder_inst: POSSL_DECODER_INSTANCE): PIdAnsiChar; cdecl;
 function OSSL_DECODER_INSTANCE_get_input_structure(decoder_inst: POSSL_DECODER_INSTANCE; was_set: PIdC_INT): PIdAnsiChar; cdecl;
-function OSSL_DECODER_CTX_set_construct(ctx: POSSL_DECODER_CTX; construct: TOSSL_DECODER_CONSTRUCT_func_cb): TIdC_INT; cdecl;
+function OSSL_DECODER_CTX_set_construct(ctx: POSSL_DECODER_CTX; construct: TOSSL_DECODER_CONSTRUCT): TIdC_INT; cdecl;
 function OSSL_DECODER_CTX_set_construct_data(ctx: POSSL_DECODER_CTX; construct_data: Pointer): TIdC_INT; cdecl;
-function OSSL_DECODER_CTX_set_cleanup(ctx: POSSL_DECODER_CTX; cleanup: TOSSL_DECODER_CLEANUP_func_cb): TIdC_INT; cdecl;
-function OSSL_DECODER_CTX_get_construct(ctx: POSSL_DECODER_CTX): TOSSL_DECODER_CONSTRUCT_func_cb; cdecl;
+function OSSL_DECODER_CTX_set_cleanup(ctx: POSSL_DECODER_CTX; cleanup: TOSSL_DECODER_CLEANUP): TIdC_INT; cdecl;
+function OSSL_DECODER_CTX_get_construct(ctx: POSSL_DECODER_CTX): TOSSL_DECODER_CONSTRUCT; cdecl;
 function OSSL_DECODER_CTX_get_construct_data(ctx: POSSL_DECODER_CTX): Pointer; cdecl;
-function OSSL_DECODER_CTX_get_cleanup(ctx: POSSL_DECODER_CTX): TOSSL_DECODER_CLEANUP_func_cb; cdecl;
+function OSSL_DECODER_CTX_get_cleanup(ctx: POSSL_DECODER_CTX): TOSSL_DECODER_CLEANUP; cdecl;
 function OSSL_DECODER_export(decoder_inst: POSSL_DECODER_INSTANCE; reference: Pointer; reference_sz: TIdC_SIZET; export_cb: TOSSL_DECODER_export_export_cb_cb; export_cbarg: Pointer): TIdC_INT; cdecl;
 function OSSL_DECODER_from_bio(ctx: POSSL_DECODER_CTX; _in: PBIO): TIdC_INT; cdecl;
 function OSSL_DECODER_from_fp(ctx: POSSL_DECODER_CTX; _in: PFILE): TIdC_INT; cdecl;
@@ -250,20 +254,20 @@ uses
 
 function OSSL_DECODER_fetch(libctx: POSSL_LIB_CTX; name: PIdAnsiChar; properties: PIdAnsiChar): POSSL_DECODER; cdecl external CLibCrypto name 'OSSL_DECODER_fetch';
 function OSSL_DECODER_up_ref(encoder: POSSL_DECODER): TIdC_INT; cdecl external CLibCrypto name 'OSSL_DECODER_up_ref';
-procedure OSSL_DECODER_free(encoder: POSSL_DECODER); cdecl external CLibCrypto name 'OSSL_DECODER_free';
+function OSSL_DECODER_free(encoder: POSSL_DECODER): void; cdecl external CLibCrypto name 'OSSL_DECODER_free';
 function OSSL_DECODER_get0_provider(encoder: POSSL_DECODER): POSSL_PROVIDER; cdecl external CLibCrypto name 'OSSL_DECODER_get0_provider';
 function OSSL_DECODER_get0_properties(encoder: POSSL_DECODER): PIdAnsiChar; cdecl external CLibCrypto name 'OSSL_DECODER_get0_properties';
 function OSSL_DECODER_get0_name(decoder: POSSL_DECODER): PIdAnsiChar; cdecl external CLibCrypto name 'OSSL_DECODER_get0_name';
 function OSSL_DECODER_get0_description(decoder: POSSL_DECODER): PIdAnsiChar; cdecl external CLibCrypto name 'OSSL_DECODER_get0_description';
 function OSSL_DECODER_is_a(encoder: POSSL_DECODER; name: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_DECODER_is_a';
-procedure OSSL_DECODER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TOSSL_DECODER_do_all_provided_fn_cb; arg: Pointer); cdecl external CLibCrypto name 'OSSL_DECODER_do_all_provided';
+function OSSL_DECODER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TOSSL_DECODER_do_all_provided_fn_cb; arg: Pointer): void; cdecl external CLibCrypto name 'OSSL_DECODER_do_all_provided';
 function OSSL_DECODER_names_do_all(encoder: POSSL_DECODER; fn: TOSSL_DECODER_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl external CLibCrypto name 'OSSL_DECODER_names_do_all';
-function OSSL_DECODER_gettable_params(decoder: POSSL_DECODER): POSSL_PARAM_ARRAY; cdecl external CLibCrypto name 'OSSL_DECODER_gettable_params';
-function OSSL_DECODER_get_params(decoder: POSSL_DECODER; params: POSSL_PARAM_ARRAY): TIdC_INT; cdecl external CLibCrypto name 'OSSL_DECODER_get_params';
-function OSSL_DECODER_settable_ctx_params(encoder: POSSL_DECODER): POSSL_PARAM_ARRAY; cdecl external CLibCrypto name 'OSSL_DECODER_settable_ctx_params';
+function OSSL_DECODER_gettable_params(decoder: POSSL_DECODER): POSSL_PARAM; cdecl external CLibCrypto name 'OSSL_DECODER_gettable_params';
+function OSSL_DECODER_get_params(decoder: POSSL_DECODER; params: POSSL_PARAM): TIdC_INT; cdecl external CLibCrypto name 'OSSL_DECODER_get_params';
+function OSSL_DECODER_settable_ctx_params(encoder: POSSL_DECODER): POSSL_PARAM; cdecl external CLibCrypto name 'OSSL_DECODER_settable_ctx_params';
 function OSSL_DECODER_CTX_new: POSSL_DECODER_CTX; cdecl external CLibCrypto name 'OSSL_DECODER_CTX_new';
-function OSSL_DECODER_CTX_set_params(ctx: POSSL_DECODER_CTX; params: POSSL_PARAM_ARRAY): TIdC_INT; cdecl external CLibCrypto name 'OSSL_DECODER_CTX_set_params';
-procedure OSSL_DECODER_CTX_free(ctx: POSSL_DECODER_CTX); cdecl external CLibCrypto name 'OSSL_DECODER_CTX_free';
+function OSSL_DECODER_CTX_set_params(ctx: POSSL_DECODER_CTX; params: POSSL_PARAM): TIdC_INT; cdecl external CLibCrypto name 'OSSL_DECODER_CTX_set_params';
+function OSSL_DECODER_CTX_free(ctx: POSSL_DECODER_CTX): void; cdecl external CLibCrypto name 'OSSL_DECODER_CTX_free';
 function OSSL_DECODER_CTX_set_passphrase(ctx: POSSL_DECODER_CTX; kstr: PIdAnsiChar; klen: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_DECODER_CTX_set_passphrase';
 function OSSL_DECODER_CTX_set_pem_password_cb(ctx: POSSL_DECODER_CTX; cb: TOSSL_DECODER_CTX_set_pem_password_cb_cb_cb; cbarg: Pointer): TIdC_INT; cdecl external CLibCrypto name 'OSSL_DECODER_CTX_set_pem_password_cb';
 function OSSL_DECODER_CTX_set_passphrase_cb(ctx: POSSL_DECODER_CTX; cb: TOSSL_DECODER_CTX_set_passphrase_cb_cb_cb; cbarg: Pointer): TIdC_INT; cdecl external CLibCrypto name 'OSSL_DECODER_CTX_set_passphrase_cb';
@@ -278,12 +282,12 @@ function OSSL_DECODER_INSTANCE_get_decoder(decoder_inst: POSSL_DECODER_INSTANCE)
 function OSSL_DECODER_INSTANCE_get_decoder_ctx(decoder_inst: POSSL_DECODER_INSTANCE): Pointer; cdecl external CLibCrypto name 'OSSL_DECODER_INSTANCE_get_decoder_ctx';
 function OSSL_DECODER_INSTANCE_get_input_type(decoder_inst: POSSL_DECODER_INSTANCE): PIdAnsiChar; cdecl external CLibCrypto name 'OSSL_DECODER_INSTANCE_get_input_type';
 function OSSL_DECODER_INSTANCE_get_input_structure(decoder_inst: POSSL_DECODER_INSTANCE; was_set: PIdC_INT): PIdAnsiChar; cdecl external CLibCrypto name 'OSSL_DECODER_INSTANCE_get_input_structure';
-function OSSL_DECODER_CTX_set_construct(ctx: POSSL_DECODER_CTX; construct: TOSSL_DECODER_CONSTRUCT_func_cb): TIdC_INT; cdecl external CLibCrypto name 'OSSL_DECODER_CTX_set_construct';
+function OSSL_DECODER_CTX_set_construct(ctx: POSSL_DECODER_CTX; construct: TOSSL_DECODER_CONSTRUCT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_DECODER_CTX_set_construct';
 function OSSL_DECODER_CTX_set_construct_data(ctx: POSSL_DECODER_CTX; construct_data: Pointer): TIdC_INT; cdecl external CLibCrypto name 'OSSL_DECODER_CTX_set_construct_data';
-function OSSL_DECODER_CTX_set_cleanup(ctx: POSSL_DECODER_CTX; cleanup: TOSSL_DECODER_CLEANUP_func_cb): TIdC_INT; cdecl external CLibCrypto name 'OSSL_DECODER_CTX_set_cleanup';
-function OSSL_DECODER_CTX_get_construct(ctx: POSSL_DECODER_CTX): TOSSL_DECODER_CONSTRUCT_func_cb; cdecl external CLibCrypto name 'OSSL_DECODER_CTX_get_construct';
+function OSSL_DECODER_CTX_set_cleanup(ctx: POSSL_DECODER_CTX; cleanup: TOSSL_DECODER_CLEANUP): TIdC_INT; cdecl external CLibCrypto name 'OSSL_DECODER_CTX_set_cleanup';
+function OSSL_DECODER_CTX_get_construct(ctx: POSSL_DECODER_CTX): TOSSL_DECODER_CONSTRUCT; cdecl external CLibCrypto name 'OSSL_DECODER_CTX_get_construct';
 function OSSL_DECODER_CTX_get_construct_data(ctx: POSSL_DECODER_CTX): Pointer; cdecl external CLibCrypto name 'OSSL_DECODER_CTX_get_construct_data';
-function OSSL_DECODER_CTX_get_cleanup(ctx: POSSL_DECODER_CTX): TOSSL_DECODER_CLEANUP_func_cb; cdecl external CLibCrypto name 'OSSL_DECODER_CTX_get_cleanup';
+function OSSL_DECODER_CTX_get_cleanup(ctx: POSSL_DECODER_CTX): TOSSL_DECODER_CLEANUP; cdecl external CLibCrypto name 'OSSL_DECODER_CTX_get_cleanup';
 function OSSL_DECODER_export(decoder_inst: POSSL_DECODER_INSTANCE; reference: Pointer; reference_sz: TIdC_SIZET; export_cb: TOSSL_DECODER_export_export_cb_cb; export_cbarg: Pointer): TIdC_INT; cdecl external CLibCrypto name 'OSSL_DECODER_export';
 function OSSL_DECODER_from_bio(ctx: POSSL_DECODER_CTX; _in: PBIO): TIdC_INT; cdecl external CLibCrypto name 'OSSL_DECODER_from_bio';
 function OSSL_DECODER_from_fp(ctx: POSSL_DECODER_CTX; _in: PFILE): TIdC_INT; cdecl external CLibCrypto name 'OSSL_DECODER_from_fp';
@@ -442,7 +446,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_DECODER_up_ref_procname);
 end;
 
-procedure ERR_OSSL_DECODER_free(encoder: POSSL_DECODER); cdecl
+function ERR_OSSL_DECODER_free(encoder: POSSL_DECODER): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_DECODER_free_procname);
 end;
@@ -472,7 +476,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_DECODER_is_a_procname);
 end;
 
-procedure ERR_OSSL_DECODER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TOSSL_DECODER_do_all_provided_fn_cb; arg: Pointer); cdecl
+function ERR_OSSL_DECODER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TOSSL_DECODER_do_all_provided_fn_cb; arg: Pointer): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_DECODER_do_all_provided_procname);
 end;
@@ -482,17 +486,17 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_DECODER_names_do_all_procname);
 end;
 
-function ERR_OSSL_DECODER_gettable_params(decoder: POSSL_DECODER): POSSL_PARAM_ARRAY; cdecl
+function ERR_OSSL_DECODER_gettable_params(decoder: POSSL_DECODER): POSSL_PARAM; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_DECODER_gettable_params_procname);
 end;
 
-function ERR_OSSL_DECODER_get_params(decoder: POSSL_DECODER; params: POSSL_PARAM_ARRAY): TIdC_INT; cdecl
+function ERR_OSSL_DECODER_get_params(decoder: POSSL_DECODER; params: POSSL_PARAM): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_DECODER_get_params_procname);
 end;
 
-function ERR_OSSL_DECODER_settable_ctx_params(encoder: POSSL_DECODER): POSSL_PARAM_ARRAY; cdecl
+function ERR_OSSL_DECODER_settable_ctx_params(encoder: POSSL_DECODER): POSSL_PARAM; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_DECODER_settable_ctx_params_procname);
 end;
@@ -502,12 +506,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_DECODER_CTX_new_procname);
 end;
 
-function ERR_OSSL_DECODER_CTX_set_params(ctx: POSSL_DECODER_CTX; params: POSSL_PARAM_ARRAY): TIdC_INT; cdecl
+function ERR_OSSL_DECODER_CTX_set_params(ctx: POSSL_DECODER_CTX; params: POSSL_PARAM): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_DECODER_CTX_set_params_procname);
 end;
 
-procedure ERR_OSSL_DECODER_CTX_free(ctx: POSSL_DECODER_CTX); cdecl
+function ERR_OSSL_DECODER_CTX_free(ctx: POSSL_DECODER_CTX): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_DECODER_CTX_free_procname);
 end;
@@ -582,7 +586,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_DECODER_INSTANCE_get_input_structure_procname);
 end;
 
-function ERR_OSSL_DECODER_CTX_set_construct(ctx: POSSL_DECODER_CTX; construct: TOSSL_DECODER_CONSTRUCT_func_cb): TIdC_INT; cdecl
+function ERR_OSSL_DECODER_CTX_set_construct(ctx: POSSL_DECODER_CTX; construct: TOSSL_DECODER_CONSTRUCT): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_DECODER_CTX_set_construct_procname);
 end;
@@ -592,12 +596,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_DECODER_CTX_set_construct_data_procname);
 end;
 
-function ERR_OSSL_DECODER_CTX_set_cleanup(ctx: POSSL_DECODER_CTX; cleanup: TOSSL_DECODER_CLEANUP_func_cb): TIdC_INT; cdecl
+function ERR_OSSL_DECODER_CTX_set_cleanup(ctx: POSSL_DECODER_CTX; cleanup: TOSSL_DECODER_CLEANUP): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_DECODER_CTX_set_cleanup_procname);
 end;
 
-function ERR_OSSL_DECODER_CTX_get_construct(ctx: POSSL_DECODER_CTX): TOSSL_DECODER_CONSTRUCT_func_cb; cdecl
+function ERR_OSSL_DECODER_CTX_get_construct(ctx: POSSL_DECODER_CTX): TOSSL_DECODER_CONSTRUCT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_DECODER_CTX_get_construct_procname);
 end;
@@ -607,7 +611,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_DECODER_CTX_get_construct_data_procname);
 end;
 
-function ERR_OSSL_DECODER_CTX_get_cleanup(ctx: POSSL_DECODER_CTX): TOSSL_DECODER_CLEANUP_func_cb; cdecl
+function ERR_OSSL_DECODER_CTX_get_cleanup(ctx: POSSL_DECODER_CTX): TOSSL_DECODER_CLEANUP; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_DECODER_CTX_get_cleanup_procname);
 end;

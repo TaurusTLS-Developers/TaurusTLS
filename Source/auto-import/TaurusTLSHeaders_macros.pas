@@ -27,6 +27,9 @@ uses
   TaurusTLSHeaders_core;
 
 
+
+
+
 // =============================================================================
 // CONSTANTS DECLARATIONS
 // =============================================================================
@@ -53,11 +56,11 @@ const
 // INLINE OR MACRO ROUTINES
 // =============================================================================
 
-function OPENSSL_MSTR_HELPER(x: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OPENSSL_MSTR_HELPER(x: Pointer): TIdC_INT; cdecl;
 
-function OPENSSL_MSTR(x: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OPENSSL_MSTR(x: Pointer): TIdC_INT; cdecl;
 
 
 implementation

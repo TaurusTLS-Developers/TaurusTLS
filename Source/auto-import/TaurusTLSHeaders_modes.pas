@@ -26,53 +26,40 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   Pgcm128_context = ^Tgcm128_context;
-  Tgcm128_context = record end;
+  Tgcm128_context =   record end;
   {$EXTERNALSYM Pgcm128_context}
 
-  { TODO 1 -cID Collision detected : Review it and update. }
-  // Collision with gcm128_context:
-  // typedef struct gcm128_context GCM128_CONTEXT
-
   Pccm128_context = ^Tccm128_context;
-  Tccm128_context = record end;
+  Tccm128_context =   record end;
   {$EXTERNALSYM Pccm128_context}
 
-  { TODO 1 -cID Collision detected : Review it and update. }
-  // Collision with ccm128_context:
-  // typedef struct ccm128_context CCM128_CONTEXT
-
   Pxts128_context = ^Txts128_context;
-  Txts128_context = record end;
+  Txts128_context =   record end;
   {$EXTERNALSYM Pxts128_context}
 
-  { TODO 1 -cID Collision detected : Review it and update. }
-  // Collision with xts128_context:
-  // typedef struct xts128_context XTS128_CONTEXT
-
   Pocb128_context = ^Tocb128_context;
-  Tocb128_context = record end;
+  Tocb128_context =   record end;
   {$EXTERNALSYM Pocb128_context}
-
-  { TODO 1 -cID Collision detected : Review it and update. }
-  // Collision with ocb128_context:
-  // typedef struct ocb128_context OCB128_CONTEXT
 
 
 // =============================================================================
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  Tblock128_f_func_cb = procedure(arg1: PIdAnsiChar; arg2: PIdAnsiChar; arg3: Pointer); cdecl;
-  Tcbc128_f_func_cb = procedure(arg1: PIdAnsiChar; arg2: PIdAnsiChar; arg3: TIdC_SIZET; arg4: Pointer; arg5: PIdAnsiChar; arg6: TIdC_INT); cdecl;
-  Tecb128_f_func_cb = procedure(arg1: PIdAnsiChar; arg2: PIdAnsiChar; arg3: TIdC_SIZET; arg4: Pointer; arg5: TIdC_INT); cdecl;
-  Tctr128_f_func_cb = procedure(arg1: PIdAnsiChar; arg2: PIdAnsiChar; arg3: TIdC_SIZET; arg4: Pointer; arg5: PIdAnsiChar); cdecl;
-  Tccm128_f_func_cb = procedure(arg1: PIdAnsiChar; arg2: PIdAnsiChar; arg3: TIdC_SIZET; arg4: Pointer; arg5: PIdAnsiChar; arg6: PIdAnsiChar); cdecl;
-  Tocb128_f_func_cb = procedure(arg1: PIdAnsiChar; arg2: PIdAnsiChar; arg3: TIdC_SIZET; arg4: Pointer; arg5: TIdC_SIZET; arg6: PIdAnsiChar; arg7: PPIdAnsiChar; arg8: PIdAnsiChar); cdecl;
+  Tblock128_f = function(_in: PIdAnsiChar; _out: PIdAnsiChar; key: Pointer): void; cdecl;
+  Tcbc128_f = function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl;
+  Tecb128_f = function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; enc: TIdC_INT): void; cdecl;
+  Tctr128_f = function(_in: PIdAnsiChar; _out: PIdAnsiChar; blocks: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar): void; cdecl;
+  Tccm128_f = function(_in: PIdAnsiChar; _out: PIdAnsiChar; blocks: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cmac: PIdAnsiChar): void; cdecl;
+  Tocb128_f = function(_in: PIdAnsiChar; _out: PIdAnsiChar; blocks: TIdC_SIZET; key: Pointer; start_block_num: TIdC_SIZET; offset_i: PIdAnsiChar; L_: PPIdAnsiChar; checksum: PIdAnsiChar): void; cdecl;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 
@@ -81,61 +68,61 @@ type
 // =============================================================================
 var
 
-  CRYPTO_cbc128_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb); cdecl = nil;
+  CRYPTO_cbc128_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): void; cdecl = nil;
   {$EXTERNALSYM CRYPTO_cbc128_encrypt}
 
-  CRYPTO_cbc128_decrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb); cdecl = nil;
+  CRYPTO_cbc128_decrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): void; cdecl = nil;
   {$EXTERNALSYM CRYPTO_cbc128_decrypt}
 
-  CRYPTO_ctr128_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT; block: Tblock128_f_func_cb); cdecl = nil;
+  CRYPTO_ctr128_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT; block: Tblock128_f): void; cdecl = nil;
   {$EXTERNALSYM CRYPTO_ctr128_encrypt}
 
-  CRYPTO_ctr128_encrypt_ctr32: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT; ctr: Tctr128_f_func_cb); cdecl = nil;
+  CRYPTO_ctr128_encrypt_ctr32: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT; ctr: Tctr128_f): void; cdecl = nil;
   {$EXTERNALSYM CRYPTO_ctr128_encrypt_ctr32}
 
-  CRYPTO_ofb128_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; block: Tblock128_f_func_cb); cdecl = nil;
+  CRYPTO_ofb128_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; block: Tblock128_f): void; cdecl = nil;
   {$EXTERNALSYM CRYPTO_ofb128_encrypt}
 
-  CRYPTO_cfb128_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f_func_cb); cdecl = nil;
+  CRYPTO_cfb128_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f): void; cdecl = nil;
   {$EXTERNALSYM CRYPTO_cfb128_encrypt}
 
-  CRYPTO_cfb128_8_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f_func_cb); cdecl = nil;
+  CRYPTO_cfb128_8_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f): void; cdecl = nil;
   {$EXTERNALSYM CRYPTO_cfb128_8_encrypt}
 
-  CRYPTO_cfb128_1_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; bits: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f_func_cb); cdecl = nil;
+  CRYPTO_cfb128_1_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; bits: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f): void; cdecl = nil;
   {$EXTERNALSYM CRYPTO_cfb128_1_encrypt}
 
-  CRYPTO_cts128_encrypt_block: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl = nil;
+  CRYPTO_cts128_encrypt_block: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): TIdC_SIZET; cdecl = nil;
   {$EXTERNALSYM CRYPTO_cts128_encrypt_block}
 
-  CRYPTO_cts128_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f_func_cb): TIdC_SIZET; cdecl = nil;
+  CRYPTO_cts128_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f): TIdC_SIZET; cdecl = nil;
   {$EXTERNALSYM CRYPTO_cts128_encrypt}
 
-  CRYPTO_cts128_decrypt_block: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl = nil;
+  CRYPTO_cts128_decrypt_block: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): TIdC_SIZET; cdecl = nil;
   {$EXTERNALSYM CRYPTO_cts128_decrypt_block}
 
-  CRYPTO_cts128_decrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f_func_cb): TIdC_SIZET; cdecl = nil;
+  CRYPTO_cts128_decrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f): TIdC_SIZET; cdecl = nil;
   {$EXTERNALSYM CRYPTO_cts128_decrypt}
 
-  CRYPTO_nistcts128_encrypt_block: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl = nil;
+  CRYPTO_nistcts128_encrypt_block: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): TIdC_SIZET; cdecl = nil;
   {$EXTERNALSYM CRYPTO_nistcts128_encrypt_block}
 
-  CRYPTO_nistcts128_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f_func_cb): TIdC_SIZET; cdecl = nil;
+  CRYPTO_nistcts128_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f): TIdC_SIZET; cdecl = nil;
   {$EXTERNALSYM CRYPTO_nistcts128_encrypt}
 
-  CRYPTO_nistcts128_decrypt_block: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl = nil;
+  CRYPTO_nistcts128_decrypt_block: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): TIdC_SIZET; cdecl = nil;
   {$EXTERNALSYM CRYPTO_nistcts128_decrypt_block}
 
-  CRYPTO_nistcts128_decrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f_func_cb): TIdC_SIZET; cdecl = nil;
+  CRYPTO_nistcts128_decrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f): TIdC_SIZET; cdecl = nil;
   {$EXTERNALSYM CRYPTO_nistcts128_decrypt}
 
-  CRYPTO_gcm128_new: function(key: Pointer; block: Tblock128_f_func_cb): PGCM128_CONTEXT; cdecl = nil;
+  CRYPTO_gcm128_new: function(key: Pointer; block: Tblock128_f): PGCM128_CONTEXT; cdecl = nil;
   {$EXTERNALSYM CRYPTO_gcm128_new}
 
-  CRYPTO_gcm128_init: procedure(ctx: PGCM128_CONTEXT; key: Pointer; block: Tblock128_f_func_cb); cdecl = nil;
+  CRYPTO_gcm128_init: function(ctx: PGCM128_CONTEXT; key: Pointer; block: Tblock128_f): void; cdecl = nil;
   {$EXTERNALSYM CRYPTO_gcm128_init}
 
-  CRYPTO_gcm128_setiv: procedure(ctx: PGCM128_CONTEXT; iv: PIdAnsiChar; len: TIdC_SIZET); cdecl = nil;
+  CRYPTO_gcm128_setiv: function(ctx: PGCM128_CONTEXT; iv: PIdAnsiChar; len: TIdC_SIZET): void; cdecl = nil;
   {$EXTERNALSYM CRYPTO_gcm128_setiv}
 
   CRYPTO_gcm128_aad: function(ctx: PGCM128_CONTEXT; aad: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl = nil;
@@ -147,28 +134,28 @@ var
   CRYPTO_gcm128_decrypt: function(ctx: PGCM128_CONTEXT; _in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CRYPTO_gcm128_decrypt}
 
-  CRYPTO_gcm128_encrypt_ctr32: function(ctx: PGCM128_CONTEXT; _in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tctr128_f_func_cb): TIdC_INT; cdecl = nil;
+  CRYPTO_gcm128_encrypt_ctr32: function(ctx: PGCM128_CONTEXT; _in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tctr128_f): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CRYPTO_gcm128_encrypt_ctr32}
 
-  CRYPTO_gcm128_decrypt_ctr32: function(ctx: PGCM128_CONTEXT; _in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tctr128_f_func_cb): TIdC_INT; cdecl = nil;
+  CRYPTO_gcm128_decrypt_ctr32: function(ctx: PGCM128_CONTEXT; _in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tctr128_f): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CRYPTO_gcm128_decrypt_ctr32}
 
   CRYPTO_gcm128_finish: function(ctx: PGCM128_CONTEXT; tag: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CRYPTO_gcm128_finish}
 
-  CRYPTO_gcm128_tag: procedure(ctx: PGCM128_CONTEXT; tag: PIdAnsiChar; len: TIdC_SIZET); cdecl = nil;
+  CRYPTO_gcm128_tag: function(ctx: PGCM128_CONTEXT; tag: PIdAnsiChar; len: TIdC_SIZET): void; cdecl = nil;
   {$EXTERNALSYM CRYPTO_gcm128_tag}
 
-  CRYPTO_gcm128_release: procedure(ctx: PGCM128_CONTEXT); cdecl = nil;
+  CRYPTO_gcm128_release: function(ctx: PGCM128_CONTEXT): void; cdecl = nil;
   {$EXTERNALSYM CRYPTO_gcm128_release}
 
-  CRYPTO_ccm128_init: procedure(ctx: PCCM128_CONTEXT; M: TIdC_UINT; L: TIdC_UINT; key: Pointer; block: Tblock128_f_func_cb); cdecl = nil;
+  CRYPTO_ccm128_init: function(ctx: PCCM128_CONTEXT; M: TIdC_UINT; L: TIdC_UINT; key: Pointer; block: Tblock128_f): void; cdecl = nil;
   {$EXTERNALSYM CRYPTO_ccm128_init}
 
   CRYPTO_ccm128_setiv: function(ctx: PCCM128_CONTEXT; nonce: PIdAnsiChar; nlen: TIdC_SIZET; mlen: TIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CRYPTO_ccm128_setiv}
 
-  CRYPTO_ccm128_aad: procedure(ctx: PCCM128_CONTEXT; aad: PIdAnsiChar; alen: TIdC_SIZET); cdecl = nil;
+  CRYPTO_ccm128_aad: function(ctx: PCCM128_CONTEXT; aad: PIdAnsiChar; alen: TIdC_SIZET): void; cdecl = nil;
   {$EXTERNALSYM CRYPTO_ccm128_aad}
 
   CRYPTO_ccm128_encrypt: function(ctx: PCCM128_CONTEXT; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl = nil;
@@ -177,10 +164,10 @@ var
   CRYPTO_ccm128_decrypt: function(ctx: PCCM128_CONTEXT; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CRYPTO_ccm128_decrypt}
 
-  CRYPTO_ccm128_encrypt_ccm64: function(ctx: PCCM128_CONTEXT; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tccm128_f_func_cb): TIdC_INT; cdecl = nil;
+  CRYPTO_ccm128_encrypt_ccm64: function(ctx: PCCM128_CONTEXT; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tccm128_f): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CRYPTO_ccm128_encrypt_ccm64}
 
-  CRYPTO_ccm128_decrypt_ccm64: function(ctx: PCCM128_CONTEXT; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tccm128_f_func_cb): TIdC_INT; cdecl = nil;
+  CRYPTO_ccm128_decrypt_ccm64: function(ctx: PCCM128_CONTEXT; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tccm128_f): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CRYPTO_ccm128_decrypt_ccm64}
 
   CRYPTO_ccm128_tag: function(ctx: PCCM128_CONTEXT; tag: PIdAnsiChar; len: TIdC_SIZET): TIdC_SIZET; cdecl = nil;
@@ -189,22 +176,22 @@ var
   CRYPTO_xts128_encrypt: function(ctx: PXTS128_CONTEXT; iv: PIdAnsiChar; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; enc: TIdC_INT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CRYPTO_xts128_encrypt}
 
-  CRYPTO_128_wrap: function(key: Pointer; iv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl = nil;
+  CRYPTO_128_wrap: function(key: Pointer; iv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f): TIdC_SIZET; cdecl = nil;
   {$EXTERNALSYM CRYPTO_128_wrap}
 
-  CRYPTO_128_unwrap: function(key: Pointer; iv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl = nil;
+  CRYPTO_128_unwrap: function(key: Pointer; iv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f): TIdC_SIZET; cdecl = nil;
   {$EXTERNALSYM CRYPTO_128_unwrap}
 
-  CRYPTO_128_wrap_pad: function(key: Pointer; icv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl = nil;
+  CRYPTO_128_wrap_pad: function(key: Pointer; icv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f): TIdC_SIZET; cdecl = nil;
   {$EXTERNALSYM CRYPTO_128_wrap_pad}
 
-  CRYPTO_128_unwrap_pad: function(key: Pointer; icv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl = nil;
+  CRYPTO_128_unwrap_pad: function(key: Pointer; icv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f): TIdC_SIZET; cdecl = nil;
   {$EXTERNALSYM CRYPTO_128_unwrap_pad}
 
-  CRYPTO_ocb128_new: function(keyenc: Pointer; keydec: Pointer; encrypt: Tblock128_f_func_cb; decrypt: Tblock128_f_func_cb; stream: Tocb128_f_func_cb): POCB128_CONTEXT; cdecl = nil;
+  CRYPTO_ocb128_new: function(keyenc: Pointer; keydec: Pointer; encrypt: Tblock128_f; decrypt: Tblock128_f; stream: Tocb128_f): POCB128_CONTEXT; cdecl = nil;
   {$EXTERNALSYM CRYPTO_ocb128_new}
 
-  CRYPTO_ocb128_init: function(ctx: POCB128_CONTEXT; keyenc: Pointer; keydec: Pointer; encrypt: Tblock128_f_func_cb; decrypt: Tblock128_f_func_cb; stream: Tocb128_f_func_cb): TIdC_INT; cdecl = nil;
+  CRYPTO_ocb128_init: function(ctx: POCB128_CONTEXT; keyenc: Pointer; keydec: Pointer; encrypt: Tblock128_f; decrypt: Tblock128_f; stream: Tocb128_f): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CRYPTO_ocb128_init}
 
   CRYPTO_ocb128_copy_ctx: function(dest: POCB128_CONTEXT; src: POCB128_CONTEXT; keyenc: Pointer; keydec: Pointer): TIdC_INT; cdecl = nil;
@@ -228,7 +215,7 @@ var
   CRYPTO_ocb128_tag: function(ctx: POCB128_CONTEXT; tag: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CRYPTO_ocb128_tag}
 
-  CRYPTO_ocb128_cleanup: procedure(ctx: POCB128_CONTEXT); cdecl = nil;
+  CRYPTO_ocb128_cleanup: function(ctx: POCB128_CONTEXT): void; cdecl = nil;
   {$EXTERNALSYM CRYPTO_ocb128_cleanup}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -239,48 +226,48 @@ var
 // STATIC BINDING ROUTINES
 // =============================================================================
 
-procedure CRYPTO_cbc128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb); cdecl;
-procedure CRYPTO_cbc128_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb); cdecl;
-procedure CRYPTO_ctr128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT; block: Tblock128_f_func_cb); cdecl;
-procedure CRYPTO_ctr128_encrypt_ctr32(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT; ctr: Tctr128_f_func_cb); cdecl;
-procedure CRYPTO_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; block: Tblock128_f_func_cb); cdecl;
-procedure CRYPTO_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f_func_cb); cdecl;
-procedure CRYPTO_cfb128_8_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f_func_cb); cdecl;
-procedure CRYPTO_cfb128_1_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; bits: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f_func_cb); cdecl;
-function CRYPTO_cts128_encrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl;
-function CRYPTO_cts128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f_func_cb): TIdC_SIZET; cdecl;
-function CRYPTO_cts128_decrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl;
-function CRYPTO_cts128_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f_func_cb): TIdC_SIZET; cdecl;
-function CRYPTO_nistcts128_encrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl;
-function CRYPTO_nistcts128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f_func_cb): TIdC_SIZET; cdecl;
-function CRYPTO_nistcts128_decrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl;
-function CRYPTO_nistcts128_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f_func_cb): TIdC_SIZET; cdecl;
-function CRYPTO_gcm128_new(key: Pointer; block: Tblock128_f_func_cb): PGCM128_CONTEXT; cdecl;
-procedure CRYPTO_gcm128_init(ctx: PGCM128_CONTEXT; key: Pointer; block: Tblock128_f_func_cb); cdecl;
-procedure CRYPTO_gcm128_setiv(ctx: PGCM128_CONTEXT; iv: PIdAnsiChar; len: TIdC_SIZET); cdecl;
+function CRYPTO_cbc128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): void; cdecl;
+function CRYPTO_cbc128_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): void; cdecl;
+function CRYPTO_ctr128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT; block: Tblock128_f): void; cdecl;
+function CRYPTO_ctr128_encrypt_ctr32(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT; ctr: Tctr128_f): void; cdecl;
+function CRYPTO_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; block: Tblock128_f): void; cdecl;
+function CRYPTO_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f): void; cdecl;
+function CRYPTO_cfb128_8_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f): void; cdecl;
+function CRYPTO_cfb128_1_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; bits: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f): void; cdecl;
+function CRYPTO_cts128_encrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): TIdC_SIZET; cdecl;
+function CRYPTO_cts128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f): TIdC_SIZET; cdecl;
+function CRYPTO_cts128_decrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): TIdC_SIZET; cdecl;
+function CRYPTO_cts128_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f): TIdC_SIZET; cdecl;
+function CRYPTO_nistcts128_encrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): TIdC_SIZET; cdecl;
+function CRYPTO_nistcts128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f): TIdC_SIZET; cdecl;
+function CRYPTO_nistcts128_decrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): TIdC_SIZET; cdecl;
+function CRYPTO_nistcts128_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f): TIdC_SIZET; cdecl;
+function CRYPTO_gcm128_new(key: Pointer; block: Tblock128_f): PGCM128_CONTEXT; cdecl;
+function CRYPTO_gcm128_init(ctx: PGCM128_CONTEXT; key: Pointer; block: Tblock128_f): void; cdecl;
+function CRYPTO_gcm128_setiv(ctx: PGCM128_CONTEXT; iv: PIdAnsiChar; len: TIdC_SIZET): void; cdecl;
 function CRYPTO_gcm128_aad(ctx: PGCM128_CONTEXT; aad: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl;
 function CRYPTO_gcm128_encrypt(ctx: PGCM128_CONTEXT; _in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl;
 function CRYPTO_gcm128_decrypt(ctx: PGCM128_CONTEXT; _in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl;
-function CRYPTO_gcm128_encrypt_ctr32(ctx: PGCM128_CONTEXT; _in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tctr128_f_func_cb): TIdC_INT; cdecl;
-function CRYPTO_gcm128_decrypt_ctr32(ctx: PGCM128_CONTEXT; _in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tctr128_f_func_cb): TIdC_INT; cdecl;
+function CRYPTO_gcm128_encrypt_ctr32(ctx: PGCM128_CONTEXT; _in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tctr128_f): TIdC_INT; cdecl;
+function CRYPTO_gcm128_decrypt_ctr32(ctx: PGCM128_CONTEXT; _in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tctr128_f): TIdC_INT; cdecl;
 function CRYPTO_gcm128_finish(ctx: PGCM128_CONTEXT; tag: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl;
-procedure CRYPTO_gcm128_tag(ctx: PGCM128_CONTEXT; tag: PIdAnsiChar; len: TIdC_SIZET); cdecl;
-procedure CRYPTO_gcm128_release(ctx: PGCM128_CONTEXT); cdecl;
-procedure CRYPTO_ccm128_init(ctx: PCCM128_CONTEXT; M: TIdC_UINT; L: TIdC_UINT; key: Pointer; block: Tblock128_f_func_cb); cdecl;
+function CRYPTO_gcm128_tag(ctx: PGCM128_CONTEXT; tag: PIdAnsiChar; len: TIdC_SIZET): void; cdecl;
+function CRYPTO_gcm128_release(ctx: PGCM128_CONTEXT): void; cdecl;
+function CRYPTO_ccm128_init(ctx: PCCM128_CONTEXT; M: TIdC_UINT; L: TIdC_UINT; key: Pointer; block: Tblock128_f): void; cdecl;
 function CRYPTO_ccm128_setiv(ctx: PCCM128_CONTEXT; nonce: PIdAnsiChar; nlen: TIdC_SIZET; mlen: TIdC_SIZET): TIdC_INT; cdecl;
-procedure CRYPTO_ccm128_aad(ctx: PCCM128_CONTEXT; aad: PIdAnsiChar; alen: TIdC_SIZET); cdecl;
+function CRYPTO_ccm128_aad(ctx: PCCM128_CONTEXT; aad: PIdAnsiChar; alen: TIdC_SIZET): void; cdecl;
 function CRYPTO_ccm128_encrypt(ctx: PCCM128_CONTEXT; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl;
 function CRYPTO_ccm128_decrypt(ctx: PCCM128_CONTEXT; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl;
-function CRYPTO_ccm128_encrypt_ccm64(ctx: PCCM128_CONTEXT; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tccm128_f_func_cb): TIdC_INT; cdecl;
-function CRYPTO_ccm128_decrypt_ccm64(ctx: PCCM128_CONTEXT; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tccm128_f_func_cb): TIdC_INT; cdecl;
+function CRYPTO_ccm128_encrypt_ccm64(ctx: PCCM128_CONTEXT; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tccm128_f): TIdC_INT; cdecl;
+function CRYPTO_ccm128_decrypt_ccm64(ctx: PCCM128_CONTEXT; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tccm128_f): TIdC_INT; cdecl;
 function CRYPTO_ccm128_tag(ctx: PCCM128_CONTEXT; tag: PIdAnsiChar; len: TIdC_SIZET): TIdC_SIZET; cdecl;
 function CRYPTO_xts128_encrypt(ctx: PXTS128_CONTEXT; iv: PIdAnsiChar; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; enc: TIdC_INT): TIdC_INT; cdecl;
-function CRYPTO_128_wrap(key: Pointer; iv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl;
-function CRYPTO_128_unwrap(key: Pointer; iv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl;
-function CRYPTO_128_wrap_pad(key: Pointer; icv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl;
-function CRYPTO_128_unwrap_pad(key: Pointer; icv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl;
-function CRYPTO_ocb128_new(keyenc: Pointer; keydec: Pointer; encrypt: Tblock128_f_func_cb; decrypt: Tblock128_f_func_cb; stream: Tocb128_f_func_cb): POCB128_CONTEXT; cdecl;
-function CRYPTO_ocb128_init(ctx: POCB128_CONTEXT; keyenc: Pointer; keydec: Pointer; encrypt: Tblock128_f_func_cb; decrypt: Tblock128_f_func_cb; stream: Tocb128_f_func_cb): TIdC_INT; cdecl;
+function CRYPTO_128_wrap(key: Pointer; iv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f): TIdC_SIZET; cdecl;
+function CRYPTO_128_unwrap(key: Pointer; iv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f): TIdC_SIZET; cdecl;
+function CRYPTO_128_wrap_pad(key: Pointer; icv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f): TIdC_SIZET; cdecl;
+function CRYPTO_128_unwrap_pad(key: Pointer; icv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f): TIdC_SIZET; cdecl;
+function CRYPTO_ocb128_new(keyenc: Pointer; keydec: Pointer; encrypt: Tblock128_f; decrypt: Tblock128_f; stream: Tocb128_f): POCB128_CONTEXT; cdecl;
+function CRYPTO_ocb128_init(ctx: POCB128_CONTEXT; keyenc: Pointer; keydec: Pointer; encrypt: Tblock128_f; decrypt: Tblock128_f; stream: Tocb128_f): TIdC_INT; cdecl;
 function CRYPTO_ocb128_copy_ctx(dest: POCB128_CONTEXT; src: POCB128_CONTEXT; keyenc: Pointer; keydec: Pointer): TIdC_INT; cdecl;
 function CRYPTO_ocb128_setiv(ctx: POCB128_CONTEXT; iv: PIdAnsiChar; len: TIdC_SIZET; taglen: TIdC_SIZET): TIdC_INT; cdecl;
 function CRYPTO_ocb128_aad(ctx: POCB128_CONTEXT; aad: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl;
@@ -288,7 +275,7 @@ function CRYPTO_ocb128_encrypt(ctx: POCB128_CONTEXT; _in: PIdAnsiChar; _out: PId
 function CRYPTO_ocb128_decrypt(ctx: POCB128_CONTEXT; _in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl;
 function CRYPTO_ocb128_finish(ctx: POCB128_CONTEXT; tag: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl;
 function CRYPTO_ocb128_tag(ctx: POCB128_CONTEXT; tag: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl;
-procedure CRYPTO_ocb128_cleanup(ctx: POCB128_CONTEXT); cdecl;
+function CRYPTO_ocb128_cleanup(ctx: POCB128_CONTEXT): void; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 implementation
@@ -307,48 +294,48 @@ uses
 // STATIC BINDING ROUTINES IMPORTS
 // =============================================================================
 
-procedure CRYPTO_cbc128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb); cdecl external CLibCrypto name 'CRYPTO_cbc128_encrypt';
-procedure CRYPTO_cbc128_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb); cdecl external CLibCrypto name 'CRYPTO_cbc128_decrypt';
-procedure CRYPTO_ctr128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT; block: Tblock128_f_func_cb); cdecl external CLibCrypto name 'CRYPTO_ctr128_encrypt';
-procedure CRYPTO_ctr128_encrypt_ctr32(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT; ctr: Tctr128_f_func_cb); cdecl external CLibCrypto name 'CRYPTO_ctr128_encrypt_ctr32';
-procedure CRYPTO_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; block: Tblock128_f_func_cb); cdecl external CLibCrypto name 'CRYPTO_ofb128_encrypt';
-procedure CRYPTO_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f_func_cb); cdecl external CLibCrypto name 'CRYPTO_cfb128_encrypt';
-procedure CRYPTO_cfb128_8_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f_func_cb); cdecl external CLibCrypto name 'CRYPTO_cfb128_8_encrypt';
-procedure CRYPTO_cfb128_1_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; bits: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f_func_cb); cdecl external CLibCrypto name 'CRYPTO_cfb128_1_encrypt';
-function CRYPTO_cts128_encrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_cts128_encrypt_block';
-function CRYPTO_cts128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f_func_cb): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_cts128_encrypt';
-function CRYPTO_cts128_decrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_cts128_decrypt_block';
-function CRYPTO_cts128_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f_func_cb): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_cts128_decrypt';
-function CRYPTO_nistcts128_encrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_nistcts128_encrypt_block';
-function CRYPTO_nistcts128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f_func_cb): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_nistcts128_encrypt';
-function CRYPTO_nistcts128_decrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_nistcts128_decrypt_block';
-function CRYPTO_nistcts128_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f_func_cb): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_nistcts128_decrypt';
-function CRYPTO_gcm128_new(key: Pointer; block: Tblock128_f_func_cb): PGCM128_CONTEXT; cdecl external CLibCrypto name 'CRYPTO_gcm128_new';
-procedure CRYPTO_gcm128_init(ctx: PGCM128_CONTEXT; key: Pointer; block: Tblock128_f_func_cb); cdecl external CLibCrypto name 'CRYPTO_gcm128_init';
-procedure CRYPTO_gcm128_setiv(ctx: PGCM128_CONTEXT; iv: PIdAnsiChar; len: TIdC_SIZET); cdecl external CLibCrypto name 'CRYPTO_gcm128_setiv';
+function CRYPTO_cbc128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): void; cdecl external CLibCrypto name 'CRYPTO_cbc128_encrypt';
+function CRYPTO_cbc128_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): void; cdecl external CLibCrypto name 'CRYPTO_cbc128_decrypt';
+function CRYPTO_ctr128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT; block: Tblock128_f): void; cdecl external CLibCrypto name 'CRYPTO_ctr128_encrypt';
+function CRYPTO_ctr128_encrypt_ctr32(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT; ctr: Tctr128_f): void; cdecl external CLibCrypto name 'CRYPTO_ctr128_encrypt_ctr32';
+function CRYPTO_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; block: Tblock128_f): void; cdecl external CLibCrypto name 'CRYPTO_ofb128_encrypt';
+function CRYPTO_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f): void; cdecl external CLibCrypto name 'CRYPTO_cfb128_encrypt';
+function CRYPTO_cfb128_8_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f): void; cdecl external CLibCrypto name 'CRYPTO_cfb128_8_encrypt';
+function CRYPTO_cfb128_1_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; bits: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f): void; cdecl external CLibCrypto name 'CRYPTO_cfb128_1_encrypt';
+function CRYPTO_cts128_encrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_cts128_encrypt_block';
+function CRYPTO_cts128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_cts128_encrypt';
+function CRYPTO_cts128_decrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_cts128_decrypt_block';
+function CRYPTO_cts128_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_cts128_decrypt';
+function CRYPTO_nistcts128_encrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_nistcts128_encrypt_block';
+function CRYPTO_nistcts128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_nistcts128_encrypt';
+function CRYPTO_nistcts128_decrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_nistcts128_decrypt_block';
+function CRYPTO_nistcts128_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_nistcts128_decrypt';
+function CRYPTO_gcm128_new(key: Pointer; block: Tblock128_f): PGCM128_CONTEXT; cdecl external CLibCrypto name 'CRYPTO_gcm128_new';
+function CRYPTO_gcm128_init(ctx: PGCM128_CONTEXT; key: Pointer; block: Tblock128_f): void; cdecl external CLibCrypto name 'CRYPTO_gcm128_init';
+function CRYPTO_gcm128_setiv(ctx: PGCM128_CONTEXT; iv: PIdAnsiChar; len: TIdC_SIZET): void; cdecl external CLibCrypto name 'CRYPTO_gcm128_setiv';
 function CRYPTO_gcm128_aad(ctx: PGCM128_CONTEXT; aad: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_gcm128_aad';
 function CRYPTO_gcm128_encrypt(ctx: PGCM128_CONTEXT; _in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_gcm128_encrypt';
 function CRYPTO_gcm128_decrypt(ctx: PGCM128_CONTEXT; _in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_gcm128_decrypt';
-function CRYPTO_gcm128_encrypt_ctr32(ctx: PGCM128_CONTEXT; _in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tctr128_f_func_cb): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_gcm128_encrypt_ctr32';
-function CRYPTO_gcm128_decrypt_ctr32(ctx: PGCM128_CONTEXT; _in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tctr128_f_func_cb): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_gcm128_decrypt_ctr32';
+function CRYPTO_gcm128_encrypt_ctr32(ctx: PGCM128_CONTEXT; _in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tctr128_f): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_gcm128_encrypt_ctr32';
+function CRYPTO_gcm128_decrypt_ctr32(ctx: PGCM128_CONTEXT; _in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tctr128_f): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_gcm128_decrypt_ctr32';
 function CRYPTO_gcm128_finish(ctx: PGCM128_CONTEXT; tag: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_gcm128_finish';
-procedure CRYPTO_gcm128_tag(ctx: PGCM128_CONTEXT; tag: PIdAnsiChar; len: TIdC_SIZET); cdecl external CLibCrypto name 'CRYPTO_gcm128_tag';
-procedure CRYPTO_gcm128_release(ctx: PGCM128_CONTEXT); cdecl external CLibCrypto name 'CRYPTO_gcm128_release';
-procedure CRYPTO_ccm128_init(ctx: PCCM128_CONTEXT; M: TIdC_UINT; L: TIdC_UINT; key: Pointer; block: Tblock128_f_func_cb); cdecl external CLibCrypto name 'CRYPTO_ccm128_init';
+function CRYPTO_gcm128_tag(ctx: PGCM128_CONTEXT; tag: PIdAnsiChar; len: TIdC_SIZET): void; cdecl external CLibCrypto name 'CRYPTO_gcm128_tag';
+function CRYPTO_gcm128_release(ctx: PGCM128_CONTEXT): void; cdecl external CLibCrypto name 'CRYPTO_gcm128_release';
+function CRYPTO_ccm128_init(ctx: PCCM128_CONTEXT; M: TIdC_UINT; L: TIdC_UINT; key: Pointer; block: Tblock128_f): void; cdecl external CLibCrypto name 'CRYPTO_ccm128_init';
 function CRYPTO_ccm128_setiv(ctx: PCCM128_CONTEXT; nonce: PIdAnsiChar; nlen: TIdC_SIZET; mlen: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_ccm128_setiv';
-procedure CRYPTO_ccm128_aad(ctx: PCCM128_CONTEXT; aad: PIdAnsiChar; alen: TIdC_SIZET); cdecl external CLibCrypto name 'CRYPTO_ccm128_aad';
+function CRYPTO_ccm128_aad(ctx: PCCM128_CONTEXT; aad: PIdAnsiChar; alen: TIdC_SIZET): void; cdecl external CLibCrypto name 'CRYPTO_ccm128_aad';
 function CRYPTO_ccm128_encrypt(ctx: PCCM128_CONTEXT; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_ccm128_encrypt';
 function CRYPTO_ccm128_decrypt(ctx: PCCM128_CONTEXT; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_ccm128_decrypt';
-function CRYPTO_ccm128_encrypt_ccm64(ctx: PCCM128_CONTEXT; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tccm128_f_func_cb): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_ccm128_encrypt_ccm64';
-function CRYPTO_ccm128_decrypt_ccm64(ctx: PCCM128_CONTEXT; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tccm128_f_func_cb): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_ccm128_decrypt_ccm64';
+function CRYPTO_ccm128_encrypt_ccm64(ctx: PCCM128_CONTEXT; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tccm128_f): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_ccm128_encrypt_ccm64';
+function CRYPTO_ccm128_decrypt_ccm64(ctx: PCCM128_CONTEXT; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tccm128_f): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_ccm128_decrypt_ccm64';
 function CRYPTO_ccm128_tag(ctx: PCCM128_CONTEXT; tag: PIdAnsiChar; len: TIdC_SIZET): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_ccm128_tag';
 function CRYPTO_xts128_encrypt(ctx: PXTS128_CONTEXT; iv: PIdAnsiChar; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; enc: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_xts128_encrypt';
-function CRYPTO_128_wrap(key: Pointer; iv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_128_wrap';
-function CRYPTO_128_unwrap(key: Pointer; iv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_128_unwrap';
-function CRYPTO_128_wrap_pad(key: Pointer; icv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_128_wrap_pad';
-function CRYPTO_128_unwrap_pad(key: Pointer; icv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_128_unwrap_pad';
-function CRYPTO_ocb128_new(keyenc: Pointer; keydec: Pointer; encrypt: Tblock128_f_func_cb; decrypt: Tblock128_f_func_cb; stream: Tocb128_f_func_cb): POCB128_CONTEXT; cdecl external CLibCrypto name 'CRYPTO_ocb128_new';
-function CRYPTO_ocb128_init(ctx: POCB128_CONTEXT; keyenc: Pointer; keydec: Pointer; encrypt: Tblock128_f_func_cb; decrypt: Tblock128_f_func_cb; stream: Tocb128_f_func_cb): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_ocb128_init';
+function CRYPTO_128_wrap(key: Pointer; iv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_128_wrap';
+function CRYPTO_128_unwrap(key: Pointer; iv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_128_unwrap';
+function CRYPTO_128_wrap_pad(key: Pointer; icv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_128_wrap_pad';
+function CRYPTO_128_unwrap_pad(key: Pointer; icv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_128_unwrap_pad';
+function CRYPTO_ocb128_new(keyenc: Pointer; keydec: Pointer; encrypt: Tblock128_f; decrypt: Tblock128_f; stream: Tocb128_f): POCB128_CONTEXT; cdecl external CLibCrypto name 'CRYPTO_ocb128_new';
+function CRYPTO_ocb128_init(ctx: POCB128_CONTEXT; keyenc: Pointer; keydec: Pointer; encrypt: Tblock128_f; decrypt: Tblock128_f; stream: Tocb128_f): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_ocb128_init';
 function CRYPTO_ocb128_copy_ctx(dest: POCB128_CONTEXT; src: POCB128_CONTEXT; keyenc: Pointer; keydec: Pointer): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_ocb128_copy_ctx';
 function CRYPTO_ocb128_setiv(ctx: POCB128_CONTEXT; iv: PIdAnsiChar; len: TIdC_SIZET; taglen: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_ocb128_setiv';
 function CRYPTO_ocb128_aad(ctx: POCB128_CONTEXT; aad: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_ocb128_aad';
@@ -356,7 +343,7 @@ function CRYPTO_ocb128_encrypt(ctx: POCB128_CONTEXT; _in: PIdAnsiChar; _out: PId
 function CRYPTO_ocb128_decrypt(ctx: POCB128_CONTEXT; _in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_ocb128_decrypt';
 function CRYPTO_ocb128_finish(ctx: POCB128_CONTEXT; tag: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_ocb128_finish';
 function CRYPTO_ocb128_tag(ctx: POCB128_CONTEXT; tag: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_ocb128_tag';
-procedure CRYPTO_ocb128_cleanup(ctx: POCB128_CONTEXT); cdecl external CLibCrypto name 'CRYPTO_ocb128_cleanup';
+function CRYPTO_ocb128_cleanup(ctx: POCB128_CONTEXT): void; cdecl external CLibCrypto name 'CRYPTO_ocb128_cleanup';
 {$ENDIF}
 
 // =============================================================================
@@ -527,97 +514,97 @@ const
 // ERRORS STUBS
 // =============================================================================
 
-procedure ERR_CRYPTO_cbc128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb); cdecl
+function ERR_CRYPTO_cbc128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_cbc128_encrypt_procname);
 end;
 
-procedure ERR_CRYPTO_cbc128_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb); cdecl
+function ERR_CRYPTO_cbc128_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_cbc128_decrypt_procname);
 end;
 
-procedure ERR_CRYPTO_ctr128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT; block: Tblock128_f_func_cb); cdecl
+function ERR_CRYPTO_ctr128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT; block: Tblock128_f): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_ctr128_encrypt_procname);
 end;
 
-procedure ERR_CRYPTO_ctr128_encrypt_ctr32(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT; ctr: Tctr128_f_func_cb); cdecl
+function ERR_CRYPTO_ctr128_encrypt_ctr32(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT; ctr: Tctr128_f): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_ctr128_encrypt_ctr32_procname);
 end;
 
-procedure ERR_CRYPTO_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; block: Tblock128_f_func_cb); cdecl
+function ERR_CRYPTO_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; block: Tblock128_f): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_ofb128_encrypt_procname);
 end;
 
-procedure ERR_CRYPTO_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f_func_cb); cdecl
+function ERR_CRYPTO_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_cfb128_encrypt_procname);
 end;
 
-procedure ERR_CRYPTO_cfb128_8_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f_func_cb); cdecl
+function ERR_CRYPTO_cfb128_8_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_cfb128_8_encrypt_procname);
 end;
 
-procedure ERR_CRYPTO_cfb128_1_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; bits: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f_func_cb); cdecl
+function ERR_CRYPTO_cfb128_1_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; bits: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT; block: Tblock128_f): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_cfb128_1_encrypt_procname);
 end;
 
-function ERR_CRYPTO_cts128_encrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl
+function ERR_CRYPTO_cts128_encrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): TIdC_SIZET; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_cts128_encrypt_block_procname);
 end;
 
-function ERR_CRYPTO_cts128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f_func_cb): TIdC_SIZET; cdecl
+function ERR_CRYPTO_cts128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f): TIdC_SIZET; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_cts128_encrypt_procname);
 end;
 
-function ERR_CRYPTO_cts128_decrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl
+function ERR_CRYPTO_cts128_decrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): TIdC_SIZET; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_cts128_decrypt_block_procname);
 end;
 
-function ERR_CRYPTO_cts128_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f_func_cb): TIdC_SIZET; cdecl
+function ERR_CRYPTO_cts128_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f): TIdC_SIZET; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_cts128_decrypt_procname);
 end;
 
-function ERR_CRYPTO_nistcts128_encrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl
+function ERR_CRYPTO_nistcts128_encrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): TIdC_SIZET; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_nistcts128_encrypt_block_procname);
 end;
 
-function ERR_CRYPTO_nistcts128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f_func_cb): TIdC_SIZET; cdecl
+function ERR_CRYPTO_nistcts128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f): TIdC_SIZET; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_nistcts128_encrypt_procname);
 end;
 
-function ERR_CRYPTO_nistcts128_decrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl
+function ERR_CRYPTO_nistcts128_decrypt_block(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; block: Tblock128_f): TIdC_SIZET; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_nistcts128_decrypt_block_procname);
 end;
 
-function ERR_CRYPTO_nistcts128_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f_func_cb): TIdC_SIZET; cdecl
+function ERR_CRYPTO_nistcts128_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; key: Pointer; ivec: PIdAnsiChar; cbc: Tcbc128_f): TIdC_SIZET; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_nistcts128_decrypt_procname);
 end;
 
-function ERR_CRYPTO_gcm128_new(key: Pointer; block: Tblock128_f_func_cb): PGCM128_CONTEXT; cdecl
+function ERR_CRYPTO_gcm128_new(key: Pointer; block: Tblock128_f): PGCM128_CONTEXT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_gcm128_new_procname);
 end;
 
-procedure ERR_CRYPTO_gcm128_init(ctx: PGCM128_CONTEXT; key: Pointer; block: Tblock128_f_func_cb); cdecl
+function ERR_CRYPTO_gcm128_init(ctx: PGCM128_CONTEXT; key: Pointer; block: Tblock128_f): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_gcm128_init_procname);
 end;
 
-procedure ERR_CRYPTO_gcm128_setiv(ctx: PGCM128_CONTEXT; iv: PIdAnsiChar; len: TIdC_SIZET); cdecl
+function ERR_CRYPTO_gcm128_setiv(ctx: PGCM128_CONTEXT; iv: PIdAnsiChar; len: TIdC_SIZET): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_gcm128_setiv_procname);
 end;
@@ -637,12 +624,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_gcm128_decrypt_procname);
 end;
 
-function ERR_CRYPTO_gcm128_encrypt_ctr32(ctx: PGCM128_CONTEXT; _in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tctr128_f_func_cb): TIdC_INT; cdecl
+function ERR_CRYPTO_gcm128_encrypt_ctr32(ctx: PGCM128_CONTEXT; _in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tctr128_f): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_gcm128_encrypt_ctr32_procname);
 end;
 
-function ERR_CRYPTO_gcm128_decrypt_ctr32(ctx: PGCM128_CONTEXT; _in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tctr128_f_func_cb): TIdC_INT; cdecl
+function ERR_CRYPTO_gcm128_decrypt_ctr32(ctx: PGCM128_CONTEXT; _in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tctr128_f): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_gcm128_decrypt_ctr32_procname);
 end;
@@ -652,17 +639,17 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_gcm128_finish_procname);
 end;
 
-procedure ERR_CRYPTO_gcm128_tag(ctx: PGCM128_CONTEXT; tag: PIdAnsiChar; len: TIdC_SIZET); cdecl
+function ERR_CRYPTO_gcm128_tag(ctx: PGCM128_CONTEXT; tag: PIdAnsiChar; len: TIdC_SIZET): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_gcm128_tag_procname);
 end;
 
-procedure ERR_CRYPTO_gcm128_release(ctx: PGCM128_CONTEXT); cdecl
+function ERR_CRYPTO_gcm128_release(ctx: PGCM128_CONTEXT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_gcm128_release_procname);
 end;
 
-procedure ERR_CRYPTO_ccm128_init(ctx: PCCM128_CONTEXT; M: TIdC_UINT; L: TIdC_UINT; key: Pointer; block: Tblock128_f_func_cb); cdecl
+function ERR_CRYPTO_ccm128_init(ctx: PCCM128_CONTEXT; M: TIdC_UINT; L: TIdC_UINT; key: Pointer; block: Tblock128_f): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_ccm128_init_procname);
 end;
@@ -672,7 +659,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_ccm128_setiv_procname);
 end;
 
-procedure ERR_CRYPTO_ccm128_aad(ctx: PCCM128_CONTEXT; aad: PIdAnsiChar; alen: TIdC_SIZET); cdecl
+function ERR_CRYPTO_ccm128_aad(ctx: PCCM128_CONTEXT; aad: PIdAnsiChar; alen: TIdC_SIZET): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_ccm128_aad_procname);
 end;
@@ -687,12 +674,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_ccm128_decrypt_procname);
 end;
 
-function ERR_CRYPTO_ccm128_encrypt_ccm64(ctx: PCCM128_CONTEXT; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tccm128_f_func_cb): TIdC_INT; cdecl
+function ERR_CRYPTO_ccm128_encrypt_ccm64(ctx: PCCM128_CONTEXT; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tccm128_f): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_ccm128_encrypt_ccm64_procname);
 end;
 
-function ERR_CRYPTO_ccm128_decrypt_ccm64(ctx: PCCM128_CONTEXT; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tccm128_f_func_cb): TIdC_INT; cdecl
+function ERR_CRYPTO_ccm128_decrypt_ccm64(ctx: PCCM128_CONTEXT; inp: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; stream: Tccm128_f): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_ccm128_decrypt_ccm64_procname);
 end;
@@ -707,32 +694,32 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_xts128_encrypt_procname);
 end;
 
-function ERR_CRYPTO_128_wrap(key: Pointer; iv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl
+function ERR_CRYPTO_128_wrap(key: Pointer; iv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f): TIdC_SIZET; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_128_wrap_procname);
 end;
 
-function ERR_CRYPTO_128_unwrap(key: Pointer; iv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl
+function ERR_CRYPTO_128_unwrap(key: Pointer; iv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f): TIdC_SIZET; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_128_unwrap_procname);
 end;
 
-function ERR_CRYPTO_128_wrap_pad(key: Pointer; icv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl
+function ERR_CRYPTO_128_wrap_pad(key: Pointer; icv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f): TIdC_SIZET; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_128_wrap_pad_procname);
 end;
 
-function ERR_CRYPTO_128_unwrap_pad(key: Pointer; icv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f_func_cb): TIdC_SIZET; cdecl
+function ERR_CRYPTO_128_unwrap_pad(key: Pointer; icv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_SIZET; block: Tblock128_f): TIdC_SIZET; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_128_unwrap_pad_procname);
 end;
 
-function ERR_CRYPTO_ocb128_new(keyenc: Pointer; keydec: Pointer; encrypt: Tblock128_f_func_cb; decrypt: Tblock128_f_func_cb; stream: Tocb128_f_func_cb): POCB128_CONTEXT; cdecl
+function ERR_CRYPTO_ocb128_new(keyenc: Pointer; keydec: Pointer; encrypt: Tblock128_f; decrypt: Tblock128_f; stream: Tocb128_f): POCB128_CONTEXT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_ocb128_new_procname);
 end;
 
-function ERR_CRYPTO_ocb128_init(ctx: POCB128_CONTEXT; keyenc: Pointer; keydec: Pointer; encrypt: Tblock128_f_func_cb; decrypt: Tblock128_f_func_cb; stream: Tocb128_f_func_cb): TIdC_INT; cdecl
+function ERR_CRYPTO_ocb128_init(ctx: POCB128_CONTEXT; keyenc: Pointer; keydec: Pointer; encrypt: Tblock128_f; decrypt: Tblock128_f; stream: Tocb128_f): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_ocb128_init_procname);
 end;
@@ -772,7 +759,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_ocb128_tag_procname);
 end;
 
-procedure ERR_CRYPTO_ocb128_cleanup(ctx: POCB128_CONTEXT); cdecl
+function ERR_CRYPTO_ocb128_cleanup(ctx: POCB128_CONTEXT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_ocb128_cleanup_procname);
 end;

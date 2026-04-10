@@ -26,48 +26,56 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   Possl_core_handle_st = ^Tossl_core_handle_st;
-  Tossl_core_handle_st = record end;
+  Tossl_core_handle_st =   record end;
   {$EXTERNALSYM Possl_core_handle_st}
 
-  POSSL_CORE_HANDLE = ^TOSSL_CORE_HANDLE;
-  TOSSL_CORE_HANDLE = Tossl_core_handle_st;
-  {$EXTERNALSYM POSSL_CORE_HANDLE}
-
   Popenssl_core_ctx_st = ^Topenssl_core_ctx_st;
-  Topenssl_core_ctx_st = record end;
+  Topenssl_core_ctx_st =   record end;
   {$EXTERNALSYM Popenssl_core_ctx_st}
 
-  POPENSSL_CORE_CTX = ^TOPENSSL_CORE_CTX;
-  TOPENSSL_CORE_CTX = Topenssl_core_ctx_st;
-  {$EXTERNALSYM POPENSSL_CORE_CTX}
-
   Possl_core_bio_st = ^Tossl_core_bio_st;
-  Tossl_core_bio_st = record end;
+  Tossl_core_bio_st =   record end;
   {$EXTERNALSYM Possl_core_bio_st}
 
-  POSSL_CORE_BIO = ^TOSSL_CORE_BIO;
-  TOSSL_CORE_BIO = Tossl_core_bio_st;
-  {$EXTERNALSYM POSSL_CORE_BIO}
-
   Possl_dispatch_st = ^Tossl_dispatch_st;
-  Tossl_dispatch_st = record end;
+  Tossl_dispatch_st =   record
+    function_id: TIdC_INT;
+    _function: TOSSL_CORE_BIO_func_cb;
+  end;
   {$EXTERNALSYM Possl_dispatch_st}
 
   Possl_item_st = ^Tossl_item_st;
-  Tossl_item_st = record end;
+  Tossl_item_st =   record
+    id: TIdC_UINT;
+    ptr: Pointer;
+  end;
   {$EXTERNALSYM Possl_item_st}
 
   Possl_algorithm_st = ^Tossl_algorithm_st;
-  Tossl_algorithm_st = record end;
+  Tossl_algorithm_st =   record
+    algorithm_names: PIdAnsiChar;
+    property_definition: PIdAnsiChar;
+    _implementation: POSSL_DISPATCH;
+    algorithm_description: PIdAnsiChar;
+  end;
   {$EXTERNALSYM Possl_algorithm_st}
 
   Possl_param_st = ^Tossl_param_st;
-  Tossl_param_st = record end;
+  Tossl_param_st =   record
+    key: PIdAnsiChar;
+    data_type: TIdC_UINT;
+    data: Pointer;
+    data_size: TIdC_SIZET;
+    return_size: TIdC_SIZET;
+  end;
   {$EXTERNALSYM Possl_param_st}
 
 
@@ -75,11 +83,13 @@ type
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  TOSSL_thread_stop_handler_fn_func_cb = procedure(arg1: Pointer); cdecl;
-  TOSSL_provider_init_fn_func_cb = function(arg1: POSSL_CORE_HANDLE; arg2: POSSL_DISPATCH; arg3: PPOSSL_DISPATCH; arg4: PPointer): TIdC_INT; cdecl;
-  TOSSL_CALLBACK_func_cb = function(arg1: POSSL_PARAM_ARRAY; arg2: Pointer): TIdC_INT; cdecl;
-  TOSSL_INOUT_CALLBACK_func_cb = function(arg1: POSSL_PARAM_ARRAY; arg2: POSSL_PARAM_ARRAY; arg3: Pointer): TIdC_INT; cdecl;
-  TOSSL_PASSPHRASE_CALLBACK_func_cb = function(arg1: PIdAnsiChar; arg2: TIdC_SIZET; arg3: PIdC_SIZET; arg4: POSSL_PARAM_ARRAY; arg5: Pointer): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // OSSL_CORE_BIO_func_cb = function: void; cdecl;
+  TOSSL_thread_stop_handler_fn = function(arg: Pointer): void; cdecl;
+  TOSSL_provider_init_fn = function(handle: POSSL_CORE_HANDLE; _in: POSSL_DISPATCH; _out: PPOSSL_DISPATCH; provctx: PPointer): TIdC_INT; cdecl;
+  TOSSL_CALLBACK = function(params: POSSL_PARAM; arg: Pointer): TIdC_INT; cdecl;
+  TOSSL_INOUT_CALLBACK = function(in_params: POSSL_PARAM; out_params: POSSL_PARAM; arg: Pointer): TIdC_INT; cdecl;
+  TOSSL_PASSPHRASE_CALLBACK = function(pass: PIdAnsiChar; pass_size: TIdC_SIZET; pass_len: PIdC_SIZET; params: POSSL_PARAM; arg: Pointer): TIdC_INT; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS

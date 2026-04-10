@@ -26,37 +26,36 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   Pui_string_st = ^Tui_string_st;
-  Tui_string_st = record end;
+  Tui_string_st =   record end;
   {$EXTERNALSYM Pui_string_st}
-
-  PUI_STRING = ^TUI_STRING;
-  TUI_STRING = Tui_string_st;
-  {$EXTERNALSYM PUI_STRING}
-
-  Pstack_st_UI_STRING = ^Tstack_st_UI_STRING;
-  Tstack_st_UI_STRING = record end;
-  {$EXTERNALSYM Pstack_st_UI_STRING}
 
 
 // =============================================================================
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  TUI_ctrl_f_cb = procedure; cdecl;
-  Tsk_UI_STRING_compfunc_func_cb = function(arg1: PPUI_STRING; arg2: PPUI_STRING): TIdC_INT; cdecl;
-  Tsk_UI_STRING_freefunc_func_cb = procedure(arg1: PUI_STRING); cdecl;
-  Tsk_UI_STRING_copyfunc_func_cb = function(arg1: PUI_STRING): PUI_STRING; cdecl;
-  TUI_method_set_opener_opener_cb = function(arg1: PUI): TIdC_INT; cdecl;
-  TUI_method_set_writer_writer_cb = function(arg1: PUI; arg2: PUI_STRING): TIdC_INT; cdecl;
-  TUI_method_set_data_duplicator_duplicator_cb = function(arg1: PUI; arg2: Pointer): Pointer; cdecl;
-  TUI_method_set_data_duplicator_destructor_cb = procedure(arg1: PUI; arg2: Pointer); cdecl;
-  TUI_method_set_prompt_constructor_prompt_constructor_cb = function(arg1: PUI; arg2: PIdAnsiChar; arg3: PIdAnsiChar): PIdAnsiChar; cdecl;
-  TUI_UTIL_wrap_read_pem_callback_cb_cb = function: TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // UI_ctrl_f_cb = function: void; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // UI_method_set_opener_opener_cb = function(ui: PUI): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // UI_method_set_writer_writer_cb = function(ui: PUI; uis: PUI_STRING): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // UI_method_set_data_duplicator_duplicator_cb = function(ui: PUI; ui_data: Pointer): Pointer; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // UI_method_set_data_duplicator_destructor_cb = function(ui: PUI; ui_data: Pointer): void; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // UI_method_set_prompt_constructor_prompt_constructor_cb = function(ui: PUI; phrase_desc: PIdAnsiChar; object_name: PIdAnsiChar): PIdAnsiChar; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // UI_UTIL_wrap_read_pem_callback_cb_cb = function(arg1: PIdAnsiChar; arg2: TIdC_INT; arg3: TIdC_INT; arg4: Pointer): TIdC_INT; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -81,7 +80,7 @@ var
   UI_new_method: function(method: PUI_METHOD): PUI; cdecl = nil;
   {$EXTERNALSYM UI_new_method}
 
-  UI_free: procedure(ui: PUI); cdecl = nil;
+  UI_free: function(ui: PUI): void; cdecl = nil;
   {$EXTERNALSYM UI_free}
 
   UI_add_input_string: function(ui: PUI; prompt: PIdAnsiChar; flags: TIdC_INT; result_buf: PIdAnsiChar; minsize: TIdC_INT; maxsize: TIdC_INT): TIdC_INT; cdecl = nil;
@@ -144,7 +143,7 @@ var
   UI_get_ex_data: function(r: PUI; idx: TIdC_INT): Pointer; cdecl = nil;
   {$EXTERNALSYM UI_get_ex_data}
 
-  UI_set_default_method: procedure(meth: PUI_METHOD); cdecl = nil;
+  UI_set_default_method: function(meth: PUI_METHOD): void; cdecl = nil;
   {$EXTERNALSYM UI_set_default_method}
 
   UI_get_default_method: function: PUI_METHOD; cdecl = nil;
@@ -165,7 +164,7 @@ var
   UI_create_method: function(name: PIdAnsiChar): PUI_METHOD; cdecl = nil;
   {$EXTERNALSYM UI_create_method}
 
-  UI_destroy_method: procedure(ui_method: PUI_METHOD); cdecl = nil;
+  UI_destroy_method: function(ui_method: PUI_METHOD): void; cdecl = nil;
   {$EXTERNALSYM UI_destroy_method}
 
   UI_method_set_opener: function(method: PUI_METHOD; opener: TUI_method_set_opener_opener_cb): TIdC_INT; cdecl = nil;
@@ -271,7 +270,7 @@ var
 
 function UI_new: PUI; cdecl;
 function UI_new_method(method: PUI_METHOD): PUI; cdecl;
-procedure UI_free(ui: PUI); cdecl;
+function UI_free(ui: PUI): void; cdecl;
 function UI_add_input_string(ui: PUI; prompt: PIdAnsiChar; flags: TIdC_INT; result_buf: PIdAnsiChar; minsize: TIdC_INT; maxsize: TIdC_INT): TIdC_INT; cdecl;
 function UI_dup_input_string(ui: PUI; prompt: PIdAnsiChar; flags: TIdC_INT; result_buf: PIdAnsiChar; minsize: TIdC_INT; maxsize: TIdC_INT): TIdC_INT; cdecl;
 function UI_add_verify_string(ui: PUI; prompt: PIdAnsiChar; flags: TIdC_INT; result_buf: PIdAnsiChar; minsize: TIdC_INT; maxsize: TIdC_INT; test_buf: PIdAnsiChar): TIdC_INT; cdecl;
@@ -292,14 +291,14 @@ function UI_process(ui: PUI): TIdC_INT; cdecl;
 function UI_ctrl(ui: PUI; cmd: TIdC_INT; i: TIdC_LONG; p: Pointer; f: TUI_ctrl_f_cb): TIdC_INT; cdecl;
 function UI_set_ex_data(r: PUI; idx: TIdC_INT; arg: Pointer): TIdC_INT; cdecl;
 function UI_get_ex_data(r: PUI; idx: TIdC_INT): Pointer; cdecl;
-procedure UI_set_default_method(meth: PUI_METHOD); cdecl;
+function UI_set_default_method(meth: PUI_METHOD): void; cdecl;
 function UI_get_default_method: PUI_METHOD; cdecl;
 function UI_get_method(ui: PUI): PUI_METHOD; cdecl;
 function UI_set_method(ui: PUI; meth: PUI_METHOD): PUI_METHOD; cdecl;
 function UI_OpenSSL: PUI_METHOD; cdecl;
 function UI_null: PUI_METHOD; cdecl;
 function UI_create_method(name: PIdAnsiChar): PUI_METHOD; cdecl;
-procedure UI_destroy_method(ui_method: PUI_METHOD); cdecl;
+function UI_destroy_method(ui_method: PUI_METHOD): void; cdecl;
 function UI_method_set_opener(method: PUI_METHOD; opener: TUI_method_set_opener_opener_cb): TIdC_INT; cdecl;
 function UI_method_set_writer(method: PUI_METHOD; writer: TUI_method_set_writer_writer_cb): TIdC_INT; cdecl;
 function UI_method_set_flusher(method: PUI_METHOD; flusher: TUI_method_set_opener_opener_cb): TIdC_INT; cdecl;
@@ -333,6 +332,44 @@ function UI_UTIL_read_pw(buf: PIdAnsiChar; buff: PIdAnsiChar; size: TIdC_INT; pr
 function UI_UTIL_wrap_read_pem_callback(cb: TUI_UTIL_wrap_read_pem_callback_cb_cb; rwflag: TIdC_INT): PUI_METHOD; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
+// =============================================================================
+// OPENSSL STACK DEFINITIONS
+// =============================================================================
+type
+  { TODO 1 -copenssl stack UI_STRING definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_UI_STRING = Pointer;
+  {$EXTERNALSYM PSTACK_OF_UI_STRING}
+
+  { Original Stack Macros for UI_STRING:
+    SKM_DEFINE_STACK_OF_INTERNAL(UI_STRING, UI_STRING, UI_STRING)
+    sk_UI_STRING_num(sk) OPENSSL_sk_num(ossl_check_const_UI_STRING_sk_type(sk))
+    sk_UI_STRING_value(sk, idx) ((UI_STRING *)OPENSSL_sk_value(ossl_check_const_UI_STRING_sk_type(sk), (idx)))
+    sk_UI_STRING_new(cmp) ((STACK_OF(UI_STRING) *)OPENSSL_sk_new(ossl_check_UI_STRING_compfunc_type(cmp)))
+    sk_UI_STRING_new_null() ((STACK_OF(UI_STRING) *)OPENSSL_sk_new_null())
+    sk_UI_STRING_new_reserve(cmp, n) ((STACK_OF(UI_STRING) *)OPENSSL_sk_new_reserve(ossl_check_UI_STRING_compfunc_type(cmp), (n)))
+    sk_UI_STRING_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_UI_STRING_sk_type(sk), (n))
+    sk_UI_STRING_free(sk) OPENSSL_sk_free(ossl_check_UI_STRING_sk_type(sk))
+    sk_UI_STRING_zero(sk) OPENSSL_sk_zero(ossl_check_UI_STRING_sk_type(sk))
+    sk_UI_STRING_delete(sk, i) ((UI_STRING *)OPENSSL_sk_delete(ossl_check_UI_STRING_sk_type(sk), (i)))
+    sk_UI_STRING_delete_ptr(sk, ptr) ((UI_STRING *)OPENSSL_sk_delete_ptr(ossl_check_UI_STRING_sk_type(sk), ossl_check_UI_STRING_type(ptr)))
+    sk_UI_STRING_push(sk, ptr) OPENSSL_sk_push(ossl_check_UI_STRING_sk_type(sk), ossl_check_UI_STRING_type(ptr))
+    sk_UI_STRING_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_UI_STRING_sk_type(sk), ossl_check_UI_STRING_type(ptr))
+    sk_UI_STRING_pop(sk) ((UI_STRING *)OPENSSL_sk_pop(ossl_check_UI_STRING_sk_type(sk)))
+    sk_UI_STRING_shift(sk) ((UI_STRING *)OPENSSL_sk_shift(ossl_check_UI_STRING_sk_type(sk)))
+    sk_UI_STRING_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_UI_STRING_sk_type(sk), ossl_check_UI_STRING_freefunc_type(freefunc))
+    sk_UI_STRING_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_UI_STRING_sk_type(sk), ossl_check_UI_STRING_type(ptr), (idx))
+    sk_UI_STRING_set(sk, idx, ptr) ((UI_STRING *)OPENSSL_sk_set(ossl_check_UI_STRING_sk_type(sk), (idx), ossl_check_UI_STRING_type(ptr)))
+    sk_UI_STRING_find(sk, ptr) OPENSSL_sk_find(ossl_check_UI_STRING_sk_type(sk), ossl_check_UI_STRING_type(ptr))
+    sk_UI_STRING_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_UI_STRING_sk_type(sk), ossl_check_UI_STRING_type(ptr))
+    sk_UI_STRING_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_UI_STRING_sk_type(sk), ossl_check_UI_STRING_type(ptr), pnum)
+    sk_UI_STRING_sort(sk) OPENSSL_sk_sort(ossl_check_UI_STRING_sk_type(sk))
+    sk_UI_STRING_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_UI_STRING_sk_type(sk))
+    sk_UI_STRING_dup(sk) ((STACK_OF(UI_STRING) *)OPENSSL_sk_dup(ossl_check_const_UI_STRING_sk_type(sk)))
+    sk_UI_STRING_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(UI_STRING) *)OPENSSL_sk_deep_copy(ossl_check_const_UI_STRING_sk_type(sk), ossl_check_UI_STRING_copyfunc_type(copyfunc), ossl_check_UI_STRING_freefunc_type(freefunc)))
+    sk_UI_STRING_set_cmp_func(sk, cmp) ((sk_UI_STRING_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_UI_STRING_sk_type(sk), ossl_check_UI_STRING_compfunc_type(cmp)))
+  }
+
+
 implementation
 
 uses
@@ -351,7 +388,7 @@ uses
 
 function UI_new: PUI; cdecl external CLibCrypto name 'UI_new';
 function UI_new_method(method: PUI_METHOD): PUI; cdecl external CLibCrypto name 'UI_new_method';
-procedure UI_free(ui: PUI); cdecl external CLibCrypto name 'UI_free';
+function UI_free(ui: PUI): void; cdecl external CLibCrypto name 'UI_free';
 function UI_add_input_string(ui: PUI; prompt: PIdAnsiChar; flags: TIdC_INT; result_buf: PIdAnsiChar; minsize: TIdC_INT; maxsize: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'UI_add_input_string';
 function UI_dup_input_string(ui: PUI; prompt: PIdAnsiChar; flags: TIdC_INT; result_buf: PIdAnsiChar; minsize: TIdC_INT; maxsize: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'UI_dup_input_string';
 function UI_add_verify_string(ui: PUI; prompt: PIdAnsiChar; flags: TIdC_INT; result_buf: PIdAnsiChar; minsize: TIdC_INT; maxsize: TIdC_INT; test_buf: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'UI_add_verify_string';
@@ -372,14 +409,14 @@ function UI_process(ui: PUI): TIdC_INT; cdecl external CLibCrypto name 'UI_proce
 function UI_ctrl(ui: PUI; cmd: TIdC_INT; i: TIdC_LONG; p: Pointer; f: TUI_ctrl_f_cb): TIdC_INT; cdecl external CLibCrypto name 'UI_ctrl';
 function UI_set_ex_data(r: PUI; idx: TIdC_INT; arg: Pointer): TIdC_INT; cdecl external CLibCrypto name 'UI_set_ex_data';
 function UI_get_ex_data(r: PUI; idx: TIdC_INT): Pointer; cdecl external CLibCrypto name 'UI_get_ex_data';
-procedure UI_set_default_method(meth: PUI_METHOD); cdecl external CLibCrypto name 'UI_set_default_method';
+function UI_set_default_method(meth: PUI_METHOD): void; cdecl external CLibCrypto name 'UI_set_default_method';
 function UI_get_default_method: PUI_METHOD; cdecl external CLibCrypto name 'UI_get_default_method';
 function UI_get_method(ui: PUI): PUI_METHOD; cdecl external CLibCrypto name 'UI_get_method';
 function UI_set_method(ui: PUI; meth: PUI_METHOD): PUI_METHOD; cdecl external CLibCrypto name 'UI_set_method';
 function UI_OpenSSL: PUI_METHOD; cdecl external CLibCrypto name 'UI_OpenSSL';
 function UI_null: PUI_METHOD; cdecl external CLibCrypto name 'UI_null';
 function UI_create_method(name: PIdAnsiChar): PUI_METHOD; cdecl external CLibCrypto name 'UI_create_method';
-procedure UI_destroy_method(ui_method: PUI_METHOD); cdecl external CLibCrypto name 'UI_destroy_method';
+function UI_destroy_method(ui_method: PUI_METHOD): void; cdecl external CLibCrypto name 'UI_destroy_method';
 function UI_method_set_opener(method: PUI_METHOD; opener: TUI_method_set_opener_opener_cb): TIdC_INT; cdecl external CLibCrypto name 'UI_method_set_opener';
 function UI_method_set_writer(method: PUI_METHOD; writer: TUI_method_set_writer_writer_cb): TIdC_INT; cdecl external CLibCrypto name 'UI_method_set_writer';
 function UI_method_set_flusher(method: PUI_METHOD; flusher: TUI_method_set_opener_opener_cb): TIdC_INT; cdecl external CLibCrypto name 'UI_method_set_flusher';
@@ -627,7 +664,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(UI_new_method_procname);
 end;
 
-procedure ERR_UI_free(ui: PUI); cdecl
+function ERR_UI_free(ui: PUI): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(UI_free_procname);
 end;
@@ -732,7 +769,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(UI_get_ex_data_procname);
 end;
 
-procedure ERR_UI_set_default_method(meth: PUI_METHOD); cdecl
+function ERR_UI_set_default_method(meth: PUI_METHOD): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(UI_set_default_method_procname);
 end;
@@ -767,7 +804,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(UI_create_method_procname);
 end;
 
-procedure ERR_UI_destroy_method(ui_method: PUI_METHOD); cdecl
+function ERR_UI_destroy_method(ui_method: PUI_METHOD): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(UI_destroy_method_procname);
 end;

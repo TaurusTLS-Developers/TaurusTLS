@@ -26,127 +26,57 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   PCMS_EnvelopedData_st = ^TCMS_EnvelopedData_st;
-  TCMS_EnvelopedData_st = record end;
+  TCMS_EnvelopedData_st =   record end;
   {$EXTERNALSYM PCMS_EnvelopedData_st}
 
-  PCMS_EnvelopedData = ^TCMS_EnvelopedData;
-  TCMS_EnvelopedData = TCMS_EnvelopedData_st;
-  {$EXTERNALSYM PCMS_EnvelopedData}
-
   PCMS_ContentInfo_st = ^TCMS_ContentInfo_st;
-  TCMS_ContentInfo_st = record end;
+  TCMS_ContentInfo_st =   record end;
   {$EXTERNALSYM PCMS_ContentInfo_st}
 
-  PCMS_ContentInfo = ^TCMS_ContentInfo;
-  TCMS_ContentInfo = TCMS_ContentInfo_st;
-  {$EXTERNALSYM PCMS_ContentInfo}
-
   PCMS_SignerInfo_st = ^TCMS_SignerInfo_st;
-  TCMS_SignerInfo_st = record end;
+  TCMS_SignerInfo_st =   record end;
   {$EXTERNALSYM PCMS_SignerInfo_st}
 
-  PCMS_SignerInfo = ^TCMS_SignerInfo;
-  TCMS_SignerInfo = TCMS_SignerInfo_st;
-  {$EXTERNALSYM PCMS_SignerInfo}
-
   PCMS_SignedData_st = ^TCMS_SignedData_st;
-  TCMS_SignedData_st = record end;
+  TCMS_SignedData_st =   record end;
   {$EXTERNALSYM PCMS_SignedData_st}
 
-  PCMS_SignedData = ^TCMS_SignedData;
-  TCMS_SignedData = TCMS_SignedData_st;
-  {$EXTERNALSYM PCMS_SignedData}
-
   PCMS_CertificateChoices = ^TCMS_CertificateChoices;
-  TCMS_CertificateChoices = record end;
+  TCMS_CertificateChoices =   record end;
   {$EXTERNALSYM PCMS_CertificateChoices}
 
   PCMS_RevocationInfoChoice_st = ^TCMS_RevocationInfoChoice_st;
-  TCMS_RevocationInfoChoice_st = record end;
+  TCMS_RevocationInfoChoice_st =   record end;
   {$EXTERNALSYM PCMS_RevocationInfoChoice_st}
 
-  PCMS_RevocationInfoChoice = ^TCMS_RevocationInfoChoice;
-  TCMS_RevocationInfoChoice = TCMS_RevocationInfoChoice_st;
-  {$EXTERNALSYM PCMS_RevocationInfoChoice}
-
   PCMS_RecipientInfo_st = ^TCMS_RecipientInfo_st;
-  TCMS_RecipientInfo_st = record end;
+  TCMS_RecipientInfo_st =   record end;
   {$EXTERNALSYM PCMS_RecipientInfo_st}
 
-  PCMS_RecipientInfo = ^TCMS_RecipientInfo;
-  TCMS_RecipientInfo = TCMS_RecipientInfo_st;
-  {$EXTERNALSYM PCMS_RecipientInfo}
-
   PCMS_ReceiptRequest_st = ^TCMS_ReceiptRequest_st;
-  TCMS_ReceiptRequest_st = record end;
+  TCMS_ReceiptRequest_st =   record end;
   {$EXTERNALSYM PCMS_ReceiptRequest_st}
 
-  PCMS_ReceiptRequest = ^TCMS_ReceiptRequest;
-  TCMS_ReceiptRequest = TCMS_ReceiptRequest_st;
-  {$EXTERNALSYM PCMS_ReceiptRequest}
-
   PCMS_Receipt_st = ^TCMS_Receipt_st;
-  TCMS_Receipt_st = record end;
+  TCMS_Receipt_st =   record end;
   {$EXTERNALSYM PCMS_Receipt_st}
 
-  PCMS_Receipt = ^TCMS_Receipt;
-  TCMS_Receipt = TCMS_Receipt_st;
-  {$EXTERNALSYM PCMS_Receipt}
-
   PCMS_RecipientEncryptedKey_st = ^TCMS_RecipientEncryptedKey_st;
-  TCMS_RecipientEncryptedKey_st = record end;
+  TCMS_RecipientEncryptedKey_st =   record end;
   {$EXTERNALSYM PCMS_RecipientEncryptedKey_st}
 
-  PCMS_RecipientEncryptedKey = ^TCMS_RecipientEncryptedKey;
-  TCMS_RecipientEncryptedKey = TCMS_RecipientEncryptedKey_st;
-  {$EXTERNALSYM PCMS_RecipientEncryptedKey}
-
   PCMS_OtherKeyAttribute_st = ^TCMS_OtherKeyAttribute_st;
-  TCMS_OtherKeyAttribute_st = record end;
+  TCMS_OtherKeyAttribute_st =   record end;
   {$EXTERNALSYM PCMS_OtherKeyAttribute_st}
 
-  PCMS_OtherKeyAttribute = ^TCMS_OtherKeyAttribute;
-  TCMS_OtherKeyAttribute = TCMS_OtherKeyAttribute_st;
-  {$EXTERNALSYM PCMS_OtherKeyAttribute}
-
-  Pstack_st_CMS_SignerInfo = ^Tstack_st_CMS_SignerInfo;
-  Tstack_st_CMS_SignerInfo = record end;
-  {$EXTERNALSYM Pstack_st_CMS_SignerInfo}
-
-  Pstack_st_CMS_RecipientEncryptedKey = ^Tstack_st_CMS_RecipientEncryptedKey;
-  Tstack_st_CMS_RecipientEncryptedKey = record end;
-  {$EXTERNALSYM Pstack_st_CMS_RecipientEncryptedKey}
-
-  Pstack_st_CMS_RecipientInfo = ^Tstack_st_CMS_RecipientInfo;
-  Tstack_st_CMS_RecipientInfo = record end;
-  {$EXTERNALSYM Pstack_st_CMS_RecipientInfo}
-
-  Pstack_st_CMS_RevocationInfoChoice = ^Tstack_st_CMS_RevocationInfoChoice;
-  Tstack_st_CMS_RevocationInfoChoice = record end;
-  {$EXTERNALSYM Pstack_st_CMS_RevocationInfoChoice}
-
-
-// =============================================================================
-// CALLBACK TYPE DECLARATIONS
-// =============================================================================
-type
-  Tsk_CMS_SignerInfo_compfunc_func_cb = function(arg1: PPCMS_SignerInfo; arg2: PPCMS_SignerInfo): TIdC_INT; cdecl;
-  Tsk_CMS_SignerInfo_freefunc_func_cb = procedure(arg1: PCMS_SignerInfo); cdecl;
-  Tsk_CMS_SignerInfo_copyfunc_func_cb = function(arg1: PCMS_SignerInfo): PCMS_SignerInfo; cdecl;
-  Tsk_CMS_RecipientEncryptedKey_compfunc_func_cb = function(arg1: PPCMS_RecipientEncryptedKey; arg2: PPCMS_RecipientEncryptedKey): TIdC_INT; cdecl;
-  Tsk_CMS_RecipientEncryptedKey_freefunc_func_cb = procedure(arg1: PCMS_RecipientEncryptedKey); cdecl;
-  Tsk_CMS_RecipientEncryptedKey_copyfunc_func_cb = function(arg1: PCMS_RecipientEncryptedKey): PCMS_RecipientEncryptedKey; cdecl;
-  Tsk_CMS_RecipientInfo_compfunc_func_cb = function(arg1: PPCMS_RecipientInfo; arg2: PPCMS_RecipientInfo): TIdC_INT; cdecl;
-  Tsk_CMS_RecipientInfo_freefunc_func_cb = procedure(arg1: PCMS_RecipientInfo); cdecl;
-  Tsk_CMS_RecipientInfo_copyfunc_func_cb = function(arg1: PCMS_RecipientInfo): PCMS_RecipientInfo; cdecl;
-  Tsk_CMS_RevocationInfoChoice_compfunc_func_cb = function(arg1: PPCMS_RevocationInfoChoice; arg2: PPCMS_RevocationInfoChoice): TIdC_INT; cdecl;
-  Tsk_CMS_RevocationInfoChoice_freefunc_func_cb = procedure(arg1: PCMS_RevocationInfoChoice); cdecl;
-  Tsk_CMS_RevocationInfoChoice_copyfunc_func_cb = function(arg1: PCMS_RevocationInfoChoice): PCMS_RevocationInfoChoice; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -202,13 +132,13 @@ var
   CMS_SignedData_new: function: PCMS_SignedData; cdecl = nil;
   {$EXTERNALSYM CMS_SignedData_new}
 
-  CMS_SignedData_free: procedure(a: PCMS_SignedData); cdecl = nil;
+  CMS_SignedData_free: function(a: PCMS_SignedData): void; cdecl = nil;
   {$EXTERNALSYM CMS_SignedData_free}
 
   CMS_ContentInfo_new: function: PCMS_ContentInfo; cdecl = nil;
   {$EXTERNALSYM CMS_ContentInfo_new}
 
-  CMS_ContentInfo_free: procedure(a: PCMS_ContentInfo); cdecl = nil;
+  CMS_ContentInfo_free: function(a: PCMS_ContentInfo): void; cdecl = nil;
   {$EXTERNALSYM CMS_ContentInfo_free}
 
   d2i_CMS_ContentInfo: function(a: PPCMS_ContentInfo; _in: PPIdAnsiChar; len: TIdC_LONG): PCMS_ContentInfo; cdecl = nil;
@@ -223,7 +153,7 @@ var
   CMS_ReceiptRequest_new: function: PCMS_ReceiptRequest; cdecl = nil;
   {$EXTERNALSYM CMS_ReceiptRequest_new}
 
-  CMS_ReceiptRequest_free: procedure(a: PCMS_ReceiptRequest); cdecl = nil;
+  CMS_ReceiptRequest_free: function(a: PCMS_ReceiptRequest): void; cdecl = nil;
   {$EXTERNALSYM CMS_ReceiptRequest_free}
 
   d2i_CMS_ReceiptRequest: function(a: PPCMS_ReceiptRequest; _in: PPIdAnsiChar; len: TIdC_LONG): PCMS_ReceiptRequest; cdecl = nil;
@@ -481,7 +411,7 @@ var
   CMS_get0_SignerInfos: function(cms: PCMS_ContentInfo): Pstack_st_CMS_SignerInfo; cdecl = nil;
   {$EXTERNALSYM CMS_get0_SignerInfos}
 
-  CMS_SignerInfo_set1_signer_cert: procedure(si: PCMS_SignerInfo; signer: PX509); cdecl = nil;
+  CMS_SignerInfo_set1_signer_cert: function(si: PCMS_SignerInfo; signer: PX509): void; cdecl = nil;
   {$EXTERNALSYM CMS_SignerInfo_set1_signer_cert}
 
   CMS_SignerInfo_get0_signer_id: function(si: PCMS_SignerInfo; keyid: PPASN1_OCTET_STRING; issuer: PPX509_NAME; sno: PPASN1_INTEGER): TIdC_INT; cdecl = nil;
@@ -493,7 +423,7 @@ var
   CMS_set1_signers_certs: function(cms: PCMS_ContentInfo; certs: Pstack_st_X509; flags: TIdC_UINT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CMS_set1_signers_certs}
 
-  CMS_SignerInfo_get0_algs: procedure(si: PCMS_SignerInfo; pk: PPEVP_PKEY; signer: PPX509; pdig: PPX509_ALGOR; psig: PPX509_ALGOR); cdecl = nil;
+  CMS_SignerInfo_get0_algs: function(si: PCMS_SignerInfo; pk: PPEVP_PKEY; signer: PPX509; pdig: PPX509_ALGOR; psig: PPX509_ALGOR): void; cdecl = nil;
   {$EXTERNALSYM CMS_SignerInfo_get0_algs}
 
   CMS_SignerInfo_get0_signature: function(si: PCMS_SignerInfo): PASN1_OCTET_STRING; cdecl = nil;
@@ -592,7 +522,7 @@ var
   CMS_add1_ReceiptRequest: function(si: PCMS_SignerInfo; rr: PCMS_ReceiptRequest): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CMS_add1_ReceiptRequest}
 
-  CMS_ReceiptRequest_get0_values: procedure(rr: PCMS_ReceiptRequest; pcid: PPASN1_STRING; pallorfirst: PIdC_INT; plist: PPstack_st_GENERAL_NAMES; prto: PPstack_st_GENERAL_NAMES); cdecl = nil;
+  CMS_ReceiptRequest_get0_values: function(rr: PCMS_ReceiptRequest; pcid: PPASN1_STRING; pallorfirst: PIdC_INT; plist: PPstack_st_GENERAL_NAMES; prto: PPstack_st_GENERAL_NAMES): void; cdecl = nil;
   {$EXTERNALSYM CMS_ReceiptRequest_get0_values}
 
   CMS_RecipientInfo_kari_get0_alg: function(ri: PCMS_RecipientInfo; palg: PPX509_ALGOR; pukm: PPASN1_OCTET_STRING): TIdC_INT; cdecl = nil;
@@ -653,14 +583,14 @@ var
 
 function CMS_EnvelopedData_it: PASN1_ITEM; cdecl;
 function CMS_SignedData_new: PCMS_SignedData; cdecl;
-procedure CMS_SignedData_free(a: PCMS_SignedData); cdecl;
+function CMS_SignedData_free(a: PCMS_SignedData): void; cdecl;
 function CMS_ContentInfo_new: PCMS_ContentInfo; cdecl;
-procedure CMS_ContentInfo_free(a: PCMS_ContentInfo); cdecl;
+function CMS_ContentInfo_free(a: PCMS_ContentInfo): void; cdecl;
 function d2i_CMS_ContentInfo(a: PPCMS_ContentInfo; _in: PPIdAnsiChar; len: TIdC_LONG): PCMS_ContentInfo; cdecl;
 function i2d_CMS_ContentInfo(a: PCMS_ContentInfo; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function CMS_ContentInfo_it: PASN1_ITEM; cdecl;
 function CMS_ReceiptRequest_new: PCMS_ReceiptRequest; cdecl;
-procedure CMS_ReceiptRequest_free(a: PCMS_ReceiptRequest); cdecl;
+function CMS_ReceiptRequest_free(a: PCMS_ReceiptRequest): void; cdecl;
 function d2i_CMS_ReceiptRequest(a: PPCMS_ReceiptRequest; _in: PPIdAnsiChar; len: TIdC_LONG): PCMS_ReceiptRequest; cdecl;
 function i2d_CMS_ReceiptRequest(a: PCMS_ReceiptRequest; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function CMS_ReceiptRequest_it: PASN1_ITEM; cdecl;
@@ -746,11 +676,11 @@ function CMS_add1_signer(cms: PCMS_ContentInfo; signer: PX509; pk: PEVP_PKEY; md
 function CMS_SignerInfo_get0_pkey_ctx(si: PCMS_SignerInfo): PEVP_PKEY_CTX; cdecl;
 function CMS_SignerInfo_get0_md_ctx(si: PCMS_SignerInfo): PEVP_MD_CTX; cdecl;
 function CMS_get0_SignerInfos(cms: PCMS_ContentInfo): Pstack_st_CMS_SignerInfo; cdecl;
-procedure CMS_SignerInfo_set1_signer_cert(si: PCMS_SignerInfo; signer: PX509); cdecl;
+function CMS_SignerInfo_set1_signer_cert(si: PCMS_SignerInfo; signer: PX509): void; cdecl;
 function CMS_SignerInfo_get0_signer_id(si: PCMS_SignerInfo; keyid: PPASN1_OCTET_STRING; issuer: PPX509_NAME; sno: PPASN1_INTEGER): TIdC_INT; cdecl;
 function CMS_SignerInfo_cert_cmp(si: PCMS_SignerInfo; cert: PX509): TIdC_INT; cdecl;
 function CMS_set1_signers_certs(cms: PCMS_ContentInfo; certs: Pstack_st_X509; flags: TIdC_UINT): TIdC_INT; cdecl;
-procedure CMS_SignerInfo_get0_algs(si: PCMS_SignerInfo; pk: PPEVP_PKEY; signer: PPX509; pdig: PPX509_ALGOR; psig: PPX509_ALGOR); cdecl;
+function CMS_SignerInfo_get0_algs(si: PCMS_SignerInfo; pk: PPEVP_PKEY; signer: PPX509; pdig: PPX509_ALGOR; psig: PPX509_ALGOR): void; cdecl;
 function CMS_SignerInfo_get0_signature(si: PCMS_SignerInfo): PASN1_OCTET_STRING; cdecl;
 function CMS_SignerInfo_sign(si: PCMS_SignerInfo): TIdC_INT; cdecl;
 function CMS_SignerInfo_verify(si: PCMS_SignerInfo): TIdC_INT; cdecl;
@@ -783,7 +713,7 @@ function CMS_get1_ReceiptRequest(si: PCMS_SignerInfo; prr: PPCMS_ReceiptRequest)
 function CMS_ReceiptRequest_create0(id: PIdAnsiChar; idlen: TIdC_INT; allorfirst: TIdC_INT; receiptList: Pstack_st_GENERAL_NAMES; receiptsTo: Pstack_st_GENERAL_NAMES): PCMS_ReceiptRequest; cdecl;
 function CMS_ReceiptRequest_create0_ex(id: PIdAnsiChar; idlen: TIdC_INT; allorfirst: TIdC_INT; receiptList: Pstack_st_GENERAL_NAMES; receiptsTo: Pstack_st_GENERAL_NAMES; libctx: POSSL_LIB_CTX): PCMS_ReceiptRequest; cdecl;
 function CMS_add1_ReceiptRequest(si: PCMS_SignerInfo; rr: PCMS_ReceiptRequest): TIdC_INT; cdecl;
-procedure CMS_ReceiptRequest_get0_values(rr: PCMS_ReceiptRequest; pcid: PPASN1_STRING; pallorfirst: PIdC_INT; plist: PPstack_st_GENERAL_NAMES; prto: PPstack_st_GENERAL_NAMES); cdecl;
+function CMS_ReceiptRequest_get0_values(rr: PCMS_ReceiptRequest; pcid: PPASN1_STRING; pallorfirst: PIdC_INT; plist: PPstack_st_GENERAL_NAMES; prto: PPstack_st_GENERAL_NAMES): void; cdecl;
 function CMS_RecipientInfo_kari_get0_alg(ri: PCMS_RecipientInfo; palg: PPX509_ALGOR; pukm: PPASN1_OCTET_STRING): TIdC_INT; cdecl;
 function CMS_RecipientInfo_kari_get0_reks(ri: PCMS_RecipientInfo): Pstack_st_CMS_RecipientEncryptedKey; cdecl;
 function CMS_RecipientInfo_kari_get0_orig_id(ri: PCMS_RecipientInfo; pubalg: PPX509_ALGOR; pubkey: PPASN1_BIT_STRING; keyid: PPASN1_OCTET_STRING; issuer: PPX509_NAME; sno: PPASN1_INTEGER): TIdC_INT; cdecl;
@@ -801,6 +731,143 @@ function CMS_RecipientInfo_kemri_get0_ctx(ri: PCMS_RecipientInfo): PEVP_CIPHER_C
 function CMS_RecipientInfo_kemri_get0_kdf_alg(ri: PCMS_RecipientInfo): PX509_ALGOR; cdecl;
 function CMS_RecipientInfo_kemri_set_ukm(ri: PCMS_RecipientInfo; ukm: PIdAnsiChar; ukmLength: TIdC_INT): TIdC_INT; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
+
+// =============================================================================
+// OPENSSL STACK DEFINITIONS
+// =============================================================================
+type
+  { TODO 1 -copenssl stack CMS_SignerInfo definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_CMS_SignerInfo = Pointer;
+  {$EXTERNALSYM PSTACK_OF_CMS_SignerInfo}
+
+  { Original Stack Macros for CMS_SignerInfo:
+    SKM_DEFINE_STACK_OF_INTERNAL(CMS_SignerInfo, CMS_SignerInfo, CMS_SignerInfo)
+    sk_CMS_SignerInfo_num(sk) OPENSSL_sk_num(ossl_check_const_CMS_SignerInfo_sk_type(sk))
+    sk_CMS_SignerInfo_value(sk, idx) ((CMS_SignerInfo *)OPENSSL_sk_value(ossl_check_const_CMS_SignerInfo_sk_type(sk), (idx)))
+    sk_CMS_SignerInfo_new(cmp) ((STACK_OF(CMS_SignerInfo) *)OPENSSL_sk_new(ossl_check_CMS_SignerInfo_compfunc_type(cmp)))
+    sk_CMS_SignerInfo_new_null() ((STACK_OF(CMS_SignerInfo) *)OPENSSL_sk_new_null())
+    sk_CMS_SignerInfo_new_reserve(cmp, n) ((STACK_OF(CMS_SignerInfo) *)OPENSSL_sk_new_reserve(ossl_check_CMS_SignerInfo_compfunc_type(cmp), (n)))
+    sk_CMS_SignerInfo_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_CMS_SignerInfo_sk_type(sk), (n))
+    sk_CMS_SignerInfo_free(sk) OPENSSL_sk_free(ossl_check_CMS_SignerInfo_sk_type(sk))
+    sk_CMS_SignerInfo_zero(sk) OPENSSL_sk_zero(ossl_check_CMS_SignerInfo_sk_type(sk))
+    sk_CMS_SignerInfo_delete(sk, i) ((CMS_SignerInfo *)OPENSSL_sk_delete(ossl_check_CMS_SignerInfo_sk_type(sk), (i)))
+    sk_CMS_SignerInfo_delete_ptr(sk, ptr) ((CMS_SignerInfo *)OPENSSL_sk_delete_ptr(ossl_check_CMS_SignerInfo_sk_type(sk), ossl_check_CMS_SignerInfo_type(ptr)))
+    sk_CMS_SignerInfo_push(sk, ptr) OPENSSL_sk_push(ossl_check_CMS_SignerInfo_sk_type(sk), ossl_check_CMS_SignerInfo_type(ptr))
+    sk_CMS_SignerInfo_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_CMS_SignerInfo_sk_type(sk), ossl_check_CMS_SignerInfo_type(ptr))
+    sk_CMS_SignerInfo_pop(sk) ((CMS_SignerInfo *)OPENSSL_sk_pop(ossl_check_CMS_SignerInfo_sk_type(sk)))
+    sk_CMS_SignerInfo_shift(sk) ((CMS_SignerInfo *)OPENSSL_sk_shift(ossl_check_CMS_SignerInfo_sk_type(sk)))
+    sk_CMS_SignerInfo_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_CMS_SignerInfo_sk_type(sk), ossl_check_CMS_SignerInfo_freefunc_type(freefunc))
+    sk_CMS_SignerInfo_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_CMS_SignerInfo_sk_type(sk), ossl_check_CMS_SignerInfo_type(ptr), (idx))
+    sk_CMS_SignerInfo_set(sk, idx, ptr) ((CMS_SignerInfo *)OPENSSL_sk_set(ossl_check_CMS_SignerInfo_sk_type(sk), (idx), ossl_check_CMS_SignerInfo_type(ptr)))
+    sk_CMS_SignerInfo_find(sk, ptr) OPENSSL_sk_find(ossl_check_CMS_SignerInfo_sk_type(sk), ossl_check_CMS_SignerInfo_type(ptr))
+    sk_CMS_SignerInfo_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_CMS_SignerInfo_sk_type(sk), ossl_check_CMS_SignerInfo_type(ptr))
+    sk_CMS_SignerInfo_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_CMS_SignerInfo_sk_type(sk), ossl_check_CMS_SignerInfo_type(ptr), pnum)
+    sk_CMS_SignerInfo_sort(sk) OPENSSL_sk_sort(ossl_check_CMS_SignerInfo_sk_type(sk))
+    sk_CMS_SignerInfo_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_CMS_SignerInfo_sk_type(sk))
+    sk_CMS_SignerInfo_dup(sk) ((STACK_OF(CMS_SignerInfo) *)OPENSSL_sk_dup(ossl_check_const_CMS_SignerInfo_sk_type(sk)))
+    sk_CMS_SignerInfo_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(CMS_SignerInfo) *)OPENSSL_sk_deep_copy(ossl_check_const_CMS_SignerInfo_sk_type(sk), ossl_check_CMS_SignerInfo_copyfunc_type(copyfunc), ossl_check_CMS_SignerInfo_freefunc_type(freefunc)))
+    sk_CMS_SignerInfo_set_cmp_func(sk, cmp) ((sk_CMS_SignerInfo_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_CMS_SignerInfo_sk_type(sk), ossl_check_CMS_SignerInfo_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack CMS_RecipientEncryptedKey definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_CMS_RecipientEncryptedKey = Pointer;
+  {$EXTERNALSYM PSTACK_OF_CMS_RecipientEncryptedKey}
+
+  { Original Stack Macros for CMS_RecipientEncryptedKey:
+    SKM_DEFINE_STACK_OF_INTERNAL(CMS_RecipientEncryptedKey, CMS_RecipientEncryptedKey, CMS_RecipientEncryptedKey)
+    sk_CMS_RecipientEncryptedKey_num(sk) OPENSSL_sk_num(ossl_check_const_CMS_RecipientEncryptedKey_sk_type(sk))
+    sk_CMS_RecipientEncryptedKey_value(sk, idx) ((CMS_RecipientEncryptedKey *)OPENSSL_sk_value(ossl_check_const_CMS_RecipientEncryptedKey_sk_type(sk), (idx)))
+    sk_CMS_RecipientEncryptedKey_new(cmp) ((STACK_OF(CMS_RecipientEncryptedKey) *)OPENSSL_sk_new(ossl_check_CMS_RecipientEncryptedKey_compfunc_type(cmp)))
+    sk_CMS_RecipientEncryptedKey_new_null() ((STACK_OF(CMS_RecipientEncryptedKey) *)OPENSSL_sk_new_null())
+    sk_CMS_RecipientEncryptedKey_new_reserve(cmp, n) ((STACK_OF(CMS_RecipientEncryptedKey) *)OPENSSL_sk_new_reserve(ossl_check_CMS_RecipientEncryptedKey_compfunc_type(cmp), (n)))
+    sk_CMS_RecipientEncryptedKey_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_CMS_RecipientEncryptedKey_sk_type(sk), (n))
+    sk_CMS_RecipientEncryptedKey_free(sk) OPENSSL_sk_free(ossl_check_CMS_RecipientEncryptedKey_sk_type(sk))
+    sk_CMS_RecipientEncryptedKey_zero(sk) OPENSSL_sk_zero(ossl_check_CMS_RecipientEncryptedKey_sk_type(sk))
+    sk_CMS_RecipientEncryptedKey_delete(sk, i) ((CMS_RecipientEncryptedKey *)OPENSSL_sk_delete(ossl_check_CMS_RecipientEncryptedKey_sk_type(sk), (i)))
+    sk_CMS_RecipientEncryptedKey_delete_ptr(sk, ptr) ((CMS_RecipientEncryptedKey *)OPENSSL_sk_delete_ptr(ossl_check_CMS_RecipientEncryptedKey_sk_type(sk), ossl_check_CMS_RecipientEncryptedKey_type(ptr)))
+    sk_CMS_RecipientEncryptedKey_push(sk, ptr) OPENSSL_sk_push(ossl_check_CMS_RecipientEncryptedKey_sk_type(sk), ossl_check_CMS_RecipientEncryptedKey_type(ptr))
+    sk_CMS_RecipientEncryptedKey_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_CMS_RecipientEncryptedKey_sk_type(sk), ossl_check_CMS_RecipientEncryptedKey_type(ptr))
+    sk_CMS_RecipientEncryptedKey_pop(sk) ((CMS_RecipientEncryptedKey *)OPENSSL_sk_pop(ossl_check_CMS_RecipientEncryptedKey_sk_type(sk)))
+    sk_CMS_RecipientEncryptedKey_shift(sk) ((CMS_RecipientEncryptedKey *)OPENSSL_sk_shift(ossl_check_CMS_RecipientEncryptedKey_sk_type(sk)))
+    sk_CMS_RecipientEncryptedKey_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_CMS_RecipientEncryptedKey_sk_type(sk), ossl_check_CMS_RecipientEncryptedKey_freefunc_type(freefunc))
+    sk_CMS_RecipientEncryptedKey_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_CMS_RecipientEncryptedKey_sk_type(sk), ossl_check_CMS_RecipientEncryptedKey_type(ptr), (idx))
+    sk_CMS_RecipientEncryptedKey_set(sk, idx, ptr) ((CMS_RecipientEncryptedKey *)OPENSSL_sk_set(ossl_check_CMS_RecipientEncryptedKey_sk_type(sk), (idx), ossl_check_CMS_RecipientEncryptedKey_type(ptr)))
+    sk_CMS_RecipientEncryptedKey_find(sk, ptr) OPENSSL_sk_find(ossl_check_CMS_RecipientEncryptedKey_sk_type(sk), ossl_check_CMS_RecipientEncryptedKey_type(ptr))
+    sk_CMS_RecipientEncryptedKey_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_CMS_RecipientEncryptedKey_sk_type(sk), ossl_check_CMS_RecipientEncryptedKey_type(ptr))
+    sk_CMS_RecipientEncryptedKey_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_CMS_RecipientEncryptedKey_sk_type(sk), ossl_check_CMS_RecipientEncryptedKey_type(ptr), pnum)
+    sk_CMS_RecipientEncryptedKey_sort(sk) OPENSSL_sk_sort(ossl_check_CMS_RecipientEncryptedKey_sk_type(sk))
+    sk_CMS_RecipientEncryptedKey_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_CMS_RecipientEncryptedKey_sk_type(sk))
+    sk_CMS_RecipientEncryptedKey_dup(sk) ((STACK_OF(CMS_RecipientEncryptedKey) *)OPENSSL_sk_dup(ossl_check_const_CMS_RecipientEncryptedKey_sk_type(sk)))
+    sk_CMS_RecipientEncryptedKey_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(CMS_RecipientEncryptedKey) *)OPENSSL_sk_deep_copy(ossl_check_const_CMS_RecipientEncryptedKey_sk_type(sk), ossl_check_CMS_RecipientEncryptedKey_copyfunc_type(copyfunc), ossl_check_CMS_RecipientEncryptedKey_freefunc_type(freefunc)))
+    sk_CMS_RecipientEncryptedKey_set_cmp_func(sk, cmp) ((sk_CMS_RecipientEncryptedKey_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_CMS_RecipientEncryptedKey_sk_type(sk), ossl_check_CMS_RecipientEncryptedKey_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack CMS_RecipientInfo definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_CMS_RecipientInfo = Pointer;
+  {$EXTERNALSYM PSTACK_OF_CMS_RecipientInfo}
+
+  { Original Stack Macros for CMS_RecipientInfo:
+    SKM_DEFINE_STACK_OF_INTERNAL(CMS_RecipientInfo, CMS_RecipientInfo, CMS_RecipientInfo)
+    sk_CMS_RecipientInfo_num(sk) OPENSSL_sk_num(ossl_check_const_CMS_RecipientInfo_sk_type(sk))
+    sk_CMS_RecipientInfo_value(sk, idx) ((CMS_RecipientInfo *)OPENSSL_sk_value(ossl_check_const_CMS_RecipientInfo_sk_type(sk), (idx)))
+    sk_CMS_RecipientInfo_new(cmp) ((STACK_OF(CMS_RecipientInfo) *)OPENSSL_sk_new(ossl_check_CMS_RecipientInfo_compfunc_type(cmp)))
+    sk_CMS_RecipientInfo_new_null() ((STACK_OF(CMS_RecipientInfo) *)OPENSSL_sk_new_null())
+    sk_CMS_RecipientInfo_new_reserve(cmp, n) ((STACK_OF(CMS_RecipientInfo) *)OPENSSL_sk_new_reserve(ossl_check_CMS_RecipientInfo_compfunc_type(cmp), (n)))
+    sk_CMS_RecipientInfo_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_CMS_RecipientInfo_sk_type(sk), (n))
+    sk_CMS_RecipientInfo_free(sk) OPENSSL_sk_free(ossl_check_CMS_RecipientInfo_sk_type(sk))
+    sk_CMS_RecipientInfo_zero(sk) OPENSSL_sk_zero(ossl_check_CMS_RecipientInfo_sk_type(sk))
+    sk_CMS_RecipientInfo_delete(sk, i) ((CMS_RecipientInfo *)OPENSSL_sk_delete(ossl_check_CMS_RecipientInfo_sk_type(sk), (i)))
+    sk_CMS_RecipientInfo_delete_ptr(sk, ptr) ((CMS_RecipientInfo *)OPENSSL_sk_delete_ptr(ossl_check_CMS_RecipientInfo_sk_type(sk), ossl_check_CMS_RecipientInfo_type(ptr)))
+    sk_CMS_RecipientInfo_push(sk, ptr) OPENSSL_sk_push(ossl_check_CMS_RecipientInfo_sk_type(sk), ossl_check_CMS_RecipientInfo_type(ptr))
+    sk_CMS_RecipientInfo_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_CMS_RecipientInfo_sk_type(sk), ossl_check_CMS_RecipientInfo_type(ptr))
+    sk_CMS_RecipientInfo_pop(sk) ((CMS_RecipientInfo *)OPENSSL_sk_pop(ossl_check_CMS_RecipientInfo_sk_type(sk)))
+    sk_CMS_RecipientInfo_shift(sk) ((CMS_RecipientInfo *)OPENSSL_sk_shift(ossl_check_CMS_RecipientInfo_sk_type(sk)))
+    sk_CMS_RecipientInfo_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_CMS_RecipientInfo_sk_type(sk), ossl_check_CMS_RecipientInfo_freefunc_type(freefunc))
+    sk_CMS_RecipientInfo_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_CMS_RecipientInfo_sk_type(sk), ossl_check_CMS_RecipientInfo_type(ptr), (idx))
+    sk_CMS_RecipientInfo_set(sk, idx, ptr) ((CMS_RecipientInfo *)OPENSSL_sk_set(ossl_check_CMS_RecipientInfo_sk_type(sk), (idx), ossl_check_CMS_RecipientInfo_type(ptr)))
+    sk_CMS_RecipientInfo_find(sk, ptr) OPENSSL_sk_find(ossl_check_CMS_RecipientInfo_sk_type(sk), ossl_check_CMS_RecipientInfo_type(ptr))
+    sk_CMS_RecipientInfo_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_CMS_RecipientInfo_sk_type(sk), ossl_check_CMS_RecipientInfo_type(ptr))
+    sk_CMS_RecipientInfo_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_CMS_RecipientInfo_sk_type(sk), ossl_check_CMS_RecipientInfo_type(ptr), pnum)
+    sk_CMS_RecipientInfo_sort(sk) OPENSSL_sk_sort(ossl_check_CMS_RecipientInfo_sk_type(sk))
+    sk_CMS_RecipientInfo_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_CMS_RecipientInfo_sk_type(sk))
+    sk_CMS_RecipientInfo_dup(sk) ((STACK_OF(CMS_RecipientInfo) *)OPENSSL_sk_dup(ossl_check_const_CMS_RecipientInfo_sk_type(sk)))
+    sk_CMS_RecipientInfo_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(CMS_RecipientInfo) *)OPENSSL_sk_deep_copy(ossl_check_const_CMS_RecipientInfo_sk_type(sk), ossl_check_CMS_RecipientInfo_copyfunc_type(copyfunc), ossl_check_CMS_RecipientInfo_freefunc_type(freefunc)))
+    sk_CMS_RecipientInfo_set_cmp_func(sk, cmp) ((sk_CMS_RecipientInfo_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_CMS_RecipientInfo_sk_type(sk), ossl_check_CMS_RecipientInfo_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack CMS_RevocationInfoChoice definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_CMS_RevocationInfoChoice = Pointer;
+  {$EXTERNALSYM PSTACK_OF_CMS_RevocationInfoChoice}
+
+  { Original Stack Macros for CMS_RevocationInfoChoice:
+    SKM_DEFINE_STACK_OF_INTERNAL(CMS_RevocationInfoChoice, CMS_RevocationInfoChoice, CMS_RevocationInfoChoice)
+    sk_CMS_RevocationInfoChoice_num(sk) OPENSSL_sk_num(ossl_check_const_CMS_RevocationInfoChoice_sk_type(sk))
+    sk_CMS_RevocationInfoChoice_value(sk, idx) ((CMS_RevocationInfoChoice *)OPENSSL_sk_value(ossl_check_const_CMS_RevocationInfoChoice_sk_type(sk), (idx)))
+    sk_CMS_RevocationInfoChoice_new(cmp) ((STACK_OF(CMS_RevocationInfoChoice) *)OPENSSL_sk_new(ossl_check_CMS_RevocationInfoChoice_compfunc_type(cmp)))
+    sk_CMS_RevocationInfoChoice_new_null() ((STACK_OF(CMS_RevocationInfoChoice) *)OPENSSL_sk_new_null())
+    sk_CMS_RevocationInfoChoice_new_reserve(cmp, n) ((STACK_OF(CMS_RevocationInfoChoice) *)OPENSSL_sk_new_reserve(ossl_check_CMS_RevocationInfoChoice_compfunc_type(cmp), (n)))
+    sk_CMS_RevocationInfoChoice_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_CMS_RevocationInfoChoice_sk_type(sk), (n))
+    sk_CMS_RevocationInfoChoice_free(sk) OPENSSL_sk_free(ossl_check_CMS_RevocationInfoChoice_sk_type(sk))
+    sk_CMS_RevocationInfoChoice_zero(sk) OPENSSL_sk_zero(ossl_check_CMS_RevocationInfoChoice_sk_type(sk))
+    sk_CMS_RevocationInfoChoice_delete(sk, i) ((CMS_RevocationInfoChoice *)OPENSSL_sk_delete(ossl_check_CMS_RevocationInfoChoice_sk_type(sk), (i)))
+    sk_CMS_RevocationInfoChoice_delete_ptr(sk, ptr) ((CMS_RevocationInfoChoice *)OPENSSL_sk_delete_ptr(ossl_check_CMS_RevocationInfoChoice_sk_type(sk), ossl_check_CMS_RevocationInfoChoice_type(ptr)))
+    sk_CMS_RevocationInfoChoice_push(sk, ptr) OPENSSL_sk_push(ossl_check_CMS_RevocationInfoChoice_sk_type(sk), ossl_check_CMS_RevocationInfoChoice_type(ptr))
+    sk_CMS_RevocationInfoChoice_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_CMS_RevocationInfoChoice_sk_type(sk), ossl_check_CMS_RevocationInfoChoice_type(ptr))
+    sk_CMS_RevocationInfoChoice_pop(sk) ((CMS_RevocationInfoChoice *)OPENSSL_sk_pop(ossl_check_CMS_RevocationInfoChoice_sk_type(sk)))
+    sk_CMS_RevocationInfoChoice_shift(sk) ((CMS_RevocationInfoChoice *)OPENSSL_sk_shift(ossl_check_CMS_RevocationInfoChoice_sk_type(sk)))
+    sk_CMS_RevocationInfoChoice_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_CMS_RevocationInfoChoice_sk_type(sk), ossl_check_CMS_RevocationInfoChoice_freefunc_type(freefunc))
+    sk_CMS_RevocationInfoChoice_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_CMS_RevocationInfoChoice_sk_type(sk), ossl_check_CMS_RevocationInfoChoice_type(ptr), (idx))
+    sk_CMS_RevocationInfoChoice_set(sk, idx, ptr) ((CMS_RevocationInfoChoice *)OPENSSL_sk_set(ossl_check_CMS_RevocationInfoChoice_sk_type(sk), (idx), ossl_check_CMS_RevocationInfoChoice_type(ptr)))
+    sk_CMS_RevocationInfoChoice_find(sk, ptr) OPENSSL_sk_find(ossl_check_CMS_RevocationInfoChoice_sk_type(sk), ossl_check_CMS_RevocationInfoChoice_type(ptr))
+    sk_CMS_RevocationInfoChoice_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_CMS_RevocationInfoChoice_sk_type(sk), ossl_check_CMS_RevocationInfoChoice_type(ptr))
+    sk_CMS_RevocationInfoChoice_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_CMS_RevocationInfoChoice_sk_type(sk), ossl_check_CMS_RevocationInfoChoice_type(ptr), pnum)
+    sk_CMS_RevocationInfoChoice_sort(sk) OPENSSL_sk_sort(ossl_check_CMS_RevocationInfoChoice_sk_type(sk))
+    sk_CMS_RevocationInfoChoice_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_CMS_RevocationInfoChoice_sk_type(sk))
+    sk_CMS_RevocationInfoChoice_dup(sk) ((STACK_OF(CMS_RevocationInfoChoice) *)OPENSSL_sk_dup(ossl_check_const_CMS_RevocationInfoChoice_sk_type(sk)))
+    sk_CMS_RevocationInfoChoice_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(CMS_RevocationInfoChoice) *)OPENSSL_sk_deep_copy(ossl_check_const_CMS_RevocationInfoChoice_sk_type(sk), ossl_check_CMS_RevocationInfoChoice_copyfunc_type(copyfunc), ossl_check_CMS_RevocationInfoChoice_freefunc_type(freefunc)))
+    sk_CMS_RevocationInfoChoice_set_cmp_func(sk, cmp) ((sk_CMS_RevocationInfoChoice_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_CMS_RevocationInfoChoice_sk_type(sk), ossl_check_CMS_RevocationInfoChoice_compfunc_type(cmp)))
+  }
+
 
 implementation
 
@@ -820,14 +887,14 @@ uses
 
 function CMS_EnvelopedData_it: PASN1_ITEM; cdecl external CLibCrypto name 'CMS_EnvelopedData_it';
 function CMS_SignedData_new: PCMS_SignedData; cdecl external CLibCrypto name 'CMS_SignedData_new';
-procedure CMS_SignedData_free(a: PCMS_SignedData); cdecl external CLibCrypto name 'CMS_SignedData_free';
+function CMS_SignedData_free(a: PCMS_SignedData): void; cdecl external CLibCrypto name 'CMS_SignedData_free';
 function CMS_ContentInfo_new: PCMS_ContentInfo; cdecl external CLibCrypto name 'CMS_ContentInfo_new';
-procedure CMS_ContentInfo_free(a: PCMS_ContentInfo); cdecl external CLibCrypto name 'CMS_ContentInfo_free';
+function CMS_ContentInfo_free(a: PCMS_ContentInfo): void; cdecl external CLibCrypto name 'CMS_ContentInfo_free';
 function d2i_CMS_ContentInfo(a: PPCMS_ContentInfo; _in: PPIdAnsiChar; len: TIdC_LONG): PCMS_ContentInfo; cdecl external CLibCrypto name 'd2i_CMS_ContentInfo';
 function i2d_CMS_ContentInfo(a: PCMS_ContentInfo; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_CMS_ContentInfo';
 function CMS_ContentInfo_it: PASN1_ITEM; cdecl external CLibCrypto name 'CMS_ContentInfo_it';
 function CMS_ReceiptRequest_new: PCMS_ReceiptRequest; cdecl external CLibCrypto name 'CMS_ReceiptRequest_new';
-procedure CMS_ReceiptRequest_free(a: PCMS_ReceiptRequest); cdecl external CLibCrypto name 'CMS_ReceiptRequest_free';
+function CMS_ReceiptRequest_free(a: PCMS_ReceiptRequest): void; cdecl external CLibCrypto name 'CMS_ReceiptRequest_free';
 function d2i_CMS_ReceiptRequest(a: PPCMS_ReceiptRequest; _in: PPIdAnsiChar; len: TIdC_LONG): PCMS_ReceiptRequest; cdecl external CLibCrypto name 'd2i_CMS_ReceiptRequest';
 function i2d_CMS_ReceiptRequest(a: PCMS_ReceiptRequest; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_CMS_ReceiptRequest';
 function CMS_ReceiptRequest_it: PASN1_ITEM; cdecl external CLibCrypto name 'CMS_ReceiptRequest_it';
@@ -913,11 +980,11 @@ function CMS_add1_signer(cms: PCMS_ContentInfo; signer: PX509; pk: PEVP_PKEY; md
 function CMS_SignerInfo_get0_pkey_ctx(si: PCMS_SignerInfo): PEVP_PKEY_CTX; cdecl external CLibCrypto name 'CMS_SignerInfo_get0_pkey_ctx';
 function CMS_SignerInfo_get0_md_ctx(si: PCMS_SignerInfo): PEVP_MD_CTX; cdecl external CLibCrypto name 'CMS_SignerInfo_get0_md_ctx';
 function CMS_get0_SignerInfos(cms: PCMS_ContentInfo): Pstack_st_CMS_SignerInfo; cdecl external CLibCrypto name 'CMS_get0_SignerInfos';
-procedure CMS_SignerInfo_set1_signer_cert(si: PCMS_SignerInfo; signer: PX509); cdecl external CLibCrypto name 'CMS_SignerInfo_set1_signer_cert';
+function CMS_SignerInfo_set1_signer_cert(si: PCMS_SignerInfo; signer: PX509): void; cdecl external CLibCrypto name 'CMS_SignerInfo_set1_signer_cert';
 function CMS_SignerInfo_get0_signer_id(si: PCMS_SignerInfo; keyid: PPASN1_OCTET_STRING; issuer: PPX509_NAME; sno: PPASN1_INTEGER): TIdC_INT; cdecl external CLibCrypto name 'CMS_SignerInfo_get0_signer_id';
 function CMS_SignerInfo_cert_cmp(si: PCMS_SignerInfo; cert: PX509): TIdC_INT; cdecl external CLibCrypto name 'CMS_SignerInfo_cert_cmp';
 function CMS_set1_signers_certs(cms: PCMS_ContentInfo; certs: Pstack_st_X509; flags: TIdC_UINT): TIdC_INT; cdecl external CLibCrypto name 'CMS_set1_signers_certs';
-procedure CMS_SignerInfo_get0_algs(si: PCMS_SignerInfo; pk: PPEVP_PKEY; signer: PPX509; pdig: PPX509_ALGOR; psig: PPX509_ALGOR); cdecl external CLibCrypto name 'CMS_SignerInfo_get0_algs';
+function CMS_SignerInfo_get0_algs(si: PCMS_SignerInfo; pk: PPEVP_PKEY; signer: PPX509; pdig: PPX509_ALGOR; psig: PPX509_ALGOR): void; cdecl external CLibCrypto name 'CMS_SignerInfo_get0_algs';
 function CMS_SignerInfo_get0_signature(si: PCMS_SignerInfo): PASN1_OCTET_STRING; cdecl external CLibCrypto name 'CMS_SignerInfo_get0_signature';
 function CMS_SignerInfo_sign(si: PCMS_SignerInfo): TIdC_INT; cdecl external CLibCrypto name 'CMS_SignerInfo_sign';
 function CMS_SignerInfo_verify(si: PCMS_SignerInfo): TIdC_INT; cdecl external CLibCrypto name 'CMS_SignerInfo_verify';
@@ -950,7 +1017,7 @@ function CMS_get1_ReceiptRequest(si: PCMS_SignerInfo; prr: PPCMS_ReceiptRequest)
 function CMS_ReceiptRequest_create0(id: PIdAnsiChar; idlen: TIdC_INT; allorfirst: TIdC_INT; receiptList: Pstack_st_GENERAL_NAMES; receiptsTo: Pstack_st_GENERAL_NAMES): PCMS_ReceiptRequest; cdecl external CLibCrypto name 'CMS_ReceiptRequest_create0';
 function CMS_ReceiptRequest_create0_ex(id: PIdAnsiChar; idlen: TIdC_INT; allorfirst: TIdC_INT; receiptList: Pstack_st_GENERAL_NAMES; receiptsTo: Pstack_st_GENERAL_NAMES; libctx: POSSL_LIB_CTX): PCMS_ReceiptRequest; cdecl external CLibCrypto name 'CMS_ReceiptRequest_create0_ex';
 function CMS_add1_ReceiptRequest(si: PCMS_SignerInfo; rr: PCMS_ReceiptRequest): TIdC_INT; cdecl external CLibCrypto name 'CMS_add1_ReceiptRequest';
-procedure CMS_ReceiptRequest_get0_values(rr: PCMS_ReceiptRequest; pcid: PPASN1_STRING; pallorfirst: PIdC_INT; plist: PPstack_st_GENERAL_NAMES; prto: PPstack_st_GENERAL_NAMES); cdecl external CLibCrypto name 'CMS_ReceiptRequest_get0_values';
+function CMS_ReceiptRequest_get0_values(rr: PCMS_ReceiptRequest; pcid: PPASN1_STRING; pallorfirst: PIdC_INT; plist: PPstack_st_GENERAL_NAMES; prto: PPstack_st_GENERAL_NAMES): void; cdecl external CLibCrypto name 'CMS_ReceiptRequest_get0_values';
 function CMS_RecipientInfo_kari_get0_alg(ri: PCMS_RecipientInfo; palg: PPX509_ALGOR; pukm: PPASN1_OCTET_STRING): TIdC_INT; cdecl external CLibCrypto name 'CMS_RecipientInfo_kari_get0_alg';
 function CMS_RecipientInfo_kari_get0_reks(ri: PCMS_RecipientInfo): Pstack_st_CMS_RecipientEncryptedKey; cdecl external CLibCrypto name 'CMS_RecipientInfo_kari_get0_reks';
 function CMS_RecipientInfo_kari_get0_orig_id(ri: PCMS_RecipientInfo; pubalg: PPX509_ALGOR; pubkey: PPASN1_BIT_STRING; keyid: PPASN1_OCTET_STRING; issuer: PPX509_NAME; sno: PPASN1_INTEGER): TIdC_INT; cdecl external CLibCrypto name 'CMS_RecipientInfo_kari_get0_orig_id';
@@ -1444,7 +1511,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_SignedData_new_procname);
 end;
 
-procedure ERR_CMS_SignedData_free(a: PCMS_SignedData); cdecl
+function ERR_CMS_SignedData_free(a: PCMS_SignedData): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_SignedData_free_procname);
 end;
@@ -1454,7 +1521,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_ContentInfo_new_procname);
 end;
 
-procedure ERR_CMS_ContentInfo_free(a: PCMS_ContentInfo); cdecl
+function ERR_CMS_ContentInfo_free(a: PCMS_ContentInfo): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_ContentInfo_free_procname);
 end;
@@ -1479,7 +1546,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_ReceiptRequest_new_procname);
 end;
 
-procedure ERR_CMS_ReceiptRequest_free(a: PCMS_ReceiptRequest); cdecl
+function ERR_CMS_ReceiptRequest_free(a: PCMS_ReceiptRequest): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_ReceiptRequest_free_procname);
 end;
@@ -1909,7 +1976,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_get0_SignerInfos_procname);
 end;
 
-procedure ERR_CMS_SignerInfo_set1_signer_cert(si: PCMS_SignerInfo; signer: PX509); cdecl
+function ERR_CMS_SignerInfo_set1_signer_cert(si: PCMS_SignerInfo; signer: PX509): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_SignerInfo_set1_signer_cert_procname);
 end;
@@ -1929,7 +1996,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_set1_signers_certs_procname);
 end;
 
-procedure ERR_CMS_SignerInfo_get0_algs(si: PCMS_SignerInfo; pk: PPEVP_PKEY; signer: PPX509; pdig: PPX509_ALGOR; psig: PPX509_ALGOR); cdecl
+function ERR_CMS_SignerInfo_get0_algs(si: PCMS_SignerInfo; pk: PPEVP_PKEY; signer: PPX509; pdig: PPX509_ALGOR; psig: PPX509_ALGOR): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_SignerInfo_get0_algs_procname);
 end;
@@ -2094,7 +2161,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_add1_ReceiptRequest_procname);
 end;
 
-procedure ERR_CMS_ReceiptRequest_get0_values(rr: PCMS_ReceiptRequest; pcid: PPASN1_STRING; pallorfirst: PIdC_INT; plist: PPstack_st_GENERAL_NAMES; prto: PPstack_st_GENERAL_NAMES); cdecl
+function ERR_CMS_ReceiptRequest_get0_values(rr: PCMS_ReceiptRequest; pcid: PPASN1_STRING; pallorfirst: PIdC_INT; plist: PPstack_st_GENERAL_NAMES; prto: PPstack_st_GENERAL_NAMES): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_ReceiptRequest_get0_values_procname);
 end;

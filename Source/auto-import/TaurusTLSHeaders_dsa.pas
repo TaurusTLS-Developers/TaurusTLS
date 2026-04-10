@@ -26,31 +26,38 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   PDSA_SIG_st = ^TDSA_SIG_st;
-  TDSA_SIG_st = record end;
+  TDSA_SIG_st =   record end;
   {$EXTERNALSYM PDSA_SIG_st}
-
-  PDSA_SIG = ^TDSA_SIG;
-  TDSA_SIG = TDSA_SIG_st;
-  {$EXTERNALSYM PDSA_SIG}
 
 
 // =============================================================================
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  TDSA_generate_parameters_callback_cb = procedure(arg1: TIdC_INT; arg2: TIdC_INT; arg3: Pointer); cdecl;
-  TDSA_meth_get_sign_func_cb = function(arg1: PIdAnsiChar; arg2: TIdC_INT; arg3: PDSA): PDSA_SIG; cdecl;
-  TDSA_meth_get_sign_setup_func_cb = function(arg1: PDSA; arg2: PBN_CTX; arg3: PPBIGNUM; arg4: PPBIGNUM): TIdC_INT; cdecl;
-  TDSA_meth_get_verify_func_cb = function(arg1: PIdAnsiChar; arg2: TIdC_INT; arg3: PDSA_SIG; arg4: PDSA): TIdC_INT; cdecl;
-  TDSA_meth_get_mod_exp_func_cb = function(arg1: PDSA; arg2: PBIGNUM; arg3: PBIGNUM; arg4: PBIGNUM; arg5: PBIGNUM; arg6: PBIGNUM; arg7: PBIGNUM; arg8: PBN_CTX; arg9: PBN_MONT_CTX): TIdC_INT; cdecl;
-  TDSA_meth_get_bn_mod_exp_func_cb = function(arg1: PDSA; arg2: PBIGNUM; arg3: PBIGNUM; arg4: PBIGNUM; arg5: PBIGNUM; arg6: PBN_CTX; arg7: PBN_MONT_CTX): TIdC_INT; cdecl;
-  TDSA_meth_get_init_func_cb = function(arg1: PDSA): TIdC_INT; cdecl;
-  TDSA_meth_get_paramgen_func_cb = function(arg1: PDSA; arg2: TIdC_INT; arg3: PIdAnsiChar; arg4: TIdC_INT; arg5: PIdC_INT; arg6: PIdC_ULONG; arg7: PBN_GENCB): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // DSA_generate_parameters_callback_cb = function(arg1: TIdC_INT; arg2: TIdC_INT; arg3: Pointer): void; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // DSA_meth_get_sign_func_cb = function(arg1: PIdAnsiChar; arg2: TIdC_INT; arg3: Pdsa_st): PDSA_SIG; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // DSA_meth_get_sign_setup_func_cb = function(arg1: Pdsa_st; arg2: Pbignum_ctx; arg3: PPbignum_st; arg4: PPbignum_st): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // DSA_meth_get_verify_func_cb = function(arg1: PIdAnsiChar; arg2: TIdC_INT; arg3: PDSA_SIG_st; arg4: Pdsa_st): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // DSA_meth_get_mod_exp_func_cb = function(arg1: Pdsa_st; arg2: Pbignum_st; arg3: Pbignum_st; arg4: Pbignum_st; arg5: Pbignum_st; arg6: Pbignum_st; arg7: Pbignum_st; arg8: Pbignum_ctx; arg9: Pbn_mont_ctx_st): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // DSA_meth_get_bn_mod_exp_func_cb = function(arg1: Pdsa_st; arg2: Pbignum_st; arg3: Pbignum_st; arg4: Pbignum_st; arg5: Pbignum_st; arg6: Pbignum_ctx; arg7: Pbn_mont_ctx_st): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // DSA_meth_get_init_func_cb = function(arg1: Pdsa_st): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // DSA_meth_get_paramgen_func_cb = function(arg1: Pdsa_st; arg2: TIdC_INT; arg3: PIdAnsiChar; arg4: TIdC_INT; arg5: PIdC_INT; arg6: PIdC_ULONG; arg7: Pbn_gencb_st): TIdC_INT; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -99,7 +106,7 @@ var
   DSA_SIG_new: function: PDSA_SIG; cdecl = nil;
   {$EXTERNALSYM DSA_SIG_new}
 
-  DSA_SIG_free: procedure(a: PDSA_SIG); cdecl = nil;
+  DSA_SIG_free: function(a: PDSA_SIG): void; cdecl = nil;
   {$EXTERNALSYM DSA_SIG_free}
 
   d2i_DSA_SIG: function(a: PPDSA_SIG; _in: PPIdAnsiChar; len: TIdC_LONG): PDSA_SIG; cdecl = nil;
@@ -108,7 +115,7 @@ var
   i2d_DSA_SIG: function(a: PDSA_SIG; _out: PPIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM i2d_DSA_SIG}
 
-  DSA_SIG_get0: procedure(sig: PDSA_SIG; pr: PPBIGNUM; ps: PPBIGNUM); cdecl = nil;
+  DSA_SIG_get0: function(sig: PDSA_SIG; pr: PPBIGNUM; ps: PPBIGNUM): void; cdecl = nil;
   {$EXTERNALSYM DSA_SIG_get0}
 
   DSA_SIG_set0: function(sig: PDSA_SIG; r: PBIGNUM; s: PBIGNUM): TIdC_INT; cdecl = nil;
@@ -126,7 +133,7 @@ var
   DSA_OpenSSL: function: PDSA_METHOD; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DSA_OpenSSL}
 
-  DSA_set_default_method: procedure(arg1: PDSA_METHOD); cdecl = nil; // Deprecated in 3_0_0
+  DSA_set_default_method: function(arg1: PDSA_METHOD): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DSA_set_default_method}
 
   DSA_get_default_method: function: PDSA_METHOD; cdecl = nil; // Deprecated in 3_0_0
@@ -144,7 +151,7 @@ var
   DSA_new_method: function(engine: PENGINE): PDSA; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DSA_new_method}
 
-  DSA_free: procedure(r: PDSA); cdecl = nil; // Deprecated in 3_0_0
+  DSA_free: function(r: PDSA): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DSA_free}
 
   DSA_up_ref: function(r: PDSA): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -213,13 +220,13 @@ var
   DSA_dup_DH: function(r: PDSA): PDH; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DSA_dup_DH}
 
-  DSA_get0_pqg: procedure(d: PDSA; p: PPBIGNUM; q: PPBIGNUM; g: PPBIGNUM); cdecl = nil; // Deprecated in 3_0_0
+  DSA_get0_pqg: function(d: PDSA; p: PPBIGNUM; q: PPBIGNUM; g: PPBIGNUM): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DSA_get0_pqg}
 
   DSA_set0_pqg: function(d: PDSA; p: PBIGNUM; q: PBIGNUM; g: PBIGNUM): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DSA_set0_pqg}
 
-  DSA_get0_key: procedure(d: PDSA; pub_key: PPBIGNUM; priv_key: PPBIGNUM); cdecl = nil; // Deprecated in 3_0_0
+  DSA_get0_key: function(d: PDSA; pub_key: PPBIGNUM; priv_key: PPBIGNUM): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DSA_get0_key}
 
   DSA_set0_key: function(d: PDSA; pub_key: PBIGNUM; priv_key: PBIGNUM): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -240,13 +247,13 @@ var
   DSA_get0_priv_key: function(d: PDSA): PBIGNUM; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DSA_get0_priv_key}
 
-  DSA_clear_flags: procedure(d: PDSA; flags: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  DSA_clear_flags: function(d: PDSA; flags: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DSA_clear_flags}
 
   DSA_test_flags: function(d: PDSA; flags: TIdC_INT): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DSA_test_flags}
 
-  DSA_set_flags: procedure(d: PDSA; flags: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  DSA_set_flags: function(d: PDSA; flags: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DSA_set_flags}
 
   DSA_get0_engine: function(d: PDSA): PENGINE; cdecl = nil; // Deprecated in 3_0_0
@@ -255,7 +262,7 @@ var
   DSA_meth_new: function(name: PIdAnsiChar; flags: TIdC_INT): PDSA_METHOD; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DSA_meth_new}
 
-  DSA_meth_free: procedure(dsam: PDSA_METHOD); cdecl = nil; // Deprecated in 3_0_0
+  DSA_meth_free: function(dsam: PDSA_METHOD): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DSA_meth_free}
 
   DSA_meth_dup: function(dsam: PDSA_METHOD): PDSA_METHOD; cdecl = nil; // Deprecated in 3_0_0
@@ -349,22 +356,22 @@ function EVP_PKEY_CTX_set_dsa_paramgen_type(ctx: PEVP_PKEY_CTX; name: PIdAnsiCha
 function EVP_PKEY_CTX_set_dsa_paramgen_seed(ctx: PEVP_PKEY_CTX; seed: PIdAnsiChar; seedlen: TIdC_SIZET): TIdC_INT; cdecl;
 function EVP_PKEY_CTX_set_dsa_paramgen_md(ctx: PEVP_PKEY_CTX; md: PEVP_MD): TIdC_INT; cdecl;
 function DSA_SIG_new: PDSA_SIG; cdecl;
-procedure DSA_SIG_free(a: PDSA_SIG); cdecl;
+function DSA_SIG_free(a: PDSA_SIG): void; cdecl;
 function d2i_DSA_SIG(a: PPDSA_SIG; _in: PPIdAnsiChar; len: TIdC_LONG): PDSA_SIG; cdecl;
 function i2d_DSA_SIG(a: PDSA_SIG; _out: PPIdAnsiChar): TIdC_INT; cdecl;
-procedure DSA_SIG_get0(sig: PDSA_SIG; pr: PPBIGNUM; ps: PPBIGNUM); cdecl;
+function DSA_SIG_get0(sig: PDSA_SIG; pr: PPBIGNUM; ps: PPBIGNUM): void; cdecl;
 function DSA_SIG_set0(sig: PDSA_SIG; r: PBIGNUM; s: PBIGNUM): TIdC_INT; cdecl;
 function DSAparams_dup(a: PDSA): PDSA; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_do_sign(dgst: PIdAnsiChar; dlen: TIdC_INT; dsa: PDSA): PDSA_SIG; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_do_verify(dgst: PIdAnsiChar; dgst_len: TIdC_INT; sig: PDSA_SIG; dsa: PDSA): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_OpenSSL: PDSA_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DSA_set_default_method(arg1: PDSA_METHOD); cdecl; deprecated 'In OpenSSL 3_0_0';
+function DSA_set_default_method(arg1: PDSA_METHOD): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_get_default_method: PDSA_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_set_method(dsa: PDSA; arg2: PDSA_METHOD): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_get_method(d: PDSA): PDSA_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_new: PDSA; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_new_method(engine: PENGINE): PDSA; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DSA_free(r: PDSA); cdecl; deprecated 'In OpenSSL 3_0_0';
+function DSA_free(r: PDSA): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_up_ref(r: PDSA): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_size(arg1: PDSA): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_bits(d: PDSA): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
@@ -387,21 +394,21 @@ function DSA_print(bp: PBIO; x: PDSA; off: TIdC_INT): TIdC_INT; cdecl; deprecate
 function DSAparams_print_fp(fp: PFILE; x: PDSA): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_print_fp(bp: PFILE; x: PDSA; off: TIdC_INT): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_dup_DH(r: PDSA): PDH; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DSA_get0_pqg(d: PDSA; p: PPBIGNUM; q: PPBIGNUM; g: PPBIGNUM); cdecl; deprecated 'In OpenSSL 3_0_0';
+function DSA_get0_pqg(d: PDSA; p: PPBIGNUM; q: PPBIGNUM; g: PPBIGNUM): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_set0_pqg(d: PDSA; p: PBIGNUM; q: PBIGNUM; g: PBIGNUM): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DSA_get0_key(d: PDSA; pub_key: PPBIGNUM; priv_key: PPBIGNUM); cdecl; deprecated 'In OpenSSL 3_0_0';
+function DSA_get0_key(d: PDSA; pub_key: PPBIGNUM; priv_key: PPBIGNUM): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_set0_key(d: PDSA; pub_key: PBIGNUM; priv_key: PBIGNUM): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_get0_p(d: PDSA): PBIGNUM; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_get0_q(d: PDSA): PBIGNUM; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_get0_g(d: PDSA): PBIGNUM; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_get0_pub_key(d: PDSA): PBIGNUM; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_get0_priv_key(d: PDSA): PBIGNUM; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DSA_clear_flags(d: PDSA; flags: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+function DSA_clear_flags(d: PDSA; flags: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_test_flags(d: PDSA; flags: TIdC_INT): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DSA_set_flags(d: PDSA; flags: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+function DSA_set_flags(d: PDSA; flags: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_get0_engine(d: PDSA): PENGINE; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_meth_new(name: PIdAnsiChar; flags: TIdC_INT): PDSA_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DSA_meth_free(dsam: PDSA_METHOD); cdecl; deprecated 'In OpenSSL 3_0_0';
+function DSA_meth_free(dsam: PDSA_METHOD): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_meth_dup(dsam: PDSA_METHOD): PDSA_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_meth_get0_name(dsam: PDSA_METHOD): PIdAnsiChar; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DSA_meth_set1_name(dsam: PDSA_METHOD; name: PIdAnsiChar): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
@@ -453,22 +460,22 @@ function EVP_PKEY_CTX_set_dsa_paramgen_type(ctx: PEVP_PKEY_CTX; name: PIdAnsiCha
 function EVP_PKEY_CTX_set_dsa_paramgen_seed(ctx: PEVP_PKEY_CTX; seed: PIdAnsiChar; seedlen: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_CTX_set_dsa_paramgen_seed';
 function EVP_PKEY_CTX_set_dsa_paramgen_md(ctx: PEVP_PKEY_CTX; md: PEVP_MD): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_CTX_set_dsa_paramgen_md';
 function DSA_SIG_new: PDSA_SIG; cdecl external CLibCrypto name 'DSA_SIG_new';
-procedure DSA_SIG_free(a: PDSA_SIG); cdecl external CLibCrypto name 'DSA_SIG_free';
+function DSA_SIG_free(a: PDSA_SIG): void; cdecl external CLibCrypto name 'DSA_SIG_free';
 function d2i_DSA_SIG(a: PPDSA_SIG; _in: PPIdAnsiChar; len: TIdC_LONG): PDSA_SIG; cdecl external CLibCrypto name 'd2i_DSA_SIG';
 function i2d_DSA_SIG(a: PDSA_SIG; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_DSA_SIG';
-procedure DSA_SIG_get0(sig: PDSA_SIG; pr: PPBIGNUM; ps: PPBIGNUM); cdecl external CLibCrypto name 'DSA_SIG_get0';
+function DSA_SIG_get0(sig: PDSA_SIG; pr: PPBIGNUM; ps: PPBIGNUM): void; cdecl external CLibCrypto name 'DSA_SIG_get0';
 function DSA_SIG_set0(sig: PDSA_SIG; r: PBIGNUM; s: PBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'DSA_SIG_set0';
 function DSAparams_dup(a: PDSA): PDSA; cdecl external CLibCrypto name 'DSAparams_dup';
 function DSA_do_sign(dgst: PIdAnsiChar; dlen: TIdC_INT; dsa: PDSA): PDSA_SIG; cdecl external CLibCrypto name 'DSA_do_sign';
 function DSA_do_verify(dgst: PIdAnsiChar; dgst_len: TIdC_INT; sig: PDSA_SIG; dsa: PDSA): TIdC_INT; cdecl external CLibCrypto name 'DSA_do_verify';
 function DSA_OpenSSL: PDSA_METHOD; cdecl external CLibCrypto name 'DSA_OpenSSL';
-procedure DSA_set_default_method(arg1: PDSA_METHOD); cdecl external CLibCrypto name 'DSA_set_default_method';
+function DSA_set_default_method(arg1: PDSA_METHOD): void; cdecl external CLibCrypto name 'DSA_set_default_method';
 function DSA_get_default_method: PDSA_METHOD; cdecl external CLibCrypto name 'DSA_get_default_method';
 function DSA_set_method(dsa: PDSA; arg2: PDSA_METHOD): TIdC_INT; cdecl external CLibCrypto name 'DSA_set_method';
 function DSA_get_method(d: PDSA): PDSA_METHOD; cdecl external CLibCrypto name 'DSA_get_method';
 function DSA_new: PDSA; cdecl external CLibCrypto name 'DSA_new';
 function DSA_new_method(engine: PENGINE): PDSA; cdecl external CLibCrypto name 'DSA_new_method';
-procedure DSA_free(r: PDSA); cdecl external CLibCrypto name 'DSA_free';
+function DSA_free(r: PDSA): void; cdecl external CLibCrypto name 'DSA_free';
 function DSA_up_ref(r: PDSA): TIdC_INT; cdecl external CLibCrypto name 'DSA_up_ref';
 function DSA_size(arg1: PDSA): TIdC_INT; cdecl external CLibCrypto name 'DSA_size';
 function DSA_bits(d: PDSA): TIdC_INT; cdecl external CLibCrypto name 'DSA_bits';
@@ -491,21 +498,21 @@ function DSA_print(bp: PBIO; x: PDSA; off: TIdC_INT): TIdC_INT; cdecl external C
 function DSAparams_print_fp(fp: PFILE; x: PDSA): TIdC_INT; cdecl external CLibCrypto name 'DSAparams_print_fp';
 function DSA_print_fp(bp: PFILE; x: PDSA; off: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'DSA_print_fp';
 function DSA_dup_DH(r: PDSA): PDH; cdecl external CLibCrypto name 'DSA_dup_DH';
-procedure DSA_get0_pqg(d: PDSA; p: PPBIGNUM; q: PPBIGNUM; g: PPBIGNUM); cdecl external CLibCrypto name 'DSA_get0_pqg';
+function DSA_get0_pqg(d: PDSA; p: PPBIGNUM; q: PPBIGNUM; g: PPBIGNUM): void; cdecl external CLibCrypto name 'DSA_get0_pqg';
 function DSA_set0_pqg(d: PDSA; p: PBIGNUM; q: PBIGNUM; g: PBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'DSA_set0_pqg';
-procedure DSA_get0_key(d: PDSA; pub_key: PPBIGNUM; priv_key: PPBIGNUM); cdecl external CLibCrypto name 'DSA_get0_key';
+function DSA_get0_key(d: PDSA; pub_key: PPBIGNUM; priv_key: PPBIGNUM): void; cdecl external CLibCrypto name 'DSA_get0_key';
 function DSA_set0_key(d: PDSA; pub_key: PBIGNUM; priv_key: PBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'DSA_set0_key';
 function DSA_get0_p(d: PDSA): PBIGNUM; cdecl external CLibCrypto name 'DSA_get0_p';
 function DSA_get0_q(d: PDSA): PBIGNUM; cdecl external CLibCrypto name 'DSA_get0_q';
 function DSA_get0_g(d: PDSA): PBIGNUM; cdecl external CLibCrypto name 'DSA_get0_g';
 function DSA_get0_pub_key(d: PDSA): PBIGNUM; cdecl external CLibCrypto name 'DSA_get0_pub_key';
 function DSA_get0_priv_key(d: PDSA): PBIGNUM; cdecl external CLibCrypto name 'DSA_get0_priv_key';
-procedure DSA_clear_flags(d: PDSA; flags: TIdC_INT); cdecl external CLibCrypto name 'DSA_clear_flags';
+function DSA_clear_flags(d: PDSA; flags: TIdC_INT): void; cdecl external CLibCrypto name 'DSA_clear_flags';
 function DSA_test_flags(d: PDSA; flags: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'DSA_test_flags';
-procedure DSA_set_flags(d: PDSA; flags: TIdC_INT); cdecl external CLibCrypto name 'DSA_set_flags';
+function DSA_set_flags(d: PDSA; flags: TIdC_INT): void; cdecl external CLibCrypto name 'DSA_set_flags';
 function DSA_get0_engine(d: PDSA): PENGINE; cdecl external CLibCrypto name 'DSA_get0_engine';
 function DSA_meth_new(name: PIdAnsiChar; flags: TIdC_INT): PDSA_METHOD; cdecl external CLibCrypto name 'DSA_meth_new';
-procedure DSA_meth_free(dsam: PDSA_METHOD); cdecl external CLibCrypto name 'DSA_meth_free';
+function DSA_meth_free(dsam: PDSA_METHOD): void; cdecl external CLibCrypto name 'DSA_meth_free';
 function DSA_meth_dup(dsam: PDSA_METHOD): PDSA_METHOD; cdecl external CLibCrypto name 'DSA_meth_dup';
 function DSA_meth_get0_name(dsam: PDSA_METHOD): PIdAnsiChar; cdecl external CLibCrypto name 'DSA_meth_get0_name';
 function DSA_meth_set1_name(dsam: PDSA_METHOD; name: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'DSA_meth_set1_name';
@@ -922,7 +929,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DSA_SIG_new_procname);
 end;
 
-procedure ERR_DSA_SIG_free(a: PDSA_SIG); cdecl
+function ERR_DSA_SIG_free(a: PDSA_SIG): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DSA_SIG_free_procname);
 end;
@@ -937,7 +944,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(i2d_DSA_SIG_procname);
 end;
 
-procedure ERR_DSA_SIG_get0(sig: PDSA_SIG; pr: PPBIGNUM; ps: PPBIGNUM); cdecl
+function ERR_DSA_SIG_get0(sig: PDSA_SIG; pr: PPBIGNUM; ps: PPBIGNUM): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DSA_SIG_get0_procname);
 end;
@@ -967,7 +974,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DSA_OpenSSL_procname);
 end;
 
-procedure ERR_DSA_set_default_method(arg1: PDSA_METHOD); cdecl
+function ERR_DSA_set_default_method(arg1: PDSA_METHOD): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DSA_set_default_method_procname);
 end;
@@ -997,7 +1004,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DSA_new_method_procname);
 end;
 
-procedure ERR_DSA_free(r: PDSA); cdecl
+function ERR_DSA_free(r: PDSA): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DSA_free_procname);
 end;
@@ -1112,7 +1119,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DSA_dup_DH_procname);
 end;
 
-procedure ERR_DSA_get0_pqg(d: PDSA; p: PPBIGNUM; q: PPBIGNUM; g: PPBIGNUM); cdecl
+function ERR_DSA_get0_pqg(d: PDSA; p: PPBIGNUM; q: PPBIGNUM; g: PPBIGNUM): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DSA_get0_pqg_procname);
 end;
@@ -1122,7 +1129,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DSA_set0_pqg_procname);
 end;
 
-procedure ERR_DSA_get0_key(d: PDSA; pub_key: PPBIGNUM; priv_key: PPBIGNUM); cdecl
+function ERR_DSA_get0_key(d: PDSA; pub_key: PPBIGNUM; priv_key: PPBIGNUM): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DSA_get0_key_procname);
 end;
@@ -1157,7 +1164,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DSA_get0_priv_key_procname);
 end;
 
-procedure ERR_DSA_clear_flags(d: PDSA; flags: TIdC_INT); cdecl
+function ERR_DSA_clear_flags(d: PDSA; flags: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DSA_clear_flags_procname);
 end;
@@ -1167,7 +1174,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DSA_test_flags_procname);
 end;
 
-procedure ERR_DSA_set_flags(d: PDSA; flags: TIdC_INT); cdecl
+function ERR_DSA_set_flags(d: PDSA; flags: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DSA_set_flags_procname);
 end;
@@ -1182,7 +1189,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DSA_meth_new_procname);
 end;
 
-procedure ERR_DSA_meth_free(dsam: PDSA_METHOD); cdecl
+function ERR_DSA_meth_free(dsam: PDSA_METHOD): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DSA_meth_free_procname);
 end;

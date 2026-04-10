@@ -26,17 +26,8 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
-// =============================================================================
-// TYPE DECLARATIONS
-// =============================================================================
-type
-  Possl_intmax_t = ^Tossl_intmax_t;
-  Tossl_intmax_t = Tintmax_t;
-  {$EXTERNALSYM Possl_intmax_t}
 
-  Possl_uintmax_t = ^Tossl_uintmax_t;
-  Tossl_uintmax_t = Tuintmax_t;
-  {$EXTERNALSYM Possl_uintmax_t}
+
 
 
 // =============================================================================

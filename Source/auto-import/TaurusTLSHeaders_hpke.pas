@@ -26,21 +26,24 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   POSSL_HPKE_SUITE = ^TOSSL_HPKE_SUITE;
-  TOSSL_HPKE_SUITE = record end;
+  TOSSL_HPKE_SUITE =   record
+    kem_id: TIdC_UINT16;
+    kdf_id: TIdC_UINT16;
+    aead_id: TIdC_UINT16;
+  end;
   {$EXTERNALSYM POSSL_HPKE_SUITE}
 
   Possl_hpke_ctx_st = ^Tossl_hpke_ctx_st;
-  Tossl_hpke_ctx_st = record end;
+  Tossl_hpke_ctx_st =   record end;
   {$EXTERNALSYM Possl_hpke_ctx_st}
-
-  POSSL_HPKE_CTX = ^TOSSL_HPKE_CTX;
-  TOSSL_HPKE_CTX = Tossl_hpke_ctx_st;
-  {$EXTERNALSYM POSSL_HPKE_CTX}
 
 
 // =============================================================================
@@ -95,7 +98,7 @@ var
   OSSL_HPKE_CTX_new: function(mode: TIdC_INT; suite: TOSSL_HPKE_SUITE; role: TIdC_INT; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): POSSL_HPKE_CTX; cdecl = nil;
   {$EXTERNALSYM OSSL_HPKE_CTX_new}
 
-  OSSL_HPKE_CTX_free: procedure(ctx: POSSL_HPKE_CTX); cdecl = nil;
+  OSSL_HPKE_CTX_free: function(ctx: POSSL_HPKE_CTX): void; cdecl = nil;
   {$EXTERNALSYM OSSL_HPKE_CTX_free}
 
   OSSL_HPKE_encap: function(ctx: POSSL_HPKE_CTX; enc: PIdAnsiChar; enclen: PIdC_SIZET; pub: PIdAnsiChar; publen: TIdC_SIZET; info: PIdAnsiChar; infolen: TIdC_SIZET): TIdC_INT; cdecl = nil;
@@ -128,10 +131,10 @@ var
   OSSL_HPKE_CTX_set1_ikme: function(ctx: POSSL_HPKE_CTX; ikme: PIdAnsiChar; ikmelen: TIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_HPKE_CTX_set1_ikme}
 
-  OSSL_HPKE_CTX_set_seq: function(ctx: POSSL_HPKE_CTX; seq: UInt64): TIdC_INT; cdecl = nil;
+  OSSL_HPKE_CTX_set_seq: function(ctx: POSSL_HPKE_CTX; seq: TIdC_UINT64): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_HPKE_CTX_set_seq}
 
-  OSSL_HPKE_CTX_get_seq: function(ctx: POSSL_HPKE_CTX; seq: PUInt64): TIdC_INT; cdecl = nil;
+  OSSL_HPKE_CTX_get_seq: function(ctx: POSSL_HPKE_CTX; seq: PIdC_UINT64): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_HPKE_CTX_get_seq}
 
   OSSL_HPKE_suite_check: function(suite: TOSSL_HPKE_SUITE): TIdC_INT; cdecl = nil;
@@ -161,7 +164,7 @@ var
 // =============================================================================
 
 function OSSL_HPKE_CTX_new(mode: TIdC_INT; suite: TOSSL_HPKE_SUITE; role: TIdC_INT; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): POSSL_HPKE_CTX; cdecl;
-procedure OSSL_HPKE_CTX_free(ctx: POSSL_HPKE_CTX); cdecl;
+function OSSL_HPKE_CTX_free(ctx: POSSL_HPKE_CTX): void; cdecl;
 function OSSL_HPKE_encap(ctx: POSSL_HPKE_CTX; enc: PIdAnsiChar; enclen: PIdC_SIZET; pub: PIdAnsiChar; publen: TIdC_SIZET; info: PIdAnsiChar; infolen: TIdC_SIZET): TIdC_INT; cdecl;
 function OSSL_HPKE_seal(ctx: POSSL_HPKE_CTX; ct: PIdAnsiChar; ctlen: PIdC_SIZET; aad: PIdAnsiChar; aadlen: TIdC_SIZET; pt: PIdAnsiChar; ptlen: TIdC_SIZET): TIdC_INT; cdecl;
 function OSSL_HPKE_keygen(suite: TOSSL_HPKE_SUITE; pub: PIdAnsiChar; publen: PIdC_SIZET; priv: PPEVP_PKEY; ikm: PIdAnsiChar; ikmlen: TIdC_SIZET; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): TIdC_INT; cdecl;
@@ -172,8 +175,8 @@ function OSSL_HPKE_CTX_set1_authpriv(ctx: POSSL_HPKE_CTX; priv: PEVP_PKEY): TIdC
 function OSSL_HPKE_CTX_set1_authpub(ctx: POSSL_HPKE_CTX; pub: PIdAnsiChar; publen: TIdC_SIZET): TIdC_INT; cdecl;
 function OSSL_HPKE_CTX_set1_psk(ctx: POSSL_HPKE_CTX; pskid: PIdAnsiChar; psk: PIdAnsiChar; psklen: TIdC_SIZET): TIdC_INT; cdecl;
 function OSSL_HPKE_CTX_set1_ikme(ctx: POSSL_HPKE_CTX; ikme: PIdAnsiChar; ikmelen: TIdC_SIZET): TIdC_INT; cdecl;
-function OSSL_HPKE_CTX_set_seq(ctx: POSSL_HPKE_CTX; seq: UInt64): TIdC_INT; cdecl;
-function OSSL_HPKE_CTX_get_seq(ctx: POSSL_HPKE_CTX; seq: PUInt64): TIdC_INT; cdecl;
+function OSSL_HPKE_CTX_set_seq(ctx: POSSL_HPKE_CTX; seq: TIdC_UINT64): TIdC_INT; cdecl;
+function OSSL_HPKE_CTX_get_seq(ctx: POSSL_HPKE_CTX; seq: PIdC_UINT64): TIdC_INT; cdecl;
 function OSSL_HPKE_suite_check(suite: TOSSL_HPKE_SUITE): TIdC_INT; cdecl;
 function OSSL_HPKE_get_grease_value(suite_in: POSSL_HPKE_SUITE; suite: POSSL_HPKE_SUITE; enc: PIdAnsiChar; enclen: PIdC_SIZET; ct: PIdAnsiChar; ctlen: TIdC_SIZET; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_HPKE_str2suite(str: PIdAnsiChar; suite: POSSL_HPKE_SUITE): TIdC_INT; cdecl;
@@ -199,7 +202,7 @@ uses
 // =============================================================================
 
 function OSSL_HPKE_CTX_new(mode: TIdC_INT; suite: TOSSL_HPKE_SUITE; role: TIdC_INT; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): POSSL_HPKE_CTX; cdecl external CLibCrypto name 'OSSL_HPKE_CTX_new';
-procedure OSSL_HPKE_CTX_free(ctx: POSSL_HPKE_CTX); cdecl external CLibCrypto name 'OSSL_HPKE_CTX_free';
+function OSSL_HPKE_CTX_free(ctx: POSSL_HPKE_CTX): void; cdecl external CLibCrypto name 'OSSL_HPKE_CTX_free';
 function OSSL_HPKE_encap(ctx: POSSL_HPKE_CTX; enc: PIdAnsiChar; enclen: PIdC_SIZET; pub: PIdAnsiChar; publen: TIdC_SIZET; info: PIdAnsiChar; infolen: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HPKE_encap';
 function OSSL_HPKE_seal(ctx: POSSL_HPKE_CTX; ct: PIdAnsiChar; ctlen: PIdC_SIZET; aad: PIdAnsiChar; aadlen: TIdC_SIZET; pt: PIdAnsiChar; ptlen: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HPKE_seal';
 function OSSL_HPKE_keygen(suite: TOSSL_HPKE_SUITE; pub: PIdAnsiChar; publen: PIdC_SIZET; priv: PPEVP_PKEY; ikm: PIdAnsiChar; ikmlen: TIdC_SIZET; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HPKE_keygen';
@@ -210,8 +213,8 @@ function OSSL_HPKE_CTX_set1_authpriv(ctx: POSSL_HPKE_CTX; priv: PEVP_PKEY): TIdC
 function OSSL_HPKE_CTX_set1_authpub(ctx: POSSL_HPKE_CTX; pub: PIdAnsiChar; publen: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HPKE_CTX_set1_authpub';
 function OSSL_HPKE_CTX_set1_psk(ctx: POSSL_HPKE_CTX; pskid: PIdAnsiChar; psk: PIdAnsiChar; psklen: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HPKE_CTX_set1_psk';
 function OSSL_HPKE_CTX_set1_ikme(ctx: POSSL_HPKE_CTX; ikme: PIdAnsiChar; ikmelen: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HPKE_CTX_set1_ikme';
-function OSSL_HPKE_CTX_set_seq(ctx: POSSL_HPKE_CTX; seq: UInt64): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HPKE_CTX_set_seq';
-function OSSL_HPKE_CTX_get_seq(ctx: POSSL_HPKE_CTX; seq: PUInt64): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HPKE_CTX_get_seq';
+function OSSL_HPKE_CTX_set_seq(ctx: POSSL_HPKE_CTX; seq: TIdC_UINT64): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HPKE_CTX_set_seq';
+function OSSL_HPKE_CTX_get_seq(ctx: POSSL_HPKE_CTX; seq: PIdC_UINT64): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HPKE_CTX_get_seq';
 function OSSL_HPKE_suite_check(suite: TOSSL_HPKE_SUITE): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HPKE_suite_check';
 function OSSL_HPKE_get_grease_value(suite_in: POSSL_HPKE_SUITE; suite: POSSL_HPKE_SUITE; enc: PIdAnsiChar; enclen: PIdC_SIZET; ct: PIdAnsiChar; ctlen: TIdC_SIZET; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HPKE_get_grease_value';
 function OSSL_HPKE_str2suite(str: PIdAnsiChar; suite: POSSL_HPKE_SUITE): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HPKE_str2suite';
@@ -303,7 +306,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_HPKE_CTX_new_procname);
 end;
 
-procedure ERR_OSSL_HPKE_CTX_free(ctx: POSSL_HPKE_CTX); cdecl
+function ERR_OSSL_HPKE_CTX_free(ctx: POSSL_HPKE_CTX): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_HPKE_CTX_free_procname);
 end;
@@ -358,12 +361,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_HPKE_CTX_set1_ikme_procname);
 end;
 
-function ERR_OSSL_HPKE_CTX_set_seq(ctx: POSSL_HPKE_CTX; seq: UInt64): TIdC_INT; cdecl
+function ERR_OSSL_HPKE_CTX_set_seq(ctx: POSSL_HPKE_CTX; seq: TIdC_UINT64): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_HPKE_CTX_set_seq_procname);
 end;
 
-function ERR_OSSL_HPKE_CTX_get_seq(ctx: POSSL_HPKE_CTX; seq: PUInt64): TIdC_INT; cdecl
+function ERR_OSSL_HPKE_CTX_get_seq(ctx: POSSL_HPKE_CTX; seq: PIdC_UINT64): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_HPKE_CTX_get_seq_procname);
 end;

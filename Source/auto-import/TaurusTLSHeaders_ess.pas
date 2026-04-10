@@ -26,69 +26,33 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   PESS_issuer_serial = ^TESS_issuer_serial;
-  TESS_issuer_serial = record end;
+  TESS_issuer_serial =   record end;
   {$EXTERNALSYM PESS_issuer_serial}
 
-  { TODO 1 -cID Collision detected : Review it and update. }
-  // Collision with ESS_issuer_serial:
-  // typedef struct ESS_issuer_serial ESS_ISSUER_SERIAL
-
   PESS_cert_id = ^TESS_cert_id;
-  TESS_cert_id = record end;
+  TESS_cert_id =   record end;
   {$EXTERNALSYM PESS_cert_id}
 
-  { TODO 1 -cID Collision detected : Review it and update. }
-  // Collision with ESS_cert_id:
-  // typedef struct ESS_cert_id ESS_CERT_ID
-
   PESS_signing_cert = ^TESS_signing_cert;
-  TESS_signing_cert = record end;
+  TESS_signing_cert =   record end;
   {$EXTERNALSYM PESS_signing_cert}
 
-  { TODO 1 -cID Collision detected : Review it and update. }
-  // Collision with ESS_signing_cert:
-  // typedef struct ESS_signing_cert ESS_SIGNING_CERT
-
-  Pstack_st_ESS_CERT_ID = ^Tstack_st_ESS_CERT_ID;
-  Tstack_st_ESS_CERT_ID = record end;
-  {$EXTERNALSYM Pstack_st_ESS_CERT_ID}
-
   PESS_signing_cert_v2_st = ^TESS_signing_cert_v2_st;
-  TESS_signing_cert_v2_st = record end;
+  TESS_signing_cert_v2_st =   record end;
   {$EXTERNALSYM PESS_signing_cert_v2_st}
 
-  PESS_SIGNING_CERT_V2 = ^TESS_SIGNING_CERT_V2;
-  TESS_SIGNING_CERT_V2 = TESS_signing_cert_v2_st;
-  {$EXTERNALSYM PESS_SIGNING_CERT_V2}
-
   PESS_cert_id_v2_st = ^TESS_cert_id_v2_st;
-  TESS_cert_id_v2_st = record end;
+  TESS_cert_id_v2_st =   record end;
   {$EXTERNALSYM PESS_cert_id_v2_st}
 
-  PESS_CERT_ID_V2 = ^TESS_CERT_ID_V2;
-  TESS_CERT_ID_V2 = TESS_cert_id_v2_st;
-  {$EXTERNALSYM PESS_CERT_ID_V2}
-
-  Pstack_st_ESS_CERT_ID_V2 = ^Tstack_st_ESS_CERT_ID_V2;
-  Tstack_st_ESS_CERT_ID_V2 = record end;
-  {$EXTERNALSYM Pstack_st_ESS_CERT_ID_V2}
-
-
-// =============================================================================
-// CALLBACK TYPE DECLARATIONS
-// =============================================================================
-type
-  Tsk_ESS_CERT_ID_compfunc_func_cb = function(arg1: PPESS_CERT_ID; arg2: PPESS_CERT_ID): TIdC_INT; cdecl;
-  Tsk_ESS_CERT_ID_freefunc_func_cb = procedure(arg1: PESS_CERT_ID); cdecl;
-  Tsk_ESS_CERT_ID_copyfunc_func_cb = function(arg1: PESS_CERT_ID): PESS_CERT_ID; cdecl;
-  Tsk_ESS_CERT_ID_V2_compfunc_func_cb = function(arg1: PPESS_CERT_ID_V2; arg2: PPESS_CERT_ID_V2): TIdC_INT; cdecl;
-  Tsk_ESS_CERT_ID_V2_freefunc_func_cb = procedure(arg1: PESS_CERT_ID_V2); cdecl;
-  Tsk_ESS_CERT_ID_V2_copyfunc_func_cb = function(arg1: PESS_CERT_ID_V2): PESS_CERT_ID_V2; cdecl;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 
@@ -100,7 +64,7 @@ var
   ESS_ISSUER_SERIAL_new: function: PESS_ISSUER_SERIAL; cdecl = nil;
   {$EXTERNALSYM ESS_ISSUER_SERIAL_new}
 
-  ESS_ISSUER_SERIAL_free: procedure(a: PESS_ISSUER_SERIAL); cdecl = nil;
+  ESS_ISSUER_SERIAL_free: function(a: PESS_ISSUER_SERIAL): void; cdecl = nil;
   {$EXTERNALSYM ESS_ISSUER_SERIAL_free}
 
   d2i_ESS_ISSUER_SERIAL: function(a: PPESS_ISSUER_SERIAL; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_ISSUER_SERIAL; cdecl = nil;
@@ -115,7 +79,7 @@ var
   ESS_CERT_ID_new: function: PESS_CERT_ID; cdecl = nil;
   {$EXTERNALSYM ESS_CERT_ID_new}
 
-  ESS_CERT_ID_free: procedure(a: PESS_CERT_ID); cdecl = nil;
+  ESS_CERT_ID_free: function(a: PESS_CERT_ID): void; cdecl = nil;
   {$EXTERNALSYM ESS_CERT_ID_free}
 
   d2i_ESS_CERT_ID: function(a: PPESS_CERT_ID; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_CERT_ID; cdecl = nil;
@@ -130,7 +94,7 @@ var
   ESS_SIGNING_CERT_new: function: PESS_SIGNING_CERT; cdecl = nil;
   {$EXTERNALSYM ESS_SIGNING_CERT_new}
 
-  ESS_SIGNING_CERT_free: procedure(a: PESS_SIGNING_CERT); cdecl = nil;
+  ESS_SIGNING_CERT_free: function(a: PESS_SIGNING_CERT): void; cdecl = nil;
   {$EXTERNALSYM ESS_SIGNING_CERT_free}
 
   d2i_ESS_SIGNING_CERT: function(a: PPESS_SIGNING_CERT; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_SIGNING_CERT; cdecl = nil;
@@ -148,7 +112,7 @@ var
   ESS_CERT_ID_V2_new: function: PESS_CERT_ID_V2; cdecl = nil;
   {$EXTERNALSYM ESS_CERT_ID_V2_new}
 
-  ESS_CERT_ID_V2_free: procedure(a: PESS_CERT_ID_V2); cdecl = nil;
+  ESS_CERT_ID_V2_free: function(a: PESS_CERT_ID_V2): void; cdecl = nil;
   {$EXTERNALSYM ESS_CERT_ID_V2_free}
 
   d2i_ESS_CERT_ID_V2: function(a: PPESS_CERT_ID_V2; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_CERT_ID_V2; cdecl = nil;
@@ -163,7 +127,7 @@ var
   ESS_SIGNING_CERT_V2_new: function: PESS_SIGNING_CERT_V2; cdecl = nil;
   {$EXTERNALSYM ESS_SIGNING_CERT_V2_new}
 
-  ESS_SIGNING_CERT_V2_free: procedure(a: PESS_SIGNING_CERT_V2); cdecl = nil;
+  ESS_SIGNING_CERT_V2_free: function(a: PESS_SIGNING_CERT_V2): void; cdecl = nil;
   {$EXTERNALSYM ESS_SIGNING_CERT_V2_free}
 
   d2i_ESS_SIGNING_CERT_V2: function(a: PPESS_SIGNING_CERT_V2; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_SIGNING_CERT_V2; cdecl = nil;
@@ -196,28 +160,28 @@ var
 // =============================================================================
 
 function ESS_ISSUER_SERIAL_new: PESS_ISSUER_SERIAL; cdecl;
-procedure ESS_ISSUER_SERIAL_free(a: PESS_ISSUER_SERIAL); cdecl;
+function ESS_ISSUER_SERIAL_free(a: PESS_ISSUER_SERIAL): void; cdecl;
 function d2i_ESS_ISSUER_SERIAL(a: PPESS_ISSUER_SERIAL; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_ISSUER_SERIAL; cdecl;
 function i2d_ESS_ISSUER_SERIAL(a: PESS_ISSUER_SERIAL; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ESS_ISSUER_SERIAL_dup(a: PESS_ISSUER_SERIAL): PESS_ISSUER_SERIAL; cdecl;
 function ESS_CERT_ID_new: PESS_CERT_ID; cdecl;
-procedure ESS_CERT_ID_free(a: PESS_CERT_ID); cdecl;
+function ESS_CERT_ID_free(a: PESS_CERT_ID): void; cdecl;
 function d2i_ESS_CERT_ID(a: PPESS_CERT_ID; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_CERT_ID; cdecl;
 function i2d_ESS_CERT_ID(a: PESS_CERT_ID; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ESS_CERT_ID_dup(a: PESS_CERT_ID): PESS_CERT_ID; cdecl;
 function ESS_SIGNING_CERT_new: PESS_SIGNING_CERT; cdecl;
-procedure ESS_SIGNING_CERT_free(a: PESS_SIGNING_CERT); cdecl;
+function ESS_SIGNING_CERT_free(a: PESS_SIGNING_CERT): void; cdecl;
 function d2i_ESS_SIGNING_CERT(a: PPESS_SIGNING_CERT; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_SIGNING_CERT; cdecl;
 function i2d_ESS_SIGNING_CERT(a: PESS_SIGNING_CERT; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ESS_SIGNING_CERT_it: PASN1_ITEM; cdecl;
 function ESS_SIGNING_CERT_dup(a: PESS_SIGNING_CERT): PESS_SIGNING_CERT; cdecl;
 function ESS_CERT_ID_V2_new: PESS_CERT_ID_V2; cdecl;
-procedure ESS_CERT_ID_V2_free(a: PESS_CERT_ID_V2); cdecl;
+function ESS_CERT_ID_V2_free(a: PESS_CERT_ID_V2): void; cdecl;
 function d2i_ESS_CERT_ID_V2(a: PPESS_CERT_ID_V2; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_CERT_ID_V2; cdecl;
 function i2d_ESS_CERT_ID_V2(a: PESS_CERT_ID_V2; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ESS_CERT_ID_V2_dup(a: PESS_CERT_ID_V2): PESS_CERT_ID_V2; cdecl;
 function ESS_SIGNING_CERT_V2_new: PESS_SIGNING_CERT_V2; cdecl;
-procedure ESS_SIGNING_CERT_V2_free(a: PESS_SIGNING_CERT_V2); cdecl;
+function ESS_SIGNING_CERT_V2_free(a: PESS_SIGNING_CERT_V2): void; cdecl;
 function d2i_ESS_SIGNING_CERT_V2(a: PPESS_SIGNING_CERT_V2; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_SIGNING_CERT_V2; cdecl;
 function i2d_ESS_SIGNING_CERT_V2(a: PESS_SIGNING_CERT_V2; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ESS_SIGNING_CERT_V2_it: PASN1_ITEM; cdecl;
@@ -226,6 +190,77 @@ function OSSL_ESS_signing_cert_new_init(signcert: PX509; certs: Pstack_st_X509; 
 function OSSL_ESS_signing_cert_v2_new_init(hash_alg: PEVP_MD; signcert: PX509; certs: Pstack_st_X509; set_issuer_serial: TIdC_INT): PESS_SIGNING_CERT_V2; cdecl;
 function OSSL_ESS_check_signing_certs(ss: PESS_SIGNING_CERT; ssv2: PESS_SIGNING_CERT_V2; chain: Pstack_st_X509; require_signing_cert: TIdC_INT): TIdC_INT; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
+
+// =============================================================================
+// OPENSSL STACK DEFINITIONS
+// =============================================================================
+type
+  { TODO 1 -copenssl stack ESS_CERT_ID definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_ESS_CERT_ID = Pointer;
+  {$EXTERNALSYM PSTACK_OF_ESS_CERT_ID}
+
+  { Original Stack Macros for ESS_CERT_ID:
+    SKM_DEFINE_STACK_OF_INTERNAL(ESS_CERT_ID, ESS_CERT_ID, ESS_CERT_ID)
+    sk_ESS_CERT_ID_num(sk) OPENSSL_sk_num(ossl_check_const_ESS_CERT_ID_sk_type(sk))
+    sk_ESS_CERT_ID_value(sk, idx) ((ESS_CERT_ID *)OPENSSL_sk_value(ossl_check_const_ESS_CERT_ID_sk_type(sk), (idx)))
+    sk_ESS_CERT_ID_new(cmp) ((STACK_OF(ESS_CERT_ID) *)OPENSSL_sk_new(ossl_check_ESS_CERT_ID_compfunc_type(cmp)))
+    sk_ESS_CERT_ID_new_null() ((STACK_OF(ESS_CERT_ID) *)OPENSSL_sk_new_null())
+    sk_ESS_CERT_ID_new_reserve(cmp, n) ((STACK_OF(ESS_CERT_ID) *)OPENSSL_sk_new_reserve(ossl_check_ESS_CERT_ID_compfunc_type(cmp), (n)))
+    sk_ESS_CERT_ID_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_ESS_CERT_ID_sk_type(sk), (n))
+    sk_ESS_CERT_ID_free(sk) OPENSSL_sk_free(ossl_check_ESS_CERT_ID_sk_type(sk))
+    sk_ESS_CERT_ID_zero(sk) OPENSSL_sk_zero(ossl_check_ESS_CERT_ID_sk_type(sk))
+    sk_ESS_CERT_ID_delete(sk, i) ((ESS_CERT_ID *)OPENSSL_sk_delete(ossl_check_ESS_CERT_ID_sk_type(sk), (i)))
+    sk_ESS_CERT_ID_delete_ptr(sk, ptr) ((ESS_CERT_ID *)OPENSSL_sk_delete_ptr(ossl_check_ESS_CERT_ID_sk_type(sk), ossl_check_ESS_CERT_ID_type(ptr)))
+    sk_ESS_CERT_ID_push(sk, ptr) OPENSSL_sk_push(ossl_check_ESS_CERT_ID_sk_type(sk), ossl_check_ESS_CERT_ID_type(ptr))
+    sk_ESS_CERT_ID_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_ESS_CERT_ID_sk_type(sk), ossl_check_ESS_CERT_ID_type(ptr))
+    sk_ESS_CERT_ID_pop(sk) ((ESS_CERT_ID *)OPENSSL_sk_pop(ossl_check_ESS_CERT_ID_sk_type(sk)))
+    sk_ESS_CERT_ID_shift(sk) ((ESS_CERT_ID *)OPENSSL_sk_shift(ossl_check_ESS_CERT_ID_sk_type(sk)))
+    sk_ESS_CERT_ID_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_ESS_CERT_ID_sk_type(sk), ossl_check_ESS_CERT_ID_freefunc_type(freefunc))
+    sk_ESS_CERT_ID_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_ESS_CERT_ID_sk_type(sk), ossl_check_ESS_CERT_ID_type(ptr), (idx))
+    sk_ESS_CERT_ID_set(sk, idx, ptr) ((ESS_CERT_ID *)OPENSSL_sk_set(ossl_check_ESS_CERT_ID_sk_type(sk), (idx), ossl_check_ESS_CERT_ID_type(ptr)))
+    sk_ESS_CERT_ID_find(sk, ptr) OPENSSL_sk_find(ossl_check_ESS_CERT_ID_sk_type(sk), ossl_check_ESS_CERT_ID_type(ptr))
+    sk_ESS_CERT_ID_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_ESS_CERT_ID_sk_type(sk), ossl_check_ESS_CERT_ID_type(ptr))
+    sk_ESS_CERT_ID_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_ESS_CERT_ID_sk_type(sk), ossl_check_ESS_CERT_ID_type(ptr), pnum)
+    sk_ESS_CERT_ID_sort(sk) OPENSSL_sk_sort(ossl_check_ESS_CERT_ID_sk_type(sk))
+    sk_ESS_CERT_ID_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_ESS_CERT_ID_sk_type(sk))
+    sk_ESS_CERT_ID_dup(sk) ((STACK_OF(ESS_CERT_ID) *)OPENSSL_sk_dup(ossl_check_const_ESS_CERT_ID_sk_type(sk)))
+    sk_ESS_CERT_ID_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(ESS_CERT_ID) *)OPENSSL_sk_deep_copy(ossl_check_const_ESS_CERT_ID_sk_type(sk), ossl_check_ESS_CERT_ID_copyfunc_type(copyfunc), ossl_check_ESS_CERT_ID_freefunc_type(freefunc)))
+    sk_ESS_CERT_ID_set_cmp_func(sk, cmp) ((sk_ESS_CERT_ID_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_ESS_CERT_ID_sk_type(sk), ossl_check_ESS_CERT_ID_compfunc_type(cmp)))
+    sk_ESS_CERT_ID_V2_num(sk) OPENSSL_sk_num(ossl_check_const_ESS_CERT_ID_V2_sk_type(sk))
+    sk_ESS_CERT_ID_V2_value(sk, idx) ((ESS_CERT_ID_V2 *)OPENSSL_sk_value(ossl_check_const_ESS_CERT_ID_V2_sk_type(sk), (idx)))
+    sk_ESS_CERT_ID_V2_new(cmp) ((STACK_OF(ESS_CERT_ID_V2) *)OPENSSL_sk_new(ossl_check_ESS_CERT_ID_V2_compfunc_type(cmp)))
+    sk_ESS_CERT_ID_V2_new_null() ((STACK_OF(ESS_CERT_ID_V2) *)OPENSSL_sk_new_null())
+    sk_ESS_CERT_ID_V2_new_reserve(cmp, n) ((STACK_OF(ESS_CERT_ID_V2) *)OPENSSL_sk_new_reserve(ossl_check_ESS_CERT_ID_V2_compfunc_type(cmp), (n)))
+    sk_ESS_CERT_ID_V2_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_ESS_CERT_ID_V2_sk_type(sk), (n))
+    sk_ESS_CERT_ID_V2_free(sk) OPENSSL_sk_free(ossl_check_ESS_CERT_ID_V2_sk_type(sk))
+    sk_ESS_CERT_ID_V2_zero(sk) OPENSSL_sk_zero(ossl_check_ESS_CERT_ID_V2_sk_type(sk))
+    sk_ESS_CERT_ID_V2_delete(sk, i) ((ESS_CERT_ID_V2 *)OPENSSL_sk_delete(ossl_check_ESS_CERT_ID_V2_sk_type(sk), (i)))
+    sk_ESS_CERT_ID_V2_delete_ptr(sk, ptr) ((ESS_CERT_ID_V2 *)OPENSSL_sk_delete_ptr(ossl_check_ESS_CERT_ID_V2_sk_type(sk), ossl_check_ESS_CERT_ID_V2_type(ptr)))
+    sk_ESS_CERT_ID_V2_push(sk, ptr) OPENSSL_sk_push(ossl_check_ESS_CERT_ID_V2_sk_type(sk), ossl_check_ESS_CERT_ID_V2_type(ptr))
+    sk_ESS_CERT_ID_V2_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_ESS_CERT_ID_V2_sk_type(sk), ossl_check_ESS_CERT_ID_V2_type(ptr))
+    sk_ESS_CERT_ID_V2_pop(sk) ((ESS_CERT_ID_V2 *)OPENSSL_sk_pop(ossl_check_ESS_CERT_ID_V2_sk_type(sk)))
+    sk_ESS_CERT_ID_V2_shift(sk) ((ESS_CERT_ID_V2 *)OPENSSL_sk_shift(ossl_check_ESS_CERT_ID_V2_sk_type(sk)))
+    sk_ESS_CERT_ID_V2_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_ESS_CERT_ID_V2_sk_type(sk), ossl_check_ESS_CERT_ID_V2_freefunc_type(freefunc))
+    sk_ESS_CERT_ID_V2_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_ESS_CERT_ID_V2_sk_type(sk), ossl_check_ESS_CERT_ID_V2_type(ptr), (idx))
+    sk_ESS_CERT_ID_V2_set(sk, idx, ptr) ((ESS_CERT_ID_V2 *)OPENSSL_sk_set(ossl_check_ESS_CERT_ID_V2_sk_type(sk), (idx), ossl_check_ESS_CERT_ID_V2_type(ptr)))
+    sk_ESS_CERT_ID_V2_find(sk, ptr) OPENSSL_sk_find(ossl_check_ESS_CERT_ID_V2_sk_type(sk), ossl_check_ESS_CERT_ID_V2_type(ptr))
+    sk_ESS_CERT_ID_V2_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_ESS_CERT_ID_V2_sk_type(sk), ossl_check_ESS_CERT_ID_V2_type(ptr))
+    sk_ESS_CERT_ID_V2_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_ESS_CERT_ID_V2_sk_type(sk), ossl_check_ESS_CERT_ID_V2_type(ptr), pnum)
+    sk_ESS_CERT_ID_V2_sort(sk) OPENSSL_sk_sort(ossl_check_ESS_CERT_ID_V2_sk_type(sk))
+    sk_ESS_CERT_ID_V2_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_ESS_CERT_ID_V2_sk_type(sk))
+    sk_ESS_CERT_ID_V2_dup(sk) ((STACK_OF(ESS_CERT_ID_V2) *)OPENSSL_sk_dup(ossl_check_const_ESS_CERT_ID_V2_sk_type(sk)))
+    sk_ESS_CERT_ID_V2_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(ESS_CERT_ID_V2) *)OPENSSL_sk_deep_copy(ossl_check_const_ESS_CERT_ID_V2_sk_type(sk), ossl_check_ESS_CERT_ID_V2_copyfunc_type(copyfunc), ossl_check_ESS_CERT_ID_V2_freefunc_type(freefunc)))
+    sk_ESS_CERT_ID_V2_set_cmp_func(sk, cmp) ((sk_ESS_CERT_ID_V2_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_ESS_CERT_ID_V2_sk_type(sk), ossl_check_ESS_CERT_ID_V2_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack ESS_CERT_ID_V2 definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_ESS_CERT_ID_V2 = Pointer;
+  {$EXTERNALSYM PSTACK_OF_ESS_CERT_ID_V2}
+
+  { Original Stack Macros for ESS_CERT_ID_V2:
+    SKM_DEFINE_STACK_OF_INTERNAL(ESS_CERT_ID_V2, ESS_CERT_ID_V2, ESS_CERT_ID_V2)
+  }
+
 
 implementation
 
@@ -244,28 +279,28 @@ uses
 // =============================================================================
 
 function ESS_ISSUER_SERIAL_new: PESS_ISSUER_SERIAL; cdecl external CLibCrypto name 'ESS_ISSUER_SERIAL_new';
-procedure ESS_ISSUER_SERIAL_free(a: PESS_ISSUER_SERIAL); cdecl external CLibCrypto name 'ESS_ISSUER_SERIAL_free';
+function ESS_ISSUER_SERIAL_free(a: PESS_ISSUER_SERIAL): void; cdecl external CLibCrypto name 'ESS_ISSUER_SERIAL_free';
 function d2i_ESS_ISSUER_SERIAL(a: PPESS_ISSUER_SERIAL; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_ISSUER_SERIAL; cdecl external CLibCrypto name 'd2i_ESS_ISSUER_SERIAL';
 function i2d_ESS_ISSUER_SERIAL(a: PESS_ISSUER_SERIAL; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ESS_ISSUER_SERIAL';
 function ESS_ISSUER_SERIAL_dup(a: PESS_ISSUER_SERIAL): PESS_ISSUER_SERIAL; cdecl external CLibCrypto name 'ESS_ISSUER_SERIAL_dup';
 function ESS_CERT_ID_new: PESS_CERT_ID; cdecl external CLibCrypto name 'ESS_CERT_ID_new';
-procedure ESS_CERT_ID_free(a: PESS_CERT_ID); cdecl external CLibCrypto name 'ESS_CERT_ID_free';
+function ESS_CERT_ID_free(a: PESS_CERT_ID): void; cdecl external CLibCrypto name 'ESS_CERT_ID_free';
 function d2i_ESS_CERT_ID(a: PPESS_CERT_ID; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_CERT_ID; cdecl external CLibCrypto name 'd2i_ESS_CERT_ID';
 function i2d_ESS_CERT_ID(a: PESS_CERT_ID; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ESS_CERT_ID';
 function ESS_CERT_ID_dup(a: PESS_CERT_ID): PESS_CERT_ID; cdecl external CLibCrypto name 'ESS_CERT_ID_dup';
 function ESS_SIGNING_CERT_new: PESS_SIGNING_CERT; cdecl external CLibCrypto name 'ESS_SIGNING_CERT_new';
-procedure ESS_SIGNING_CERT_free(a: PESS_SIGNING_CERT); cdecl external CLibCrypto name 'ESS_SIGNING_CERT_free';
+function ESS_SIGNING_CERT_free(a: PESS_SIGNING_CERT): void; cdecl external CLibCrypto name 'ESS_SIGNING_CERT_free';
 function d2i_ESS_SIGNING_CERT(a: PPESS_SIGNING_CERT; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_SIGNING_CERT; cdecl external CLibCrypto name 'd2i_ESS_SIGNING_CERT';
 function i2d_ESS_SIGNING_CERT(a: PESS_SIGNING_CERT; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ESS_SIGNING_CERT';
 function ESS_SIGNING_CERT_it: PASN1_ITEM; cdecl external CLibCrypto name 'ESS_SIGNING_CERT_it';
 function ESS_SIGNING_CERT_dup(a: PESS_SIGNING_CERT): PESS_SIGNING_CERT; cdecl external CLibCrypto name 'ESS_SIGNING_CERT_dup';
 function ESS_CERT_ID_V2_new: PESS_CERT_ID_V2; cdecl external CLibCrypto name 'ESS_CERT_ID_V2_new';
-procedure ESS_CERT_ID_V2_free(a: PESS_CERT_ID_V2); cdecl external CLibCrypto name 'ESS_CERT_ID_V2_free';
+function ESS_CERT_ID_V2_free(a: PESS_CERT_ID_V2): void; cdecl external CLibCrypto name 'ESS_CERT_ID_V2_free';
 function d2i_ESS_CERT_ID_V2(a: PPESS_CERT_ID_V2; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_CERT_ID_V2; cdecl external CLibCrypto name 'd2i_ESS_CERT_ID_V2';
 function i2d_ESS_CERT_ID_V2(a: PESS_CERT_ID_V2; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ESS_CERT_ID_V2';
 function ESS_CERT_ID_V2_dup(a: PESS_CERT_ID_V2): PESS_CERT_ID_V2; cdecl external CLibCrypto name 'ESS_CERT_ID_V2_dup';
 function ESS_SIGNING_CERT_V2_new: PESS_SIGNING_CERT_V2; cdecl external CLibCrypto name 'ESS_SIGNING_CERT_V2_new';
-procedure ESS_SIGNING_CERT_V2_free(a: PESS_SIGNING_CERT_V2); cdecl external CLibCrypto name 'ESS_SIGNING_CERT_V2_free';
+function ESS_SIGNING_CERT_V2_free(a: PESS_SIGNING_CERT_V2): void; cdecl external CLibCrypto name 'ESS_SIGNING_CERT_V2_free';
 function d2i_ESS_SIGNING_CERT_V2(a: PPESS_SIGNING_CERT_V2; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_SIGNING_CERT_V2; cdecl external CLibCrypto name 'd2i_ESS_SIGNING_CERT_V2';
 function i2d_ESS_SIGNING_CERT_V2(a: PESS_SIGNING_CERT_V2; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ESS_SIGNING_CERT_V2';
 function ESS_SIGNING_CERT_V2_it: PASN1_ITEM; cdecl external CLibCrypto name 'ESS_SIGNING_CERT_V2_it';
@@ -388,7 +423,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ESS_ISSUER_SERIAL_new_procname);
 end;
 
-procedure ERR_ESS_ISSUER_SERIAL_free(a: PESS_ISSUER_SERIAL); cdecl
+function ERR_ESS_ISSUER_SERIAL_free(a: PESS_ISSUER_SERIAL): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ESS_ISSUER_SERIAL_free_procname);
 end;
@@ -413,7 +448,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ESS_CERT_ID_new_procname);
 end;
 
-procedure ERR_ESS_CERT_ID_free(a: PESS_CERT_ID); cdecl
+function ERR_ESS_CERT_ID_free(a: PESS_CERT_ID): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ESS_CERT_ID_free_procname);
 end;
@@ -438,7 +473,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ESS_SIGNING_CERT_new_procname);
 end;
 
-procedure ERR_ESS_SIGNING_CERT_free(a: PESS_SIGNING_CERT); cdecl
+function ERR_ESS_SIGNING_CERT_free(a: PESS_SIGNING_CERT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ESS_SIGNING_CERT_free_procname);
 end;
@@ -468,7 +503,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ESS_CERT_ID_V2_new_procname);
 end;
 
-procedure ERR_ESS_CERT_ID_V2_free(a: PESS_CERT_ID_V2); cdecl
+function ERR_ESS_CERT_ID_V2_free(a: PESS_CERT_ID_V2): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ESS_CERT_ID_V2_free_procname);
 end;
@@ -493,7 +528,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ESS_SIGNING_CERT_V2_new_procname);
 end;
 
-procedure ERR_ESS_SIGNING_CERT_V2_free(a: PESS_SIGNING_CERT_V2); cdecl
+function ERR_ESS_SIGNING_CERT_V2_free(a: PESS_SIGNING_CERT_V2): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ESS_SIGNING_CERT_V2_free_procname);
 end;

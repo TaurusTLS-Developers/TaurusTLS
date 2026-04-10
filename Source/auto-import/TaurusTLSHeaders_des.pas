@@ -26,32 +26,18 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
-  PDES_LONG = ^TDES_LONG;
-  TDES_LONG = TIdC_UINT;
-  {$EXTERNALSYM PDES_LONG}
-
-  PDES_cblock = ^TDES_cblock;
-  TDES_cblock = PIdAnsiChar;
-  {$EXTERNALSYM PDES_cblock}
-
-  Pconst_DES_cblock = ^Tconst_DES_cblock;
-  Tconst_DES_cblock = PIdAnsiChar;
-  {$EXTERNALSYM Pconst_DES_cblock}
-
   PDES_ks = ^TDES_ks;
-  TDES_ks = record end;
+  TDES_ks =   record
+    ks: Pointer;
+  end;
   {$EXTERNALSYM PDES_ks}
-
-  Punion (unnamed at /home/sasha/dev/openssl/include/openssl/des.h:43:5) = ^Tunion (unnamed at /home/sasha/dev/openssl/include/openssl/des.h:43:5);
-  {$EXTERNALSYM Punion (unnamed at /home/sasha/dev/openssl/include/openssl/des.h:43:5)}
-
-  PDES_key_schedule = ^TDES_key_schedule;
-  TDES_key_schedule = TDES_ks;
-  {$EXTERNALSYM PDES_key_schedule}
 
 
 // =============================================================================
@@ -75,49 +61,49 @@ var
   DES_options: function: PIdAnsiChar; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_options}
 
-  DES_ecb3_encrypt: procedure(input: Pconst_DES_cblock; output: PDES_cblock; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  DES_ecb3_encrypt: function(input: Pconst_DES_cblock; output: PDES_cblock; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_ecb3_encrypt}
 
   DES_cbc_cksum: function(input: PIdAnsiChar; output: PDES_cblock; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: Pconst_DES_cblock): TDES_LONG; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_cbc_cksum}
 
-  DES_cbc_encrypt: procedure(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  DES_cbc_encrypt: function(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_cbc_encrypt}
 
-  DES_ncbc_encrypt: procedure(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  DES_ncbc_encrypt: function(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_ncbc_encrypt}
 
-  DES_xcbc_encrypt: procedure(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; inw: Pconst_DES_cblock; outw: Pconst_DES_cblock; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  DES_xcbc_encrypt: function(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; inw: Pconst_DES_cblock; outw: Pconst_DES_cblock; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_xcbc_encrypt}
 
-  DES_cfb_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  DES_cfb_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_cfb_encrypt}
 
-  DES_ecb_encrypt: procedure(input: Pconst_DES_cblock; output: PDES_cblock; ks: PDES_key_schedule; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  DES_ecb_encrypt: function(input: Pconst_DES_cblock; output: PDES_cblock; ks: PDES_key_schedule; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_ecb_encrypt}
 
-  DES_encrypt1: procedure(data: PDES_LONG; ks: PDES_key_schedule; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  DES_encrypt1: function(data: PDES_LONG; ks: PDES_key_schedule; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_encrypt1}
 
-  DES_encrypt2: procedure(data: PDES_LONG; ks: PDES_key_schedule; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  DES_encrypt2: function(data: PDES_LONG; ks: PDES_key_schedule; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_encrypt2}
 
-  DES_encrypt3: procedure(data: PDES_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule); cdecl = nil; // Deprecated in 3_0_0
+  DES_encrypt3: function(data: PDES_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_encrypt3}
 
-  DES_decrypt3: procedure(data: PDES_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule); cdecl = nil; // Deprecated in 3_0_0
+  DES_decrypt3: function(data: PDES_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_decrypt3}
 
-  DES_ede3_cbc_encrypt: procedure(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  DES_ede3_cbc_encrypt: function(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_ede3_cbc_encrypt}
 
-  DES_ede3_cfb64_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  DES_ede3_cfb64_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_ede3_cfb64_encrypt}
 
-  DES_ede3_cfb_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  DES_ede3_cfb_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_ede3_cfb_encrypt}
 
-  DES_ede3_ofb64_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  DES_ede3_ofb64_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_ede3_ofb64_encrypt}
 
   DES_fcrypt: function(buf: PIdAnsiChar; salt: PIdAnsiChar; ret: PIdAnsiChar): PIdAnsiChar; cdecl = nil; // Deprecated in 3_0_0
@@ -126,10 +112,10 @@ var
   DES_crypt: function(buf: PIdAnsiChar; salt: PIdAnsiChar): PIdAnsiChar; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_crypt}
 
-  DES_ofb_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock); cdecl = nil; // Deprecated in 3_0_0
+  DES_ofb_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_ofb_encrypt}
 
-  DES_pcbc_encrypt: procedure(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  DES_pcbc_encrypt: function(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_pcbc_encrypt}
 
   DES_quad_cksum: function(input: PIdAnsiChar; output: PDES_cblock; length: TIdC_LONG; out_count: TIdC_INT; seed: PDES_cblock): TDES_LONG; cdecl = nil; // Deprecated in 3_0_0
@@ -138,7 +124,7 @@ var
   DES_random_key: function(ret: PDES_cblock): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_random_key}
 
-  DES_set_odd_parity: procedure(key: PDES_cblock); cdecl = nil; // Deprecated in 3_0_0
+  DES_set_odd_parity: function(key: PDES_cblock): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_set_odd_parity}
 
   DES_check_key_parity: function(key: Pconst_DES_cblock): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -156,19 +142,19 @@ var
   DES_set_key_checked: function(key: Pconst_DES_cblock; schedule: PDES_key_schedule): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_set_key_checked}
 
-  DES_set_key_unchecked: procedure(key: Pconst_DES_cblock; schedule: PDES_key_schedule); cdecl = nil; // Deprecated in 3_0_0
+  DES_set_key_unchecked: function(key: Pconst_DES_cblock; schedule: PDES_key_schedule): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_set_key_unchecked}
 
-  DES_string_to_key: procedure(str: PIdAnsiChar; key: PDES_cblock); cdecl = nil; // Deprecated in 3_0_0
+  DES_string_to_key: function(str: PIdAnsiChar; key: PDES_cblock): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_string_to_key}
 
-  DES_string_to_2keys: procedure(str: PIdAnsiChar; key1: PDES_cblock; key2: PDES_cblock); cdecl = nil; // Deprecated in 3_0_0
+  DES_string_to_2keys: function(str: PIdAnsiChar; key1: PDES_cblock; key2: PDES_cblock): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_string_to_2keys}
 
-  DES_cfb64_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  DES_cfb64_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_cfb64_encrypt}
 
-  DES_ofb64_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  DES_ofb64_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DES_ofb64_encrypt}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -180,58 +166,58 @@ var
 // =============================================================================
 
 function DES_options: PIdAnsiChar; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DES_ecb3_encrypt(input: Pconst_DES_cblock; output: PDES_cblock; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+function DES_ecb3_encrypt(input: Pconst_DES_cblock; output: PDES_cblock; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DES_cbc_cksum(input: PIdAnsiChar; output: PDES_cblock; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: Pconst_DES_cblock): TDES_LONG; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DES_cbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DES_ncbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DES_xcbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; inw: Pconst_DES_cblock; outw: Pconst_DES_cblock; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DES_cfb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DES_ecb_encrypt(input: Pconst_DES_cblock; output: PDES_cblock; ks: PDES_key_schedule; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DES_encrypt1(data: PDES_LONG; ks: PDES_key_schedule; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DES_encrypt2(data: PDES_LONG; ks: PDES_key_schedule; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DES_encrypt3(data: PDES_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DES_decrypt3(data: PDES_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DES_ede3_cbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DES_ede3_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DES_ede3_cfb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DES_ede3_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+function DES_cbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function DES_ncbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function DES_xcbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; inw: Pconst_DES_cblock; outw: Pconst_DES_cblock; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function DES_cfb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function DES_ecb_encrypt(input: Pconst_DES_cblock; output: PDES_cblock; ks: PDES_key_schedule; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function DES_encrypt1(data: PDES_LONG; ks: PDES_key_schedule; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function DES_encrypt2(data: PDES_LONG; ks: PDES_key_schedule; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function DES_encrypt3(data: PDES_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function DES_decrypt3(data: PDES_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function DES_ede3_cbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function DES_ede3_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function DES_ede3_cfb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function DES_ede3_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DES_fcrypt(buf: PIdAnsiChar; salt: PIdAnsiChar; ret: PIdAnsiChar): PIdAnsiChar; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DES_crypt(buf: PIdAnsiChar; salt: PIdAnsiChar): PIdAnsiChar; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DES_ofb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DES_pcbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+function DES_ofb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function DES_pcbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DES_quad_cksum(input: PIdAnsiChar; output: PDES_cblock; length: TIdC_LONG; out_count: TIdC_INT; seed: PDES_cblock): TDES_LONG; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DES_random_key(ret: PDES_cblock): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DES_set_odd_parity(key: PDES_cblock); cdecl; deprecated 'In OpenSSL 3_0_0';
+function DES_set_odd_parity(key: PDES_cblock): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DES_check_key_parity(key: Pconst_DES_cblock): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DES_is_weak_key(key: Pconst_DES_cblock): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DES_set_key(key: Pconst_DES_cblock; schedule: PDES_key_schedule): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DES_key_sched(key: Pconst_DES_cblock; schedule: PDES_key_schedule): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DES_set_key_checked(key: Pconst_DES_cblock; schedule: PDES_key_schedule): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DES_set_key_unchecked(key: Pconst_DES_cblock; schedule: PDES_key_schedule); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DES_string_to_key(str: PIdAnsiChar; key: PDES_cblock); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DES_string_to_2keys(str: PIdAnsiChar; key1: PDES_cblock; key2: PDES_cblock); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DES_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure DES_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+function DES_set_key_unchecked(key: Pconst_DES_cblock; schedule: PDES_key_schedule): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function DES_string_to_key(str: PIdAnsiChar; key: PDES_cblock): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function DES_string_to_2keys(str: PIdAnsiChar; key1: PDES_cblock; key2: PDES_cblock): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function DES_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function DES_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 // =============================================================================
 // INLINE OR MACRO ROUTINES
 // =============================================================================
 
-function DES_ecb2_encrypt(i: Pointer; o: Pointer; k1: Pointer; k2: Pointer; e: Pointer): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0';
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function DES_ecb2_encrypt(i: Pointer; o: Pointer; k1: Pointer; k2: Pointer; e: Pointer): TIdC_INT; cdecl;
 
-function DES_ede2_cbc_encrypt(i: Pointer; o: Pointer; l: Pointer; k1: Pointer; k2: Pointer; iv: Pointer; e: Pointer): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0';
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function DES_ede2_cbc_encrypt(i: Pointer; o: Pointer; l: Pointer; k1: Pointer; k2: Pointer; iv: Pointer; e: Pointer): TIdC_INT; cdecl;
 
-function DES_ede2_cfb64_encrypt(i: Pointer; o: Pointer; l: Pointer; k1: Pointer; k2: Pointer; iv: Pointer; n: Pointer; e: Pointer): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0';
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function DES_ede2_cfb64_encrypt(i: Pointer; o: Pointer; l: Pointer; k1: Pointer; k2: Pointer; iv: Pointer; n: Pointer; e: Pointer): TIdC_INT; cdecl;
 
-function DES_ede2_ofb64_encrypt(i: Pointer; o: Pointer; l: Pointer; k1: Pointer; k2: Pointer; iv: Pointer; n: Pointer): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0';
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function DES_ede2_ofb64_encrypt(i: Pointer; o: Pointer; l: Pointer; k1: Pointer; k2: Pointer; iv: Pointer; n: Pointer): TIdC_INT; cdecl;
 
-procedure DES_fixup_key_parity(key: PDES_cblock); cdecl; deprecated 'In OpenSSL 3_0_0';
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function DES_fixup_key_parity(key: PDES_cblock): void; cdecl;
 
 
 implementation
@@ -251,38 +237,38 @@ uses
 // =============================================================================
 
 function DES_options: PIdAnsiChar; cdecl external CLibCrypto name 'DES_options';
-procedure DES_ecb3_encrypt(input: Pconst_DES_cblock; output: PDES_cblock; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; enc: TIdC_INT); cdecl external CLibCrypto name 'DES_ecb3_encrypt';
+function DES_ecb3_encrypt(input: Pconst_DES_cblock; output: PDES_cblock; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; enc: TIdC_INT): void; cdecl external CLibCrypto name 'DES_ecb3_encrypt';
 function DES_cbc_cksum(input: PIdAnsiChar; output: PDES_cblock; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: Pconst_DES_cblock): TDES_LONG; cdecl external CLibCrypto name 'DES_cbc_cksum';
-procedure DES_cbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl external CLibCrypto name 'DES_cbc_encrypt';
-procedure DES_ncbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl external CLibCrypto name 'DES_ncbc_encrypt';
-procedure DES_xcbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; inw: Pconst_DES_cblock; outw: Pconst_DES_cblock; enc: TIdC_INT); cdecl external CLibCrypto name 'DES_xcbc_encrypt';
-procedure DES_cfb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl external CLibCrypto name 'DES_cfb_encrypt';
-procedure DES_ecb_encrypt(input: Pconst_DES_cblock; output: PDES_cblock; ks: PDES_key_schedule; enc: TIdC_INT); cdecl external CLibCrypto name 'DES_ecb_encrypt';
-procedure DES_encrypt1(data: PDES_LONG; ks: PDES_key_schedule; enc: TIdC_INT); cdecl external CLibCrypto name 'DES_encrypt1';
-procedure DES_encrypt2(data: PDES_LONG; ks: PDES_key_schedule; enc: TIdC_INT); cdecl external CLibCrypto name 'DES_encrypt2';
-procedure DES_encrypt3(data: PDES_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule); cdecl external CLibCrypto name 'DES_encrypt3';
-procedure DES_decrypt3(data: PDES_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule); cdecl external CLibCrypto name 'DES_decrypt3';
-procedure DES_ede3_cbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl external CLibCrypto name 'DES_ede3_cbc_encrypt';
-procedure DES_ede3_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT; enc: TIdC_INT); cdecl external CLibCrypto name 'DES_ede3_cfb64_encrypt';
-procedure DES_ede3_cfb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl external CLibCrypto name 'DES_ede3_cfb_encrypt';
-procedure DES_ede3_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT); cdecl external CLibCrypto name 'DES_ede3_ofb64_encrypt';
+function DES_cbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl external CLibCrypto name 'DES_cbc_encrypt';
+function DES_ncbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl external CLibCrypto name 'DES_ncbc_encrypt';
+function DES_xcbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; inw: Pconst_DES_cblock; outw: Pconst_DES_cblock; enc: TIdC_INT): void; cdecl external CLibCrypto name 'DES_xcbc_encrypt';
+function DES_cfb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl external CLibCrypto name 'DES_cfb_encrypt';
+function DES_ecb_encrypt(input: Pconst_DES_cblock; output: PDES_cblock; ks: PDES_key_schedule; enc: TIdC_INT): void; cdecl external CLibCrypto name 'DES_ecb_encrypt';
+function DES_encrypt1(data: PDES_LONG; ks: PDES_key_schedule; enc: TIdC_INT): void; cdecl external CLibCrypto name 'DES_encrypt1';
+function DES_encrypt2(data: PDES_LONG; ks: PDES_key_schedule; enc: TIdC_INT): void; cdecl external CLibCrypto name 'DES_encrypt2';
+function DES_encrypt3(data: PDES_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule): void; cdecl external CLibCrypto name 'DES_encrypt3';
+function DES_decrypt3(data: PDES_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule): void; cdecl external CLibCrypto name 'DES_decrypt3';
+function DES_ede3_cbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl external CLibCrypto name 'DES_ede3_cbc_encrypt';
+function DES_ede3_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT; enc: TIdC_INT): void; cdecl external CLibCrypto name 'DES_ede3_cfb64_encrypt';
+function DES_ede3_cfb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl external CLibCrypto name 'DES_ede3_cfb_encrypt';
+function DES_ede3_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT): void; cdecl external CLibCrypto name 'DES_ede3_ofb64_encrypt';
 function DES_fcrypt(buf: PIdAnsiChar; salt: PIdAnsiChar; ret: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'DES_fcrypt';
 function DES_crypt(buf: PIdAnsiChar; salt: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'DES_crypt';
-procedure DES_ofb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock); cdecl external CLibCrypto name 'DES_ofb_encrypt';
-procedure DES_pcbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl external CLibCrypto name 'DES_pcbc_encrypt';
+function DES_ofb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock): void; cdecl external CLibCrypto name 'DES_ofb_encrypt';
+function DES_pcbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl external CLibCrypto name 'DES_pcbc_encrypt';
 function DES_quad_cksum(input: PIdAnsiChar; output: PDES_cblock; length: TIdC_LONG; out_count: TIdC_INT; seed: PDES_cblock): TDES_LONG; cdecl external CLibCrypto name 'DES_quad_cksum';
 function DES_random_key(ret: PDES_cblock): TIdC_INT; cdecl external CLibCrypto name 'DES_random_key';
-procedure DES_set_odd_parity(key: PDES_cblock); cdecl external CLibCrypto name 'DES_set_odd_parity';
+function DES_set_odd_parity(key: PDES_cblock): void; cdecl external CLibCrypto name 'DES_set_odd_parity';
 function DES_check_key_parity(key: Pconst_DES_cblock): TIdC_INT; cdecl external CLibCrypto name 'DES_check_key_parity';
 function DES_is_weak_key(key: Pconst_DES_cblock): TIdC_INT; cdecl external CLibCrypto name 'DES_is_weak_key';
 function DES_set_key(key: Pconst_DES_cblock; schedule: PDES_key_schedule): TIdC_INT; cdecl external CLibCrypto name 'DES_set_key';
 function DES_key_sched(key: Pconst_DES_cblock; schedule: PDES_key_schedule): TIdC_INT; cdecl external CLibCrypto name 'DES_key_sched';
 function DES_set_key_checked(key: Pconst_DES_cblock; schedule: PDES_key_schedule): TIdC_INT; cdecl external CLibCrypto name 'DES_set_key_checked';
-procedure DES_set_key_unchecked(key: Pconst_DES_cblock; schedule: PDES_key_schedule); cdecl external CLibCrypto name 'DES_set_key_unchecked';
-procedure DES_string_to_key(str: PIdAnsiChar; key: PDES_cblock); cdecl external CLibCrypto name 'DES_string_to_key';
-procedure DES_string_to_2keys(str: PIdAnsiChar; key1: PDES_cblock; key2: PDES_cblock); cdecl external CLibCrypto name 'DES_string_to_2keys';
-procedure DES_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT; enc: TIdC_INT); cdecl external CLibCrypto name 'DES_cfb64_encrypt';
-procedure DES_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT); cdecl external CLibCrypto name 'DES_ofb64_encrypt';
+function DES_set_key_unchecked(key: Pconst_DES_cblock; schedule: PDES_key_schedule): void; cdecl external CLibCrypto name 'DES_set_key_unchecked';
+function DES_string_to_key(str: PIdAnsiChar; key: PDES_cblock): void; cdecl external CLibCrypto name 'DES_string_to_key';
+function DES_string_to_2keys(str: PIdAnsiChar; key1: PDES_cblock; key2: PDES_cblock): void; cdecl external CLibCrypto name 'DES_string_to_2keys';
+function DES_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT; enc: TIdC_INT): void; cdecl external CLibCrypto name 'DES_cfb64_encrypt';
+function DES_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT): void; cdecl external CLibCrypto name 'DES_ofb64_encrypt';
 {$ENDIF}
 
 // =============================================================================
@@ -467,7 +453,7 @@ begin
   }
 end;
 
-procedure DES_fixup_key_parity(key: PDES_cblock); cdecl
+function DES_fixup_key_parity(key: PDES_cblock): void; cdecl
 begin
  { TODO 1 -copenssl inline routines : To replace placeholder body with the actual code. }
   // This is an inline routine or macro. Manual implementation required if needed.
@@ -493,7 +479,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_options_procname);
 end;
 
-procedure ERR_DES_ecb3_encrypt(input: Pconst_DES_cblock; output: PDES_cblock; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; enc: TIdC_INT); cdecl
+function ERR_DES_ecb3_encrypt(input: Pconst_DES_cblock; output: PDES_cblock; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; enc: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_ecb3_encrypt_procname);
 end;
@@ -503,67 +489,67 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_cbc_cksum_procname);
 end;
 
-procedure ERR_DES_cbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl
+function ERR_DES_cbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_cbc_encrypt_procname);
 end;
 
-procedure ERR_DES_ncbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl
+function ERR_DES_ncbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_ncbc_encrypt_procname);
 end;
 
-procedure ERR_DES_xcbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; inw: Pconst_DES_cblock; outw: Pconst_DES_cblock; enc: TIdC_INT); cdecl
+function ERR_DES_xcbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; inw: Pconst_DES_cblock; outw: Pconst_DES_cblock; enc: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_xcbc_encrypt_procname);
 end;
 
-procedure ERR_DES_cfb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl
+function ERR_DES_cfb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_cfb_encrypt_procname);
 end;
 
-procedure ERR_DES_ecb_encrypt(input: Pconst_DES_cblock; output: PDES_cblock; ks: PDES_key_schedule; enc: TIdC_INT); cdecl
+function ERR_DES_ecb_encrypt(input: Pconst_DES_cblock; output: PDES_cblock; ks: PDES_key_schedule; enc: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_ecb_encrypt_procname);
 end;
 
-procedure ERR_DES_encrypt1(data: PDES_LONG; ks: PDES_key_schedule; enc: TIdC_INT); cdecl
+function ERR_DES_encrypt1(data: PDES_LONG; ks: PDES_key_schedule; enc: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_encrypt1_procname);
 end;
 
-procedure ERR_DES_encrypt2(data: PDES_LONG; ks: PDES_key_schedule; enc: TIdC_INT); cdecl
+function ERR_DES_encrypt2(data: PDES_LONG; ks: PDES_key_schedule; enc: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_encrypt2_procname);
 end;
 
-procedure ERR_DES_encrypt3(data: PDES_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule); cdecl
+function ERR_DES_encrypt3(data: PDES_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_encrypt3_procname);
 end;
 
-procedure ERR_DES_decrypt3(data: PDES_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule); cdecl
+function ERR_DES_decrypt3(data: PDES_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_decrypt3_procname);
 end;
 
-procedure ERR_DES_ede3_cbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl
+function ERR_DES_ede3_cbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_ede3_cbc_encrypt_procname);
 end;
 
-procedure ERR_DES_ede3_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT; enc: TIdC_INT); cdecl
+function ERR_DES_ede3_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT; enc: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_ede3_cfb64_encrypt_procname);
 end;
 
-procedure ERR_DES_ede3_cfb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl
+function ERR_DES_ede3_cfb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_ede3_cfb_encrypt_procname);
 end;
 
-procedure ERR_DES_ede3_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT); cdecl
+function ERR_DES_ede3_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_ede3_ofb64_encrypt_procname);
 end;
@@ -578,12 +564,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_crypt_procname);
 end;
 
-procedure ERR_DES_ofb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock); cdecl
+function ERR_DES_ofb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; numbits: TIdC_INT; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_ofb_encrypt_procname);
 end;
 
-procedure ERR_DES_pcbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT); cdecl
+function ERR_DES_pcbc_encrypt(input: PIdAnsiChar; output: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; enc: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_pcbc_encrypt_procname);
 end;
@@ -598,7 +584,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_random_key_procname);
 end;
 
-procedure ERR_DES_set_odd_parity(key: PDES_cblock); cdecl
+function ERR_DES_set_odd_parity(key: PDES_cblock): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_set_odd_parity_procname);
 end;
@@ -628,27 +614,27 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_set_key_checked_procname);
 end;
 
-procedure ERR_DES_set_key_unchecked(key: Pconst_DES_cblock; schedule: PDES_key_schedule); cdecl
+function ERR_DES_set_key_unchecked(key: Pconst_DES_cblock; schedule: PDES_key_schedule): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_set_key_unchecked_procname);
 end;
 
-procedure ERR_DES_string_to_key(str: PIdAnsiChar; key: PDES_cblock); cdecl
+function ERR_DES_string_to_key(str: PIdAnsiChar; key: PDES_cblock): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_string_to_key_procname);
 end;
 
-procedure ERR_DES_string_to_2keys(str: PIdAnsiChar; key1: PDES_cblock; key2: PDES_cblock); cdecl
+function ERR_DES_string_to_2keys(str: PIdAnsiChar; key1: PDES_cblock; key2: PDES_cblock): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_string_to_2keys_procname);
 end;
 
-procedure ERR_DES_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT; enc: TIdC_INT); cdecl
+function ERR_DES_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT; enc: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_cfb64_encrypt_procname);
 end;
 
-procedure ERR_DES_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT); cdecl
+function ERR_DES_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PDES_key_schedule; ivec: PDES_cblock; num: PIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DES_ofb64_encrypt_procname);
 end;

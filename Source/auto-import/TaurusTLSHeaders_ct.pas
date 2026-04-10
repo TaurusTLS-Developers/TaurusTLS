@@ -26,17 +26,8 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
-// =============================================================================
-// TYPE DECLARATIONS
-// =============================================================================
-type
-  Pstack_st_SCT = ^Tstack_st_SCT;
-  Tstack_st_SCT = record end;
-  {$EXTERNALSYM Pstack_st_SCT}
 
-  Pstack_st_CTLOG = ^Tstack_st_CTLOG;
-  Tstack_st_CTLOG = record end;
-  {$EXTERNALSYM Pstack_st_CTLOG}
+
 
 
 // =============================================================================
@@ -76,17 +67,6 @@ type
 
 
 // =============================================================================
-// CALLBACK TYPE DECLARATIONS
-// =============================================================================
-type
-  Tsk_SCT_compfunc_func_cb = function(arg1: PPSCT; arg2: PPSCT): TIdC_INT; cdecl;
-  Tsk_SCT_freefunc_func_cb = procedure(arg1: PSCT); cdecl;
-  Tsk_SCT_copyfunc_func_cb = function(arg1: PSCT): PSCT; cdecl;
-  Tsk_CTLOG_compfunc_func_cb = function(arg1: PPCTLOG; arg2: PPCTLOG): TIdC_INT; cdecl;
-  Tsk_CTLOG_freefunc_func_cb = procedure(arg1: PCTLOG); cdecl;
-  Tsk_CTLOG_copyfunc_func_cb = function(arg1: PCTLOG): PCTLOG; cdecl;
-
-// =============================================================================
 // CONSTANTS DECLARATIONS
 // =============================================================================
 const
@@ -106,7 +86,7 @@ var
   CT_POLICY_EVAL_CTX_new: function: PCT_POLICY_EVAL_CTX; cdecl = nil;
   {$EXTERNALSYM CT_POLICY_EVAL_CTX_new}
 
-  CT_POLICY_EVAL_CTX_free: procedure(ctx: PCT_POLICY_EVAL_CTX); cdecl = nil;
+  CT_POLICY_EVAL_CTX_free: function(ctx: PCT_POLICY_EVAL_CTX): void; cdecl = nil;
   {$EXTERNALSYM CT_POLICY_EVAL_CTX_free}
 
   CT_POLICY_EVAL_CTX_get0_cert: function(ctx: PCT_POLICY_EVAL_CTX): PX509; cdecl = nil;
@@ -124,25 +104,25 @@ var
   CT_POLICY_EVAL_CTX_get0_log_store: function(ctx: PCT_POLICY_EVAL_CTX): PCTLOG_STORE; cdecl = nil;
   {$EXTERNALSYM CT_POLICY_EVAL_CTX_get0_log_store}
 
-  CT_POLICY_EVAL_CTX_set_shared_CTLOG_STORE: procedure(ctx: PCT_POLICY_EVAL_CTX; log_store: PCTLOG_STORE); cdecl = nil;
+  CT_POLICY_EVAL_CTX_set_shared_CTLOG_STORE: function(ctx: PCT_POLICY_EVAL_CTX; log_store: PCTLOG_STORE): void; cdecl = nil;
   {$EXTERNALSYM CT_POLICY_EVAL_CTX_set_shared_CTLOG_STORE}
 
-  CT_POLICY_EVAL_CTX_get_time: function(ctx: PCT_POLICY_EVAL_CTX): UInt64; cdecl = nil;
+  CT_POLICY_EVAL_CTX_get_time: function(ctx: PCT_POLICY_EVAL_CTX): TIdC_UINT64; cdecl = nil;
   {$EXTERNALSYM CT_POLICY_EVAL_CTX_get_time}
 
-  CT_POLICY_EVAL_CTX_set_time: procedure(ctx: PCT_POLICY_EVAL_CTX; time_in_ms: UInt64); cdecl = nil;
+  CT_POLICY_EVAL_CTX_set_time: function(ctx: PCT_POLICY_EVAL_CTX; time_in_ms: TIdC_UINT64): void; cdecl = nil;
   {$EXTERNALSYM CT_POLICY_EVAL_CTX_set_time}
 
   SCT_new: function: PSCT; cdecl = nil;
   {$EXTERNALSYM SCT_new}
 
-  SCT_new_from_base64: function(version: TIdC_UCHAR; logid_base64: PIdAnsiChar; entry_type: Tct_log_entry_type_t; timestamp: UInt64; extensions_base64: PIdAnsiChar; signature_base64: PIdAnsiChar): PSCT; cdecl = nil;
+  SCT_new_from_base64: function(version: TIdC_UINT8; logid_base64: PIdAnsiChar; entry_type: Tct_log_entry_type_t; timestamp: TIdC_UINT64; extensions_base64: PIdAnsiChar; signature_base64: PIdAnsiChar): PSCT; cdecl = nil;
   {$EXTERNALSYM SCT_new_from_base64}
 
-  SCT_free: procedure(sct: PSCT); cdecl = nil;
+  SCT_free: function(sct: PSCT): void; cdecl = nil;
   {$EXTERNALSYM SCT_free}
 
-  SCT_LIST_free: procedure(a: Pstack_st_SCT); cdecl = nil;
+  SCT_LIST_free: function(a: Pstack_st_SCT): void; cdecl = nil;
   {$EXTERNALSYM SCT_LIST_free}
 
   SCT_get_version: function(sct: PSCT): Tsct_version_t; cdecl = nil;
@@ -166,10 +146,10 @@ var
   SCT_set1_log_id: function(sct: PSCT; log_id: PIdAnsiChar; log_id_len: TIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM SCT_set1_log_id}
 
-  SCT_get_timestamp: function(sct: PSCT): UInt64; cdecl = nil;
+  SCT_get_timestamp: function(sct: PSCT): TIdC_UINT64; cdecl = nil;
   {$EXTERNALSYM SCT_get_timestamp}
 
-  SCT_set_timestamp: procedure(sct: PSCT; timestamp: UInt64); cdecl = nil;
+  SCT_set_timestamp: function(sct: PSCT; timestamp: TIdC_UINT64): void; cdecl = nil;
   {$EXTERNALSYM SCT_set_timestamp}
 
   SCT_get_signature_nid: function(sct: PSCT): TIdC_INT; cdecl = nil;
@@ -181,7 +161,7 @@ var
   SCT_get0_extensions: function(sct: PSCT; ext: PPIdAnsiChar): TIdC_SIZET; cdecl = nil;
   {$EXTERNALSYM SCT_get0_extensions}
 
-  SCT_set0_extensions: procedure(sct: PSCT; ext: PIdAnsiChar; ext_len: TIdC_SIZET); cdecl = nil;
+  SCT_set0_extensions: function(sct: PSCT; ext: PIdAnsiChar; ext_len: TIdC_SIZET): void; cdecl = nil;
   {$EXTERNALSYM SCT_set0_extensions}
 
   SCT_set1_extensions: function(sct: PSCT; ext: PIdAnsiChar; ext_len: TIdC_SIZET): TIdC_INT; cdecl = nil;
@@ -190,7 +170,7 @@ var
   SCT_get0_signature: function(sct: PSCT; sig: PPIdAnsiChar): TIdC_SIZET; cdecl = nil;
   {$EXTERNALSYM SCT_get0_signature}
 
-  SCT_set0_signature: procedure(sct: PSCT; sig: PIdAnsiChar; sig_len: TIdC_SIZET); cdecl = nil;
+  SCT_set0_signature: function(sct: PSCT; sig: PIdAnsiChar; sig_len: TIdC_SIZET): void; cdecl = nil;
   {$EXTERNALSYM SCT_set0_signature}
 
   SCT_set1_signature: function(sct: PSCT; sig: PIdAnsiChar; sig_len: TIdC_SIZET): TIdC_INT; cdecl = nil;
@@ -205,10 +185,10 @@ var
   SCT_validation_status_string: function(sct: PSCT): PIdAnsiChar; cdecl = nil;
   {$EXTERNALSYM SCT_validation_status_string}
 
-  SCT_print: procedure(sct: PSCT; _out: PBIO; indent: TIdC_INT; logs: PCTLOG_STORE); cdecl = nil;
+  SCT_print: function(sct: PSCT; _out: PBIO; indent: TIdC_INT; logs: PCTLOG_STORE): void; cdecl = nil;
   {$EXTERNALSYM SCT_print}
 
-  SCT_LIST_print: procedure(sct_list: Pstack_st_SCT; _out: PBIO; indent: TIdC_INT; separator: PIdAnsiChar; logs: PCTLOG_STORE); cdecl = nil;
+  SCT_LIST_print: function(sct_list: Pstack_st_SCT; _out: PBIO; indent: TIdC_INT; separator: PIdAnsiChar; logs: PCTLOG_STORE): void; cdecl = nil;
   {$EXTERNALSYM SCT_LIST_print}
 
   SCT_get_validation_status: function(sct: PSCT): Tsct_validation_status_t; cdecl = nil;
@@ -250,13 +230,13 @@ var
   CTLOG_new_from_base64: function(ct_log: PPCTLOG; pkey_base64: PIdAnsiChar; name: PIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CTLOG_new_from_base64}
 
-  CTLOG_free: procedure(log: PCTLOG); cdecl = nil;
+  CTLOG_free: function(log: PCTLOG): void; cdecl = nil;
   {$EXTERNALSYM CTLOG_free}
 
   CTLOG_get0_name: function(log: PCTLOG): PIdAnsiChar; cdecl = nil;
   {$EXTERNALSYM CTLOG_get0_name}
 
-  CTLOG_get0_log_id: procedure(log: PCTLOG; log_id: PPuint8_t; log_id_len: PIdC_SIZET); cdecl = nil;
+  CTLOG_get0_log_id: function(log: PCTLOG; log_id: PPIdC_UINT8; log_id_len: PIdC_SIZET): void; cdecl = nil;
   {$EXTERNALSYM CTLOG_get0_log_id}
 
   CTLOG_get0_public_key: function(log: PCTLOG): PEVP_PKEY; cdecl = nil;
@@ -268,10 +248,10 @@ var
   CTLOG_STORE_new: function: PCTLOG_STORE; cdecl = nil;
   {$EXTERNALSYM CTLOG_STORE_new}
 
-  CTLOG_STORE_free: procedure(store: PCTLOG_STORE); cdecl = nil;
+  CTLOG_STORE_free: function(store: PCTLOG_STORE): void; cdecl = nil;
   {$EXTERNALSYM CTLOG_STORE_free}
 
-  CTLOG_STORE_get0_log_by_id: function(store: PCTLOG_STORE; log_id: Puint8_t; log_id_len: TIdC_SIZET): PCTLOG; cdecl = nil;
+  CTLOG_STORE_get0_log_by_id: function(store: PCTLOG_STORE; log_id: PIdC_UINT8; log_id_len: TIdC_SIZET): PCTLOG; cdecl = nil;
   {$EXTERNALSYM CTLOG_STORE_get0_log_by_id}
 
   CTLOG_STORE_load_file: function(store: PCTLOG_STORE; _file: PIdAnsiChar): TIdC_INT; cdecl = nil;
@@ -290,19 +270,19 @@ var
 
 function CT_POLICY_EVAL_CTX_new_ex(libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PCT_POLICY_EVAL_CTX; cdecl;
 function CT_POLICY_EVAL_CTX_new: PCT_POLICY_EVAL_CTX; cdecl;
-procedure CT_POLICY_EVAL_CTX_free(ctx: PCT_POLICY_EVAL_CTX); cdecl;
+function CT_POLICY_EVAL_CTX_free(ctx: PCT_POLICY_EVAL_CTX): void; cdecl;
 function CT_POLICY_EVAL_CTX_get0_cert(ctx: PCT_POLICY_EVAL_CTX): PX509; cdecl;
 function CT_POLICY_EVAL_CTX_set1_cert(ctx: PCT_POLICY_EVAL_CTX; cert: PX509): TIdC_INT; cdecl;
 function CT_POLICY_EVAL_CTX_get0_issuer(ctx: PCT_POLICY_EVAL_CTX): PX509; cdecl;
 function CT_POLICY_EVAL_CTX_set1_issuer(ctx: PCT_POLICY_EVAL_CTX; issuer: PX509): TIdC_INT; cdecl;
 function CT_POLICY_EVAL_CTX_get0_log_store(ctx: PCT_POLICY_EVAL_CTX): PCTLOG_STORE; cdecl;
-procedure CT_POLICY_EVAL_CTX_set_shared_CTLOG_STORE(ctx: PCT_POLICY_EVAL_CTX; log_store: PCTLOG_STORE); cdecl;
-function CT_POLICY_EVAL_CTX_get_time(ctx: PCT_POLICY_EVAL_CTX): UInt64; cdecl;
-procedure CT_POLICY_EVAL_CTX_set_time(ctx: PCT_POLICY_EVAL_CTX; time_in_ms: UInt64); cdecl;
+function CT_POLICY_EVAL_CTX_set_shared_CTLOG_STORE(ctx: PCT_POLICY_EVAL_CTX; log_store: PCTLOG_STORE): void; cdecl;
+function CT_POLICY_EVAL_CTX_get_time(ctx: PCT_POLICY_EVAL_CTX): TIdC_UINT64; cdecl;
+function CT_POLICY_EVAL_CTX_set_time(ctx: PCT_POLICY_EVAL_CTX; time_in_ms: TIdC_UINT64): void; cdecl;
 function SCT_new: PSCT; cdecl;
-function SCT_new_from_base64(version: TIdC_UCHAR; logid_base64: PIdAnsiChar; entry_type: Tct_log_entry_type_t; timestamp: UInt64; extensions_base64: PIdAnsiChar; signature_base64: PIdAnsiChar): PSCT; cdecl;
-procedure SCT_free(sct: PSCT); cdecl;
-procedure SCT_LIST_free(a: Pstack_st_SCT); cdecl;
+function SCT_new_from_base64(version: TIdC_UINT8; logid_base64: PIdAnsiChar; entry_type: Tct_log_entry_type_t; timestamp: TIdC_UINT64; extensions_base64: PIdAnsiChar; signature_base64: PIdAnsiChar): PSCT; cdecl;
+function SCT_free(sct: PSCT): void; cdecl;
+function SCT_LIST_free(a: Pstack_st_SCT): void; cdecl;
 function SCT_get_version(sct: PSCT): Tsct_version_t; cdecl;
 function SCT_set_version(sct: PSCT; version: Tsct_version_t): TIdC_INT; cdecl;
 function SCT_get_log_entry_type(sct: PSCT): Tct_log_entry_type_t; cdecl;
@@ -310,21 +290,21 @@ function SCT_set_log_entry_type(sct: PSCT; entry_type: Tct_log_entry_type_t): TI
 function SCT_get0_log_id(sct: PSCT; log_id: PPIdAnsiChar): TIdC_SIZET; cdecl;
 function SCT_set0_log_id(sct: PSCT; log_id: PIdAnsiChar; log_id_len: TIdC_SIZET): TIdC_INT; cdecl;
 function SCT_set1_log_id(sct: PSCT; log_id: PIdAnsiChar; log_id_len: TIdC_SIZET): TIdC_INT; cdecl;
-function SCT_get_timestamp(sct: PSCT): UInt64; cdecl;
-procedure SCT_set_timestamp(sct: PSCT; timestamp: UInt64); cdecl;
+function SCT_get_timestamp(sct: PSCT): TIdC_UINT64; cdecl;
+function SCT_set_timestamp(sct: PSCT; timestamp: TIdC_UINT64): void; cdecl;
 function SCT_get_signature_nid(sct: PSCT): TIdC_INT; cdecl;
 function SCT_set_signature_nid(sct: PSCT; nid: TIdC_INT): TIdC_INT; cdecl;
 function SCT_get0_extensions(sct: PSCT; ext: PPIdAnsiChar): TIdC_SIZET; cdecl;
-procedure SCT_set0_extensions(sct: PSCT; ext: PIdAnsiChar; ext_len: TIdC_SIZET); cdecl;
+function SCT_set0_extensions(sct: PSCT; ext: PIdAnsiChar; ext_len: TIdC_SIZET): void; cdecl;
 function SCT_set1_extensions(sct: PSCT; ext: PIdAnsiChar; ext_len: TIdC_SIZET): TIdC_INT; cdecl;
 function SCT_get0_signature(sct: PSCT; sig: PPIdAnsiChar): TIdC_SIZET; cdecl;
-procedure SCT_set0_signature(sct: PSCT; sig: PIdAnsiChar; sig_len: TIdC_SIZET); cdecl;
+function SCT_set0_signature(sct: PSCT; sig: PIdAnsiChar; sig_len: TIdC_SIZET): void; cdecl;
 function SCT_set1_signature(sct: PSCT; sig: PIdAnsiChar; sig_len: TIdC_SIZET): TIdC_INT; cdecl;
 function SCT_get_source(sct: PSCT): Tsct_source_t; cdecl;
 function SCT_set_source(sct: PSCT; source: Tsct_source_t): TIdC_INT; cdecl;
 function SCT_validation_status_string(sct: PSCT): PIdAnsiChar; cdecl;
-procedure SCT_print(sct: PSCT; _out: PBIO; indent: TIdC_INT; logs: PCTLOG_STORE); cdecl;
-procedure SCT_LIST_print(sct_list: Pstack_st_SCT; _out: PBIO; indent: TIdC_INT; separator: PIdAnsiChar; logs: PCTLOG_STORE); cdecl;
+function SCT_print(sct: PSCT; _out: PBIO; indent: TIdC_INT; logs: PCTLOG_STORE): void; cdecl;
+function SCT_LIST_print(sct_list: Pstack_st_SCT; _out: PBIO; indent: TIdC_INT; separator: PIdAnsiChar; logs: PCTLOG_STORE): void; cdecl;
 function SCT_get_validation_status(sct: PSCT): Tsct_validation_status_t; cdecl;
 function SCT_validate(sct: PSCT; ctx: PCT_POLICY_EVAL_CTX): TIdC_INT; cdecl;
 function SCT_LIST_validate(scts: Pstack_st_SCT; ctx: PCT_POLICY_EVAL_CTX): TIdC_INT; cdecl;
@@ -338,17 +318,88 @@ function CTLOG_new_ex(public_key: PEVP_PKEY; name: PIdAnsiChar; libctx: POSSL_LI
 function CTLOG_new(public_key: PEVP_PKEY; name: PIdAnsiChar): PCTLOG; cdecl;
 function CTLOG_new_from_base64_ex(ct_log: PPCTLOG; pkey_base64: PIdAnsiChar; name: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): TIdC_INT; cdecl;
 function CTLOG_new_from_base64(ct_log: PPCTLOG; pkey_base64: PIdAnsiChar; name: PIdAnsiChar): TIdC_INT; cdecl;
-procedure CTLOG_free(log: PCTLOG); cdecl;
+function CTLOG_free(log: PCTLOG): void; cdecl;
 function CTLOG_get0_name(log: PCTLOG): PIdAnsiChar; cdecl;
-procedure CTLOG_get0_log_id(log: PCTLOG; log_id: PPuint8_t; log_id_len: PIdC_SIZET); cdecl;
+function CTLOG_get0_log_id(log: PCTLOG; log_id: PPIdC_UINT8; log_id_len: PIdC_SIZET): void; cdecl;
 function CTLOG_get0_public_key(log: PCTLOG): PEVP_PKEY; cdecl;
 function CTLOG_STORE_new_ex(libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PCTLOG_STORE; cdecl;
 function CTLOG_STORE_new: PCTLOG_STORE; cdecl;
-procedure CTLOG_STORE_free(store: PCTLOG_STORE); cdecl;
-function CTLOG_STORE_get0_log_by_id(store: PCTLOG_STORE; log_id: Puint8_t; log_id_len: TIdC_SIZET): PCTLOG; cdecl;
+function CTLOG_STORE_free(store: PCTLOG_STORE): void; cdecl;
+function CTLOG_STORE_get0_log_by_id(store: PCTLOG_STORE; log_id: PIdC_UINT8; log_id_len: TIdC_SIZET): PCTLOG; cdecl;
 function CTLOG_STORE_load_file(store: PCTLOG_STORE; _file: PIdAnsiChar): TIdC_INT; cdecl;
 function CTLOG_STORE_load_default_file(store: PCTLOG_STORE): TIdC_INT; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
+
+// =============================================================================
+// OPENSSL STACK DEFINITIONS
+// =============================================================================
+type
+  { TODO 1 -copenssl stack SCT definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_SCT = Pointer;
+  {$EXTERNALSYM PSTACK_OF_SCT}
+
+  { Original Stack Macros for SCT:
+    SKM_DEFINE_STACK_OF_INTERNAL(SCT, SCT, SCT)
+    sk_SCT_num(sk) OPENSSL_sk_num(ossl_check_const_SCT_sk_type(sk))
+    sk_SCT_value(sk, idx) ((SCT *)OPENSSL_sk_value(ossl_check_const_SCT_sk_type(sk), (idx)))
+    sk_SCT_new(cmp) ((STACK_OF(SCT) *)OPENSSL_sk_new(ossl_check_SCT_compfunc_type(cmp)))
+    sk_SCT_new_null() ((STACK_OF(SCT) *)OPENSSL_sk_new_null())
+    sk_SCT_new_reserve(cmp, n) ((STACK_OF(SCT) *)OPENSSL_sk_new_reserve(ossl_check_SCT_compfunc_type(cmp), (n)))
+    sk_SCT_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_SCT_sk_type(sk), (n))
+    sk_SCT_free(sk) OPENSSL_sk_free(ossl_check_SCT_sk_type(sk))
+    sk_SCT_zero(sk) OPENSSL_sk_zero(ossl_check_SCT_sk_type(sk))
+    sk_SCT_delete(sk, i) ((SCT *)OPENSSL_sk_delete(ossl_check_SCT_sk_type(sk), (i)))
+    sk_SCT_delete_ptr(sk, ptr) ((SCT *)OPENSSL_sk_delete_ptr(ossl_check_SCT_sk_type(sk), ossl_check_SCT_type(ptr)))
+    sk_SCT_push(sk, ptr) OPENSSL_sk_push(ossl_check_SCT_sk_type(sk), ossl_check_SCT_type(ptr))
+    sk_SCT_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_SCT_sk_type(sk), ossl_check_SCT_type(ptr))
+    sk_SCT_pop(sk) ((SCT *)OPENSSL_sk_pop(ossl_check_SCT_sk_type(sk)))
+    sk_SCT_shift(sk) ((SCT *)OPENSSL_sk_shift(ossl_check_SCT_sk_type(sk)))
+    sk_SCT_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_SCT_sk_type(sk), ossl_check_SCT_freefunc_type(freefunc))
+    sk_SCT_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_SCT_sk_type(sk), ossl_check_SCT_type(ptr), (idx))
+    sk_SCT_set(sk, idx, ptr) ((SCT *)OPENSSL_sk_set(ossl_check_SCT_sk_type(sk), (idx), ossl_check_SCT_type(ptr)))
+    sk_SCT_find(sk, ptr) OPENSSL_sk_find(ossl_check_SCT_sk_type(sk), ossl_check_SCT_type(ptr))
+    sk_SCT_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_SCT_sk_type(sk), ossl_check_SCT_type(ptr))
+    sk_SCT_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_SCT_sk_type(sk), ossl_check_SCT_type(ptr), pnum)
+    sk_SCT_sort(sk) OPENSSL_sk_sort(ossl_check_SCT_sk_type(sk))
+    sk_SCT_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_SCT_sk_type(sk))
+    sk_SCT_dup(sk) ((STACK_OF(SCT) *)OPENSSL_sk_dup(ossl_check_const_SCT_sk_type(sk)))
+    sk_SCT_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(SCT) *)OPENSSL_sk_deep_copy(ossl_check_const_SCT_sk_type(sk), ossl_check_SCT_copyfunc_type(copyfunc), ossl_check_SCT_freefunc_type(freefunc)))
+    sk_SCT_set_cmp_func(sk, cmp) ((sk_SCT_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_SCT_sk_type(sk), ossl_check_SCT_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack CTLOG definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_CTLOG = Pointer;
+  {$EXTERNALSYM PSTACK_OF_CTLOG}
+
+  { Original Stack Macros for CTLOG:
+    SKM_DEFINE_STACK_OF_INTERNAL(CTLOG, CTLOG, CTLOG)
+    sk_CTLOG_num(sk) OPENSSL_sk_num(ossl_check_const_CTLOG_sk_type(sk))
+    sk_CTLOG_value(sk, idx) ((CTLOG *)OPENSSL_sk_value(ossl_check_const_CTLOG_sk_type(sk), (idx)))
+    sk_CTLOG_new(cmp) ((STACK_OF(CTLOG) *)OPENSSL_sk_new(ossl_check_CTLOG_compfunc_type(cmp)))
+    sk_CTLOG_new_null() ((STACK_OF(CTLOG) *)OPENSSL_sk_new_null())
+    sk_CTLOG_new_reserve(cmp, n) ((STACK_OF(CTLOG) *)OPENSSL_sk_new_reserve(ossl_check_CTLOG_compfunc_type(cmp), (n)))
+    sk_CTLOG_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_CTLOG_sk_type(sk), (n))
+    sk_CTLOG_free(sk) OPENSSL_sk_free(ossl_check_CTLOG_sk_type(sk))
+    sk_CTLOG_zero(sk) OPENSSL_sk_zero(ossl_check_CTLOG_sk_type(sk))
+    sk_CTLOG_delete(sk, i) ((CTLOG *)OPENSSL_sk_delete(ossl_check_CTLOG_sk_type(sk), (i)))
+    sk_CTLOG_delete_ptr(sk, ptr) ((CTLOG *)OPENSSL_sk_delete_ptr(ossl_check_CTLOG_sk_type(sk), ossl_check_CTLOG_type(ptr)))
+    sk_CTLOG_push(sk, ptr) OPENSSL_sk_push(ossl_check_CTLOG_sk_type(sk), ossl_check_CTLOG_type(ptr))
+    sk_CTLOG_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_CTLOG_sk_type(sk), ossl_check_CTLOG_type(ptr))
+    sk_CTLOG_pop(sk) ((CTLOG *)OPENSSL_sk_pop(ossl_check_CTLOG_sk_type(sk)))
+    sk_CTLOG_shift(sk) ((CTLOG *)OPENSSL_sk_shift(ossl_check_CTLOG_sk_type(sk)))
+    sk_CTLOG_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_CTLOG_sk_type(sk), ossl_check_CTLOG_freefunc_type(freefunc))
+    sk_CTLOG_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_CTLOG_sk_type(sk), ossl_check_CTLOG_type(ptr), (idx))
+    sk_CTLOG_set(sk, idx, ptr) ((CTLOG *)OPENSSL_sk_set(ossl_check_CTLOG_sk_type(sk), (idx), ossl_check_CTLOG_type(ptr)))
+    sk_CTLOG_find(sk, ptr) OPENSSL_sk_find(ossl_check_CTLOG_sk_type(sk), ossl_check_CTLOG_type(ptr))
+    sk_CTLOG_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_CTLOG_sk_type(sk), ossl_check_CTLOG_type(ptr))
+    sk_CTLOG_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_CTLOG_sk_type(sk), ossl_check_CTLOG_type(ptr), pnum)
+    sk_CTLOG_sort(sk) OPENSSL_sk_sort(ossl_check_CTLOG_sk_type(sk))
+    sk_CTLOG_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_CTLOG_sk_type(sk))
+    sk_CTLOG_dup(sk) ((STACK_OF(CTLOG) *)OPENSSL_sk_dup(ossl_check_const_CTLOG_sk_type(sk)))
+    sk_CTLOG_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(CTLOG) *)OPENSSL_sk_deep_copy(ossl_check_const_CTLOG_sk_type(sk), ossl_check_CTLOG_copyfunc_type(copyfunc), ossl_check_CTLOG_freefunc_type(freefunc)))
+    sk_CTLOG_set_cmp_func(sk, cmp) ((sk_CTLOG_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_CTLOG_sk_type(sk), ossl_check_CTLOG_compfunc_type(cmp)))
+  }
+
 
 implementation
 
@@ -368,19 +419,19 @@ uses
 
 function CT_POLICY_EVAL_CTX_new_ex(libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PCT_POLICY_EVAL_CTX; cdecl external CLibCrypto name 'CT_POLICY_EVAL_CTX_new_ex';
 function CT_POLICY_EVAL_CTX_new: PCT_POLICY_EVAL_CTX; cdecl external CLibCrypto name 'CT_POLICY_EVAL_CTX_new';
-procedure CT_POLICY_EVAL_CTX_free(ctx: PCT_POLICY_EVAL_CTX); cdecl external CLibCrypto name 'CT_POLICY_EVAL_CTX_free';
+function CT_POLICY_EVAL_CTX_free(ctx: PCT_POLICY_EVAL_CTX): void; cdecl external CLibCrypto name 'CT_POLICY_EVAL_CTX_free';
 function CT_POLICY_EVAL_CTX_get0_cert(ctx: PCT_POLICY_EVAL_CTX): PX509; cdecl external CLibCrypto name 'CT_POLICY_EVAL_CTX_get0_cert';
 function CT_POLICY_EVAL_CTX_set1_cert(ctx: PCT_POLICY_EVAL_CTX; cert: PX509): TIdC_INT; cdecl external CLibCrypto name 'CT_POLICY_EVAL_CTX_set1_cert';
 function CT_POLICY_EVAL_CTX_get0_issuer(ctx: PCT_POLICY_EVAL_CTX): PX509; cdecl external CLibCrypto name 'CT_POLICY_EVAL_CTX_get0_issuer';
 function CT_POLICY_EVAL_CTX_set1_issuer(ctx: PCT_POLICY_EVAL_CTX; issuer: PX509): TIdC_INT; cdecl external CLibCrypto name 'CT_POLICY_EVAL_CTX_set1_issuer';
 function CT_POLICY_EVAL_CTX_get0_log_store(ctx: PCT_POLICY_EVAL_CTX): PCTLOG_STORE; cdecl external CLibCrypto name 'CT_POLICY_EVAL_CTX_get0_log_store';
-procedure CT_POLICY_EVAL_CTX_set_shared_CTLOG_STORE(ctx: PCT_POLICY_EVAL_CTX; log_store: PCTLOG_STORE); cdecl external CLibCrypto name 'CT_POLICY_EVAL_CTX_set_shared_CTLOG_STORE';
-function CT_POLICY_EVAL_CTX_get_time(ctx: PCT_POLICY_EVAL_CTX): UInt64; cdecl external CLibCrypto name 'CT_POLICY_EVAL_CTX_get_time';
-procedure CT_POLICY_EVAL_CTX_set_time(ctx: PCT_POLICY_EVAL_CTX; time_in_ms: UInt64); cdecl external CLibCrypto name 'CT_POLICY_EVAL_CTX_set_time';
+function CT_POLICY_EVAL_CTX_set_shared_CTLOG_STORE(ctx: PCT_POLICY_EVAL_CTX; log_store: PCTLOG_STORE): void; cdecl external CLibCrypto name 'CT_POLICY_EVAL_CTX_set_shared_CTLOG_STORE';
+function CT_POLICY_EVAL_CTX_get_time(ctx: PCT_POLICY_EVAL_CTX): TIdC_UINT64; cdecl external CLibCrypto name 'CT_POLICY_EVAL_CTX_get_time';
+function CT_POLICY_EVAL_CTX_set_time(ctx: PCT_POLICY_EVAL_CTX; time_in_ms: TIdC_UINT64): void; cdecl external CLibCrypto name 'CT_POLICY_EVAL_CTX_set_time';
 function SCT_new: PSCT; cdecl external CLibCrypto name 'SCT_new';
-function SCT_new_from_base64(version: TIdC_UCHAR; logid_base64: PIdAnsiChar; entry_type: Tct_log_entry_type_t; timestamp: UInt64; extensions_base64: PIdAnsiChar; signature_base64: PIdAnsiChar): PSCT; cdecl external CLibCrypto name 'SCT_new_from_base64';
-procedure SCT_free(sct: PSCT); cdecl external CLibCrypto name 'SCT_free';
-procedure SCT_LIST_free(a: Pstack_st_SCT); cdecl external CLibCrypto name 'SCT_LIST_free';
+function SCT_new_from_base64(version: TIdC_UINT8; logid_base64: PIdAnsiChar; entry_type: Tct_log_entry_type_t; timestamp: TIdC_UINT64; extensions_base64: PIdAnsiChar; signature_base64: PIdAnsiChar): PSCT; cdecl external CLibCrypto name 'SCT_new_from_base64';
+function SCT_free(sct: PSCT): void; cdecl external CLibCrypto name 'SCT_free';
+function SCT_LIST_free(a: Pstack_st_SCT): void; cdecl external CLibCrypto name 'SCT_LIST_free';
 function SCT_get_version(sct: PSCT): Tsct_version_t; cdecl external CLibCrypto name 'SCT_get_version';
 function SCT_set_version(sct: PSCT; version: Tsct_version_t): TIdC_INT; cdecl external CLibCrypto name 'SCT_set_version';
 function SCT_get_log_entry_type(sct: PSCT): Tct_log_entry_type_t; cdecl external CLibCrypto name 'SCT_get_log_entry_type';
@@ -388,21 +439,21 @@ function SCT_set_log_entry_type(sct: PSCT; entry_type: Tct_log_entry_type_t): TI
 function SCT_get0_log_id(sct: PSCT; log_id: PPIdAnsiChar): TIdC_SIZET; cdecl external CLibCrypto name 'SCT_get0_log_id';
 function SCT_set0_log_id(sct: PSCT; log_id: PIdAnsiChar; log_id_len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'SCT_set0_log_id';
 function SCT_set1_log_id(sct: PSCT; log_id: PIdAnsiChar; log_id_len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'SCT_set1_log_id';
-function SCT_get_timestamp(sct: PSCT): UInt64; cdecl external CLibCrypto name 'SCT_get_timestamp';
-procedure SCT_set_timestamp(sct: PSCT; timestamp: UInt64); cdecl external CLibCrypto name 'SCT_set_timestamp';
+function SCT_get_timestamp(sct: PSCT): TIdC_UINT64; cdecl external CLibCrypto name 'SCT_get_timestamp';
+function SCT_set_timestamp(sct: PSCT; timestamp: TIdC_UINT64): void; cdecl external CLibCrypto name 'SCT_set_timestamp';
 function SCT_get_signature_nid(sct: PSCT): TIdC_INT; cdecl external CLibCrypto name 'SCT_get_signature_nid';
 function SCT_set_signature_nid(sct: PSCT; nid: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'SCT_set_signature_nid';
 function SCT_get0_extensions(sct: PSCT; ext: PPIdAnsiChar): TIdC_SIZET; cdecl external CLibCrypto name 'SCT_get0_extensions';
-procedure SCT_set0_extensions(sct: PSCT; ext: PIdAnsiChar; ext_len: TIdC_SIZET); cdecl external CLibCrypto name 'SCT_set0_extensions';
+function SCT_set0_extensions(sct: PSCT; ext: PIdAnsiChar; ext_len: TIdC_SIZET): void; cdecl external CLibCrypto name 'SCT_set0_extensions';
 function SCT_set1_extensions(sct: PSCT; ext: PIdAnsiChar; ext_len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'SCT_set1_extensions';
 function SCT_get0_signature(sct: PSCT; sig: PPIdAnsiChar): TIdC_SIZET; cdecl external CLibCrypto name 'SCT_get0_signature';
-procedure SCT_set0_signature(sct: PSCT; sig: PIdAnsiChar; sig_len: TIdC_SIZET); cdecl external CLibCrypto name 'SCT_set0_signature';
+function SCT_set0_signature(sct: PSCT; sig: PIdAnsiChar; sig_len: TIdC_SIZET): void; cdecl external CLibCrypto name 'SCT_set0_signature';
 function SCT_set1_signature(sct: PSCT; sig: PIdAnsiChar; sig_len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'SCT_set1_signature';
 function SCT_get_source(sct: PSCT): Tsct_source_t; cdecl external CLibCrypto name 'SCT_get_source';
 function SCT_set_source(sct: PSCT; source: Tsct_source_t): TIdC_INT; cdecl external CLibCrypto name 'SCT_set_source';
 function SCT_validation_status_string(sct: PSCT): PIdAnsiChar; cdecl external CLibCrypto name 'SCT_validation_status_string';
-procedure SCT_print(sct: PSCT; _out: PBIO; indent: TIdC_INT; logs: PCTLOG_STORE); cdecl external CLibCrypto name 'SCT_print';
-procedure SCT_LIST_print(sct_list: Pstack_st_SCT; _out: PBIO; indent: TIdC_INT; separator: PIdAnsiChar; logs: PCTLOG_STORE); cdecl external CLibCrypto name 'SCT_LIST_print';
+function SCT_print(sct: PSCT; _out: PBIO; indent: TIdC_INT; logs: PCTLOG_STORE): void; cdecl external CLibCrypto name 'SCT_print';
+function SCT_LIST_print(sct_list: Pstack_st_SCT; _out: PBIO; indent: TIdC_INT; separator: PIdAnsiChar; logs: PCTLOG_STORE): void; cdecl external CLibCrypto name 'SCT_LIST_print';
 function SCT_get_validation_status(sct: PSCT): Tsct_validation_status_t; cdecl external CLibCrypto name 'SCT_get_validation_status';
 function SCT_validate(sct: PSCT; ctx: PCT_POLICY_EVAL_CTX): TIdC_INT; cdecl external CLibCrypto name 'SCT_validate';
 function SCT_LIST_validate(scts: Pstack_st_SCT; ctx: PCT_POLICY_EVAL_CTX): TIdC_INT; cdecl external CLibCrypto name 'SCT_LIST_validate';
@@ -416,14 +467,14 @@ function CTLOG_new_ex(public_key: PEVP_PKEY; name: PIdAnsiChar; libctx: POSSL_LI
 function CTLOG_new(public_key: PEVP_PKEY; name: PIdAnsiChar): PCTLOG; cdecl external CLibCrypto name 'CTLOG_new';
 function CTLOG_new_from_base64_ex(ct_log: PPCTLOG; pkey_base64: PIdAnsiChar; name: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'CTLOG_new_from_base64_ex';
 function CTLOG_new_from_base64(ct_log: PPCTLOG; pkey_base64: PIdAnsiChar; name: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'CTLOG_new_from_base64';
-procedure CTLOG_free(log: PCTLOG); cdecl external CLibCrypto name 'CTLOG_free';
+function CTLOG_free(log: PCTLOG): void; cdecl external CLibCrypto name 'CTLOG_free';
 function CTLOG_get0_name(log: PCTLOG): PIdAnsiChar; cdecl external CLibCrypto name 'CTLOG_get0_name';
-procedure CTLOG_get0_log_id(log: PCTLOG; log_id: PPuint8_t; log_id_len: PIdC_SIZET); cdecl external CLibCrypto name 'CTLOG_get0_log_id';
+function CTLOG_get0_log_id(log: PCTLOG; log_id: PPIdC_UINT8; log_id_len: PIdC_SIZET): void; cdecl external CLibCrypto name 'CTLOG_get0_log_id';
 function CTLOG_get0_public_key(log: PCTLOG): PEVP_PKEY; cdecl external CLibCrypto name 'CTLOG_get0_public_key';
 function CTLOG_STORE_new_ex(libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PCTLOG_STORE; cdecl external CLibCrypto name 'CTLOG_STORE_new_ex';
 function CTLOG_STORE_new: PCTLOG_STORE; cdecl external CLibCrypto name 'CTLOG_STORE_new';
-procedure CTLOG_STORE_free(store: PCTLOG_STORE); cdecl external CLibCrypto name 'CTLOG_STORE_free';
-function CTLOG_STORE_get0_log_by_id(store: PCTLOG_STORE; log_id: Puint8_t; log_id_len: TIdC_SIZET): PCTLOG; cdecl external CLibCrypto name 'CTLOG_STORE_get0_log_by_id';
+function CTLOG_STORE_free(store: PCTLOG_STORE): void; cdecl external CLibCrypto name 'CTLOG_STORE_free';
+function CTLOG_STORE_get0_log_by_id(store: PCTLOG_STORE; log_id: PIdC_UINT8; log_id_len: TIdC_SIZET): PCTLOG; cdecl external CLibCrypto name 'CTLOG_STORE_get0_log_by_id';
 function CTLOG_STORE_load_file(store: PCTLOG_STORE; _file: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'CTLOG_STORE_load_file';
 function CTLOG_STORE_load_default_file(store: PCTLOG_STORE): TIdC_INT; cdecl external CLibCrypto name 'CTLOG_STORE_load_default_file';
 {$ENDIF}
@@ -636,7 +687,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CT_POLICY_EVAL_CTX_new_procname);
 end;
 
-procedure ERR_CT_POLICY_EVAL_CTX_free(ctx: PCT_POLICY_EVAL_CTX); cdecl
+function ERR_CT_POLICY_EVAL_CTX_free(ctx: PCT_POLICY_EVAL_CTX): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CT_POLICY_EVAL_CTX_free_procname);
 end;
@@ -666,17 +717,17 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CT_POLICY_EVAL_CTX_get0_log_store_procname);
 end;
 
-procedure ERR_CT_POLICY_EVAL_CTX_set_shared_CTLOG_STORE(ctx: PCT_POLICY_EVAL_CTX; log_store: PCTLOG_STORE); cdecl
+function ERR_CT_POLICY_EVAL_CTX_set_shared_CTLOG_STORE(ctx: PCT_POLICY_EVAL_CTX; log_store: PCTLOG_STORE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CT_POLICY_EVAL_CTX_set_shared_CTLOG_STORE_procname);
 end;
 
-function ERR_CT_POLICY_EVAL_CTX_get_time(ctx: PCT_POLICY_EVAL_CTX): UInt64; cdecl
+function ERR_CT_POLICY_EVAL_CTX_get_time(ctx: PCT_POLICY_EVAL_CTX): TIdC_UINT64; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CT_POLICY_EVAL_CTX_get_time_procname);
 end;
 
-procedure ERR_CT_POLICY_EVAL_CTX_set_time(ctx: PCT_POLICY_EVAL_CTX; time_in_ms: UInt64); cdecl
+function ERR_CT_POLICY_EVAL_CTX_set_time(ctx: PCT_POLICY_EVAL_CTX; time_in_ms: TIdC_UINT64): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CT_POLICY_EVAL_CTX_set_time_procname);
 end;
@@ -686,17 +737,17 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SCT_new_procname);
 end;
 
-function ERR_SCT_new_from_base64(version: TIdC_UCHAR; logid_base64: PIdAnsiChar; entry_type: Tct_log_entry_type_t; timestamp: UInt64; extensions_base64: PIdAnsiChar; signature_base64: PIdAnsiChar): PSCT; cdecl
+function ERR_SCT_new_from_base64(version: TIdC_UINT8; logid_base64: PIdAnsiChar; entry_type: Tct_log_entry_type_t; timestamp: TIdC_UINT64; extensions_base64: PIdAnsiChar; signature_base64: PIdAnsiChar): PSCT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SCT_new_from_base64_procname);
 end;
 
-procedure ERR_SCT_free(sct: PSCT); cdecl
+function ERR_SCT_free(sct: PSCT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SCT_free_procname);
 end;
 
-procedure ERR_SCT_LIST_free(a: Pstack_st_SCT); cdecl
+function ERR_SCT_LIST_free(a: Pstack_st_SCT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SCT_LIST_free_procname);
 end;
@@ -736,12 +787,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SCT_set1_log_id_procname);
 end;
 
-function ERR_SCT_get_timestamp(sct: PSCT): UInt64; cdecl
+function ERR_SCT_get_timestamp(sct: PSCT): TIdC_UINT64; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SCT_get_timestamp_procname);
 end;
 
-procedure ERR_SCT_set_timestamp(sct: PSCT; timestamp: UInt64); cdecl
+function ERR_SCT_set_timestamp(sct: PSCT; timestamp: TIdC_UINT64): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SCT_set_timestamp_procname);
 end;
@@ -761,7 +812,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SCT_get0_extensions_procname);
 end;
 
-procedure ERR_SCT_set0_extensions(sct: PSCT; ext: PIdAnsiChar; ext_len: TIdC_SIZET); cdecl
+function ERR_SCT_set0_extensions(sct: PSCT; ext: PIdAnsiChar; ext_len: TIdC_SIZET): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SCT_set0_extensions_procname);
 end;
@@ -776,7 +827,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SCT_get0_signature_procname);
 end;
 
-procedure ERR_SCT_set0_signature(sct: PSCT; sig: PIdAnsiChar; sig_len: TIdC_SIZET); cdecl
+function ERR_SCT_set0_signature(sct: PSCT; sig: PIdAnsiChar; sig_len: TIdC_SIZET): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SCT_set0_signature_procname);
 end;
@@ -801,12 +852,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SCT_validation_status_string_procname);
 end;
 
-procedure ERR_SCT_print(sct: PSCT; _out: PBIO; indent: TIdC_INT; logs: PCTLOG_STORE); cdecl
+function ERR_SCT_print(sct: PSCT; _out: PBIO; indent: TIdC_INT; logs: PCTLOG_STORE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SCT_print_procname);
 end;
 
-procedure ERR_SCT_LIST_print(sct_list: Pstack_st_SCT; _out: PBIO; indent: TIdC_INT; separator: PIdAnsiChar; logs: PCTLOG_STORE); cdecl
+function ERR_SCT_LIST_print(sct_list: Pstack_st_SCT; _out: PBIO; indent: TIdC_INT; separator: PIdAnsiChar; logs: PCTLOG_STORE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SCT_LIST_print_procname);
 end;
@@ -876,7 +927,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CTLOG_new_from_base64_procname);
 end;
 
-procedure ERR_CTLOG_free(log: PCTLOG); cdecl
+function ERR_CTLOG_free(log: PCTLOG): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CTLOG_free_procname);
 end;
@@ -886,7 +937,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CTLOG_get0_name_procname);
 end;
 
-procedure ERR_CTLOG_get0_log_id(log: PCTLOG; log_id: PPuint8_t; log_id_len: PIdC_SIZET); cdecl
+function ERR_CTLOG_get0_log_id(log: PCTLOG; log_id: PPIdC_UINT8; log_id_len: PIdC_SIZET): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CTLOG_get0_log_id_procname);
 end;
@@ -906,12 +957,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CTLOG_STORE_new_procname);
 end;
 
-procedure ERR_CTLOG_STORE_free(store: PCTLOG_STORE); cdecl
+function ERR_CTLOG_STORE_free(store: PCTLOG_STORE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CTLOG_STORE_free_procname);
 end;
 
-function ERR_CTLOG_STORE_get0_log_by_id(store: PCTLOG_STORE; log_id: Puint8_t; log_id_len: TIdC_SIZET): PCTLOG; cdecl
+function ERR_CTLOG_STORE_get0_log_by_id(store: PCTLOG_STORE; log_id: PIdC_UINT8; log_id_len: TIdC_SIZET): PCTLOG; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CTLOG_STORE_get0_log_by_id_procname);
 end;

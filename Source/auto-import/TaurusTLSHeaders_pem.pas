@@ -27,14 +27,21 @@ uses
   TaurusTLSHeaders_core;
 
 
+
+
+
 // =============================================================================
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  TPEM_do_header_callback_cb = function: TIdC_INT; cdecl;
-  TPEM_ASN1_read_bio_d2i_cb = function: Pointer; cdecl;
-  TPEM_ASN1_write_bio_i2d_cb = function: TIdC_INT; cdecl;
-  TPEM_ASN1_write_bio_ctx_i2d_cb = function: TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // PEM_do_header_callback_cb = function(arg1: PIdAnsiChar; arg2: TIdC_INT; arg3: TIdC_INT; arg4: Pointer): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // PEM_ASN1_read_bio_d2i_cb = function(arg1: PPointer; arg2: PPIdAnsiChar; arg3: TIdC_LONG): Pointer; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // PEM_ASN1_write_bio_i2d_cb = function(arg1: Pointer; arg2: PPIdAnsiChar): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // PEM_ASN1_write_bio_ctx_i2d_cb = function(arg1: Pointer; arg2: PPIdAnsiChar; arg3: Pointer): TIdC_INT; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -153,10 +160,10 @@ var
   PEM_def_callback: function(buf: PIdAnsiChar; num: TIdC_INT; rwflag: TIdC_INT; userdata: Pointer): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM PEM_def_callback}
 
-  PEM_proc_type: procedure(buf: PIdAnsiChar; _type: TIdC_INT); cdecl = nil;
+  PEM_proc_type: function(buf: PIdAnsiChar; _type: TIdC_INT): void; cdecl = nil;
   {$EXTERNALSYM PEM_proc_type}
 
-  PEM_dek_info: procedure(buf: PIdAnsiChar; _type: PIdAnsiChar; len: TIdC_INT; str: PIdAnsiChar); cdecl = nil;
+  PEM_dek_info: function(buf: PIdAnsiChar; _type: PIdAnsiChar; len: TIdC_INT; str: PIdAnsiChar): void; cdecl = nil;
   {$EXTERNALSYM PEM_dek_info}
 
   PEM_read_bio_X509: function(_out: PBIO; x: PPX509; cb: TPEM_do_header_callback_cb; u: Pointer): PX509; cdecl = nil;
@@ -550,8 +557,8 @@ function PEM_SignInit(ctx: PEVP_MD_CTX; _type: PEVP_MD): TIdC_INT; cdecl;
 function PEM_SignUpdate(ctx: PEVP_MD_CTX; d: PIdAnsiChar; cnt: TIdC_UINT): TIdC_INT; cdecl;
 function PEM_SignFinal(ctx: PEVP_MD_CTX; sigret: PIdAnsiChar; siglen: PIdC_UINT; pkey: PEVP_PKEY): TIdC_INT; cdecl;
 function PEM_def_callback(buf: PIdAnsiChar; num: TIdC_INT; rwflag: TIdC_INT; userdata: Pointer): TIdC_INT; cdecl;
-procedure PEM_proc_type(buf: PIdAnsiChar; _type: TIdC_INT); cdecl;
-procedure PEM_dek_info(buf: PIdAnsiChar; _type: PIdAnsiChar; len: TIdC_INT; str: PIdAnsiChar); cdecl;
+function PEM_proc_type(buf: PIdAnsiChar; _type: TIdC_INT): void; cdecl;
+function PEM_dek_info(buf: PIdAnsiChar; _type: PIdAnsiChar; len: TIdC_INT; str: PIdAnsiChar): void; cdecl;
 function PEM_read_bio_X509(_out: PBIO; x: PPX509; cb: TPEM_do_header_callback_cb; u: Pointer): PX509; cdecl;
 function PEM_read_X509(_out: PFILE; x: PPX509; cb: TPEM_do_header_callback_cb; u: Pointer): PX509; cdecl;
 function PEM_write_bio_X509(_out: PBIO; x: PX509): TIdC_INT; cdecl;
@@ -713,8 +720,8 @@ function PEM_SignInit(ctx: PEVP_MD_CTX; _type: PEVP_MD): TIdC_INT; cdecl externa
 function PEM_SignUpdate(ctx: PEVP_MD_CTX; d: PIdAnsiChar; cnt: TIdC_UINT): TIdC_INT; cdecl external CLibCrypto name 'PEM_SignUpdate';
 function PEM_SignFinal(ctx: PEVP_MD_CTX; sigret: PIdAnsiChar; siglen: PIdC_UINT; pkey: PEVP_PKEY): TIdC_INT; cdecl external CLibCrypto name 'PEM_SignFinal';
 function PEM_def_callback(buf: PIdAnsiChar; num: TIdC_INT; rwflag: TIdC_INT; userdata: Pointer): TIdC_INT; cdecl external CLibCrypto name 'PEM_def_callback';
-procedure PEM_proc_type(buf: PIdAnsiChar; _type: TIdC_INT); cdecl external CLibCrypto name 'PEM_proc_type';
-procedure PEM_dek_info(buf: PIdAnsiChar; _type: PIdAnsiChar; len: TIdC_INT; str: PIdAnsiChar); cdecl external CLibCrypto name 'PEM_dek_info';
+function PEM_proc_type(buf: PIdAnsiChar; _type: TIdC_INT): void; cdecl external CLibCrypto name 'PEM_proc_type';
+function PEM_dek_info(buf: PIdAnsiChar; _type: PIdAnsiChar; len: TIdC_INT; str: PIdAnsiChar): void; cdecl external CLibCrypto name 'PEM_dek_info';
 function PEM_read_bio_X509(_out: PBIO; x: PPX509; cb: TPEM_do_header_callback_cb; u: Pointer): PX509; cdecl external CLibCrypto name 'PEM_read_bio_X509';
 function PEM_read_X509(_out: PFILE; x: PPX509; cb: TPEM_do_header_callback_cb; u: Pointer): PX509; cdecl external CLibCrypto name 'PEM_read_X509';
 function PEM_write_bio_X509(_out: PBIO; x: PX509): TIdC_INT; cdecl external CLibCrypto name 'PEM_write_bio_X509';
@@ -1447,12 +1454,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PEM_def_callback_procname);
 end;
 
-procedure ERR_PEM_proc_type(buf: PIdAnsiChar; _type: TIdC_INT); cdecl
+function ERR_PEM_proc_type(buf: PIdAnsiChar; _type: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PEM_proc_type_procname);
 end;
 
-procedure ERR_PEM_dek_info(buf: PIdAnsiChar; _type: PIdAnsiChar; len: TIdC_INT; str: PIdAnsiChar); cdecl
+function ERR_PEM_dek_info(buf: PIdAnsiChar; _type: PIdAnsiChar; len: TIdC_INT; str: PIdAnsiChar): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PEM_dek_info_procname);
 end;

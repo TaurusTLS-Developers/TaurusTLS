@@ -26,21 +26,18 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
-  PIDEA_INT = ^TIDEA_INT;
-  TIDEA_INT = TIdC_UINT;
-  {$EXTERNALSYM PIDEA_INT}
-
   Pidea_key_st = ^Tidea_key_st;
-  Tidea_key_st = record end;
+  Tidea_key_st =   record
+    data: PPIDEA_INT;
+  end;
   {$EXTERNALSYM Pidea_key_st}
-
-  PIDEA_KEY_SCHEDULE = ^TIDEA_KEY_SCHEDULE;
-  TIDEA_KEY_SCHEDULE = Tidea_key_st;
-  {$EXTERNALSYM PIDEA_KEY_SCHEDULE}
 
 
 // =============================================================================
@@ -62,25 +59,25 @@ var
   IDEA_options: function: PIdAnsiChar; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM IDEA_options}
 
-  IDEA_ecb_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE); cdecl = nil; // Deprecated in 3_0_0
+  IDEA_ecb_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM IDEA_ecb_encrypt}
 
-  IDEA_set_encrypt_key: procedure(key: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE); cdecl = nil; // Deprecated in 3_0_0
+  IDEA_set_encrypt_key: function(key: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM IDEA_set_encrypt_key}
 
-  IDEA_set_decrypt_key: procedure(ek: PIDEA_KEY_SCHEDULE; dk: PIDEA_KEY_SCHEDULE); cdecl = nil; // Deprecated in 3_0_0
+  IDEA_set_decrypt_key: function(ek: PIDEA_KEY_SCHEDULE; dk: PIDEA_KEY_SCHEDULE): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM IDEA_set_decrypt_key}
 
-  IDEA_cbc_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  IDEA_cbc_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM IDEA_cbc_encrypt}
 
-  IDEA_cfb64_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  IDEA_cfb64_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM IDEA_cfb64_encrypt}
 
-  IDEA_ofb64_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  IDEA_ofb64_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM IDEA_ofb64_encrypt}
 
-  IDEA_encrypt: procedure(_in: PIdC_ULONG; ks: PIDEA_KEY_SCHEDULE); cdecl = nil; // Deprecated in 3_0_0
+  IDEA_encrypt: function(_in: PIdC_ULONG; ks: PIDEA_KEY_SCHEDULE): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM IDEA_encrypt}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -92,42 +89,42 @@ var
 // =============================================================================
 
 function IDEA_options: PIdAnsiChar; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure IDEA_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure IDEA_set_encrypt_key(key: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure IDEA_set_decrypt_key(ek: PIDEA_KEY_SCHEDULE; dk: PIDEA_KEY_SCHEDULE); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure IDEA_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure IDEA_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure IDEA_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure IDEA_encrypt(_in: PIdC_ULONG; ks: PIDEA_KEY_SCHEDULE); cdecl; deprecated 'In OpenSSL 3_0_0';
+function IDEA_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function IDEA_set_encrypt_key(key: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function IDEA_set_decrypt_key(ek: PIDEA_KEY_SCHEDULE; dk: PIDEA_KEY_SCHEDULE): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function IDEA_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function IDEA_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function IDEA_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function IDEA_encrypt(_in: PIdC_ULONG; ks: PIDEA_KEY_SCHEDULE): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 // =============================================================================
 // INLINE OR MACRO ROUTINES
 // =============================================================================
 
-function idea_options: PIdAnsiChar; cdecl; deprecated 'In OpenSSL 3_0_0';
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function idea_options: PIdAnsiChar; cdecl;
 
-procedure idea_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE); cdecl; deprecated 'In OpenSSL 3_0_0';
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function idea_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE): void; cdecl;
 
-procedure idea_set_encrypt_key(key: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE); cdecl; deprecated 'In OpenSSL 3_0_0';
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function idea_set_encrypt_key(key: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE): void; cdecl;
 
-procedure idea_set_decrypt_key(ek: PIDEA_KEY_SCHEDULE; dk: PIDEA_KEY_SCHEDULE); cdecl; deprecated 'In OpenSSL 3_0_0';
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function idea_set_decrypt_key(ek: PIDEA_KEY_SCHEDULE; dk: PIDEA_KEY_SCHEDULE): void; cdecl;
 
-procedure idea_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function idea_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; enc: TIdC_INT): void; cdecl;
 
-procedure idea_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function idea_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl;
 
-procedure idea_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function idea_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT): void; cdecl;
 
-procedure idea_encrypt(_in: PIdC_ULONG; ks: PIDEA_KEY_SCHEDULE); cdecl; deprecated 'In OpenSSL 3_0_0';
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function idea_encrypt(_in: PIdC_ULONG; ks: PIDEA_KEY_SCHEDULE): void; cdecl;
 
 
 implementation
@@ -147,13 +144,13 @@ uses
 // =============================================================================
 
 function IDEA_options: PIdAnsiChar; cdecl external CLibCrypto name 'IDEA_options';
-procedure IDEA_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE); cdecl external CLibCrypto name 'IDEA_ecb_encrypt';
-procedure IDEA_set_encrypt_key(key: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE); cdecl external CLibCrypto name 'IDEA_set_encrypt_key';
-procedure IDEA_set_decrypt_key(ek: PIDEA_KEY_SCHEDULE; dk: PIDEA_KEY_SCHEDULE); cdecl external CLibCrypto name 'IDEA_set_decrypt_key';
-procedure IDEA_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; enc: TIdC_INT); cdecl external CLibCrypto name 'IDEA_cbc_encrypt';
-procedure IDEA_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl external CLibCrypto name 'IDEA_cfb64_encrypt';
-procedure IDEA_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT); cdecl external CLibCrypto name 'IDEA_ofb64_encrypt';
-procedure IDEA_encrypt(_in: PIdC_ULONG; ks: PIDEA_KEY_SCHEDULE); cdecl external CLibCrypto name 'IDEA_encrypt';
+function IDEA_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE): void; cdecl external CLibCrypto name 'IDEA_ecb_encrypt';
+function IDEA_set_encrypt_key(key: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE): void; cdecl external CLibCrypto name 'IDEA_set_encrypt_key';
+function IDEA_set_decrypt_key(ek: PIDEA_KEY_SCHEDULE; dk: PIDEA_KEY_SCHEDULE): void; cdecl external CLibCrypto name 'IDEA_set_decrypt_key';
+function IDEA_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; enc: TIdC_INT): void; cdecl external CLibCrypto name 'IDEA_cbc_encrypt';
+function IDEA_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl external CLibCrypto name 'IDEA_cfb64_encrypt';
+function IDEA_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT): void; cdecl external CLibCrypto name 'IDEA_ofb64_encrypt';
+function IDEA_encrypt(_in: PIdC_ULONG; ks: PIDEA_KEY_SCHEDULE): void; cdecl external CLibCrypto name 'IDEA_encrypt';
 {$ENDIF}
 
 // =============================================================================
@@ -207,7 +204,7 @@ begin
   }
 end;
 
-procedure idea_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE); cdecl
+function idea_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE): void; cdecl
 begin
  { TODO 1 -copenssl inline routines : To replace placeholder body with the actual code. }
   // This is an inline routine or macro. Manual implementation required if needed.
@@ -216,7 +213,7 @@ begin
   }
 end;
 
-procedure idea_set_encrypt_key(key: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE); cdecl
+function idea_set_encrypt_key(key: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE): void; cdecl
 begin
  { TODO 1 -copenssl inline routines : To replace placeholder body with the actual code. }
   // This is an inline routine or macro. Manual implementation required if needed.
@@ -225,7 +222,7 @@ begin
   }
 end;
 
-procedure idea_set_decrypt_key(ek: PIDEA_KEY_SCHEDULE; dk: PIDEA_KEY_SCHEDULE); cdecl
+function idea_set_decrypt_key(ek: PIDEA_KEY_SCHEDULE; dk: PIDEA_KEY_SCHEDULE): void; cdecl
 begin
  { TODO 1 -copenssl inline routines : To replace placeholder body with the actual code. }
   // This is an inline routine or macro. Manual implementation required if needed.
@@ -234,7 +231,7 @@ begin
   }
 end;
 
-procedure idea_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; enc: TIdC_INT); cdecl
+function idea_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; enc: TIdC_INT): void; cdecl
 begin
  { TODO 1 -copenssl inline routines : To replace placeholder body with the actual code. }
   // This is an inline routine or macro. Manual implementation required if needed.
@@ -243,7 +240,7 @@ begin
   }
 end;
 
-procedure idea_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl
+function idea_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl
 begin
  { TODO 1 -copenssl inline routines : To replace placeholder body with the actual code. }
   // This is an inline routine or macro. Manual implementation required if needed.
@@ -252,7 +249,7 @@ begin
   }
 end;
 
-procedure idea_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT); cdecl
+function idea_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT): void; cdecl
 begin
  { TODO 1 -copenssl inline routines : To replace placeholder body with the actual code. }
   // This is an inline routine or macro. Manual implementation required if needed.
@@ -261,7 +258,7 @@ begin
   }
 end;
 
-procedure idea_encrypt(_in: PIdC_ULONG; ks: PIDEA_KEY_SCHEDULE); cdecl
+function idea_encrypt(_in: PIdC_ULONG; ks: PIDEA_KEY_SCHEDULE): void; cdecl
 begin
  { TODO 1 -copenssl inline routines : To replace placeholder body with the actual code. }
   // This is an inline routine or macro. Manual implementation required if needed.
@@ -287,37 +284,37 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(IDEA_options_procname);
 end;
 
-procedure ERR_IDEA_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE); cdecl
+function ERR_IDEA_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(IDEA_ecb_encrypt_procname);
 end;
 
-procedure ERR_IDEA_set_encrypt_key(key: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE); cdecl
+function ERR_IDEA_set_encrypt_key(key: PIdAnsiChar; ks: PIDEA_KEY_SCHEDULE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(IDEA_set_encrypt_key_procname);
 end;
 
-procedure ERR_IDEA_set_decrypt_key(ek: PIDEA_KEY_SCHEDULE; dk: PIDEA_KEY_SCHEDULE); cdecl
+function ERR_IDEA_set_decrypt_key(ek: PIDEA_KEY_SCHEDULE; dk: PIDEA_KEY_SCHEDULE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(IDEA_set_decrypt_key_procname);
 end;
 
-procedure ERR_IDEA_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; enc: TIdC_INT); cdecl
+function ERR_IDEA_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; enc: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(IDEA_cbc_encrypt_procname);
 end;
 
-procedure ERR_IDEA_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl
+function ERR_IDEA_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(IDEA_cfb64_encrypt_procname);
 end;
 
-procedure ERR_IDEA_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT); cdecl
+function ERR_IDEA_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PIDEA_KEY_SCHEDULE; iv: PIdAnsiChar; num: PIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(IDEA_ofb64_encrypt_procname);
 end;
 
-procedure ERR_IDEA_encrypt(_in: PIdC_ULONG; ks: PIDEA_KEY_SCHEDULE); cdecl
+function ERR_IDEA_encrypt(_in: PIdC_ULONG; ks: PIDEA_KEY_SCHEDULE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(IDEA_encrypt_procname);
 end;

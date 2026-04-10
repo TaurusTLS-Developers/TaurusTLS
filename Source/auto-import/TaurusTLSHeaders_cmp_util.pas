@@ -26,20 +26,15 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
-// =============================================================================
-// TYPE DECLARATIONS
-// =============================================================================
-type
-  POSSL_CMP_severity = ^TOSSL_CMP_severity;
-  TOSSL_CMP_severity = TIdC_INT;
-  {$EXTERNALSYM POSSL_CMP_severity}
+
+
 
 
 // =============================================================================
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  TOSSL_CMP_log_cb_t_func_cb = function(arg1: PIdAnsiChar; arg2: PIdAnsiChar; arg3: TIdC_INT; arg4: TOSSL_CMP_severity; arg5: PIdAnsiChar): TIdC_INT; cdecl;
+  TOSSL_CMP_log_cb_t = function(func: PIdAnsiChar; _file: PIdAnsiChar; line: TIdC_INT; level: TOSSL_CMP_severity; msg: PIdAnsiChar): TIdC_INT; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -67,13 +62,13 @@ var
   OSSL_CMP_log_open: function: TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_log_open}
 
-  OSSL_CMP_log_close: procedure; cdecl = nil;
+  OSSL_CMP_log_close: function: void; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_log_close}
 
   OSSL_CMP_print_to_bio: function(bio: PBIO; component: PIdAnsiChar; _file: PIdAnsiChar; line: TIdC_INT; level: TOSSL_CMP_severity; msg: PIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_print_to_bio}
 
-  OSSL_CMP_print_errors_cb: procedure(log_fn: TOSSL_CMP_log_cb_t_func_cb); cdecl = nil;
+  OSSL_CMP_print_errors_cb: function(log_fn: TOSSL_CMP_log_cb_t): void; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_print_errors_cb}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -85,9 +80,9 @@ var
 // =============================================================================
 
 function OSSL_CMP_log_open: TIdC_INT; cdecl;
-procedure OSSL_CMP_log_close; cdecl;
+function OSSL_CMP_log_close: void; cdecl;
 function OSSL_CMP_print_to_bio(bio: PBIO; component: PIdAnsiChar; _file: PIdAnsiChar; line: TIdC_INT; level: TOSSL_CMP_severity; msg: PIdAnsiChar): TIdC_INT; cdecl;
-procedure OSSL_CMP_print_errors_cb(log_fn: TOSSL_CMP_log_cb_t_func_cb); cdecl;
+function OSSL_CMP_print_errors_cb(log_fn: TOSSL_CMP_log_cb_t): void; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 implementation
@@ -107,9 +102,9 @@ uses
 // =============================================================================
 
 function OSSL_CMP_log_open: TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_log_open';
-procedure OSSL_CMP_log_close; cdecl external CLibCrypto name 'OSSL_CMP_log_close';
+function OSSL_CMP_log_close: void; cdecl external CLibCrypto name 'OSSL_CMP_log_close';
 function OSSL_CMP_print_to_bio(bio: PBIO; component: PIdAnsiChar; _file: PIdAnsiChar; line: TIdC_INT; level: TOSSL_CMP_severity; msg: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_print_to_bio';
-procedure OSSL_CMP_print_errors_cb(log_fn: TOSSL_CMP_log_cb_t_func_cb); cdecl external CLibCrypto name 'OSSL_CMP_print_errors_cb';
+function OSSL_CMP_print_errors_cb(log_fn: TOSSL_CMP_log_cb_t): void; cdecl external CLibCrypto name 'OSSL_CMP_print_errors_cb';
 {$ENDIF}
 
 // =============================================================================
@@ -147,7 +142,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_log_open_procname);
 end;
 
-procedure ERR_OSSL_CMP_log_close; cdecl
+function ERR_OSSL_CMP_log_close: void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_log_close_procname);
 end;
@@ -157,7 +152,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_print_to_bio_procname);
 end;
 
-procedure ERR_OSSL_CMP_print_errors_cb(log_fn: TOSSL_CMP_log_cb_t_func_cb); cdecl
+function ERR_OSSL_CMP_print_errors_cb(log_fn: TOSSL_CMP_log_cb_t): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_print_errors_cb_procname);
 end;

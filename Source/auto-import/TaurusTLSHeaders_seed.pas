@@ -26,17 +26,18 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   Pseed_key_st = ^Tseed_key_st;
-  Tseed_key_st = record end;
+  Tseed_key_st =   record
+    data: PIdC_UINT;
+  end;
   {$EXTERNALSYM Pseed_key_st}
-
-  PSEED_KEY_SCHEDULE = ^TSEED_KEY_SCHEDULE;
-  TSEED_KEY_SCHEDULE = Tseed_key_st;
-  {$EXTERNALSYM PSEED_KEY_SCHEDULE}
 
 
 // =============================================================================
@@ -53,25 +54,25 @@ const
 // =============================================================================
 var
 
-  SEED_set_key: procedure(rawkey: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE); cdecl = nil; // Deprecated in 3_0_0
+  SEED_set_key: function(rawkey: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM SEED_set_key}
 
-  SEED_encrypt: procedure(s: PIdAnsiChar; d: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE); cdecl = nil; // Deprecated in 3_0_0
+  SEED_encrypt: function(s: PIdAnsiChar; d: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM SEED_encrypt}
 
-  SEED_decrypt: procedure(s: PIdAnsiChar; d: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE); cdecl = nil; // Deprecated in 3_0_0
+  SEED_decrypt: function(s: PIdAnsiChar; d: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM SEED_decrypt}
 
-  SEED_ecb_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  SEED_ecb_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM SEED_ecb_encrypt}
 
-  SEED_cbc_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  SEED_cbc_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM SEED_cbc_encrypt}
 
-  SEED_cfb128_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  SEED_cfb128_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM SEED_cfb128_encrypt}
 
-  SEED_ofb128_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; num: PIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  SEED_ofb128_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM SEED_ofb128_encrypt}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -82,13 +83,13 @@ var
 // STATIC BINDING ROUTINES
 // =============================================================================
 
-procedure SEED_set_key(rawkey: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure SEED_encrypt(s: PIdAnsiChar; d: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure SEED_decrypt(s: PIdAnsiChar; d: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure SEED_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure SEED_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure SEED_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure SEED_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; num: PIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+function SEED_set_key(rawkey: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function SEED_encrypt(s: PIdAnsiChar; d: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function SEED_decrypt(s: PIdAnsiChar; d: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function SEED_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function SEED_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function SEED_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function SEED_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 implementation
@@ -107,13 +108,13 @@ uses
 // STATIC BINDING ROUTINES IMPORTS
 // =============================================================================
 
-procedure SEED_set_key(rawkey: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE); cdecl external CLibCrypto name 'SEED_set_key';
-procedure SEED_encrypt(s: PIdAnsiChar; d: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE); cdecl external CLibCrypto name 'SEED_encrypt';
-procedure SEED_decrypt(s: PIdAnsiChar; d: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE); cdecl external CLibCrypto name 'SEED_decrypt';
-procedure SEED_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE; enc: TIdC_INT); cdecl external CLibCrypto name 'SEED_ecb_encrypt';
-procedure SEED_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl external CLibCrypto name 'SEED_cbc_encrypt';
-procedure SEED_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl external CLibCrypto name 'SEED_cfb128_encrypt';
-procedure SEED_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; num: PIdC_INT); cdecl external CLibCrypto name 'SEED_ofb128_encrypt';
+function SEED_set_key(rawkey: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE): void; cdecl external CLibCrypto name 'SEED_set_key';
+function SEED_encrypt(s: PIdAnsiChar; d: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE): void; cdecl external CLibCrypto name 'SEED_encrypt';
+function SEED_decrypt(s: PIdAnsiChar; d: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE): void; cdecl external CLibCrypto name 'SEED_decrypt';
+function SEED_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE; enc: TIdC_INT): void; cdecl external CLibCrypto name 'SEED_ecb_encrypt';
+function SEED_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl external CLibCrypto name 'SEED_cbc_encrypt';
+function SEED_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl external CLibCrypto name 'SEED_cfb128_encrypt';
+function SEED_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl external CLibCrypto name 'SEED_ofb128_encrypt';
 {$ENDIF}
 
 // =============================================================================
@@ -162,37 +163,37 @@ const
 // ERRORS STUBS
 // =============================================================================
 
-procedure ERR_SEED_set_key(rawkey: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE); cdecl
+function ERR_SEED_set_key(rawkey: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SEED_set_key_procname);
 end;
 
-procedure ERR_SEED_encrypt(s: PIdAnsiChar; d: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE); cdecl
+function ERR_SEED_encrypt(s: PIdAnsiChar; d: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SEED_encrypt_procname);
 end;
 
-procedure ERR_SEED_decrypt(s: PIdAnsiChar; d: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE); cdecl
+function ERR_SEED_decrypt(s: PIdAnsiChar; d: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SEED_decrypt_procname);
 end;
 
-procedure ERR_SEED_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE; enc: TIdC_INT); cdecl
+function ERR_SEED_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; ks: PSEED_KEY_SCHEDULE; enc: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SEED_ecb_encrypt_procname);
 end;
 
-procedure ERR_SEED_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl
+function ERR_SEED_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SEED_cbc_encrypt_procname);
 end;
 
-procedure ERR_SEED_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl
+function ERR_SEED_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SEED_cfb128_encrypt_procname);
 end;
 
-procedure ERR_SEED_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; num: PIdC_INT); cdecl
+function ERR_SEED_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; len: TIdC_SIZET; ks: PSEED_KEY_SCHEDULE; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SEED_ofb128_encrypt_procname);
 end;

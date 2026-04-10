@@ -26,38 +26,52 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   Perr_state_st = ^Terr_state_st;
-  Terr_state_st = record end;
+  Terr_state_st =   record
+    err_flags: PIdC_INT;
+    err_marks: PIdC_INT;
+    err_buffer: PIdC_ULONG;
+    err_data: PPIdAnsiChar;
+    err_data_size: PIdC_SIZET;
+    err_data_flags: PIdC_INT;
+    err_file: PPIdAnsiChar;
+    err_line: PIdC_INT;
+    err_func: PPIdAnsiChar;
+    top: TIdC_INT;
+    bottom: TIdC_INT;
+  end;
   {$EXTERNALSYM Perr_state_st}
 
   PERR_string_data_st = ^TERR_string_data_st;
-  TERR_string_data_st = record end;
+  TERR_string_data_st =   record
+    error: TIdC_ULONG;
+    string: PIdAnsiChar;
+  end;
   {$EXTERNALSYM PERR_string_data_st}
 
-  PERR_STRING_DATA = ^TERR_STRING_DATA;
-  TERR_STRING_DATA = TERR_string_data_st;
-  {$EXTERNALSYM PERR_STRING_DATA}
+  { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
+  // DEFINE_LHASH_OF_INTERNAL(ERR_STRING_DATA)
 
-  Plhash_st_ERR_STRING_DATA = ^Tlhash_st_ERR_STRING_DATA;
-  Tlhash_st_ERR_STRING_DATA = record end;
-  {$EXTERNALSYM Plhash_st_ERR_STRING_DATA}
-
-  Plh_ERR_STRING_DATA_dummy = ^Tlh_ERR_STRING_DATA_dummy;
-  {$EXTERNALSYM Plh_ERR_STRING_DATA_dummy}
+  { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
+  // DEFINE_LHASH_OF_INTERNAL(ERR_STRING_DATA)
 
 
 // =============================================================================
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  Tlh_ERR_STRING_DATA_compfunc_func_cb = function(arg1: PERR_STRING_DATA; arg2: PERR_STRING_DATA): TIdC_INT; cdecl;
-  Tlh_ERR_STRING_DATA_hashfunc_func_cb = function(arg1: PERR_STRING_DATA): TIdC_ULONG; cdecl;
-  Tlh_ERR_STRING_DATA_doallfunc_func_cb = procedure(arg1: PERR_STRING_DATA); cdecl;
-  TERR_print_errors_cb_cb_cb = function(arg1: PIdAnsiChar; arg2: TIdC_SIZET; arg3: Pointer): TIdC_INT; cdecl;
+  Tlh_ERR_STRING_DATA_compfunc = function(a: PERR_STRING_DATA; b: PERR_STRING_DATA): TIdC_INT; cdecl;
+  Tlh_ERR_STRING_DATA_hashfunc = function(a: PERR_STRING_DATA): TIdC_ULONG; cdecl;
+  Tlh_ERR_STRING_DATA_doallfunc = function(a: PERR_STRING_DATA): void; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // ERR_print_errors_cb_cb_cb = function(str: PIdAnsiChar; len: TIdC_SIZET; u: Pointer): TIdC_INT; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -148,39 +162,39 @@ const
   SYS_F_FCNTL = 0;
   SYS_F_FSTAT = 0;
   SYS_F_SENDFILE = 0;
-  ERR_R_SYS_LIB = (ERR_LIB_SYS/* 2 */ or ERR_RFLAG_COMMON);
-  ERR_R_BN_LIB = (ERR_LIB_BN/* 3 */ or ERR_RFLAG_COMMON);
-  ERR_R_RSA_LIB = (ERR_LIB_RSA/* 4 */ or ERR_RFLAG_COMMON);
-  ERR_R_DH_LIB = (ERR_LIB_DH/* 5 */ or ERR_RFLAG_COMMON);
-  ERR_R_EVP_LIB = (ERR_LIB_EVP/* 6 */ or ERR_RFLAG_COMMON);
-  ERR_R_BUF_LIB = (ERR_LIB_BUF/* 7 */ or ERR_RFLAG_COMMON);
-  ERR_R_OBJ_LIB = (ERR_LIB_OBJ/* 8 */ or ERR_RFLAG_COMMON);
-  ERR_R_PEM_LIB = (ERR_LIB_PEM/* 9 */ or ERR_RFLAG_COMMON);
-  ERR_R_DSA_LIB = (ERR_LIB_DSA/* 10 */ or ERR_RFLAG_COMMON);
-  ERR_R_X509_LIB = (ERR_LIB_X509/* 11 */ or ERR_RFLAG_COMMON);
-  ERR_R_ASN1_LIB = (ERR_LIB_ASN1/* 13 */ or ERR_RFLAG_COMMON);
-  ERR_R_CONF_LIB = (ERR_LIB_CONF/* 14 */ or ERR_RFLAG_COMMON);
-  ERR_R_CRYPTO_LIB = (ERR_LIB_CRYPTO/* 15 */ or ERR_RFLAG_COMMON);
-  ERR_R_EC_LIB = (ERR_LIB_EC/* 16 */ or ERR_RFLAG_COMMON);
-  ERR_R_SSL_LIB = (ERR_LIB_SSL/* 20 */ or ERR_RFLAG_COMMON);
-  ERR_R_BIO_LIB = (ERR_LIB_BIO/* 32 */ or ERR_RFLAG_COMMON);
-  ERR_R_PKCS7_LIB = (ERR_LIB_PKCS7/* 33 */ or ERR_RFLAG_COMMON);
-  ERR_R_X509V3_LIB = (ERR_LIB_X509V3/* 34 */ or ERR_RFLAG_COMMON);
-  ERR_R_PKCS12_LIB = (ERR_LIB_PKCS12/* 35 */ or ERR_RFLAG_COMMON);
-  ERR_R_RAND_LIB = (ERR_LIB_RAND/* 36 */ or ERR_RFLAG_COMMON);
-  ERR_R_DSO_LIB = (ERR_LIB_DSO/* 37 */ or ERR_RFLAG_COMMON);
-  ERR_R_ENGINE_LIB = (ERR_LIB_ENGINE/* 38 */ or ERR_RFLAG_COMMON);
-  ERR_R_UI_LIB = (ERR_LIB_UI/* 40 */ or ERR_RFLAG_COMMON);
-  ERR_R_ECDSA_LIB = (ERR_LIB_ECDSA/* 42 */ or ERR_RFLAG_COMMON);
-  ERR_R_OSSL_STORE_LIB = (ERR_LIB_OSSL_STORE/* 44 */ or ERR_RFLAG_COMMON);
-  ERR_R_CMS_LIB = (ERR_LIB_CMS/* 46 */ or ERR_RFLAG_COMMON);
-  ERR_R_TS_LIB = (ERR_LIB_TS/* 47 */ or ERR_RFLAG_COMMON);
-  ERR_R_CT_LIB = (ERR_LIB_CT/* 50 */ or ERR_RFLAG_COMMON);
-  ERR_R_PROV_LIB = (ERR_LIB_PROV/* 57 */ or ERR_RFLAG_COMMON);
-  ERR_R_ESS_LIB = (ERR_LIB_ESS/* 54 */ or ERR_RFLAG_COMMON);
-  ERR_R_CMP_LIB = (ERR_LIB_CMP/* 58 */ or ERR_RFLAG_COMMON);
-  ERR_R_OSSL_ENCODER_LIB = (ERR_LIB_OSSL_ENCODER/* 59 */ or ERR_RFLAG_COMMON);
-  ERR_R_OSSL_DECODER_LIB = (ERR_LIB_OSSL_DECODER/* 60 */ or ERR_RFLAG_COMMON);
+  ERR_R_SYS_LIB = (ERR_LIB_SYS or ERR_RFLAG_COMMON);
+  ERR_R_BN_LIB = (ERR_LIB_BN or ERR_RFLAG_COMMON);
+  ERR_R_RSA_LIB = (ERR_LIB_RSA or ERR_RFLAG_COMMON);
+  ERR_R_DH_LIB = (ERR_LIB_DH or ERR_RFLAG_COMMON);
+  ERR_R_EVP_LIB = (ERR_LIB_EVP or ERR_RFLAG_COMMON);
+  ERR_R_BUF_LIB = (ERR_LIB_BUF or ERR_RFLAG_COMMON);
+  ERR_R_OBJ_LIB = (ERR_LIB_OBJ or ERR_RFLAG_COMMON);
+  ERR_R_PEM_LIB = (ERR_LIB_PEM or ERR_RFLAG_COMMON);
+  ERR_R_DSA_LIB = (ERR_LIB_DSA or ERR_RFLAG_COMMON);
+  ERR_R_X509_LIB = (ERR_LIB_X509 or ERR_RFLAG_COMMON);
+  ERR_R_ASN1_LIB = (ERR_LIB_ASN1 or ERR_RFLAG_COMMON);
+  ERR_R_CONF_LIB = (ERR_LIB_CONF or ERR_RFLAG_COMMON);
+  ERR_R_CRYPTO_LIB = (ERR_LIB_CRYPTO or ERR_RFLAG_COMMON);
+  ERR_R_EC_LIB = (ERR_LIB_EC or ERR_RFLAG_COMMON);
+  ERR_R_SSL_LIB = (ERR_LIB_SSL or ERR_RFLAG_COMMON);
+  ERR_R_BIO_LIB = (ERR_LIB_BIO or ERR_RFLAG_COMMON);
+  ERR_R_PKCS7_LIB = (ERR_LIB_PKCS7 or ERR_RFLAG_COMMON);
+  ERR_R_X509V3_LIB = (ERR_LIB_X509V3 or ERR_RFLAG_COMMON);
+  ERR_R_PKCS12_LIB = (ERR_LIB_PKCS12 or ERR_RFLAG_COMMON);
+  ERR_R_RAND_LIB = (ERR_LIB_RAND or ERR_RFLAG_COMMON);
+  ERR_R_DSO_LIB = (ERR_LIB_DSO or ERR_RFLAG_COMMON);
+  ERR_R_ENGINE_LIB = (ERR_LIB_ENGINE or ERR_RFLAG_COMMON);
+  ERR_R_UI_LIB = (ERR_LIB_UI or ERR_RFLAG_COMMON);
+  ERR_R_ECDSA_LIB = (ERR_LIB_ECDSA or ERR_RFLAG_COMMON);
+  ERR_R_OSSL_STORE_LIB = (ERR_LIB_OSSL_STORE or ERR_RFLAG_COMMON);
+  ERR_R_CMS_LIB = (ERR_LIB_CMS or ERR_RFLAG_COMMON);
+  ERR_R_TS_LIB = (ERR_LIB_TS or ERR_RFLAG_COMMON);
+  ERR_R_CT_LIB = (ERR_LIB_CT or ERR_RFLAG_COMMON);
+  ERR_R_PROV_LIB = (ERR_LIB_PROV or ERR_RFLAG_COMMON);
+  ERR_R_ESS_LIB = (ERR_LIB_ESS or ERR_RFLAG_COMMON);
+  ERR_R_CMP_LIB = (ERR_LIB_CMP or ERR_RFLAG_COMMON);
+  ERR_R_OSSL_ENCODER_LIB = (ERR_LIB_OSSL_ENCODER or ERR_RFLAG_COMMON);
+  ERR_R_OSSL_DECODER_LIB = (ERR_LIB_OSSL_DECODER or ERR_RFLAG_COMMON);
   ERR_R_FATAL = (ERR_RFLAG_FATAL or ERR_RFLAG_COMMON);
   ERR_R_MALLOC_FAILURE = (256 or ERR_R_FATAL);
   ERR_R_SHOULD_NOT_HAVE_BEEN_CALLED = (257 or ERR_R_FATAL);
@@ -209,28 +223,28 @@ const
 // =============================================================================
 var
 
-  ERR_GET_LIB: function(errcode: TIdC_ULONG): TIdC_INT; cdecl = nil;
-  {$EXTERNALSYM ERR_GET_LIB}
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // ERR_GET_LIB: function(errcode: TIdC_ULONG): TIdC_INT; cdecl = nil;
 
-  ERR_GET_REASON: function(errcode: TIdC_ULONG): TIdC_INT; cdecl = nil;
-  {$EXTERNALSYM ERR_GET_REASON}
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // ERR_GET_REASON: function(errcode: TIdC_ULONG): TIdC_INT; cdecl = nil;
 
-  ERR_FATAL_ERROR: function(errcode: TIdC_ULONG): TIdC_INT; cdecl = nil;
-  {$EXTERNALSYM ERR_FATAL_ERROR}
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // ERR_FATAL_ERROR: function(errcode: TIdC_ULONG): TIdC_INT; cdecl = nil;
 
-  ERR_new: procedure; cdecl = nil;
+  ERR_new: function: void; cdecl = nil;
   {$EXTERNALSYM ERR_new}
 
-  ERR_set_debug: procedure(_file: PIdAnsiChar; line: TIdC_INT; func: PIdAnsiChar); cdecl = nil;
+  ERR_set_debug: function(_file: PIdAnsiChar; line: TIdC_INT; func: PIdAnsiChar): void; cdecl = nil;
   {$EXTERNALSYM ERR_set_debug}
 
-  ERR_set_error: procedure(lib: TIdC_INT; reason: TIdC_INT; fmt: PIdAnsiChar); cdecl = nil;
+  ERR_set_error: function(lib: TIdC_INT; reason: TIdC_INT; fmt: PIdAnsiChar): void; cdecl = nil;
   {$EXTERNALSYM ERR_set_error}
 
-  ERR_vset_error: procedure(lib: TIdC_INT; reason: TIdC_INT; fmt: PIdAnsiChar; args: Tva_list); cdecl = nil;
+  ERR_vset_error: function(lib: TIdC_INT; reason: TIdC_INT; fmt: PIdAnsiChar; args: Tva_list): void; cdecl = nil;
   {$EXTERNALSYM ERR_vset_error}
 
-  ERR_set_error_data: procedure(data: PIdAnsiChar; flags: TIdC_INT); cdecl = nil;
+  ERR_set_error_data: function(data: PIdAnsiChar; flags: TIdC_INT): void; cdecl = nil;
   {$EXTERNALSYM ERR_set_error_data}
 
   ERR_get_error: function: TIdC_ULONG; cdecl = nil;
@@ -281,13 +295,13 @@ var
   ERR_peek_last_error_line_data: function(_file: PPIdAnsiChar; line: PIdC_INT; data: PPIdAnsiChar; flags: PIdC_INT): TIdC_ULONG; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ERR_peek_last_error_line_data}
 
-  ERR_clear_error: procedure; cdecl = nil;
+  ERR_clear_error: function: void; cdecl = nil;
   {$EXTERNALSYM ERR_clear_error}
 
   ERR_error_string: function(e: TIdC_ULONG; buf: PIdAnsiChar): PIdAnsiChar; cdecl = nil;
   {$EXTERNALSYM ERR_error_string}
 
-  ERR_error_string_n: procedure(e: TIdC_ULONG; buf: PIdAnsiChar; len: TIdC_SIZET); cdecl = nil;
+  ERR_error_string_n: function(e: TIdC_ULONG; buf: PIdAnsiChar; len: TIdC_SIZET): void; cdecl = nil;
   {$EXTERNALSYM ERR_error_string_n}
 
   ERR_lib_error_string: function(e: TIdC_ULONG): PIdAnsiChar; cdecl = nil;
@@ -299,25 +313,25 @@ var
   ERR_reason_error_string: function(e: TIdC_ULONG): PIdAnsiChar; cdecl = nil;
   {$EXTERNALSYM ERR_reason_error_string}
 
-  ERR_print_errors_cb: procedure(cb: TERR_print_errors_cb_cb_cb; u: Pointer); cdecl = nil;
+  ERR_print_errors_cb: function(cb: TERR_print_errors_cb_cb_cb; u: Pointer): void; cdecl = nil;
   {$EXTERNALSYM ERR_print_errors_cb}
 
-  ERR_print_errors_fp: procedure(fp: PFILE); cdecl = nil;
+  ERR_print_errors_fp: function(fp: PFILE): void; cdecl = nil;
   {$EXTERNALSYM ERR_print_errors_fp}
 
-  ERR_print_errors: procedure(bp: PBIO); cdecl = nil;
+  ERR_print_errors: function(bp: PBIO): void; cdecl = nil;
   {$EXTERNALSYM ERR_print_errors}
 
-  ERR_add_error_data: procedure(num: TIdC_INT); cdecl = nil;
+  ERR_add_error_data: function(num: TIdC_INT): void; cdecl = nil;
   {$EXTERNALSYM ERR_add_error_data}
 
-  ERR_add_error_vdata: procedure(num: TIdC_INT; args: Tva_list); cdecl = nil;
+  ERR_add_error_vdata: function(num: TIdC_INT; args: Tva_list): void; cdecl = nil;
   {$EXTERNALSYM ERR_add_error_vdata}
 
-  ERR_add_error_txt: procedure(sepr: PIdAnsiChar; txt: PIdAnsiChar); cdecl = nil;
+  ERR_add_error_txt: function(sepr: PIdAnsiChar; txt: PIdAnsiChar): void; cdecl = nil;
   {$EXTERNALSYM ERR_add_error_txt}
 
-  ERR_add_error_mem_bio: procedure(sep: PIdAnsiChar; bio: PBIO); cdecl = nil;
+  ERR_add_error_mem_bio: function(sep: PIdAnsiChar; bio: PBIO): void; cdecl = nil;
   {$EXTERNALSYM ERR_add_error_mem_bio}
 
   ERR_load_strings: function(lib: TIdC_INT; str: PERR_STRING_DATA): TIdC_INT; cdecl = nil;
@@ -353,16 +367,16 @@ var
   OSSL_ERR_STATE_new: function: PERR_STATE; cdecl = nil;
   {$EXTERNALSYM OSSL_ERR_STATE_new}
 
-  OSSL_ERR_STATE_save: procedure(es: PERR_STATE); cdecl = nil;
+  OSSL_ERR_STATE_save: function(es: PERR_STATE): void; cdecl = nil;
   {$EXTERNALSYM OSSL_ERR_STATE_save}
 
-  OSSL_ERR_STATE_save_to_mark: procedure(es: PERR_STATE); cdecl = nil;
+  OSSL_ERR_STATE_save_to_mark: function(es: PERR_STATE): void; cdecl = nil;
   {$EXTERNALSYM OSSL_ERR_STATE_save_to_mark}
 
-  OSSL_ERR_STATE_restore: procedure(es: PERR_STATE); cdecl = nil;
+  OSSL_ERR_STATE_restore: function(es: PERR_STATE): void; cdecl = nil;
   {$EXTERNALSYM OSSL_ERR_STATE_restore}
 
-  OSSL_ERR_STATE_free: procedure(es: PERR_STATE); cdecl = nil;
+  OSSL_ERR_STATE_free: function(es: PERR_STATE): void; cdecl = nil;
   {$EXTERNALSYM OSSL_ERR_STATE_free}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -373,14 +387,17 @@ var
 // STATIC BINDING ROUTINES
 // =============================================================================
 
-function ERR_GET_LIB(errcode: TIdC_ULONG): TIdC_INT; cdecl;
-function ERR_GET_REASON(errcode: TIdC_ULONG): TIdC_INT; cdecl;
-function ERR_FATAL_ERROR(errcode: TIdC_ULONG): TIdC_INT; cdecl;
-procedure ERR_new; cdecl;
-procedure ERR_set_debug(_file: PIdAnsiChar; line: TIdC_INT; func: PIdAnsiChar); cdecl;
-procedure ERR_set_error(lib: TIdC_INT; reason: TIdC_INT; fmt: PIdAnsiChar); cdecl;
-procedure ERR_vset_error(lib: TIdC_INT; reason: TIdC_INT; fmt: PIdAnsiChar; args: Tva_list); cdecl;
-procedure ERR_set_error_data(data: PIdAnsiChar; flags: TIdC_INT); cdecl;
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // function ERR_GET_LIB(errcode: TIdC_ULONG): TIdC_INT; cdecl;
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // function ERR_GET_REASON(errcode: TIdC_ULONG): TIdC_INT; cdecl;
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // function ERR_FATAL_ERROR(errcode: TIdC_ULONG): TIdC_INT; cdecl;
+function ERR_new: void; cdecl;
+function ERR_set_debug(_file: PIdAnsiChar; line: TIdC_INT; func: PIdAnsiChar): void; cdecl;
+function ERR_set_error(lib: TIdC_INT; reason: TIdC_INT; fmt: PIdAnsiChar): void; cdecl;
+function ERR_vset_error(lib: TIdC_INT; reason: TIdC_INT; fmt: PIdAnsiChar; args: Tva_list): void; cdecl;
+function ERR_set_error_data(data: PIdAnsiChar; flags: TIdC_INT): void; cdecl;
 function ERR_get_error: TIdC_ULONG; cdecl;
 function ERR_get_error_all(_file: PPIdAnsiChar; line: PIdC_INT; func: PPIdAnsiChar; data: PPIdAnsiChar; flags: PIdC_INT): TIdC_ULONG; cdecl;
 function ERR_get_error_line(_file: PPIdAnsiChar; line: PIdC_INT): TIdC_ULONG; cdecl; deprecated 'In OpenSSL 3_0_0';
@@ -397,19 +414,19 @@ function ERR_peek_last_error_func(func: PPIdAnsiChar): TIdC_ULONG; cdecl;
 function ERR_peek_last_error_data(data: PPIdAnsiChar; flags: PIdC_INT): TIdC_ULONG; cdecl;
 function ERR_peek_last_error_all(_file: PPIdAnsiChar; line: PIdC_INT; func: PPIdAnsiChar; data: PPIdAnsiChar; flags: PIdC_INT): TIdC_ULONG; cdecl;
 function ERR_peek_last_error_line_data(_file: PPIdAnsiChar; line: PIdC_INT; data: PPIdAnsiChar; flags: PIdC_INT): TIdC_ULONG; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure ERR_clear_error; cdecl;
+function ERR_clear_error: void; cdecl;
 function ERR_error_string(e: TIdC_ULONG; buf: PIdAnsiChar): PIdAnsiChar; cdecl;
-procedure ERR_error_string_n(e: TIdC_ULONG; buf: PIdAnsiChar; len: TIdC_SIZET); cdecl;
+function ERR_error_string_n(e: TIdC_ULONG; buf: PIdAnsiChar; len: TIdC_SIZET): void; cdecl;
 function ERR_lib_error_string(e: TIdC_ULONG): PIdAnsiChar; cdecl;
 function ERR_func_error_string(e: TIdC_ULONG): PIdAnsiChar; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ERR_reason_error_string(e: TIdC_ULONG): PIdAnsiChar; cdecl;
-procedure ERR_print_errors_cb(cb: TERR_print_errors_cb_cb_cb; u: Pointer); cdecl;
-procedure ERR_print_errors_fp(fp: PFILE); cdecl;
-procedure ERR_print_errors(bp: PBIO); cdecl;
-procedure ERR_add_error_data(num: TIdC_INT); cdecl;
-procedure ERR_add_error_vdata(num: TIdC_INT; args: Tva_list); cdecl;
-procedure ERR_add_error_txt(sepr: PIdAnsiChar; txt: PIdAnsiChar); cdecl;
-procedure ERR_add_error_mem_bio(sep: PIdAnsiChar; bio: PBIO); cdecl;
+function ERR_print_errors_cb(cb: TERR_print_errors_cb_cb_cb; u: Pointer): void; cdecl;
+function ERR_print_errors_fp(fp: PFILE): void; cdecl;
+function ERR_print_errors(bp: PBIO): void; cdecl;
+function ERR_add_error_data(num: TIdC_INT): void; cdecl;
+function ERR_add_error_vdata(num: TIdC_INT; args: Tva_list): void; cdecl;
+function ERR_add_error_txt(sepr: PIdAnsiChar; txt: PIdAnsiChar): void; cdecl;
+function ERR_add_error_mem_bio(sep: PIdAnsiChar; bio: PBIO): void; cdecl;
 function ERR_load_strings(lib: TIdC_INT; str: PERR_STRING_DATA): TIdC_INT; cdecl;
 function ERR_load_strings_const(str: PERR_STRING_DATA): TIdC_INT; cdecl;
 function ERR_unload_strings(lib: TIdC_INT; str: PERR_STRING_DATA): TIdC_INT; cdecl;
@@ -421,30 +438,30 @@ function ERR_clear_last_mark: TIdC_INT; cdecl;
 function ERR_count_to_mark: TIdC_INT; cdecl;
 function ERR_pop: TIdC_INT; cdecl;
 function OSSL_ERR_STATE_new: PERR_STATE; cdecl;
-procedure OSSL_ERR_STATE_save(es: PERR_STATE); cdecl;
-procedure OSSL_ERR_STATE_save_to_mark(es: PERR_STATE); cdecl;
-procedure OSSL_ERR_STATE_restore(es: PERR_STATE); cdecl;
-procedure OSSL_ERR_STATE_free(es: PERR_STATE); cdecl;
+function OSSL_ERR_STATE_save(es: PERR_STATE): void; cdecl;
+function OSSL_ERR_STATE_save_to_mark(es: PERR_STATE): void; cdecl;
+function OSSL_ERR_STATE_restore(es: PERR_STATE): void; cdecl;
+function OSSL_ERR_STATE_free(es: PERR_STATE): void; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 // =============================================================================
 // INLINE OR MACRO ROUTINES
 // =============================================================================
 
-function ERR_PACK(lib: Pointer; func: Pointer; reason: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function ERR_PACK(lib: Pointer; func: Pointer; reason: Pointer): TIdC_INT; cdecl;
 
-function ERR_raise(lib: Pointer; reason: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function ERR_raise(lib: Pointer; reason: Pointer): TIdC_INT; cdecl;
 
-function ERR_put_error(lib: Pointer; func: Pointer; reason: Pointer; _file: Pointer; line: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function ERR_put_error(lib: Pointer; func: Pointer; reason: Pointer; _file: Pointer; line: Pointer): TIdC_INT; cdecl;
 
-function ERR_load_crypto_strings: TIdC_INT; cdecl; deprecated 'In OpenSSL 1_1_0';
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function ERR_load_crypto_strings: TIdC_INT; cdecl;
 
-function ERR_free_strings: TIdC_INT; cdecl; deprecated 'In OpenSSL 1_1_0';
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function ERR_free_strings: TIdC_INT; cdecl;
 
 
 implementation
@@ -466,11 +483,11 @@ uses
 function ERR_GET_LIB(errcode: TIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'ERR_GET_LIB';
 function ERR_GET_REASON(errcode: TIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'ERR_GET_REASON';
 function ERR_FATAL_ERROR(errcode: TIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'ERR_FATAL_ERROR';
-procedure ERR_new; cdecl external CLibCrypto name 'ERR_new';
-procedure ERR_set_debug(_file: PIdAnsiChar; line: TIdC_INT; func: PIdAnsiChar); cdecl external CLibCrypto name 'ERR_set_debug';
-procedure ERR_set_error(lib: TIdC_INT; reason: TIdC_INT; fmt: PIdAnsiChar); cdecl external CLibCrypto name 'ERR_set_error';
-procedure ERR_vset_error(lib: TIdC_INT; reason: TIdC_INT; fmt: PIdAnsiChar; args: Tva_list); cdecl external CLibCrypto name 'ERR_vset_error';
-procedure ERR_set_error_data(data: PIdAnsiChar; flags: TIdC_INT); cdecl external CLibCrypto name 'ERR_set_error_data';
+function ERR_new: void; cdecl external CLibCrypto name 'ERR_new';
+function ERR_set_debug(_file: PIdAnsiChar; line: TIdC_INT; func: PIdAnsiChar): void; cdecl external CLibCrypto name 'ERR_set_debug';
+function ERR_set_error(lib: TIdC_INT; reason: TIdC_INT; fmt: PIdAnsiChar): void; cdecl external CLibCrypto name 'ERR_set_error';
+function ERR_vset_error(lib: TIdC_INT; reason: TIdC_INT; fmt: PIdAnsiChar; args: Tva_list): void; cdecl external CLibCrypto name 'ERR_vset_error';
+function ERR_set_error_data(data: PIdAnsiChar; flags: TIdC_INT): void; cdecl external CLibCrypto name 'ERR_set_error_data';
 function ERR_get_error: TIdC_ULONG; cdecl external CLibCrypto name 'ERR_get_error';
 function ERR_get_error_all(_file: PPIdAnsiChar; line: PIdC_INT; func: PPIdAnsiChar; data: PPIdAnsiChar; flags: PIdC_INT): TIdC_ULONG; cdecl external CLibCrypto name 'ERR_get_error_all';
 function ERR_get_error_line(_file: PPIdAnsiChar; line: PIdC_INT): TIdC_ULONG; cdecl external CLibCrypto name 'ERR_get_error_line';
@@ -487,19 +504,19 @@ function ERR_peek_last_error_func(func: PPIdAnsiChar): TIdC_ULONG; cdecl externa
 function ERR_peek_last_error_data(data: PPIdAnsiChar; flags: PIdC_INT): TIdC_ULONG; cdecl external CLibCrypto name 'ERR_peek_last_error_data';
 function ERR_peek_last_error_all(_file: PPIdAnsiChar; line: PIdC_INT; func: PPIdAnsiChar; data: PPIdAnsiChar; flags: PIdC_INT): TIdC_ULONG; cdecl external CLibCrypto name 'ERR_peek_last_error_all';
 function ERR_peek_last_error_line_data(_file: PPIdAnsiChar; line: PIdC_INT; data: PPIdAnsiChar; flags: PIdC_INT): TIdC_ULONG; cdecl external CLibCrypto name 'ERR_peek_last_error_line_data';
-procedure ERR_clear_error; cdecl external CLibCrypto name 'ERR_clear_error';
+function ERR_clear_error: void; cdecl external CLibCrypto name 'ERR_clear_error';
 function ERR_error_string(e: TIdC_ULONG; buf: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'ERR_error_string';
-procedure ERR_error_string_n(e: TIdC_ULONG; buf: PIdAnsiChar; len: TIdC_SIZET); cdecl external CLibCrypto name 'ERR_error_string_n';
+function ERR_error_string_n(e: TIdC_ULONG; buf: PIdAnsiChar; len: TIdC_SIZET): void; cdecl external CLibCrypto name 'ERR_error_string_n';
 function ERR_lib_error_string(e: TIdC_ULONG): PIdAnsiChar; cdecl external CLibCrypto name 'ERR_lib_error_string';
 function ERR_func_error_string(e: TIdC_ULONG): PIdAnsiChar; cdecl external CLibCrypto name 'ERR_func_error_string';
 function ERR_reason_error_string(e: TIdC_ULONG): PIdAnsiChar; cdecl external CLibCrypto name 'ERR_reason_error_string';
-procedure ERR_print_errors_cb(cb: TERR_print_errors_cb_cb_cb; u: Pointer); cdecl external CLibCrypto name 'ERR_print_errors_cb';
-procedure ERR_print_errors_fp(fp: PFILE); cdecl external CLibCrypto name 'ERR_print_errors_fp';
-procedure ERR_print_errors(bp: PBIO); cdecl external CLibCrypto name 'ERR_print_errors';
-procedure ERR_add_error_data(num: TIdC_INT); cdecl external CLibCrypto name 'ERR_add_error_data';
-procedure ERR_add_error_vdata(num: TIdC_INT; args: Tva_list); cdecl external CLibCrypto name 'ERR_add_error_vdata';
-procedure ERR_add_error_txt(sepr: PIdAnsiChar; txt: PIdAnsiChar); cdecl external CLibCrypto name 'ERR_add_error_txt';
-procedure ERR_add_error_mem_bio(sep: PIdAnsiChar; bio: PBIO); cdecl external CLibCrypto name 'ERR_add_error_mem_bio';
+function ERR_print_errors_cb(cb: TERR_print_errors_cb_cb_cb; u: Pointer): void; cdecl external CLibCrypto name 'ERR_print_errors_cb';
+function ERR_print_errors_fp(fp: PFILE): void; cdecl external CLibCrypto name 'ERR_print_errors_fp';
+function ERR_print_errors(bp: PBIO): void; cdecl external CLibCrypto name 'ERR_print_errors';
+function ERR_add_error_data(num: TIdC_INT): void; cdecl external CLibCrypto name 'ERR_add_error_data';
+function ERR_add_error_vdata(num: TIdC_INT; args: Tva_list): void; cdecl external CLibCrypto name 'ERR_add_error_vdata';
+function ERR_add_error_txt(sepr: PIdAnsiChar; txt: PIdAnsiChar): void; cdecl external CLibCrypto name 'ERR_add_error_txt';
+function ERR_add_error_mem_bio(sep: PIdAnsiChar; bio: PBIO): void; cdecl external CLibCrypto name 'ERR_add_error_mem_bio';
 function ERR_load_strings(lib: TIdC_INT; str: PERR_STRING_DATA): TIdC_INT; cdecl external CLibCrypto name 'ERR_load_strings';
 function ERR_load_strings_const(str: PERR_STRING_DATA): TIdC_INT; cdecl external CLibCrypto name 'ERR_load_strings_const';
 function ERR_unload_strings(lib: TIdC_INT; str: PERR_STRING_DATA): TIdC_INT; cdecl external CLibCrypto name 'ERR_unload_strings';
@@ -511,10 +528,10 @@ function ERR_clear_last_mark: TIdC_INT; cdecl external CLibCrypto name 'ERR_clea
 function ERR_count_to_mark: TIdC_INT; cdecl external CLibCrypto name 'ERR_count_to_mark';
 function ERR_pop: TIdC_INT; cdecl external CLibCrypto name 'ERR_pop';
 function OSSL_ERR_STATE_new: PERR_STATE; cdecl external CLibCrypto name 'OSSL_ERR_STATE_new';
-procedure OSSL_ERR_STATE_save(es: PERR_STATE); cdecl external CLibCrypto name 'OSSL_ERR_STATE_save';
-procedure OSSL_ERR_STATE_save_to_mark(es: PERR_STATE); cdecl external CLibCrypto name 'OSSL_ERR_STATE_save_to_mark';
-procedure OSSL_ERR_STATE_restore(es: PERR_STATE); cdecl external CLibCrypto name 'OSSL_ERR_STATE_restore';
-procedure OSSL_ERR_STATE_free(es: PERR_STATE); cdecl external CLibCrypto name 'OSSL_ERR_STATE_free';
+function OSSL_ERR_STATE_save(es: PERR_STATE): void; cdecl external CLibCrypto name 'OSSL_ERR_STATE_save';
+function OSSL_ERR_STATE_save_to_mark(es: PERR_STATE): void; cdecl external CLibCrypto name 'OSSL_ERR_STATE_save_to_mark';
+function OSSL_ERR_STATE_restore(es: PERR_STATE): void; cdecl external CLibCrypto name 'OSSL_ERR_STATE_restore';
+function OSSL_ERR_STATE_free(es: PERR_STATE): void; cdecl external CLibCrypto name 'OSSL_ERR_STATE_free';
 {$ENDIF}
 
 // =============================================================================
@@ -768,27 +785,27 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ERR_FATAL_ERROR_procname);
 end;
 
-procedure ERR_ERR_new; cdecl
+function ERR_ERR_new: void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ERR_new_procname);
 end;
 
-procedure ERR_ERR_set_debug(_file: PIdAnsiChar; line: TIdC_INT; func: PIdAnsiChar); cdecl
+function ERR_ERR_set_debug(_file: PIdAnsiChar; line: TIdC_INT; func: PIdAnsiChar): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ERR_set_debug_procname);
 end;
 
-procedure ERR_ERR_set_error(lib: TIdC_INT; reason: TIdC_INT; fmt: PIdAnsiChar); cdecl
+function ERR_ERR_set_error(lib: TIdC_INT; reason: TIdC_INT; fmt: PIdAnsiChar): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ERR_set_error_procname);
 end;
 
-procedure ERR_ERR_vset_error(lib: TIdC_INT; reason: TIdC_INT; fmt: PIdAnsiChar; args: Tva_list); cdecl
+function ERR_ERR_vset_error(lib: TIdC_INT; reason: TIdC_INT; fmt: PIdAnsiChar; args: Tva_list): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ERR_vset_error_procname);
 end;
 
-procedure ERR_ERR_set_error_data(data: PIdAnsiChar; flags: TIdC_INT); cdecl
+function ERR_ERR_set_error_data(data: PIdAnsiChar; flags: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ERR_set_error_data_procname);
 end;
@@ -873,7 +890,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ERR_peek_last_error_line_data_procname);
 end;
 
-procedure ERR_ERR_clear_error; cdecl
+function ERR_ERR_clear_error: void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ERR_clear_error_procname);
 end;
@@ -883,7 +900,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ERR_error_string_procname);
 end;
 
-procedure ERR_ERR_error_string_n(e: TIdC_ULONG; buf: PIdAnsiChar; len: TIdC_SIZET); cdecl
+function ERR_ERR_error_string_n(e: TIdC_ULONG; buf: PIdAnsiChar; len: TIdC_SIZET): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ERR_error_string_n_procname);
 end;
@@ -903,37 +920,37 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ERR_reason_error_string_procname);
 end;
 
-procedure ERR_ERR_print_errors_cb(cb: TERR_print_errors_cb_cb_cb; u: Pointer); cdecl
+function ERR_ERR_print_errors_cb(cb: TERR_print_errors_cb_cb_cb; u: Pointer): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ERR_print_errors_cb_procname);
 end;
 
-procedure ERR_ERR_print_errors_fp(fp: PFILE); cdecl
+function ERR_ERR_print_errors_fp(fp: PFILE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ERR_print_errors_fp_procname);
 end;
 
-procedure ERR_ERR_print_errors(bp: PBIO); cdecl
+function ERR_ERR_print_errors(bp: PBIO): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ERR_print_errors_procname);
 end;
 
-procedure ERR_ERR_add_error_data(num: TIdC_INT); cdecl
+function ERR_ERR_add_error_data(num: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ERR_add_error_data_procname);
 end;
 
-procedure ERR_ERR_add_error_vdata(num: TIdC_INT; args: Tva_list); cdecl
+function ERR_ERR_add_error_vdata(num: TIdC_INT; args: Tva_list): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ERR_add_error_vdata_procname);
 end;
 
-procedure ERR_ERR_add_error_txt(sepr: PIdAnsiChar; txt: PIdAnsiChar); cdecl
+function ERR_ERR_add_error_txt(sepr: PIdAnsiChar; txt: PIdAnsiChar): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ERR_add_error_txt_procname);
 end;
 
-procedure ERR_ERR_add_error_mem_bio(sep: PIdAnsiChar; bio: PBIO); cdecl
+function ERR_ERR_add_error_mem_bio(sep: PIdAnsiChar; bio: PBIO): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ERR_add_error_mem_bio_procname);
 end;
@@ -993,22 +1010,22 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ERR_STATE_new_procname);
 end;
 
-procedure ERR_OSSL_ERR_STATE_save(es: PERR_STATE); cdecl
+function ERR_OSSL_ERR_STATE_save(es: PERR_STATE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ERR_STATE_save_procname);
 end;
 
-procedure ERR_OSSL_ERR_STATE_save_to_mark(es: PERR_STATE); cdecl
+function ERR_OSSL_ERR_STATE_save_to_mark(es: PERR_STATE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ERR_STATE_save_to_mark_procname);
 end;
 
-procedure ERR_OSSL_ERR_STATE_restore(es: PERR_STATE); cdecl
+function ERR_OSSL_ERR_STATE_restore(es: PERR_STATE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ERR_STATE_restore_procname);
 end;
 
-procedure ERR_OSSL_ERR_STATE_free(es: PERR_STATE); cdecl
+function ERR_OSSL_ERR_STATE_free(es: PERR_STATE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ERR_STATE_free_procname);
 end;

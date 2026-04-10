@@ -26,243 +26,162 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
-  Pstack_st_X509_NAME = ^Tstack_st_X509_NAME;
-  Tstack_st_X509_NAME = record end;
-  {$EXTERNALSYM Pstack_st_X509_NAME}
-
-  Pstack_st_X509 = ^Tstack_st_X509;
-  Tstack_st_X509 = record end;
-  {$EXTERNALSYM Pstack_st_X509}
-
-  Pstack_st_X509_REVOKED = ^Tstack_st_X509_REVOKED;
-  Tstack_st_X509_REVOKED = record end;
-  {$EXTERNALSYM Pstack_st_X509_REVOKED}
-
-  Pstack_st_X509_CRL = ^Tstack_st_X509_CRL;
-  Tstack_st_X509_CRL = record end;
-  {$EXTERNALSYM Pstack_st_X509_CRL}
-
   PX509_algor_st = ^TX509_algor_st;
-  TX509_algor_st = record end;
+  TX509_algor_st =   record
+    algorithm: PASN1_OBJECT;
+    parameter: PASN1_TYPE;
+  end;
   {$EXTERNALSYM PX509_algor_st}
 
-  PX509_ALGORS = ^TX509_ALGORS;
-  TX509_ALGORS = Tstack_st_X509_ALGOR;
-  {$EXTERNALSYM PX509_ALGORS}
-
   PX509_val_st = ^TX509_val_st;
-  TX509_val_st = record end;
+  TX509_val_st =   record
+    notBefore: PASN1_TIME;
+    notAfter: PASN1_TIME;
+  end;
   {$EXTERNALSYM PX509_val_st}
 
-  PX509_VAL = ^TX509_VAL;
-  TX509_VAL = TX509_val_st;
-  {$EXTERNALSYM PX509_VAL}
-
   PX509_sig_st = ^TX509_sig_st;
-  TX509_sig_st = record end;
+  TX509_sig_st =   record end;
   {$EXTERNALSYM PX509_sig_st}
 
-  PX509_SIG = ^TX509_SIG;
-  TX509_SIG = TX509_sig_st;
-  {$EXTERNALSYM PX509_SIG}
-
   PX509_name_entry_st = ^TX509_name_entry_st;
-  TX509_name_entry_st = record end;
+  TX509_name_entry_st =   record end;
   {$EXTERNALSYM PX509_name_entry_st}
 
-  PX509_NAME_ENTRY = ^TX509_NAME_ENTRY;
-  TX509_NAME_ENTRY = TX509_name_entry_st;
-  {$EXTERNALSYM PX509_NAME_ENTRY}
-
-  Pstack_st_X509_NAME_ENTRY = ^Tstack_st_X509_NAME_ENTRY;
-  Tstack_st_X509_NAME_ENTRY = record end;
-  {$EXTERNALSYM Pstack_st_X509_NAME_ENTRY}
-
   PX509_extension_st = ^TX509_extension_st;
-  TX509_extension_st = record end;
+  TX509_extension_st =   record end;
   {$EXTERNALSYM PX509_extension_st}
 
-  PX509_EXTENSION = ^TX509_EXTENSION;
-  TX509_EXTENSION = TX509_extension_st;
-  {$EXTERNALSYM PX509_EXTENSION}
-
-  Pstack_st_X509_EXTENSION = ^Tstack_st_X509_EXTENSION;
-  Tstack_st_X509_EXTENSION = record end;
-  {$EXTERNALSYM Pstack_st_X509_EXTENSION}
-
-  PX509_EXTENSIONS = ^TX509_EXTENSIONS;
-  TX509_EXTENSIONS = Tstack_st_X509_EXTENSION;
-  {$EXTERNALSYM PX509_EXTENSIONS}
-
   Px509_attributes_st = ^Tx509_attributes_st;
-  Tx509_attributes_st = record end;
+  Tx509_attributes_st =   record end;
   {$EXTERNALSYM Px509_attributes_st}
 
-  PX509_ATTRIBUTE = ^TX509_ATTRIBUTE;
-  TX509_ATTRIBUTE = Tx509_attributes_st;
-  {$EXTERNALSYM PX509_ATTRIBUTE}
-
-  Pstack_st_X509_ATTRIBUTE = ^Tstack_st_X509_ATTRIBUTE;
-  Tstack_st_X509_ATTRIBUTE = record end;
-  {$EXTERNALSYM Pstack_st_X509_ATTRIBUTE}
-
   PX509_req_info_st = ^TX509_req_info_st;
-  TX509_req_info_st = record end;
+  TX509_req_info_st =   record end;
   {$EXTERNALSYM PX509_req_info_st}
 
-  PX509_REQ_INFO = ^TX509_REQ_INFO;
-  TX509_REQ_INFO = TX509_req_info_st;
-  {$EXTERNALSYM PX509_REQ_INFO}
-
   PX509_req_st = ^TX509_req_st;
-  TX509_req_st = record end;
+  TX509_req_st =   record end;
   {$EXTERNALSYM PX509_req_st}
 
-  PX509_REQ = ^TX509_REQ;
-  TX509_REQ = TX509_req_st;
-  {$EXTERNALSYM PX509_REQ}
-
   Px509_cert_aux_st = ^Tx509_cert_aux_st;
-  Tx509_cert_aux_st = record end;
+  Tx509_cert_aux_st =   record end;
   {$EXTERNALSYM Px509_cert_aux_st}
 
-  PX509_CERT_AUX = ^TX509_CERT_AUX;
-  TX509_CERT_AUX = Tx509_cert_aux_st;
-  {$EXTERNALSYM PX509_CERT_AUX}
-
   Px509_cinf_st = ^Tx509_cinf_st;
-  Tx509_cinf_st = record end;
+  Tx509_cinf_st =   record end;
   {$EXTERNALSYM Px509_cinf_st}
 
-  PX509_CINF = ^TX509_CINF;
-  TX509_CINF = Tx509_cinf_st;
-  {$EXTERNALSYM PX509_CINF}
-
   PX509_crl_info_st = ^TX509_crl_info_st;
-  TX509_crl_info_st = record end;
+  TX509_crl_info_st =   record end;
   {$EXTERNALSYM PX509_crl_info_st}
 
-  PX509_CRL_INFO = ^TX509_CRL_INFO;
-  TX509_CRL_INFO = TX509_crl_info_st;
-  {$EXTERNALSYM PX509_CRL_INFO}
-
   Pprivate_key_st = ^Tprivate_key_st;
-  Tprivate_key_st = record end;
+  Tprivate_key_st =   record
+    version: TIdC_INT;
+    enc_algor: PX509_ALGOR;
+    enc_pkey: PASN1_OCTET_STRING;
+    dec_pkey: PEVP_PKEY;
+    key_length: TIdC_INT;
+    key_data: PIdAnsiChar;
+    key_free: TIdC_INT;
+    cipher: TEVP_CIPHER_INFO;
+  end;
   {$EXTERNALSYM Pprivate_key_st}
 
-  PX509_PKEY = ^TX509_PKEY;
-  TX509_PKEY = Tprivate_key_st;
-  {$EXTERNALSYM PX509_PKEY}
-
   PX509_info_st = ^TX509_info_st;
-  TX509_info_st = record end;
+  TX509_info_st =   record
+    x509: PX509;
+    crl: PX509_CRL;
+    x_pkey: PX509_PKEY;
+    enc_cipher: TEVP_CIPHER_INFO;
+    enc_len: TIdC_INT;
+    enc_data: PIdAnsiChar;
+  end;
   {$EXTERNALSYM PX509_info_st}
 
-  PX509_INFO = ^TX509_INFO;
-  TX509_INFO = TX509_info_st;
-  {$EXTERNALSYM PX509_INFO}
-
-  Pstack_st_X509_INFO = ^Tstack_st_X509_INFO;
-  Tstack_st_X509_INFO = record end;
-  {$EXTERNALSYM Pstack_st_X509_INFO}
-
   PNetscape_spkac_st = ^TNetscape_spkac_st;
-  TNetscape_spkac_st = record end;
+  TNetscape_spkac_st =   record
+    pubkey: PX509_PUBKEY;
+    challenge: PASN1_IA5STRING;
+  end;
   {$EXTERNALSYM PNetscape_spkac_st}
 
-  PNETSCAPE_SPKAC = ^TNETSCAPE_SPKAC;
-  TNETSCAPE_SPKAC = TNetscape_spkac_st;
-  {$EXTERNALSYM PNETSCAPE_SPKAC}
-
   PNetscape_spki_st = ^TNetscape_spki_st;
-  TNetscape_spki_st = record end;
+  TNetscape_spki_st =   record
+    spkac: PNETSCAPE_SPKAC;
+    sig_algor: TX509_ALGOR;
+    signature: PASN1_BIT_STRING;
+  end;
   {$EXTERNALSYM PNetscape_spki_st}
 
-  PNETSCAPE_SPKI = ^TNETSCAPE_SPKI;
-  TNETSCAPE_SPKI = TNetscape_spki_st;
-  {$EXTERNALSYM PNETSCAPE_SPKI}
-
   PNetscape_certificate_sequence = ^TNetscape_certificate_sequence;
-  TNetscape_certificate_sequence = record end;
+  TNetscape_certificate_sequence =   record
+    _type: PASN1_OBJECT;
+    certs: Pstack_st_X509;
+  end;
   {$EXTERNALSYM PNetscape_certificate_sequence}
 
-  PNETSCAPE_CERT_SEQUENCE = ^TNETSCAPE_CERT_SEQUENCE;
-  TNETSCAPE_CERT_SEQUENCE = TNetscape_certificate_sequence;
-  {$EXTERNALSYM PNETSCAPE_CERT_SEQUENCE}
-
   PPBEPARAM_st = ^TPBEPARAM_st;
-  TPBEPARAM_st = record end;
+  TPBEPARAM_st =   record
+    salt: PASN1_OCTET_STRING;
+    iter: PASN1_INTEGER;
+  end;
   {$EXTERNALSYM PPBEPARAM_st}
 
-  PPBEPARAM = ^TPBEPARAM;
-  TPBEPARAM = TPBEPARAM_st;
-  {$EXTERNALSYM PPBEPARAM}
-
   PPBE2PARAM_st = ^TPBE2PARAM_st;
-  TPBE2PARAM_st = record end;
+  TPBE2PARAM_st =   record
+    keyfunc: PX509_ALGOR;
+    encryption: PX509_ALGOR;
+  end;
   {$EXTERNALSYM PPBE2PARAM_st}
 
-  PPBE2PARAM = ^TPBE2PARAM;
-  TPBE2PARAM = TPBE2PARAM_st;
-  {$EXTERNALSYM PPBE2PARAM}
-
   PPBKDF2PARAM_st = ^TPBKDF2PARAM_st;
-  TPBKDF2PARAM_st = record end;
+  TPBKDF2PARAM_st =   record
+    salt: PASN1_TYPE;
+    iter: PASN1_INTEGER;
+    keylength: PASN1_INTEGER;
+    prf: PX509_ALGOR;
+  end;
   {$EXTERNALSYM PPBKDF2PARAM_st}
 
-  PPBKDF2PARAM = ^TPBKDF2PARAM;
-  TPBKDF2PARAM = TPBKDF2PARAM_st;
-  {$EXTERNALSYM PPBKDF2PARAM}
-
   PPBMAC1PARAM = ^TPBMAC1PARAM;
-  TPBMAC1PARAM = record end;
+  TPBMAC1PARAM =   record
+    keyDerivationFunc: PX509_ALGOR;
+    messageAuthScheme: PX509_ALGOR;
+  end;
   {$EXTERNALSYM PPBMAC1PARAM}
 
   PSCRYPT_PARAMS_st = ^TSCRYPT_PARAMS_st;
-  TSCRYPT_PARAMS_st = record end;
+  TSCRYPT_PARAMS_st =   record
+    salt: PASN1_OCTET_STRING;
+    costParameter: PASN1_INTEGER;
+    blockSize: PASN1_INTEGER;
+    parallelizationParameter: PASN1_INTEGER;
+    keyLength: PASN1_INTEGER;
+  end;
   {$EXTERNALSYM PSCRYPT_PARAMS_st}
-
-  PSCRYPT_PARAMS = ^TSCRYPT_PARAMS;
-  TSCRYPT_PARAMS = TSCRYPT_PARAMS_st;
-  {$EXTERNALSYM PSCRYPT_PARAMS}
 
 
 // =============================================================================
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  Tsk_X509_NAME_compfunc_func_cb = function(arg1: PPX509_NAME; arg2: PPX509_NAME): TIdC_INT; cdecl;
-  Tsk_X509_NAME_freefunc_func_cb = procedure(arg1: PX509_NAME); cdecl;
-  Tsk_X509_NAME_copyfunc_func_cb = function(arg1: PX509_NAME): PX509_NAME; cdecl;
-  Tsk_X509_compfunc_func_cb = function(arg1: PPX509; arg2: PPX509): TIdC_INT; cdecl;
-  Tsk_X509_freefunc_func_cb = procedure(arg1: PX509); cdecl;
-  Tsk_X509_copyfunc_func_cb = function(arg1: PX509): PX509; cdecl;
-  Tsk_X509_REVOKED_compfunc_func_cb = function(arg1: PPX509_REVOKED; arg2: PPX509_REVOKED): TIdC_INT; cdecl;
-  Tsk_X509_REVOKED_freefunc_func_cb = procedure(arg1: PX509_REVOKED); cdecl;
-  Tsk_X509_REVOKED_copyfunc_func_cb = function(arg1: PX509_REVOKED): PX509_REVOKED; cdecl;
-  Tsk_X509_CRL_compfunc_func_cb = function(arg1: PPX509_CRL; arg2: PPX509_CRL): TIdC_INT; cdecl;
-  Tsk_X509_CRL_freefunc_func_cb = procedure(arg1: PX509_CRL); cdecl;
-  Tsk_X509_CRL_copyfunc_func_cb = function(arg1: PX509_CRL): PX509_CRL; cdecl;
-  Tsk_X509_NAME_ENTRY_compfunc_func_cb = function(arg1: PPX509_NAME_ENTRY; arg2: PPX509_NAME_ENTRY): TIdC_INT; cdecl;
-  Tsk_X509_NAME_ENTRY_freefunc_func_cb = procedure(arg1: PX509_NAME_ENTRY); cdecl;
-  Tsk_X509_NAME_ENTRY_copyfunc_func_cb = function(arg1: PX509_NAME_ENTRY): PX509_NAME_ENTRY; cdecl;
-  Tsk_X509_EXTENSION_compfunc_func_cb = function(arg1: PPX509_EXTENSION; arg2: PPX509_EXTENSION): TIdC_INT; cdecl;
-  Tsk_X509_EXTENSION_freefunc_func_cb = procedure(arg1: PX509_EXTENSION); cdecl;
-  Tsk_X509_EXTENSION_copyfunc_func_cb = function(arg1: PX509_EXTENSION): PX509_EXTENSION; cdecl;
-  Tsk_X509_ATTRIBUTE_compfunc_func_cb = function(arg1: PPX509_ATTRIBUTE; arg2: PPX509_ATTRIBUTE): TIdC_INT; cdecl;
-  Tsk_X509_ATTRIBUTE_freefunc_func_cb = procedure(arg1: PX509_ATTRIBUTE); cdecl;
-  Tsk_X509_ATTRIBUTE_copyfunc_func_cb = function(arg1: PX509_ATTRIBUTE): PX509_ATTRIBUTE; cdecl;
-  Tsk_X509_INFO_compfunc_func_cb = function(arg1: PPX509_INFO; arg2: PPX509_INFO): TIdC_INT; cdecl;
-  Tsk_X509_INFO_freefunc_func_cb = procedure(arg1: PX509_INFO); cdecl;
-  Tsk_X509_INFO_copyfunc_func_cb = function(arg1: PX509_INFO): PX509_INFO; cdecl;
-  TX509_CRL_METHOD_new_crl_init_cb = function(arg1: PX509_CRL): TIdC_INT; cdecl;
-  TX509_CRL_METHOD_new_crl_lookup_cb = function(arg1: PX509_CRL; arg2: PPX509_REVOKED; arg3: PASN1_INTEGER; arg4: PX509_NAME): TIdC_INT; cdecl;
-  TX509_CRL_METHOD_new_crl_verify_cb = function(arg1: PX509_CRL; arg2: PEVP_PKEY): TIdC_INT; cdecl;
-  TASN1_verify_i2d_cb = function: TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // X509_CRL_METHOD_new_crl_init_cb = function(crl: PX509_CRL): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // X509_CRL_METHOD_new_crl_lookup_cb = function(crl: PX509_CRL; ret: PPX509_REVOKED; serial: PASN1_INTEGER; issuer: PX509_NAME): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // X509_CRL_METHOD_new_crl_verify_cb = function(crl: PX509_CRL; pk: PEVP_PKEY): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // ASN1_verify_i2d_cb = function(arg1: Pointer; arg2: PPIdAnsiChar): TIdC_INT; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -339,16 +258,16 @@ const
 // =============================================================================
 var
 
-  X509_CRL_set_default_method: procedure(meth: PX509_CRL_METHOD); cdecl = nil;
+  X509_CRL_set_default_method: function(meth: PX509_CRL_METHOD): void; cdecl = nil;
   {$EXTERNALSYM X509_CRL_set_default_method}
 
   X509_CRL_METHOD_new: function(crl_init: TX509_CRL_METHOD_new_crl_init_cb; crl_free: TX509_CRL_METHOD_new_crl_init_cb; crl_lookup: TX509_CRL_METHOD_new_crl_lookup_cb; crl_verify: TX509_CRL_METHOD_new_crl_verify_cb): PX509_CRL_METHOD; cdecl = nil;
   {$EXTERNALSYM X509_CRL_METHOD_new}
 
-  X509_CRL_METHOD_free: procedure(m: PX509_CRL_METHOD); cdecl = nil;
+  X509_CRL_METHOD_free: function(m: PX509_CRL_METHOD): void; cdecl = nil;
   {$EXTERNALSYM X509_CRL_METHOD_free}
 
-  X509_CRL_set_meth_data: procedure(crl: PX509_CRL; dat: Pointer); cdecl = nil;
+  X509_CRL_set_meth_data: function(crl: PX509_CRL; dat: Pointer): void; cdecl = nil;
   {$EXTERNALSYM X509_CRL_set_meth_data}
 
   X509_CRL_get_meth_data: function(crl: PX509_CRL): Pointer; cdecl = nil;
@@ -666,10 +585,10 @@ var
   X509_ALGOR_set0: function(alg: PX509_ALGOR; aobj: PASN1_OBJECT; ptype: TIdC_INT; pval: Pointer): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM X509_ALGOR_set0}
 
-  X509_ALGOR_get0: procedure(paobj: PPASN1_OBJECT; pptype: PIdC_INT; ppval: PPointer; algor: PX509_ALGOR); cdecl = nil;
+  X509_ALGOR_get0: function(paobj: PPASN1_OBJECT; pptype: PIdC_INT; ppval: PPointer; algor: PX509_ALGOR): void; cdecl = nil;
   {$EXTERNALSYM X509_ALGOR_get0}
 
-  X509_ALGOR_set_md: procedure(alg: PX509_ALGOR; md: PEVP_MD); cdecl = nil;
+  X509_ALGOR_set_md: function(alg: PX509_ALGOR; md: PEVP_MD): void; cdecl = nil;
   {$EXTERNALSYM X509_ALGOR_set_md}
 
   X509_ALGOR_cmp: function(a: PX509_ALGOR; b: PX509_ALGOR): TIdC_INT; cdecl = nil;
@@ -684,7 +603,7 @@ var
   X509_NAME_ENTRY_dup: function(a: PX509_NAME_ENTRY): PX509_NAME_ENTRY; cdecl = nil;
   {$EXTERNALSYM X509_NAME_ENTRY_dup}
 
-  X509_cmp_time: function(s: PASN1_TIME; t: PIdC_TIME_T): TIdC_INT; cdecl = nil;
+  X509_cmp_time: function(s: PASN1_TIME; t: PIdC_TIMET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM X509_cmp_time}
 
   X509_cmp_current_time: function(s: PASN1_TIME): TIdC_INT; cdecl = nil;
@@ -693,10 +612,10 @@ var
   X509_cmp_timeframe: function(vpm: PX509_VERIFY_PARAM; start: PASN1_TIME; _end: PASN1_TIME): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM X509_cmp_timeframe}
 
-  X509_time_adj: function(s: PASN1_TIME; adj: TIdC_LONG; t: PIdC_TIME_T): PASN1_TIME; cdecl = nil;
+  X509_time_adj: function(s: PASN1_TIME; adj: TIdC_LONG; t: PIdC_TIMET): PASN1_TIME; cdecl = nil;
   {$EXTERNALSYM X509_time_adj}
 
-  X509_time_adj_ex: function(s: PASN1_TIME; offset_day: TIdC_INT; offset_sec: TIdC_LONG; t: PIdC_TIME_T): PASN1_TIME; cdecl = nil;
+  X509_time_adj_ex: function(s: PASN1_TIME; offset_day: TIdC_INT; offset_sec: TIdC_LONG; t: PIdC_TIMET): PASN1_TIME; cdecl = nil;
   {$EXTERNALSYM X509_time_adj_ex}
 
   X509_gmtime_adj: function(s: PASN1_TIME; adj: TIdC_LONG): PASN1_TIME; cdecl = nil;
@@ -729,7 +648,7 @@ var
   X509_ALGOR_new: function: PX509_ALGOR; cdecl = nil;
   {$EXTERNALSYM X509_ALGOR_new}
 
-  X509_ALGOR_free: procedure(a: PX509_ALGOR); cdecl = nil;
+  X509_ALGOR_free: function(a: PX509_ALGOR): void; cdecl = nil;
   {$EXTERNALSYM X509_ALGOR_free}
 
   d2i_X509_ALGOR: function(a: PPX509_ALGOR; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_ALGOR; cdecl = nil;
@@ -753,7 +672,7 @@ var
   X509_VAL_new: function: PX509_VAL; cdecl = nil;
   {$EXTERNALSYM X509_VAL_new}
 
-  X509_VAL_free: procedure(a: PX509_VAL); cdecl = nil;
+  X509_VAL_free: function(a: PX509_VAL): void; cdecl = nil;
   {$EXTERNALSYM X509_VAL_free}
 
   d2i_X509_VAL: function(a: PPX509_VAL; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_VAL; cdecl = nil;
@@ -768,7 +687,7 @@ var
   X509_PUBKEY_new: function: PX509_PUBKEY; cdecl = nil;
   {$EXTERNALSYM X509_PUBKEY_new}
 
-  X509_PUBKEY_free: procedure(a: PX509_PUBKEY); cdecl = nil;
+  X509_PUBKEY_free: function(a: PX509_PUBKEY): void; cdecl = nil;
   {$EXTERNALSYM X509_PUBKEY_free}
 
   d2i_X509_PUBKEY: function(a: PPX509_PUBKEY; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_PUBKEY; cdecl = nil;
@@ -828,7 +747,7 @@ var
   X509_SIG_new: function: PX509_SIG; cdecl = nil;
   {$EXTERNALSYM X509_SIG_new}
 
-  X509_SIG_free: procedure(a: PX509_SIG); cdecl = nil;
+  X509_SIG_free: function(a: PX509_SIG): void; cdecl = nil;
   {$EXTERNALSYM X509_SIG_free}
 
   d2i_X509_SIG: function(a: PPX509_SIG; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_SIG; cdecl = nil;
@@ -840,16 +759,16 @@ var
   X509_SIG_it: function: PASN1_ITEM; cdecl = nil;
   {$EXTERNALSYM X509_SIG_it}
 
-  X509_SIG_get0: procedure(sig: PX509_SIG; palg: PPX509_ALGOR; pdigest: PPASN1_OCTET_STRING); cdecl = nil;
+  X509_SIG_get0: function(sig: PX509_SIG; palg: PPX509_ALGOR; pdigest: PPASN1_OCTET_STRING): void; cdecl = nil;
   {$EXTERNALSYM X509_SIG_get0}
 
-  X509_SIG_getm: procedure(sig: PX509_SIG; palg: PPX509_ALGOR; pdigest: PPASN1_OCTET_STRING); cdecl = nil;
+  X509_SIG_getm: function(sig: PX509_SIG; palg: PPX509_ALGOR; pdigest: PPASN1_OCTET_STRING): void; cdecl = nil;
   {$EXTERNALSYM X509_SIG_getm}
 
   X509_REQ_INFO_new: function: PX509_REQ_INFO; cdecl = nil;
   {$EXTERNALSYM X509_REQ_INFO_new}
 
-  X509_REQ_INFO_free: procedure(a: PX509_REQ_INFO); cdecl = nil;
+  X509_REQ_INFO_free: function(a: PX509_REQ_INFO): void; cdecl = nil;
   {$EXTERNALSYM X509_REQ_INFO_free}
 
   d2i_X509_REQ_INFO: function(a: PPX509_REQ_INFO; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_REQ_INFO; cdecl = nil;
@@ -864,7 +783,7 @@ var
   X509_REQ_new: function: PX509_REQ; cdecl = nil;
   {$EXTERNALSYM X509_REQ_new}
 
-  X509_REQ_free: procedure(a: PX509_REQ); cdecl = nil;
+  X509_REQ_free: function(a: PX509_REQ): void; cdecl = nil;
   {$EXTERNALSYM X509_REQ_free}
 
   d2i_X509_REQ: function(a: PPX509_REQ; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_REQ; cdecl = nil;
@@ -882,7 +801,7 @@ var
   X509_ATTRIBUTE_new: function: PX509_ATTRIBUTE; cdecl = nil;
   {$EXTERNALSYM X509_ATTRIBUTE_new}
 
-  X509_ATTRIBUTE_free: procedure(a: PX509_ATTRIBUTE); cdecl = nil;
+  X509_ATTRIBUTE_free: function(a: PX509_ATTRIBUTE): void; cdecl = nil;
   {$EXTERNALSYM X509_ATTRIBUTE_free}
 
   d2i_X509_ATTRIBUTE: function(a: PPX509_ATTRIBUTE; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_ATTRIBUTE; cdecl = nil;
@@ -900,7 +819,7 @@ var
   X509_EXTENSION_new: function: PX509_EXTENSION; cdecl = nil;
   {$EXTERNALSYM X509_EXTENSION_new}
 
-  X509_EXTENSION_free: procedure(a: PX509_EXTENSION); cdecl = nil;
+  X509_EXTENSION_free: function(a: PX509_EXTENSION): void; cdecl = nil;
   {$EXTERNALSYM X509_EXTENSION_free}
 
   d2i_X509_EXTENSION: function(a: PPX509_EXTENSION; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_EXTENSION; cdecl = nil;
@@ -924,7 +843,7 @@ var
   X509_NAME_ENTRY_new: function: PX509_NAME_ENTRY; cdecl = nil;
   {$EXTERNALSYM X509_NAME_ENTRY_new}
 
-  X509_NAME_ENTRY_free: procedure(a: PX509_NAME_ENTRY); cdecl = nil;
+  X509_NAME_ENTRY_free: function(a: PX509_NAME_ENTRY): void; cdecl = nil;
   {$EXTERNALSYM X509_NAME_ENTRY_free}
 
   d2i_X509_NAME_ENTRY: function(a: PPX509_NAME_ENTRY; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_NAME_ENTRY; cdecl = nil;
@@ -939,7 +858,7 @@ var
   X509_NAME_new: function: PX509_NAME; cdecl = nil;
   {$EXTERNALSYM X509_NAME_new}
 
-  X509_NAME_free: procedure(a: PX509_NAME); cdecl = nil;
+  X509_NAME_free: function(a: PX509_NAME): void; cdecl = nil;
   {$EXTERNALSYM X509_NAME_free}
 
   d2i_X509_NAME: function(a: PPX509_NAME; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_NAME; cdecl = nil;
@@ -957,7 +876,7 @@ var
   X509_CINF_new: function: PX509_CINF; cdecl = nil;
   {$EXTERNALSYM X509_CINF_new}
 
-  X509_CINF_free: procedure(a: PX509_CINF); cdecl = nil;
+  X509_CINF_free: function(a: PX509_CINF): void; cdecl = nil;
   {$EXTERNALSYM X509_CINF_free}
 
   d2i_X509_CINF: function(a: PPX509_CINF; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_CINF; cdecl = nil;
@@ -972,7 +891,7 @@ var
   X509_new: function: PX509; cdecl = nil;
   {$EXTERNALSYM X509_new}
 
-  X509_free: procedure(a: PX509); cdecl = nil;
+  X509_free: function(a: PX509): void; cdecl = nil;
   {$EXTERNALSYM X509_free}
 
   d2i_X509: function(a: PPX509; _in: PPIdAnsiChar; len: TIdC_LONG): PX509; cdecl = nil;
@@ -990,7 +909,7 @@ var
   X509_CERT_AUX_new: function: PX509_CERT_AUX; cdecl = nil;
   {$EXTERNALSYM X509_CERT_AUX_new}
 
-  X509_CERT_AUX_free: procedure(a: PX509_CERT_AUX); cdecl = nil;
+  X509_CERT_AUX_free: function(a: PX509_CERT_AUX): void; cdecl = nil;
   {$EXTERNALSYM X509_CERT_AUX_free}
 
   d2i_X509_CERT_AUX: function(a: PPX509_CERT_AUX; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_CERT_AUX; cdecl = nil;
@@ -1017,28 +936,28 @@ var
   i2d_re_X509_tbs: function(x: PX509; pp: PPIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM i2d_re_X509_tbs}
 
-  X509_SIG_INFO_get: function(siginf: PX509_SIG_INFO; mdnid: PIdC_INT; pknid: PIdC_INT; secbits: PIdC_INT; flags: PUInt32): TIdC_INT; cdecl = nil;
+  X509_SIG_INFO_get: function(siginf: PX509_SIG_INFO; mdnid: PIdC_INT; pknid: PIdC_INT; secbits: PIdC_INT; flags: PIdC_UINT32): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM X509_SIG_INFO_get}
 
-  X509_SIG_INFO_set: procedure(siginf: PX509_SIG_INFO; mdnid: TIdC_INT; pknid: TIdC_INT; secbits: TIdC_INT; flags: UInt32); cdecl = nil;
+  X509_SIG_INFO_set: function(siginf: PX509_SIG_INFO; mdnid: TIdC_INT; pknid: TIdC_INT; secbits: TIdC_INT; flags: TIdC_UINT32): void; cdecl = nil;
   {$EXTERNALSYM X509_SIG_INFO_set}
 
-  X509_get_signature_info: function(x: PX509; mdnid: PIdC_INT; pknid: PIdC_INT; secbits: PIdC_INT; flags: PUInt32): TIdC_INT; cdecl = nil;
+  X509_get_signature_info: function(x: PX509; mdnid: PIdC_INT; pknid: PIdC_INT; secbits: PIdC_INT; flags: PIdC_UINT32): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM X509_get_signature_info}
 
-  X509_get0_signature: procedure(psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR; x: PX509); cdecl = nil;
+  X509_get0_signature: function(psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR; x: PX509): void; cdecl = nil;
   {$EXTERNALSYM X509_get0_signature}
 
   X509_get_signature_nid: function(x: PX509): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM X509_get_signature_nid}
 
-  X509_set0_distinguishing_id: procedure(x: PX509; d_id: PASN1_OCTET_STRING); cdecl = nil;
+  X509_set0_distinguishing_id: function(x: PX509; d_id: PASN1_OCTET_STRING): void; cdecl = nil;
   {$EXTERNALSYM X509_set0_distinguishing_id}
 
   X509_get0_distinguishing_id: function(x: PX509): PASN1_OCTET_STRING; cdecl = nil;
   {$EXTERNALSYM X509_get0_distinguishing_id}
 
-  X509_REQ_set0_distinguishing_id: procedure(x: PX509_REQ; d_id: PASN1_OCTET_STRING); cdecl = nil;
+  X509_REQ_set0_distinguishing_id: function(x: PX509_REQ; d_id: PASN1_OCTET_STRING): void; cdecl = nil;
   {$EXTERNALSYM X509_REQ_set0_distinguishing_id}
 
   X509_REQ_get0_distinguishing_id: function(x: PX509_REQ): PASN1_OCTET_STRING; cdecl = nil;
@@ -1059,7 +978,7 @@ var
   X509_REVOKED_new: function: PX509_REVOKED; cdecl = nil;
   {$EXTERNALSYM X509_REVOKED_new}
 
-  X509_REVOKED_free: procedure(a: PX509_REVOKED); cdecl = nil;
+  X509_REVOKED_free: function(a: PX509_REVOKED): void; cdecl = nil;
   {$EXTERNALSYM X509_REVOKED_free}
 
   d2i_X509_REVOKED: function(a: PPX509_REVOKED; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_REVOKED; cdecl = nil;
@@ -1074,7 +993,7 @@ var
   X509_CRL_INFO_new: function: PX509_CRL_INFO; cdecl = nil;
   {$EXTERNALSYM X509_CRL_INFO_new}
 
-  X509_CRL_INFO_free: procedure(a: PX509_CRL_INFO); cdecl = nil;
+  X509_CRL_INFO_free: function(a: PX509_CRL_INFO): void; cdecl = nil;
   {$EXTERNALSYM X509_CRL_INFO_free}
 
   d2i_X509_CRL_INFO: function(a: PPX509_CRL_INFO; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_CRL_INFO; cdecl = nil;
@@ -1089,7 +1008,7 @@ var
   X509_CRL_new: function: PX509_CRL; cdecl = nil;
   {$EXTERNALSYM X509_CRL_new}
 
-  X509_CRL_free: procedure(a: PX509_CRL); cdecl = nil;
+  X509_CRL_free: function(a: PX509_CRL): void; cdecl = nil;
   {$EXTERNALSYM X509_CRL_free}
 
   d2i_X509_CRL: function(a: PPX509_CRL; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_CRL; cdecl = nil;
@@ -1116,13 +1035,13 @@ var
   X509_PKEY_new: function: PX509_PKEY; cdecl = nil;
   {$EXTERNALSYM X509_PKEY_new}
 
-  X509_PKEY_free: procedure(a: PX509_PKEY); cdecl = nil;
+  X509_PKEY_free: function(a: PX509_PKEY): void; cdecl = nil;
   {$EXTERNALSYM X509_PKEY_free}
 
   NETSCAPE_SPKI_new: function: PNETSCAPE_SPKI; cdecl = nil;
   {$EXTERNALSYM NETSCAPE_SPKI_new}
 
-  NETSCAPE_SPKI_free: procedure(a: PNETSCAPE_SPKI); cdecl = nil;
+  NETSCAPE_SPKI_free: function(a: PNETSCAPE_SPKI): void; cdecl = nil;
   {$EXTERNALSYM NETSCAPE_SPKI_free}
 
   d2i_NETSCAPE_SPKI: function(a: PPNETSCAPE_SPKI; _in: PPIdAnsiChar; len: TIdC_LONG): PNETSCAPE_SPKI; cdecl = nil;
@@ -1137,7 +1056,7 @@ var
   NETSCAPE_SPKAC_new: function: PNETSCAPE_SPKAC; cdecl = nil;
   {$EXTERNALSYM NETSCAPE_SPKAC_new}
 
-  NETSCAPE_SPKAC_free: procedure(a: PNETSCAPE_SPKAC); cdecl = nil;
+  NETSCAPE_SPKAC_free: function(a: PNETSCAPE_SPKAC): void; cdecl = nil;
   {$EXTERNALSYM NETSCAPE_SPKAC_free}
 
   d2i_NETSCAPE_SPKAC: function(a: PPNETSCAPE_SPKAC; _in: PPIdAnsiChar; len: TIdC_LONG): PNETSCAPE_SPKAC; cdecl = nil;
@@ -1152,7 +1071,7 @@ var
   NETSCAPE_CERT_SEQUENCE_new: function: PNETSCAPE_CERT_SEQUENCE; cdecl = nil;
   {$EXTERNALSYM NETSCAPE_CERT_SEQUENCE_new}
 
-  NETSCAPE_CERT_SEQUENCE_free: procedure(a: PNETSCAPE_CERT_SEQUENCE); cdecl = nil;
+  NETSCAPE_CERT_SEQUENCE_free: function(a: PNETSCAPE_CERT_SEQUENCE): void; cdecl = nil;
   {$EXTERNALSYM NETSCAPE_CERT_SEQUENCE_free}
 
   d2i_NETSCAPE_CERT_SEQUENCE: function(a: PPNETSCAPE_CERT_SEQUENCE; _in: PPIdAnsiChar; len: TIdC_LONG): PNETSCAPE_CERT_SEQUENCE; cdecl = nil;
@@ -1167,7 +1086,7 @@ var
   X509_INFO_new: function: PX509_INFO; cdecl = nil;
   {$EXTERNALSYM X509_INFO_new}
 
-  X509_INFO_free: procedure(a: PX509_INFO); cdecl = nil;
+  X509_INFO_free: function(a: PX509_INFO): void; cdecl = nil;
   {$EXTERNALSYM X509_INFO_free}
 
   X509_NAME_oneline: function(a: PX509_NAME; buf: PIdAnsiChar; size: TIdC_INT): PIdAnsiChar; cdecl = nil;
@@ -1257,7 +1176,7 @@ var
   X509_get0_extensions: function(x: PX509): Pstack_st_X509_EXTENSION; cdecl = nil;
   {$EXTERNALSYM X509_get0_extensions}
 
-  X509_get0_uids: procedure(x: PX509; piuid: PPASN1_BIT_STRING; psuid: PPASN1_BIT_STRING); cdecl = nil;
+  X509_get0_uids: function(x: PX509; piuid: PPASN1_BIT_STRING; psuid: PPASN1_BIT_STRING): void; cdecl = nil;
   {$EXTERNALSYM X509_get0_uids}
 
   X509_get0_tbs_sigalg: function(x: PX509): PX509_ALGOR; cdecl = nil;
@@ -1284,10 +1203,10 @@ var
   X509_REQ_set_subject_name: function(req: PX509_REQ; name: PX509_NAME): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM X509_REQ_set_subject_name}
 
-  X509_REQ_get0_signature: procedure(req: PX509_REQ; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR); cdecl = nil;
+  X509_REQ_get0_signature: function(req: PX509_REQ; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR): void; cdecl = nil;
   {$EXTERNALSYM X509_REQ_get0_signature}
 
-  X509_REQ_set0_signature: procedure(req: PX509_REQ; psig: PASN1_BIT_STRING); cdecl = nil;
+  X509_REQ_set0_signature: function(req: PX509_REQ; psig: PASN1_BIT_STRING): void; cdecl = nil;
   {$EXTERNALSYM X509_REQ_set0_signature}
 
   X509_REQ_set1_signature_algo: function(req: PX509_REQ; palg: PX509_ALGOR): TIdC_INT; cdecl = nil;
@@ -1317,7 +1236,7 @@ var
   X509_REQ_get_extension_nids: function: PIdC_INT; cdecl = nil;
   {$EXTERNALSYM X509_REQ_get_extension_nids}
 
-  X509_REQ_set_extension_nids: procedure(nids: PIdC_INT); cdecl = nil;
+  X509_REQ_set_extension_nids: function(nids: PIdC_INT): void; cdecl = nil;
   {$EXTERNALSYM X509_REQ_set_extension_nids}
 
   X509_REQ_get_extensions: function(req: PX509_REQ): Pstack_st_X509_EXTENSION; cdecl = nil;
@@ -1395,7 +1314,7 @@ var
   X509_CRL_get0_tbs_sigalg: function(crl: PX509_CRL): PX509_ALGOR; cdecl = nil;
   {$EXTERNALSYM X509_CRL_get0_tbs_sigalg}
 
-  X509_CRL_get0_signature: procedure(crl: PX509_CRL; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR); cdecl = nil;
+  X509_CRL_get0_signature: function(crl: PX509_CRL; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR): void; cdecl = nil;
   {$EXTERNALSYM X509_CRL_get0_signature}
 
   X509_CRL_get_signature_nid: function(crl: PX509_CRL): TIdC_INT; cdecl = nil;
@@ -1434,7 +1353,7 @@ var
   X509_CRL_check_suiteb: function(crl: PX509_CRL; pk: PEVP_PKEY; flags: TIdC_ULONG): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM X509_CRL_check_suiteb}
 
-  OSSL_STACK_OF_X509_free: procedure(certs: Pstack_st_X509); cdecl = nil;
+  OSSL_STACK_OF_X509_free: function(certs: Pstack_st_X509): void; cdecl = nil;
   {$EXTERNALSYM OSSL_STACK_OF_X509_free}
 
   X509_chain_up_ref: function(chain: Pstack_st_X509): Pstack_st_X509; cdecl = nil;
@@ -1818,7 +1737,7 @@ var
   PBEPARAM_new: function: PPBEPARAM; cdecl = nil;
   {$EXTERNALSYM PBEPARAM_new}
 
-  PBEPARAM_free: procedure(a: PPBEPARAM); cdecl = nil;
+  PBEPARAM_free: function(a: PPBEPARAM): void; cdecl = nil;
   {$EXTERNALSYM PBEPARAM_free}
 
   d2i_PBEPARAM: function(a: PPPBEPARAM; _in: PPIdAnsiChar; len: TIdC_LONG): PPBEPARAM; cdecl = nil;
@@ -1833,7 +1752,7 @@ var
   PBE2PARAM_new: function: PPBE2PARAM; cdecl = nil;
   {$EXTERNALSYM PBE2PARAM_new}
 
-  PBE2PARAM_free: procedure(a: PPBE2PARAM); cdecl = nil;
+  PBE2PARAM_free: function(a: PPBE2PARAM): void; cdecl = nil;
   {$EXTERNALSYM PBE2PARAM_free}
 
   d2i_PBE2PARAM: function(a: PPPBE2PARAM; _in: PPIdAnsiChar; len: TIdC_LONG): PPBE2PARAM; cdecl = nil;
@@ -1848,7 +1767,7 @@ var
   PBKDF2PARAM_new: function: PPBKDF2PARAM; cdecl = nil;
   {$EXTERNALSYM PBKDF2PARAM_new}
 
-  PBKDF2PARAM_free: procedure(a: PPBKDF2PARAM); cdecl = nil;
+  PBKDF2PARAM_free: function(a: PPBKDF2PARAM): void; cdecl = nil;
   {$EXTERNALSYM PBKDF2PARAM_free}
 
   d2i_PBKDF2PARAM: function(a: PPPBKDF2PARAM; _in: PPIdAnsiChar; len: TIdC_LONG): PPBKDF2PARAM; cdecl = nil;
@@ -1863,7 +1782,7 @@ var
   PBMAC1PARAM_new: function: PPBMAC1PARAM; cdecl = nil;
   {$EXTERNALSYM PBMAC1PARAM_new}
 
-  PBMAC1PARAM_free: procedure(a: PPBMAC1PARAM); cdecl = nil;
+  PBMAC1PARAM_free: function(a: PPBMAC1PARAM): void; cdecl = nil;
   {$EXTERNALSYM PBMAC1PARAM_free}
 
   d2i_PBMAC1PARAM: function(a: PPPBMAC1PARAM; _in: PPIdAnsiChar; len: TIdC_LONG): PPBMAC1PARAM; cdecl = nil;
@@ -1878,7 +1797,7 @@ var
   SCRYPT_PARAMS_new: function: PSCRYPT_PARAMS; cdecl = nil;
   {$EXTERNALSYM SCRYPT_PARAMS_new}
 
-  SCRYPT_PARAMS_free: procedure(a: PSCRYPT_PARAMS); cdecl = nil;
+  SCRYPT_PARAMS_free: function(a: PSCRYPT_PARAMS): void; cdecl = nil;
   {$EXTERNALSYM SCRYPT_PARAMS_free}
 
   d2i_SCRYPT_PARAMS: function(a: PPSCRYPT_PARAMS; _in: PPIdAnsiChar; len: TIdC_LONG): PSCRYPT_PARAMS; cdecl = nil;
@@ -1911,7 +1830,7 @@ var
   PKCS5_pbe2_set_iv_ex: function(cipher: PEVP_CIPHER; iter: TIdC_INT; salt: PIdAnsiChar; saltlen: TIdC_INT; aiv: PIdAnsiChar; prf_nid: TIdC_INT; libctx: POSSL_LIB_CTX): PX509_ALGOR; cdecl = nil;
   {$EXTERNALSYM PKCS5_pbe2_set_iv_ex}
 
-  PKCS5_pbe2_set_scrypt: function(cipher: PEVP_CIPHER; salt: PIdAnsiChar; saltlen: TIdC_INT; aiv: PIdAnsiChar; N: UInt64; r: UInt64; p: UInt64): PX509_ALGOR; cdecl = nil;
+  PKCS5_pbe2_set_scrypt: function(cipher: PEVP_CIPHER; salt: PIdAnsiChar; saltlen: TIdC_INT; aiv: PIdAnsiChar; N: TIdC_UINT64; r: TIdC_UINT64; p: TIdC_UINT64): PX509_ALGOR; cdecl = nil;
   {$EXTERNALSYM PKCS5_pbe2_set_scrypt}
 
   PKCS5_pbkdf2_set: function(iter: TIdC_INT; salt: PIdAnsiChar; saltlen: TIdC_INT; prf_nid: TIdC_INT; keylen: TIdC_INT): PX509_ALGOR; cdecl = nil;
@@ -1926,7 +1845,7 @@ var
   PKCS8_PRIV_KEY_INFO_new: function: PPKCS8_PRIV_KEY_INFO; cdecl = nil;
   {$EXTERNALSYM PKCS8_PRIV_KEY_INFO_new}
 
-  PKCS8_PRIV_KEY_INFO_free: procedure(a: PPKCS8_PRIV_KEY_INFO); cdecl = nil;
+  PKCS8_PRIV_KEY_INFO_free: function(a: PPKCS8_PRIV_KEY_INFO): void; cdecl = nil;
   {$EXTERNALSYM PKCS8_PRIV_KEY_INFO_free}
 
   d2i_PKCS8_PRIV_KEY_INFO: function(a: PPPKCS8_PRIV_KEY_INFO; _in: PPIdAnsiChar; len: TIdC_LONG): PPKCS8_PRIV_KEY_INFO; cdecl = nil;
@@ -1965,7 +1884,7 @@ var
   PKCS8_pkey_add1_attr_by_OBJ: function(p8: PPKCS8_PRIV_KEY_INFO; obj: PASN1_OBJECT; _type: TIdC_INT; bytes: PIdAnsiChar; len: TIdC_INT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM PKCS8_pkey_add1_attr_by_OBJ}
 
-  X509_PUBKEY_set0_public_key: procedure(pub: PX509_PUBKEY; penc: PIdAnsiChar; penclen: TIdC_INT); cdecl = nil;
+  X509_PUBKEY_set0_public_key: function(pub: PX509_PUBKEY; penc: PIdAnsiChar; penclen: TIdC_INT): void; cdecl = nil;
   {$EXTERNALSYM X509_PUBKEY_set0_public_key}
 
   X509_PUBKEY_set0_param: function(pub: PX509_PUBKEY; aobj: PASN1_OBJECT; ptype: TIdC_INT; pval: Pointer; penc: PIdAnsiChar; penclen: TIdC_INT): TIdC_INT; cdecl = nil;
@@ -1985,10 +1904,10 @@ var
 // STATIC BINDING ROUTINES
 // =============================================================================
 
-procedure X509_CRL_set_default_method(meth: PX509_CRL_METHOD); cdecl;
+function X509_CRL_set_default_method(meth: PX509_CRL_METHOD): void; cdecl;
 function X509_CRL_METHOD_new(crl_init: TX509_CRL_METHOD_new_crl_init_cb; crl_free: TX509_CRL_METHOD_new_crl_init_cb; crl_lookup: TX509_CRL_METHOD_new_crl_lookup_cb; crl_verify: TX509_CRL_METHOD_new_crl_verify_cb): PX509_CRL_METHOD; cdecl;
-procedure X509_CRL_METHOD_free(m: PX509_CRL_METHOD); cdecl;
-procedure X509_CRL_set_meth_data(crl: PX509_CRL; dat: Pointer); cdecl;
+function X509_CRL_METHOD_free(m: PX509_CRL_METHOD): void; cdecl;
+function X509_CRL_set_meth_data(crl: PX509_CRL; dat: Pointer): void; cdecl;
 function X509_CRL_get_meth_data(crl: PX509_CRL): Pointer; cdecl;
 function X509_verify_cert_error_string(n: TIdC_LONG): PIdAnsiChar; cdecl;
 function X509_verify(a: PX509; r: PEVP_PKEY): TIdC_INT; cdecl;
@@ -2094,17 +2013,17 @@ function X509_PUBKEY_dup(a: PX509_PUBKEY): PX509_PUBKEY; cdecl;
 function X509_REQ_dup(a: PX509_REQ): PX509_REQ; cdecl;
 function X509_REVOKED_dup(a: PX509_REVOKED): PX509_REVOKED; cdecl;
 function X509_ALGOR_set0(alg: PX509_ALGOR; aobj: PASN1_OBJECT; ptype: TIdC_INT; pval: Pointer): TIdC_INT; cdecl;
-procedure X509_ALGOR_get0(paobj: PPASN1_OBJECT; pptype: PIdC_INT; ppval: PPointer; algor: PX509_ALGOR); cdecl;
-procedure X509_ALGOR_set_md(alg: PX509_ALGOR; md: PEVP_MD); cdecl;
+function X509_ALGOR_get0(paobj: PPASN1_OBJECT; pptype: PIdC_INT; ppval: PPointer; algor: PX509_ALGOR): void; cdecl;
+function X509_ALGOR_set_md(alg: PX509_ALGOR; md: PEVP_MD): void; cdecl;
 function X509_ALGOR_cmp(a: PX509_ALGOR; b: PX509_ALGOR): TIdC_INT; cdecl;
 function X509_ALGOR_copy(dest: PX509_ALGOR; src: PX509_ALGOR): TIdC_INT; cdecl;
 function X509_NAME_dup(a: PX509_NAME): PX509_NAME; cdecl;
 function X509_NAME_ENTRY_dup(a: PX509_NAME_ENTRY): PX509_NAME_ENTRY; cdecl;
-function X509_cmp_time(s: PASN1_TIME; t: PIdC_TIME_T): TIdC_INT; cdecl;
+function X509_cmp_time(s: PASN1_TIME; t: PIdC_TIMET): TIdC_INT; cdecl;
 function X509_cmp_current_time(s: PASN1_TIME): TIdC_INT; cdecl;
 function X509_cmp_timeframe(vpm: PX509_VERIFY_PARAM; start: PASN1_TIME; _end: PASN1_TIME): TIdC_INT; cdecl;
-function X509_time_adj(s: PASN1_TIME; adj: TIdC_LONG; t: PIdC_TIME_T): PASN1_TIME; cdecl;
-function X509_time_adj_ex(s: PASN1_TIME; offset_day: TIdC_INT; offset_sec: TIdC_LONG; t: PIdC_TIME_T): PASN1_TIME; cdecl;
+function X509_time_adj(s: PASN1_TIME; adj: TIdC_LONG; t: PIdC_TIMET): PASN1_TIME; cdecl;
+function X509_time_adj_ex(s: PASN1_TIME; offset_day: TIdC_INT; offset_sec: TIdC_LONG; t: PIdC_TIMET): PASN1_TIME; cdecl;
 function X509_gmtime_adj(s: PASN1_TIME; adj: TIdC_LONG): PASN1_TIME; cdecl;
 function X509_get_default_cert_area: PIdAnsiChar; cdecl;
 function X509_get_default_cert_dir: PIdAnsiChar; cdecl;
@@ -2115,7 +2034,7 @@ function X509_get_default_private_dir: PIdAnsiChar; cdecl;
 function X509_to_X509_REQ(x: PX509; pkey: PEVP_PKEY; md: PEVP_MD): PX509_REQ; cdecl;
 function X509_REQ_to_X509(r: PX509_REQ; days: TIdC_INT; pkey: PEVP_PKEY): PX509; cdecl;
 function X509_ALGOR_new: PX509_ALGOR; cdecl;
-procedure X509_ALGOR_free(a: PX509_ALGOR); cdecl;
+function X509_ALGOR_free(a: PX509_ALGOR): void; cdecl;
 function d2i_X509_ALGOR(a: PPX509_ALGOR; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_ALGOR; cdecl;
 function i2d_X509_ALGOR(a: PX509_ALGOR; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function X509_ALGOR_it: PASN1_ITEM; cdecl;
@@ -2123,12 +2042,12 @@ function d2i_X509_ALGORS(a: PPX509_ALGORS; _in: PPIdAnsiChar; len: TIdC_LONG): P
 function i2d_X509_ALGORS(a: PX509_ALGORS; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function X509_ALGORS_it: PASN1_ITEM; cdecl;
 function X509_VAL_new: PX509_VAL; cdecl;
-procedure X509_VAL_free(a: PX509_VAL); cdecl;
+function X509_VAL_free(a: PX509_VAL): void; cdecl;
 function d2i_X509_VAL(a: PPX509_VAL; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_VAL; cdecl;
 function i2d_X509_VAL(a: PX509_VAL; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function X509_VAL_it: PASN1_ITEM; cdecl;
 function X509_PUBKEY_new: PX509_PUBKEY; cdecl;
-procedure X509_PUBKEY_free(a: PX509_PUBKEY); cdecl;
+function X509_PUBKEY_free(a: PX509_PUBKEY): void; cdecl;
 function d2i_X509_PUBKEY(a: PPX509_PUBKEY; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_PUBKEY; cdecl;
 function i2d_X509_PUBKEY(a: PX509_PUBKEY; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function X509_PUBKEY_it: PASN1_ITEM; cdecl;
@@ -2148,31 +2067,31 @@ function i2d_DSA_PUBKEY(a: PDSA; _out: PPIdAnsiChar): TIdC_INT; cdecl; deprecate
 function d2i_EC_PUBKEY(a: PPEC_KEY; _in: PPIdAnsiChar; len: TIdC_LONG): PEC_KEY; cdecl; deprecated 'In OpenSSL 3_0_0';
 function i2d_EC_PUBKEY(a: PEC_KEY; _out: PPIdAnsiChar): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function X509_SIG_new: PX509_SIG; cdecl;
-procedure X509_SIG_free(a: PX509_SIG); cdecl;
+function X509_SIG_free(a: PX509_SIG): void; cdecl;
 function d2i_X509_SIG(a: PPX509_SIG; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_SIG; cdecl;
 function i2d_X509_SIG(a: PX509_SIG; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function X509_SIG_it: PASN1_ITEM; cdecl;
-procedure X509_SIG_get0(sig: PX509_SIG; palg: PPX509_ALGOR; pdigest: PPASN1_OCTET_STRING); cdecl;
-procedure X509_SIG_getm(sig: PX509_SIG; palg: PPX509_ALGOR; pdigest: PPASN1_OCTET_STRING); cdecl;
+function X509_SIG_get0(sig: PX509_SIG; palg: PPX509_ALGOR; pdigest: PPASN1_OCTET_STRING): void; cdecl;
+function X509_SIG_getm(sig: PX509_SIG; palg: PPX509_ALGOR; pdigest: PPASN1_OCTET_STRING): void; cdecl;
 function X509_REQ_INFO_new: PX509_REQ_INFO; cdecl;
-procedure X509_REQ_INFO_free(a: PX509_REQ_INFO); cdecl;
+function X509_REQ_INFO_free(a: PX509_REQ_INFO): void; cdecl;
 function d2i_X509_REQ_INFO(a: PPX509_REQ_INFO; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_REQ_INFO; cdecl;
 function i2d_X509_REQ_INFO(a: PX509_REQ_INFO; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function X509_REQ_INFO_it: PASN1_ITEM; cdecl;
 function X509_REQ_new: PX509_REQ; cdecl;
-procedure X509_REQ_free(a: PX509_REQ); cdecl;
+function X509_REQ_free(a: PX509_REQ): void; cdecl;
 function d2i_X509_REQ(a: PPX509_REQ; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_REQ; cdecl;
 function i2d_X509_REQ(a: PX509_REQ; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function X509_REQ_it: PASN1_ITEM; cdecl;
 function X509_REQ_new_ex(libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PX509_REQ; cdecl;
 function X509_ATTRIBUTE_new: PX509_ATTRIBUTE; cdecl;
-procedure X509_ATTRIBUTE_free(a: PX509_ATTRIBUTE); cdecl;
+function X509_ATTRIBUTE_free(a: PX509_ATTRIBUTE): void; cdecl;
 function d2i_X509_ATTRIBUTE(a: PPX509_ATTRIBUTE; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_ATTRIBUTE; cdecl;
 function i2d_X509_ATTRIBUTE(a: PX509_ATTRIBUTE; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function X509_ATTRIBUTE_it: PASN1_ITEM; cdecl;
 function X509_ATTRIBUTE_create(nid: TIdC_INT; atrtype: TIdC_INT; value: Pointer): PX509_ATTRIBUTE; cdecl;
 function X509_EXTENSION_new: PX509_EXTENSION; cdecl;
-procedure X509_EXTENSION_free(a: PX509_EXTENSION); cdecl;
+function X509_EXTENSION_free(a: PX509_EXTENSION): void; cdecl;
 function d2i_X509_EXTENSION(a: PPX509_EXTENSION; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_EXTENSION; cdecl;
 function i2d_X509_EXTENSION(a: PX509_EXTENSION; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function X509_EXTENSION_it: PASN1_ITEM; cdecl;
@@ -2180,29 +2099,29 @@ function d2i_X509_EXTENSIONS(a: PPX509_EXTENSIONS; _in: PPIdAnsiChar; len: TIdC_
 function i2d_X509_EXTENSIONS(a: PX509_EXTENSIONS; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function X509_EXTENSIONS_it: PASN1_ITEM; cdecl;
 function X509_NAME_ENTRY_new: PX509_NAME_ENTRY; cdecl;
-procedure X509_NAME_ENTRY_free(a: PX509_NAME_ENTRY); cdecl;
+function X509_NAME_ENTRY_free(a: PX509_NAME_ENTRY): void; cdecl;
 function d2i_X509_NAME_ENTRY(a: PPX509_NAME_ENTRY; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_NAME_ENTRY; cdecl;
 function i2d_X509_NAME_ENTRY(a: PX509_NAME_ENTRY; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function X509_NAME_ENTRY_it: PASN1_ITEM; cdecl;
 function X509_NAME_new: PX509_NAME; cdecl;
-procedure X509_NAME_free(a: PX509_NAME); cdecl;
+function X509_NAME_free(a: PX509_NAME): void; cdecl;
 function d2i_X509_NAME(a: PPX509_NAME; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_NAME; cdecl;
 function i2d_X509_NAME(a: PX509_NAME; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function X509_NAME_it: PASN1_ITEM; cdecl;
 function X509_NAME_set(xn: PPX509_NAME; name: PX509_NAME): TIdC_INT; cdecl;
 function X509_CINF_new: PX509_CINF; cdecl;
-procedure X509_CINF_free(a: PX509_CINF); cdecl;
+function X509_CINF_free(a: PX509_CINF): void; cdecl;
 function d2i_X509_CINF(a: PPX509_CINF; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_CINF; cdecl;
 function i2d_X509_CINF(a: PX509_CINF; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function X509_CINF_it: PASN1_ITEM; cdecl;
 function X509_new: PX509; cdecl;
-procedure X509_free(a: PX509); cdecl;
+function X509_free(a: PX509): void; cdecl;
 function d2i_X509(a: PPX509; _in: PPIdAnsiChar; len: TIdC_LONG): PX509; cdecl;
 function i2d_X509(a: PX509; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function X509_it: PASN1_ITEM; cdecl;
 function X509_new_ex(libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PX509; cdecl;
 function X509_CERT_AUX_new: PX509_CERT_AUX; cdecl;
-procedure X509_CERT_AUX_free(a: PX509_CERT_AUX); cdecl;
+function X509_CERT_AUX_free(a: PX509_CERT_AUX): void; cdecl;
 function d2i_X509_CERT_AUX(a: PPX509_CERT_AUX; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_CERT_AUX; cdecl;
 function i2d_X509_CERT_AUX(a: PX509_CERT_AUX; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function X509_CERT_AUX_it: PASN1_ITEM; cdecl;
@@ -2211,31 +2130,31 @@ function X509_get_ex_data(r: PX509; idx: TIdC_INT): Pointer; cdecl;
 function d2i_X509_AUX(a: PPX509; _in: PPIdAnsiChar; len: TIdC_LONG): PX509; cdecl;
 function i2d_X509_AUX(a: PX509; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function i2d_re_X509_tbs(x: PX509; pp: PPIdAnsiChar): TIdC_INT; cdecl;
-function X509_SIG_INFO_get(siginf: PX509_SIG_INFO; mdnid: PIdC_INT; pknid: PIdC_INT; secbits: PIdC_INT; flags: PUInt32): TIdC_INT; cdecl;
-procedure X509_SIG_INFO_set(siginf: PX509_SIG_INFO; mdnid: TIdC_INT; pknid: TIdC_INT; secbits: TIdC_INT; flags: UInt32); cdecl;
-function X509_get_signature_info(x: PX509; mdnid: PIdC_INT; pknid: PIdC_INT; secbits: PIdC_INT; flags: PUInt32): TIdC_INT; cdecl;
-procedure X509_get0_signature(psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR; x: PX509); cdecl;
+function X509_SIG_INFO_get(siginf: PX509_SIG_INFO; mdnid: PIdC_INT; pknid: PIdC_INT; secbits: PIdC_INT; flags: PIdC_UINT32): TIdC_INT; cdecl;
+function X509_SIG_INFO_set(siginf: PX509_SIG_INFO; mdnid: TIdC_INT; pknid: TIdC_INT; secbits: TIdC_INT; flags: TIdC_UINT32): void; cdecl;
+function X509_get_signature_info(x: PX509; mdnid: PIdC_INT; pknid: PIdC_INT; secbits: PIdC_INT; flags: PIdC_UINT32): TIdC_INT; cdecl;
+function X509_get0_signature(psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR; x: PX509): void; cdecl;
 function X509_get_signature_nid(x: PX509): TIdC_INT; cdecl;
-procedure X509_set0_distinguishing_id(x: PX509; d_id: PASN1_OCTET_STRING); cdecl;
+function X509_set0_distinguishing_id(x: PX509; d_id: PASN1_OCTET_STRING): void; cdecl;
 function X509_get0_distinguishing_id(x: PX509): PASN1_OCTET_STRING; cdecl;
-procedure X509_REQ_set0_distinguishing_id(x: PX509_REQ; d_id: PASN1_OCTET_STRING); cdecl;
+function X509_REQ_set0_distinguishing_id(x: PX509_REQ; d_id: PASN1_OCTET_STRING): void; cdecl;
 function X509_REQ_get0_distinguishing_id(x: PX509_REQ): PASN1_OCTET_STRING; cdecl;
 function X509_alias_set1(x: PX509; name: PIdAnsiChar; len: TIdC_INT): TIdC_INT; cdecl;
 function X509_keyid_set1(x: PX509; id: PIdAnsiChar; len: TIdC_INT): TIdC_INT; cdecl;
 function X509_alias_get0(x: PX509; len: PIdC_INT): PIdAnsiChar; cdecl;
 function X509_keyid_get0(x: PX509; len: PIdC_INT): PIdAnsiChar; cdecl;
 function X509_REVOKED_new: PX509_REVOKED; cdecl;
-procedure X509_REVOKED_free(a: PX509_REVOKED); cdecl;
+function X509_REVOKED_free(a: PX509_REVOKED): void; cdecl;
 function d2i_X509_REVOKED(a: PPX509_REVOKED; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_REVOKED; cdecl;
 function i2d_X509_REVOKED(a: PX509_REVOKED; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function X509_REVOKED_it: PASN1_ITEM; cdecl;
 function X509_CRL_INFO_new: PX509_CRL_INFO; cdecl;
-procedure X509_CRL_INFO_free(a: PX509_CRL_INFO); cdecl;
+function X509_CRL_INFO_free(a: PX509_CRL_INFO): void; cdecl;
 function d2i_X509_CRL_INFO(a: PPX509_CRL_INFO; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_CRL_INFO; cdecl;
 function i2d_X509_CRL_INFO(a: PX509_CRL_INFO; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function X509_CRL_INFO_it: PASN1_ITEM; cdecl;
 function X509_CRL_new: PX509_CRL; cdecl;
-procedure X509_CRL_free(a: PX509_CRL); cdecl;
+function X509_CRL_free(a: PX509_CRL): void; cdecl;
 function d2i_X509_CRL(a: PPX509_CRL; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_CRL; cdecl;
 function i2d_X509_CRL(a: PX509_CRL; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function X509_CRL_it: PASN1_ITEM; cdecl;
@@ -2244,24 +2163,24 @@ function X509_CRL_add0_revoked(crl: PX509_CRL; rev: PX509_REVOKED): TIdC_INT; cd
 function X509_CRL_get0_by_serial(crl: PX509_CRL; ret: PPX509_REVOKED; serial: PASN1_INTEGER): TIdC_INT; cdecl;
 function X509_CRL_get0_by_cert(crl: PX509_CRL; ret: PPX509_REVOKED; x: PX509): TIdC_INT; cdecl;
 function X509_PKEY_new: PX509_PKEY; cdecl;
-procedure X509_PKEY_free(a: PX509_PKEY); cdecl;
+function X509_PKEY_free(a: PX509_PKEY): void; cdecl;
 function NETSCAPE_SPKI_new: PNETSCAPE_SPKI; cdecl;
-procedure NETSCAPE_SPKI_free(a: PNETSCAPE_SPKI); cdecl;
+function NETSCAPE_SPKI_free(a: PNETSCAPE_SPKI): void; cdecl;
 function d2i_NETSCAPE_SPKI(a: PPNETSCAPE_SPKI; _in: PPIdAnsiChar; len: TIdC_LONG): PNETSCAPE_SPKI; cdecl;
 function i2d_NETSCAPE_SPKI(a: PNETSCAPE_SPKI; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function NETSCAPE_SPKI_it: PASN1_ITEM; cdecl;
 function NETSCAPE_SPKAC_new: PNETSCAPE_SPKAC; cdecl;
-procedure NETSCAPE_SPKAC_free(a: PNETSCAPE_SPKAC); cdecl;
+function NETSCAPE_SPKAC_free(a: PNETSCAPE_SPKAC): void; cdecl;
 function d2i_NETSCAPE_SPKAC(a: PPNETSCAPE_SPKAC; _in: PPIdAnsiChar; len: TIdC_LONG): PNETSCAPE_SPKAC; cdecl;
 function i2d_NETSCAPE_SPKAC(a: PNETSCAPE_SPKAC; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function NETSCAPE_SPKAC_it: PASN1_ITEM; cdecl;
 function NETSCAPE_CERT_SEQUENCE_new: PNETSCAPE_CERT_SEQUENCE; cdecl;
-procedure NETSCAPE_CERT_SEQUENCE_free(a: PNETSCAPE_CERT_SEQUENCE); cdecl;
+function NETSCAPE_CERT_SEQUENCE_free(a: PNETSCAPE_CERT_SEQUENCE): void; cdecl;
 function d2i_NETSCAPE_CERT_SEQUENCE(a: PPNETSCAPE_CERT_SEQUENCE; _in: PPIdAnsiChar; len: TIdC_LONG): PNETSCAPE_CERT_SEQUENCE; cdecl;
 function i2d_NETSCAPE_CERT_SEQUENCE(a: PNETSCAPE_CERT_SEQUENCE; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function NETSCAPE_CERT_SEQUENCE_it: PASN1_ITEM; cdecl;
 function X509_INFO_new: PX509_INFO; cdecl;
-procedure X509_INFO_free(a: PX509_INFO); cdecl;
+function X509_INFO_free(a: PX509_INFO): void; cdecl;
 function X509_NAME_oneline(a: PX509_NAME; buf: PIdAnsiChar; size: TIdC_INT): PIdAnsiChar; cdecl;
 function ASN1_verify(i2d: TASN1_verify_i2d_cb; algor1: PX509_ALGOR; signature: PASN1_BIT_STRING; data: PIdAnsiChar; pkey: PEVP_PKEY): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ASN1_digest(i2d: TASN1_verify_i2d_cb; _type: PEVP_MD; data: PIdAnsiChar; md: PIdAnsiChar; len: PIdC_UINT): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
@@ -2291,7 +2210,7 @@ function X509_up_ref(x: PX509): TIdC_INT; cdecl;
 function X509_get_signature_type(x: PX509): TIdC_INT; cdecl;
 function X509_get_X509_PUBKEY(x: PX509): PX509_PUBKEY; cdecl;
 function X509_get0_extensions(x: PX509): Pstack_st_X509_EXTENSION; cdecl;
-procedure X509_get0_uids(x: PX509; piuid: PPASN1_BIT_STRING; psuid: PPASN1_BIT_STRING); cdecl;
+function X509_get0_uids(x: PX509; piuid: PPASN1_BIT_STRING; psuid: PPASN1_BIT_STRING): void; cdecl;
 function X509_get0_tbs_sigalg(x: PX509): PX509_ALGOR; cdecl;
 function X509_get0_pubkey(x: PX509): PEVP_PKEY; cdecl;
 function X509_get_pubkey(x: PX509): PEVP_PKEY; cdecl;
@@ -2300,8 +2219,8 @@ function X509_REQ_get_version(req: PX509_REQ): TIdC_LONG; cdecl;
 function X509_REQ_set_version(x: PX509_REQ; version: TIdC_LONG): TIdC_INT; cdecl;
 function X509_REQ_get_subject_name(req: PX509_REQ): PX509_NAME; cdecl;
 function X509_REQ_set_subject_name(req: PX509_REQ; name: PX509_NAME): TIdC_INT; cdecl;
-procedure X509_REQ_get0_signature(req: PX509_REQ; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR); cdecl;
-procedure X509_REQ_set0_signature(req: PX509_REQ; psig: PASN1_BIT_STRING); cdecl;
+function X509_REQ_get0_signature(req: PX509_REQ; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR): void; cdecl;
+function X509_REQ_set0_signature(req: PX509_REQ; psig: PASN1_BIT_STRING): void; cdecl;
 function X509_REQ_set1_signature_algo(req: PX509_REQ; palg: PX509_ALGOR): TIdC_INT; cdecl;
 function X509_REQ_get_signature_nid(req: PX509_REQ): TIdC_INT; cdecl;
 function i2d_re_X509_REQ_tbs(req: PX509_REQ; pp: PPIdAnsiChar): TIdC_INT; cdecl;
@@ -2311,7 +2230,7 @@ function X509_REQ_get0_pubkey(req: PX509_REQ): PEVP_PKEY; cdecl;
 function X509_REQ_get_X509_PUBKEY(req: PX509_REQ): PX509_PUBKEY; cdecl;
 function X509_REQ_extension_nid(nid: TIdC_INT): TIdC_INT; cdecl;
 function X509_REQ_get_extension_nids: PIdC_INT; cdecl;
-procedure X509_REQ_set_extension_nids(nids: PIdC_INT); cdecl;
+function X509_REQ_set_extension_nids(nids: PIdC_INT): void; cdecl;
 function X509_REQ_get_extensions(req: PX509_REQ): Pstack_st_X509_EXTENSION; cdecl;
 function X509_REQ_add_extensions_nid(req: PX509_REQ; exts: Pstack_st_X509_EXTENSION; nid: TIdC_INT): TIdC_INT; cdecl;
 function X509_REQ_add_extensions(req: PX509_REQ; ext: Pstack_st_X509_EXTENSION): TIdC_INT; cdecl;
@@ -2337,7 +2256,7 @@ function X509_CRL_get_issuer(crl: PX509_CRL): PX509_NAME; cdecl;
 function X509_CRL_get0_extensions(crl: PX509_CRL): Pstack_st_X509_EXTENSION; cdecl;
 function X509_CRL_get_REVOKED(crl: PX509_CRL): Pstack_st_X509_REVOKED; cdecl;
 function X509_CRL_get0_tbs_sigalg(crl: PX509_CRL): PX509_ALGOR; cdecl;
-procedure X509_CRL_get0_signature(crl: PX509_CRL; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR); cdecl;
+function X509_CRL_get0_signature(crl: PX509_CRL; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR): void; cdecl;
 function X509_CRL_get_signature_nid(crl: PX509_CRL): TIdC_INT; cdecl;
 function i2d_re_X509_CRL_tbs(req: PX509_CRL; pp: PPIdAnsiChar): TIdC_INT; cdecl;
 function X509_REVOKED_get0_serialNumber(x: PX509_REVOKED): PASN1_INTEGER; cdecl;
@@ -2350,7 +2269,7 @@ function X509_REQ_check_private_key(req: PX509_REQ; pkey: PEVP_PKEY): TIdC_INT; 
 function X509_check_private_key(cert: PX509; pkey: PEVP_PKEY): TIdC_INT; cdecl;
 function X509_chain_check_suiteb(perror_depth: PIdC_INT; x: PX509; chain: Pstack_st_X509; flags: TIdC_ULONG): TIdC_INT; cdecl;
 function X509_CRL_check_suiteb(crl: PX509_CRL; pk: PEVP_PKEY; flags: TIdC_ULONG): TIdC_INT; cdecl;
-procedure OSSL_STACK_OF_X509_free(certs: Pstack_st_X509); cdecl;
+function OSSL_STACK_OF_X509_free(certs: Pstack_st_X509): void; cdecl;
 function X509_chain_up_ref(chain: Pstack_st_X509): Pstack_st_X509; cdecl;
 function X509_issuer_and_serial_cmp(a: PX509; b: PX509): TIdC_INT; cdecl;
 function X509_issuer_and_serial_hash(a: PX509): TIdC_ULONG; cdecl;
@@ -2478,27 +2397,27 @@ function EVP_PKEY_add1_attr_by_txt(key: PEVP_PKEY; attrname: PIdAnsiChar; _type:
 function X509_find_by_issuer_and_serial(sk: Pstack_st_X509; name: PX509_NAME; serial: PASN1_INTEGER): PX509; cdecl;
 function X509_find_by_subject(sk: Pstack_st_X509; name: PX509_NAME): PX509; cdecl;
 function PBEPARAM_new: PPBEPARAM; cdecl;
-procedure PBEPARAM_free(a: PPBEPARAM); cdecl;
+function PBEPARAM_free(a: PPBEPARAM): void; cdecl;
 function d2i_PBEPARAM(a: PPPBEPARAM; _in: PPIdAnsiChar; len: TIdC_LONG): PPBEPARAM; cdecl;
 function i2d_PBEPARAM(a: PPBEPARAM; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function PBEPARAM_it: PASN1_ITEM; cdecl;
 function PBE2PARAM_new: PPBE2PARAM; cdecl;
-procedure PBE2PARAM_free(a: PPBE2PARAM); cdecl;
+function PBE2PARAM_free(a: PPBE2PARAM): void; cdecl;
 function d2i_PBE2PARAM(a: PPPBE2PARAM; _in: PPIdAnsiChar; len: TIdC_LONG): PPBE2PARAM; cdecl;
 function i2d_PBE2PARAM(a: PPBE2PARAM; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function PBE2PARAM_it: PASN1_ITEM; cdecl;
 function PBKDF2PARAM_new: PPBKDF2PARAM; cdecl;
-procedure PBKDF2PARAM_free(a: PPBKDF2PARAM); cdecl;
+function PBKDF2PARAM_free(a: PPBKDF2PARAM): void; cdecl;
 function d2i_PBKDF2PARAM(a: PPPBKDF2PARAM; _in: PPIdAnsiChar; len: TIdC_LONG): PPBKDF2PARAM; cdecl;
 function i2d_PBKDF2PARAM(a: PPBKDF2PARAM; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function PBKDF2PARAM_it: PASN1_ITEM; cdecl;
 function PBMAC1PARAM_new: PPBMAC1PARAM; cdecl;
-procedure PBMAC1PARAM_free(a: PPBMAC1PARAM); cdecl;
+function PBMAC1PARAM_free(a: PPBMAC1PARAM): void; cdecl;
 function d2i_PBMAC1PARAM(a: PPPBMAC1PARAM; _in: PPIdAnsiChar; len: TIdC_LONG): PPBMAC1PARAM; cdecl;
 function i2d_PBMAC1PARAM(a: PPBMAC1PARAM; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function PBMAC1PARAM_it: PASN1_ITEM; cdecl;
 function SCRYPT_PARAMS_new: PSCRYPT_PARAMS; cdecl;
-procedure SCRYPT_PARAMS_free(a: PSCRYPT_PARAMS); cdecl;
+function SCRYPT_PARAMS_free(a: PSCRYPT_PARAMS): void; cdecl;
 function d2i_SCRYPT_PARAMS(a: PPSCRYPT_PARAMS; _in: PPIdAnsiChar; len: TIdC_LONG): PSCRYPT_PARAMS; cdecl;
 function i2d_SCRYPT_PARAMS(a: PSCRYPT_PARAMS; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function SCRYPT_PARAMS_it: PASN1_ITEM; cdecl;
@@ -2509,12 +2428,12 @@ function PKCS5_pbe_set_ex(alg: TIdC_INT; iter: TIdC_INT; salt: PIdAnsiChar; salt
 function PKCS5_pbe2_set(cipher: PEVP_CIPHER; iter: TIdC_INT; salt: PIdAnsiChar; saltlen: TIdC_INT): PX509_ALGOR; cdecl;
 function PKCS5_pbe2_set_iv(cipher: PEVP_CIPHER; iter: TIdC_INT; salt: PIdAnsiChar; saltlen: TIdC_INT; aiv: PIdAnsiChar; prf_nid: TIdC_INT): PX509_ALGOR; cdecl;
 function PKCS5_pbe2_set_iv_ex(cipher: PEVP_CIPHER; iter: TIdC_INT; salt: PIdAnsiChar; saltlen: TIdC_INT; aiv: PIdAnsiChar; prf_nid: TIdC_INT; libctx: POSSL_LIB_CTX): PX509_ALGOR; cdecl;
-function PKCS5_pbe2_set_scrypt(cipher: PEVP_CIPHER; salt: PIdAnsiChar; saltlen: TIdC_INT; aiv: PIdAnsiChar; N: UInt64; r: UInt64; p: UInt64): PX509_ALGOR; cdecl;
+function PKCS5_pbe2_set_scrypt(cipher: PEVP_CIPHER; salt: PIdAnsiChar; saltlen: TIdC_INT; aiv: PIdAnsiChar; N: TIdC_UINT64; r: TIdC_UINT64; p: TIdC_UINT64): PX509_ALGOR; cdecl;
 function PKCS5_pbkdf2_set(iter: TIdC_INT; salt: PIdAnsiChar; saltlen: TIdC_INT; prf_nid: TIdC_INT; keylen: TIdC_INT): PX509_ALGOR; cdecl;
 function PKCS5_pbkdf2_set_ex(iter: TIdC_INT; salt: PIdAnsiChar; saltlen: TIdC_INT; prf_nid: TIdC_INT; keylen: TIdC_INT; libctx: POSSL_LIB_CTX): PX509_ALGOR; cdecl;
 function PBMAC1_get1_pbkdf2_param(macalg: PX509_ALGOR): PPBKDF2PARAM; cdecl;
 function PKCS8_PRIV_KEY_INFO_new: PPKCS8_PRIV_KEY_INFO; cdecl;
-procedure PKCS8_PRIV_KEY_INFO_free(a: PPKCS8_PRIV_KEY_INFO); cdecl;
+function PKCS8_PRIV_KEY_INFO_free(a: PPKCS8_PRIV_KEY_INFO): void; cdecl;
 function d2i_PKCS8_PRIV_KEY_INFO(a: PPPKCS8_PRIV_KEY_INFO; _in: PPIdAnsiChar; len: TIdC_LONG): PPKCS8_PRIV_KEY_INFO; cdecl;
 function i2d_PKCS8_PRIV_KEY_INFO(a: PPKCS8_PRIV_KEY_INFO; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function PKCS8_PRIV_KEY_INFO_it: PASN1_ITEM; cdecl;
@@ -2527,7 +2446,7 @@ function PKCS8_pkey_get0_attrs(p8: PPKCS8_PRIV_KEY_INFO): Pstack_st_X509_ATTRIBU
 function PKCS8_pkey_add1_attr(p8: PPKCS8_PRIV_KEY_INFO; attr: PX509_ATTRIBUTE): TIdC_INT; cdecl;
 function PKCS8_pkey_add1_attr_by_NID(p8: PPKCS8_PRIV_KEY_INFO; nid: TIdC_INT; _type: TIdC_INT; bytes: PIdAnsiChar; len: TIdC_INT): TIdC_INT; cdecl;
 function PKCS8_pkey_add1_attr_by_OBJ(p8: PPKCS8_PRIV_KEY_INFO; obj: PASN1_OBJECT; _type: TIdC_INT; bytes: PIdAnsiChar; len: TIdC_INT): TIdC_INT; cdecl;
-procedure X509_PUBKEY_set0_public_key(pub: PX509_PUBKEY; penc: PIdAnsiChar; penclen: TIdC_INT); cdecl;
+function X509_PUBKEY_set0_public_key(pub: PX509_PUBKEY; penc: PIdAnsiChar; penclen: TIdC_INT): void; cdecl;
 function X509_PUBKEY_set0_param(pub: PX509_PUBKEY; aobj: PASN1_OBJECT; ptype: TIdC_INT; pval: Pointer; penc: PIdAnsiChar; penclen: TIdC_INT): TIdC_INT; cdecl;
 function X509_PUBKEY_get0_param(ppkalg: PPASN1_OBJECT; pk: PPIdAnsiChar; ppklen: PIdC_INT; pa: PPX509_ALGOR; pub: PX509_PUBKEY): TIdC_INT; cdecl;
 function X509_PUBKEY_eq(a: PX509_PUBKEY; b: PX509_PUBKEY): TIdC_INT; cdecl;
@@ -2537,32 +2456,301 @@ function X509_PUBKEY_eq(a: PX509_PUBKEY; b: PX509_PUBKEY): TIdC_INT; cdecl;
 // INLINE OR MACRO ROUTINES
 // =============================================================================
 
-function X509_http_nbio(rctx: Pointer; pcert: Pointer): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function X509_http_nbio(rctx: Pointer; pcert: Pointer): TIdC_INT; cdecl;
 
-function X509_CRL_http_nbio(rctx: Pointer; pcrl: Pointer): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function X509_CRL_http_nbio(rctx: Pointer; pcrl: Pointer): TIdC_INT; cdecl;
 
-function X509_NAME_hash(x: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function X509_NAME_hash(x: Pointer): TIdC_INT; cdecl;
 
-function X509_get_notBefore(x: PX509): PASN1_TIME; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function X509_get_notBefore(x: PX509): PASN1_TIME; cdecl;
 
-function X509_get_notAfter(x: PX509): PASN1_TIME; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function X509_get_notAfter(x: PX509): PASN1_TIME; cdecl;
 
-function X509_set_notBefore(x: PX509; tm: PASN1_TIME): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function X509_set_notBefore(x: PX509; tm: PASN1_TIME): TIdC_INT; cdecl;
 
-function X509_set_notAfter(x: PX509; tm: PASN1_TIME): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function X509_set_notAfter(x: PX509; tm: PASN1_TIME): TIdC_INT; cdecl;
 
-function X509_CRL_set_lastUpdate(x: PX509_CRL; tm: PASN1_TIME): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function X509_CRL_set_lastUpdate(x: PX509_CRL; tm: PASN1_TIME): TIdC_INT; cdecl;
 
-function X509_CRL_set_nextUpdate(x: PX509_CRL; tm: PASN1_TIME): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function X509_CRL_set_nextUpdate(x: PX509_CRL; tm: PASN1_TIME): TIdC_INT; cdecl;
+
+
+// =============================================================================
+// OPENSSL STACK DEFINITIONS
+// =============================================================================
+type
+  { TODO 1 -copenssl stack X509_NAME definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_X509_NAME = Pointer;
+  {$EXTERNALSYM PSTACK_OF_X509_NAME}
+
+  { Original Stack Macros for X509_NAME:
+    SKM_DEFINE_STACK_OF_INTERNAL(X509_NAME, X509_NAME, X509_NAME)
+    sk_X509_NAME_num(sk) OPENSSL_sk_num(ossl_check_const_X509_NAME_sk_type(sk))
+    sk_X509_NAME_value(sk, idx) ((X509_NAME *)OPENSSL_sk_value(ossl_check_const_X509_NAME_sk_type(sk), (idx)))
+    sk_X509_NAME_new(cmp) ((STACK_OF(X509_NAME) *)OPENSSL_sk_new(ossl_check_X509_NAME_compfunc_type(cmp)))
+    sk_X509_NAME_new_null() ((STACK_OF(X509_NAME) *)OPENSSL_sk_new_null())
+    sk_X509_NAME_new_reserve(cmp, n) ((STACK_OF(X509_NAME) *)OPENSSL_sk_new_reserve(ossl_check_X509_NAME_compfunc_type(cmp), (n)))
+    sk_X509_NAME_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_X509_NAME_sk_type(sk), (n))
+    sk_X509_NAME_free(sk) OPENSSL_sk_free(ossl_check_X509_NAME_sk_type(sk))
+    sk_X509_NAME_zero(sk) OPENSSL_sk_zero(ossl_check_X509_NAME_sk_type(sk))
+    sk_X509_NAME_delete(sk, i) ((X509_NAME *)OPENSSL_sk_delete(ossl_check_X509_NAME_sk_type(sk), (i)))
+    sk_X509_NAME_delete_ptr(sk, ptr) ((X509_NAME *)OPENSSL_sk_delete_ptr(ossl_check_X509_NAME_sk_type(sk), ossl_check_X509_NAME_type(ptr)))
+    sk_X509_NAME_push(sk, ptr) OPENSSL_sk_push(ossl_check_X509_NAME_sk_type(sk), ossl_check_X509_NAME_type(ptr))
+    sk_X509_NAME_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_X509_NAME_sk_type(sk), ossl_check_X509_NAME_type(ptr))
+    sk_X509_NAME_pop(sk) ((X509_NAME *)OPENSSL_sk_pop(ossl_check_X509_NAME_sk_type(sk)))
+    sk_X509_NAME_shift(sk) ((X509_NAME *)OPENSSL_sk_shift(ossl_check_X509_NAME_sk_type(sk)))
+    sk_X509_NAME_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_X509_NAME_sk_type(sk), ossl_check_X509_NAME_freefunc_type(freefunc))
+    sk_X509_NAME_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_X509_NAME_sk_type(sk), ossl_check_X509_NAME_type(ptr), (idx))
+    sk_X509_NAME_set(sk, idx, ptr) ((X509_NAME *)OPENSSL_sk_set(ossl_check_X509_NAME_sk_type(sk), (idx), ossl_check_X509_NAME_type(ptr)))
+    sk_X509_NAME_find(sk, ptr) OPENSSL_sk_find(ossl_check_X509_NAME_sk_type(sk), ossl_check_X509_NAME_type(ptr))
+    sk_X509_NAME_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_X509_NAME_sk_type(sk), ossl_check_X509_NAME_type(ptr))
+    sk_X509_NAME_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_X509_NAME_sk_type(sk), ossl_check_X509_NAME_type(ptr), pnum)
+    sk_X509_NAME_sort(sk) OPENSSL_sk_sort(ossl_check_X509_NAME_sk_type(sk))
+    sk_X509_NAME_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_X509_NAME_sk_type(sk))
+    sk_X509_NAME_dup(sk) ((STACK_OF(X509_NAME) *)OPENSSL_sk_dup(ossl_check_const_X509_NAME_sk_type(sk)))
+    sk_X509_NAME_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(X509_NAME) *)OPENSSL_sk_deep_copy(ossl_check_const_X509_NAME_sk_type(sk), ossl_check_X509_NAME_copyfunc_type(copyfunc), ossl_check_X509_NAME_freefunc_type(freefunc)))
+    sk_X509_NAME_set_cmp_func(sk, cmp) ((sk_X509_NAME_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_X509_NAME_sk_type(sk), ossl_check_X509_NAME_compfunc_type(cmp)))
+    sk_X509_NAME_ENTRY_num(sk) OPENSSL_sk_num(ossl_check_const_X509_NAME_ENTRY_sk_type(sk))
+    sk_X509_NAME_ENTRY_value(sk, idx) ((X509_NAME_ENTRY *)OPENSSL_sk_value(ossl_check_const_X509_NAME_ENTRY_sk_type(sk), (idx)))
+    sk_X509_NAME_ENTRY_new(cmp) ((STACK_OF(X509_NAME_ENTRY) *)OPENSSL_sk_new(ossl_check_X509_NAME_ENTRY_compfunc_type(cmp)))
+    sk_X509_NAME_ENTRY_new_null() ((STACK_OF(X509_NAME_ENTRY) *)OPENSSL_sk_new_null())
+    sk_X509_NAME_ENTRY_new_reserve(cmp, n) ((STACK_OF(X509_NAME_ENTRY) *)OPENSSL_sk_new_reserve(ossl_check_X509_NAME_ENTRY_compfunc_type(cmp), (n)))
+    sk_X509_NAME_ENTRY_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_X509_NAME_ENTRY_sk_type(sk), (n))
+    sk_X509_NAME_ENTRY_free(sk) OPENSSL_sk_free(ossl_check_X509_NAME_ENTRY_sk_type(sk))
+    sk_X509_NAME_ENTRY_zero(sk) OPENSSL_sk_zero(ossl_check_X509_NAME_ENTRY_sk_type(sk))
+    sk_X509_NAME_ENTRY_delete(sk, i) ((X509_NAME_ENTRY *)OPENSSL_sk_delete(ossl_check_X509_NAME_ENTRY_sk_type(sk), (i)))
+    sk_X509_NAME_ENTRY_delete_ptr(sk, ptr) ((X509_NAME_ENTRY *)OPENSSL_sk_delete_ptr(ossl_check_X509_NAME_ENTRY_sk_type(sk), ossl_check_X509_NAME_ENTRY_type(ptr)))
+    sk_X509_NAME_ENTRY_push(sk, ptr) OPENSSL_sk_push(ossl_check_X509_NAME_ENTRY_sk_type(sk), ossl_check_X509_NAME_ENTRY_type(ptr))
+    sk_X509_NAME_ENTRY_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_X509_NAME_ENTRY_sk_type(sk), ossl_check_X509_NAME_ENTRY_type(ptr))
+    sk_X509_NAME_ENTRY_pop(sk) ((X509_NAME_ENTRY *)OPENSSL_sk_pop(ossl_check_X509_NAME_ENTRY_sk_type(sk)))
+    sk_X509_NAME_ENTRY_shift(sk) ((X509_NAME_ENTRY *)OPENSSL_sk_shift(ossl_check_X509_NAME_ENTRY_sk_type(sk)))
+    sk_X509_NAME_ENTRY_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_X509_NAME_ENTRY_sk_type(sk), ossl_check_X509_NAME_ENTRY_freefunc_type(freefunc))
+    sk_X509_NAME_ENTRY_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_X509_NAME_ENTRY_sk_type(sk), ossl_check_X509_NAME_ENTRY_type(ptr), (idx))
+    sk_X509_NAME_ENTRY_set(sk, idx, ptr) ((X509_NAME_ENTRY *)OPENSSL_sk_set(ossl_check_X509_NAME_ENTRY_sk_type(sk), (idx), ossl_check_X509_NAME_ENTRY_type(ptr)))
+    sk_X509_NAME_ENTRY_find(sk, ptr) OPENSSL_sk_find(ossl_check_X509_NAME_ENTRY_sk_type(sk), ossl_check_X509_NAME_ENTRY_type(ptr))
+    sk_X509_NAME_ENTRY_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_X509_NAME_ENTRY_sk_type(sk), ossl_check_X509_NAME_ENTRY_type(ptr))
+    sk_X509_NAME_ENTRY_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_X509_NAME_ENTRY_sk_type(sk), ossl_check_X509_NAME_ENTRY_type(ptr), pnum)
+    sk_X509_NAME_ENTRY_sort(sk) OPENSSL_sk_sort(ossl_check_X509_NAME_ENTRY_sk_type(sk))
+    sk_X509_NAME_ENTRY_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_X509_NAME_ENTRY_sk_type(sk))
+    sk_X509_NAME_ENTRY_dup(sk) ((STACK_OF(X509_NAME_ENTRY) *)OPENSSL_sk_dup(ossl_check_const_X509_NAME_ENTRY_sk_type(sk)))
+    sk_X509_NAME_ENTRY_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(X509_NAME_ENTRY) *)OPENSSL_sk_deep_copy(ossl_check_const_X509_NAME_ENTRY_sk_type(sk), ossl_check_X509_NAME_ENTRY_copyfunc_type(copyfunc), ossl_check_X509_NAME_ENTRY_freefunc_type(freefunc)))
+    sk_X509_NAME_ENTRY_set_cmp_func(sk, cmp) ((sk_X509_NAME_ENTRY_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_X509_NAME_ENTRY_sk_type(sk), ossl_check_X509_NAME_ENTRY_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack X509 definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_X509 = Pointer;
+  {$EXTERNALSYM PSTACK_OF_X509}
+
+  { Original Stack Macros for X509:
+    SKM_DEFINE_STACK_OF_INTERNAL(X509, X509, X509)
+    sk_X509_num(sk) OPENSSL_sk_num(ossl_check_const_X509_sk_type(sk))
+    sk_X509_value(sk, idx) ((X509 *)OPENSSL_sk_value(ossl_check_const_X509_sk_type(sk), (idx)))
+    sk_X509_new(cmp) ((STACK_OF(X509) *)OPENSSL_sk_new(ossl_check_X509_compfunc_type(cmp)))
+    sk_X509_new_null() ((STACK_OF(X509) *)OPENSSL_sk_new_null())
+    sk_X509_new_reserve(cmp, n) ((STACK_OF(X509) *)OPENSSL_sk_new_reserve(ossl_check_X509_compfunc_type(cmp), (n)))
+    sk_X509_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_X509_sk_type(sk), (n))
+    sk_X509_free(sk) OPENSSL_sk_free(ossl_check_X509_sk_type(sk))
+    sk_X509_zero(sk) OPENSSL_sk_zero(ossl_check_X509_sk_type(sk))
+    sk_X509_delete(sk, i) ((X509 *)OPENSSL_sk_delete(ossl_check_X509_sk_type(sk), (i)))
+    sk_X509_delete_ptr(sk, ptr) ((X509 *)OPENSSL_sk_delete_ptr(ossl_check_X509_sk_type(sk), ossl_check_X509_type(ptr)))
+    sk_X509_push(sk, ptr) OPENSSL_sk_push(ossl_check_X509_sk_type(sk), ossl_check_X509_type(ptr))
+    sk_X509_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_X509_sk_type(sk), ossl_check_X509_type(ptr))
+    sk_X509_pop(sk) ((X509 *)OPENSSL_sk_pop(ossl_check_X509_sk_type(sk)))
+    sk_X509_shift(sk) ((X509 *)OPENSSL_sk_shift(ossl_check_X509_sk_type(sk)))
+    sk_X509_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_X509_sk_type(sk), ossl_check_X509_freefunc_type(freefunc))
+    sk_X509_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_X509_sk_type(sk), ossl_check_X509_type(ptr), (idx))
+    sk_X509_set(sk, idx, ptr) ((X509 *)OPENSSL_sk_set(ossl_check_X509_sk_type(sk), (idx), ossl_check_X509_type(ptr)))
+    sk_X509_find(sk, ptr) OPENSSL_sk_find(ossl_check_X509_sk_type(sk), ossl_check_X509_type(ptr))
+    sk_X509_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_X509_sk_type(sk), ossl_check_X509_type(ptr))
+    sk_X509_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_X509_sk_type(sk), ossl_check_X509_type(ptr), pnum)
+    sk_X509_sort(sk) OPENSSL_sk_sort(ossl_check_X509_sk_type(sk))
+    sk_X509_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_X509_sk_type(sk))
+    sk_X509_dup(sk) ((STACK_OF(X509) *)OPENSSL_sk_dup(ossl_check_const_X509_sk_type(sk)))
+    sk_X509_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(X509) *)OPENSSL_sk_deep_copy(ossl_check_const_X509_sk_type(sk), ossl_check_X509_copyfunc_type(copyfunc), ossl_check_X509_freefunc_type(freefunc)))
+    sk_X509_set_cmp_func(sk, cmp) ((sk_X509_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_X509_sk_type(sk), ossl_check_X509_compfunc_type(cmp)))
+    sk_X509_REVOKED_num(sk) OPENSSL_sk_num(ossl_check_const_X509_REVOKED_sk_type(sk))
+    sk_X509_REVOKED_value(sk, idx) ((X509_REVOKED *)OPENSSL_sk_value(ossl_check_const_X509_REVOKED_sk_type(sk), (idx)))
+    sk_X509_REVOKED_new(cmp) ((STACK_OF(X509_REVOKED) *)OPENSSL_sk_new(ossl_check_X509_REVOKED_compfunc_type(cmp)))
+    sk_X509_REVOKED_new_null() ((STACK_OF(X509_REVOKED) *)OPENSSL_sk_new_null())
+    sk_X509_REVOKED_new_reserve(cmp, n) ((STACK_OF(X509_REVOKED) *)OPENSSL_sk_new_reserve(ossl_check_X509_REVOKED_compfunc_type(cmp), (n)))
+    sk_X509_REVOKED_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_X509_REVOKED_sk_type(sk), (n))
+    sk_X509_REVOKED_free(sk) OPENSSL_sk_free(ossl_check_X509_REVOKED_sk_type(sk))
+    sk_X509_REVOKED_zero(sk) OPENSSL_sk_zero(ossl_check_X509_REVOKED_sk_type(sk))
+    sk_X509_REVOKED_delete(sk, i) ((X509_REVOKED *)OPENSSL_sk_delete(ossl_check_X509_REVOKED_sk_type(sk), (i)))
+    sk_X509_REVOKED_delete_ptr(sk, ptr) ((X509_REVOKED *)OPENSSL_sk_delete_ptr(ossl_check_X509_REVOKED_sk_type(sk), ossl_check_X509_REVOKED_type(ptr)))
+    sk_X509_REVOKED_push(sk, ptr) OPENSSL_sk_push(ossl_check_X509_REVOKED_sk_type(sk), ossl_check_X509_REVOKED_type(ptr))
+    sk_X509_REVOKED_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_X509_REVOKED_sk_type(sk), ossl_check_X509_REVOKED_type(ptr))
+    sk_X509_REVOKED_pop(sk) ((X509_REVOKED *)OPENSSL_sk_pop(ossl_check_X509_REVOKED_sk_type(sk)))
+    sk_X509_REVOKED_shift(sk) ((X509_REVOKED *)OPENSSL_sk_shift(ossl_check_X509_REVOKED_sk_type(sk)))
+    sk_X509_REVOKED_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_X509_REVOKED_sk_type(sk), ossl_check_X509_REVOKED_freefunc_type(freefunc))
+    sk_X509_REVOKED_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_X509_REVOKED_sk_type(sk), ossl_check_X509_REVOKED_type(ptr), (idx))
+    sk_X509_REVOKED_set(sk, idx, ptr) ((X509_REVOKED *)OPENSSL_sk_set(ossl_check_X509_REVOKED_sk_type(sk), (idx), ossl_check_X509_REVOKED_type(ptr)))
+    sk_X509_REVOKED_find(sk, ptr) OPENSSL_sk_find(ossl_check_X509_REVOKED_sk_type(sk), ossl_check_X509_REVOKED_type(ptr))
+    sk_X509_REVOKED_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_X509_REVOKED_sk_type(sk), ossl_check_X509_REVOKED_type(ptr))
+    sk_X509_REVOKED_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_X509_REVOKED_sk_type(sk), ossl_check_X509_REVOKED_type(ptr), pnum)
+    sk_X509_REVOKED_sort(sk) OPENSSL_sk_sort(ossl_check_X509_REVOKED_sk_type(sk))
+    sk_X509_REVOKED_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_X509_REVOKED_sk_type(sk))
+    sk_X509_REVOKED_dup(sk) ((STACK_OF(X509_REVOKED) *)OPENSSL_sk_dup(ossl_check_const_X509_REVOKED_sk_type(sk)))
+    sk_X509_REVOKED_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(X509_REVOKED) *)OPENSSL_sk_deep_copy(ossl_check_const_X509_REVOKED_sk_type(sk), ossl_check_X509_REVOKED_copyfunc_type(copyfunc), ossl_check_X509_REVOKED_freefunc_type(freefunc)))
+    sk_X509_REVOKED_set_cmp_func(sk, cmp) ((sk_X509_REVOKED_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_X509_REVOKED_sk_type(sk), ossl_check_X509_REVOKED_compfunc_type(cmp)))
+    sk_X509_CRL_num(sk) OPENSSL_sk_num(ossl_check_const_X509_CRL_sk_type(sk))
+    sk_X509_CRL_value(sk, idx) ((X509_CRL *)OPENSSL_sk_value(ossl_check_const_X509_CRL_sk_type(sk), (idx)))
+    sk_X509_CRL_new(cmp) ((STACK_OF(X509_CRL) *)OPENSSL_sk_new(ossl_check_X509_CRL_compfunc_type(cmp)))
+    sk_X509_CRL_new_null() ((STACK_OF(X509_CRL) *)OPENSSL_sk_new_null())
+    sk_X509_CRL_new_reserve(cmp, n) ((STACK_OF(X509_CRL) *)OPENSSL_sk_new_reserve(ossl_check_X509_CRL_compfunc_type(cmp), (n)))
+    sk_X509_CRL_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_X509_CRL_sk_type(sk), (n))
+    sk_X509_CRL_free(sk) OPENSSL_sk_free(ossl_check_X509_CRL_sk_type(sk))
+    sk_X509_CRL_zero(sk) OPENSSL_sk_zero(ossl_check_X509_CRL_sk_type(sk))
+    sk_X509_CRL_delete(sk, i) ((X509_CRL *)OPENSSL_sk_delete(ossl_check_X509_CRL_sk_type(sk), (i)))
+    sk_X509_CRL_delete_ptr(sk, ptr) ((X509_CRL *)OPENSSL_sk_delete_ptr(ossl_check_X509_CRL_sk_type(sk), ossl_check_X509_CRL_type(ptr)))
+    sk_X509_CRL_push(sk, ptr) OPENSSL_sk_push(ossl_check_X509_CRL_sk_type(sk), ossl_check_X509_CRL_type(ptr))
+    sk_X509_CRL_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_X509_CRL_sk_type(sk), ossl_check_X509_CRL_type(ptr))
+    sk_X509_CRL_pop(sk) ((X509_CRL *)OPENSSL_sk_pop(ossl_check_X509_CRL_sk_type(sk)))
+    sk_X509_CRL_shift(sk) ((X509_CRL *)OPENSSL_sk_shift(ossl_check_X509_CRL_sk_type(sk)))
+    sk_X509_CRL_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_X509_CRL_sk_type(sk), ossl_check_X509_CRL_freefunc_type(freefunc))
+    sk_X509_CRL_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_X509_CRL_sk_type(sk), ossl_check_X509_CRL_type(ptr), (idx))
+    sk_X509_CRL_set(sk, idx, ptr) ((X509_CRL *)OPENSSL_sk_set(ossl_check_X509_CRL_sk_type(sk), (idx), ossl_check_X509_CRL_type(ptr)))
+    sk_X509_CRL_find(sk, ptr) OPENSSL_sk_find(ossl_check_X509_CRL_sk_type(sk), ossl_check_X509_CRL_type(ptr))
+    sk_X509_CRL_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_X509_CRL_sk_type(sk), ossl_check_X509_CRL_type(ptr))
+    sk_X509_CRL_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_X509_CRL_sk_type(sk), ossl_check_X509_CRL_type(ptr), pnum)
+    sk_X509_CRL_sort(sk) OPENSSL_sk_sort(ossl_check_X509_CRL_sk_type(sk))
+    sk_X509_CRL_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_X509_CRL_sk_type(sk))
+    sk_X509_CRL_dup(sk) ((STACK_OF(X509_CRL) *)OPENSSL_sk_dup(ossl_check_const_X509_CRL_sk_type(sk)))
+    sk_X509_CRL_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(X509_CRL) *)OPENSSL_sk_deep_copy(ossl_check_const_X509_CRL_sk_type(sk), ossl_check_X509_CRL_copyfunc_type(copyfunc), ossl_check_X509_CRL_freefunc_type(freefunc)))
+    sk_X509_CRL_set_cmp_func(sk, cmp) ((sk_X509_CRL_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_X509_CRL_sk_type(sk), ossl_check_X509_CRL_compfunc_type(cmp)))
+    sk_X509_EXTENSION_num(sk) OPENSSL_sk_num(ossl_check_const_X509_EXTENSION_sk_type(sk))
+    sk_X509_EXTENSION_value(sk, idx) ((X509_EXTENSION *)OPENSSL_sk_value(ossl_check_const_X509_EXTENSION_sk_type(sk), (idx)))
+    sk_X509_EXTENSION_new(cmp) ((STACK_OF(X509_EXTENSION) *)OPENSSL_sk_new(ossl_check_X509_EXTENSION_compfunc_type(cmp)))
+    sk_X509_EXTENSION_new_null() ((STACK_OF(X509_EXTENSION) *)OPENSSL_sk_new_null())
+    sk_X509_EXTENSION_new_reserve(cmp, n) ((STACK_OF(X509_EXTENSION) *)OPENSSL_sk_new_reserve(ossl_check_X509_EXTENSION_compfunc_type(cmp), (n)))
+    sk_X509_EXTENSION_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_X509_EXTENSION_sk_type(sk), (n))
+    sk_X509_EXTENSION_free(sk) OPENSSL_sk_free(ossl_check_X509_EXTENSION_sk_type(sk))
+    sk_X509_EXTENSION_zero(sk) OPENSSL_sk_zero(ossl_check_X509_EXTENSION_sk_type(sk))
+    sk_X509_EXTENSION_delete(sk, i) ((X509_EXTENSION *)OPENSSL_sk_delete(ossl_check_X509_EXTENSION_sk_type(sk), (i)))
+    sk_X509_EXTENSION_delete_ptr(sk, ptr) ((X509_EXTENSION *)OPENSSL_sk_delete_ptr(ossl_check_X509_EXTENSION_sk_type(sk), ossl_check_X509_EXTENSION_type(ptr)))
+    sk_X509_EXTENSION_push(sk, ptr) OPENSSL_sk_push(ossl_check_X509_EXTENSION_sk_type(sk), ossl_check_X509_EXTENSION_type(ptr))
+    sk_X509_EXTENSION_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_X509_EXTENSION_sk_type(sk), ossl_check_X509_EXTENSION_type(ptr))
+    sk_X509_EXTENSION_pop(sk) ((X509_EXTENSION *)OPENSSL_sk_pop(ossl_check_X509_EXTENSION_sk_type(sk)))
+    sk_X509_EXTENSION_shift(sk) ((X509_EXTENSION *)OPENSSL_sk_shift(ossl_check_X509_EXTENSION_sk_type(sk)))
+    sk_X509_EXTENSION_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_X509_EXTENSION_sk_type(sk), ossl_check_X509_EXTENSION_freefunc_type(freefunc))
+    sk_X509_EXTENSION_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_X509_EXTENSION_sk_type(sk), ossl_check_X509_EXTENSION_type(ptr), (idx))
+    sk_X509_EXTENSION_set(sk, idx, ptr) ((X509_EXTENSION *)OPENSSL_sk_set(ossl_check_X509_EXTENSION_sk_type(sk), (idx), ossl_check_X509_EXTENSION_type(ptr)))
+    sk_X509_EXTENSION_find(sk, ptr) OPENSSL_sk_find(ossl_check_X509_EXTENSION_sk_type(sk), ossl_check_X509_EXTENSION_type(ptr))
+    sk_X509_EXTENSION_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_X509_EXTENSION_sk_type(sk), ossl_check_X509_EXTENSION_type(ptr))
+    sk_X509_EXTENSION_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_X509_EXTENSION_sk_type(sk), ossl_check_X509_EXTENSION_type(ptr), pnum)
+    sk_X509_EXTENSION_sort(sk) OPENSSL_sk_sort(ossl_check_X509_EXTENSION_sk_type(sk))
+    sk_X509_EXTENSION_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_X509_EXTENSION_sk_type(sk))
+    sk_X509_EXTENSION_dup(sk) ((STACK_OF(X509_EXTENSION) *)OPENSSL_sk_dup(ossl_check_const_X509_EXTENSION_sk_type(sk)))
+    sk_X509_EXTENSION_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(X509_EXTENSION) *)OPENSSL_sk_deep_copy(ossl_check_const_X509_EXTENSION_sk_type(sk), ossl_check_X509_EXTENSION_copyfunc_type(copyfunc), ossl_check_X509_EXTENSION_freefunc_type(freefunc)))
+    sk_X509_EXTENSION_set_cmp_func(sk, cmp) ((sk_X509_EXTENSION_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_X509_EXTENSION_sk_type(sk), ossl_check_X509_EXTENSION_compfunc_type(cmp)))
+    sk_X509_ATTRIBUTE_num(sk) OPENSSL_sk_num(ossl_check_const_X509_ATTRIBUTE_sk_type(sk))
+    sk_X509_ATTRIBUTE_value(sk, idx) ((X509_ATTRIBUTE *)OPENSSL_sk_value(ossl_check_const_X509_ATTRIBUTE_sk_type(sk), (idx)))
+    sk_X509_ATTRIBUTE_new(cmp) ((STACK_OF(X509_ATTRIBUTE) *)OPENSSL_sk_new(ossl_check_X509_ATTRIBUTE_compfunc_type(cmp)))
+    sk_X509_ATTRIBUTE_new_null() ((STACK_OF(X509_ATTRIBUTE) *)OPENSSL_sk_new_null())
+    sk_X509_ATTRIBUTE_new_reserve(cmp, n) ((STACK_OF(X509_ATTRIBUTE) *)OPENSSL_sk_new_reserve(ossl_check_X509_ATTRIBUTE_compfunc_type(cmp), (n)))
+    sk_X509_ATTRIBUTE_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_X509_ATTRIBUTE_sk_type(sk), (n))
+    sk_X509_ATTRIBUTE_free(sk) OPENSSL_sk_free(ossl_check_X509_ATTRIBUTE_sk_type(sk))
+    sk_X509_ATTRIBUTE_zero(sk) OPENSSL_sk_zero(ossl_check_X509_ATTRIBUTE_sk_type(sk))
+    sk_X509_ATTRIBUTE_delete(sk, i) ((X509_ATTRIBUTE *)OPENSSL_sk_delete(ossl_check_X509_ATTRIBUTE_sk_type(sk), (i)))
+    sk_X509_ATTRIBUTE_delete_ptr(sk, ptr) ((X509_ATTRIBUTE *)OPENSSL_sk_delete_ptr(ossl_check_X509_ATTRIBUTE_sk_type(sk), ossl_check_X509_ATTRIBUTE_type(ptr)))
+    sk_X509_ATTRIBUTE_push(sk, ptr) OPENSSL_sk_push(ossl_check_X509_ATTRIBUTE_sk_type(sk), ossl_check_X509_ATTRIBUTE_type(ptr))
+    sk_X509_ATTRIBUTE_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_X509_ATTRIBUTE_sk_type(sk), ossl_check_X509_ATTRIBUTE_type(ptr))
+    sk_X509_ATTRIBUTE_pop(sk) ((X509_ATTRIBUTE *)OPENSSL_sk_pop(ossl_check_X509_ATTRIBUTE_sk_type(sk)))
+    sk_X509_ATTRIBUTE_shift(sk) ((X509_ATTRIBUTE *)OPENSSL_sk_shift(ossl_check_X509_ATTRIBUTE_sk_type(sk)))
+    sk_X509_ATTRIBUTE_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_X509_ATTRIBUTE_sk_type(sk), ossl_check_X509_ATTRIBUTE_freefunc_type(freefunc))
+    sk_X509_ATTRIBUTE_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_X509_ATTRIBUTE_sk_type(sk), ossl_check_X509_ATTRIBUTE_type(ptr), (idx))
+    sk_X509_ATTRIBUTE_set(sk, idx, ptr) ((X509_ATTRIBUTE *)OPENSSL_sk_set(ossl_check_X509_ATTRIBUTE_sk_type(sk), (idx), ossl_check_X509_ATTRIBUTE_type(ptr)))
+    sk_X509_ATTRIBUTE_find(sk, ptr) OPENSSL_sk_find(ossl_check_X509_ATTRIBUTE_sk_type(sk), ossl_check_X509_ATTRIBUTE_type(ptr))
+    sk_X509_ATTRIBUTE_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_X509_ATTRIBUTE_sk_type(sk), ossl_check_X509_ATTRIBUTE_type(ptr))
+    sk_X509_ATTRIBUTE_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_X509_ATTRIBUTE_sk_type(sk), ossl_check_X509_ATTRIBUTE_type(ptr), pnum)
+    sk_X509_ATTRIBUTE_sort(sk) OPENSSL_sk_sort(ossl_check_X509_ATTRIBUTE_sk_type(sk))
+    sk_X509_ATTRIBUTE_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_X509_ATTRIBUTE_sk_type(sk))
+    sk_X509_ATTRIBUTE_dup(sk) ((STACK_OF(X509_ATTRIBUTE) *)OPENSSL_sk_dup(ossl_check_const_X509_ATTRIBUTE_sk_type(sk)))
+    sk_X509_ATTRIBUTE_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(X509_ATTRIBUTE) *)OPENSSL_sk_deep_copy(ossl_check_const_X509_ATTRIBUTE_sk_type(sk), ossl_check_X509_ATTRIBUTE_copyfunc_type(copyfunc), ossl_check_X509_ATTRIBUTE_freefunc_type(freefunc)))
+    sk_X509_ATTRIBUTE_set_cmp_func(sk, cmp) ((sk_X509_ATTRIBUTE_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_X509_ATTRIBUTE_sk_type(sk), ossl_check_X509_ATTRIBUTE_compfunc_type(cmp)))
+    sk_X509_INFO_num(sk) OPENSSL_sk_num(ossl_check_const_X509_INFO_sk_type(sk))
+    sk_X509_INFO_value(sk, idx) ((X509_INFO *)OPENSSL_sk_value(ossl_check_const_X509_INFO_sk_type(sk), (idx)))
+    sk_X509_INFO_new(cmp) ((STACK_OF(X509_INFO) *)OPENSSL_sk_new(ossl_check_X509_INFO_compfunc_type(cmp)))
+    sk_X509_INFO_new_null() ((STACK_OF(X509_INFO) *)OPENSSL_sk_new_null())
+    sk_X509_INFO_new_reserve(cmp, n) ((STACK_OF(X509_INFO) *)OPENSSL_sk_new_reserve(ossl_check_X509_INFO_compfunc_type(cmp), (n)))
+    sk_X509_INFO_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_X509_INFO_sk_type(sk), (n))
+    sk_X509_INFO_free(sk) OPENSSL_sk_free(ossl_check_X509_INFO_sk_type(sk))
+    sk_X509_INFO_zero(sk) OPENSSL_sk_zero(ossl_check_X509_INFO_sk_type(sk))
+    sk_X509_INFO_delete(sk, i) ((X509_INFO *)OPENSSL_sk_delete(ossl_check_X509_INFO_sk_type(sk), (i)))
+    sk_X509_INFO_delete_ptr(sk, ptr) ((X509_INFO *)OPENSSL_sk_delete_ptr(ossl_check_X509_INFO_sk_type(sk), ossl_check_X509_INFO_type(ptr)))
+    sk_X509_INFO_push(sk, ptr) OPENSSL_sk_push(ossl_check_X509_INFO_sk_type(sk), ossl_check_X509_INFO_type(ptr))
+    sk_X509_INFO_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_X509_INFO_sk_type(sk), ossl_check_X509_INFO_type(ptr))
+    sk_X509_INFO_pop(sk) ((X509_INFO *)OPENSSL_sk_pop(ossl_check_X509_INFO_sk_type(sk)))
+    sk_X509_INFO_shift(sk) ((X509_INFO *)OPENSSL_sk_shift(ossl_check_X509_INFO_sk_type(sk)))
+    sk_X509_INFO_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_X509_INFO_sk_type(sk), ossl_check_X509_INFO_freefunc_type(freefunc))
+    sk_X509_INFO_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_X509_INFO_sk_type(sk), ossl_check_X509_INFO_type(ptr), (idx))
+    sk_X509_INFO_set(sk, idx, ptr) ((X509_INFO *)OPENSSL_sk_set(ossl_check_X509_INFO_sk_type(sk), (idx), ossl_check_X509_INFO_type(ptr)))
+    sk_X509_INFO_find(sk, ptr) OPENSSL_sk_find(ossl_check_X509_INFO_sk_type(sk), ossl_check_X509_INFO_type(ptr))
+    sk_X509_INFO_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_X509_INFO_sk_type(sk), ossl_check_X509_INFO_type(ptr))
+    sk_X509_INFO_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_X509_INFO_sk_type(sk), ossl_check_X509_INFO_type(ptr), pnum)
+    sk_X509_INFO_sort(sk) OPENSSL_sk_sort(ossl_check_X509_INFO_sk_type(sk))
+    sk_X509_INFO_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_X509_INFO_sk_type(sk))
+    sk_X509_INFO_dup(sk) ((STACK_OF(X509_INFO) *)OPENSSL_sk_dup(ossl_check_const_X509_INFO_sk_type(sk)))
+    sk_X509_INFO_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(X509_INFO) *)OPENSSL_sk_deep_copy(ossl_check_const_X509_INFO_sk_type(sk), ossl_check_X509_INFO_copyfunc_type(copyfunc), ossl_check_X509_INFO_freefunc_type(freefunc)))
+    sk_X509_INFO_set_cmp_func(sk, cmp) ((sk_X509_INFO_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_X509_INFO_sk_type(sk), ossl_check_X509_INFO_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack X509_REVOKED definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_X509_REVOKED = Pointer;
+  {$EXTERNALSYM PSTACK_OF_X509_REVOKED}
+
+  { Original Stack Macros for X509_REVOKED:
+    SKM_DEFINE_STACK_OF_INTERNAL(X509_REVOKED, X509_REVOKED, X509_REVOKED)
+  }
+
+  { TODO 1 -copenssl stack X509_CRL definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_X509_CRL = Pointer;
+  {$EXTERNALSYM PSTACK_OF_X509_CRL}
+
+  { Original Stack Macros for X509_CRL:
+    SKM_DEFINE_STACK_OF_INTERNAL(X509_CRL, X509_CRL, X509_CRL)
+  }
+
+  { TODO 1 -copenssl stack X509_NAME_ENTRY definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_X509_NAME_ENTRY = Pointer;
+  {$EXTERNALSYM PSTACK_OF_X509_NAME_ENTRY}
+
+  { Original Stack Macros for X509_NAME_ENTRY:
+    SKM_DEFINE_STACK_OF_INTERNAL(X509_NAME_ENTRY, X509_NAME_ENTRY, X509_NAME_ENTRY)
+  }
+
+  { TODO 1 -copenssl stack X509_EXTENSION definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_X509_EXTENSION = Pointer;
+  {$EXTERNALSYM PSTACK_OF_X509_EXTENSION}
+
+  { Original Stack Macros for X509_EXTENSION:
+    SKM_DEFINE_STACK_OF_INTERNAL(X509_EXTENSION, X509_EXTENSION, X509_EXTENSION)
+  }
+
+  { TODO 1 -copenssl stack X509_ATTRIBUTE definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_X509_ATTRIBUTE = Pointer;
+  {$EXTERNALSYM PSTACK_OF_X509_ATTRIBUTE}
+
+  { Original Stack Macros for X509_ATTRIBUTE:
+    SKM_DEFINE_STACK_OF_INTERNAL(X509_ATTRIBUTE, X509_ATTRIBUTE, X509_ATTRIBUTE)
+  }
+
+  { TODO 1 -copenssl stack X509_INFO definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_X509_INFO = Pointer;
+  {$EXTERNALSYM PSTACK_OF_X509_INFO}
+
+  { Original Stack Macros for X509_INFO:
+    SKM_DEFINE_STACK_OF_INTERNAL(X509_INFO, X509_INFO, X509_INFO)
+  }
 
 
 implementation
@@ -2581,10 +2769,10 @@ uses
 // STATIC BINDING ROUTINES IMPORTS
 // =============================================================================
 
-procedure X509_CRL_set_default_method(meth: PX509_CRL_METHOD); cdecl external CLibCrypto name 'X509_CRL_set_default_method';
+function X509_CRL_set_default_method(meth: PX509_CRL_METHOD): void; cdecl external CLibCrypto name 'X509_CRL_set_default_method';
 function X509_CRL_METHOD_new(crl_init: TX509_CRL_METHOD_new_crl_init_cb; crl_free: TX509_CRL_METHOD_new_crl_init_cb; crl_lookup: TX509_CRL_METHOD_new_crl_lookup_cb; crl_verify: TX509_CRL_METHOD_new_crl_verify_cb): PX509_CRL_METHOD; cdecl external CLibCrypto name 'X509_CRL_METHOD_new';
-procedure X509_CRL_METHOD_free(m: PX509_CRL_METHOD); cdecl external CLibCrypto name 'X509_CRL_METHOD_free';
-procedure X509_CRL_set_meth_data(crl: PX509_CRL; dat: Pointer); cdecl external CLibCrypto name 'X509_CRL_set_meth_data';
+function X509_CRL_METHOD_free(m: PX509_CRL_METHOD): void; cdecl external CLibCrypto name 'X509_CRL_METHOD_free';
+function X509_CRL_set_meth_data(crl: PX509_CRL; dat: Pointer): void; cdecl external CLibCrypto name 'X509_CRL_set_meth_data';
 function X509_CRL_get_meth_data(crl: PX509_CRL): Pointer; cdecl external CLibCrypto name 'X509_CRL_get_meth_data';
 function X509_verify_cert_error_string(n: TIdC_LONG): PIdAnsiChar; cdecl external CLibCrypto name 'X509_verify_cert_error_string';
 function X509_verify(a: PX509; r: PEVP_PKEY): TIdC_INT; cdecl external CLibCrypto name 'X509_verify';
@@ -2690,17 +2878,17 @@ function X509_PUBKEY_dup(a: PX509_PUBKEY): PX509_PUBKEY; cdecl external CLibCryp
 function X509_REQ_dup(a: PX509_REQ): PX509_REQ; cdecl external CLibCrypto name 'X509_REQ_dup';
 function X509_REVOKED_dup(a: PX509_REVOKED): PX509_REVOKED; cdecl external CLibCrypto name 'X509_REVOKED_dup';
 function X509_ALGOR_set0(alg: PX509_ALGOR; aobj: PASN1_OBJECT; ptype: TIdC_INT; pval: Pointer): TIdC_INT; cdecl external CLibCrypto name 'X509_ALGOR_set0';
-procedure X509_ALGOR_get0(paobj: PPASN1_OBJECT; pptype: PIdC_INT; ppval: PPointer; algor: PX509_ALGOR); cdecl external CLibCrypto name 'X509_ALGOR_get0';
-procedure X509_ALGOR_set_md(alg: PX509_ALGOR; md: PEVP_MD); cdecl external CLibCrypto name 'X509_ALGOR_set_md';
+function X509_ALGOR_get0(paobj: PPASN1_OBJECT; pptype: PIdC_INT; ppval: PPointer; algor: PX509_ALGOR): void; cdecl external CLibCrypto name 'X509_ALGOR_get0';
+function X509_ALGOR_set_md(alg: PX509_ALGOR; md: PEVP_MD): void; cdecl external CLibCrypto name 'X509_ALGOR_set_md';
 function X509_ALGOR_cmp(a: PX509_ALGOR; b: PX509_ALGOR): TIdC_INT; cdecl external CLibCrypto name 'X509_ALGOR_cmp';
 function X509_ALGOR_copy(dest: PX509_ALGOR; src: PX509_ALGOR): TIdC_INT; cdecl external CLibCrypto name 'X509_ALGOR_copy';
 function X509_NAME_dup(a: PX509_NAME): PX509_NAME; cdecl external CLibCrypto name 'X509_NAME_dup';
 function X509_NAME_ENTRY_dup(a: PX509_NAME_ENTRY): PX509_NAME_ENTRY; cdecl external CLibCrypto name 'X509_NAME_ENTRY_dup';
-function X509_cmp_time(s: PASN1_TIME; t: PIdC_TIME_T): TIdC_INT; cdecl external CLibCrypto name 'X509_cmp_time';
+function X509_cmp_time(s: PASN1_TIME; t: PIdC_TIMET): TIdC_INT; cdecl external CLibCrypto name 'X509_cmp_time';
 function X509_cmp_current_time(s: PASN1_TIME): TIdC_INT; cdecl external CLibCrypto name 'X509_cmp_current_time';
 function X509_cmp_timeframe(vpm: PX509_VERIFY_PARAM; start: PASN1_TIME; _end: PASN1_TIME): TIdC_INT; cdecl external CLibCrypto name 'X509_cmp_timeframe';
-function X509_time_adj(s: PASN1_TIME; adj: TIdC_LONG; t: PIdC_TIME_T): PASN1_TIME; cdecl external CLibCrypto name 'X509_time_adj';
-function X509_time_adj_ex(s: PASN1_TIME; offset_day: TIdC_INT; offset_sec: TIdC_LONG; t: PIdC_TIME_T): PASN1_TIME; cdecl external CLibCrypto name 'X509_time_adj_ex';
+function X509_time_adj(s: PASN1_TIME; adj: TIdC_LONG; t: PIdC_TIMET): PASN1_TIME; cdecl external CLibCrypto name 'X509_time_adj';
+function X509_time_adj_ex(s: PASN1_TIME; offset_day: TIdC_INT; offset_sec: TIdC_LONG; t: PIdC_TIMET): PASN1_TIME; cdecl external CLibCrypto name 'X509_time_adj_ex';
 function X509_gmtime_adj(s: PASN1_TIME; adj: TIdC_LONG): PASN1_TIME; cdecl external CLibCrypto name 'X509_gmtime_adj';
 function X509_get_default_cert_area: PIdAnsiChar; cdecl external CLibCrypto name 'X509_get_default_cert_area';
 function X509_get_default_cert_dir: PIdAnsiChar; cdecl external CLibCrypto name 'X509_get_default_cert_dir';
@@ -2711,7 +2899,7 @@ function X509_get_default_private_dir: PIdAnsiChar; cdecl external CLibCrypto na
 function X509_to_X509_REQ(x: PX509; pkey: PEVP_PKEY; md: PEVP_MD): PX509_REQ; cdecl external CLibCrypto name 'X509_to_X509_REQ';
 function X509_REQ_to_X509(r: PX509_REQ; days: TIdC_INT; pkey: PEVP_PKEY): PX509; cdecl external CLibCrypto name 'X509_REQ_to_X509';
 function X509_ALGOR_new: PX509_ALGOR; cdecl external CLibCrypto name 'X509_ALGOR_new';
-procedure X509_ALGOR_free(a: PX509_ALGOR); cdecl external CLibCrypto name 'X509_ALGOR_free';
+function X509_ALGOR_free(a: PX509_ALGOR): void; cdecl external CLibCrypto name 'X509_ALGOR_free';
 function d2i_X509_ALGOR(a: PPX509_ALGOR; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_ALGOR; cdecl external CLibCrypto name 'd2i_X509_ALGOR';
 function i2d_X509_ALGOR(a: PX509_ALGOR; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_X509_ALGOR';
 function X509_ALGOR_it: PASN1_ITEM; cdecl external CLibCrypto name 'X509_ALGOR_it';
@@ -2719,12 +2907,12 @@ function d2i_X509_ALGORS(a: PPX509_ALGORS; _in: PPIdAnsiChar; len: TIdC_LONG): P
 function i2d_X509_ALGORS(a: PX509_ALGORS; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_X509_ALGORS';
 function X509_ALGORS_it: PASN1_ITEM; cdecl external CLibCrypto name 'X509_ALGORS_it';
 function X509_VAL_new: PX509_VAL; cdecl external CLibCrypto name 'X509_VAL_new';
-procedure X509_VAL_free(a: PX509_VAL); cdecl external CLibCrypto name 'X509_VAL_free';
+function X509_VAL_free(a: PX509_VAL): void; cdecl external CLibCrypto name 'X509_VAL_free';
 function d2i_X509_VAL(a: PPX509_VAL; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_VAL; cdecl external CLibCrypto name 'd2i_X509_VAL';
 function i2d_X509_VAL(a: PX509_VAL; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_X509_VAL';
 function X509_VAL_it: PASN1_ITEM; cdecl external CLibCrypto name 'X509_VAL_it';
 function X509_PUBKEY_new: PX509_PUBKEY; cdecl external CLibCrypto name 'X509_PUBKEY_new';
-procedure X509_PUBKEY_free(a: PX509_PUBKEY); cdecl external CLibCrypto name 'X509_PUBKEY_free';
+function X509_PUBKEY_free(a: PX509_PUBKEY): void; cdecl external CLibCrypto name 'X509_PUBKEY_free';
 function d2i_X509_PUBKEY(a: PPX509_PUBKEY; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_PUBKEY; cdecl external CLibCrypto name 'd2i_X509_PUBKEY';
 function i2d_X509_PUBKEY(a: PX509_PUBKEY; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_X509_PUBKEY';
 function X509_PUBKEY_it: PASN1_ITEM; cdecl external CLibCrypto name 'X509_PUBKEY_it';
@@ -2744,31 +2932,31 @@ function i2d_DSA_PUBKEY(a: PDSA; _out: PPIdAnsiChar): TIdC_INT; cdecl external C
 function d2i_EC_PUBKEY(a: PPEC_KEY; _in: PPIdAnsiChar; len: TIdC_LONG): PEC_KEY; cdecl external CLibCrypto name 'd2i_EC_PUBKEY';
 function i2d_EC_PUBKEY(a: PEC_KEY; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_EC_PUBKEY';
 function X509_SIG_new: PX509_SIG; cdecl external CLibCrypto name 'X509_SIG_new';
-procedure X509_SIG_free(a: PX509_SIG); cdecl external CLibCrypto name 'X509_SIG_free';
+function X509_SIG_free(a: PX509_SIG): void; cdecl external CLibCrypto name 'X509_SIG_free';
 function d2i_X509_SIG(a: PPX509_SIG; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_SIG; cdecl external CLibCrypto name 'd2i_X509_SIG';
 function i2d_X509_SIG(a: PX509_SIG; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_X509_SIG';
 function X509_SIG_it: PASN1_ITEM; cdecl external CLibCrypto name 'X509_SIG_it';
-procedure X509_SIG_get0(sig: PX509_SIG; palg: PPX509_ALGOR; pdigest: PPASN1_OCTET_STRING); cdecl external CLibCrypto name 'X509_SIG_get0';
-procedure X509_SIG_getm(sig: PX509_SIG; palg: PPX509_ALGOR; pdigest: PPASN1_OCTET_STRING); cdecl external CLibCrypto name 'X509_SIG_getm';
+function X509_SIG_get0(sig: PX509_SIG; palg: PPX509_ALGOR; pdigest: PPASN1_OCTET_STRING): void; cdecl external CLibCrypto name 'X509_SIG_get0';
+function X509_SIG_getm(sig: PX509_SIG; palg: PPX509_ALGOR; pdigest: PPASN1_OCTET_STRING): void; cdecl external CLibCrypto name 'X509_SIG_getm';
 function X509_REQ_INFO_new: PX509_REQ_INFO; cdecl external CLibCrypto name 'X509_REQ_INFO_new';
-procedure X509_REQ_INFO_free(a: PX509_REQ_INFO); cdecl external CLibCrypto name 'X509_REQ_INFO_free';
+function X509_REQ_INFO_free(a: PX509_REQ_INFO): void; cdecl external CLibCrypto name 'X509_REQ_INFO_free';
 function d2i_X509_REQ_INFO(a: PPX509_REQ_INFO; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_REQ_INFO; cdecl external CLibCrypto name 'd2i_X509_REQ_INFO';
 function i2d_X509_REQ_INFO(a: PX509_REQ_INFO; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_X509_REQ_INFO';
 function X509_REQ_INFO_it: PASN1_ITEM; cdecl external CLibCrypto name 'X509_REQ_INFO_it';
 function X509_REQ_new: PX509_REQ; cdecl external CLibCrypto name 'X509_REQ_new';
-procedure X509_REQ_free(a: PX509_REQ); cdecl external CLibCrypto name 'X509_REQ_free';
+function X509_REQ_free(a: PX509_REQ): void; cdecl external CLibCrypto name 'X509_REQ_free';
 function d2i_X509_REQ(a: PPX509_REQ; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_REQ; cdecl external CLibCrypto name 'd2i_X509_REQ';
 function i2d_X509_REQ(a: PX509_REQ; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_X509_REQ';
 function X509_REQ_it: PASN1_ITEM; cdecl external CLibCrypto name 'X509_REQ_it';
 function X509_REQ_new_ex(libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PX509_REQ; cdecl external CLibCrypto name 'X509_REQ_new_ex';
 function X509_ATTRIBUTE_new: PX509_ATTRIBUTE; cdecl external CLibCrypto name 'X509_ATTRIBUTE_new';
-procedure X509_ATTRIBUTE_free(a: PX509_ATTRIBUTE); cdecl external CLibCrypto name 'X509_ATTRIBUTE_free';
+function X509_ATTRIBUTE_free(a: PX509_ATTRIBUTE): void; cdecl external CLibCrypto name 'X509_ATTRIBUTE_free';
 function d2i_X509_ATTRIBUTE(a: PPX509_ATTRIBUTE; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_ATTRIBUTE; cdecl external CLibCrypto name 'd2i_X509_ATTRIBUTE';
 function i2d_X509_ATTRIBUTE(a: PX509_ATTRIBUTE; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_X509_ATTRIBUTE';
 function X509_ATTRIBUTE_it: PASN1_ITEM; cdecl external CLibCrypto name 'X509_ATTRIBUTE_it';
 function X509_ATTRIBUTE_create(nid: TIdC_INT; atrtype: TIdC_INT; value: Pointer): PX509_ATTRIBUTE; cdecl external CLibCrypto name 'X509_ATTRIBUTE_create';
 function X509_EXTENSION_new: PX509_EXTENSION; cdecl external CLibCrypto name 'X509_EXTENSION_new';
-procedure X509_EXTENSION_free(a: PX509_EXTENSION); cdecl external CLibCrypto name 'X509_EXTENSION_free';
+function X509_EXTENSION_free(a: PX509_EXTENSION): void; cdecl external CLibCrypto name 'X509_EXTENSION_free';
 function d2i_X509_EXTENSION(a: PPX509_EXTENSION; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_EXTENSION; cdecl external CLibCrypto name 'd2i_X509_EXTENSION';
 function i2d_X509_EXTENSION(a: PX509_EXTENSION; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_X509_EXTENSION';
 function X509_EXTENSION_it: PASN1_ITEM; cdecl external CLibCrypto name 'X509_EXTENSION_it';
@@ -2776,29 +2964,29 @@ function d2i_X509_EXTENSIONS(a: PPX509_EXTENSIONS; _in: PPIdAnsiChar; len: TIdC_
 function i2d_X509_EXTENSIONS(a: PX509_EXTENSIONS; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_X509_EXTENSIONS';
 function X509_EXTENSIONS_it: PASN1_ITEM; cdecl external CLibCrypto name 'X509_EXTENSIONS_it';
 function X509_NAME_ENTRY_new: PX509_NAME_ENTRY; cdecl external CLibCrypto name 'X509_NAME_ENTRY_new';
-procedure X509_NAME_ENTRY_free(a: PX509_NAME_ENTRY); cdecl external CLibCrypto name 'X509_NAME_ENTRY_free';
+function X509_NAME_ENTRY_free(a: PX509_NAME_ENTRY): void; cdecl external CLibCrypto name 'X509_NAME_ENTRY_free';
 function d2i_X509_NAME_ENTRY(a: PPX509_NAME_ENTRY; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_NAME_ENTRY; cdecl external CLibCrypto name 'd2i_X509_NAME_ENTRY';
 function i2d_X509_NAME_ENTRY(a: PX509_NAME_ENTRY; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_X509_NAME_ENTRY';
 function X509_NAME_ENTRY_it: PASN1_ITEM; cdecl external CLibCrypto name 'X509_NAME_ENTRY_it';
 function X509_NAME_new: PX509_NAME; cdecl external CLibCrypto name 'X509_NAME_new';
-procedure X509_NAME_free(a: PX509_NAME); cdecl external CLibCrypto name 'X509_NAME_free';
+function X509_NAME_free(a: PX509_NAME): void; cdecl external CLibCrypto name 'X509_NAME_free';
 function d2i_X509_NAME(a: PPX509_NAME; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_NAME; cdecl external CLibCrypto name 'd2i_X509_NAME';
 function i2d_X509_NAME(a: PX509_NAME; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_X509_NAME';
 function X509_NAME_it: PASN1_ITEM; cdecl external CLibCrypto name 'X509_NAME_it';
 function X509_NAME_set(xn: PPX509_NAME; name: PX509_NAME): TIdC_INT; cdecl external CLibCrypto name 'X509_NAME_set';
 function X509_CINF_new: PX509_CINF; cdecl external CLibCrypto name 'X509_CINF_new';
-procedure X509_CINF_free(a: PX509_CINF); cdecl external CLibCrypto name 'X509_CINF_free';
+function X509_CINF_free(a: PX509_CINF): void; cdecl external CLibCrypto name 'X509_CINF_free';
 function d2i_X509_CINF(a: PPX509_CINF; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_CINF; cdecl external CLibCrypto name 'd2i_X509_CINF';
 function i2d_X509_CINF(a: PX509_CINF; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_X509_CINF';
 function X509_CINF_it: PASN1_ITEM; cdecl external CLibCrypto name 'X509_CINF_it';
 function X509_new: PX509; cdecl external CLibCrypto name 'X509_new';
-procedure X509_free(a: PX509); cdecl external CLibCrypto name 'X509_free';
+function X509_free(a: PX509): void; cdecl external CLibCrypto name 'X509_free';
 function d2i_X509(a: PPX509; _in: PPIdAnsiChar; len: TIdC_LONG): PX509; cdecl external CLibCrypto name 'd2i_X509';
 function i2d_X509(a: PX509; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_X509';
 function X509_it: PASN1_ITEM; cdecl external CLibCrypto name 'X509_it';
 function X509_new_ex(libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PX509; cdecl external CLibCrypto name 'X509_new_ex';
 function X509_CERT_AUX_new: PX509_CERT_AUX; cdecl external CLibCrypto name 'X509_CERT_AUX_new';
-procedure X509_CERT_AUX_free(a: PX509_CERT_AUX); cdecl external CLibCrypto name 'X509_CERT_AUX_free';
+function X509_CERT_AUX_free(a: PX509_CERT_AUX): void; cdecl external CLibCrypto name 'X509_CERT_AUX_free';
 function d2i_X509_CERT_AUX(a: PPX509_CERT_AUX; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_CERT_AUX; cdecl external CLibCrypto name 'd2i_X509_CERT_AUX';
 function i2d_X509_CERT_AUX(a: PX509_CERT_AUX; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_X509_CERT_AUX';
 function X509_CERT_AUX_it: PASN1_ITEM; cdecl external CLibCrypto name 'X509_CERT_AUX_it';
@@ -2807,31 +2995,31 @@ function X509_get_ex_data(r: PX509; idx: TIdC_INT): Pointer; cdecl external CLib
 function d2i_X509_AUX(a: PPX509; _in: PPIdAnsiChar; len: TIdC_LONG): PX509; cdecl external CLibCrypto name 'd2i_X509_AUX';
 function i2d_X509_AUX(a: PX509; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_X509_AUX';
 function i2d_re_X509_tbs(x: PX509; pp: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_re_X509_tbs';
-function X509_SIG_INFO_get(siginf: PX509_SIG_INFO; mdnid: PIdC_INT; pknid: PIdC_INT; secbits: PIdC_INT; flags: PUInt32): TIdC_INT; cdecl external CLibCrypto name 'X509_SIG_INFO_get';
-procedure X509_SIG_INFO_set(siginf: PX509_SIG_INFO; mdnid: TIdC_INT; pknid: TIdC_INT; secbits: TIdC_INT; flags: UInt32); cdecl external CLibCrypto name 'X509_SIG_INFO_set';
-function X509_get_signature_info(x: PX509; mdnid: PIdC_INT; pknid: PIdC_INT; secbits: PIdC_INT; flags: PUInt32): TIdC_INT; cdecl external CLibCrypto name 'X509_get_signature_info';
-procedure X509_get0_signature(psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR; x: PX509); cdecl external CLibCrypto name 'X509_get0_signature';
+function X509_SIG_INFO_get(siginf: PX509_SIG_INFO; mdnid: PIdC_INT; pknid: PIdC_INT; secbits: PIdC_INT; flags: PIdC_UINT32): TIdC_INT; cdecl external CLibCrypto name 'X509_SIG_INFO_get';
+function X509_SIG_INFO_set(siginf: PX509_SIG_INFO; mdnid: TIdC_INT; pknid: TIdC_INT; secbits: TIdC_INT; flags: TIdC_UINT32): void; cdecl external CLibCrypto name 'X509_SIG_INFO_set';
+function X509_get_signature_info(x: PX509; mdnid: PIdC_INT; pknid: PIdC_INT; secbits: PIdC_INT; flags: PIdC_UINT32): TIdC_INT; cdecl external CLibCrypto name 'X509_get_signature_info';
+function X509_get0_signature(psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR; x: PX509): void; cdecl external CLibCrypto name 'X509_get0_signature';
 function X509_get_signature_nid(x: PX509): TIdC_INT; cdecl external CLibCrypto name 'X509_get_signature_nid';
-procedure X509_set0_distinguishing_id(x: PX509; d_id: PASN1_OCTET_STRING); cdecl external CLibCrypto name 'X509_set0_distinguishing_id';
+function X509_set0_distinguishing_id(x: PX509; d_id: PASN1_OCTET_STRING): void; cdecl external CLibCrypto name 'X509_set0_distinguishing_id';
 function X509_get0_distinguishing_id(x: PX509): PASN1_OCTET_STRING; cdecl external CLibCrypto name 'X509_get0_distinguishing_id';
-procedure X509_REQ_set0_distinguishing_id(x: PX509_REQ; d_id: PASN1_OCTET_STRING); cdecl external CLibCrypto name 'X509_REQ_set0_distinguishing_id';
+function X509_REQ_set0_distinguishing_id(x: PX509_REQ; d_id: PASN1_OCTET_STRING): void; cdecl external CLibCrypto name 'X509_REQ_set0_distinguishing_id';
 function X509_REQ_get0_distinguishing_id(x: PX509_REQ): PASN1_OCTET_STRING; cdecl external CLibCrypto name 'X509_REQ_get0_distinguishing_id';
 function X509_alias_set1(x: PX509; name: PIdAnsiChar; len: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'X509_alias_set1';
 function X509_keyid_set1(x: PX509; id: PIdAnsiChar; len: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'X509_keyid_set1';
 function X509_alias_get0(x: PX509; len: PIdC_INT): PIdAnsiChar; cdecl external CLibCrypto name 'X509_alias_get0';
 function X509_keyid_get0(x: PX509; len: PIdC_INT): PIdAnsiChar; cdecl external CLibCrypto name 'X509_keyid_get0';
 function X509_REVOKED_new: PX509_REVOKED; cdecl external CLibCrypto name 'X509_REVOKED_new';
-procedure X509_REVOKED_free(a: PX509_REVOKED); cdecl external CLibCrypto name 'X509_REVOKED_free';
+function X509_REVOKED_free(a: PX509_REVOKED): void; cdecl external CLibCrypto name 'X509_REVOKED_free';
 function d2i_X509_REVOKED(a: PPX509_REVOKED; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_REVOKED; cdecl external CLibCrypto name 'd2i_X509_REVOKED';
 function i2d_X509_REVOKED(a: PX509_REVOKED; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_X509_REVOKED';
 function X509_REVOKED_it: PASN1_ITEM; cdecl external CLibCrypto name 'X509_REVOKED_it';
 function X509_CRL_INFO_new: PX509_CRL_INFO; cdecl external CLibCrypto name 'X509_CRL_INFO_new';
-procedure X509_CRL_INFO_free(a: PX509_CRL_INFO); cdecl external CLibCrypto name 'X509_CRL_INFO_free';
+function X509_CRL_INFO_free(a: PX509_CRL_INFO): void; cdecl external CLibCrypto name 'X509_CRL_INFO_free';
 function d2i_X509_CRL_INFO(a: PPX509_CRL_INFO; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_CRL_INFO; cdecl external CLibCrypto name 'd2i_X509_CRL_INFO';
 function i2d_X509_CRL_INFO(a: PX509_CRL_INFO; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_X509_CRL_INFO';
 function X509_CRL_INFO_it: PASN1_ITEM; cdecl external CLibCrypto name 'X509_CRL_INFO_it';
 function X509_CRL_new: PX509_CRL; cdecl external CLibCrypto name 'X509_CRL_new';
-procedure X509_CRL_free(a: PX509_CRL); cdecl external CLibCrypto name 'X509_CRL_free';
+function X509_CRL_free(a: PX509_CRL): void; cdecl external CLibCrypto name 'X509_CRL_free';
 function d2i_X509_CRL(a: PPX509_CRL; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_CRL; cdecl external CLibCrypto name 'd2i_X509_CRL';
 function i2d_X509_CRL(a: PX509_CRL; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_X509_CRL';
 function X509_CRL_it: PASN1_ITEM; cdecl external CLibCrypto name 'X509_CRL_it';
@@ -2840,24 +3028,24 @@ function X509_CRL_add0_revoked(crl: PX509_CRL; rev: PX509_REVOKED): TIdC_INT; cd
 function X509_CRL_get0_by_serial(crl: PX509_CRL; ret: PPX509_REVOKED; serial: PASN1_INTEGER): TIdC_INT; cdecl external CLibCrypto name 'X509_CRL_get0_by_serial';
 function X509_CRL_get0_by_cert(crl: PX509_CRL; ret: PPX509_REVOKED; x: PX509): TIdC_INT; cdecl external CLibCrypto name 'X509_CRL_get0_by_cert';
 function X509_PKEY_new: PX509_PKEY; cdecl external CLibCrypto name 'X509_PKEY_new';
-procedure X509_PKEY_free(a: PX509_PKEY); cdecl external CLibCrypto name 'X509_PKEY_free';
+function X509_PKEY_free(a: PX509_PKEY): void; cdecl external CLibCrypto name 'X509_PKEY_free';
 function NETSCAPE_SPKI_new: PNETSCAPE_SPKI; cdecl external CLibCrypto name 'NETSCAPE_SPKI_new';
-procedure NETSCAPE_SPKI_free(a: PNETSCAPE_SPKI); cdecl external CLibCrypto name 'NETSCAPE_SPKI_free';
+function NETSCAPE_SPKI_free(a: PNETSCAPE_SPKI): void; cdecl external CLibCrypto name 'NETSCAPE_SPKI_free';
 function d2i_NETSCAPE_SPKI(a: PPNETSCAPE_SPKI; _in: PPIdAnsiChar; len: TIdC_LONG): PNETSCAPE_SPKI; cdecl external CLibCrypto name 'd2i_NETSCAPE_SPKI';
 function i2d_NETSCAPE_SPKI(a: PNETSCAPE_SPKI; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_NETSCAPE_SPKI';
 function NETSCAPE_SPKI_it: PASN1_ITEM; cdecl external CLibCrypto name 'NETSCAPE_SPKI_it';
 function NETSCAPE_SPKAC_new: PNETSCAPE_SPKAC; cdecl external CLibCrypto name 'NETSCAPE_SPKAC_new';
-procedure NETSCAPE_SPKAC_free(a: PNETSCAPE_SPKAC); cdecl external CLibCrypto name 'NETSCAPE_SPKAC_free';
+function NETSCAPE_SPKAC_free(a: PNETSCAPE_SPKAC): void; cdecl external CLibCrypto name 'NETSCAPE_SPKAC_free';
 function d2i_NETSCAPE_SPKAC(a: PPNETSCAPE_SPKAC; _in: PPIdAnsiChar; len: TIdC_LONG): PNETSCAPE_SPKAC; cdecl external CLibCrypto name 'd2i_NETSCAPE_SPKAC';
 function i2d_NETSCAPE_SPKAC(a: PNETSCAPE_SPKAC; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_NETSCAPE_SPKAC';
 function NETSCAPE_SPKAC_it: PASN1_ITEM; cdecl external CLibCrypto name 'NETSCAPE_SPKAC_it';
 function NETSCAPE_CERT_SEQUENCE_new: PNETSCAPE_CERT_SEQUENCE; cdecl external CLibCrypto name 'NETSCAPE_CERT_SEQUENCE_new';
-procedure NETSCAPE_CERT_SEQUENCE_free(a: PNETSCAPE_CERT_SEQUENCE); cdecl external CLibCrypto name 'NETSCAPE_CERT_SEQUENCE_free';
+function NETSCAPE_CERT_SEQUENCE_free(a: PNETSCAPE_CERT_SEQUENCE): void; cdecl external CLibCrypto name 'NETSCAPE_CERT_SEQUENCE_free';
 function d2i_NETSCAPE_CERT_SEQUENCE(a: PPNETSCAPE_CERT_SEQUENCE; _in: PPIdAnsiChar; len: TIdC_LONG): PNETSCAPE_CERT_SEQUENCE; cdecl external CLibCrypto name 'd2i_NETSCAPE_CERT_SEQUENCE';
 function i2d_NETSCAPE_CERT_SEQUENCE(a: PNETSCAPE_CERT_SEQUENCE; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_NETSCAPE_CERT_SEQUENCE';
 function NETSCAPE_CERT_SEQUENCE_it: PASN1_ITEM; cdecl external CLibCrypto name 'NETSCAPE_CERT_SEQUENCE_it';
 function X509_INFO_new: PX509_INFO; cdecl external CLibCrypto name 'X509_INFO_new';
-procedure X509_INFO_free(a: PX509_INFO); cdecl external CLibCrypto name 'X509_INFO_free';
+function X509_INFO_free(a: PX509_INFO): void; cdecl external CLibCrypto name 'X509_INFO_free';
 function X509_NAME_oneline(a: PX509_NAME; buf: PIdAnsiChar; size: TIdC_INT): PIdAnsiChar; cdecl external CLibCrypto name 'X509_NAME_oneline';
 function ASN1_verify(i2d: TASN1_verify_i2d_cb; algor1: PX509_ALGOR; signature: PASN1_BIT_STRING; data: PIdAnsiChar; pkey: PEVP_PKEY): TIdC_INT; cdecl external CLibCrypto name 'ASN1_verify';
 function ASN1_digest(i2d: TASN1_verify_i2d_cb; _type: PEVP_MD; data: PIdAnsiChar; md: PIdAnsiChar; len: PIdC_UINT): TIdC_INT; cdecl external CLibCrypto name 'ASN1_digest';
@@ -2887,7 +3075,7 @@ function X509_up_ref(x: PX509): TIdC_INT; cdecl external CLibCrypto name 'X509_u
 function X509_get_signature_type(x: PX509): TIdC_INT; cdecl external CLibCrypto name 'X509_get_signature_type';
 function X509_get_X509_PUBKEY(x: PX509): PX509_PUBKEY; cdecl external CLibCrypto name 'X509_get_X509_PUBKEY';
 function X509_get0_extensions(x: PX509): Pstack_st_X509_EXTENSION; cdecl external CLibCrypto name 'X509_get0_extensions';
-procedure X509_get0_uids(x: PX509; piuid: PPASN1_BIT_STRING; psuid: PPASN1_BIT_STRING); cdecl external CLibCrypto name 'X509_get0_uids';
+function X509_get0_uids(x: PX509; piuid: PPASN1_BIT_STRING; psuid: PPASN1_BIT_STRING): void; cdecl external CLibCrypto name 'X509_get0_uids';
 function X509_get0_tbs_sigalg(x: PX509): PX509_ALGOR; cdecl external CLibCrypto name 'X509_get0_tbs_sigalg';
 function X509_get0_pubkey(x: PX509): PEVP_PKEY; cdecl external CLibCrypto name 'X509_get0_pubkey';
 function X509_get_pubkey(x: PX509): PEVP_PKEY; cdecl external CLibCrypto name 'X509_get_pubkey';
@@ -2896,8 +3084,8 @@ function X509_REQ_get_version(req: PX509_REQ): TIdC_LONG; cdecl external CLibCry
 function X509_REQ_set_version(x: PX509_REQ; version: TIdC_LONG): TIdC_INT; cdecl external CLibCrypto name 'X509_REQ_set_version';
 function X509_REQ_get_subject_name(req: PX509_REQ): PX509_NAME; cdecl external CLibCrypto name 'X509_REQ_get_subject_name';
 function X509_REQ_set_subject_name(req: PX509_REQ; name: PX509_NAME): TIdC_INT; cdecl external CLibCrypto name 'X509_REQ_set_subject_name';
-procedure X509_REQ_get0_signature(req: PX509_REQ; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR); cdecl external CLibCrypto name 'X509_REQ_get0_signature';
-procedure X509_REQ_set0_signature(req: PX509_REQ; psig: PASN1_BIT_STRING); cdecl external CLibCrypto name 'X509_REQ_set0_signature';
+function X509_REQ_get0_signature(req: PX509_REQ; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR): void; cdecl external CLibCrypto name 'X509_REQ_get0_signature';
+function X509_REQ_set0_signature(req: PX509_REQ; psig: PASN1_BIT_STRING): void; cdecl external CLibCrypto name 'X509_REQ_set0_signature';
 function X509_REQ_set1_signature_algo(req: PX509_REQ; palg: PX509_ALGOR): TIdC_INT; cdecl external CLibCrypto name 'X509_REQ_set1_signature_algo';
 function X509_REQ_get_signature_nid(req: PX509_REQ): TIdC_INT; cdecl external CLibCrypto name 'X509_REQ_get_signature_nid';
 function i2d_re_X509_REQ_tbs(req: PX509_REQ; pp: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_re_X509_REQ_tbs';
@@ -2907,7 +3095,7 @@ function X509_REQ_get0_pubkey(req: PX509_REQ): PEVP_PKEY; cdecl external CLibCry
 function X509_REQ_get_X509_PUBKEY(req: PX509_REQ): PX509_PUBKEY; cdecl external CLibCrypto name 'X509_REQ_get_X509_PUBKEY';
 function X509_REQ_extension_nid(nid: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'X509_REQ_extension_nid';
 function X509_REQ_get_extension_nids: PIdC_INT; cdecl external CLibCrypto name 'X509_REQ_get_extension_nids';
-procedure X509_REQ_set_extension_nids(nids: PIdC_INT); cdecl external CLibCrypto name 'X509_REQ_set_extension_nids';
+function X509_REQ_set_extension_nids(nids: PIdC_INT): void; cdecl external CLibCrypto name 'X509_REQ_set_extension_nids';
 function X509_REQ_get_extensions(req: PX509_REQ): Pstack_st_X509_EXTENSION; cdecl external CLibCrypto name 'X509_REQ_get_extensions';
 function X509_REQ_add_extensions_nid(req: PX509_REQ; exts: Pstack_st_X509_EXTENSION; nid: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'X509_REQ_add_extensions_nid';
 function X509_REQ_add_extensions(req: PX509_REQ; ext: Pstack_st_X509_EXTENSION): TIdC_INT; cdecl external CLibCrypto name 'X509_REQ_add_extensions';
@@ -2933,7 +3121,7 @@ function X509_CRL_get_issuer(crl: PX509_CRL): PX509_NAME; cdecl external CLibCry
 function X509_CRL_get0_extensions(crl: PX509_CRL): Pstack_st_X509_EXTENSION; cdecl external CLibCrypto name 'X509_CRL_get0_extensions';
 function X509_CRL_get_REVOKED(crl: PX509_CRL): Pstack_st_X509_REVOKED; cdecl external CLibCrypto name 'X509_CRL_get_REVOKED';
 function X509_CRL_get0_tbs_sigalg(crl: PX509_CRL): PX509_ALGOR; cdecl external CLibCrypto name 'X509_CRL_get0_tbs_sigalg';
-procedure X509_CRL_get0_signature(crl: PX509_CRL; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR); cdecl external CLibCrypto name 'X509_CRL_get0_signature';
+function X509_CRL_get0_signature(crl: PX509_CRL; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR): void; cdecl external CLibCrypto name 'X509_CRL_get0_signature';
 function X509_CRL_get_signature_nid(crl: PX509_CRL): TIdC_INT; cdecl external CLibCrypto name 'X509_CRL_get_signature_nid';
 function i2d_re_X509_CRL_tbs(req: PX509_CRL; pp: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_re_X509_CRL_tbs';
 function X509_REVOKED_get0_serialNumber(x: PX509_REVOKED): PASN1_INTEGER; cdecl external CLibCrypto name 'X509_REVOKED_get0_serialNumber';
@@ -2946,7 +3134,7 @@ function X509_REQ_check_private_key(req: PX509_REQ; pkey: PEVP_PKEY): TIdC_INT; 
 function X509_check_private_key(cert: PX509; pkey: PEVP_PKEY): TIdC_INT; cdecl external CLibCrypto name 'X509_check_private_key';
 function X509_chain_check_suiteb(perror_depth: PIdC_INT; x: PX509; chain: Pstack_st_X509; flags: TIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'X509_chain_check_suiteb';
 function X509_CRL_check_suiteb(crl: PX509_CRL; pk: PEVP_PKEY; flags: TIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'X509_CRL_check_suiteb';
-procedure OSSL_STACK_OF_X509_free(certs: Pstack_st_X509); cdecl external CLibCrypto name 'OSSL_STACK_OF_X509_free';
+function OSSL_STACK_OF_X509_free(certs: Pstack_st_X509): void; cdecl external CLibCrypto name 'OSSL_STACK_OF_X509_free';
 function X509_chain_up_ref(chain: Pstack_st_X509): Pstack_st_X509; cdecl external CLibCrypto name 'X509_chain_up_ref';
 function X509_issuer_and_serial_cmp(a: PX509; b: PX509): TIdC_INT; cdecl external CLibCrypto name 'X509_issuer_and_serial_cmp';
 function X509_issuer_and_serial_hash(a: PX509): TIdC_ULONG; cdecl external CLibCrypto name 'X509_issuer_and_serial_hash';
@@ -3074,27 +3262,27 @@ function EVP_PKEY_add1_attr_by_txt(key: PEVP_PKEY; attrname: PIdAnsiChar; _type:
 function X509_find_by_issuer_and_serial(sk: Pstack_st_X509; name: PX509_NAME; serial: PASN1_INTEGER): PX509; cdecl external CLibCrypto name 'X509_find_by_issuer_and_serial';
 function X509_find_by_subject(sk: Pstack_st_X509; name: PX509_NAME): PX509; cdecl external CLibCrypto name 'X509_find_by_subject';
 function PBEPARAM_new: PPBEPARAM; cdecl external CLibCrypto name 'PBEPARAM_new';
-procedure PBEPARAM_free(a: PPBEPARAM); cdecl external CLibCrypto name 'PBEPARAM_free';
+function PBEPARAM_free(a: PPBEPARAM): void; cdecl external CLibCrypto name 'PBEPARAM_free';
 function d2i_PBEPARAM(a: PPPBEPARAM; _in: PPIdAnsiChar; len: TIdC_LONG): PPBEPARAM; cdecl external CLibCrypto name 'd2i_PBEPARAM';
 function i2d_PBEPARAM(a: PPBEPARAM; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_PBEPARAM';
 function PBEPARAM_it: PASN1_ITEM; cdecl external CLibCrypto name 'PBEPARAM_it';
 function PBE2PARAM_new: PPBE2PARAM; cdecl external CLibCrypto name 'PBE2PARAM_new';
-procedure PBE2PARAM_free(a: PPBE2PARAM); cdecl external CLibCrypto name 'PBE2PARAM_free';
+function PBE2PARAM_free(a: PPBE2PARAM): void; cdecl external CLibCrypto name 'PBE2PARAM_free';
 function d2i_PBE2PARAM(a: PPPBE2PARAM; _in: PPIdAnsiChar; len: TIdC_LONG): PPBE2PARAM; cdecl external CLibCrypto name 'd2i_PBE2PARAM';
 function i2d_PBE2PARAM(a: PPBE2PARAM; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_PBE2PARAM';
 function PBE2PARAM_it: PASN1_ITEM; cdecl external CLibCrypto name 'PBE2PARAM_it';
 function PBKDF2PARAM_new: PPBKDF2PARAM; cdecl external CLibCrypto name 'PBKDF2PARAM_new';
-procedure PBKDF2PARAM_free(a: PPBKDF2PARAM); cdecl external CLibCrypto name 'PBKDF2PARAM_free';
+function PBKDF2PARAM_free(a: PPBKDF2PARAM): void; cdecl external CLibCrypto name 'PBKDF2PARAM_free';
 function d2i_PBKDF2PARAM(a: PPPBKDF2PARAM; _in: PPIdAnsiChar; len: TIdC_LONG): PPBKDF2PARAM; cdecl external CLibCrypto name 'd2i_PBKDF2PARAM';
 function i2d_PBKDF2PARAM(a: PPBKDF2PARAM; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_PBKDF2PARAM';
 function PBKDF2PARAM_it: PASN1_ITEM; cdecl external CLibCrypto name 'PBKDF2PARAM_it';
 function PBMAC1PARAM_new: PPBMAC1PARAM; cdecl external CLibCrypto name 'PBMAC1PARAM_new';
-procedure PBMAC1PARAM_free(a: PPBMAC1PARAM); cdecl external CLibCrypto name 'PBMAC1PARAM_free';
+function PBMAC1PARAM_free(a: PPBMAC1PARAM): void; cdecl external CLibCrypto name 'PBMAC1PARAM_free';
 function d2i_PBMAC1PARAM(a: PPPBMAC1PARAM; _in: PPIdAnsiChar; len: TIdC_LONG): PPBMAC1PARAM; cdecl external CLibCrypto name 'd2i_PBMAC1PARAM';
 function i2d_PBMAC1PARAM(a: PPBMAC1PARAM; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_PBMAC1PARAM';
 function PBMAC1PARAM_it: PASN1_ITEM; cdecl external CLibCrypto name 'PBMAC1PARAM_it';
 function SCRYPT_PARAMS_new: PSCRYPT_PARAMS; cdecl external CLibCrypto name 'SCRYPT_PARAMS_new';
-procedure SCRYPT_PARAMS_free(a: PSCRYPT_PARAMS); cdecl external CLibCrypto name 'SCRYPT_PARAMS_free';
+function SCRYPT_PARAMS_free(a: PSCRYPT_PARAMS): void; cdecl external CLibCrypto name 'SCRYPT_PARAMS_free';
 function d2i_SCRYPT_PARAMS(a: PPSCRYPT_PARAMS; _in: PPIdAnsiChar; len: TIdC_LONG): PSCRYPT_PARAMS; cdecl external CLibCrypto name 'd2i_SCRYPT_PARAMS';
 function i2d_SCRYPT_PARAMS(a: PSCRYPT_PARAMS; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_SCRYPT_PARAMS';
 function SCRYPT_PARAMS_it: PASN1_ITEM; cdecl external CLibCrypto name 'SCRYPT_PARAMS_it';
@@ -3105,12 +3293,12 @@ function PKCS5_pbe_set_ex(alg: TIdC_INT; iter: TIdC_INT; salt: PIdAnsiChar; salt
 function PKCS5_pbe2_set(cipher: PEVP_CIPHER; iter: TIdC_INT; salt: PIdAnsiChar; saltlen: TIdC_INT): PX509_ALGOR; cdecl external CLibCrypto name 'PKCS5_pbe2_set';
 function PKCS5_pbe2_set_iv(cipher: PEVP_CIPHER; iter: TIdC_INT; salt: PIdAnsiChar; saltlen: TIdC_INT; aiv: PIdAnsiChar; prf_nid: TIdC_INT): PX509_ALGOR; cdecl external CLibCrypto name 'PKCS5_pbe2_set_iv';
 function PKCS5_pbe2_set_iv_ex(cipher: PEVP_CIPHER; iter: TIdC_INT; salt: PIdAnsiChar; saltlen: TIdC_INT; aiv: PIdAnsiChar; prf_nid: TIdC_INT; libctx: POSSL_LIB_CTX): PX509_ALGOR; cdecl external CLibCrypto name 'PKCS5_pbe2_set_iv_ex';
-function PKCS5_pbe2_set_scrypt(cipher: PEVP_CIPHER; salt: PIdAnsiChar; saltlen: TIdC_INT; aiv: PIdAnsiChar; N: UInt64; r: UInt64; p: UInt64): PX509_ALGOR; cdecl external CLibCrypto name 'PKCS5_pbe2_set_scrypt';
+function PKCS5_pbe2_set_scrypt(cipher: PEVP_CIPHER; salt: PIdAnsiChar; saltlen: TIdC_INT; aiv: PIdAnsiChar; N: TIdC_UINT64; r: TIdC_UINT64; p: TIdC_UINT64): PX509_ALGOR; cdecl external CLibCrypto name 'PKCS5_pbe2_set_scrypt';
 function PKCS5_pbkdf2_set(iter: TIdC_INT; salt: PIdAnsiChar; saltlen: TIdC_INT; prf_nid: TIdC_INT; keylen: TIdC_INT): PX509_ALGOR; cdecl external CLibCrypto name 'PKCS5_pbkdf2_set';
 function PKCS5_pbkdf2_set_ex(iter: TIdC_INT; salt: PIdAnsiChar; saltlen: TIdC_INT; prf_nid: TIdC_INT; keylen: TIdC_INT; libctx: POSSL_LIB_CTX): PX509_ALGOR; cdecl external CLibCrypto name 'PKCS5_pbkdf2_set_ex';
 function PBMAC1_get1_pbkdf2_param(macalg: PX509_ALGOR): PPBKDF2PARAM; cdecl external CLibCrypto name 'PBMAC1_get1_pbkdf2_param';
 function PKCS8_PRIV_KEY_INFO_new: PPKCS8_PRIV_KEY_INFO; cdecl external CLibCrypto name 'PKCS8_PRIV_KEY_INFO_new';
-procedure PKCS8_PRIV_KEY_INFO_free(a: PPKCS8_PRIV_KEY_INFO); cdecl external CLibCrypto name 'PKCS8_PRIV_KEY_INFO_free';
+function PKCS8_PRIV_KEY_INFO_free(a: PPKCS8_PRIV_KEY_INFO): void; cdecl external CLibCrypto name 'PKCS8_PRIV_KEY_INFO_free';
 function d2i_PKCS8_PRIV_KEY_INFO(a: PPPKCS8_PRIV_KEY_INFO; _in: PPIdAnsiChar; len: TIdC_LONG): PPKCS8_PRIV_KEY_INFO; cdecl external CLibCrypto name 'd2i_PKCS8_PRIV_KEY_INFO';
 function i2d_PKCS8_PRIV_KEY_INFO(a: PPKCS8_PRIV_KEY_INFO; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_PKCS8_PRIV_KEY_INFO';
 function PKCS8_PRIV_KEY_INFO_it: PASN1_ITEM; cdecl external CLibCrypto name 'PKCS8_PRIV_KEY_INFO_it';
@@ -3123,7 +3311,7 @@ function PKCS8_pkey_get0_attrs(p8: PPKCS8_PRIV_KEY_INFO): Pstack_st_X509_ATTRIBU
 function PKCS8_pkey_add1_attr(p8: PPKCS8_PRIV_KEY_INFO; attr: PX509_ATTRIBUTE): TIdC_INT; cdecl external CLibCrypto name 'PKCS8_pkey_add1_attr';
 function PKCS8_pkey_add1_attr_by_NID(p8: PPKCS8_PRIV_KEY_INFO; nid: TIdC_INT; _type: TIdC_INT; bytes: PIdAnsiChar; len: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'PKCS8_pkey_add1_attr_by_NID';
 function PKCS8_pkey_add1_attr_by_OBJ(p8: PPKCS8_PRIV_KEY_INFO; obj: PASN1_OBJECT; _type: TIdC_INT; bytes: PIdAnsiChar; len: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'PKCS8_pkey_add1_attr_by_OBJ';
-procedure X509_PUBKEY_set0_public_key(pub: PX509_PUBKEY; penc: PIdAnsiChar; penclen: TIdC_INT); cdecl external CLibCrypto name 'X509_PUBKEY_set0_public_key';
+function X509_PUBKEY_set0_public_key(pub: PX509_PUBKEY; penc: PIdAnsiChar; penclen: TIdC_INT): void; cdecl external CLibCrypto name 'X509_PUBKEY_set0_public_key';
 function X509_PUBKEY_set0_param(pub: PX509_PUBKEY; aobj: PASN1_OBJECT; ptype: TIdC_INT; pval: Pointer; penc: PIdAnsiChar; penclen: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'X509_PUBKEY_set0_param';
 function X509_PUBKEY_get0_param(ppkalg: PPASN1_OBJECT; pk: PPIdAnsiChar; ppklen: PIdC_INT; pa: PPX509_ALGOR; pub: PX509_PUBKEY): TIdC_INT; cdecl external CLibCrypto name 'X509_PUBKEY_get0_param';
 function X509_PUBKEY_eq(a: PX509_PUBKEY; b: PX509_PUBKEY): TIdC_INT; cdecl external CLibCrypto name 'X509_PUBKEY_eq';
@@ -4910,7 +5098,7 @@ end;
 // ERRORS STUBS
 // =============================================================================
 
-procedure ERR_X509_CRL_set_default_method(meth: PX509_CRL_METHOD); cdecl
+function ERR_X509_CRL_set_default_method(meth: PX509_CRL_METHOD): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_CRL_set_default_method_procname);
 end;
@@ -4920,12 +5108,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_CRL_METHOD_new_procname);
 end;
 
-procedure ERR_X509_CRL_METHOD_free(m: PX509_CRL_METHOD); cdecl
+function ERR_X509_CRL_METHOD_free(m: PX509_CRL_METHOD): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_CRL_METHOD_free_procname);
 end;
 
-procedure ERR_X509_CRL_set_meth_data(crl: PX509_CRL; dat: Pointer); cdecl
+function ERR_X509_CRL_set_meth_data(crl: PX509_CRL; dat: Pointer): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_CRL_set_meth_data_procname);
 end;
@@ -5455,12 +5643,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_ALGOR_set0_procname);
 end;
 
-procedure ERR_X509_ALGOR_get0(paobj: PPASN1_OBJECT; pptype: PIdC_INT; ppval: PPointer; algor: PX509_ALGOR); cdecl
+function ERR_X509_ALGOR_get0(paobj: PPASN1_OBJECT; pptype: PIdC_INT; ppval: PPointer; algor: PX509_ALGOR): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_ALGOR_get0_procname);
 end;
 
-procedure ERR_X509_ALGOR_set_md(alg: PX509_ALGOR; md: PEVP_MD); cdecl
+function ERR_X509_ALGOR_set_md(alg: PX509_ALGOR; md: PEVP_MD): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_ALGOR_set_md_procname);
 end;
@@ -5485,7 +5673,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_NAME_ENTRY_dup_procname);
 end;
 
-function ERR_X509_cmp_time(s: PASN1_TIME; t: PIdC_TIME_T): TIdC_INT; cdecl
+function ERR_X509_cmp_time(s: PASN1_TIME; t: PIdC_TIMET): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_cmp_time_procname);
 end;
@@ -5500,12 +5688,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_cmp_timeframe_procname);
 end;
 
-function ERR_X509_time_adj(s: PASN1_TIME; adj: TIdC_LONG; t: PIdC_TIME_T): PASN1_TIME; cdecl
+function ERR_X509_time_adj(s: PASN1_TIME; adj: TIdC_LONG; t: PIdC_TIMET): PASN1_TIME; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_time_adj_procname);
 end;
 
-function ERR_X509_time_adj_ex(s: PASN1_TIME; offset_day: TIdC_INT; offset_sec: TIdC_LONG; t: PIdC_TIME_T): PASN1_TIME; cdecl
+function ERR_X509_time_adj_ex(s: PASN1_TIME; offset_day: TIdC_INT; offset_sec: TIdC_LONG; t: PIdC_TIMET): PASN1_TIME; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_time_adj_ex_procname);
 end;
@@ -5560,7 +5748,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_ALGOR_new_procname);
 end;
 
-procedure ERR_X509_ALGOR_free(a: PX509_ALGOR); cdecl
+function ERR_X509_ALGOR_free(a: PX509_ALGOR): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_ALGOR_free_procname);
 end;
@@ -5600,7 +5788,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_VAL_new_procname);
 end;
 
-procedure ERR_X509_VAL_free(a: PX509_VAL); cdecl
+function ERR_X509_VAL_free(a: PX509_VAL): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_VAL_free_procname);
 end;
@@ -5625,7 +5813,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_PUBKEY_new_procname);
 end;
 
-procedure ERR_X509_PUBKEY_free(a: PX509_PUBKEY); cdecl
+function ERR_X509_PUBKEY_free(a: PX509_PUBKEY): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_PUBKEY_free_procname);
 end;
@@ -5725,7 +5913,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_SIG_new_procname);
 end;
 
-procedure ERR_X509_SIG_free(a: PX509_SIG); cdecl
+function ERR_X509_SIG_free(a: PX509_SIG): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_SIG_free_procname);
 end;
@@ -5745,12 +5933,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_SIG_it_procname);
 end;
 
-procedure ERR_X509_SIG_get0(sig: PX509_SIG; palg: PPX509_ALGOR; pdigest: PPASN1_OCTET_STRING); cdecl
+function ERR_X509_SIG_get0(sig: PX509_SIG; palg: PPX509_ALGOR; pdigest: PPASN1_OCTET_STRING): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_SIG_get0_procname);
 end;
 
-procedure ERR_X509_SIG_getm(sig: PX509_SIG; palg: PPX509_ALGOR; pdigest: PPASN1_OCTET_STRING); cdecl
+function ERR_X509_SIG_getm(sig: PX509_SIG; palg: PPX509_ALGOR; pdigest: PPASN1_OCTET_STRING): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_SIG_getm_procname);
 end;
@@ -5760,7 +5948,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_REQ_INFO_new_procname);
 end;
 
-procedure ERR_X509_REQ_INFO_free(a: PX509_REQ_INFO); cdecl
+function ERR_X509_REQ_INFO_free(a: PX509_REQ_INFO): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_REQ_INFO_free_procname);
 end;
@@ -5785,7 +5973,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_REQ_new_procname);
 end;
 
-procedure ERR_X509_REQ_free(a: PX509_REQ); cdecl
+function ERR_X509_REQ_free(a: PX509_REQ): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_REQ_free_procname);
 end;
@@ -5815,7 +6003,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_ATTRIBUTE_new_procname);
 end;
 
-procedure ERR_X509_ATTRIBUTE_free(a: PX509_ATTRIBUTE); cdecl
+function ERR_X509_ATTRIBUTE_free(a: PX509_ATTRIBUTE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_ATTRIBUTE_free_procname);
 end;
@@ -5845,7 +6033,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_EXTENSION_new_procname);
 end;
 
-procedure ERR_X509_EXTENSION_free(a: PX509_EXTENSION); cdecl
+function ERR_X509_EXTENSION_free(a: PX509_EXTENSION): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_EXTENSION_free_procname);
 end;
@@ -5885,7 +6073,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_NAME_ENTRY_new_procname);
 end;
 
-procedure ERR_X509_NAME_ENTRY_free(a: PX509_NAME_ENTRY); cdecl
+function ERR_X509_NAME_ENTRY_free(a: PX509_NAME_ENTRY): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_NAME_ENTRY_free_procname);
 end;
@@ -5910,7 +6098,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_NAME_new_procname);
 end;
 
-procedure ERR_X509_NAME_free(a: PX509_NAME); cdecl
+function ERR_X509_NAME_free(a: PX509_NAME): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_NAME_free_procname);
 end;
@@ -5940,7 +6128,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_CINF_new_procname);
 end;
 
-procedure ERR_X509_CINF_free(a: PX509_CINF); cdecl
+function ERR_X509_CINF_free(a: PX509_CINF): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_CINF_free_procname);
 end;
@@ -5965,7 +6153,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_new_procname);
 end;
 
-procedure ERR_X509_free(a: PX509); cdecl
+function ERR_X509_free(a: PX509): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_free_procname);
 end;
@@ -5995,7 +6183,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_CERT_AUX_new_procname);
 end;
 
-procedure ERR_X509_CERT_AUX_free(a: PX509_CERT_AUX); cdecl
+function ERR_X509_CERT_AUX_free(a: PX509_CERT_AUX): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_CERT_AUX_free_procname);
 end;
@@ -6040,22 +6228,22 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(i2d_re_X509_tbs_procname);
 end;
 
-function ERR_X509_SIG_INFO_get(siginf: PX509_SIG_INFO; mdnid: PIdC_INT; pknid: PIdC_INT; secbits: PIdC_INT; flags: PUInt32): TIdC_INT; cdecl
+function ERR_X509_SIG_INFO_get(siginf: PX509_SIG_INFO; mdnid: PIdC_INT; pknid: PIdC_INT; secbits: PIdC_INT; flags: PIdC_UINT32): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_SIG_INFO_get_procname);
 end;
 
-procedure ERR_X509_SIG_INFO_set(siginf: PX509_SIG_INFO; mdnid: TIdC_INT; pknid: TIdC_INT; secbits: TIdC_INT; flags: UInt32); cdecl
+function ERR_X509_SIG_INFO_set(siginf: PX509_SIG_INFO; mdnid: TIdC_INT; pknid: TIdC_INT; secbits: TIdC_INT; flags: TIdC_UINT32): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_SIG_INFO_set_procname);
 end;
 
-function ERR_X509_get_signature_info(x: PX509; mdnid: PIdC_INT; pknid: PIdC_INT; secbits: PIdC_INT; flags: PUInt32): TIdC_INT; cdecl
+function ERR_X509_get_signature_info(x: PX509; mdnid: PIdC_INT; pknid: PIdC_INT; secbits: PIdC_INT; flags: PIdC_UINT32): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_get_signature_info_procname);
 end;
 
-procedure ERR_X509_get0_signature(psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR; x: PX509); cdecl
+function ERR_X509_get0_signature(psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR; x: PX509): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_get0_signature_procname);
 end;
@@ -6065,7 +6253,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_get_signature_nid_procname);
 end;
 
-procedure ERR_X509_set0_distinguishing_id(x: PX509; d_id: PASN1_OCTET_STRING); cdecl
+function ERR_X509_set0_distinguishing_id(x: PX509; d_id: PASN1_OCTET_STRING): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_set0_distinguishing_id_procname);
 end;
@@ -6075,7 +6263,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_get0_distinguishing_id_procname);
 end;
 
-procedure ERR_X509_REQ_set0_distinguishing_id(x: PX509_REQ; d_id: PASN1_OCTET_STRING); cdecl
+function ERR_X509_REQ_set0_distinguishing_id(x: PX509_REQ; d_id: PASN1_OCTET_STRING): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_REQ_set0_distinguishing_id_procname);
 end;
@@ -6110,7 +6298,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_REVOKED_new_procname);
 end;
 
-procedure ERR_X509_REVOKED_free(a: PX509_REVOKED); cdecl
+function ERR_X509_REVOKED_free(a: PX509_REVOKED): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_REVOKED_free_procname);
 end;
@@ -6135,7 +6323,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_CRL_INFO_new_procname);
 end;
 
-procedure ERR_X509_CRL_INFO_free(a: PX509_CRL_INFO); cdecl
+function ERR_X509_CRL_INFO_free(a: PX509_CRL_INFO): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_CRL_INFO_free_procname);
 end;
@@ -6160,7 +6348,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_CRL_new_procname);
 end;
 
-procedure ERR_X509_CRL_free(a: PX509_CRL); cdecl
+function ERR_X509_CRL_free(a: PX509_CRL): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_CRL_free_procname);
 end;
@@ -6205,7 +6393,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_PKEY_new_procname);
 end;
 
-procedure ERR_X509_PKEY_free(a: PX509_PKEY); cdecl
+function ERR_X509_PKEY_free(a: PX509_PKEY): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_PKEY_free_procname);
 end;
@@ -6215,7 +6403,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(NETSCAPE_SPKI_new_procname);
 end;
 
-procedure ERR_NETSCAPE_SPKI_free(a: PNETSCAPE_SPKI); cdecl
+function ERR_NETSCAPE_SPKI_free(a: PNETSCAPE_SPKI): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(NETSCAPE_SPKI_free_procname);
 end;
@@ -6240,7 +6428,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(NETSCAPE_SPKAC_new_procname);
 end;
 
-procedure ERR_NETSCAPE_SPKAC_free(a: PNETSCAPE_SPKAC); cdecl
+function ERR_NETSCAPE_SPKAC_free(a: PNETSCAPE_SPKAC): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(NETSCAPE_SPKAC_free_procname);
 end;
@@ -6265,7 +6453,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(NETSCAPE_CERT_SEQUENCE_new_procname);
 end;
 
-procedure ERR_NETSCAPE_CERT_SEQUENCE_free(a: PNETSCAPE_CERT_SEQUENCE); cdecl
+function ERR_NETSCAPE_CERT_SEQUENCE_free(a: PNETSCAPE_CERT_SEQUENCE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(NETSCAPE_CERT_SEQUENCE_free_procname);
 end;
@@ -6290,7 +6478,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_INFO_new_procname);
 end;
 
-procedure ERR_X509_INFO_free(a: PX509_INFO); cdecl
+function ERR_X509_INFO_free(a: PX509_INFO): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_INFO_free_procname);
 end;
@@ -6440,7 +6628,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_get0_extensions_procname);
 end;
 
-procedure ERR_X509_get0_uids(x: PX509; piuid: PPASN1_BIT_STRING; psuid: PPASN1_BIT_STRING); cdecl
+function ERR_X509_get0_uids(x: PX509; piuid: PPASN1_BIT_STRING; psuid: PPASN1_BIT_STRING): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_get0_uids_procname);
 end;
@@ -6485,12 +6673,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_REQ_set_subject_name_procname);
 end;
 
-procedure ERR_X509_REQ_get0_signature(req: PX509_REQ; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR); cdecl
+function ERR_X509_REQ_get0_signature(req: PX509_REQ; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_REQ_get0_signature_procname);
 end;
 
-procedure ERR_X509_REQ_set0_signature(req: PX509_REQ; psig: PASN1_BIT_STRING); cdecl
+function ERR_X509_REQ_set0_signature(req: PX509_REQ; psig: PASN1_BIT_STRING): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_REQ_set0_signature_procname);
 end;
@@ -6540,7 +6728,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_REQ_get_extension_nids_procname);
 end;
 
-procedure ERR_X509_REQ_set_extension_nids(nids: PIdC_INT); cdecl
+function ERR_X509_REQ_set_extension_nids(nids: PIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_REQ_set_extension_nids_procname);
 end;
@@ -6670,7 +6858,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_CRL_get0_tbs_sigalg_procname);
 end;
 
-procedure ERR_X509_CRL_get0_signature(crl: PX509_CRL; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR); cdecl
+function ERR_X509_CRL_get0_signature(crl: PX509_CRL; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_CRL_get0_signature_procname);
 end;
@@ -6735,7 +6923,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_CRL_check_suiteb_procname);
 end;
 
-procedure ERR_OSSL_STACK_OF_X509_free(certs: Pstack_st_X509); cdecl
+function ERR_OSSL_STACK_OF_X509_free(certs: Pstack_st_X509): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STACK_OF_X509_free_procname);
 end;
@@ -7375,7 +7563,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PBEPARAM_new_procname);
 end;
 
-procedure ERR_PBEPARAM_free(a: PPBEPARAM); cdecl
+function ERR_PBEPARAM_free(a: PPBEPARAM): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PBEPARAM_free_procname);
 end;
@@ -7400,7 +7588,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PBE2PARAM_new_procname);
 end;
 
-procedure ERR_PBE2PARAM_free(a: PPBE2PARAM); cdecl
+function ERR_PBE2PARAM_free(a: PPBE2PARAM): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PBE2PARAM_free_procname);
 end;
@@ -7425,7 +7613,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PBKDF2PARAM_new_procname);
 end;
 
-procedure ERR_PBKDF2PARAM_free(a: PPBKDF2PARAM); cdecl
+function ERR_PBKDF2PARAM_free(a: PPBKDF2PARAM): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PBKDF2PARAM_free_procname);
 end;
@@ -7450,7 +7638,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PBMAC1PARAM_new_procname);
 end;
 
-procedure ERR_PBMAC1PARAM_free(a: PPBMAC1PARAM); cdecl
+function ERR_PBMAC1PARAM_free(a: PPBMAC1PARAM): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PBMAC1PARAM_free_procname);
 end;
@@ -7475,7 +7663,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SCRYPT_PARAMS_new_procname);
 end;
 
-procedure ERR_SCRYPT_PARAMS_free(a: PSCRYPT_PARAMS); cdecl
+function ERR_SCRYPT_PARAMS_free(a: PSCRYPT_PARAMS): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SCRYPT_PARAMS_free_procname);
 end;
@@ -7530,7 +7718,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKCS5_pbe2_set_iv_ex_procname);
 end;
 
-function ERR_PKCS5_pbe2_set_scrypt(cipher: PEVP_CIPHER; salt: PIdAnsiChar; saltlen: TIdC_INT; aiv: PIdAnsiChar; N: UInt64; r: UInt64; p: UInt64): PX509_ALGOR; cdecl
+function ERR_PKCS5_pbe2_set_scrypt(cipher: PEVP_CIPHER; salt: PIdAnsiChar; saltlen: TIdC_INT; aiv: PIdAnsiChar; N: TIdC_UINT64; r: TIdC_UINT64; p: TIdC_UINT64): PX509_ALGOR; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKCS5_pbe2_set_scrypt_procname);
 end;
@@ -7555,7 +7743,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKCS8_PRIV_KEY_INFO_new_procname);
 end;
 
-procedure ERR_PKCS8_PRIV_KEY_INFO_free(a: PPKCS8_PRIV_KEY_INFO); cdecl
+function ERR_PKCS8_PRIV_KEY_INFO_free(a: PPKCS8_PRIV_KEY_INFO): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKCS8_PRIV_KEY_INFO_free_procname);
 end;
@@ -7620,7 +7808,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKCS8_pkey_add1_attr_by_OBJ_procname);
 end;
 
-procedure ERR_X509_PUBKEY_set0_public_key(pub: PX509_PUBKEY; penc: PIdAnsiChar; penclen: TIdC_INT); cdecl
+function ERR_X509_PUBKEY_set0_public_key(pub: PX509_PUBKEY; penc: PIdAnsiChar; penclen: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_PUBKEY_set0_public_key_procname);
 end;

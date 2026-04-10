@@ -27,11 +27,14 @@ uses
   TaurusTLSHeaders_core;
 
 
+
+
+
 // =============================================================================
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  TOSSL_trace_cb_func_cb = function(arg1: PIdAnsiChar; arg2: TIdC_SIZET; arg3: TIdC_INT; arg4: TIdC_INT; arg5: Pointer): TIdC_SIZET; cdecl;
+  TOSSL_trace_cb = function(buffer: PIdAnsiChar; count: TIdC_SIZET; category: TIdC_INT; cmd: TIdC_INT; data: Pointer): TIdC_ULONG; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -86,7 +89,7 @@ var
   OSSL_trace_set_suffix: function(category: TIdC_INT; suffix: PIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_trace_set_suffix}
 
-  OSSL_trace_set_callback: function(category: TIdC_INT; callback: TOSSL_trace_cb_func_cb; data: Pointer): TIdC_INT; cdecl = nil;
+  OSSL_trace_set_callback: function(category: TIdC_INT; callback: TOSSL_trace_cb; data: Pointer): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_trace_set_callback}
 
   OSSL_trace_enabled: function(category: TIdC_INT): TIdC_INT; cdecl = nil;
@@ -95,7 +98,7 @@ var
   OSSL_trace_begin: function(category: TIdC_INT): PBIO; cdecl = nil;
   {$EXTERNALSYM OSSL_trace_begin}
 
-  OSSL_trace_end: procedure(category: TIdC_INT; channel: PBIO); cdecl = nil;
+  OSSL_trace_end: function(category: TIdC_INT; channel: PBIO): void; cdecl = nil;
   {$EXTERNALSYM OSSL_trace_end}
 
   OSSL_trace_string: function(_out: PBIO; text: TIdC_INT; full: TIdC_INT; data: PIdAnsiChar; size: TIdC_SIZET): TIdC_INT; cdecl = nil;
@@ -114,10 +117,10 @@ function OSSL_trace_get_category_name(num: TIdC_INT): PIdAnsiChar; cdecl;
 function OSSL_trace_set_channel(category: TIdC_INT; channel: PBIO): TIdC_INT; cdecl;
 function OSSL_trace_set_prefix(category: TIdC_INT; prefix: PIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_trace_set_suffix(category: TIdC_INT; suffix: PIdAnsiChar): TIdC_INT; cdecl;
-function OSSL_trace_set_callback(category: TIdC_INT; callback: TOSSL_trace_cb_func_cb; data: Pointer): TIdC_INT; cdecl;
+function OSSL_trace_set_callback(category: TIdC_INT; callback: TOSSL_trace_cb; data: Pointer): TIdC_INT; cdecl;
 function OSSL_trace_enabled(category: TIdC_INT): TIdC_INT; cdecl;
 function OSSL_trace_begin(category: TIdC_INT): PBIO; cdecl;
-procedure OSSL_trace_end(category: TIdC_INT; channel: PBIO); cdecl;
+function OSSL_trace_end(category: TIdC_INT; channel: PBIO): void; cdecl;
 function OSSL_trace_string(_out: PBIO; text: TIdC_INT; full: TIdC_INT; data: PIdAnsiChar; size: TIdC_SIZET): TIdC_INT; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
@@ -125,23 +128,23 @@ function OSSL_trace_string(_out: PBIO; text: TIdC_INT; full: TIdC_INT; data: PId
 // INLINE OR MACRO ROUTINES
 // =============================================================================
 
-function OSSL_TRACE_BEGIN(category: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OSSL_TRACE_BEGIN(category: Pointer): TIdC_INT; cdecl;
 
-function OSSL_TRACE_END(category: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OSSL_TRACE_END(category: Pointer): TIdC_INT; cdecl;
 
-function OSSL_TRACE_CANCEL(category: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OSSL_TRACE_CANCEL(category: Pointer): TIdC_INT; cdecl;
 
-function OSSL_TRACE1(category: Pointer; format: Pointer; arg1: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OSSL_TRACE1(category: Pointer; format: Pointer; arg1: Pointer): TIdC_INT; cdecl;
 
-function OSSL_TRACE2(category: Pointer; format: Pointer; arg1: Pointer; arg2: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OSSL_TRACE2(category: Pointer; format: Pointer; arg1: Pointer; arg2: Pointer): TIdC_INT; cdecl;
 
-function OSSL_TRACE9(category: Pointer; format: Pointer; arg1: Pointer; arg2: Pointer; arg3: Pointer; arg4: Pointer; arg5: Pointer; arg6: Pointer; arg7: Pointer; arg8: Pointer; arg9: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OSSL_TRACE9(category: Pointer; format: Pointer; arg1: Pointer; arg2: Pointer; arg3: Pointer; arg4: Pointer; arg5: Pointer; arg6: Pointer; arg7: Pointer; arg8: Pointer; arg9: Pointer): TIdC_INT; cdecl;
 
 
 implementation
@@ -165,10 +168,10 @@ function OSSL_trace_get_category_name(num: TIdC_INT): PIdAnsiChar; cdecl externa
 function OSSL_trace_set_channel(category: TIdC_INT; channel: PBIO): TIdC_INT; cdecl external CLibCrypto name 'OSSL_trace_set_channel';
 function OSSL_trace_set_prefix(category: TIdC_INT; prefix: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_trace_set_prefix';
 function OSSL_trace_set_suffix(category: TIdC_INT; suffix: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_trace_set_suffix';
-function OSSL_trace_set_callback(category: TIdC_INT; callback: TOSSL_trace_cb_func_cb; data: Pointer): TIdC_INT; cdecl external CLibCrypto name 'OSSL_trace_set_callback';
+function OSSL_trace_set_callback(category: TIdC_INT; callback: TOSSL_trace_cb; data: Pointer): TIdC_INT; cdecl external CLibCrypto name 'OSSL_trace_set_callback';
 function OSSL_trace_enabled(category: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_trace_enabled';
 function OSSL_trace_begin(category: TIdC_INT): PBIO; cdecl external CLibCrypto name 'OSSL_trace_begin';
-procedure OSSL_trace_end(category: TIdC_INT; channel: PBIO); cdecl external CLibCrypto name 'OSSL_trace_end';
+function OSSL_trace_end(category: TIdC_INT; channel: PBIO): void; cdecl external CLibCrypto name 'OSSL_trace_end';
 function OSSL_trace_string(_out: PBIO; text: TIdC_INT; full: TIdC_INT; data: PIdAnsiChar; size: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_trace_string';
 {$ENDIF}
 
@@ -312,7 +315,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_trace_set_suffix_procname);
 end;
 
-function ERR_OSSL_trace_set_callback(category: TIdC_INT; callback: TOSSL_trace_cb_func_cb; data: Pointer): TIdC_INT; cdecl
+function ERR_OSSL_trace_set_callback(category: TIdC_INT; callback: TOSSL_trace_cb; data: Pointer): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_trace_set_callback_procname);
 end;
@@ -327,7 +330,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_trace_begin_procname);
 end;
 
-procedure ERR_OSSL_trace_end(category: TIdC_INT; channel: PBIO); cdecl
+function ERR_OSSL_trace_end(category: TIdC_INT; channel: PBIO): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_trace_end_procname);
 end;

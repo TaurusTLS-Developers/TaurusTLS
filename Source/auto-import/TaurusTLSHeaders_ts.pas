@@ -26,82 +26,53 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   PS_msg_imprint_st = ^TS_msg_imprint_st;
-  TS_msg_imprint_st = record end;
+  TS_msg_imprint_st =   record end;
   {$EXTERNALSYM PS_msg_imprint_st}
 
-  PS_MSG_IMPRINT = ^TS_MSG_IMPRINT;
-  TS_MSG_IMPRINT = TS_msg_imprint_st;
-  {$EXTERNALSYM PS_MSG_IMPRINT}
-
   PS_req_st = ^TS_req_st;
-  TS_req_st = record end;
+  TS_req_st =   record end;
   {$EXTERNALSYM PS_req_st}
 
-  PS_REQ = ^TS_REQ;
-  TS_REQ = TS_req_st;
-  {$EXTERNALSYM PS_REQ}
-
   PS_accuracy_st = ^TS_accuracy_st;
-  TS_accuracy_st = record end;
+  TS_accuracy_st =   record end;
   {$EXTERNALSYM PS_accuracy_st}
 
-  PS_ACCURACY = ^TS_ACCURACY;
-  TS_ACCURACY = TS_accuracy_st;
-  {$EXTERNALSYM PS_ACCURACY}
-
   PS_tst_info_st = ^TS_tst_info_st;
-  TS_tst_info_st = record end;
+  TS_tst_info_st =   record end;
   {$EXTERNALSYM PS_tst_info_st}
 
-  PS_TST_INFO = ^TS_TST_INFO;
-  TS_TST_INFO = TS_tst_info_st;
-  {$EXTERNALSYM PS_TST_INFO}
-
   PS_status_info_st = ^TS_status_info_st;
-  TS_status_info_st = record end;
+  TS_status_info_st =   record end;
   {$EXTERNALSYM PS_status_info_st}
 
-  PS_STATUS_INFO = ^TS_STATUS_INFO;
-  TS_STATUS_INFO = TS_status_info_st;
-  {$EXTERNALSYM PS_STATUS_INFO}
-
   PS_resp_st = ^TS_resp_st;
-  TS_resp_st = record end;
+  TS_resp_st =   record end;
   {$EXTERNALSYM PS_resp_st}
 
-  PS_RESP = ^TS_RESP;
-  TS_RESP = TS_resp_st;
-  {$EXTERNALSYM PS_RESP}
-
   PS_resp_ctx = ^TS_resp_ctx;
-  TS_resp_ctx = record end;
+  TS_resp_ctx =   record end;
   {$EXTERNALSYM PS_resp_ctx}
 
-  { TODO 1 -cID Collision detected : Review it and update. }
-  // Collision with TS_resp_ctx:
-  // typedef struct TS_resp_ctx TS_RESP_CTX
-
   PS_verify_ctx = ^TS_verify_ctx;
-  TS_verify_ctx = record end;
+  TS_verify_ctx =   record end;
   {$EXTERNALSYM PS_verify_ctx}
-
-  { TODO 1 -cID Collision detected : Review it and update. }
-  // Collision with TS_verify_ctx:
-  // typedef struct TS_verify_ctx TS_VERIFY_CTX
 
 
 // =============================================================================
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  TS_serial_cb_func_cb = function(arg1: PS_resp_ctx; arg2: Pointer): PASN1_INTEGER; cdecl;
-  TS_time_cb_func_cb = function(arg1: PS_resp_ctx; arg2: Pointer; arg3: PIdC_LONG; arg4: PIdC_LONG): TIdC_INT; cdecl;
-  TS_extension_cb_func_cb = function(arg1: PS_resp_ctx; arg2: PX509_EXTENSION; arg3: Pointer): TIdC_INT; cdecl;
+  TS_serial_cb = function(arg1: PS_resp_ctx; arg2: Pointer): Pasn1_string_st; cdecl;
+  TS_time_cb = function(arg1: PS_resp_ctx; arg2: Pointer; sec: PIdC_LONG; usec: PIdC_LONG): TIdC_INT; cdecl;
+  TS_extension_cb = function(arg1: PS_resp_ctx; arg2: PX509_EXTENSION; arg3: Pointer): TIdC_INT; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -147,7 +118,7 @@ var
   TS_REQ_new: function: PS_REQ; cdecl = nil;
   {$EXTERNALSYM TS_REQ_new}
 
-  TS_REQ_free: procedure(a: PS_REQ); cdecl = nil;
+  TS_REQ_free: function(a: PS_REQ): void; cdecl = nil;
   {$EXTERNALSYM TS_REQ_free}
 
   d2i_TS_REQ: function(a: PPS_REQ; _in: PPIdAnsiChar; len: TIdC_LONG): PS_REQ; cdecl = nil;
@@ -174,7 +145,7 @@ var
   TS_MSG_IMPRINT_new: function: PS_MSG_IMPRINT; cdecl = nil;
   {$EXTERNALSYM TS_MSG_IMPRINT_new}
 
-  TS_MSG_IMPRINT_free: procedure(a: PS_MSG_IMPRINT); cdecl = nil;
+  TS_MSG_IMPRINT_free: function(a: PS_MSG_IMPRINT): void; cdecl = nil;
   {$EXTERNALSYM TS_MSG_IMPRINT_free}
 
   d2i_TS_MSG_IMPRINT: function(a: PPS_MSG_IMPRINT; _in: PPIdAnsiChar; len: TIdC_LONG): PS_MSG_IMPRINT; cdecl = nil;
@@ -201,7 +172,7 @@ var
   TS_RESP_new: function: PS_RESP; cdecl = nil;
   {$EXTERNALSYM TS_RESP_new}
 
-  TS_RESP_free: procedure(a: PS_RESP); cdecl = nil;
+  TS_RESP_free: function(a: PS_RESP): void; cdecl = nil;
   {$EXTERNALSYM TS_RESP_free}
 
   d2i_TS_RESP: function(a: PPS_RESP; _in: PPIdAnsiChar; len: TIdC_LONG): PS_RESP; cdecl = nil;
@@ -228,7 +199,7 @@ var
   TS_STATUS_INFO_new: function: PS_STATUS_INFO; cdecl = nil;
   {$EXTERNALSYM TS_STATUS_INFO_new}
 
-  TS_STATUS_INFO_free: procedure(a: PS_STATUS_INFO); cdecl = nil;
+  TS_STATUS_INFO_free: function(a: PS_STATUS_INFO): void; cdecl = nil;
   {$EXTERNALSYM TS_STATUS_INFO_free}
 
   d2i_TS_STATUS_INFO: function(a: PPS_STATUS_INFO; _in: PPIdAnsiChar; len: TIdC_LONG): PS_STATUS_INFO; cdecl = nil;
@@ -243,7 +214,7 @@ var
   TS_TST_INFO_new: function: PS_TST_INFO; cdecl = nil;
   {$EXTERNALSYM TS_TST_INFO_new}
 
-  TS_TST_INFO_free: procedure(a: PS_TST_INFO); cdecl = nil;
+  TS_TST_INFO_free: function(a: PS_TST_INFO): void; cdecl = nil;
   {$EXTERNALSYM TS_TST_INFO_free}
 
   d2i_TS_TST_INFO: function(a: PPS_TST_INFO; _in: PPIdAnsiChar; len: TIdC_LONG): PS_TST_INFO; cdecl = nil;
@@ -273,7 +244,7 @@ var
   TS_ACCURACY_new: function: PS_ACCURACY; cdecl = nil;
   {$EXTERNALSYM TS_ACCURACY_new}
 
-  TS_ACCURACY_free: procedure(a: PS_ACCURACY); cdecl = nil;
+  TS_ACCURACY_free: function(a: PS_ACCURACY): void; cdecl = nil;
   {$EXTERNALSYM TS_ACCURACY_free}
 
   d2i_TS_ACCURACY: function(a: PPS_ACCURACY; _in: PPIdAnsiChar; len: TIdC_LONG): PS_ACCURACY; cdecl = nil;
@@ -342,7 +313,7 @@ var
   TS_REQ_get_exts: function(a: PS_REQ): Pstack_st_X509_EXTENSION; cdecl = nil;
   {$EXTERNALSYM TS_REQ_get_exts}
 
-  TS_REQ_ext_free: procedure(a: PS_REQ); cdecl = nil;
+  TS_REQ_ext_free: function(a: PS_REQ): void; cdecl = nil;
   {$EXTERNALSYM TS_REQ_ext_free}
 
   TS_REQ_get_ext_count: function(a: PS_REQ): TIdC_INT; cdecl = nil;
@@ -378,7 +349,7 @@ var
   TS_RESP_get_status_info: function(a: PS_RESP): PS_STATUS_INFO; cdecl = nil;
   {$EXTERNALSYM TS_RESP_get_status_info}
 
-  TS_RESP_set_tst_info: procedure(a: PS_RESP; p7: PPKCS7; tst_info: PS_TST_INFO); cdecl = nil;
+  TS_RESP_set_tst_info: function(a: PS_RESP; p7: PPKCS7; tst_info: PS_TST_INFO): void; cdecl = nil;
   {$EXTERNALSYM TS_RESP_set_tst_info}
 
   TS_RESP_get_token: function(a: PS_RESP): PPKCS7; cdecl = nil;
@@ -462,7 +433,7 @@ var
   TS_TST_INFO_get_exts: function(a: PS_TST_INFO): Pstack_st_X509_EXTENSION; cdecl = nil;
   {$EXTERNALSYM TS_TST_INFO_get_exts}
 
-  TS_TST_INFO_ext_free: procedure(a: PS_TST_INFO); cdecl = nil;
+  TS_TST_INFO_ext_free: function(a: PS_TST_INFO): void; cdecl = nil;
   {$EXTERNALSYM TS_TST_INFO_ext_free}
 
   TS_TST_INFO_get_ext_count: function(a: PS_TST_INFO): TIdC_INT; cdecl = nil;
@@ -495,7 +466,7 @@ var
   TS_RESP_CTX_new_ex: function(libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PS_RESP_CTX; cdecl = nil;
   {$EXTERNALSYM TS_RESP_CTX_new_ex}
 
-  TS_RESP_CTX_free: procedure(ctx: PS_RESP_CTX); cdecl = nil;
+  TS_RESP_CTX_free: function(ctx: PS_RESP_CTX): void; cdecl = nil;
   {$EXTERNALSYM TS_RESP_CTX_free}
 
   TS_RESP_CTX_set_signer_cert: function(ctx: PS_RESP_CTX; signer: PX509): TIdC_INT; cdecl = nil;
@@ -528,16 +499,16 @@ var
   TS_RESP_CTX_set_clock_precision_digits: function(ctx: PS_RESP_CTX; clock_precision_digits: TIdC_UINT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM TS_RESP_CTX_set_clock_precision_digits}
 
-  TS_RESP_CTX_add_flags: procedure(ctx: PS_RESP_CTX; flags: TIdC_INT); cdecl = nil;
+  TS_RESP_CTX_add_flags: function(ctx: PS_RESP_CTX; flags: TIdC_INT): void; cdecl = nil;
   {$EXTERNALSYM TS_RESP_CTX_add_flags}
 
-  TS_RESP_CTX_set_serial_cb: procedure(ctx: PS_RESP_CTX; cb: TS_serial_cb_func_cb; data: Pointer); cdecl = nil;
+  TS_RESP_CTX_set_serial_cb: function(ctx: PS_RESP_CTX; cb: TS_serial_cb; data: Pointer): void; cdecl = nil;
   {$EXTERNALSYM TS_RESP_CTX_set_serial_cb}
 
-  TS_RESP_CTX_set_time_cb: procedure(ctx: PS_RESP_CTX; cb: TS_time_cb_func_cb; data: Pointer); cdecl = nil;
+  TS_RESP_CTX_set_time_cb: function(ctx: PS_RESP_CTX; cb: TS_time_cb; data: Pointer): void; cdecl = nil;
   {$EXTERNALSYM TS_RESP_CTX_set_time_cb}
 
-  TS_RESP_CTX_set_extension_cb: procedure(ctx: PS_RESP_CTX; cb: TS_extension_cb_func_cb; data: Pointer); cdecl = nil;
+  TS_RESP_CTX_set_extension_cb: function(ctx: PS_RESP_CTX; cb: TS_extension_cb; data: Pointer): void; cdecl = nil;
   {$EXTERNALSYM TS_RESP_CTX_set_extension_cb}
 
   TS_RESP_CTX_set_status_info: function(ctx: PS_RESP_CTX; status: TIdC_INT; text: PIdAnsiChar): TIdC_INT; cdecl = nil;
@@ -570,13 +541,13 @@ var
   TS_VERIFY_CTX_new: function: PS_VERIFY_CTX; cdecl = nil;
   {$EXTERNALSYM TS_VERIFY_CTX_new}
 
-  TS_VERIFY_CTX_init: procedure(ctx: PS_VERIFY_CTX); cdecl = nil;
+  TS_VERIFY_CTX_init: function(ctx: PS_VERIFY_CTX): void; cdecl = nil;
   {$EXTERNALSYM TS_VERIFY_CTX_init}
 
-  TS_VERIFY_CTX_free: procedure(ctx: PS_VERIFY_CTX); cdecl = nil;
+  TS_VERIFY_CTX_free: function(ctx: PS_VERIFY_CTX): void; cdecl = nil;
   {$EXTERNALSYM TS_VERIFY_CTX_free}
 
-  TS_VERIFY_CTX_cleanup: procedure(ctx: PS_VERIFY_CTX); cdecl = nil;
+  TS_VERIFY_CTX_cleanup: function(ctx: PS_VERIFY_CTX): void; cdecl = nil;
   {$EXTERNALSYM TS_VERIFY_CTX_cleanup}
 
   TS_VERIFY_CTX_set_flags: function(ctx: PS_VERIFY_CTX; f: TIdC_INT): TIdC_INT; cdecl = nil;
@@ -648,7 +619,7 @@ var
   TS_CONF_get_tsa_section: function(conf: PCONF; section: PIdAnsiChar): PIdAnsiChar; cdecl = nil;
   {$EXTERNALSYM TS_CONF_get_tsa_section}
 
-  TS_CONF_set_serial: function(conf: PCONF; section: PIdAnsiChar; cb: TS_serial_cb_func_cb; ctx: PS_RESP_CTX): TIdC_INT; cdecl = nil;
+  TS_CONF_set_serial: function(conf: PCONF; section: PIdAnsiChar; cb: TS_serial_cb; ctx: PS_RESP_CTX): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM TS_CONF_set_serial}
 
   TS_CONF_set_crypto_device: function(conf: PCONF; section: PIdAnsiChar; device: PIdAnsiChar): TIdC_INT; cdecl = nil;
@@ -705,7 +676,7 @@ var
 // =============================================================================
 
 function TS_REQ_new: PS_REQ; cdecl;
-procedure TS_REQ_free(a: PS_REQ); cdecl;
+function TS_REQ_free(a: PS_REQ): void; cdecl;
 function d2i_TS_REQ(a: PPS_REQ; _in: PPIdAnsiChar; len: TIdC_LONG): PS_REQ; cdecl;
 function i2d_TS_REQ(a: PS_REQ; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function TS_REQ_dup(a: PS_REQ): PS_REQ; cdecl;
@@ -714,7 +685,7 @@ function i2d_TS_REQ_fp(fp: PFILE; a: PS_REQ): TIdC_INT; cdecl;
 function d2i_TS_REQ_bio(fp: PBIO; a: PPS_REQ): PS_REQ; cdecl;
 function i2d_TS_REQ_bio(fp: PBIO; a: PS_REQ): TIdC_INT; cdecl;
 function TS_MSG_IMPRINT_new: PS_MSG_IMPRINT; cdecl;
-procedure TS_MSG_IMPRINT_free(a: PS_MSG_IMPRINT); cdecl;
+function TS_MSG_IMPRINT_free(a: PS_MSG_IMPRINT): void; cdecl;
 function d2i_TS_MSG_IMPRINT(a: PPS_MSG_IMPRINT; _in: PPIdAnsiChar; len: TIdC_LONG): PS_MSG_IMPRINT; cdecl;
 function i2d_TS_MSG_IMPRINT(a: PS_MSG_IMPRINT; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function TS_MSG_IMPRINT_dup(a: PS_MSG_IMPRINT): PS_MSG_IMPRINT; cdecl;
@@ -723,7 +694,7 @@ function i2d_TS_MSG_IMPRINT_fp(fp: PFILE; a: PS_MSG_IMPRINT): TIdC_INT; cdecl;
 function d2i_TS_MSG_IMPRINT_bio(bio: PBIO; a: PPS_MSG_IMPRINT): PS_MSG_IMPRINT; cdecl;
 function i2d_TS_MSG_IMPRINT_bio(bio: PBIO; a: PS_MSG_IMPRINT): TIdC_INT; cdecl;
 function TS_RESP_new: PS_RESP; cdecl;
-procedure TS_RESP_free(a: PS_RESP); cdecl;
+function TS_RESP_free(a: PS_RESP): void; cdecl;
 function d2i_TS_RESP(a: PPS_RESP; _in: PPIdAnsiChar; len: TIdC_LONG): PS_RESP; cdecl;
 function i2d_TS_RESP(a: PS_RESP; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function TS_RESP_dup(a: PS_RESP): PS_RESP; cdecl;
@@ -732,12 +703,12 @@ function i2d_TS_RESP_fp(fp: PFILE; a: PS_RESP): TIdC_INT; cdecl;
 function d2i_TS_RESP_bio(bio: PBIO; a: PPS_RESP): PS_RESP; cdecl;
 function i2d_TS_RESP_bio(bio: PBIO; a: PS_RESP): TIdC_INT; cdecl;
 function TS_STATUS_INFO_new: PS_STATUS_INFO; cdecl;
-procedure TS_STATUS_INFO_free(a: PS_STATUS_INFO); cdecl;
+function TS_STATUS_INFO_free(a: PS_STATUS_INFO): void; cdecl;
 function d2i_TS_STATUS_INFO(a: PPS_STATUS_INFO; _in: PPIdAnsiChar; len: TIdC_LONG): PS_STATUS_INFO; cdecl;
 function i2d_TS_STATUS_INFO(a: PS_STATUS_INFO; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function TS_STATUS_INFO_dup(a: PS_STATUS_INFO): PS_STATUS_INFO; cdecl;
 function TS_TST_INFO_new: PS_TST_INFO; cdecl;
-procedure TS_TST_INFO_free(a: PS_TST_INFO); cdecl;
+function TS_TST_INFO_free(a: PS_TST_INFO): void; cdecl;
 function d2i_TS_TST_INFO(a: PPS_TST_INFO; _in: PPIdAnsiChar; len: TIdC_LONG): PS_TST_INFO; cdecl;
 function i2d_TS_TST_INFO(a: PS_TST_INFO; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function TS_TST_INFO_dup(a: PS_TST_INFO): PS_TST_INFO; cdecl;
@@ -747,7 +718,7 @@ function i2d_TS_TST_INFO_fp(fp: PFILE; a: PS_TST_INFO): TIdC_INT; cdecl;
 function d2i_TS_TST_INFO_bio(bio: PBIO; a: PPS_TST_INFO): PS_TST_INFO; cdecl;
 function i2d_TS_TST_INFO_bio(bio: PBIO; a: PS_TST_INFO): TIdC_INT; cdecl;
 function TS_ACCURACY_new: PS_ACCURACY; cdecl;
-procedure TS_ACCURACY_free(a: PS_ACCURACY); cdecl;
+function TS_ACCURACY_free(a: PS_ACCURACY): void; cdecl;
 function d2i_TS_ACCURACY(a: PPS_ACCURACY; _in: PPIdAnsiChar; len: TIdC_LONG): PS_ACCURACY; cdecl;
 function i2d_TS_ACCURACY(a: PS_ACCURACY; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function TS_ACCURACY_dup(a: PS_ACCURACY): PS_ACCURACY; cdecl;
@@ -770,7 +741,7 @@ function TS_REQ_get_nonce(a: PS_REQ): PASN1_INTEGER; cdecl;
 function TS_REQ_set_cert_req(a: PS_REQ; cert_req: TIdC_INT): TIdC_INT; cdecl;
 function TS_REQ_get_cert_req(a: PS_REQ): TIdC_INT; cdecl;
 function TS_REQ_get_exts(a: PS_REQ): Pstack_st_X509_EXTENSION; cdecl;
-procedure TS_REQ_ext_free(a: PS_REQ); cdecl;
+function TS_REQ_ext_free(a: PS_REQ): void; cdecl;
 function TS_REQ_get_ext_count(a: PS_REQ): TIdC_INT; cdecl;
 function TS_REQ_get_ext_by_NID(a: PS_REQ; nid: TIdC_INT; lastpos: TIdC_INT): TIdC_INT; cdecl;
 function TS_REQ_get_ext_by_OBJ(a: PS_REQ; obj: PASN1_OBJECT; lastpos: TIdC_INT): TIdC_INT; cdecl;
@@ -782,7 +753,7 @@ function TS_REQ_get_ext_d2i(a: PS_REQ; nid: TIdC_INT; crit: PIdC_INT; idx: PIdC_
 function TS_REQ_print_bio(bio: PBIO; a: PS_REQ): TIdC_INT; cdecl;
 function TS_RESP_set_status_info(a: PS_RESP; info: PS_STATUS_INFO): TIdC_INT; cdecl;
 function TS_RESP_get_status_info(a: PS_RESP): PS_STATUS_INFO; cdecl;
-procedure TS_RESP_set_tst_info(a: PS_RESP; p7: PPKCS7; tst_info: PS_TST_INFO); cdecl;
+function TS_RESP_set_tst_info(a: PS_RESP; p7: PPKCS7; tst_info: PS_TST_INFO): void; cdecl;
 function TS_RESP_get_token(a: PS_RESP): PPKCS7; cdecl;
 function TS_RESP_get_tst_info(a: PS_RESP): PS_TST_INFO; cdecl;
 function TS_TST_INFO_set_version(a: PS_TST_INFO; version: TIdC_LONG): TIdC_INT; cdecl;
@@ -810,7 +781,7 @@ function TS_TST_INFO_get_nonce(a: PS_TST_INFO): PASN1_INTEGER; cdecl;
 function TS_TST_INFO_set_tsa(a: PS_TST_INFO; tsa: PGENERAL_NAME): TIdC_INT; cdecl;
 function TS_TST_INFO_get_tsa(a: PS_TST_INFO): PGENERAL_NAME; cdecl;
 function TS_TST_INFO_get_exts(a: PS_TST_INFO): Pstack_st_X509_EXTENSION; cdecl;
-procedure TS_TST_INFO_ext_free(a: PS_TST_INFO); cdecl;
+function TS_TST_INFO_ext_free(a: PS_TST_INFO): void; cdecl;
 function TS_TST_INFO_get_ext_count(a: PS_TST_INFO): TIdC_INT; cdecl;
 function TS_TST_INFO_get_ext_by_NID(a: PS_TST_INFO; nid: TIdC_INT; lastpos: TIdC_INT): TIdC_INT; cdecl;
 function TS_TST_INFO_get_ext_by_OBJ(a: PS_TST_INFO; obj: PASN1_OBJECT; lastpos: TIdC_INT): TIdC_INT; cdecl;
@@ -821,7 +792,7 @@ function TS_TST_INFO_add_ext(a: PS_TST_INFO; ex: PX509_EXTENSION; loc: TIdC_INT)
 function TS_TST_INFO_get_ext_d2i(a: PS_TST_INFO; nid: TIdC_INT; crit: PIdC_INT; idx: PIdC_INT): Pointer; cdecl;
 function TS_RESP_CTX_new: PS_RESP_CTX; cdecl;
 function TS_RESP_CTX_new_ex(libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PS_RESP_CTX; cdecl;
-procedure TS_RESP_CTX_free(ctx: PS_RESP_CTX); cdecl;
+function TS_RESP_CTX_free(ctx: PS_RESP_CTX): void; cdecl;
 function TS_RESP_CTX_set_signer_cert(ctx: PS_RESP_CTX; signer: PX509): TIdC_INT; cdecl;
 function TS_RESP_CTX_set_signer_key(ctx: PS_RESP_CTX; key: PEVP_PKEY): TIdC_INT; cdecl;
 function TS_RESP_CTX_set_signer_digest(ctx: PS_RESP_CTX; signer_digest: PEVP_MD): TIdC_INT; cdecl;
@@ -832,10 +803,10 @@ function TS_RESP_CTX_add_policy(ctx: PS_RESP_CTX; policy: PASN1_OBJECT): TIdC_IN
 function TS_RESP_CTX_add_md(ctx: PS_RESP_CTX; md: PEVP_MD): TIdC_INT; cdecl;
 function TS_RESP_CTX_set_accuracy(ctx: PS_RESP_CTX; secs: TIdC_INT; millis: TIdC_INT; micros: TIdC_INT): TIdC_INT; cdecl;
 function TS_RESP_CTX_set_clock_precision_digits(ctx: PS_RESP_CTX; clock_precision_digits: TIdC_UINT): TIdC_INT; cdecl;
-procedure TS_RESP_CTX_add_flags(ctx: PS_RESP_CTX; flags: TIdC_INT); cdecl;
-procedure TS_RESP_CTX_set_serial_cb(ctx: PS_RESP_CTX; cb: TS_serial_cb_func_cb; data: Pointer); cdecl;
-procedure TS_RESP_CTX_set_time_cb(ctx: PS_RESP_CTX; cb: TS_time_cb_func_cb; data: Pointer); cdecl;
-procedure TS_RESP_CTX_set_extension_cb(ctx: PS_RESP_CTX; cb: TS_extension_cb_func_cb; data: Pointer); cdecl;
+function TS_RESP_CTX_add_flags(ctx: PS_RESP_CTX; flags: TIdC_INT): void; cdecl;
+function TS_RESP_CTX_set_serial_cb(ctx: PS_RESP_CTX; cb: TS_serial_cb; data: Pointer): void; cdecl;
+function TS_RESP_CTX_set_time_cb(ctx: PS_RESP_CTX; cb: TS_time_cb; data: Pointer): void; cdecl;
+function TS_RESP_CTX_set_extension_cb(ctx: PS_RESP_CTX; cb: TS_extension_cb; data: Pointer): void; cdecl;
 function TS_RESP_CTX_set_status_info(ctx: PS_RESP_CTX; status: TIdC_INT; text: PIdAnsiChar): TIdC_INT; cdecl;
 function TS_RESP_CTX_set_status_info_cond(ctx: PS_RESP_CTX; status: TIdC_INT; text: PIdAnsiChar): TIdC_INT; cdecl;
 function TS_RESP_CTX_add_failure_info(ctx: PS_RESP_CTX; failure: TIdC_INT): TIdC_INT; cdecl;
@@ -846,9 +817,9 @@ function TS_RESP_verify_signature(token: PPKCS7; certs: Pstack_st_X509; store: P
 function TS_RESP_verify_response(ctx: PS_VERIFY_CTX; response: PS_RESP): TIdC_INT; cdecl;
 function TS_RESP_verify_token(ctx: PS_VERIFY_CTX; token: PPKCS7): TIdC_INT; cdecl;
 function TS_VERIFY_CTX_new: PS_VERIFY_CTX; cdecl;
-procedure TS_VERIFY_CTX_init(ctx: PS_VERIFY_CTX); cdecl;
-procedure TS_VERIFY_CTX_free(ctx: PS_VERIFY_CTX); cdecl;
-procedure TS_VERIFY_CTX_cleanup(ctx: PS_VERIFY_CTX); cdecl;
+function TS_VERIFY_CTX_init(ctx: PS_VERIFY_CTX): void; cdecl;
+function TS_VERIFY_CTX_free(ctx: PS_VERIFY_CTX): void; cdecl;
+function TS_VERIFY_CTX_cleanup(ctx: PS_VERIFY_CTX): void; cdecl;
 function TS_VERIFY_CTX_set_flags(ctx: PS_VERIFY_CTX; f: TIdC_INT): TIdC_INT; cdecl;
 function TS_VERIFY_CTX_add_flags(ctx: PS_VERIFY_CTX; f: TIdC_INT): TIdC_INT; cdecl;
 function TS_VERIFY_CTX_set_data(ctx: PS_VERIFY_CTX; b: PBIO): PBIO; cdecl; deprecated 'In OpenSSL 3_4_0';
@@ -872,7 +843,7 @@ function TS_CONF_load_cert(_file: PIdAnsiChar): PX509; cdecl;
 function TS_CONF_load_certs(_file: PIdAnsiChar): Pstack_st_X509; cdecl;
 function TS_CONF_load_key(_file: PIdAnsiChar; pass: PIdAnsiChar): PEVP_PKEY; cdecl;
 function TS_CONF_get_tsa_section(conf: PCONF; section: PIdAnsiChar): PIdAnsiChar; cdecl;
-function TS_CONF_set_serial(conf: PCONF; section: PIdAnsiChar; cb: TS_serial_cb_func_cb; ctx: PS_RESP_CTX): TIdC_INT; cdecl;
+function TS_CONF_set_serial(conf: PCONF; section: PIdAnsiChar; cb: TS_serial_cb; ctx: PS_RESP_CTX): TIdC_INT; cdecl;
 function TS_CONF_set_crypto_device(conf: PCONF; section: PIdAnsiChar; device: PIdAnsiChar): TIdC_INT; cdecl;
 function TS_CONF_set_default_engine(name: PIdAnsiChar): TIdC_INT; cdecl;
 function TS_CONF_set_signer_cert(conf: PCONF; section: PIdAnsiChar; cert: PIdAnsiChar; ctx: PS_RESP_CTX): TIdC_INT; cdecl;
@@ -894,8 +865,8 @@ function TS_CONF_set_ess_cert_id_digest(conf: PCONF; section: PIdAnsiChar; ctx: 
 // INLINE OR MACRO ROUTINES
 // =============================================================================
 
-function TS_VERIFY_CTS_set_certs(ctx: Pointer; cert: Pointer): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function TS_VERIFY_CTS_set_certs(ctx: Pointer; cert: Pointer): TIdC_INT; cdecl;
 
 
 implementation
@@ -915,7 +886,7 @@ uses
 // =============================================================================
 
 function TS_REQ_new: PS_REQ; cdecl external CLibCrypto name 'TS_REQ_new';
-procedure TS_REQ_free(a: PS_REQ); cdecl external CLibCrypto name 'TS_REQ_free';
+function TS_REQ_free(a: PS_REQ): void; cdecl external CLibCrypto name 'TS_REQ_free';
 function d2i_TS_REQ(a: PPS_REQ; _in: PPIdAnsiChar; len: TIdC_LONG): PS_REQ; cdecl external CLibCrypto name 'd2i_TS_REQ';
 function i2d_TS_REQ(a: PS_REQ; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_TS_REQ';
 function TS_REQ_dup(a: PS_REQ): PS_REQ; cdecl external CLibCrypto name 'TS_REQ_dup';
@@ -924,7 +895,7 @@ function i2d_TS_REQ_fp(fp: PFILE; a: PS_REQ): TIdC_INT; cdecl external CLibCrypt
 function d2i_TS_REQ_bio(fp: PBIO; a: PPS_REQ): PS_REQ; cdecl external CLibCrypto name 'd2i_TS_REQ_bio';
 function i2d_TS_REQ_bio(fp: PBIO; a: PS_REQ): TIdC_INT; cdecl external CLibCrypto name 'i2d_TS_REQ_bio';
 function TS_MSG_IMPRINT_new: PS_MSG_IMPRINT; cdecl external CLibCrypto name 'TS_MSG_IMPRINT_new';
-procedure TS_MSG_IMPRINT_free(a: PS_MSG_IMPRINT); cdecl external CLibCrypto name 'TS_MSG_IMPRINT_free';
+function TS_MSG_IMPRINT_free(a: PS_MSG_IMPRINT): void; cdecl external CLibCrypto name 'TS_MSG_IMPRINT_free';
 function d2i_TS_MSG_IMPRINT(a: PPS_MSG_IMPRINT; _in: PPIdAnsiChar; len: TIdC_LONG): PS_MSG_IMPRINT; cdecl external CLibCrypto name 'd2i_TS_MSG_IMPRINT';
 function i2d_TS_MSG_IMPRINT(a: PS_MSG_IMPRINT; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_TS_MSG_IMPRINT';
 function TS_MSG_IMPRINT_dup(a: PS_MSG_IMPRINT): PS_MSG_IMPRINT; cdecl external CLibCrypto name 'TS_MSG_IMPRINT_dup';
@@ -933,7 +904,7 @@ function i2d_TS_MSG_IMPRINT_fp(fp: PFILE; a: PS_MSG_IMPRINT): TIdC_INT; cdecl ex
 function d2i_TS_MSG_IMPRINT_bio(bio: PBIO; a: PPS_MSG_IMPRINT): PS_MSG_IMPRINT; cdecl external CLibCrypto name 'd2i_TS_MSG_IMPRINT_bio';
 function i2d_TS_MSG_IMPRINT_bio(bio: PBIO; a: PS_MSG_IMPRINT): TIdC_INT; cdecl external CLibCrypto name 'i2d_TS_MSG_IMPRINT_bio';
 function TS_RESP_new: PS_RESP; cdecl external CLibCrypto name 'TS_RESP_new';
-procedure TS_RESP_free(a: PS_RESP); cdecl external CLibCrypto name 'TS_RESP_free';
+function TS_RESP_free(a: PS_RESP): void; cdecl external CLibCrypto name 'TS_RESP_free';
 function d2i_TS_RESP(a: PPS_RESP; _in: PPIdAnsiChar; len: TIdC_LONG): PS_RESP; cdecl external CLibCrypto name 'd2i_TS_RESP';
 function i2d_TS_RESP(a: PS_RESP; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_TS_RESP';
 function TS_RESP_dup(a: PS_RESP): PS_RESP; cdecl external CLibCrypto name 'TS_RESP_dup';
@@ -942,12 +913,12 @@ function i2d_TS_RESP_fp(fp: PFILE; a: PS_RESP): TIdC_INT; cdecl external CLibCry
 function d2i_TS_RESP_bio(bio: PBIO; a: PPS_RESP): PS_RESP; cdecl external CLibCrypto name 'd2i_TS_RESP_bio';
 function i2d_TS_RESP_bio(bio: PBIO; a: PS_RESP): TIdC_INT; cdecl external CLibCrypto name 'i2d_TS_RESP_bio';
 function TS_STATUS_INFO_new: PS_STATUS_INFO; cdecl external CLibCrypto name 'TS_STATUS_INFO_new';
-procedure TS_STATUS_INFO_free(a: PS_STATUS_INFO); cdecl external CLibCrypto name 'TS_STATUS_INFO_free';
+function TS_STATUS_INFO_free(a: PS_STATUS_INFO): void; cdecl external CLibCrypto name 'TS_STATUS_INFO_free';
 function d2i_TS_STATUS_INFO(a: PPS_STATUS_INFO; _in: PPIdAnsiChar; len: TIdC_LONG): PS_STATUS_INFO; cdecl external CLibCrypto name 'd2i_TS_STATUS_INFO';
 function i2d_TS_STATUS_INFO(a: PS_STATUS_INFO; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_TS_STATUS_INFO';
 function TS_STATUS_INFO_dup(a: PS_STATUS_INFO): PS_STATUS_INFO; cdecl external CLibCrypto name 'TS_STATUS_INFO_dup';
 function TS_TST_INFO_new: PS_TST_INFO; cdecl external CLibCrypto name 'TS_TST_INFO_new';
-procedure TS_TST_INFO_free(a: PS_TST_INFO); cdecl external CLibCrypto name 'TS_TST_INFO_free';
+function TS_TST_INFO_free(a: PS_TST_INFO): void; cdecl external CLibCrypto name 'TS_TST_INFO_free';
 function d2i_TS_TST_INFO(a: PPS_TST_INFO; _in: PPIdAnsiChar; len: TIdC_LONG): PS_TST_INFO; cdecl external CLibCrypto name 'd2i_TS_TST_INFO';
 function i2d_TS_TST_INFO(a: PS_TST_INFO; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_TS_TST_INFO';
 function TS_TST_INFO_dup(a: PS_TST_INFO): PS_TST_INFO; cdecl external CLibCrypto name 'TS_TST_INFO_dup';
@@ -957,7 +928,7 @@ function i2d_TS_TST_INFO_fp(fp: PFILE; a: PS_TST_INFO): TIdC_INT; cdecl external
 function d2i_TS_TST_INFO_bio(bio: PBIO; a: PPS_TST_INFO): PS_TST_INFO; cdecl external CLibCrypto name 'd2i_TS_TST_INFO_bio';
 function i2d_TS_TST_INFO_bio(bio: PBIO; a: PS_TST_INFO): TIdC_INT; cdecl external CLibCrypto name 'i2d_TS_TST_INFO_bio';
 function TS_ACCURACY_new: PS_ACCURACY; cdecl external CLibCrypto name 'TS_ACCURACY_new';
-procedure TS_ACCURACY_free(a: PS_ACCURACY); cdecl external CLibCrypto name 'TS_ACCURACY_free';
+function TS_ACCURACY_free(a: PS_ACCURACY): void; cdecl external CLibCrypto name 'TS_ACCURACY_free';
 function d2i_TS_ACCURACY(a: PPS_ACCURACY; _in: PPIdAnsiChar; len: TIdC_LONG): PS_ACCURACY; cdecl external CLibCrypto name 'd2i_TS_ACCURACY';
 function i2d_TS_ACCURACY(a: PS_ACCURACY; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_TS_ACCURACY';
 function TS_ACCURACY_dup(a: PS_ACCURACY): PS_ACCURACY; cdecl external CLibCrypto name 'TS_ACCURACY_dup';
@@ -980,7 +951,7 @@ function TS_REQ_get_nonce(a: PS_REQ): PASN1_INTEGER; cdecl external CLibCrypto n
 function TS_REQ_set_cert_req(a: PS_REQ; cert_req: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'TS_REQ_set_cert_req';
 function TS_REQ_get_cert_req(a: PS_REQ): TIdC_INT; cdecl external CLibCrypto name 'TS_REQ_get_cert_req';
 function TS_REQ_get_exts(a: PS_REQ): Pstack_st_X509_EXTENSION; cdecl external CLibCrypto name 'TS_REQ_get_exts';
-procedure TS_REQ_ext_free(a: PS_REQ); cdecl external CLibCrypto name 'TS_REQ_ext_free';
+function TS_REQ_ext_free(a: PS_REQ): void; cdecl external CLibCrypto name 'TS_REQ_ext_free';
 function TS_REQ_get_ext_count(a: PS_REQ): TIdC_INT; cdecl external CLibCrypto name 'TS_REQ_get_ext_count';
 function TS_REQ_get_ext_by_NID(a: PS_REQ; nid: TIdC_INT; lastpos: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'TS_REQ_get_ext_by_NID';
 function TS_REQ_get_ext_by_OBJ(a: PS_REQ; obj: PASN1_OBJECT; lastpos: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'TS_REQ_get_ext_by_OBJ';
@@ -992,7 +963,7 @@ function TS_REQ_get_ext_d2i(a: PS_REQ; nid: TIdC_INT; crit: PIdC_INT; idx: PIdC_
 function TS_REQ_print_bio(bio: PBIO; a: PS_REQ): TIdC_INT; cdecl external CLibCrypto name 'TS_REQ_print_bio';
 function TS_RESP_set_status_info(a: PS_RESP; info: PS_STATUS_INFO): TIdC_INT; cdecl external CLibCrypto name 'TS_RESP_set_status_info';
 function TS_RESP_get_status_info(a: PS_RESP): PS_STATUS_INFO; cdecl external CLibCrypto name 'TS_RESP_get_status_info';
-procedure TS_RESP_set_tst_info(a: PS_RESP; p7: PPKCS7; tst_info: PS_TST_INFO); cdecl external CLibCrypto name 'TS_RESP_set_tst_info';
+function TS_RESP_set_tst_info(a: PS_RESP; p7: PPKCS7; tst_info: PS_TST_INFO): void; cdecl external CLibCrypto name 'TS_RESP_set_tst_info';
 function TS_RESP_get_token(a: PS_RESP): PPKCS7; cdecl external CLibCrypto name 'TS_RESP_get_token';
 function TS_RESP_get_tst_info(a: PS_RESP): PS_TST_INFO; cdecl external CLibCrypto name 'TS_RESP_get_tst_info';
 function TS_TST_INFO_set_version(a: PS_TST_INFO; version: TIdC_LONG): TIdC_INT; cdecl external CLibCrypto name 'TS_TST_INFO_set_version';
@@ -1020,7 +991,7 @@ function TS_TST_INFO_get_nonce(a: PS_TST_INFO): PASN1_INTEGER; cdecl external CL
 function TS_TST_INFO_set_tsa(a: PS_TST_INFO; tsa: PGENERAL_NAME): TIdC_INT; cdecl external CLibCrypto name 'TS_TST_INFO_set_tsa';
 function TS_TST_INFO_get_tsa(a: PS_TST_INFO): PGENERAL_NAME; cdecl external CLibCrypto name 'TS_TST_INFO_get_tsa';
 function TS_TST_INFO_get_exts(a: PS_TST_INFO): Pstack_st_X509_EXTENSION; cdecl external CLibCrypto name 'TS_TST_INFO_get_exts';
-procedure TS_TST_INFO_ext_free(a: PS_TST_INFO); cdecl external CLibCrypto name 'TS_TST_INFO_ext_free';
+function TS_TST_INFO_ext_free(a: PS_TST_INFO): void; cdecl external CLibCrypto name 'TS_TST_INFO_ext_free';
 function TS_TST_INFO_get_ext_count(a: PS_TST_INFO): TIdC_INT; cdecl external CLibCrypto name 'TS_TST_INFO_get_ext_count';
 function TS_TST_INFO_get_ext_by_NID(a: PS_TST_INFO; nid: TIdC_INT; lastpos: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'TS_TST_INFO_get_ext_by_NID';
 function TS_TST_INFO_get_ext_by_OBJ(a: PS_TST_INFO; obj: PASN1_OBJECT; lastpos: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'TS_TST_INFO_get_ext_by_OBJ';
@@ -1031,7 +1002,7 @@ function TS_TST_INFO_add_ext(a: PS_TST_INFO; ex: PX509_EXTENSION; loc: TIdC_INT)
 function TS_TST_INFO_get_ext_d2i(a: PS_TST_INFO; nid: TIdC_INT; crit: PIdC_INT; idx: PIdC_INT): Pointer; cdecl external CLibCrypto name 'TS_TST_INFO_get_ext_d2i';
 function TS_RESP_CTX_new: PS_RESP_CTX; cdecl external CLibCrypto name 'TS_RESP_CTX_new';
 function TS_RESP_CTX_new_ex(libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PS_RESP_CTX; cdecl external CLibCrypto name 'TS_RESP_CTX_new_ex';
-procedure TS_RESP_CTX_free(ctx: PS_RESP_CTX); cdecl external CLibCrypto name 'TS_RESP_CTX_free';
+function TS_RESP_CTX_free(ctx: PS_RESP_CTX): void; cdecl external CLibCrypto name 'TS_RESP_CTX_free';
 function TS_RESP_CTX_set_signer_cert(ctx: PS_RESP_CTX; signer: PX509): TIdC_INT; cdecl external CLibCrypto name 'TS_RESP_CTX_set_signer_cert';
 function TS_RESP_CTX_set_signer_key(ctx: PS_RESP_CTX; key: PEVP_PKEY): TIdC_INT; cdecl external CLibCrypto name 'TS_RESP_CTX_set_signer_key';
 function TS_RESP_CTX_set_signer_digest(ctx: PS_RESP_CTX; signer_digest: PEVP_MD): TIdC_INT; cdecl external CLibCrypto name 'TS_RESP_CTX_set_signer_digest';
@@ -1042,10 +1013,10 @@ function TS_RESP_CTX_add_policy(ctx: PS_RESP_CTX; policy: PASN1_OBJECT): TIdC_IN
 function TS_RESP_CTX_add_md(ctx: PS_RESP_CTX; md: PEVP_MD): TIdC_INT; cdecl external CLibCrypto name 'TS_RESP_CTX_add_md';
 function TS_RESP_CTX_set_accuracy(ctx: PS_RESP_CTX; secs: TIdC_INT; millis: TIdC_INT; micros: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'TS_RESP_CTX_set_accuracy';
 function TS_RESP_CTX_set_clock_precision_digits(ctx: PS_RESP_CTX; clock_precision_digits: TIdC_UINT): TIdC_INT; cdecl external CLibCrypto name 'TS_RESP_CTX_set_clock_precision_digits';
-procedure TS_RESP_CTX_add_flags(ctx: PS_RESP_CTX; flags: TIdC_INT); cdecl external CLibCrypto name 'TS_RESP_CTX_add_flags';
-procedure TS_RESP_CTX_set_serial_cb(ctx: PS_RESP_CTX; cb: TS_serial_cb_func_cb; data: Pointer); cdecl external CLibCrypto name 'TS_RESP_CTX_set_serial_cb';
-procedure TS_RESP_CTX_set_time_cb(ctx: PS_RESP_CTX; cb: TS_time_cb_func_cb; data: Pointer); cdecl external CLibCrypto name 'TS_RESP_CTX_set_time_cb';
-procedure TS_RESP_CTX_set_extension_cb(ctx: PS_RESP_CTX; cb: TS_extension_cb_func_cb; data: Pointer); cdecl external CLibCrypto name 'TS_RESP_CTX_set_extension_cb';
+function TS_RESP_CTX_add_flags(ctx: PS_RESP_CTX; flags: TIdC_INT): void; cdecl external CLibCrypto name 'TS_RESP_CTX_add_flags';
+function TS_RESP_CTX_set_serial_cb(ctx: PS_RESP_CTX; cb: TS_serial_cb; data: Pointer): void; cdecl external CLibCrypto name 'TS_RESP_CTX_set_serial_cb';
+function TS_RESP_CTX_set_time_cb(ctx: PS_RESP_CTX; cb: TS_time_cb; data: Pointer): void; cdecl external CLibCrypto name 'TS_RESP_CTX_set_time_cb';
+function TS_RESP_CTX_set_extension_cb(ctx: PS_RESP_CTX; cb: TS_extension_cb; data: Pointer): void; cdecl external CLibCrypto name 'TS_RESP_CTX_set_extension_cb';
 function TS_RESP_CTX_set_status_info(ctx: PS_RESP_CTX; status: TIdC_INT; text: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'TS_RESP_CTX_set_status_info';
 function TS_RESP_CTX_set_status_info_cond(ctx: PS_RESP_CTX; status: TIdC_INT; text: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'TS_RESP_CTX_set_status_info_cond';
 function TS_RESP_CTX_add_failure_info(ctx: PS_RESP_CTX; failure: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'TS_RESP_CTX_add_failure_info';
@@ -1056,9 +1027,9 @@ function TS_RESP_verify_signature(token: PPKCS7; certs: Pstack_st_X509; store: P
 function TS_RESP_verify_response(ctx: PS_VERIFY_CTX; response: PS_RESP): TIdC_INT; cdecl external CLibCrypto name 'TS_RESP_verify_response';
 function TS_RESP_verify_token(ctx: PS_VERIFY_CTX; token: PPKCS7): TIdC_INT; cdecl external CLibCrypto name 'TS_RESP_verify_token';
 function TS_VERIFY_CTX_new: PS_VERIFY_CTX; cdecl external CLibCrypto name 'TS_VERIFY_CTX_new';
-procedure TS_VERIFY_CTX_init(ctx: PS_VERIFY_CTX); cdecl external CLibCrypto name 'TS_VERIFY_CTX_init';
-procedure TS_VERIFY_CTX_free(ctx: PS_VERIFY_CTX); cdecl external CLibCrypto name 'TS_VERIFY_CTX_free';
-procedure TS_VERIFY_CTX_cleanup(ctx: PS_VERIFY_CTX); cdecl external CLibCrypto name 'TS_VERIFY_CTX_cleanup';
+function TS_VERIFY_CTX_init(ctx: PS_VERIFY_CTX): void; cdecl external CLibCrypto name 'TS_VERIFY_CTX_init';
+function TS_VERIFY_CTX_free(ctx: PS_VERIFY_CTX): void; cdecl external CLibCrypto name 'TS_VERIFY_CTX_free';
+function TS_VERIFY_CTX_cleanup(ctx: PS_VERIFY_CTX): void; cdecl external CLibCrypto name 'TS_VERIFY_CTX_cleanup';
 function TS_VERIFY_CTX_set_flags(ctx: PS_VERIFY_CTX; f: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'TS_VERIFY_CTX_set_flags';
 function TS_VERIFY_CTX_add_flags(ctx: PS_VERIFY_CTX; f: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'TS_VERIFY_CTX_add_flags';
 function TS_VERIFY_CTX_set_data(ctx: PS_VERIFY_CTX; b: PBIO): PBIO; cdecl external CLibCrypto name 'TS_VERIFY_CTX_set_data';
@@ -1082,7 +1053,7 @@ function TS_CONF_load_cert(_file: PIdAnsiChar): PX509; cdecl external CLibCrypto
 function TS_CONF_load_certs(_file: PIdAnsiChar): Pstack_st_X509; cdecl external CLibCrypto name 'TS_CONF_load_certs';
 function TS_CONF_load_key(_file: PIdAnsiChar; pass: PIdAnsiChar): PEVP_PKEY; cdecl external CLibCrypto name 'TS_CONF_load_key';
 function TS_CONF_get_tsa_section(conf: PCONF; section: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'TS_CONF_get_tsa_section';
-function TS_CONF_set_serial(conf: PCONF; section: PIdAnsiChar; cb: TS_serial_cb_func_cb; ctx: PS_RESP_CTX): TIdC_INT; cdecl external CLibCrypto name 'TS_CONF_set_serial';
+function TS_CONF_set_serial(conf: PCONF; section: PIdAnsiChar; cb: TS_serial_cb; ctx: PS_RESP_CTX): TIdC_INT; cdecl external CLibCrypto name 'TS_CONF_set_serial';
 function TS_CONF_set_crypto_device(conf: PCONF; section: PIdAnsiChar; device: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'TS_CONF_set_crypto_device';
 function TS_CONF_set_default_engine(name: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'TS_CONF_set_default_engine';
 function TS_CONF_set_signer_cert(conf: PCONF; section: PIdAnsiChar; cert: PIdAnsiChar; ctx: PS_RESP_CTX): TIdC_INT; cdecl external CLibCrypto name 'TS_CONF_set_signer_cert';
@@ -1692,7 +1663,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_REQ_new_procname);
 end;
 
-procedure ERR_TS_REQ_free(a: PS_REQ); cdecl
+function ERR_TS_REQ_free(a: PS_REQ): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_REQ_free_procname);
 end;
@@ -1737,7 +1708,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_MSG_IMPRINT_new_procname);
 end;
 
-procedure ERR_TS_MSG_IMPRINT_free(a: PS_MSG_IMPRINT); cdecl
+function ERR_TS_MSG_IMPRINT_free(a: PS_MSG_IMPRINT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_MSG_IMPRINT_free_procname);
 end;
@@ -1782,7 +1753,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_RESP_new_procname);
 end;
 
-procedure ERR_TS_RESP_free(a: PS_RESP); cdecl
+function ERR_TS_RESP_free(a: PS_RESP): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_RESP_free_procname);
 end;
@@ -1827,7 +1798,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_STATUS_INFO_new_procname);
 end;
 
-procedure ERR_TS_STATUS_INFO_free(a: PS_STATUS_INFO); cdecl
+function ERR_TS_STATUS_INFO_free(a: PS_STATUS_INFO): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_STATUS_INFO_free_procname);
 end;
@@ -1852,7 +1823,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_TST_INFO_new_procname);
 end;
 
-procedure ERR_TS_TST_INFO_free(a: PS_TST_INFO); cdecl
+function ERR_TS_TST_INFO_free(a: PS_TST_INFO): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_TST_INFO_free_procname);
 end;
@@ -1902,7 +1873,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_ACCURACY_new_procname);
 end;
 
-procedure ERR_TS_ACCURACY_free(a: PS_ACCURACY); cdecl
+function ERR_TS_ACCURACY_free(a: PS_ACCURACY): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_ACCURACY_free_procname);
 end;
@@ -2017,7 +1988,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_REQ_get_exts_procname);
 end;
 
-procedure ERR_TS_REQ_ext_free(a: PS_REQ); cdecl
+function ERR_TS_REQ_ext_free(a: PS_REQ): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_REQ_ext_free_procname);
 end;
@@ -2077,7 +2048,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_RESP_get_status_info_procname);
 end;
 
-procedure ERR_TS_RESP_set_tst_info(a: PS_RESP; p7: PPKCS7; tst_info: PS_TST_INFO); cdecl
+function ERR_TS_RESP_set_tst_info(a: PS_RESP; p7: PPKCS7; tst_info: PS_TST_INFO): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_RESP_set_tst_info_procname);
 end;
@@ -2217,7 +2188,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_TST_INFO_get_exts_procname);
 end;
 
-procedure ERR_TS_TST_INFO_ext_free(a: PS_TST_INFO); cdecl
+function ERR_TS_TST_INFO_ext_free(a: PS_TST_INFO): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_TST_INFO_ext_free_procname);
 end;
@@ -2272,7 +2243,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_RESP_CTX_new_ex_procname);
 end;
 
-procedure ERR_TS_RESP_CTX_free(ctx: PS_RESP_CTX); cdecl
+function ERR_TS_RESP_CTX_free(ctx: PS_RESP_CTX): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_RESP_CTX_free_procname);
 end;
@@ -2327,22 +2298,22 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_RESP_CTX_set_clock_precision_digits_procname);
 end;
 
-procedure ERR_TS_RESP_CTX_add_flags(ctx: PS_RESP_CTX; flags: TIdC_INT); cdecl
+function ERR_TS_RESP_CTX_add_flags(ctx: PS_RESP_CTX; flags: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_RESP_CTX_add_flags_procname);
 end;
 
-procedure ERR_TS_RESP_CTX_set_serial_cb(ctx: PS_RESP_CTX; cb: TS_serial_cb_func_cb; data: Pointer); cdecl
+function ERR_TS_RESP_CTX_set_serial_cb(ctx: PS_RESP_CTX; cb: TS_serial_cb; data: Pointer): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_RESP_CTX_set_serial_cb_procname);
 end;
 
-procedure ERR_TS_RESP_CTX_set_time_cb(ctx: PS_RESP_CTX; cb: TS_time_cb_func_cb; data: Pointer); cdecl
+function ERR_TS_RESP_CTX_set_time_cb(ctx: PS_RESP_CTX; cb: TS_time_cb; data: Pointer): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_RESP_CTX_set_time_cb_procname);
 end;
 
-procedure ERR_TS_RESP_CTX_set_extension_cb(ctx: PS_RESP_CTX; cb: TS_extension_cb_func_cb; data: Pointer); cdecl
+function ERR_TS_RESP_CTX_set_extension_cb(ctx: PS_RESP_CTX; cb: TS_extension_cb; data: Pointer): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_RESP_CTX_set_extension_cb_procname);
 end;
@@ -2397,17 +2368,17 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_VERIFY_CTX_new_procname);
 end;
 
-procedure ERR_TS_VERIFY_CTX_init(ctx: PS_VERIFY_CTX); cdecl
+function ERR_TS_VERIFY_CTX_init(ctx: PS_VERIFY_CTX): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_VERIFY_CTX_init_procname);
 end;
 
-procedure ERR_TS_VERIFY_CTX_free(ctx: PS_VERIFY_CTX); cdecl
+function ERR_TS_VERIFY_CTX_free(ctx: PS_VERIFY_CTX): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_VERIFY_CTX_free_procname);
 end;
 
-procedure ERR_TS_VERIFY_CTX_cleanup(ctx: PS_VERIFY_CTX); cdecl
+function ERR_TS_VERIFY_CTX_cleanup(ctx: PS_VERIFY_CTX): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_VERIFY_CTX_cleanup_procname);
 end;
@@ -2527,7 +2498,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_CONF_get_tsa_section_procname);
 end;
 
-function ERR_TS_CONF_set_serial(conf: PCONF; section: PIdAnsiChar; cb: TS_serial_cb_func_cb; ctx: PS_RESP_CTX): TIdC_INT; cdecl
+function ERR_TS_CONF_set_serial(conf: PCONF; section: PIdAnsiChar; cb: TS_serial_cb; ctx: PS_RESP_CTX): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TS_CONF_set_serial_procname);
 end;

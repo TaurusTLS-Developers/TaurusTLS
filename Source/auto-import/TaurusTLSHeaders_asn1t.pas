@@ -26,97 +26,128 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   PASN1_TEMPLATE_st = ^TASN1_TEMPLATE_st;
-  TASN1_TEMPLATE_st = record end;
+  TASN1_TEMPLATE_st =   record
+    flags: TIdC_ULONG;
+    tag: TIdC_LONG;
+    offset: TIdC_ULONG;
+    field_name: PIdAnsiChar;
+    item: T_func_cb;
+  end;
   {$EXTERNALSYM PASN1_TEMPLATE_st}
 
   PASN1_ADB_TABLE_st = ^TASN1_ADB_TABLE_st;
-  TASN1_ADB_TABLE_st = record end;
+  TASN1_ADB_TABLE_st =   record end;
   {$EXTERNALSYM PASN1_ADB_TABLE_st}
 
-  PASN1_ADB_TABLE = ^TASN1_ADB_TABLE;
-  TASN1_ADB_TABLE = TASN1_ADB_TABLE_st;
-  {$EXTERNALSYM PASN1_ADB_TABLE}
-
   PASN1_ADB_st = ^TASN1_ADB_st;
-  TASN1_ADB_st = record end;
+  TASN1_ADB_st =   record end;
   {$EXTERNALSYM PASN1_ADB_st}
 
   PASN1_ITEM_st = ^TASN1_ITEM_st;
-  TASN1_ITEM_st = record end;
+  TASN1_ITEM_st =   record
+    itype: TIdC_INT8;
+    utype: TIdC_LONG;
+    templates: PASN1_TEMPLATE;
+    tcount: TIdC_LONG;
+    funcs: Pointer;
+    size: TIdC_LONG;
+    sname: PIdAnsiChar;
+  end;
   {$EXTERNALSYM PASN1_ITEM_st}
 
   PASN1_TLC_st = ^TASN1_TLC_st;
-  TASN1_TLC_st = record end;
+  TASN1_TLC_st =   record
+    valid: TIdC_INT8;
+    ret: TIdC_INT;
+    plen: TIdC_LONG;
+    ptag: TIdC_INT;
+    pclass: TIdC_INT;
+    hdrlen: TIdC_INT;
+  end;
   {$EXTERNALSYM PASN1_TLC_st}
 
   PASN1_EXTERN_FUNCS_st = ^TASN1_EXTERN_FUNCS_st;
-  TASN1_EXTERN_FUNCS_st = record end;
+  TASN1_EXTERN_FUNCS_st =   record
+    app_data: Pointer;
+    asn1_ex_new: TASN1_ex_new_func;
+    asn1_ex_free: TASN1_ex_free_func;
+    asn1_ex_clear: TASN1_ex_free_func;
+    asn1_ex_d2i: TASN1_ex_d2i;
+    asn1_ex_i2d: TASN1_ex_i2d;
+    asn1_ex_print: TASN1_ex_print_func;
+    asn1_ex_new_ex: TASN1_ex_new_ex_func;
+    asn1_ex_d2i_ex: TASN1_ex_d2i_ex;
+  end;
   {$EXTERNALSYM PASN1_EXTERN_FUNCS_st}
 
-  PASN1_EXTERN_FUNCS = ^TASN1_EXTERN_FUNCS;
-  TASN1_EXTERN_FUNCS = TASN1_EXTERN_FUNCS_st;
-  {$EXTERNALSYM PASN1_EXTERN_FUNCS}
-
   PASN1_PRIMITIVE_FUNCS_st = ^TASN1_PRIMITIVE_FUNCS_st;
-  TASN1_PRIMITIVE_FUNCS_st = record end;
+  TASN1_PRIMITIVE_FUNCS_st =   record
+    app_data: Pointer;
+    flags: TIdC_ULONG;
+    prim_new: TASN1_ex_new_func;
+    prim_free: TASN1_ex_free_func;
+    prim_clear: TASN1_ex_free_func;
+    prim_c2i: TASN1_primitive_c2i;
+    prim_i2c: TASN1_primitive_i2c;
+    prim_print: TASN1_primitive_print;
+  end;
   {$EXTERNALSYM PASN1_PRIMITIVE_FUNCS_st}
 
-  PASN1_PRIMITIVE_FUNCS = ^TASN1_PRIMITIVE_FUNCS;
-  TASN1_PRIMITIVE_FUNCS = TASN1_PRIMITIVE_FUNCS_st;
-  {$EXTERNALSYM PASN1_PRIMITIVE_FUNCS}
-
   PASN1_AUX_st = ^TASN1_AUX_st;
-  TASN1_AUX_st = record end;
+  TASN1_AUX_st =   record
+    app_data: Pointer;
+    flags: TIdC_INT;
+    ref_offset: TIdC_INT;
+    ref_lock: TIdC_INT;
+    asn1_cb: TASN1_aux_const_cb;
+    enc_offset: TIdC_INT;
+    asn1_const_cb: TASN1_aux_const_cb;
+  end;
   {$EXTERNALSYM PASN1_AUX_st}
 
-  PASN1_AUX = ^TASN1_AUX;
-  TASN1_AUX = TASN1_AUX_st;
-  {$EXTERNALSYM PASN1_AUX}
-
   PASN1_PRINT_ARG_st = ^TASN1_PRINT_ARG_st;
-  TASN1_PRINT_ARG_st = record end;
+  TASN1_PRINT_ARG_st =   record
+    _out: PBIO;
+    indent: TIdC_INT;
+    pctx: PASN1_PCTX;
+  end;
   {$EXTERNALSYM PASN1_PRINT_ARG_st}
 
-  PASN1_PRINT_ARG = ^TASN1_PRINT_ARG;
-  TASN1_PRINT_ARG = TASN1_PRINT_ARG_st;
-  {$EXTERNALSYM PASN1_PRINT_ARG}
-
   PASN1_STREAM_ARG_st = ^TASN1_STREAM_ARG_st;
-  TASN1_STREAM_ARG_st = record end;
+  TASN1_STREAM_ARG_st =   record
+    _out: PBIO;
+    ndef_bio: PBIO;
+    boundary: PPIdAnsiChar;
+  end;
   {$EXTERNALSYM PASN1_STREAM_ARG_st}
-
-  PASN1_STREAM_ARG = ^TASN1_STREAM_ARG;
-  TASN1_STREAM_ARG = TASN1_STREAM_ARG_st;
-  {$EXTERNALSYM PASN1_STREAM_ARG}
-
-  Pstack_st_ASN1_VALUE = ^Tstack_st_ASN1_VALUE;
-  Tstack_st_ASN1_VALUE = record end;
-  {$EXTERNALSYM Pstack_st_ASN1_VALUE}
 
 
 // =============================================================================
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  TASN1_ex_d2i_func_cb = function(arg1: PPASN1_VALUE; arg2: PPIdAnsiChar; arg3: TIdC_LONG; arg4: PASN1_ITEM; arg5: TIdC_INT; arg6: TIdC_INT; arg7: TIdC_CHAR; arg8: PASN1_TLC): TIdC_INT; cdecl;
-  TASN1_ex_d2i_ex_func_cb = function(arg1: PPASN1_VALUE; arg2: PPIdAnsiChar; arg3: TIdC_LONG; arg4: PASN1_ITEM; arg5: TIdC_INT; arg6: TIdC_INT; arg7: TIdC_CHAR; arg8: PASN1_TLC; arg9: POSSL_LIB_CTX; arg10: PIdAnsiChar): TIdC_INT; cdecl;
-  TASN1_ex_i2d_func_cb = function(arg1: PPASN1_VALUE; arg2: PPIdAnsiChar; arg3: PASN1_ITEM; arg4: TIdC_INT; arg5: TIdC_INT): TIdC_INT; cdecl;
-  TASN1_ex_new_func_func_cb = function(arg1: PPASN1_VALUE; arg2: PASN1_ITEM): TIdC_INT; cdecl;
-  TASN1_ex_new_ex_func_func_cb = function(arg1: PPASN1_VALUE; arg2: PASN1_ITEM; arg3: POSSL_LIB_CTX; arg4: PIdAnsiChar): TIdC_INT; cdecl;
-  TASN1_ex_free_func_func_cb = procedure(arg1: PPASN1_VALUE; arg2: PASN1_ITEM); cdecl;
-  TASN1_ex_print_func_func_cb = function(arg1: PBIO; arg2: PPASN1_VALUE; arg3: TIdC_INT; arg4: PIdAnsiChar; arg5: PASN1_PCTX): TIdC_INT; cdecl;
-  TASN1_primitive_i2c_func_cb = function(arg1: PPASN1_VALUE; arg2: PIdAnsiChar; arg3: PIdC_INT; arg4: PASN1_ITEM): TIdC_INT; cdecl;
-  TASN1_primitive_c2i_func_cb = function(arg1: PPASN1_VALUE; arg2: PIdAnsiChar; arg3: TIdC_INT; arg4: TIdC_INT; arg5: PIdAnsiChar; arg6: PASN1_ITEM): TIdC_INT; cdecl;
-  TASN1_primitive_print_func_cb = function(arg1: PBIO; arg2: PPASN1_VALUE; arg3: PASN1_ITEM; arg4: TIdC_INT; arg5: PASN1_PCTX): TIdC_INT; cdecl;
-  TASN1_aux_cb_func_cb = function(arg1: TIdC_INT; arg2: PPASN1_VALUE; arg3: PASN1_ITEM; arg4: Pointer): TIdC_INT; cdecl;
-  Tsk_ASN1_VALUE_compfunc_func_cb = function(arg1: PPASN1_VALUE; arg2: PPASN1_VALUE): TIdC_INT; cdecl;
-  Tsk_ASN1_VALUE_freefunc_func_cb = procedure(arg1: PASN1_VALUE); cdecl;
-  Tsk_ASN1_VALUE_copyfunc_func_cb = function(arg1: PASN1_VALUE): PASN1_VALUE; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // _func_cb = function: PASN1_ITEM; cdecl;
+  TASN1_ex_d2i = function(pval: PPASN1_VALUE; _in: PPIdAnsiChar; len: TIdC_LONG; it: PASN1_ITEM; tag: TIdC_INT; aclass: TIdC_INT; opt: TIdC_INT8; ctx: PASN1_TLC): TIdC_INT; cdecl;
+  TASN1_ex_d2i_ex = function(pval: PPASN1_VALUE; _in: PPIdAnsiChar; len: TIdC_LONG; it: PASN1_ITEM; tag: TIdC_INT; aclass: TIdC_INT; opt: TIdC_INT8; ctx: PASN1_TLC; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): TIdC_INT; cdecl;
+  TASN1_ex_i2d = function(pval: PPASN1_VALUE; _out: PPIdAnsiChar; it: PASN1_ITEM; tag: TIdC_INT; aclass: TIdC_INT): TIdC_INT; cdecl;
+  TASN1_ex_new_func = function(pval: PPASN1_VALUE; it: PASN1_ITEM): TIdC_INT; cdecl;
+  TASN1_ex_new_ex_func = function(pval: PPASN1_VALUE; it: PASN1_ITEM; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): TIdC_INT; cdecl;
+  TASN1_ex_free_func = function(pval: PPASN1_VALUE; it: PASN1_ITEM): void; cdecl;
+  TASN1_ex_print_func = function(_out: PBIO; pval: PPASN1_VALUE; indent: TIdC_INT; fname: PIdAnsiChar; pctx: PASN1_PCTX): TIdC_INT; cdecl;
+  TASN1_primitive_i2c = function(pval: PPASN1_VALUE; cont: PIdAnsiChar; putype: PIdC_INT; it: PASN1_ITEM): TIdC_INT; cdecl;
+  TASN1_primitive_c2i = function(pval: PPASN1_VALUE; cont: PIdAnsiChar; len: TIdC_INT; utype: TIdC_INT; free_cont: PIdAnsiChar; it: PASN1_ITEM): TIdC_INT; cdecl;
+  TASN1_primitive_print = function(_out: PBIO; pval: PPASN1_VALUE; it: PASN1_ITEM; indent: TIdC_INT; pctx: PASN1_PCTX): TIdC_INT; cdecl;
+  TASN1_aux_cb = function(operation: TIdC_INT; _in: PPASN1_VALUE; it: PASN1_ITEM; exarg: Pointer): TIdC_INT; cdecl;
+  TASN1_aux_const_cb = function(operation: TIdC_INT; _in: PPASN1_VALUE; it: PASN1_ITEM; exarg: Pointer): TIdC_INT; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -229,10 +260,10 @@ var
   ASN1_item_ex_new: function(pval: PPASN1_VALUE; it: PASN1_ITEM): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM ASN1_item_ex_new}
 
-  ASN1_item_ex_free: procedure(pval: PPASN1_VALUE; it: PASN1_ITEM); cdecl = nil;
+  ASN1_item_ex_free: function(pval: PPASN1_VALUE; it: PASN1_ITEM): void; cdecl = nil;
   {$EXTERNALSYM ASN1_item_ex_free}
 
-  ASN1_item_ex_d2i: function(pval: PPASN1_VALUE; _in: PPIdAnsiChar; len: TIdC_LONG; it: PASN1_ITEM; tag: TIdC_INT; aclass: TIdC_INT; opt: TIdC_CHAR; ctx: PASN1_TLC): TIdC_INT; cdecl = nil;
+  ASN1_item_ex_d2i: function(pval: PPASN1_VALUE; _in: PPIdAnsiChar; len: TIdC_LONG; it: PASN1_ITEM; tag: TIdC_INT; aclass: TIdC_INT; opt: TIdC_INT8; ctx: PASN1_TLC): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM ASN1_item_ex_d2i}
 
   ASN1_item_ex_i2d: function(pval: PPASN1_VALUE; _out: PPIdAnsiChar; it: PASN1_ITEM; tag: TIdC_INT; aclass: TIdC_INT): TIdC_INT; cdecl = nil;
@@ -263,10 +294,48 @@ function ZUINT64_it: PASN1_ITEM; cdecl;
 function LONG_it: PASN1_ITEM; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ZLONG_it: PASN1_ITEM; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ASN1_item_ex_new(pval: PPASN1_VALUE; it: PASN1_ITEM): TIdC_INT; cdecl;
-procedure ASN1_item_ex_free(pval: PPASN1_VALUE; it: PASN1_ITEM); cdecl;
-function ASN1_item_ex_d2i(pval: PPASN1_VALUE; _in: PPIdAnsiChar; len: TIdC_LONG; it: PASN1_ITEM; tag: TIdC_INT; aclass: TIdC_INT; opt: TIdC_CHAR; ctx: PASN1_TLC): TIdC_INT; cdecl;
+function ASN1_item_ex_free(pval: PPASN1_VALUE; it: PASN1_ITEM): void; cdecl;
+function ASN1_item_ex_d2i(pval: PPASN1_VALUE; _in: PPIdAnsiChar; len: TIdC_LONG; it: PASN1_ITEM; tag: TIdC_INT; aclass: TIdC_INT; opt: TIdC_INT8; ctx: PASN1_TLC): TIdC_INT; cdecl;
 function ASN1_item_ex_i2d(pval: PPASN1_VALUE; _out: PPIdAnsiChar; it: PASN1_ITEM; tag: TIdC_INT; aclass: TIdC_INT): TIdC_INT; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
+
+// =============================================================================
+// OPENSSL STACK DEFINITIONS
+// =============================================================================
+type
+  { TODO 1 -copenssl stack ASN1_VALUE definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_ASN1_VALUE = Pointer;
+  {$EXTERNALSYM PSTACK_OF_ASN1_VALUE}
+
+  { Original Stack Macros for ASN1_VALUE:
+    SKM_DEFINE_STACK_OF_INTERNAL(ASN1_VALUE, ASN1_VALUE, ASN1_VALUE)
+    sk_ASN1_VALUE_num(sk) OPENSSL_sk_num(ossl_check_const_ASN1_VALUE_sk_type(sk))
+    sk_ASN1_VALUE_value(sk, idx) ((ASN1_VALUE *)OPENSSL_sk_value(ossl_check_const_ASN1_VALUE_sk_type(sk), (idx)))
+    sk_ASN1_VALUE_new(cmp) ((STACK_OF(ASN1_VALUE) *)OPENSSL_sk_new(ossl_check_ASN1_VALUE_compfunc_type(cmp)))
+    sk_ASN1_VALUE_new_null() ((STACK_OF(ASN1_VALUE) *)OPENSSL_sk_new_null())
+    sk_ASN1_VALUE_new_reserve(cmp, n) ((STACK_OF(ASN1_VALUE) *)OPENSSL_sk_new_reserve(ossl_check_ASN1_VALUE_compfunc_type(cmp), (n)))
+    sk_ASN1_VALUE_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_ASN1_VALUE_sk_type(sk), (n))
+    sk_ASN1_VALUE_free(sk) OPENSSL_sk_free(ossl_check_ASN1_VALUE_sk_type(sk))
+    sk_ASN1_VALUE_zero(sk) OPENSSL_sk_zero(ossl_check_ASN1_VALUE_sk_type(sk))
+    sk_ASN1_VALUE_delete(sk, i) ((ASN1_VALUE *)OPENSSL_sk_delete(ossl_check_ASN1_VALUE_sk_type(sk), (i)))
+    sk_ASN1_VALUE_delete_ptr(sk, ptr) ((ASN1_VALUE *)OPENSSL_sk_delete_ptr(ossl_check_ASN1_VALUE_sk_type(sk), ossl_check_ASN1_VALUE_type(ptr)))
+    sk_ASN1_VALUE_push(sk, ptr) OPENSSL_sk_push(ossl_check_ASN1_VALUE_sk_type(sk), ossl_check_ASN1_VALUE_type(ptr))
+    sk_ASN1_VALUE_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_ASN1_VALUE_sk_type(sk), ossl_check_ASN1_VALUE_type(ptr))
+    sk_ASN1_VALUE_pop(sk) ((ASN1_VALUE *)OPENSSL_sk_pop(ossl_check_ASN1_VALUE_sk_type(sk)))
+    sk_ASN1_VALUE_shift(sk) ((ASN1_VALUE *)OPENSSL_sk_shift(ossl_check_ASN1_VALUE_sk_type(sk)))
+    sk_ASN1_VALUE_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_ASN1_VALUE_sk_type(sk), ossl_check_ASN1_VALUE_freefunc_type(freefunc))
+    sk_ASN1_VALUE_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_ASN1_VALUE_sk_type(sk), ossl_check_ASN1_VALUE_type(ptr), (idx))
+    sk_ASN1_VALUE_set(sk, idx, ptr) ((ASN1_VALUE *)OPENSSL_sk_set(ossl_check_ASN1_VALUE_sk_type(sk), (idx), ossl_check_ASN1_VALUE_type(ptr)))
+    sk_ASN1_VALUE_find(sk, ptr) OPENSSL_sk_find(ossl_check_ASN1_VALUE_sk_type(sk), ossl_check_ASN1_VALUE_type(ptr))
+    sk_ASN1_VALUE_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_ASN1_VALUE_sk_type(sk), ossl_check_ASN1_VALUE_type(ptr))
+    sk_ASN1_VALUE_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_ASN1_VALUE_sk_type(sk), ossl_check_ASN1_VALUE_type(ptr), pnum)
+    sk_ASN1_VALUE_sort(sk) OPENSSL_sk_sort(ossl_check_ASN1_VALUE_sk_type(sk))
+    sk_ASN1_VALUE_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_ASN1_VALUE_sk_type(sk))
+    sk_ASN1_VALUE_dup(sk) ((STACK_OF(ASN1_VALUE) *)OPENSSL_sk_dup(ossl_check_const_ASN1_VALUE_sk_type(sk)))
+    sk_ASN1_VALUE_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(ASN1_VALUE) *)OPENSSL_sk_deep_copy(ossl_check_const_ASN1_VALUE_sk_type(sk), ossl_check_ASN1_VALUE_copyfunc_type(copyfunc), ossl_check_ASN1_VALUE_freefunc_type(freefunc)))
+    sk_ASN1_VALUE_set_cmp_func(sk, cmp) ((sk_ASN1_VALUE_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_ASN1_VALUE_sk_type(sk), ossl_check_ASN1_VALUE_compfunc_type(cmp)))
+  }
+
 
 implementation
 
@@ -301,8 +370,8 @@ function ZUINT64_it: PASN1_ITEM; cdecl external CLibCrypto name 'ZUINT64_it';
 function LONG_it: PASN1_ITEM; cdecl external CLibCrypto name 'LONG_it';
 function ZLONG_it: PASN1_ITEM; cdecl external CLibCrypto name 'ZLONG_it';
 function ASN1_item_ex_new(pval: PPASN1_VALUE; it: PASN1_ITEM): TIdC_INT; cdecl external CLibCrypto name 'ASN1_item_ex_new';
-procedure ASN1_item_ex_free(pval: PPASN1_VALUE; it: PASN1_ITEM); cdecl external CLibCrypto name 'ASN1_item_ex_free';
-function ASN1_item_ex_d2i(pval: PPASN1_VALUE; _in: PPIdAnsiChar; len: TIdC_LONG; it: PASN1_ITEM; tag: TIdC_INT; aclass: TIdC_INT; opt: TIdC_CHAR; ctx: PASN1_TLC): TIdC_INT; cdecl external CLibCrypto name 'ASN1_item_ex_d2i';
+function ASN1_item_ex_free(pval: PPASN1_VALUE; it: PASN1_ITEM): void; cdecl external CLibCrypto name 'ASN1_item_ex_free';
+function ASN1_item_ex_d2i(pval: PPASN1_VALUE; _in: PPIdAnsiChar; len: TIdC_LONG; it: PASN1_ITEM; tag: TIdC_INT; aclass: TIdC_INT; opt: TIdC_INT8; ctx: PASN1_TLC): TIdC_INT; cdecl external CLibCrypto name 'ASN1_item_ex_d2i';
 function ASN1_item_ex_i2d(pval: PPASN1_VALUE; _out: PPIdAnsiChar; it: PASN1_ITEM; tag: TIdC_INT; aclass: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'ASN1_item_ex_i2d';
 {$ENDIF}
 
@@ -471,12 +540,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_item_ex_new_procname);
 end;
 
-procedure ERR_ASN1_item_ex_free(pval: PPASN1_VALUE; it: PASN1_ITEM); cdecl
+function ERR_ASN1_item_ex_free(pval: PPASN1_VALUE; it: PASN1_ITEM): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_item_ex_free_procname);
 end;
 
-function ERR_ASN1_item_ex_d2i(pval: PPASN1_VALUE; _in: PPIdAnsiChar; len: TIdC_LONG; it: PASN1_ITEM; tag: TIdC_INT; aclass: TIdC_INT; opt: TIdC_CHAR; ctx: PASN1_TLC): TIdC_INT; cdecl
+function ERR_ASN1_item_ex_d2i(pval: PPASN1_VALUE; _in: PPIdAnsiChar; len: TIdC_LONG; it: PASN1_ITEM; tag: TIdC_INT; aclass: TIdC_INT; opt: TIdC_INT8; ctx: PASN1_TLC): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_item_ex_d2i_procname);
 end;

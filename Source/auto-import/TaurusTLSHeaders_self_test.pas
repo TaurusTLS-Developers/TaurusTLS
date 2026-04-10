@@ -27,11 +27,15 @@ uses
   TaurusTLSHeaders_core;
 
 
+
+
+
 // =============================================================================
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  TOSSL_SELF_TEST_set_callback_cb_cb = function: TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // OSSL_SELF_TEST_set_callback_cb_cb = function(arg1: Possl_param_st; arg2: Pointer): TIdC_INT; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -119,25 +123,25 @@ const
 // =============================================================================
 var
 
-  OSSL_SELF_TEST_set_callback: procedure(libctx: POSSL_LIB_CTX; cb: TOSSL_SELF_TEST_set_callback_cb_cb; cbarg: Pointer); cdecl = nil;
+  OSSL_SELF_TEST_set_callback: function(libctx: POSSL_LIB_CTX; cb: TOSSL_SELF_TEST_set_callback_cb_cb; cbarg: Pointer): void; cdecl = nil;
   {$EXTERNALSYM OSSL_SELF_TEST_set_callback}
 
-  OSSL_SELF_TEST_get_callback: procedure(libctx: POSSL_LIB_CTX; cb: PPOSSL_CALLBACK; cbarg: PPointer); cdecl = nil;
+  OSSL_SELF_TEST_get_callback: function(libctx: POSSL_LIB_CTX; cb: PPOSSL_CALLBACK; cbarg: PPointer): void; cdecl = nil;
   {$EXTERNALSYM OSSL_SELF_TEST_get_callback}
 
   OSSL_SELF_TEST_new: function(cb: TOSSL_SELF_TEST_set_callback_cb_cb; cbarg: Pointer): POSSL_SELF_TEST; cdecl = nil;
   {$EXTERNALSYM OSSL_SELF_TEST_new}
 
-  OSSL_SELF_TEST_free: procedure(st: POSSL_SELF_TEST); cdecl = nil;
+  OSSL_SELF_TEST_free: function(st: POSSL_SELF_TEST): void; cdecl = nil;
   {$EXTERNALSYM OSSL_SELF_TEST_free}
 
-  OSSL_SELF_TEST_onbegin: procedure(st: POSSL_SELF_TEST; _type: PIdAnsiChar; desc: PIdAnsiChar); cdecl = nil;
+  OSSL_SELF_TEST_onbegin: function(st: POSSL_SELF_TEST; _type: PIdAnsiChar; desc: PIdAnsiChar): void; cdecl = nil;
   {$EXTERNALSYM OSSL_SELF_TEST_onbegin}
 
   OSSL_SELF_TEST_oncorrupt_byte: function(st: POSSL_SELF_TEST; bytes: PIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_SELF_TEST_oncorrupt_byte}
 
-  OSSL_SELF_TEST_onend: procedure(st: POSSL_SELF_TEST; ret: TIdC_INT); cdecl = nil;
+  OSSL_SELF_TEST_onend: function(st: POSSL_SELF_TEST; ret: TIdC_INT): void; cdecl = nil;
   {$EXTERNALSYM OSSL_SELF_TEST_onend}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -148,13 +152,13 @@ var
 // STATIC BINDING ROUTINES
 // =============================================================================
 
-procedure OSSL_SELF_TEST_set_callback(libctx: POSSL_LIB_CTX; cb: TOSSL_SELF_TEST_set_callback_cb_cb; cbarg: Pointer); cdecl;
-procedure OSSL_SELF_TEST_get_callback(libctx: POSSL_LIB_CTX; cb: PPOSSL_CALLBACK; cbarg: PPointer); cdecl;
+function OSSL_SELF_TEST_set_callback(libctx: POSSL_LIB_CTX; cb: TOSSL_SELF_TEST_set_callback_cb_cb; cbarg: Pointer): void; cdecl;
+function OSSL_SELF_TEST_get_callback(libctx: POSSL_LIB_CTX; cb: PPOSSL_CALLBACK; cbarg: PPointer): void; cdecl;
 function OSSL_SELF_TEST_new(cb: TOSSL_SELF_TEST_set_callback_cb_cb; cbarg: Pointer): POSSL_SELF_TEST; cdecl;
-procedure OSSL_SELF_TEST_free(st: POSSL_SELF_TEST); cdecl;
-procedure OSSL_SELF_TEST_onbegin(st: POSSL_SELF_TEST; _type: PIdAnsiChar; desc: PIdAnsiChar); cdecl;
+function OSSL_SELF_TEST_free(st: POSSL_SELF_TEST): void; cdecl;
+function OSSL_SELF_TEST_onbegin(st: POSSL_SELF_TEST; _type: PIdAnsiChar; desc: PIdAnsiChar): void; cdecl;
 function OSSL_SELF_TEST_oncorrupt_byte(st: POSSL_SELF_TEST; bytes: PIdAnsiChar): TIdC_INT; cdecl;
-procedure OSSL_SELF_TEST_onend(st: POSSL_SELF_TEST; ret: TIdC_INT); cdecl;
+function OSSL_SELF_TEST_onend(st: POSSL_SELF_TEST; ret: TIdC_INT): void; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 implementation
@@ -173,13 +177,13 @@ uses
 // STATIC BINDING ROUTINES IMPORTS
 // =============================================================================
 
-procedure OSSL_SELF_TEST_set_callback(libctx: POSSL_LIB_CTX; cb: TOSSL_SELF_TEST_set_callback_cb_cb; cbarg: Pointer); cdecl external CLibCrypto name 'OSSL_SELF_TEST_set_callback';
-procedure OSSL_SELF_TEST_get_callback(libctx: POSSL_LIB_CTX; cb: PPOSSL_CALLBACK; cbarg: PPointer); cdecl external CLibCrypto name 'OSSL_SELF_TEST_get_callback';
+function OSSL_SELF_TEST_set_callback(libctx: POSSL_LIB_CTX; cb: TOSSL_SELF_TEST_set_callback_cb_cb; cbarg: Pointer): void; cdecl external CLibCrypto name 'OSSL_SELF_TEST_set_callback';
+function OSSL_SELF_TEST_get_callback(libctx: POSSL_LIB_CTX; cb: PPOSSL_CALLBACK; cbarg: PPointer): void; cdecl external CLibCrypto name 'OSSL_SELF_TEST_get_callback';
 function OSSL_SELF_TEST_new(cb: TOSSL_SELF_TEST_set_callback_cb_cb; cbarg: Pointer): POSSL_SELF_TEST; cdecl external CLibCrypto name 'OSSL_SELF_TEST_new';
-procedure OSSL_SELF_TEST_free(st: POSSL_SELF_TEST); cdecl external CLibCrypto name 'OSSL_SELF_TEST_free';
-procedure OSSL_SELF_TEST_onbegin(st: POSSL_SELF_TEST; _type: PIdAnsiChar; desc: PIdAnsiChar); cdecl external CLibCrypto name 'OSSL_SELF_TEST_onbegin';
+function OSSL_SELF_TEST_free(st: POSSL_SELF_TEST): void; cdecl external CLibCrypto name 'OSSL_SELF_TEST_free';
+function OSSL_SELF_TEST_onbegin(st: POSSL_SELF_TEST; _type: PIdAnsiChar; desc: PIdAnsiChar): void; cdecl external CLibCrypto name 'OSSL_SELF_TEST_onbegin';
 function OSSL_SELF_TEST_oncorrupt_byte(st: POSSL_SELF_TEST; bytes: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_SELF_TEST_oncorrupt_byte';
-procedure OSSL_SELF_TEST_onend(st: POSSL_SELF_TEST; ret: TIdC_INT); cdecl external CLibCrypto name 'OSSL_SELF_TEST_onend';
+function OSSL_SELF_TEST_onend(st: POSSL_SELF_TEST; ret: TIdC_INT): void; cdecl external CLibCrypto name 'OSSL_SELF_TEST_onend';
 {$ENDIF}
 
 // =============================================================================
@@ -221,12 +225,12 @@ const
 // ERRORS STUBS
 // =============================================================================
 
-procedure ERR_OSSL_SELF_TEST_set_callback(libctx: POSSL_LIB_CTX; cb: TOSSL_SELF_TEST_set_callback_cb_cb; cbarg: Pointer); cdecl
+function ERR_OSSL_SELF_TEST_set_callback(libctx: POSSL_LIB_CTX; cb: TOSSL_SELF_TEST_set_callback_cb_cb; cbarg: Pointer): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_SELF_TEST_set_callback_procname);
 end;
 
-procedure ERR_OSSL_SELF_TEST_get_callback(libctx: POSSL_LIB_CTX; cb: PPOSSL_CALLBACK; cbarg: PPointer); cdecl
+function ERR_OSSL_SELF_TEST_get_callback(libctx: POSSL_LIB_CTX; cb: PPOSSL_CALLBACK; cbarg: PPointer): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_SELF_TEST_get_callback_procname);
 end;
@@ -236,12 +240,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_SELF_TEST_new_procname);
 end;
 
-procedure ERR_OSSL_SELF_TEST_free(st: POSSL_SELF_TEST); cdecl
+function ERR_OSSL_SELF_TEST_free(st: POSSL_SELF_TEST): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_SELF_TEST_free_procname);
 end;
 
-procedure ERR_OSSL_SELF_TEST_onbegin(st: POSSL_SELF_TEST; _type: PIdAnsiChar; desc: PIdAnsiChar); cdecl
+function ERR_OSSL_SELF_TEST_onbegin(st: POSSL_SELF_TEST; _type: PIdAnsiChar; desc: PIdAnsiChar): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_SELF_TEST_onbegin_procname);
 end;
@@ -251,7 +255,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_SELF_TEST_oncorrupt_byte_procname);
 end;
 
-procedure ERR_OSSL_SELF_TEST_onend(st: POSSL_SELF_TEST; ret: TIdC_INT); cdecl
+function ERR_OSSL_SELF_TEST_onend(st: POSSL_SELF_TEST; ret: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_SELF_TEST_onend_procname);
 end;

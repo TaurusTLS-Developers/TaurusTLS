@@ -26,30 +26,17 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   Pssl_comp_st = ^Tssl_comp_st;
-  Tssl_comp_st = record end;
+  Tssl_comp_st =   record end;
   {$EXTERNALSYM Pssl_comp_st}
 
-  PSSL_COMP = ^TSSL_COMP;
-  TSSL_COMP = Tssl_comp_st;
-  {$EXTERNALSYM PSSL_COMP}
-
-  Pstack_st_SSL_COMP = ^Tstack_st_SSL_COMP;
-  Tstack_st_SSL_COMP = record end;
-  {$EXTERNALSYM Pstack_st_SSL_COMP}
-
-
-// =============================================================================
-// CALLBACK TYPE DECLARATIONS
-// =============================================================================
-type
-  Tsk_SSL_COMP_compfunc_func_cb = function(arg1: PPSSL_COMP; arg2: PPSSL_COMP): TIdC_INT; cdecl;
-  Tsk_SSL_COMP_freefunc_func_cb = procedure(arg1: PSSL_COMP); cdecl;
-  Tsk_SSL_COMP_copyfunc_func_cb = function(arg1: PSSL_COMP): PSSL_COMP; cdecl;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 
@@ -73,7 +60,7 @@ var
   COMP_get_name: function(meth: PCOMP_METHOD): PIdAnsiChar; cdecl = nil;
   {$EXTERNALSYM COMP_get_name}
 
-  COMP_CTX_free: procedure(ctx: PCOMP_CTX); cdecl = nil;
+  COMP_CTX_free: function(ctx: PCOMP_CTX): void; cdecl = nil;
   {$EXTERNALSYM COMP_CTX_free}
 
   COMP_compress_block: function(ctx: PCOMP_CTX; _out: PIdAnsiChar; olen: TIdC_INT; _in: PIdAnsiChar; ilen: TIdC_INT): TIdC_INT; cdecl = nil;
@@ -113,7 +100,7 @@ function COMP_CTX_get_method(ctx: PCOMP_CTX): PCOMP_METHOD; cdecl;
 function COMP_CTX_get_type(comp: PCOMP_CTX): TIdC_INT; cdecl;
 function COMP_get_type(meth: PCOMP_METHOD): TIdC_INT; cdecl;
 function COMP_get_name(meth: PCOMP_METHOD): PIdAnsiChar; cdecl;
-procedure COMP_CTX_free(ctx: PCOMP_CTX); cdecl;
+function COMP_CTX_free(ctx: PCOMP_CTX): void; cdecl;
 function COMP_compress_block(ctx: PCOMP_CTX; _out: PIdAnsiChar; olen: TIdC_INT; _in: PIdAnsiChar; ilen: TIdC_INT): TIdC_INT; cdecl;
 function COMP_expand_block(ctx: PCOMP_CTX; _out: PIdAnsiChar; olen: TIdC_INT; _in: PIdAnsiChar; ilen: TIdC_INT): TIdC_INT; cdecl;
 function COMP_zlib: PCOMP_METHOD; cdecl;
@@ -123,6 +110,44 @@ function COMP_brotli_oneshot: PCOMP_METHOD; cdecl;
 function COMP_zstd: PCOMP_METHOD; cdecl;
 function COMP_zstd_oneshot: PCOMP_METHOD; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
+
+// =============================================================================
+// OPENSSL STACK DEFINITIONS
+// =============================================================================
+type
+  { TODO 1 -copenssl stack SSL_COMP definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_SSL_COMP = Pointer;
+  {$EXTERNALSYM PSTACK_OF_SSL_COMP}
+
+  { Original Stack Macros for SSL_COMP:
+    SKM_DEFINE_STACK_OF_INTERNAL(SSL_COMP, SSL_COMP, SSL_COMP)
+    sk_SSL_COMP_num(sk) OPENSSL_sk_num(ossl_check_const_SSL_COMP_sk_type(sk))
+    sk_SSL_COMP_value(sk, idx) ((SSL_COMP *)OPENSSL_sk_value(ossl_check_const_SSL_COMP_sk_type(sk), (idx)))
+    sk_SSL_COMP_new(cmp) ((STACK_OF(SSL_COMP) *)OPENSSL_sk_new(ossl_check_SSL_COMP_compfunc_type(cmp)))
+    sk_SSL_COMP_new_null() ((STACK_OF(SSL_COMP) *)OPENSSL_sk_new_null())
+    sk_SSL_COMP_new_reserve(cmp, n) ((STACK_OF(SSL_COMP) *)OPENSSL_sk_new_reserve(ossl_check_SSL_COMP_compfunc_type(cmp), (n)))
+    sk_SSL_COMP_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_SSL_COMP_sk_type(sk), (n))
+    sk_SSL_COMP_free(sk) OPENSSL_sk_free(ossl_check_SSL_COMP_sk_type(sk))
+    sk_SSL_COMP_zero(sk) OPENSSL_sk_zero(ossl_check_SSL_COMP_sk_type(sk))
+    sk_SSL_COMP_delete(sk, i) ((SSL_COMP *)OPENSSL_sk_delete(ossl_check_SSL_COMP_sk_type(sk), (i)))
+    sk_SSL_COMP_delete_ptr(sk, ptr) ((SSL_COMP *)OPENSSL_sk_delete_ptr(ossl_check_SSL_COMP_sk_type(sk), ossl_check_SSL_COMP_type(ptr)))
+    sk_SSL_COMP_push(sk, ptr) OPENSSL_sk_push(ossl_check_SSL_COMP_sk_type(sk), ossl_check_SSL_COMP_type(ptr))
+    sk_SSL_COMP_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_SSL_COMP_sk_type(sk), ossl_check_SSL_COMP_type(ptr))
+    sk_SSL_COMP_pop(sk) ((SSL_COMP *)OPENSSL_sk_pop(ossl_check_SSL_COMP_sk_type(sk)))
+    sk_SSL_COMP_shift(sk) ((SSL_COMP *)OPENSSL_sk_shift(ossl_check_SSL_COMP_sk_type(sk)))
+    sk_SSL_COMP_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_SSL_COMP_sk_type(sk), ossl_check_SSL_COMP_freefunc_type(freefunc))
+    sk_SSL_COMP_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_SSL_COMP_sk_type(sk), ossl_check_SSL_COMP_type(ptr), (idx))
+    sk_SSL_COMP_set(sk, idx, ptr) ((SSL_COMP *)OPENSSL_sk_set(ossl_check_SSL_COMP_sk_type(sk), (idx), ossl_check_SSL_COMP_type(ptr)))
+    sk_SSL_COMP_find(sk, ptr) OPENSSL_sk_find(ossl_check_SSL_COMP_sk_type(sk), ossl_check_SSL_COMP_type(ptr))
+    sk_SSL_COMP_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_SSL_COMP_sk_type(sk), ossl_check_SSL_COMP_type(ptr))
+    sk_SSL_COMP_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_SSL_COMP_sk_type(sk), ossl_check_SSL_COMP_type(ptr), pnum)
+    sk_SSL_COMP_sort(sk) OPENSSL_sk_sort(ossl_check_SSL_COMP_sk_type(sk))
+    sk_SSL_COMP_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_SSL_COMP_sk_type(sk))
+    sk_SSL_COMP_dup(sk) ((STACK_OF(SSL_COMP) *)OPENSSL_sk_dup(ossl_check_const_SSL_COMP_sk_type(sk)))
+    sk_SSL_COMP_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(SSL_COMP) *)OPENSSL_sk_deep_copy(ossl_check_const_SSL_COMP_sk_type(sk), ossl_check_SSL_COMP_copyfunc_type(copyfunc), ossl_check_SSL_COMP_freefunc_type(freefunc)))
+    sk_SSL_COMP_set_cmp_func(sk, cmp) ((sk_SSL_COMP_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_SSL_COMP_sk_type(sk), ossl_check_SSL_COMP_compfunc_type(cmp)))
+  }
+
 
 implementation
 
@@ -145,7 +170,7 @@ function COMP_CTX_get_method(ctx: PCOMP_CTX): PCOMP_METHOD; cdecl external CLibC
 function COMP_CTX_get_type(comp: PCOMP_CTX): TIdC_INT; cdecl external CLibCrypto name 'COMP_CTX_get_type';
 function COMP_get_type(meth: PCOMP_METHOD): TIdC_INT; cdecl external CLibCrypto name 'COMP_get_type';
 function COMP_get_name(meth: PCOMP_METHOD): PIdAnsiChar; cdecl external CLibCrypto name 'COMP_get_name';
-procedure COMP_CTX_free(ctx: PCOMP_CTX); cdecl external CLibCrypto name 'COMP_CTX_free';
+function COMP_CTX_free(ctx: PCOMP_CTX): void; cdecl external CLibCrypto name 'COMP_CTX_free';
 function COMP_compress_block(ctx: PCOMP_CTX; _out: PIdAnsiChar; olen: TIdC_INT; _in: PIdAnsiChar; ilen: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'COMP_compress_block';
 function COMP_expand_block(ctx: PCOMP_CTX; _out: PIdAnsiChar; olen: TIdC_INT; _in: PIdAnsiChar; ilen: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'COMP_expand_block';
 function COMP_zlib: PCOMP_METHOD; cdecl external CLibCrypto name 'COMP_zlib';
@@ -241,7 +266,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(COMP_get_name_procname);
 end;
 
-procedure ERR_COMP_CTX_free(ctx: PCOMP_CTX); cdecl
+function ERR_COMP_CTX_free(ctx: PCOMP_CTX): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(COMP_CTX_free_procname);
 end;

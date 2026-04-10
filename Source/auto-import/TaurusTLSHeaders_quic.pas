@@ -27,6 +27,9 @@ uses
   TaurusTLSHeaders_core;
 
 
+
+
+
 // =============================================================================
 // CONSTANTS DECLARATIONS
 // =============================================================================
@@ -85,8 +88,8 @@ function OSSL_QUIC_server_method: PSSL_METHOD; cdecl;
 // INLINE OR MACRO ROUTINES
 // =============================================================================
 
-function OSSL_QUIC_ERR_CRYPTO_ERR(X: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OSSL_QUIC_ERR_CRYPTO_ERR(X: Pointer): TIdC_INT; cdecl;
 
 
 implementation

@@ -27,6 +27,9 @@ uses
   TaurusTLSHeaders_core;
 
 
+
+
+
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 
 // =============================================================================
@@ -34,41 +37,41 @@ uses
 // =============================================================================
 var
 
-  OPENSSL_store_u16_le: function(_out: PIdAnsiChar; val: Tuint16_t): PIdAnsiChar; cdecl = nil;
-  {$EXTERNALSYM OPENSSL_store_u16_le}
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // OPENSSL_store_u16_le: function(_out: PIdAnsiChar; val: TIdC_UINT16): PIdAnsiChar; cdecl = nil;
 
-  OPENSSL_store_u16_be: function(_out: PIdAnsiChar; val: Tuint16_t): PIdAnsiChar; cdecl = nil;
-  {$EXTERNALSYM OPENSSL_store_u16_be}
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // OPENSSL_store_u16_be: function(_out: PIdAnsiChar; val: TIdC_UINT16): PIdAnsiChar; cdecl = nil;
 
-  OPENSSL_store_u32_le: function(_out: PIdAnsiChar; val: UInt32): PIdAnsiChar; cdecl = nil;
-  {$EXTERNALSYM OPENSSL_store_u32_le}
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // OPENSSL_store_u32_le: function(_out: PIdAnsiChar; val: TIdC_UINT32): PIdAnsiChar; cdecl = nil;
 
-  OPENSSL_store_u32_be: function(_out: PIdAnsiChar; val: UInt32): PIdAnsiChar; cdecl = nil;
-  {$EXTERNALSYM OPENSSL_store_u32_be}
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // OPENSSL_store_u32_be: function(_out: PIdAnsiChar; val: TIdC_UINT32): PIdAnsiChar; cdecl = nil;
 
-  OPENSSL_store_u64_le: function(_out: PIdAnsiChar; val: UInt64): PIdAnsiChar; cdecl = nil;
-  {$EXTERNALSYM OPENSSL_store_u64_le}
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // OPENSSL_store_u64_le: function(_out: PIdAnsiChar; val: TIdC_UINT64): PIdAnsiChar; cdecl = nil;
 
-  OPENSSL_store_u64_be: function(_out: PIdAnsiChar; val: UInt64): PIdAnsiChar; cdecl = nil;
-  {$EXTERNALSYM OPENSSL_store_u64_be}
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // OPENSSL_store_u64_be: function(_out: PIdAnsiChar; val: TIdC_UINT64): PIdAnsiChar; cdecl = nil;
 
-  OPENSSL_load_u16_le: function(val: Puint16_t; _in: PIdAnsiChar): PIdAnsiChar; cdecl = nil;
-  {$EXTERNALSYM OPENSSL_load_u16_le}
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // OPENSSL_load_u16_le: function(val: PIdC_UINT16; _in: PIdAnsiChar): PIdAnsiChar; cdecl = nil;
 
-  OPENSSL_load_u16_be: function(val: Puint16_t; _in: PIdAnsiChar): PIdAnsiChar; cdecl = nil;
-  {$EXTERNALSYM OPENSSL_load_u16_be}
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // OPENSSL_load_u16_be: function(val: PIdC_UINT16; _in: PIdAnsiChar): PIdAnsiChar; cdecl = nil;
 
-  OPENSSL_load_u32_le: function(val: PUInt32; _in: PIdAnsiChar): PIdAnsiChar; cdecl = nil;
-  {$EXTERNALSYM OPENSSL_load_u32_le}
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // OPENSSL_load_u32_le: function(val: PIdC_UINT32; _in: PIdAnsiChar): PIdAnsiChar; cdecl = nil;
 
-  OPENSSL_load_u32_be: function(val: PUInt32; _in: PIdAnsiChar): PIdAnsiChar; cdecl = nil;
-  {$EXTERNALSYM OPENSSL_load_u32_be}
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // OPENSSL_load_u32_be: function(val: PIdC_UINT32; _in: PIdAnsiChar): PIdAnsiChar; cdecl = nil;
 
-  OPENSSL_load_u64_le: function(val: PUInt64; _in: PIdAnsiChar): PIdAnsiChar; cdecl = nil;
-  {$EXTERNALSYM OPENSSL_load_u64_le}
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // OPENSSL_load_u64_le: function(val: PIdC_UINT64; _in: PIdAnsiChar): PIdAnsiChar; cdecl = nil;
 
-  OPENSSL_load_u64_be: function(val: PUInt64; _in: PIdAnsiChar): PIdAnsiChar; cdecl = nil;
-  {$EXTERNALSYM OPENSSL_load_u64_be}
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // OPENSSL_load_u64_be: function(val: PIdC_UINT64; _in: PIdAnsiChar): PIdAnsiChar; cdecl = nil;
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
@@ -78,18 +81,30 @@ var
 // STATIC BINDING ROUTINES
 // =============================================================================
 
-function OPENSSL_store_u16_le(_out: PIdAnsiChar; val: Tuint16_t): PIdAnsiChar; cdecl;
-function OPENSSL_store_u16_be(_out: PIdAnsiChar; val: Tuint16_t): PIdAnsiChar; cdecl;
-function OPENSSL_store_u32_le(_out: PIdAnsiChar; val: UInt32): PIdAnsiChar; cdecl;
-function OPENSSL_store_u32_be(_out: PIdAnsiChar; val: UInt32): PIdAnsiChar; cdecl;
-function OPENSSL_store_u64_le(_out: PIdAnsiChar; val: UInt64): PIdAnsiChar; cdecl;
-function OPENSSL_store_u64_be(_out: PIdAnsiChar; val: UInt64): PIdAnsiChar; cdecl;
-function OPENSSL_load_u16_le(val: Puint16_t; _in: PIdAnsiChar): PIdAnsiChar; cdecl;
-function OPENSSL_load_u16_be(val: Puint16_t; _in: PIdAnsiChar): PIdAnsiChar; cdecl;
-function OPENSSL_load_u32_le(val: PUInt32; _in: PIdAnsiChar): PIdAnsiChar; cdecl;
-function OPENSSL_load_u32_be(val: PUInt32; _in: PIdAnsiChar): PIdAnsiChar; cdecl;
-function OPENSSL_load_u64_le(val: PUInt64; _in: PIdAnsiChar): PIdAnsiChar; cdecl;
-function OPENSSL_load_u64_be(val: PUInt64; _in: PIdAnsiChar): PIdAnsiChar; cdecl;
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // function OPENSSL_store_u16_le(_out: PIdAnsiChar; val: TIdC_UINT16): PIdAnsiChar; cdecl;
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // function OPENSSL_store_u16_be(_out: PIdAnsiChar; val: TIdC_UINT16): PIdAnsiChar; cdecl;
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // function OPENSSL_store_u32_le(_out: PIdAnsiChar; val: TIdC_UINT32): PIdAnsiChar; cdecl;
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // function OPENSSL_store_u32_be(_out: PIdAnsiChar; val: TIdC_UINT32): PIdAnsiChar; cdecl;
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // function OPENSSL_store_u64_le(_out: PIdAnsiChar; val: TIdC_UINT64): PIdAnsiChar; cdecl;
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // function OPENSSL_store_u64_be(_out: PIdAnsiChar; val: TIdC_UINT64): PIdAnsiChar; cdecl;
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // function OPENSSL_load_u16_le(val: PIdC_UINT16; _in: PIdAnsiChar): PIdAnsiChar; cdecl;
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // function OPENSSL_load_u16_be(val: PIdC_UINT16; _in: PIdAnsiChar): PIdAnsiChar; cdecl;
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // function OPENSSL_load_u32_le(val: PIdC_UINT32; _in: PIdAnsiChar): PIdAnsiChar; cdecl;
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // function OPENSSL_load_u32_be(val: PIdC_UINT32; _in: PIdAnsiChar): PIdAnsiChar; cdecl;
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // function OPENSSL_load_u64_le(val: PIdC_UINT64; _in: PIdAnsiChar): PIdAnsiChar; cdecl;
+  { TODO 1 -cID Routine needs attention (Inline or Definition in header) }
+  // function OPENSSL_load_u64_be(val: PIdC_UINT64; _in: PIdAnsiChar): PIdAnsiChar; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 implementation
@@ -108,18 +123,18 @@ uses
 // STATIC BINDING ROUTINES IMPORTS
 // =============================================================================
 
-function OPENSSL_store_u16_le(_out: PIdAnsiChar; val: Tuint16_t): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_store_u16_le';
-function OPENSSL_store_u16_be(_out: PIdAnsiChar; val: Tuint16_t): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_store_u16_be';
-function OPENSSL_store_u32_le(_out: PIdAnsiChar; val: UInt32): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_store_u32_le';
-function OPENSSL_store_u32_be(_out: PIdAnsiChar; val: UInt32): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_store_u32_be';
-function OPENSSL_store_u64_le(_out: PIdAnsiChar; val: UInt64): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_store_u64_le';
-function OPENSSL_store_u64_be(_out: PIdAnsiChar; val: UInt64): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_store_u64_be';
-function OPENSSL_load_u16_le(val: Puint16_t; _in: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_load_u16_le';
-function OPENSSL_load_u16_be(val: Puint16_t; _in: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_load_u16_be';
-function OPENSSL_load_u32_le(val: PUInt32; _in: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_load_u32_le';
-function OPENSSL_load_u32_be(val: PUInt32; _in: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_load_u32_be';
-function OPENSSL_load_u64_le(val: PUInt64; _in: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_load_u64_le';
-function OPENSSL_load_u64_be(val: PUInt64; _in: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_load_u64_be';
+function OPENSSL_store_u16_le(_out: PIdAnsiChar; val: TIdC_UINT16): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_store_u16_le';
+function OPENSSL_store_u16_be(_out: PIdAnsiChar; val: TIdC_UINT16): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_store_u16_be';
+function OPENSSL_store_u32_le(_out: PIdAnsiChar; val: TIdC_UINT32): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_store_u32_le';
+function OPENSSL_store_u32_be(_out: PIdAnsiChar; val: TIdC_UINT32): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_store_u32_be';
+function OPENSSL_store_u64_le(_out: PIdAnsiChar; val: TIdC_UINT64): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_store_u64_le';
+function OPENSSL_store_u64_be(_out: PIdAnsiChar; val: TIdC_UINT64): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_store_u64_be';
+function OPENSSL_load_u16_le(val: PIdC_UINT16; _in: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_load_u16_le';
+function OPENSSL_load_u16_be(val: PIdC_UINT16; _in: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_load_u16_be';
+function OPENSSL_load_u32_le(val: PIdC_UINT32; _in: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_load_u32_le';
+function OPENSSL_load_u32_be(val: PIdC_UINT32; _in: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_load_u32_be';
+function OPENSSL_load_u64_le(val: PIdC_UINT64; _in: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_load_u64_le';
+function OPENSSL_load_u64_be(val: PIdC_UINT64; _in: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_load_u64_be';
 {$ENDIF}
 
 // =============================================================================
@@ -176,62 +191,62 @@ const
 // ERRORS STUBS
 // =============================================================================
 
-function ERR_OPENSSL_store_u16_le(_out: PIdAnsiChar; val: Tuint16_t): PIdAnsiChar; cdecl
+function ERR_OPENSSL_store_u16_le(_out: PIdAnsiChar; val: TIdC_UINT16): PIdAnsiChar; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_store_u16_le_procname);
 end;
 
-function ERR_OPENSSL_store_u16_be(_out: PIdAnsiChar; val: Tuint16_t): PIdAnsiChar; cdecl
+function ERR_OPENSSL_store_u16_be(_out: PIdAnsiChar; val: TIdC_UINT16): PIdAnsiChar; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_store_u16_be_procname);
 end;
 
-function ERR_OPENSSL_store_u32_le(_out: PIdAnsiChar; val: UInt32): PIdAnsiChar; cdecl
+function ERR_OPENSSL_store_u32_le(_out: PIdAnsiChar; val: TIdC_UINT32): PIdAnsiChar; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_store_u32_le_procname);
 end;
 
-function ERR_OPENSSL_store_u32_be(_out: PIdAnsiChar; val: UInt32): PIdAnsiChar; cdecl
+function ERR_OPENSSL_store_u32_be(_out: PIdAnsiChar; val: TIdC_UINT32): PIdAnsiChar; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_store_u32_be_procname);
 end;
 
-function ERR_OPENSSL_store_u64_le(_out: PIdAnsiChar; val: UInt64): PIdAnsiChar; cdecl
+function ERR_OPENSSL_store_u64_le(_out: PIdAnsiChar; val: TIdC_UINT64): PIdAnsiChar; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_store_u64_le_procname);
 end;
 
-function ERR_OPENSSL_store_u64_be(_out: PIdAnsiChar; val: UInt64): PIdAnsiChar; cdecl
+function ERR_OPENSSL_store_u64_be(_out: PIdAnsiChar; val: TIdC_UINT64): PIdAnsiChar; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_store_u64_be_procname);
 end;
 
-function ERR_OPENSSL_load_u16_le(val: Puint16_t; _in: PIdAnsiChar): PIdAnsiChar; cdecl
+function ERR_OPENSSL_load_u16_le(val: PIdC_UINT16; _in: PIdAnsiChar): PIdAnsiChar; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_load_u16_le_procname);
 end;
 
-function ERR_OPENSSL_load_u16_be(val: Puint16_t; _in: PIdAnsiChar): PIdAnsiChar; cdecl
+function ERR_OPENSSL_load_u16_be(val: PIdC_UINT16; _in: PIdAnsiChar): PIdAnsiChar; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_load_u16_be_procname);
 end;
 
-function ERR_OPENSSL_load_u32_le(val: PUInt32; _in: PIdAnsiChar): PIdAnsiChar; cdecl
+function ERR_OPENSSL_load_u32_le(val: PIdC_UINT32; _in: PIdAnsiChar): PIdAnsiChar; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_load_u32_le_procname);
 end;
 
-function ERR_OPENSSL_load_u32_be(val: PUInt32; _in: PIdAnsiChar): PIdAnsiChar; cdecl
+function ERR_OPENSSL_load_u32_be(val: PIdC_UINT32; _in: PIdAnsiChar): PIdAnsiChar; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_load_u32_be_procname);
 end;
 
-function ERR_OPENSSL_load_u64_le(val: PUInt64; _in: PIdAnsiChar): PIdAnsiChar; cdecl
+function ERR_OPENSSL_load_u64_le(val: PIdC_UINT64; _in: PIdAnsiChar): PIdAnsiChar; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_load_u64_le_procname);
 end;
 
-function ERR_OPENSSL_load_u64_be(val: PUInt64; _in: PIdAnsiChar): PIdAnsiChar; cdecl
+function ERR_OPENSSL_load_u64_be(val: PIdC_UINT64; _in: PIdAnsiChar): PIdAnsiChar; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_load_u64_be_procname);
 end;

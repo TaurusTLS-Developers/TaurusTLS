@@ -26,193 +26,84 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
-  POSSL_CMP_PKIFAILUREINFO = ^TOSSL_CMP_PKIFAILUREINFO;
-  TOSSL_CMP_PKIFAILUREINFO = TASN1_BIT_STRING;
-  {$EXTERNALSYM POSSL_CMP_PKIFAILUREINFO}
-
-  POSSL_CMP_PKISTATUS = ^TOSSL_CMP_PKISTATUS;
-  TOSSL_CMP_PKISTATUS = TASN1_INTEGER;
-  {$EXTERNALSYM POSSL_CMP_PKISTATUS}
-
   Possl_cmp_ctx_st = ^Tossl_cmp_ctx_st;
-  Tossl_cmp_ctx_st = record end;
+  Tossl_cmp_ctx_st =   record end;
   {$EXTERNALSYM Possl_cmp_ctx_st}
 
-  POSSL_CMP_CTX = ^TOSSL_CMP_CTX;
-  TOSSL_CMP_CTX = Tossl_cmp_ctx_st;
-  {$EXTERNALSYM POSSL_CMP_CTX}
-
   Possl_cmp_pkiheader_st = ^Tossl_cmp_pkiheader_st;
-  Tossl_cmp_pkiheader_st = record end;
+  Tossl_cmp_pkiheader_st =   record end;
   {$EXTERNALSYM Possl_cmp_pkiheader_st}
 
-  POSSL_CMP_PKIHEADER = ^TOSSL_CMP_PKIHEADER;
-  TOSSL_CMP_PKIHEADER = Tossl_cmp_pkiheader_st;
-  {$EXTERNALSYM POSSL_CMP_PKIHEADER}
-
   Possl_cmp_msg_st = ^Tossl_cmp_msg_st;
-  Tossl_cmp_msg_st = record end;
+  Tossl_cmp_msg_st =   record end;
   {$EXTERNALSYM Possl_cmp_msg_st}
 
-  POSSL_CMP_MSG = ^TOSSL_CMP_MSG;
-  TOSSL_CMP_MSG = Tossl_cmp_msg_st;
-  {$EXTERNALSYM POSSL_CMP_MSG}
-
   Possl_cmp_certstatus_st = ^Tossl_cmp_certstatus_st;
-  Tossl_cmp_certstatus_st = record end;
+  Tossl_cmp_certstatus_st =   record end;
   {$EXTERNALSYM Possl_cmp_certstatus_st}
 
-  POSSL_CMP_CERTSTATUS = ^TOSSL_CMP_CERTSTATUS;
-  TOSSL_CMP_CERTSTATUS = Tossl_cmp_certstatus_st;
-  {$EXTERNALSYM POSSL_CMP_CERTSTATUS}
-
-  Pstack_st_OSSL_CMP_CERTSTATUS = ^Tstack_st_OSSL_CMP_CERTSTATUS;
-  Tstack_st_OSSL_CMP_CERTSTATUS = record end;
-  {$EXTERNALSYM Pstack_st_OSSL_CMP_CERTSTATUS}
-
   Possl_cmp_itav_st = ^Tossl_cmp_itav_st;
-  Tossl_cmp_itav_st = record end;
+  Tossl_cmp_itav_st =   record end;
   {$EXTERNALSYM Possl_cmp_itav_st}
 
-  POSSL_CMP_ITAV = ^TOSSL_CMP_ITAV;
-  TOSSL_CMP_ITAV = Tossl_cmp_itav_st;
-  {$EXTERNALSYM POSSL_CMP_ITAV}
-
-  Pstack_st_OSSL_CMP_ITAV = ^Tstack_st_OSSL_CMP_ITAV;
-  Tstack_st_OSSL_CMP_ITAV = record end;
-  {$EXTERNALSYM Pstack_st_OSSL_CMP_ITAV}
-
   Possl_cmp_crlstatus_st = ^Tossl_cmp_crlstatus_st;
-  Tossl_cmp_crlstatus_st = record end;
+  Tossl_cmp_crlstatus_st =   record end;
   {$EXTERNALSYM Possl_cmp_crlstatus_st}
 
-  POSSL_CMP_CRLSTATUS = ^TOSSL_CMP_CRLSTATUS;
-  TOSSL_CMP_CRLSTATUS = Tossl_cmp_crlstatus_st;
-  {$EXTERNALSYM POSSL_CMP_CRLSTATUS}
-
-  Pstack_st_OSSL_CMP_CRLSTATUS = ^Tstack_st_OSSL_CMP_CRLSTATUS;
-  Tstack_st_OSSL_CMP_CRLSTATUS = record end;
-  {$EXTERNALSYM Pstack_st_OSSL_CMP_CRLSTATUS}
-
-  POSSL_CMP_ATAV = ^TOSSL_CMP_ATAV;
-  TOSSL_CMP_ATAV = TOSSL_CRMF_ATTRIBUTETYPEANDVALUE;
-  {$EXTERNALSYM POSSL_CMP_ATAV}
-
-  POSSL_CMP_ATAVS = ^TOSSL_CMP_ATAVS;
-  TOSSL_CMP_ATAVS = Tstack_st_OSSL_CRMF_ATTRIBUTETYPEANDVALUE;
-  {$EXTERNALSYM POSSL_CMP_ATAVS}
-
   Possl_cmp_revrepcontent_st = ^Tossl_cmp_revrepcontent_st;
-  Tossl_cmp_revrepcontent_st = record end;
+  Tossl_cmp_revrepcontent_st =   record end;
   {$EXTERNALSYM Possl_cmp_revrepcontent_st}
 
-  POSSL_CMP_REVREPCONTENT = ^TOSSL_CMP_REVREPCONTENT;
-  TOSSL_CMP_REVREPCONTENT = Tossl_cmp_revrepcontent_st;
-  {$EXTERNALSYM POSSL_CMP_REVREPCONTENT}
-
   Possl_cmp_pkisi_st = ^Tossl_cmp_pkisi_st;
-  Tossl_cmp_pkisi_st = record end;
+  Tossl_cmp_pkisi_st =   record end;
   {$EXTERNALSYM Possl_cmp_pkisi_st}
 
-  POSSL_CMP_PKISI = ^TOSSL_CMP_PKISI;
-  TOSSL_CMP_PKISI = Tossl_cmp_pkisi_st;
-  {$EXTERNALSYM POSSL_CMP_PKISI}
-
-  Pstack_st_OSSL_CMP_PKISI = ^Tstack_st_OSSL_CMP_PKISI;
-  Tstack_st_OSSL_CMP_PKISI = record end;
-  {$EXTERNALSYM Pstack_st_OSSL_CMP_PKISI}
-
   Possl_cmp_certrepmessage_st = ^Tossl_cmp_certrepmessage_st;
-  Tossl_cmp_certrepmessage_st = record end;
+  Tossl_cmp_certrepmessage_st =   record end;
   {$EXTERNALSYM Possl_cmp_certrepmessage_st}
 
-  POSSL_CMP_CERTREPMESSAGE = ^TOSSL_CMP_CERTREPMESSAGE;
-  TOSSL_CMP_CERTREPMESSAGE = Tossl_cmp_certrepmessage_st;
-  {$EXTERNALSYM POSSL_CMP_CERTREPMESSAGE}
-
-  Pstack_st_OSSL_CMP_CERTREPMESSAGE = ^Tstack_st_OSSL_CMP_CERTREPMESSAGE;
-  Tstack_st_OSSL_CMP_CERTREPMESSAGE = record end;
-  {$EXTERNALSYM Pstack_st_OSSL_CMP_CERTREPMESSAGE}
-
   Possl_cmp_pollrep_st = ^Tossl_cmp_pollrep_st;
-  Tossl_cmp_pollrep_st = record end;
+  Tossl_cmp_pollrep_st =   record end;
   {$EXTERNALSYM Possl_cmp_pollrep_st}
 
-  POSSL_CMP_POLLREP = ^TOSSL_CMP_POLLREP;
-  TOSSL_CMP_POLLREP = Tossl_cmp_pollrep_st;
-  {$EXTERNALSYM POSSL_CMP_POLLREP}
-
   Pstack_st_OSSL_CMP_POLLREP = ^Tstack_st_OSSL_CMP_POLLREP;
-  Tstack_st_OSSL_CMP_POLLREP = record end;
+  Tstack_st_OSSL_CMP_POLLREP =   record end;
   {$EXTERNALSYM Pstack_st_OSSL_CMP_POLLREP}
 
-  POSSL_CMP_POLLREPCONTENT = ^TOSSL_CMP_POLLREPCONTENT;
-  TOSSL_CMP_POLLREPCONTENT = Tstack_st_OSSL_CMP_POLLREP;
-  {$EXTERNALSYM POSSL_CMP_POLLREPCONTENT}
-
   Possl_cmp_certresponse_st = ^Tossl_cmp_certresponse_st;
-  Tossl_cmp_certresponse_st = record end;
+  Tossl_cmp_certresponse_st =   record end;
   {$EXTERNALSYM Possl_cmp_certresponse_st}
 
-  POSSL_CMP_CERTRESPONSE = ^TOSSL_CMP_CERTRESPONSE;
-  TOSSL_CMP_CERTRESPONSE = Tossl_cmp_certresponse_st;
-  {$EXTERNALSYM POSSL_CMP_CERTRESPONSE}
-
-  Pstack_st_OSSL_CMP_CERTRESPONSE = ^Tstack_st_OSSL_CMP_CERTRESPONSE;
-  Tstack_st_OSSL_CMP_CERTRESPONSE = record end;
-  {$EXTERNALSYM Pstack_st_OSSL_CMP_CERTRESPONSE}
-
-  POSSL_CMP_PKIFREETEXT = ^TOSSL_CMP_PKIFREETEXT;
-  TOSSL_CMP_PKIFREETEXT = Tstack_st_ASN1_UTF8STRING;
-  {$EXTERNALSYM POSSL_CMP_PKIFREETEXT}
-
   Possl_cmp_srv_ctx_st = ^Tossl_cmp_srv_ctx_st;
-  Tossl_cmp_srv_ctx_st = record end;
+  Tossl_cmp_srv_ctx_st =   record end;
   {$EXTERNALSYM Possl_cmp_srv_ctx_st}
-
-  POSSL_CMP_SRV_CTX = ^TOSSL_CMP_SRV_CTX;
-  TOSSL_CMP_SRV_CTX = Tossl_cmp_srv_ctx_st;
-  {$EXTERNALSYM POSSL_CMP_SRV_CTX}
 
 
 // =============================================================================
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  Tsk_OSSL_CMP_CERTSTATUS_compfunc_func_cb = function(arg1: PPOSSL_CMP_CERTSTATUS; arg2: PPOSSL_CMP_CERTSTATUS): TIdC_INT; cdecl;
-  Tsk_OSSL_CMP_CERTSTATUS_freefunc_func_cb = procedure(arg1: POSSL_CMP_CERTSTATUS); cdecl;
-  Tsk_OSSL_CMP_CERTSTATUS_copyfunc_func_cb = function(arg1: POSSL_CMP_CERTSTATUS): POSSL_CMP_CERTSTATUS; cdecl;
-  Tsk_OSSL_CMP_ITAV_compfunc_func_cb = function(arg1: PPOSSL_CMP_ITAV; arg2: PPOSSL_CMP_ITAV): TIdC_INT; cdecl;
-  Tsk_OSSL_CMP_ITAV_freefunc_func_cb = procedure(arg1: POSSL_CMP_ITAV); cdecl;
-  Tsk_OSSL_CMP_ITAV_copyfunc_func_cb = function(arg1: POSSL_CMP_ITAV): POSSL_CMP_ITAV; cdecl;
-  Tsk_OSSL_CMP_CRLSTATUS_compfunc_func_cb = function(arg1: PPOSSL_CMP_CRLSTATUS; arg2: PPOSSL_CMP_CRLSTATUS): TIdC_INT; cdecl;
-  Tsk_OSSL_CMP_CRLSTATUS_freefunc_func_cb = procedure(arg1: POSSL_CMP_CRLSTATUS); cdecl;
-  Tsk_OSSL_CMP_CRLSTATUS_copyfunc_func_cb = function(arg1: POSSL_CMP_CRLSTATUS): POSSL_CMP_CRLSTATUS; cdecl;
-  Tsk_OSSL_CMP_PKISI_compfunc_func_cb = function(arg1: PPOSSL_CMP_PKISI; arg2: PPOSSL_CMP_PKISI): TIdC_INT; cdecl;
-  Tsk_OSSL_CMP_PKISI_freefunc_func_cb = procedure(arg1: POSSL_CMP_PKISI); cdecl;
-  Tsk_OSSL_CMP_PKISI_copyfunc_func_cb = function(arg1: POSSL_CMP_PKISI): POSSL_CMP_PKISI; cdecl;
-  Tsk_OSSL_CMP_CERTREPMESSAGE_compfunc_func_cb = function(arg1: PPOSSL_CMP_CERTREPMESSAGE; arg2: PPOSSL_CMP_CERTREPMESSAGE): TIdC_INT; cdecl;
-  Tsk_OSSL_CMP_CERTREPMESSAGE_freefunc_func_cb = procedure(arg1: POSSL_CMP_CERTREPMESSAGE); cdecl;
-  Tsk_OSSL_CMP_CERTREPMESSAGE_copyfunc_func_cb = function(arg1: POSSL_CMP_CERTREPMESSAGE): POSSL_CMP_CERTREPMESSAGE; cdecl;
-  Tsk_OSSL_CMP_CERTRESPONSE_compfunc_func_cb = function(arg1: PPOSSL_CMP_CERTRESPONSE; arg2: PPOSSL_CMP_CERTRESPONSE): TIdC_INT; cdecl;
-  Tsk_OSSL_CMP_CERTRESPONSE_freefunc_func_cb = procedure(arg1: POSSL_CMP_CERTRESPONSE); cdecl;
-  Tsk_OSSL_CMP_CERTRESPONSE_copyfunc_func_cb = function(arg1: POSSL_CMP_CERTRESPONSE): POSSL_CMP_CERTRESPONSE; cdecl;
-  TOSSL_CMP_CTX_set_log_cb_cb_cb = function: T; cdecl;
-  TOSSL_CMP_CTX_set_http_cb_cb_cb = function: T; cdecl;
-  TOSSL_CMP_transfer_cb_t_func_cb = function(arg1: POSSL_CMP_CTX; arg2: POSSL_CMP_MSG): POSSL_CMP_MSG; cdecl;
-  TOSSL_CMP_certConf_cb_t_func_cb = function(arg1: POSSL_CMP_CTX; arg2: PX509; arg3: TIdC_INT; arg4: PPIdAnsiChar): TIdC_INT; cdecl;
-  TOSSL_CMP_SRV_cert_request_cb_t_func_cb = function(arg1: POSSL_CMP_SRV_CTX; arg2: POSSL_CMP_MSG; arg3: TIdC_INT; arg4: POSSL_CRMF_MSG; arg5: PX509_REQ; arg6: PPX509; arg7: PPstack_st_X509; arg8: PPstack_st_X509): POSSL_CMP_PKISI; cdecl;
-  TOSSL_CMP_SRV_rr_cb_t_func_cb = function(arg1: POSSL_CMP_SRV_CTX; arg2: POSSL_CMP_MSG; arg3: PX509_NAME; arg4: PASN1_INTEGER): POSSL_CMP_PKISI; cdecl;
-  TOSSL_CMP_SRV_genm_cb_t_func_cb = function(arg1: POSSL_CMP_SRV_CTX; arg2: POSSL_CMP_MSG; arg3: Pstack_st_OSSL_CMP_ITAV; arg4: PPstack_st_OSSL_CMP_ITAV): TIdC_INT; cdecl;
-  TOSSL_CMP_SRV_error_cb_t_func_cb = procedure(arg1: POSSL_CMP_SRV_CTX; arg2: POSSL_CMP_MSG; arg3: POSSL_CMP_PKISI; arg4: PASN1_INTEGER; arg5: POSSL_CMP_PKIFREETEXT); cdecl;
-  TOSSL_CMP_SRV_certConf_cb_t_func_cb = function(arg1: POSSL_CMP_SRV_CTX; arg2: POSSL_CMP_MSG; arg3: TIdC_INT; arg4: PASN1_OCTET_STRING; arg5: POSSL_CMP_PKISI): TIdC_INT; cdecl;
-  TOSSL_CMP_SRV_pollReq_cb_t_func_cb = function(arg1: POSSL_CMP_SRV_CTX; arg2: POSSL_CMP_MSG; arg3: TIdC_INT; arg4: PPOSSL_CMP_MSG; arg5: PInt64): TIdC_INT; cdecl;
-  TOSSL_CMP_SRV_delayed_delivery_cb_t_func_cb = function(arg1: POSSL_CMP_SRV_CTX; arg2: POSSL_CMP_MSG): TIdC_INT; cdecl;
-  TOSSL_CMP_SRV_clean_transaction_cb_t_func_cb = function(arg1: POSSL_CMP_SRV_CTX; arg2: PASN1_OCTET_STRING): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // OSSL_CMP_CTX_set_log_cb_cb_cb = function(arg1: PIdAnsiChar; arg2: PIdAnsiChar; arg3: TIdC_INT; arg4: TIdC_INT; arg5: PIdAnsiChar): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // OSSL_CMP_CTX_set_http_cb_cb_cb = function(arg1: Pbio_st; arg2: Pointer; arg3: TIdC_INT; arg4: TIdC_INT): Pbio_st; cdecl;
+  TOSSL_CMP_transfer_cb_t = function(ctx: POSSL_CMP_CTX; req: POSSL_CMP_MSG): Possl_cmp_msg_st; cdecl;
+  TOSSL_CMP_certConf_cb_t = function(ctx: POSSL_CMP_CTX; cert: PX509; fail_info: TIdC_INT; txt: PPIdAnsiChar): TIdC_INT; cdecl;
+  TOSSL_CMP_SRV_cert_request_cb_t = function(srv_ctx: POSSL_CMP_SRV_CTX; req: POSSL_CMP_MSG; certReqId: TIdC_INT; crm: POSSL_CRMF_MSG; p10cr: PX509_REQ; certOut: PPX509; chainOut: PPstack_st_X509; caPubs: PPstack_st_X509): Possl_cmp_pkisi_st; cdecl;
+  TOSSL_CMP_SRV_rr_cb_t = function(srv_ctx: POSSL_CMP_SRV_CTX; req: POSSL_CMP_MSG; issuer: PX509_NAME; serial: PASN1_INTEGER): Possl_cmp_pkisi_st; cdecl;
+  TOSSL_CMP_SRV_genm_cb_t = function(srv_ctx: POSSL_CMP_SRV_CTX; req: POSSL_CMP_MSG; _in: Pstack_st_OSSL_CMP_ITAV; _out: PPstack_st_OSSL_CMP_ITAV): TIdC_INT; cdecl;
+  TOSSL_CMP_SRV_error_cb_t = function(srv_ctx: POSSL_CMP_SRV_CTX; req: POSSL_CMP_MSG; statusInfo: POSSL_CMP_PKISI; errorCode: PASN1_INTEGER; errDetails: POSSL_CMP_PKIFREETEXT): void; cdecl;
+  TOSSL_CMP_SRV_certConf_cb_t = function(srv_ctx: POSSL_CMP_SRV_CTX; req: POSSL_CMP_MSG; certReqId: TIdC_INT; certHash: PASN1_OCTET_STRING; si: POSSL_CMP_PKISI): TIdC_INT; cdecl;
+  TOSSL_CMP_SRV_pollReq_cb_t = function(srv_ctx: POSSL_CMP_SRV_CTX; req: POSSL_CMP_MSG; certReqId: TIdC_INT; certReq: PPOSSL_CMP_MSG; check_after: PIdC_INT64): TIdC_INT; cdecl;
+  TOSSL_CMP_SRV_delayed_delivery_cb_t = function(srv_ctx: POSSL_CMP_SRV_CTX; req: POSSL_CMP_MSG): TIdC_INT; cdecl;
+  TOSSL_CMP_SRV_clean_transaction_cb_t = function(srv_ctx: POSSL_CMP_SRV_CTX; id: PASN1_OCTET_STRING): TIdC_INT; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -339,7 +230,7 @@ var
   OSSL_CMP_PKIHEADER_new: function: POSSL_CMP_PKIHEADER; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_PKIHEADER_new}
 
-  OSSL_CMP_PKIHEADER_free: procedure(a: POSSL_CMP_PKIHEADER); cdecl = nil;
+  OSSL_CMP_PKIHEADER_free: function(a: POSSL_CMP_PKIHEADER): void; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_PKIHEADER_free}
 
   d2i_OSSL_CMP_PKIHEADER: function(a: PPOSSL_CMP_PKIHEADER; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CMP_PKIHEADER; cdecl = nil;
@@ -369,7 +260,7 @@ var
   OSSL_CMP_ATAVS_new: function: POSSL_CMP_ATAVS; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_ATAVS_new}
 
-  OSSL_CMP_ATAVS_free: procedure(a: POSSL_CMP_ATAVS); cdecl = nil;
+  OSSL_CMP_ATAVS_free: function(a: POSSL_CMP_ATAVS): void; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_ATAVS_free}
 
   d2i_OSSL_CMP_ATAVS: function(a: PPOSSL_CMP_ATAVS; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CMP_ATAVS; cdecl = nil;
@@ -384,7 +275,7 @@ var
   OSSL_CMP_PKISI_new: function: POSSL_CMP_PKISI; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_PKISI_new}
 
-  OSSL_CMP_PKISI_free: procedure(a: POSSL_CMP_PKISI); cdecl = nil;
+  OSSL_CMP_PKISI_free: function(a: POSSL_CMP_PKISI): void; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_PKISI_free}
 
   d2i_OSSL_CMP_PKISI: function(a: PPOSSL_CMP_PKISI; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CMP_PKISI; cdecl = nil;
@@ -402,7 +293,7 @@ var
   OSSL_CMP_ITAV_create: function(_type: PASN1_OBJECT; value: PASN1_TYPE): POSSL_CMP_ITAV; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_ITAV_create}
 
-  OSSL_CMP_ITAV_set0: procedure(itav: POSSL_CMP_ITAV; _type: PASN1_OBJECT; value: PASN1_TYPE); cdecl = nil;
+  OSSL_CMP_ITAV_set0: function(itav: POSSL_CMP_ITAV; _type: PASN1_OBJECT; value: PASN1_TYPE): void; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_ITAV_set0}
 
   OSSL_CMP_ITAV_get0_type: function(itav: POSSL_CMP_ITAV): PASN1_OBJECT; cdecl = nil;
@@ -414,7 +305,7 @@ var
   OSSL_CMP_ITAV_push0_stack_item: function(sk_p: PPstack_st_OSSL_CMP_ITAV; itav: POSSL_CMP_ITAV): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_ITAV_push0_stack_item}
 
-  OSSL_CMP_ITAV_free: procedure(itav: POSSL_CMP_ITAV); cdecl = nil;
+  OSSL_CMP_ITAV_free: function(itav: POSSL_CMP_ITAV): void; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_ITAV_free}
 
   OSSL_CMP_ITAV_new0_certProfile: function(certProfile: Pstack_st_ASN1_UTF8STRING): POSSL_CMP_ITAV; cdecl = nil;
@@ -450,7 +341,7 @@ var
   OSSL_CMP_CRLSTATUS_get0: function(crlstatus: POSSL_CMP_CRLSTATUS; dpn: PPDIST_POINT_NAME; issuer: PPGENERAL_NAMES; thisUpdate: PPASN1_TIME): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_CRLSTATUS_get0}
 
-  OSSL_CMP_CRLSTATUS_free: procedure(crlstatus: POSSL_CMP_CRLSTATUS); cdecl = nil;
+  OSSL_CMP_CRLSTATUS_free: function(crlstatus: POSSL_CMP_CRLSTATUS): void; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_CRLSTATUS_free}
 
   OSSL_CMP_ITAV_new0_crlStatusList: function(crlStatusList: Pstack_st_OSSL_CMP_CRLSTATUS): POSSL_CMP_ITAV; cdecl = nil;
@@ -474,7 +365,7 @@ var
   OSSL_CMP_ATAV_create: function(_type: PASN1_OBJECT; value: PASN1_TYPE): POSSL_CMP_ATAV; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_ATAV_create}
 
-  OSSL_CMP_ATAV_set0: procedure(itav: POSSL_CMP_ATAV; _type: PASN1_OBJECT; value: PASN1_TYPE); cdecl = nil;
+  OSSL_CMP_ATAV_set0: function(itav: POSSL_CMP_ATAV; _type: PASN1_OBJECT; value: PASN1_TYPE): void; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_ATAV_set0}
 
   OSSL_CMP_ATAV_get0_type: function(itav: POSSL_CMP_ATAV): PASN1_OBJECT; cdecl = nil;
@@ -498,13 +389,13 @@ var
   OSSL_CMP_ATAV_push1: function(sk_p: PPOSSL_CMP_ATAVS; atav: POSSL_CMP_ATAV): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_ATAV_push1}
 
-  OSSL_CMP_MSG_free: procedure(msg: POSSL_CMP_MSG); cdecl = nil;
+  OSSL_CMP_MSG_free: function(msg: POSSL_CMP_MSG): void; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_MSG_free}
 
   OSSL_CMP_CTX_new: function(libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): POSSL_CMP_CTX; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_CTX_new}
 
-  OSSL_CMP_CTX_free: procedure(ctx: POSSL_CMP_CTX); cdecl = nil;
+  OSSL_CMP_CTX_free: function(ctx: POSSL_CMP_CTX): void; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_CTX_free}
 
   OSSL_CMP_CTX_reinit: function(ctx: POSSL_CMP_CTX): TIdC_INT; cdecl = nil;
@@ -525,7 +416,7 @@ var
   OSSL_CMP_CTX_set_log_cb: function(ctx: POSSL_CMP_CTX; cb: TOSSL_CMP_CTX_set_log_cb_cb_cb): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_CTX_set_log_cb}
 
-  OSSL_CMP_CTX_print_errors: procedure(ctx: POSSL_CMP_CTX); cdecl = nil;
+  OSSL_CMP_CTX_print_errors: function(ctx: POSSL_CMP_CTX): void; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_CTX_print_errors}
 
   OSSL_CMP_CTX_set1_serverPath: function(ctx: POSSL_CMP_CTX; path: PIdAnsiChar): TIdC_INT; cdecl = nil;
@@ -552,7 +443,7 @@ var
   OSSL_CMP_CTX_get_http_cb_arg: function(ctx: POSSL_CMP_CTX): Pointer; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_CTX_get_http_cb_arg}
 
-  OSSL_CMP_CTX_set_transfer_cb: function(ctx: POSSL_CMP_CTX; cb: TOSSL_CMP_transfer_cb_t_func_cb): TIdC_INT; cdecl = nil;
+  OSSL_CMP_CTX_set_transfer_cb: function(ctx: POSSL_CMP_CTX; cb: TOSSL_CMP_transfer_cb_t): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_CTX_set_transfer_cb}
 
   OSSL_CMP_CTX_set_transfer_cb_arg: function(ctx: POSSL_CMP_CTX; arg: Pointer): TIdC_INT; cdecl = nil;
@@ -648,7 +539,7 @@ var
   OSSL_CMP_certConf_cb: function(ctx: POSSL_CMP_CTX; cert: PX509; fail_info: TIdC_INT; text: PPIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_certConf_cb}
 
-  OSSL_CMP_CTX_set_certConf_cb: function(ctx: POSSL_CMP_CTX; cb: TOSSL_CMP_certConf_cb_t_func_cb): TIdC_INT; cdecl = nil;
+  OSSL_CMP_CTX_set_certConf_cb: function(ctx: POSSL_CMP_CTX; cb: TOSSL_CMP_certConf_cb_t): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_CTX_set_certConf_cb}
 
   OSSL_CMP_CTX_set_certConf_cb_arg: function(ctx: POSSL_CMP_CTX; arg: Pointer): TIdC_INT; cdecl = nil;
@@ -753,13 +644,13 @@ var
   OSSL_CMP_SRV_CTX_new: function(libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): POSSL_CMP_SRV_CTX; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_SRV_CTX_new}
 
-  OSSL_CMP_SRV_CTX_free: procedure(srv_ctx: POSSL_CMP_SRV_CTX); cdecl = nil;
+  OSSL_CMP_SRV_CTX_free: function(srv_ctx: POSSL_CMP_SRV_CTX): void; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_SRV_CTX_free}
 
-  OSSL_CMP_SRV_CTX_init: function(srv_ctx: POSSL_CMP_SRV_CTX; custom_ctx: Pointer; process_cert_request: TOSSL_CMP_SRV_cert_request_cb_t_func_cb; process_rr: TOSSL_CMP_SRV_rr_cb_t_func_cb; process_genm: TOSSL_CMP_SRV_genm_cb_t_func_cb; process_error: TOSSL_CMP_SRV_error_cb_t_func_cb; process_certConf: TOSSL_CMP_SRV_certConf_cb_t_func_cb; process_pollReq: TOSSL_CMP_SRV_pollReq_cb_t_func_cb): TIdC_INT; cdecl = nil;
+  OSSL_CMP_SRV_CTX_init: function(srv_ctx: POSSL_CMP_SRV_CTX; custom_ctx: Pointer; process_cert_request: TOSSL_CMP_SRV_cert_request_cb_t; process_rr: TOSSL_CMP_SRV_rr_cb_t; process_genm: TOSSL_CMP_SRV_genm_cb_t; process_error: TOSSL_CMP_SRV_error_cb_t; process_certConf: TOSSL_CMP_SRV_certConf_cb_t; process_pollReq: TOSSL_CMP_SRV_pollReq_cb_t): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_SRV_CTX_init}
 
-  OSSL_CMP_SRV_CTX_init_trans: function(srv_ctx: POSSL_CMP_SRV_CTX; delay: TOSSL_CMP_SRV_delayed_delivery_cb_t_func_cb; clean: TOSSL_CMP_SRV_clean_transaction_cb_t_func_cb): TIdC_INT; cdecl = nil;
+  OSSL_CMP_SRV_CTX_init_trans: function(srv_ctx: POSSL_CMP_SRV_CTX; delay: TOSSL_CMP_SRV_delayed_delivery_cb_t; clean: TOSSL_CMP_SRV_clean_transaction_cb_t): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_CMP_SRV_CTX_init_trans}
 
   OSSL_CMP_SRV_CTX_get0_cmp_ctx: function(srv_ctx: POSSL_CMP_SRV_CTX): POSSL_CMP_CTX; cdecl = nil;
@@ -814,7 +705,7 @@ var
 
 function OSSL_CMP_PKISTATUS_it: PASN1_ITEM; cdecl;
 function OSSL_CMP_PKIHEADER_new: POSSL_CMP_PKIHEADER; cdecl;
-procedure OSSL_CMP_PKIHEADER_free(a: POSSL_CMP_PKIHEADER); cdecl;
+function OSSL_CMP_PKIHEADER_free(a: POSSL_CMP_PKIHEADER): void; cdecl;
 function d2i_OSSL_CMP_PKIHEADER(a: PPOSSL_CMP_PKIHEADER; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CMP_PKIHEADER; cdecl;
 function i2d_OSSL_CMP_PKIHEADER(a: POSSL_CMP_PKIHEADER; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_CMP_PKIHEADER_it: PASN1_ITEM; cdecl;
@@ -824,22 +715,22 @@ function i2d_OSSL_CMP_MSG(a: POSSL_CMP_MSG; _out: PPIdAnsiChar): TIdC_INT; cdecl
 function OSSL_CMP_MSG_it: PASN1_ITEM; cdecl;
 function OSSL_CMP_ITAV_dup(a: POSSL_CMP_ITAV): POSSL_CMP_ITAV; cdecl;
 function OSSL_CMP_ATAVS_new: POSSL_CMP_ATAVS; cdecl;
-procedure OSSL_CMP_ATAVS_free(a: POSSL_CMP_ATAVS); cdecl;
+function OSSL_CMP_ATAVS_free(a: POSSL_CMP_ATAVS): void; cdecl;
 function d2i_OSSL_CMP_ATAVS(a: PPOSSL_CMP_ATAVS; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CMP_ATAVS; cdecl;
 function i2d_OSSL_CMP_ATAVS(a: POSSL_CMP_ATAVS; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_CMP_ATAVS_it: PASN1_ITEM; cdecl;
 function OSSL_CMP_PKISI_new: POSSL_CMP_PKISI; cdecl;
-procedure OSSL_CMP_PKISI_free(a: POSSL_CMP_PKISI); cdecl;
+function OSSL_CMP_PKISI_free(a: POSSL_CMP_PKISI): void; cdecl;
 function d2i_OSSL_CMP_PKISI(a: PPOSSL_CMP_PKISI; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CMP_PKISI; cdecl;
 function i2d_OSSL_CMP_PKISI(a: POSSL_CMP_PKISI; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_CMP_PKISI_it: PASN1_ITEM; cdecl;
 function OSSL_CMP_PKISI_dup(a: POSSL_CMP_PKISI): POSSL_CMP_PKISI; cdecl;
 function OSSL_CMP_ITAV_create(_type: PASN1_OBJECT; value: PASN1_TYPE): POSSL_CMP_ITAV; cdecl;
-procedure OSSL_CMP_ITAV_set0(itav: POSSL_CMP_ITAV; _type: PASN1_OBJECT; value: PASN1_TYPE); cdecl;
+function OSSL_CMP_ITAV_set0(itav: POSSL_CMP_ITAV; _type: PASN1_OBJECT; value: PASN1_TYPE): void; cdecl;
 function OSSL_CMP_ITAV_get0_type(itav: POSSL_CMP_ITAV): PASN1_OBJECT; cdecl;
 function OSSL_CMP_ITAV_get0_value(itav: POSSL_CMP_ITAV): PASN1_TYPE; cdecl;
 function OSSL_CMP_ITAV_push0_stack_item(sk_p: PPstack_st_OSSL_CMP_ITAV; itav: POSSL_CMP_ITAV): TIdC_INT; cdecl;
-procedure OSSL_CMP_ITAV_free(itav: POSSL_CMP_ITAV); cdecl;
+function OSSL_CMP_ITAV_free(itav: POSSL_CMP_ITAV): void; cdecl;
 function OSSL_CMP_ITAV_new0_certProfile(certProfile: Pstack_st_ASN1_UTF8STRING): POSSL_CMP_ITAV; cdecl;
 function OSSL_CMP_ITAV_get0_certProfile(itav: POSSL_CMP_ITAV; _out: PPstack_st_ASN1_UTF8STRING): TIdC_INT; cdecl;
 function OSSL_CMP_ITAV_new_caCerts(caCerts: Pstack_st_X509): POSSL_CMP_ITAV; cdecl;
@@ -851,7 +742,7 @@ function OSSL_CMP_ITAV_get0_rootCaKeyUpdate(itav: POSSL_CMP_ITAV; newWithNew: PP
 function OSSL_CMP_CRLSTATUS_create(crl: PX509_CRL; cert: PX509; only_DN: TIdC_INT): POSSL_CMP_CRLSTATUS; cdecl;
 function OSSL_CMP_CRLSTATUS_new1(dpn: PDIST_POINT_NAME; issuer: PGENERAL_NAMES; thisUpdate: PASN1_TIME): POSSL_CMP_CRLSTATUS; cdecl;
 function OSSL_CMP_CRLSTATUS_get0(crlstatus: POSSL_CMP_CRLSTATUS; dpn: PPDIST_POINT_NAME; issuer: PPGENERAL_NAMES; thisUpdate: PPASN1_TIME): TIdC_INT; cdecl;
-procedure OSSL_CMP_CRLSTATUS_free(crlstatus: POSSL_CMP_CRLSTATUS); cdecl;
+function OSSL_CMP_CRLSTATUS_free(crlstatus: POSSL_CMP_CRLSTATUS): void; cdecl;
 function OSSL_CMP_ITAV_new0_crlStatusList(crlStatusList: Pstack_st_OSSL_CMP_CRLSTATUS): POSSL_CMP_ITAV; cdecl;
 function OSSL_CMP_ITAV_get0_crlStatusList(itav: POSSL_CMP_ITAV; _out: PPstack_st_OSSL_CMP_CRLSTATUS): TIdC_INT; cdecl;
 function OSSL_CMP_ITAV_new_crls(crls: PX509_CRL): POSSL_CMP_ITAV; cdecl;
@@ -859,7 +750,7 @@ function OSSL_CMP_ITAV_get0_crls(it: POSSL_CMP_ITAV; _out: PPstack_st_X509_CRL):
 function OSSL_CMP_ITAV_new0_certReqTemplate(certTemplate: POSSL_CRMF_CERTTEMPLATE; keySpec: POSSL_CMP_ATAVS): POSSL_CMP_ITAV; cdecl;
 function OSSL_CMP_ITAV_get1_certReqTemplate(itav: POSSL_CMP_ITAV; certTemplate: PPOSSL_CRMF_CERTTEMPLATE; keySpec: PPOSSL_CMP_ATAVS): TIdC_INT; cdecl;
 function OSSL_CMP_ATAV_create(_type: PASN1_OBJECT; value: PASN1_TYPE): POSSL_CMP_ATAV; cdecl;
-procedure OSSL_CMP_ATAV_set0(itav: POSSL_CMP_ATAV; _type: PASN1_OBJECT; value: PASN1_TYPE); cdecl;
+function OSSL_CMP_ATAV_set0(itav: POSSL_CMP_ATAV; _type: PASN1_OBJECT; value: PASN1_TYPE): void; cdecl;
 function OSSL_CMP_ATAV_get0_type(itav: POSSL_CMP_ATAV): PASN1_OBJECT; cdecl;
 function OSSL_CMP_ATAV_get0_value(itav: POSSL_CMP_ATAV): PASN1_TYPE; cdecl;
 function OSSL_CMP_ATAV_new_algId(alg: PX509_ALGOR): POSSL_CMP_ATAV; cdecl;
@@ -867,16 +758,16 @@ function OSSL_CMP_ATAV_get0_algId(atav: POSSL_CMP_ATAV): PX509_ALGOR; cdecl;
 function OSSL_CMP_ATAV_new_rsaKeyLen(len: TIdC_INT): POSSL_CMP_ATAV; cdecl;
 function OSSL_CMP_ATAV_get_rsaKeyLen(atav: POSSL_CMP_ATAV): TIdC_INT; cdecl;
 function OSSL_CMP_ATAV_push1(sk_p: PPOSSL_CMP_ATAVS; atav: POSSL_CMP_ATAV): TIdC_INT; cdecl;
-procedure OSSL_CMP_MSG_free(msg: POSSL_CMP_MSG); cdecl;
+function OSSL_CMP_MSG_free(msg: POSSL_CMP_MSG): void; cdecl;
 function OSSL_CMP_CTX_new(libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): POSSL_CMP_CTX; cdecl;
-procedure OSSL_CMP_CTX_free(ctx: POSSL_CMP_CTX); cdecl;
+function OSSL_CMP_CTX_free(ctx: POSSL_CMP_CTX): void; cdecl;
 function OSSL_CMP_CTX_reinit(ctx: POSSL_CMP_CTX): TIdC_INT; cdecl;
 function OSSL_CMP_CTX_get0_libctx(ctx: POSSL_CMP_CTX): POSSL_LIB_CTX; cdecl;
 function OSSL_CMP_CTX_get0_propq(ctx: POSSL_CMP_CTX): PIdAnsiChar; cdecl;
 function OSSL_CMP_CTX_set_option(ctx: POSSL_CMP_CTX; opt: TIdC_INT; val: TIdC_INT): TIdC_INT; cdecl;
 function OSSL_CMP_CTX_get_option(ctx: POSSL_CMP_CTX; opt: TIdC_INT): TIdC_INT; cdecl;
 function OSSL_CMP_CTX_set_log_cb(ctx: POSSL_CMP_CTX; cb: TOSSL_CMP_CTX_set_log_cb_cb_cb): TIdC_INT; cdecl;
-procedure OSSL_CMP_CTX_print_errors(ctx: POSSL_CMP_CTX); cdecl;
+function OSSL_CMP_CTX_print_errors(ctx: POSSL_CMP_CTX): void; cdecl;
 function OSSL_CMP_CTX_set1_serverPath(ctx: POSSL_CMP_CTX; path: PIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_CMP_CTX_set1_server(ctx: POSSL_CMP_CTX; address: PIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_CMP_CTX_set_serverPort(ctx: POSSL_CMP_CTX; port: TIdC_INT): TIdC_INT; cdecl;
@@ -885,7 +776,7 @@ function OSSL_CMP_CTX_set1_no_proxy(ctx: POSSL_CMP_CTX; names: PIdAnsiChar): TId
 function OSSL_CMP_CTX_set_http_cb(ctx: POSSL_CMP_CTX; cb: TOSSL_CMP_CTX_set_http_cb_cb_cb): TIdC_INT; cdecl;
 function OSSL_CMP_CTX_set_http_cb_arg(ctx: POSSL_CMP_CTX; arg: Pointer): TIdC_INT; cdecl;
 function OSSL_CMP_CTX_get_http_cb_arg(ctx: POSSL_CMP_CTX): Pointer; cdecl;
-function OSSL_CMP_CTX_set_transfer_cb(ctx: POSSL_CMP_CTX; cb: TOSSL_CMP_transfer_cb_t_func_cb): TIdC_INT; cdecl;
+function OSSL_CMP_CTX_set_transfer_cb(ctx: POSSL_CMP_CTX; cb: TOSSL_CMP_transfer_cb_t): TIdC_INT; cdecl;
 function OSSL_CMP_CTX_set_transfer_cb_arg(ctx: POSSL_CMP_CTX; arg: Pointer): TIdC_INT; cdecl;
 function OSSL_CMP_CTX_get_transfer_cb_arg(ctx: POSSL_CMP_CTX): Pointer; cdecl;
 function OSSL_CMP_CTX_set1_srvCert(ctx: POSSL_CMP_CTX; cert: PX509): TIdC_INT; cdecl;
@@ -917,7 +808,7 @@ function OSSL_CMP_CTX_set1_oldCert(ctx: POSSL_CMP_CTX; cert: PX509): TIdC_INT; c
 function OSSL_CMP_CTX_set1_p10CSR(ctx: POSSL_CMP_CTX; csr: PX509_REQ): TIdC_INT; cdecl;
 function OSSL_CMP_CTX_push0_genm_ITAV(ctx: POSSL_CMP_CTX; itav: POSSL_CMP_ITAV): TIdC_INT; cdecl;
 function OSSL_CMP_certConf_cb(ctx: POSSL_CMP_CTX; cert: PX509; fail_info: TIdC_INT; text: PPIdAnsiChar): TIdC_INT; cdecl;
-function OSSL_CMP_CTX_set_certConf_cb(ctx: POSSL_CMP_CTX; cb: TOSSL_CMP_certConf_cb_t_func_cb): TIdC_INT; cdecl;
+function OSSL_CMP_CTX_set_certConf_cb(ctx: POSSL_CMP_CTX; cb: TOSSL_CMP_certConf_cb_t): TIdC_INT; cdecl;
 function OSSL_CMP_CTX_set_certConf_cb_arg(ctx: POSSL_CMP_CTX; arg: Pointer): TIdC_INT; cdecl;
 function OSSL_CMP_CTX_get_certConf_cb_arg(ctx: POSSL_CMP_CTX): Pointer; cdecl;
 function OSSL_CMP_CTX_get_status(ctx: POSSL_CMP_CTX): TIdC_INT; cdecl;
@@ -952,9 +843,9 @@ function OSSL_CMP_MSG_http_perform(ctx: POSSL_CMP_CTX; req: POSSL_CMP_MSG): POSS
 function OSSL_CMP_SRV_process_request(srv_ctx: POSSL_CMP_SRV_CTX; req: POSSL_CMP_MSG): POSSL_CMP_MSG; cdecl;
 function OSSL_CMP_CTX_server_perform(client_ctx: POSSL_CMP_CTX; req: POSSL_CMP_MSG): POSSL_CMP_MSG; cdecl;
 function OSSL_CMP_SRV_CTX_new(libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): POSSL_CMP_SRV_CTX; cdecl;
-procedure OSSL_CMP_SRV_CTX_free(srv_ctx: POSSL_CMP_SRV_CTX); cdecl;
-function OSSL_CMP_SRV_CTX_init(srv_ctx: POSSL_CMP_SRV_CTX; custom_ctx: Pointer; process_cert_request: TOSSL_CMP_SRV_cert_request_cb_t_func_cb; process_rr: TOSSL_CMP_SRV_rr_cb_t_func_cb; process_genm: TOSSL_CMP_SRV_genm_cb_t_func_cb; process_error: TOSSL_CMP_SRV_error_cb_t_func_cb; process_certConf: TOSSL_CMP_SRV_certConf_cb_t_func_cb; process_pollReq: TOSSL_CMP_SRV_pollReq_cb_t_func_cb): TIdC_INT; cdecl;
-function OSSL_CMP_SRV_CTX_init_trans(srv_ctx: POSSL_CMP_SRV_CTX; delay: TOSSL_CMP_SRV_delayed_delivery_cb_t_func_cb; clean: TOSSL_CMP_SRV_clean_transaction_cb_t_func_cb): TIdC_INT; cdecl;
+function OSSL_CMP_SRV_CTX_free(srv_ctx: POSSL_CMP_SRV_CTX): void; cdecl;
+function OSSL_CMP_SRV_CTX_init(srv_ctx: POSSL_CMP_SRV_CTX; custom_ctx: Pointer; process_cert_request: TOSSL_CMP_SRV_cert_request_cb_t; process_rr: TOSSL_CMP_SRV_rr_cb_t; process_genm: TOSSL_CMP_SRV_genm_cb_t; process_error: TOSSL_CMP_SRV_error_cb_t; process_certConf: TOSSL_CMP_SRV_certConf_cb_t; process_pollReq: TOSSL_CMP_SRV_pollReq_cb_t): TIdC_INT; cdecl;
+function OSSL_CMP_SRV_CTX_init_trans(srv_ctx: POSSL_CMP_SRV_CTX; delay: TOSSL_CMP_SRV_delayed_delivery_cb_t; clean: TOSSL_CMP_SRV_clean_transaction_cb_t): TIdC_INT; cdecl;
 function OSSL_CMP_SRV_CTX_get0_cmp_ctx(srv_ctx: POSSL_CMP_SRV_CTX): POSSL_CMP_CTX; cdecl;
 function OSSL_CMP_SRV_CTX_get0_custom_ctx(srv_ctx: POSSL_CMP_SRV_CTX): Pointer; cdecl;
 function OSSL_CMP_SRV_CTX_set_send_unprotected_errors(srv_ctx: POSSL_CMP_SRV_CTX; val: TIdC_INT): TIdC_INT; cdecl;
@@ -975,26 +866,229 @@ function OSSL_CMP_get1_certReqTemplate(ctx: POSSL_CMP_CTX; certTemplate: PPOSSL_
 // INLINE OR MACRO ROUTINES
 // =============================================================================
 
-function OSSL_CMP_CTX_set_log_verbosity(ctx: Pointer; level: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OSSL_CMP_CTX_set_log_verbosity(ctx: Pointer; level: Pointer): TIdC_INT; cdecl;
 
-function OSSL_CMP_exec_IR_ses(ctx: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OSSL_CMP_exec_IR_ses(ctx: Pointer): TIdC_INT; cdecl;
 
-function OSSL_CMP_exec_CR_ses(ctx: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OSSL_CMP_exec_CR_ses(ctx: Pointer): TIdC_INT; cdecl;
 
-function OSSL_CMP_exec_P10CR_ses(ctx: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OSSL_CMP_exec_P10CR_ses(ctx: Pointer): TIdC_INT; cdecl;
 
-function OSSL_CMP_exec_KUR_ses(ctx: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OSSL_CMP_exec_KUR_ses(ctx: Pointer): TIdC_INT; cdecl;
 
-function OSSL_CMP_CTX_set0_trusted(ctx: POSSL_CMP_CTX; store: PX509_STORE): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OSSL_CMP_CTX_set0_trusted(ctx: POSSL_CMP_CTX; store: PX509_STORE): TIdC_INT; cdecl;
 
-function OSSL_CMP_CTX_get0_trusted(ctx: POSSL_CMP_CTX): PX509_STORE; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OSSL_CMP_CTX_get0_trusted(ctx: POSSL_CMP_CTX): PX509_STORE; cdecl;
+
+
+// =============================================================================
+// OPENSSL STACK DEFINITIONS
+// =============================================================================
+type
+  { TODO 1 -copenssl stack OSSL_CMP_CERTSTATUS definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_OSSL_CMP_CERTSTATUS = Pointer;
+  {$EXTERNALSYM PSTACK_OF_OSSL_CMP_CERTSTATUS}
+
+  { Original Stack Macros for OSSL_CMP_CERTSTATUS:
+    SKM_DEFINE_STACK_OF_INTERNAL(OSSL_CMP_CERTSTATUS, OSSL_CMP_CERTSTATUS, OSSL_CMP_CERTSTATUS)
+    sk_OSSL_CMP_CERTSTATUS_num(sk) OPENSSL_sk_num(ossl_check_const_OSSL_CMP_CERTSTATUS_sk_type(sk))
+    sk_OSSL_CMP_CERTSTATUS_value(sk, idx) ((OSSL_CMP_CERTSTATUS *)OPENSSL_sk_value(ossl_check_const_OSSL_CMP_CERTSTATUS_sk_type(sk), (idx)))
+    sk_OSSL_CMP_CERTSTATUS_new(cmp) ((STACK_OF(OSSL_CMP_CERTSTATUS) *)OPENSSL_sk_new(ossl_check_OSSL_CMP_CERTSTATUS_compfunc_type(cmp)))
+    sk_OSSL_CMP_CERTSTATUS_new_null() ((STACK_OF(OSSL_CMP_CERTSTATUS) *)OPENSSL_sk_new_null())
+    sk_OSSL_CMP_CERTSTATUS_new_reserve(cmp, n) ((STACK_OF(OSSL_CMP_CERTSTATUS) *)OPENSSL_sk_new_reserve(ossl_check_OSSL_CMP_CERTSTATUS_compfunc_type(cmp), (n)))
+    sk_OSSL_CMP_CERTSTATUS_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_OSSL_CMP_CERTSTATUS_sk_type(sk), (n))
+    sk_OSSL_CMP_CERTSTATUS_free(sk) OPENSSL_sk_free(ossl_check_OSSL_CMP_CERTSTATUS_sk_type(sk))
+    sk_OSSL_CMP_CERTSTATUS_zero(sk) OPENSSL_sk_zero(ossl_check_OSSL_CMP_CERTSTATUS_sk_type(sk))
+    sk_OSSL_CMP_CERTSTATUS_delete(sk, i) ((OSSL_CMP_CERTSTATUS *)OPENSSL_sk_delete(ossl_check_OSSL_CMP_CERTSTATUS_sk_type(sk), (i)))
+    sk_OSSL_CMP_CERTSTATUS_delete_ptr(sk, ptr) ((OSSL_CMP_CERTSTATUS *)OPENSSL_sk_delete_ptr(ossl_check_OSSL_CMP_CERTSTATUS_sk_type(sk), ossl_check_OSSL_CMP_CERTSTATUS_type(ptr)))
+    sk_OSSL_CMP_CERTSTATUS_push(sk, ptr) OPENSSL_sk_push(ossl_check_OSSL_CMP_CERTSTATUS_sk_type(sk), ossl_check_OSSL_CMP_CERTSTATUS_type(ptr))
+    sk_OSSL_CMP_CERTSTATUS_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_OSSL_CMP_CERTSTATUS_sk_type(sk), ossl_check_OSSL_CMP_CERTSTATUS_type(ptr))
+    sk_OSSL_CMP_CERTSTATUS_pop(sk) ((OSSL_CMP_CERTSTATUS *)OPENSSL_sk_pop(ossl_check_OSSL_CMP_CERTSTATUS_sk_type(sk)))
+    sk_OSSL_CMP_CERTSTATUS_shift(sk) ((OSSL_CMP_CERTSTATUS *)OPENSSL_sk_shift(ossl_check_OSSL_CMP_CERTSTATUS_sk_type(sk)))
+    sk_OSSL_CMP_CERTSTATUS_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_OSSL_CMP_CERTSTATUS_sk_type(sk), ossl_check_OSSL_CMP_CERTSTATUS_freefunc_type(freefunc))
+    sk_OSSL_CMP_CERTSTATUS_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_OSSL_CMP_CERTSTATUS_sk_type(sk), ossl_check_OSSL_CMP_CERTSTATUS_type(ptr), (idx))
+    sk_OSSL_CMP_CERTSTATUS_set(sk, idx, ptr) ((OSSL_CMP_CERTSTATUS *)OPENSSL_sk_set(ossl_check_OSSL_CMP_CERTSTATUS_sk_type(sk), (idx), ossl_check_OSSL_CMP_CERTSTATUS_type(ptr)))
+    sk_OSSL_CMP_CERTSTATUS_find(sk, ptr) OPENSSL_sk_find(ossl_check_OSSL_CMP_CERTSTATUS_sk_type(sk), ossl_check_OSSL_CMP_CERTSTATUS_type(ptr))
+    sk_OSSL_CMP_CERTSTATUS_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_OSSL_CMP_CERTSTATUS_sk_type(sk), ossl_check_OSSL_CMP_CERTSTATUS_type(ptr))
+    sk_OSSL_CMP_CERTSTATUS_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_OSSL_CMP_CERTSTATUS_sk_type(sk), ossl_check_OSSL_CMP_CERTSTATUS_type(ptr), pnum)
+    sk_OSSL_CMP_CERTSTATUS_sort(sk) OPENSSL_sk_sort(ossl_check_OSSL_CMP_CERTSTATUS_sk_type(sk))
+    sk_OSSL_CMP_CERTSTATUS_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_OSSL_CMP_CERTSTATUS_sk_type(sk))
+    sk_OSSL_CMP_CERTSTATUS_dup(sk) ((STACK_OF(OSSL_CMP_CERTSTATUS) *)OPENSSL_sk_dup(ossl_check_const_OSSL_CMP_CERTSTATUS_sk_type(sk)))
+    sk_OSSL_CMP_CERTSTATUS_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(OSSL_CMP_CERTSTATUS) *)OPENSSL_sk_deep_copy(ossl_check_const_OSSL_CMP_CERTSTATUS_sk_type(sk), ossl_check_OSSL_CMP_CERTSTATUS_copyfunc_type(copyfunc), ossl_check_OSSL_CMP_CERTSTATUS_freefunc_type(freefunc)))
+    sk_OSSL_CMP_CERTSTATUS_set_cmp_func(sk, cmp) ((sk_OSSL_CMP_CERTSTATUS_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_OSSL_CMP_CERTSTATUS_sk_type(sk), ossl_check_OSSL_CMP_CERTSTATUS_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack OSSL_CMP_ITAV definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_OSSL_CMP_ITAV = Pointer;
+  {$EXTERNALSYM PSTACK_OF_OSSL_CMP_ITAV}
+
+  { Original Stack Macros for OSSL_CMP_ITAV:
+    SKM_DEFINE_STACK_OF_INTERNAL(OSSL_CMP_ITAV, OSSL_CMP_ITAV, OSSL_CMP_ITAV)
+    sk_OSSL_CMP_ITAV_num(sk) OPENSSL_sk_num(ossl_check_const_OSSL_CMP_ITAV_sk_type(sk))
+    sk_OSSL_CMP_ITAV_value(sk, idx) ((OSSL_CMP_ITAV *)OPENSSL_sk_value(ossl_check_const_OSSL_CMP_ITAV_sk_type(sk), (idx)))
+    sk_OSSL_CMP_ITAV_new(cmp) ((STACK_OF(OSSL_CMP_ITAV) *)OPENSSL_sk_new(ossl_check_OSSL_CMP_ITAV_compfunc_type(cmp)))
+    sk_OSSL_CMP_ITAV_new_null() ((STACK_OF(OSSL_CMP_ITAV) *)OPENSSL_sk_new_null())
+    sk_OSSL_CMP_ITAV_new_reserve(cmp, n) ((STACK_OF(OSSL_CMP_ITAV) *)OPENSSL_sk_new_reserve(ossl_check_OSSL_CMP_ITAV_compfunc_type(cmp), (n)))
+    sk_OSSL_CMP_ITAV_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_OSSL_CMP_ITAV_sk_type(sk), (n))
+    sk_OSSL_CMP_ITAV_free(sk) OPENSSL_sk_free(ossl_check_OSSL_CMP_ITAV_sk_type(sk))
+    sk_OSSL_CMP_ITAV_zero(sk) OPENSSL_sk_zero(ossl_check_OSSL_CMP_ITAV_sk_type(sk))
+    sk_OSSL_CMP_ITAV_delete(sk, i) ((OSSL_CMP_ITAV *)OPENSSL_sk_delete(ossl_check_OSSL_CMP_ITAV_sk_type(sk), (i)))
+    sk_OSSL_CMP_ITAV_delete_ptr(sk, ptr) ((OSSL_CMP_ITAV *)OPENSSL_sk_delete_ptr(ossl_check_OSSL_CMP_ITAV_sk_type(sk), ossl_check_OSSL_CMP_ITAV_type(ptr)))
+    sk_OSSL_CMP_ITAV_push(sk, ptr) OPENSSL_sk_push(ossl_check_OSSL_CMP_ITAV_sk_type(sk), ossl_check_OSSL_CMP_ITAV_type(ptr))
+    sk_OSSL_CMP_ITAV_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_OSSL_CMP_ITAV_sk_type(sk), ossl_check_OSSL_CMP_ITAV_type(ptr))
+    sk_OSSL_CMP_ITAV_pop(sk) ((OSSL_CMP_ITAV *)OPENSSL_sk_pop(ossl_check_OSSL_CMP_ITAV_sk_type(sk)))
+    sk_OSSL_CMP_ITAV_shift(sk) ((OSSL_CMP_ITAV *)OPENSSL_sk_shift(ossl_check_OSSL_CMP_ITAV_sk_type(sk)))
+    sk_OSSL_CMP_ITAV_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_OSSL_CMP_ITAV_sk_type(sk), ossl_check_OSSL_CMP_ITAV_freefunc_type(freefunc))
+    sk_OSSL_CMP_ITAV_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_OSSL_CMP_ITAV_sk_type(sk), ossl_check_OSSL_CMP_ITAV_type(ptr), (idx))
+    sk_OSSL_CMP_ITAV_set(sk, idx, ptr) ((OSSL_CMP_ITAV *)OPENSSL_sk_set(ossl_check_OSSL_CMP_ITAV_sk_type(sk), (idx), ossl_check_OSSL_CMP_ITAV_type(ptr)))
+    sk_OSSL_CMP_ITAV_find(sk, ptr) OPENSSL_sk_find(ossl_check_OSSL_CMP_ITAV_sk_type(sk), ossl_check_OSSL_CMP_ITAV_type(ptr))
+    sk_OSSL_CMP_ITAV_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_OSSL_CMP_ITAV_sk_type(sk), ossl_check_OSSL_CMP_ITAV_type(ptr))
+    sk_OSSL_CMP_ITAV_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_OSSL_CMP_ITAV_sk_type(sk), ossl_check_OSSL_CMP_ITAV_type(ptr), pnum)
+    sk_OSSL_CMP_ITAV_sort(sk) OPENSSL_sk_sort(ossl_check_OSSL_CMP_ITAV_sk_type(sk))
+    sk_OSSL_CMP_ITAV_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_OSSL_CMP_ITAV_sk_type(sk))
+    sk_OSSL_CMP_ITAV_dup(sk) ((STACK_OF(OSSL_CMP_ITAV) *)OPENSSL_sk_dup(ossl_check_const_OSSL_CMP_ITAV_sk_type(sk)))
+    sk_OSSL_CMP_ITAV_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(OSSL_CMP_ITAV) *)OPENSSL_sk_deep_copy(ossl_check_const_OSSL_CMP_ITAV_sk_type(sk), ossl_check_OSSL_CMP_ITAV_copyfunc_type(copyfunc), ossl_check_OSSL_CMP_ITAV_freefunc_type(freefunc)))
+    sk_OSSL_CMP_ITAV_set_cmp_func(sk, cmp) ((sk_OSSL_CMP_ITAV_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_OSSL_CMP_ITAV_sk_type(sk), ossl_check_OSSL_CMP_ITAV_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack OSSL_CMP_CRLSTATUS definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_OSSL_CMP_CRLSTATUS = Pointer;
+  {$EXTERNALSYM PSTACK_OF_OSSL_CMP_CRLSTATUS}
+
+  { Original Stack Macros for OSSL_CMP_CRLSTATUS:
+    SKM_DEFINE_STACK_OF_INTERNAL(OSSL_CMP_CRLSTATUS, OSSL_CMP_CRLSTATUS, OSSL_CMP_CRLSTATUS)
+    sk_OSSL_CMP_CRLSTATUS_num(sk) OPENSSL_sk_num(ossl_check_const_OSSL_CMP_CRLSTATUS_sk_type(sk))
+    sk_OSSL_CMP_CRLSTATUS_value(sk, idx) ((OSSL_CMP_CRLSTATUS *)OPENSSL_sk_value(ossl_check_const_OSSL_CMP_CRLSTATUS_sk_type(sk), (idx)))
+    sk_OSSL_CMP_CRLSTATUS_new(cmp) ((STACK_OF(OSSL_CMP_CRLSTATUS) *)OPENSSL_sk_new(ossl_check_OSSL_CMP_CRLSTATUS_compfunc_type(cmp)))
+    sk_OSSL_CMP_CRLSTATUS_new_null() ((STACK_OF(OSSL_CMP_CRLSTATUS) *)OPENSSL_sk_new_null())
+    sk_OSSL_CMP_CRLSTATUS_new_reserve(cmp, n) ((STACK_OF(OSSL_CMP_CRLSTATUS) *)OPENSSL_sk_new_reserve(ossl_check_OSSL_CMP_CRLSTATUS_compfunc_type(cmp), (n)))
+    sk_OSSL_CMP_CRLSTATUS_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_OSSL_CMP_CRLSTATUS_sk_type(sk), (n))
+    sk_OSSL_CMP_CRLSTATUS_free(sk) OPENSSL_sk_free(ossl_check_OSSL_CMP_CRLSTATUS_sk_type(sk))
+    sk_OSSL_CMP_CRLSTATUS_zero(sk) OPENSSL_sk_zero(ossl_check_OSSL_CMP_CRLSTATUS_sk_type(sk))
+    sk_OSSL_CMP_CRLSTATUS_delete(sk, i) ((OSSL_CMP_CRLSTATUS *)OPENSSL_sk_delete(ossl_check_OSSL_CMP_CRLSTATUS_sk_type(sk), (i)))
+    sk_OSSL_CMP_CRLSTATUS_delete_ptr(sk, ptr) ((OSSL_CMP_CRLSTATUS *)OPENSSL_sk_delete_ptr(ossl_check_OSSL_CMP_CRLSTATUS_sk_type(sk), ossl_check_OSSL_CMP_CRLSTATUS_type(ptr)))
+    sk_OSSL_CMP_CRLSTATUS_push(sk, ptr) OPENSSL_sk_push(ossl_check_OSSL_CMP_CRLSTATUS_sk_type(sk), ossl_check_OSSL_CMP_CRLSTATUS_type(ptr))
+    sk_OSSL_CMP_CRLSTATUS_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_OSSL_CMP_CRLSTATUS_sk_type(sk), ossl_check_OSSL_CMP_CRLSTATUS_type(ptr))
+    sk_OSSL_CMP_CRLSTATUS_pop(sk) ((OSSL_CMP_CRLSTATUS *)OPENSSL_sk_pop(ossl_check_OSSL_CMP_CRLSTATUS_sk_type(sk)))
+    sk_OSSL_CMP_CRLSTATUS_shift(sk) ((OSSL_CMP_CRLSTATUS *)OPENSSL_sk_shift(ossl_check_OSSL_CMP_CRLSTATUS_sk_type(sk)))
+    sk_OSSL_CMP_CRLSTATUS_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_OSSL_CMP_CRLSTATUS_sk_type(sk), ossl_check_OSSL_CMP_CRLSTATUS_freefunc_type(freefunc))
+    sk_OSSL_CMP_CRLSTATUS_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_OSSL_CMP_CRLSTATUS_sk_type(sk), ossl_check_OSSL_CMP_CRLSTATUS_type(ptr), (idx))
+    sk_OSSL_CMP_CRLSTATUS_set(sk, idx, ptr) ((OSSL_CMP_CRLSTATUS *)OPENSSL_sk_set(ossl_check_OSSL_CMP_CRLSTATUS_sk_type(sk), (idx), ossl_check_OSSL_CMP_CRLSTATUS_type(ptr)))
+    sk_OSSL_CMP_CRLSTATUS_find(sk, ptr) OPENSSL_sk_find(ossl_check_OSSL_CMP_CRLSTATUS_sk_type(sk), ossl_check_OSSL_CMP_CRLSTATUS_type(ptr))
+    sk_OSSL_CMP_CRLSTATUS_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_OSSL_CMP_CRLSTATUS_sk_type(sk), ossl_check_OSSL_CMP_CRLSTATUS_type(ptr))
+    sk_OSSL_CMP_CRLSTATUS_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_OSSL_CMP_CRLSTATUS_sk_type(sk), ossl_check_OSSL_CMP_CRLSTATUS_type(ptr), pnum)
+    sk_OSSL_CMP_CRLSTATUS_sort(sk) OPENSSL_sk_sort(ossl_check_OSSL_CMP_CRLSTATUS_sk_type(sk))
+    sk_OSSL_CMP_CRLSTATUS_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_OSSL_CMP_CRLSTATUS_sk_type(sk))
+    sk_OSSL_CMP_CRLSTATUS_dup(sk) ((STACK_OF(OSSL_CMP_CRLSTATUS) *)OPENSSL_sk_dup(ossl_check_const_OSSL_CMP_CRLSTATUS_sk_type(sk)))
+    sk_OSSL_CMP_CRLSTATUS_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(OSSL_CMP_CRLSTATUS) *)OPENSSL_sk_deep_copy(ossl_check_const_OSSL_CMP_CRLSTATUS_sk_type(sk), ossl_check_OSSL_CMP_CRLSTATUS_copyfunc_type(copyfunc), ossl_check_OSSL_CMP_CRLSTATUS_freefunc_type(freefunc)))
+    sk_OSSL_CMP_CRLSTATUS_set_cmp_func(sk, cmp) ((sk_OSSL_CMP_CRLSTATUS_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_OSSL_CMP_CRLSTATUS_sk_type(sk), ossl_check_OSSL_CMP_CRLSTATUS_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack OSSL_CMP_PKISI definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_OSSL_CMP_PKISI = Pointer;
+  {$EXTERNALSYM PSTACK_OF_OSSL_CMP_PKISI}
+
+  { Original Stack Macros for OSSL_CMP_PKISI:
+    SKM_DEFINE_STACK_OF_INTERNAL(OSSL_CMP_PKISI, OSSL_CMP_PKISI, OSSL_CMP_PKISI)
+    sk_OSSL_CMP_PKISI_num(sk) OPENSSL_sk_num(ossl_check_const_OSSL_CMP_PKISI_sk_type(sk))
+    sk_OSSL_CMP_PKISI_value(sk, idx) ((OSSL_CMP_PKISI *)OPENSSL_sk_value(ossl_check_const_OSSL_CMP_PKISI_sk_type(sk), (idx)))
+    sk_OSSL_CMP_PKISI_new(cmp) ((STACK_OF(OSSL_CMP_PKISI) *)OPENSSL_sk_new(ossl_check_OSSL_CMP_PKISI_compfunc_type(cmp)))
+    sk_OSSL_CMP_PKISI_new_null() ((STACK_OF(OSSL_CMP_PKISI) *)OPENSSL_sk_new_null())
+    sk_OSSL_CMP_PKISI_new_reserve(cmp, n) ((STACK_OF(OSSL_CMP_PKISI) *)OPENSSL_sk_new_reserve(ossl_check_OSSL_CMP_PKISI_compfunc_type(cmp), (n)))
+    sk_OSSL_CMP_PKISI_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_OSSL_CMP_PKISI_sk_type(sk), (n))
+    sk_OSSL_CMP_PKISI_free(sk) OPENSSL_sk_free(ossl_check_OSSL_CMP_PKISI_sk_type(sk))
+    sk_OSSL_CMP_PKISI_zero(sk) OPENSSL_sk_zero(ossl_check_OSSL_CMP_PKISI_sk_type(sk))
+    sk_OSSL_CMP_PKISI_delete(sk, i) ((OSSL_CMP_PKISI *)OPENSSL_sk_delete(ossl_check_OSSL_CMP_PKISI_sk_type(sk), (i)))
+    sk_OSSL_CMP_PKISI_delete_ptr(sk, ptr) ((OSSL_CMP_PKISI *)OPENSSL_sk_delete_ptr(ossl_check_OSSL_CMP_PKISI_sk_type(sk), ossl_check_OSSL_CMP_PKISI_type(ptr)))
+    sk_OSSL_CMP_PKISI_push(sk, ptr) OPENSSL_sk_push(ossl_check_OSSL_CMP_PKISI_sk_type(sk), ossl_check_OSSL_CMP_PKISI_type(ptr))
+    sk_OSSL_CMP_PKISI_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_OSSL_CMP_PKISI_sk_type(sk), ossl_check_OSSL_CMP_PKISI_type(ptr))
+    sk_OSSL_CMP_PKISI_pop(sk) ((OSSL_CMP_PKISI *)OPENSSL_sk_pop(ossl_check_OSSL_CMP_PKISI_sk_type(sk)))
+    sk_OSSL_CMP_PKISI_shift(sk) ((OSSL_CMP_PKISI *)OPENSSL_sk_shift(ossl_check_OSSL_CMP_PKISI_sk_type(sk)))
+    sk_OSSL_CMP_PKISI_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_OSSL_CMP_PKISI_sk_type(sk), ossl_check_OSSL_CMP_PKISI_freefunc_type(freefunc))
+    sk_OSSL_CMP_PKISI_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_OSSL_CMP_PKISI_sk_type(sk), ossl_check_OSSL_CMP_PKISI_type(ptr), (idx))
+    sk_OSSL_CMP_PKISI_set(sk, idx, ptr) ((OSSL_CMP_PKISI *)OPENSSL_sk_set(ossl_check_OSSL_CMP_PKISI_sk_type(sk), (idx), ossl_check_OSSL_CMP_PKISI_type(ptr)))
+    sk_OSSL_CMP_PKISI_find(sk, ptr) OPENSSL_sk_find(ossl_check_OSSL_CMP_PKISI_sk_type(sk), ossl_check_OSSL_CMP_PKISI_type(ptr))
+    sk_OSSL_CMP_PKISI_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_OSSL_CMP_PKISI_sk_type(sk), ossl_check_OSSL_CMP_PKISI_type(ptr))
+    sk_OSSL_CMP_PKISI_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_OSSL_CMP_PKISI_sk_type(sk), ossl_check_OSSL_CMP_PKISI_type(ptr), pnum)
+    sk_OSSL_CMP_PKISI_sort(sk) OPENSSL_sk_sort(ossl_check_OSSL_CMP_PKISI_sk_type(sk))
+    sk_OSSL_CMP_PKISI_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_OSSL_CMP_PKISI_sk_type(sk))
+    sk_OSSL_CMP_PKISI_dup(sk) ((STACK_OF(OSSL_CMP_PKISI) *)OPENSSL_sk_dup(ossl_check_const_OSSL_CMP_PKISI_sk_type(sk)))
+    sk_OSSL_CMP_PKISI_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(OSSL_CMP_PKISI) *)OPENSSL_sk_deep_copy(ossl_check_const_OSSL_CMP_PKISI_sk_type(sk), ossl_check_OSSL_CMP_PKISI_copyfunc_type(copyfunc), ossl_check_OSSL_CMP_PKISI_freefunc_type(freefunc)))
+    sk_OSSL_CMP_PKISI_set_cmp_func(sk, cmp) ((sk_OSSL_CMP_PKISI_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_OSSL_CMP_PKISI_sk_type(sk), ossl_check_OSSL_CMP_PKISI_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack OSSL_CMP_CERTREPMESSAGE definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_OSSL_CMP_CERTREPMESSAGE = Pointer;
+  {$EXTERNALSYM PSTACK_OF_OSSL_CMP_CERTREPMESSAGE}
+
+  { Original Stack Macros for OSSL_CMP_CERTREPMESSAGE:
+    SKM_DEFINE_STACK_OF_INTERNAL(OSSL_CMP_CERTREPMESSAGE, OSSL_CMP_CERTREPMESSAGE, OSSL_CMP_CERTREPMESSAGE)
+    sk_OSSL_CMP_CERTREPMESSAGE_num(sk) OPENSSL_sk_num(ossl_check_const_OSSL_CMP_CERTREPMESSAGE_sk_type(sk))
+    sk_OSSL_CMP_CERTREPMESSAGE_value(sk, idx) ((OSSL_CMP_CERTREPMESSAGE *)OPENSSL_sk_value(ossl_check_const_OSSL_CMP_CERTREPMESSAGE_sk_type(sk), (idx)))
+    sk_OSSL_CMP_CERTREPMESSAGE_new(cmp) ((STACK_OF(OSSL_CMP_CERTREPMESSAGE) *)OPENSSL_sk_new(ossl_check_OSSL_CMP_CERTREPMESSAGE_compfunc_type(cmp)))
+    sk_OSSL_CMP_CERTREPMESSAGE_new_null() ((STACK_OF(OSSL_CMP_CERTREPMESSAGE) *)OPENSSL_sk_new_null())
+    sk_OSSL_CMP_CERTREPMESSAGE_new_reserve(cmp, n) ((STACK_OF(OSSL_CMP_CERTREPMESSAGE) *)OPENSSL_sk_new_reserve(ossl_check_OSSL_CMP_CERTREPMESSAGE_compfunc_type(cmp), (n)))
+    sk_OSSL_CMP_CERTREPMESSAGE_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_OSSL_CMP_CERTREPMESSAGE_sk_type(sk), (n))
+    sk_OSSL_CMP_CERTREPMESSAGE_free(sk) OPENSSL_sk_free(ossl_check_OSSL_CMP_CERTREPMESSAGE_sk_type(sk))
+    sk_OSSL_CMP_CERTREPMESSAGE_zero(sk) OPENSSL_sk_zero(ossl_check_OSSL_CMP_CERTREPMESSAGE_sk_type(sk))
+    sk_OSSL_CMP_CERTREPMESSAGE_delete(sk, i) ((OSSL_CMP_CERTREPMESSAGE *)OPENSSL_sk_delete(ossl_check_OSSL_CMP_CERTREPMESSAGE_sk_type(sk), (i)))
+    sk_OSSL_CMP_CERTREPMESSAGE_delete_ptr(sk, ptr) ((OSSL_CMP_CERTREPMESSAGE *)OPENSSL_sk_delete_ptr(ossl_check_OSSL_CMP_CERTREPMESSAGE_sk_type(sk), ossl_check_OSSL_CMP_CERTREPMESSAGE_type(ptr)))
+    sk_OSSL_CMP_CERTREPMESSAGE_push(sk, ptr) OPENSSL_sk_push(ossl_check_OSSL_CMP_CERTREPMESSAGE_sk_type(sk), ossl_check_OSSL_CMP_CERTREPMESSAGE_type(ptr))
+    sk_OSSL_CMP_CERTREPMESSAGE_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_OSSL_CMP_CERTREPMESSAGE_sk_type(sk), ossl_check_OSSL_CMP_CERTREPMESSAGE_type(ptr))
+    sk_OSSL_CMP_CERTREPMESSAGE_pop(sk) ((OSSL_CMP_CERTREPMESSAGE *)OPENSSL_sk_pop(ossl_check_OSSL_CMP_CERTREPMESSAGE_sk_type(sk)))
+    sk_OSSL_CMP_CERTREPMESSAGE_shift(sk) ((OSSL_CMP_CERTREPMESSAGE *)OPENSSL_sk_shift(ossl_check_OSSL_CMP_CERTREPMESSAGE_sk_type(sk)))
+    sk_OSSL_CMP_CERTREPMESSAGE_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_OSSL_CMP_CERTREPMESSAGE_sk_type(sk), ossl_check_OSSL_CMP_CERTREPMESSAGE_freefunc_type(freefunc))
+    sk_OSSL_CMP_CERTREPMESSAGE_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_OSSL_CMP_CERTREPMESSAGE_sk_type(sk), ossl_check_OSSL_CMP_CERTREPMESSAGE_type(ptr), (idx))
+    sk_OSSL_CMP_CERTREPMESSAGE_set(sk, idx, ptr) ((OSSL_CMP_CERTREPMESSAGE *)OPENSSL_sk_set(ossl_check_OSSL_CMP_CERTREPMESSAGE_sk_type(sk), (idx), ossl_check_OSSL_CMP_CERTREPMESSAGE_type(ptr)))
+    sk_OSSL_CMP_CERTREPMESSAGE_find(sk, ptr) OPENSSL_sk_find(ossl_check_OSSL_CMP_CERTREPMESSAGE_sk_type(sk), ossl_check_OSSL_CMP_CERTREPMESSAGE_type(ptr))
+    sk_OSSL_CMP_CERTREPMESSAGE_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_OSSL_CMP_CERTREPMESSAGE_sk_type(sk), ossl_check_OSSL_CMP_CERTREPMESSAGE_type(ptr))
+    sk_OSSL_CMP_CERTREPMESSAGE_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_OSSL_CMP_CERTREPMESSAGE_sk_type(sk), ossl_check_OSSL_CMP_CERTREPMESSAGE_type(ptr), pnum)
+    sk_OSSL_CMP_CERTREPMESSAGE_sort(sk) OPENSSL_sk_sort(ossl_check_OSSL_CMP_CERTREPMESSAGE_sk_type(sk))
+    sk_OSSL_CMP_CERTREPMESSAGE_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_OSSL_CMP_CERTREPMESSAGE_sk_type(sk))
+    sk_OSSL_CMP_CERTREPMESSAGE_dup(sk) ((STACK_OF(OSSL_CMP_CERTREPMESSAGE) *)OPENSSL_sk_dup(ossl_check_const_OSSL_CMP_CERTREPMESSAGE_sk_type(sk)))
+    sk_OSSL_CMP_CERTREPMESSAGE_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(OSSL_CMP_CERTREPMESSAGE) *)OPENSSL_sk_deep_copy(ossl_check_const_OSSL_CMP_CERTREPMESSAGE_sk_type(sk), ossl_check_OSSL_CMP_CERTREPMESSAGE_copyfunc_type(copyfunc), ossl_check_OSSL_CMP_CERTREPMESSAGE_freefunc_type(freefunc)))
+    sk_OSSL_CMP_CERTREPMESSAGE_set_cmp_func(sk, cmp) ((sk_OSSL_CMP_CERTREPMESSAGE_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_OSSL_CMP_CERTREPMESSAGE_sk_type(sk), ossl_check_OSSL_CMP_CERTREPMESSAGE_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack OSSL_CMP_CERTRESPONSE definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_OSSL_CMP_CERTRESPONSE = Pointer;
+  {$EXTERNALSYM PSTACK_OF_OSSL_CMP_CERTRESPONSE}
+
+  { Original Stack Macros for OSSL_CMP_CERTRESPONSE:
+    SKM_DEFINE_STACK_OF_INTERNAL(OSSL_CMP_CERTRESPONSE, OSSL_CMP_CERTRESPONSE, OSSL_CMP_CERTRESPONSE)
+    sk_OSSL_CMP_CERTRESPONSE_num(sk) OPENSSL_sk_num(ossl_check_const_OSSL_CMP_CERTRESPONSE_sk_type(sk))
+    sk_OSSL_CMP_CERTRESPONSE_value(sk, idx) ((OSSL_CMP_CERTRESPONSE *)OPENSSL_sk_value(ossl_check_const_OSSL_CMP_CERTRESPONSE_sk_type(sk), (idx)))
+    sk_OSSL_CMP_CERTRESPONSE_new(cmp) ((STACK_OF(OSSL_CMP_CERTRESPONSE) *)OPENSSL_sk_new(ossl_check_OSSL_CMP_CERTRESPONSE_compfunc_type(cmp)))
+    sk_OSSL_CMP_CERTRESPONSE_new_null() ((STACK_OF(OSSL_CMP_CERTRESPONSE) *)OPENSSL_sk_new_null())
+    sk_OSSL_CMP_CERTRESPONSE_new_reserve(cmp, n) ((STACK_OF(OSSL_CMP_CERTRESPONSE) *)OPENSSL_sk_new_reserve(ossl_check_OSSL_CMP_CERTRESPONSE_compfunc_type(cmp), (n)))
+    sk_OSSL_CMP_CERTRESPONSE_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_OSSL_CMP_CERTRESPONSE_sk_type(sk), (n))
+    sk_OSSL_CMP_CERTRESPONSE_free(sk) OPENSSL_sk_free(ossl_check_OSSL_CMP_CERTRESPONSE_sk_type(sk))
+    sk_OSSL_CMP_CERTRESPONSE_zero(sk) OPENSSL_sk_zero(ossl_check_OSSL_CMP_CERTRESPONSE_sk_type(sk))
+    sk_OSSL_CMP_CERTRESPONSE_delete(sk, i) ((OSSL_CMP_CERTRESPONSE *)OPENSSL_sk_delete(ossl_check_OSSL_CMP_CERTRESPONSE_sk_type(sk), (i)))
+    sk_OSSL_CMP_CERTRESPONSE_delete_ptr(sk, ptr) ((OSSL_CMP_CERTRESPONSE *)OPENSSL_sk_delete_ptr(ossl_check_OSSL_CMP_CERTRESPONSE_sk_type(sk), ossl_check_OSSL_CMP_CERTRESPONSE_type(ptr)))
+    sk_OSSL_CMP_CERTRESPONSE_push(sk, ptr) OPENSSL_sk_push(ossl_check_OSSL_CMP_CERTRESPONSE_sk_type(sk), ossl_check_OSSL_CMP_CERTRESPONSE_type(ptr))
+    sk_OSSL_CMP_CERTRESPONSE_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_OSSL_CMP_CERTRESPONSE_sk_type(sk), ossl_check_OSSL_CMP_CERTRESPONSE_type(ptr))
+    sk_OSSL_CMP_CERTRESPONSE_pop(sk) ((OSSL_CMP_CERTRESPONSE *)OPENSSL_sk_pop(ossl_check_OSSL_CMP_CERTRESPONSE_sk_type(sk)))
+    sk_OSSL_CMP_CERTRESPONSE_shift(sk) ((OSSL_CMP_CERTRESPONSE *)OPENSSL_sk_shift(ossl_check_OSSL_CMP_CERTRESPONSE_sk_type(sk)))
+    sk_OSSL_CMP_CERTRESPONSE_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_OSSL_CMP_CERTRESPONSE_sk_type(sk), ossl_check_OSSL_CMP_CERTRESPONSE_freefunc_type(freefunc))
+    sk_OSSL_CMP_CERTRESPONSE_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_OSSL_CMP_CERTRESPONSE_sk_type(sk), ossl_check_OSSL_CMP_CERTRESPONSE_type(ptr), (idx))
+    sk_OSSL_CMP_CERTRESPONSE_set(sk, idx, ptr) ((OSSL_CMP_CERTRESPONSE *)OPENSSL_sk_set(ossl_check_OSSL_CMP_CERTRESPONSE_sk_type(sk), (idx), ossl_check_OSSL_CMP_CERTRESPONSE_type(ptr)))
+    sk_OSSL_CMP_CERTRESPONSE_find(sk, ptr) OPENSSL_sk_find(ossl_check_OSSL_CMP_CERTRESPONSE_sk_type(sk), ossl_check_OSSL_CMP_CERTRESPONSE_type(ptr))
+    sk_OSSL_CMP_CERTRESPONSE_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_OSSL_CMP_CERTRESPONSE_sk_type(sk), ossl_check_OSSL_CMP_CERTRESPONSE_type(ptr))
+    sk_OSSL_CMP_CERTRESPONSE_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_OSSL_CMP_CERTRESPONSE_sk_type(sk), ossl_check_OSSL_CMP_CERTRESPONSE_type(ptr), pnum)
+    sk_OSSL_CMP_CERTRESPONSE_sort(sk) OPENSSL_sk_sort(ossl_check_OSSL_CMP_CERTRESPONSE_sk_type(sk))
+    sk_OSSL_CMP_CERTRESPONSE_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_OSSL_CMP_CERTRESPONSE_sk_type(sk))
+    sk_OSSL_CMP_CERTRESPONSE_dup(sk) ((STACK_OF(OSSL_CMP_CERTRESPONSE) *)OPENSSL_sk_dup(ossl_check_const_OSSL_CMP_CERTRESPONSE_sk_type(sk)))
+    sk_OSSL_CMP_CERTRESPONSE_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(OSSL_CMP_CERTRESPONSE) *)OPENSSL_sk_deep_copy(ossl_check_const_OSSL_CMP_CERTRESPONSE_sk_type(sk), ossl_check_OSSL_CMP_CERTRESPONSE_copyfunc_type(copyfunc), ossl_check_OSSL_CMP_CERTRESPONSE_freefunc_type(freefunc)))
+    sk_OSSL_CMP_CERTRESPONSE_set_cmp_func(sk, cmp) ((sk_OSSL_CMP_CERTRESPONSE_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_OSSL_CMP_CERTRESPONSE_sk_type(sk), ossl_check_OSSL_CMP_CERTRESPONSE_compfunc_type(cmp)))
+  }
 
 
 implementation
@@ -1015,7 +1109,7 @@ uses
 
 function OSSL_CMP_PKISTATUS_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_CMP_PKISTATUS_it';
 function OSSL_CMP_PKIHEADER_new: POSSL_CMP_PKIHEADER; cdecl external CLibCrypto name 'OSSL_CMP_PKIHEADER_new';
-procedure OSSL_CMP_PKIHEADER_free(a: POSSL_CMP_PKIHEADER); cdecl external CLibCrypto name 'OSSL_CMP_PKIHEADER_free';
+function OSSL_CMP_PKIHEADER_free(a: POSSL_CMP_PKIHEADER): void; cdecl external CLibCrypto name 'OSSL_CMP_PKIHEADER_free';
 function d2i_OSSL_CMP_PKIHEADER(a: PPOSSL_CMP_PKIHEADER; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CMP_PKIHEADER; cdecl external CLibCrypto name 'd2i_OSSL_CMP_PKIHEADER';
 function i2d_OSSL_CMP_PKIHEADER(a: POSSL_CMP_PKIHEADER; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_CMP_PKIHEADER';
 function OSSL_CMP_PKIHEADER_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_CMP_PKIHEADER_it';
@@ -1025,22 +1119,22 @@ function i2d_OSSL_CMP_MSG(a: POSSL_CMP_MSG; _out: PPIdAnsiChar): TIdC_INT; cdecl
 function OSSL_CMP_MSG_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_CMP_MSG_it';
 function OSSL_CMP_ITAV_dup(a: POSSL_CMP_ITAV): POSSL_CMP_ITAV; cdecl external CLibCrypto name 'OSSL_CMP_ITAV_dup';
 function OSSL_CMP_ATAVS_new: POSSL_CMP_ATAVS; cdecl external CLibCrypto name 'OSSL_CMP_ATAVS_new';
-procedure OSSL_CMP_ATAVS_free(a: POSSL_CMP_ATAVS); cdecl external CLibCrypto name 'OSSL_CMP_ATAVS_free';
+function OSSL_CMP_ATAVS_free(a: POSSL_CMP_ATAVS): void; cdecl external CLibCrypto name 'OSSL_CMP_ATAVS_free';
 function d2i_OSSL_CMP_ATAVS(a: PPOSSL_CMP_ATAVS; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CMP_ATAVS; cdecl external CLibCrypto name 'd2i_OSSL_CMP_ATAVS';
 function i2d_OSSL_CMP_ATAVS(a: POSSL_CMP_ATAVS; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_CMP_ATAVS';
 function OSSL_CMP_ATAVS_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_CMP_ATAVS_it';
 function OSSL_CMP_PKISI_new: POSSL_CMP_PKISI; cdecl external CLibCrypto name 'OSSL_CMP_PKISI_new';
-procedure OSSL_CMP_PKISI_free(a: POSSL_CMP_PKISI); cdecl external CLibCrypto name 'OSSL_CMP_PKISI_free';
+function OSSL_CMP_PKISI_free(a: POSSL_CMP_PKISI): void; cdecl external CLibCrypto name 'OSSL_CMP_PKISI_free';
 function d2i_OSSL_CMP_PKISI(a: PPOSSL_CMP_PKISI; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CMP_PKISI; cdecl external CLibCrypto name 'd2i_OSSL_CMP_PKISI';
 function i2d_OSSL_CMP_PKISI(a: POSSL_CMP_PKISI; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_CMP_PKISI';
 function OSSL_CMP_PKISI_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_CMP_PKISI_it';
 function OSSL_CMP_PKISI_dup(a: POSSL_CMP_PKISI): POSSL_CMP_PKISI; cdecl external CLibCrypto name 'OSSL_CMP_PKISI_dup';
 function OSSL_CMP_ITAV_create(_type: PASN1_OBJECT; value: PASN1_TYPE): POSSL_CMP_ITAV; cdecl external CLibCrypto name 'OSSL_CMP_ITAV_create';
-procedure OSSL_CMP_ITAV_set0(itav: POSSL_CMP_ITAV; _type: PASN1_OBJECT; value: PASN1_TYPE); cdecl external CLibCrypto name 'OSSL_CMP_ITAV_set0';
+function OSSL_CMP_ITAV_set0(itav: POSSL_CMP_ITAV; _type: PASN1_OBJECT; value: PASN1_TYPE): void; cdecl external CLibCrypto name 'OSSL_CMP_ITAV_set0';
 function OSSL_CMP_ITAV_get0_type(itav: POSSL_CMP_ITAV): PASN1_OBJECT; cdecl external CLibCrypto name 'OSSL_CMP_ITAV_get0_type';
 function OSSL_CMP_ITAV_get0_value(itav: POSSL_CMP_ITAV): PASN1_TYPE; cdecl external CLibCrypto name 'OSSL_CMP_ITAV_get0_value';
 function OSSL_CMP_ITAV_push0_stack_item(sk_p: PPstack_st_OSSL_CMP_ITAV; itav: POSSL_CMP_ITAV): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_ITAV_push0_stack_item';
-procedure OSSL_CMP_ITAV_free(itav: POSSL_CMP_ITAV); cdecl external CLibCrypto name 'OSSL_CMP_ITAV_free';
+function OSSL_CMP_ITAV_free(itav: POSSL_CMP_ITAV): void; cdecl external CLibCrypto name 'OSSL_CMP_ITAV_free';
 function OSSL_CMP_ITAV_new0_certProfile(certProfile: Pstack_st_ASN1_UTF8STRING): POSSL_CMP_ITAV; cdecl external CLibCrypto name 'OSSL_CMP_ITAV_new0_certProfile';
 function OSSL_CMP_ITAV_get0_certProfile(itav: POSSL_CMP_ITAV; _out: PPstack_st_ASN1_UTF8STRING): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_ITAV_get0_certProfile';
 function OSSL_CMP_ITAV_new_caCerts(caCerts: Pstack_st_X509): POSSL_CMP_ITAV; cdecl external CLibCrypto name 'OSSL_CMP_ITAV_new_caCerts';
@@ -1052,7 +1146,7 @@ function OSSL_CMP_ITAV_get0_rootCaKeyUpdate(itav: POSSL_CMP_ITAV; newWithNew: PP
 function OSSL_CMP_CRLSTATUS_create(crl: PX509_CRL; cert: PX509; only_DN: TIdC_INT): POSSL_CMP_CRLSTATUS; cdecl external CLibCrypto name 'OSSL_CMP_CRLSTATUS_create';
 function OSSL_CMP_CRLSTATUS_new1(dpn: PDIST_POINT_NAME; issuer: PGENERAL_NAMES; thisUpdate: PASN1_TIME): POSSL_CMP_CRLSTATUS; cdecl external CLibCrypto name 'OSSL_CMP_CRLSTATUS_new1';
 function OSSL_CMP_CRLSTATUS_get0(crlstatus: POSSL_CMP_CRLSTATUS; dpn: PPDIST_POINT_NAME; issuer: PPGENERAL_NAMES; thisUpdate: PPASN1_TIME): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_CRLSTATUS_get0';
-procedure OSSL_CMP_CRLSTATUS_free(crlstatus: POSSL_CMP_CRLSTATUS); cdecl external CLibCrypto name 'OSSL_CMP_CRLSTATUS_free';
+function OSSL_CMP_CRLSTATUS_free(crlstatus: POSSL_CMP_CRLSTATUS): void; cdecl external CLibCrypto name 'OSSL_CMP_CRLSTATUS_free';
 function OSSL_CMP_ITAV_new0_crlStatusList(crlStatusList: Pstack_st_OSSL_CMP_CRLSTATUS): POSSL_CMP_ITAV; cdecl external CLibCrypto name 'OSSL_CMP_ITAV_new0_crlStatusList';
 function OSSL_CMP_ITAV_get0_crlStatusList(itav: POSSL_CMP_ITAV; _out: PPstack_st_OSSL_CMP_CRLSTATUS): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_ITAV_get0_crlStatusList';
 function OSSL_CMP_ITAV_new_crls(crls: PX509_CRL): POSSL_CMP_ITAV; cdecl external CLibCrypto name 'OSSL_CMP_ITAV_new_crls';
@@ -1060,7 +1154,7 @@ function OSSL_CMP_ITAV_get0_crls(it: POSSL_CMP_ITAV; _out: PPstack_st_X509_CRL):
 function OSSL_CMP_ITAV_new0_certReqTemplate(certTemplate: POSSL_CRMF_CERTTEMPLATE; keySpec: POSSL_CMP_ATAVS): POSSL_CMP_ITAV; cdecl external CLibCrypto name 'OSSL_CMP_ITAV_new0_certReqTemplate';
 function OSSL_CMP_ITAV_get1_certReqTemplate(itav: POSSL_CMP_ITAV; certTemplate: PPOSSL_CRMF_CERTTEMPLATE; keySpec: PPOSSL_CMP_ATAVS): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_ITAV_get1_certReqTemplate';
 function OSSL_CMP_ATAV_create(_type: PASN1_OBJECT; value: PASN1_TYPE): POSSL_CMP_ATAV; cdecl external CLibCrypto name 'OSSL_CMP_ATAV_create';
-procedure OSSL_CMP_ATAV_set0(itav: POSSL_CMP_ATAV; _type: PASN1_OBJECT; value: PASN1_TYPE); cdecl external CLibCrypto name 'OSSL_CMP_ATAV_set0';
+function OSSL_CMP_ATAV_set0(itav: POSSL_CMP_ATAV; _type: PASN1_OBJECT; value: PASN1_TYPE): void; cdecl external CLibCrypto name 'OSSL_CMP_ATAV_set0';
 function OSSL_CMP_ATAV_get0_type(itav: POSSL_CMP_ATAV): PASN1_OBJECT; cdecl external CLibCrypto name 'OSSL_CMP_ATAV_get0_type';
 function OSSL_CMP_ATAV_get0_value(itav: POSSL_CMP_ATAV): PASN1_TYPE; cdecl external CLibCrypto name 'OSSL_CMP_ATAV_get0_value';
 function OSSL_CMP_ATAV_new_algId(alg: PX509_ALGOR): POSSL_CMP_ATAV; cdecl external CLibCrypto name 'OSSL_CMP_ATAV_new_algId';
@@ -1068,16 +1162,16 @@ function OSSL_CMP_ATAV_get0_algId(atav: POSSL_CMP_ATAV): PX509_ALGOR; cdecl exte
 function OSSL_CMP_ATAV_new_rsaKeyLen(len: TIdC_INT): POSSL_CMP_ATAV; cdecl external CLibCrypto name 'OSSL_CMP_ATAV_new_rsaKeyLen';
 function OSSL_CMP_ATAV_get_rsaKeyLen(atav: POSSL_CMP_ATAV): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_ATAV_get_rsaKeyLen';
 function OSSL_CMP_ATAV_push1(sk_p: PPOSSL_CMP_ATAVS; atav: POSSL_CMP_ATAV): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_ATAV_push1';
-procedure OSSL_CMP_MSG_free(msg: POSSL_CMP_MSG); cdecl external CLibCrypto name 'OSSL_CMP_MSG_free';
+function OSSL_CMP_MSG_free(msg: POSSL_CMP_MSG): void; cdecl external CLibCrypto name 'OSSL_CMP_MSG_free';
 function OSSL_CMP_CTX_new(libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): POSSL_CMP_CTX; cdecl external CLibCrypto name 'OSSL_CMP_CTX_new';
-procedure OSSL_CMP_CTX_free(ctx: POSSL_CMP_CTX); cdecl external CLibCrypto name 'OSSL_CMP_CTX_free';
+function OSSL_CMP_CTX_free(ctx: POSSL_CMP_CTX): void; cdecl external CLibCrypto name 'OSSL_CMP_CTX_free';
 function OSSL_CMP_CTX_reinit(ctx: POSSL_CMP_CTX): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_CTX_reinit';
 function OSSL_CMP_CTX_get0_libctx(ctx: POSSL_CMP_CTX): POSSL_LIB_CTX; cdecl external CLibCrypto name 'OSSL_CMP_CTX_get0_libctx';
 function OSSL_CMP_CTX_get0_propq(ctx: POSSL_CMP_CTX): PIdAnsiChar; cdecl external CLibCrypto name 'OSSL_CMP_CTX_get0_propq';
 function OSSL_CMP_CTX_set_option(ctx: POSSL_CMP_CTX; opt: TIdC_INT; val: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_CTX_set_option';
 function OSSL_CMP_CTX_get_option(ctx: POSSL_CMP_CTX; opt: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_CTX_get_option';
 function OSSL_CMP_CTX_set_log_cb(ctx: POSSL_CMP_CTX; cb: TOSSL_CMP_CTX_set_log_cb_cb_cb): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_CTX_set_log_cb';
-procedure OSSL_CMP_CTX_print_errors(ctx: POSSL_CMP_CTX); cdecl external CLibCrypto name 'OSSL_CMP_CTX_print_errors';
+function OSSL_CMP_CTX_print_errors(ctx: POSSL_CMP_CTX): void; cdecl external CLibCrypto name 'OSSL_CMP_CTX_print_errors';
 function OSSL_CMP_CTX_set1_serverPath(ctx: POSSL_CMP_CTX; path: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_CTX_set1_serverPath';
 function OSSL_CMP_CTX_set1_server(ctx: POSSL_CMP_CTX; address: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_CTX_set1_server';
 function OSSL_CMP_CTX_set_serverPort(ctx: POSSL_CMP_CTX; port: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_CTX_set_serverPort';
@@ -1086,7 +1180,7 @@ function OSSL_CMP_CTX_set1_no_proxy(ctx: POSSL_CMP_CTX; names: PIdAnsiChar): TId
 function OSSL_CMP_CTX_set_http_cb(ctx: POSSL_CMP_CTX; cb: TOSSL_CMP_CTX_set_http_cb_cb_cb): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_CTX_set_http_cb';
 function OSSL_CMP_CTX_set_http_cb_arg(ctx: POSSL_CMP_CTX; arg: Pointer): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_CTX_set_http_cb_arg';
 function OSSL_CMP_CTX_get_http_cb_arg(ctx: POSSL_CMP_CTX): Pointer; cdecl external CLibCrypto name 'OSSL_CMP_CTX_get_http_cb_arg';
-function OSSL_CMP_CTX_set_transfer_cb(ctx: POSSL_CMP_CTX; cb: TOSSL_CMP_transfer_cb_t_func_cb): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_CTX_set_transfer_cb';
+function OSSL_CMP_CTX_set_transfer_cb(ctx: POSSL_CMP_CTX; cb: TOSSL_CMP_transfer_cb_t): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_CTX_set_transfer_cb';
 function OSSL_CMP_CTX_set_transfer_cb_arg(ctx: POSSL_CMP_CTX; arg: Pointer): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_CTX_set_transfer_cb_arg';
 function OSSL_CMP_CTX_get_transfer_cb_arg(ctx: POSSL_CMP_CTX): Pointer; cdecl external CLibCrypto name 'OSSL_CMP_CTX_get_transfer_cb_arg';
 function OSSL_CMP_CTX_set1_srvCert(ctx: POSSL_CMP_CTX; cert: PX509): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_CTX_set1_srvCert';
@@ -1118,7 +1212,7 @@ function OSSL_CMP_CTX_set1_oldCert(ctx: POSSL_CMP_CTX; cert: PX509): TIdC_INT; c
 function OSSL_CMP_CTX_set1_p10CSR(ctx: POSSL_CMP_CTX; csr: PX509_REQ): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_CTX_set1_p10CSR';
 function OSSL_CMP_CTX_push0_genm_ITAV(ctx: POSSL_CMP_CTX; itav: POSSL_CMP_ITAV): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_CTX_push0_genm_ITAV';
 function OSSL_CMP_certConf_cb(ctx: POSSL_CMP_CTX; cert: PX509; fail_info: TIdC_INT; text: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_certConf_cb';
-function OSSL_CMP_CTX_set_certConf_cb(ctx: POSSL_CMP_CTX; cb: TOSSL_CMP_certConf_cb_t_func_cb): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_CTX_set_certConf_cb';
+function OSSL_CMP_CTX_set_certConf_cb(ctx: POSSL_CMP_CTX; cb: TOSSL_CMP_certConf_cb_t): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_CTX_set_certConf_cb';
 function OSSL_CMP_CTX_set_certConf_cb_arg(ctx: POSSL_CMP_CTX; arg: Pointer): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_CTX_set_certConf_cb_arg';
 function OSSL_CMP_CTX_get_certConf_cb_arg(ctx: POSSL_CMP_CTX): Pointer; cdecl external CLibCrypto name 'OSSL_CMP_CTX_get_certConf_cb_arg';
 function OSSL_CMP_CTX_get_status(ctx: POSSL_CMP_CTX): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_CTX_get_status';
@@ -1153,9 +1247,9 @@ function OSSL_CMP_MSG_http_perform(ctx: POSSL_CMP_CTX; req: POSSL_CMP_MSG): POSS
 function OSSL_CMP_SRV_process_request(srv_ctx: POSSL_CMP_SRV_CTX; req: POSSL_CMP_MSG): POSSL_CMP_MSG; cdecl external CLibCrypto name 'OSSL_CMP_SRV_process_request';
 function OSSL_CMP_CTX_server_perform(client_ctx: POSSL_CMP_CTX; req: POSSL_CMP_MSG): POSSL_CMP_MSG; cdecl external CLibCrypto name 'OSSL_CMP_CTX_server_perform';
 function OSSL_CMP_SRV_CTX_new(libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): POSSL_CMP_SRV_CTX; cdecl external CLibCrypto name 'OSSL_CMP_SRV_CTX_new';
-procedure OSSL_CMP_SRV_CTX_free(srv_ctx: POSSL_CMP_SRV_CTX); cdecl external CLibCrypto name 'OSSL_CMP_SRV_CTX_free';
-function OSSL_CMP_SRV_CTX_init(srv_ctx: POSSL_CMP_SRV_CTX; custom_ctx: Pointer; process_cert_request: TOSSL_CMP_SRV_cert_request_cb_t_func_cb; process_rr: TOSSL_CMP_SRV_rr_cb_t_func_cb; process_genm: TOSSL_CMP_SRV_genm_cb_t_func_cb; process_error: TOSSL_CMP_SRV_error_cb_t_func_cb; process_certConf: TOSSL_CMP_SRV_certConf_cb_t_func_cb; process_pollReq: TOSSL_CMP_SRV_pollReq_cb_t_func_cb): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_SRV_CTX_init';
-function OSSL_CMP_SRV_CTX_init_trans(srv_ctx: POSSL_CMP_SRV_CTX; delay: TOSSL_CMP_SRV_delayed_delivery_cb_t_func_cb; clean: TOSSL_CMP_SRV_clean_transaction_cb_t_func_cb): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_SRV_CTX_init_trans';
+function OSSL_CMP_SRV_CTX_free(srv_ctx: POSSL_CMP_SRV_CTX): void; cdecl external CLibCrypto name 'OSSL_CMP_SRV_CTX_free';
+function OSSL_CMP_SRV_CTX_init(srv_ctx: POSSL_CMP_SRV_CTX; custom_ctx: Pointer; process_cert_request: TOSSL_CMP_SRV_cert_request_cb_t; process_rr: TOSSL_CMP_SRV_rr_cb_t; process_genm: TOSSL_CMP_SRV_genm_cb_t; process_error: TOSSL_CMP_SRV_error_cb_t; process_certConf: TOSSL_CMP_SRV_certConf_cb_t; process_pollReq: TOSSL_CMP_SRV_pollReq_cb_t): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_SRV_CTX_init';
+function OSSL_CMP_SRV_CTX_init_trans(srv_ctx: POSSL_CMP_SRV_CTX; delay: TOSSL_CMP_SRV_delayed_delivery_cb_t; clean: TOSSL_CMP_SRV_clean_transaction_cb_t): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_SRV_CTX_init_trans';
 function OSSL_CMP_SRV_CTX_get0_cmp_ctx(srv_ctx: POSSL_CMP_SRV_CTX): POSSL_CMP_CTX; cdecl external CLibCrypto name 'OSSL_CMP_SRV_CTX_get0_cmp_ctx';
 function OSSL_CMP_SRV_CTX_get0_custom_ctx(srv_ctx: POSSL_CMP_SRV_CTX): Pointer; cdecl external CLibCrypto name 'OSSL_CMP_SRV_CTX_get0_custom_ctx';
 function OSSL_CMP_SRV_CTX_set_send_unprotected_errors(srv_ctx: POSSL_CMP_SRV_CTX; val: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_CMP_SRV_CTX_set_send_unprotected_errors';
@@ -1743,7 +1837,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_PKIHEADER_new_procname);
 end;
 
-procedure ERR_OSSL_CMP_PKIHEADER_free(a: POSSL_CMP_PKIHEADER); cdecl
+function ERR_OSSL_CMP_PKIHEADER_free(a: POSSL_CMP_PKIHEADER): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_PKIHEADER_free_procname);
 end;
@@ -1793,7 +1887,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_ATAVS_new_procname);
 end;
 
-procedure ERR_OSSL_CMP_ATAVS_free(a: POSSL_CMP_ATAVS); cdecl
+function ERR_OSSL_CMP_ATAVS_free(a: POSSL_CMP_ATAVS): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_ATAVS_free_procname);
 end;
@@ -1818,7 +1912,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_PKISI_new_procname);
 end;
 
-procedure ERR_OSSL_CMP_PKISI_free(a: POSSL_CMP_PKISI); cdecl
+function ERR_OSSL_CMP_PKISI_free(a: POSSL_CMP_PKISI): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_PKISI_free_procname);
 end;
@@ -1848,7 +1942,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_ITAV_create_procname);
 end;
 
-procedure ERR_OSSL_CMP_ITAV_set0(itav: POSSL_CMP_ITAV; _type: PASN1_OBJECT; value: PASN1_TYPE); cdecl
+function ERR_OSSL_CMP_ITAV_set0(itav: POSSL_CMP_ITAV; _type: PASN1_OBJECT; value: PASN1_TYPE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_ITAV_set0_procname);
 end;
@@ -1868,7 +1962,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_ITAV_push0_stack_item_procname);
 end;
 
-procedure ERR_OSSL_CMP_ITAV_free(itav: POSSL_CMP_ITAV); cdecl
+function ERR_OSSL_CMP_ITAV_free(itav: POSSL_CMP_ITAV): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_ITAV_free_procname);
 end;
@@ -1928,7 +2022,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_CRLSTATUS_get0_procname);
 end;
 
-procedure ERR_OSSL_CMP_CRLSTATUS_free(crlstatus: POSSL_CMP_CRLSTATUS); cdecl
+function ERR_OSSL_CMP_CRLSTATUS_free(crlstatus: POSSL_CMP_CRLSTATUS): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_CRLSTATUS_free_procname);
 end;
@@ -1968,7 +2062,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_ATAV_create_procname);
 end;
 
-procedure ERR_OSSL_CMP_ATAV_set0(itav: POSSL_CMP_ATAV; _type: PASN1_OBJECT; value: PASN1_TYPE); cdecl
+function ERR_OSSL_CMP_ATAV_set0(itav: POSSL_CMP_ATAV; _type: PASN1_OBJECT; value: PASN1_TYPE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_ATAV_set0_procname);
 end;
@@ -2008,7 +2102,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_ATAV_push1_procname);
 end;
 
-procedure ERR_OSSL_CMP_MSG_free(msg: POSSL_CMP_MSG); cdecl
+function ERR_OSSL_CMP_MSG_free(msg: POSSL_CMP_MSG): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_MSG_free_procname);
 end;
@@ -2018,7 +2112,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_CTX_new_procname);
 end;
 
-procedure ERR_OSSL_CMP_CTX_free(ctx: POSSL_CMP_CTX); cdecl
+function ERR_OSSL_CMP_CTX_free(ctx: POSSL_CMP_CTX): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_CTX_free_procname);
 end;
@@ -2053,7 +2147,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_CTX_set_log_cb_procname);
 end;
 
-procedure ERR_OSSL_CMP_CTX_print_errors(ctx: POSSL_CMP_CTX); cdecl
+function ERR_OSSL_CMP_CTX_print_errors(ctx: POSSL_CMP_CTX): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_CTX_print_errors_procname);
 end;
@@ -2098,7 +2192,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_CTX_get_http_cb_arg_procname);
 end;
 
-function ERR_OSSL_CMP_CTX_set_transfer_cb(ctx: POSSL_CMP_CTX; cb: TOSSL_CMP_transfer_cb_t_func_cb): TIdC_INT; cdecl
+function ERR_OSSL_CMP_CTX_set_transfer_cb(ctx: POSSL_CMP_CTX; cb: TOSSL_CMP_transfer_cb_t): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_CTX_set_transfer_cb_procname);
 end;
@@ -2258,7 +2352,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_certConf_cb_procname);
 end;
 
-function ERR_OSSL_CMP_CTX_set_certConf_cb(ctx: POSSL_CMP_CTX; cb: TOSSL_CMP_certConf_cb_t_func_cb): TIdC_INT; cdecl
+function ERR_OSSL_CMP_CTX_set_certConf_cb(ctx: POSSL_CMP_CTX; cb: TOSSL_CMP_certConf_cb_t): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_CTX_set_certConf_cb_procname);
 end;
@@ -2433,17 +2527,17 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_SRV_CTX_new_procname);
 end;
 
-procedure ERR_OSSL_CMP_SRV_CTX_free(srv_ctx: POSSL_CMP_SRV_CTX); cdecl
+function ERR_OSSL_CMP_SRV_CTX_free(srv_ctx: POSSL_CMP_SRV_CTX): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_SRV_CTX_free_procname);
 end;
 
-function ERR_OSSL_CMP_SRV_CTX_init(srv_ctx: POSSL_CMP_SRV_CTX; custom_ctx: Pointer; process_cert_request: TOSSL_CMP_SRV_cert_request_cb_t_func_cb; process_rr: TOSSL_CMP_SRV_rr_cb_t_func_cb; process_genm: TOSSL_CMP_SRV_genm_cb_t_func_cb; process_error: TOSSL_CMP_SRV_error_cb_t_func_cb; process_certConf: TOSSL_CMP_SRV_certConf_cb_t_func_cb; process_pollReq: TOSSL_CMP_SRV_pollReq_cb_t_func_cb): TIdC_INT; cdecl
+function ERR_OSSL_CMP_SRV_CTX_init(srv_ctx: POSSL_CMP_SRV_CTX; custom_ctx: Pointer; process_cert_request: TOSSL_CMP_SRV_cert_request_cb_t; process_rr: TOSSL_CMP_SRV_rr_cb_t; process_genm: TOSSL_CMP_SRV_genm_cb_t; process_error: TOSSL_CMP_SRV_error_cb_t; process_certConf: TOSSL_CMP_SRV_certConf_cb_t; process_pollReq: TOSSL_CMP_SRV_pollReq_cb_t): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_SRV_CTX_init_procname);
 end;
 
-function ERR_OSSL_CMP_SRV_CTX_init_trans(srv_ctx: POSSL_CMP_SRV_CTX; delay: TOSSL_CMP_SRV_delayed_delivery_cb_t_func_cb; clean: TOSSL_CMP_SRV_clean_transaction_cb_t_func_cb): TIdC_INT; cdecl
+function ERR_OSSL_CMP_SRV_CTX_init_trans(srv_ctx: POSSL_CMP_SRV_CTX; delay: TOSSL_CMP_SRV_delayed_delivery_cb_t; clean: TOSSL_CMP_SRV_clean_transaction_cb_t): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CMP_SRV_CTX_init_trans_procname);
 end;

@@ -26,16 +26,30 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   Prsa_pss_params_st = ^Trsa_pss_params_st;
-  Trsa_pss_params_st = record end;
+  Trsa_pss_params_st =   record
+    hashAlgorithm: PX509_ALGOR;
+    maskGenAlgorithm: PX509_ALGOR;
+    saltLength: PASN1_INTEGER;
+    trailerField: PASN1_INTEGER;
+    maskHash: PX509_ALGOR;
+  end;
   {$EXTERNALSYM Prsa_pss_params_st}
 
   Prsa_oaep_params_st = ^Trsa_oaep_params_st;
-  Trsa_oaep_params_st = record end;
+  Trsa_oaep_params_st =   record
+    hashFunc: PX509_ALGOR;
+    maskGenFunc: PX509_ALGOR;
+    pSourceFunc: PX509_ALGOR;
+    maskHash: PX509_ALGOR;
+  end;
   {$EXTERNALSYM Prsa_oaep_params_st}
 
 
@@ -43,15 +57,24 @@ type
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  TRSA_generate_key_callback_cb = procedure(arg1: TIdC_INT; arg2: TIdC_INT; arg3: Pointer); cdecl;
-  TRSA_meth_get_pub_enc_func_cb = function(arg1: TIdC_INT; arg2: PIdAnsiChar; arg3: PIdAnsiChar; arg4: PRSA; arg5: TIdC_INT): TIdC_INT; cdecl;
-  TRSA_meth_get_mod_exp_func_cb = function(arg1: PBIGNUM; arg2: PBIGNUM; arg3: PRSA; arg4: PBN_CTX): TIdC_INT; cdecl;
-  TRSA_meth_get_bn_mod_exp_func_cb = function(arg1: PBIGNUM; arg2: PBIGNUM; arg3: PBIGNUM; arg4: PBIGNUM; arg5: PBN_CTX; arg6: PBN_MONT_CTX): TIdC_INT; cdecl;
-  TRSA_meth_get_init_func_cb = function(arg1: PRSA): TIdC_INT; cdecl;
-  TRSA_meth_get_sign_func_cb = function(arg1: TIdC_INT; arg2: PIdAnsiChar; arg3: TIdC_UINT; arg4: PIdAnsiChar; arg5: PIdC_UINT; arg6: PRSA): TIdC_INT; cdecl;
-  TRSA_meth_get_verify_func_cb = function(arg1: TIdC_INT; arg2: PIdAnsiChar; arg3: TIdC_UINT; arg4: PIdAnsiChar; arg5: TIdC_UINT; arg6: PRSA): TIdC_INT; cdecl;
-  TRSA_meth_get_keygen_func_cb = function(arg1: PRSA; arg2: TIdC_INT; arg3: PBIGNUM; arg4: PBN_GENCB): TIdC_INT; cdecl;
-  TRSA_meth_get_multi_prime_keygen_func_cb = function(arg1: PRSA; arg2: TIdC_INT; arg3: TIdC_INT; arg4: PBIGNUM; arg5: PBN_GENCB): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // RSA_generate_key_callback_cb = function(arg1: TIdC_INT; arg2: TIdC_INT; arg3: Pointer): void; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // RSA_meth_get_pub_enc_func_cb = function(arg1: TIdC_INT; arg2: PIdAnsiChar; arg3: PIdAnsiChar; arg4: Prsa_st; arg5: TIdC_INT): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // RSA_meth_get_mod_exp_func_cb = function(arg1: Pbignum_st; arg2: Pbignum_st; arg3: Prsa_st; arg4: Pbignum_ctx): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // RSA_meth_get_bn_mod_exp_func_cb = function(arg1: Pbignum_st; arg2: Pbignum_st; arg3: Pbignum_st; arg4: Pbignum_st; arg5: Pbignum_ctx; arg6: Pbn_mont_ctx_st): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // RSA_meth_get_init_func_cb = function(arg1: Prsa_st): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // RSA_meth_get_sign_func_cb = function(arg1: TIdC_INT; arg2: PIdAnsiChar; arg3: TIdC_UINT; arg4: PIdAnsiChar; arg5: PIdC_UINT; arg6: Prsa_st): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // RSA_meth_get_verify_func_cb = function(arg1: TIdC_INT; arg2: PIdAnsiChar; arg3: TIdC_UINT; arg4: PIdAnsiChar; arg5: TIdC_UINT; arg6: Prsa_st): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // RSA_meth_get_keygen_func_cb = function(arg1: Prsa_st; arg2: TIdC_INT; arg3: Pbignum_st; arg4: Pbn_gencb_st): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // RSA_meth_get_multi_prime_keygen_func_cb = function(arg1: Prsa_st; arg2: TIdC_INT; arg3: TIdC_INT; arg4: Pbignum_st; arg5: Pbn_gencb_st): TIdC_INT; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -213,10 +236,10 @@ var
   RSA_set0_multi_prime_params: function(r: PRSA; primes: PPBIGNUM; exps: PPBIGNUM; coeffs: PPBIGNUM; pnum: TIdC_INT): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RSA_set0_multi_prime_params}
 
-  RSA_get0_key: procedure(r: PRSA; n: PPBIGNUM; e: PPBIGNUM; d: PPBIGNUM); cdecl = nil; // Deprecated in 3_0_0
+  RSA_get0_key: function(r: PRSA; n: PPBIGNUM; e: PPBIGNUM; d: PPBIGNUM): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RSA_get0_key}
 
-  RSA_get0_factors: procedure(r: PRSA; p: PPBIGNUM; q: PPBIGNUM); cdecl = nil; // Deprecated in 3_0_0
+  RSA_get0_factors: function(r: PRSA; p: PPBIGNUM; q: PPBIGNUM): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RSA_get0_factors}
 
   RSA_get_multi_prime_extra_count: function(r: PRSA): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -225,7 +248,7 @@ var
   RSA_get0_multi_prime_factors: function(r: PRSA; primes: PPBIGNUM): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RSA_get0_multi_prime_factors}
 
-  RSA_get0_crt_params: procedure(r: PRSA; dmp1: PPBIGNUM; dmq1: PPBIGNUM; iqmp: PPBIGNUM); cdecl = nil; // Deprecated in 3_0_0
+  RSA_get0_crt_params: function(r: PRSA; dmp1: PPBIGNUM; dmq1: PPBIGNUM; iqmp: PPBIGNUM): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RSA_get0_crt_params}
 
   RSA_get0_multi_prime_crt_params: function(r: PRSA; exps: PPBIGNUM; coeffs: PPBIGNUM): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -258,13 +281,13 @@ var
   RSA_get0_pss_params: function(r: PRSA): PRSA_PSS_PARAMS; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RSA_get0_pss_params}
 
-  RSA_clear_flags: procedure(r: PRSA; flags: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  RSA_clear_flags: function(r: PRSA; flags: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RSA_clear_flags}
 
   RSA_test_flags: function(r: PRSA; flags: TIdC_INT): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RSA_test_flags}
 
-  RSA_set_flags: procedure(r: PRSA; flags: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  RSA_set_flags: function(r: PRSA; flags: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RSA_set_flags}
 
   RSA_get_version: function(r: PRSA): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -303,7 +326,7 @@ var
   RSA_private_decrypt: function(flen: TIdC_INT; from: PIdAnsiChar; _to: PIdAnsiChar; rsa: PRSA; padding: TIdC_INT): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RSA_private_decrypt}
 
-  RSA_free: procedure(r: PRSA); cdecl = nil; // Deprecated in 3_0_0
+  RSA_free: function(r: PRSA): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RSA_free}
 
   RSA_up_ref: function(r: PRSA): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -312,7 +335,7 @@ var
   RSA_flags: function(r: PRSA): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RSA_flags}
 
-  RSA_set_default_method: procedure(meth: PRSA_METHOD); cdecl = nil; // Deprecated in 3_0_0
+  RSA_set_default_method: function(meth: PRSA_METHOD): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RSA_set_default_method}
 
   RSA_get_default_method: function: PRSA_METHOD; cdecl = nil; // Deprecated in 3_0_0
@@ -354,7 +377,7 @@ var
   RSA_PSS_PARAMS_new: function: PRSA_PSS_PARAMS; cdecl = nil;
   {$EXTERNALSYM RSA_PSS_PARAMS_new}
 
-  RSA_PSS_PARAMS_free: procedure(a: PRSA_PSS_PARAMS); cdecl = nil;
+  RSA_PSS_PARAMS_free: function(a: PRSA_PSS_PARAMS): void; cdecl = nil;
   {$EXTERNALSYM RSA_PSS_PARAMS_free}
 
   d2i_RSA_PSS_PARAMS: function(a: PPRSA_PSS_PARAMS; _in: PPIdAnsiChar; len: TIdC_LONG): PRSA_PSS_PARAMS; cdecl = nil;
@@ -372,7 +395,7 @@ var
   RSA_OAEP_PARAMS_new: function: PRSA_OAEP_PARAMS; cdecl = nil;
   {$EXTERNALSYM RSA_OAEP_PARAMS_new}
 
-  RSA_OAEP_PARAMS_free: procedure(a: PRSA_OAEP_PARAMS); cdecl = nil;
+  RSA_OAEP_PARAMS_free: function(a: PRSA_OAEP_PARAMS): void; cdecl = nil;
   {$EXTERNALSYM RSA_OAEP_PARAMS_free}
 
   d2i_RSA_OAEP_PARAMS: function(a: PPRSA_OAEP_PARAMS; _in: PPIdAnsiChar; len: TIdC_LONG): PRSA_OAEP_PARAMS; cdecl = nil;
@@ -405,7 +428,7 @@ var
   RSA_blinding_on: function(rsa: PRSA; ctx: PBN_CTX): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RSA_blinding_on}
 
-  RSA_blinding_off: procedure(rsa: PRSA); cdecl = nil; // Deprecated in 3_0_0
+  RSA_blinding_off: function(rsa: PRSA): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RSA_blinding_off}
 
   RSA_setup_blinding: function(rsa: PRSA; ctx: PBN_CTX): PBN_BLINDING; cdecl = nil; // Deprecated in 3_0_0
@@ -480,7 +503,7 @@ var
   RSA_meth_new: function(name: PIdAnsiChar; flags: TIdC_INT): PRSA_METHOD; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RSA_meth_new}
 
-  RSA_meth_free: procedure(meth: PRSA_METHOD); cdecl = nil; // Deprecated in 3_0_0
+  RSA_meth_free: function(meth: PRSA_METHOD): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RSA_meth_free}
 
   RSA_meth_dup: function(meth: PRSA_METHOD): PRSA_METHOD; cdecl = nil; // Deprecated in 3_0_0
@@ -616,11 +639,11 @@ function RSA_set0_key(r: PRSA; n: PBIGNUM; e: PBIGNUM; d: PBIGNUM): TIdC_INT; cd
 function RSA_set0_factors(r: PRSA; p: PBIGNUM; q: PBIGNUM): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_set0_crt_params(r: PRSA; dmp1: PBIGNUM; dmq1: PBIGNUM; iqmp: PBIGNUM): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_set0_multi_prime_params(r: PRSA; primes: PPBIGNUM; exps: PPBIGNUM; coeffs: PPBIGNUM; pnum: TIdC_INT): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure RSA_get0_key(r: PRSA; n: PPBIGNUM; e: PPBIGNUM; d: PPBIGNUM); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure RSA_get0_factors(r: PRSA; p: PPBIGNUM; q: PPBIGNUM); cdecl; deprecated 'In OpenSSL 3_0_0';
+function RSA_get0_key(r: PRSA; n: PPBIGNUM; e: PPBIGNUM; d: PPBIGNUM): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function RSA_get0_factors(r: PRSA; p: PPBIGNUM; q: PPBIGNUM): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_get_multi_prime_extra_count(r: PRSA): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_get0_multi_prime_factors(r: PRSA; primes: PPBIGNUM): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure RSA_get0_crt_params(r: PRSA; dmp1: PPBIGNUM; dmq1: PPBIGNUM; iqmp: PPBIGNUM); cdecl; deprecated 'In OpenSSL 3_0_0';
+function RSA_get0_crt_params(r: PRSA; dmp1: PPBIGNUM; dmq1: PPBIGNUM; iqmp: PPBIGNUM): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_get0_multi_prime_crt_params(r: PRSA; exps: PPBIGNUM; coeffs: PPBIGNUM): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_get0_n(d: PRSA): PBIGNUM; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_get0_e(d: PRSA): PBIGNUM; cdecl; deprecated 'In OpenSSL 3_0_0';
@@ -631,9 +654,9 @@ function RSA_get0_dmp1(r: PRSA): PBIGNUM; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_get0_dmq1(r: PRSA): PBIGNUM; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_get0_iqmp(r: PRSA): PBIGNUM; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_get0_pss_params(r: PRSA): PRSA_PSS_PARAMS; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure RSA_clear_flags(r: PRSA; flags: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+function RSA_clear_flags(r: PRSA; flags: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_test_flags(r: PRSA; flags: TIdC_INT): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure RSA_set_flags(r: PRSA; flags: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+function RSA_set_flags(r: PRSA; flags: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_get_version(r: PRSA): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_get0_engine(r: PRSA): PENGINE; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_generate_key_ex(rsa: PRSA; bits: TIdC_INT; e: PBIGNUM; cb: PBN_GENCB): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
@@ -646,10 +669,10 @@ function RSA_public_encrypt(flen: TIdC_INT; from: PIdAnsiChar; _to: PIdAnsiChar;
 function RSA_private_encrypt(flen: TIdC_INT; from: PIdAnsiChar; _to: PIdAnsiChar; rsa: PRSA; padding: TIdC_INT): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_public_decrypt(flen: TIdC_INT; from: PIdAnsiChar; _to: PIdAnsiChar; rsa: PRSA; padding: TIdC_INT): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_private_decrypt(flen: TIdC_INT; from: PIdAnsiChar; _to: PIdAnsiChar; rsa: PRSA; padding: TIdC_INT): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure RSA_free(r: PRSA); cdecl; deprecated 'In OpenSSL 3_0_0';
+function RSA_free(r: PRSA): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_up_ref(r: PRSA): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_flags(r: PRSA): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure RSA_set_default_method(meth: PRSA_METHOD); cdecl; deprecated 'In OpenSSL 3_0_0';
+function RSA_set_default_method(meth: PRSA_METHOD): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_get_default_method: PRSA_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_null_method: PRSA_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_get_method(rsa: PRSA): PRSA_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
@@ -663,13 +686,13 @@ function i2d_RSAPrivateKey(a: PRSA; _out: PPIdAnsiChar): TIdC_INT; cdecl; deprec
 function RSAPrivateKey_it: PASN1_ITEM; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_pkey_ctx_ctrl(ctx: PEVP_PKEY_CTX; optype: TIdC_INT; cmd: TIdC_INT; p1: TIdC_INT; p2: Pointer): TIdC_INT; cdecl;
 function RSA_PSS_PARAMS_new: PRSA_PSS_PARAMS; cdecl;
-procedure RSA_PSS_PARAMS_free(a: PRSA_PSS_PARAMS); cdecl;
+function RSA_PSS_PARAMS_free(a: PRSA_PSS_PARAMS): void; cdecl;
 function d2i_RSA_PSS_PARAMS(a: PPRSA_PSS_PARAMS; _in: PPIdAnsiChar; len: TIdC_LONG): PRSA_PSS_PARAMS; cdecl;
 function i2d_RSA_PSS_PARAMS(a: PRSA_PSS_PARAMS; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function RSA_PSS_PARAMS_it: PASN1_ITEM; cdecl;
 function RSA_PSS_PARAMS_dup(a: PRSA_PSS_PARAMS): PRSA_PSS_PARAMS; cdecl;
 function RSA_OAEP_PARAMS_new: PRSA_OAEP_PARAMS; cdecl;
-procedure RSA_OAEP_PARAMS_free(a: PRSA_OAEP_PARAMS); cdecl;
+function RSA_OAEP_PARAMS_free(a: PRSA_OAEP_PARAMS): void; cdecl;
 function d2i_RSA_OAEP_PARAMS(a: PPRSA_OAEP_PARAMS; _in: PPIdAnsiChar; len: TIdC_LONG): PRSA_OAEP_PARAMS; cdecl;
 function i2d_RSA_OAEP_PARAMS(a: PRSA_OAEP_PARAMS; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function RSA_OAEP_PARAMS_it: PASN1_ITEM; cdecl;
@@ -680,7 +703,7 @@ function RSA_verify(_type: TIdC_INT; m: PIdAnsiChar; m_length: TIdC_UINT; sigbuf
 function RSA_sign_ASN1_OCTET_STRING(_type: TIdC_INT; m: PIdAnsiChar; m_length: TIdC_UINT; sigret: PIdAnsiChar; siglen: PIdC_UINT; rsa: PRSA): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_verify_ASN1_OCTET_STRING(_type: TIdC_INT; m: PIdAnsiChar; m_length: TIdC_UINT; sigbuf: PIdAnsiChar; siglen: TIdC_UINT; rsa: PRSA): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_blinding_on(rsa: PRSA; ctx: PBN_CTX): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure RSA_blinding_off(rsa: PRSA); cdecl; deprecated 'In OpenSSL 3_0_0';
+function RSA_blinding_off(rsa: PRSA): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_setup_blinding(rsa: PRSA; ctx: PBN_CTX): PBN_BLINDING; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_padding_add_PKCS1_type_1(_to: PIdAnsiChar; tlen: TIdC_INT; f: PIdAnsiChar; fl: TIdC_INT): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_padding_check_PKCS1_type_1(_to: PIdAnsiChar; tlen: TIdC_INT; f: PIdAnsiChar; fl: TIdC_INT; rsa_len: TIdC_INT): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
@@ -705,7 +728,7 @@ function RSA_get_ex_data(r: PRSA; idx: TIdC_INT): Pointer; cdecl; deprecated 'In
 function RSAPublicKey_dup(a: PRSA): PRSA; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSAPrivateKey_dup(a: PRSA): PRSA; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_meth_new(name: PIdAnsiChar; flags: TIdC_INT): PRSA_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure RSA_meth_free(meth: PRSA_METHOD); cdecl; deprecated 'In OpenSSL 3_0_0';
+function RSA_meth_free(meth: PRSA_METHOD): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_meth_dup(meth: PRSA_METHOD): PRSA_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_meth_get0_name(meth: PRSA_METHOD): PIdAnsiChar; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RSA_meth_set1_name(meth: PRSA_METHOD; name: PIdAnsiChar): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
@@ -743,8 +766,8 @@ function RSA_meth_set_multi_prime_keygen(meth: PRSA_METHOD; keygen: TRSA_meth_ge
 // INLINE OR MACRO ROUTINES
 // =============================================================================
 
-function EVP_RSA_gen(bits: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function EVP_RSA_gen(bits: Pointer): TIdC_INT; cdecl;
 
 
 implementation
@@ -795,11 +818,11 @@ function RSA_set0_key(r: PRSA; n: PBIGNUM; e: PBIGNUM; d: PBIGNUM): TIdC_INT; cd
 function RSA_set0_factors(r: PRSA; p: PBIGNUM; q: PBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'RSA_set0_factors';
 function RSA_set0_crt_params(r: PRSA; dmp1: PBIGNUM; dmq1: PBIGNUM; iqmp: PBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'RSA_set0_crt_params';
 function RSA_set0_multi_prime_params(r: PRSA; primes: PPBIGNUM; exps: PPBIGNUM; coeffs: PPBIGNUM; pnum: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'RSA_set0_multi_prime_params';
-procedure RSA_get0_key(r: PRSA; n: PPBIGNUM; e: PPBIGNUM; d: PPBIGNUM); cdecl external CLibCrypto name 'RSA_get0_key';
-procedure RSA_get0_factors(r: PRSA; p: PPBIGNUM; q: PPBIGNUM); cdecl external CLibCrypto name 'RSA_get0_factors';
+function RSA_get0_key(r: PRSA; n: PPBIGNUM; e: PPBIGNUM; d: PPBIGNUM): void; cdecl external CLibCrypto name 'RSA_get0_key';
+function RSA_get0_factors(r: PRSA; p: PPBIGNUM; q: PPBIGNUM): void; cdecl external CLibCrypto name 'RSA_get0_factors';
 function RSA_get_multi_prime_extra_count(r: PRSA): TIdC_INT; cdecl external CLibCrypto name 'RSA_get_multi_prime_extra_count';
 function RSA_get0_multi_prime_factors(r: PRSA; primes: PPBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'RSA_get0_multi_prime_factors';
-procedure RSA_get0_crt_params(r: PRSA; dmp1: PPBIGNUM; dmq1: PPBIGNUM; iqmp: PPBIGNUM); cdecl external CLibCrypto name 'RSA_get0_crt_params';
+function RSA_get0_crt_params(r: PRSA; dmp1: PPBIGNUM; dmq1: PPBIGNUM; iqmp: PPBIGNUM): void; cdecl external CLibCrypto name 'RSA_get0_crt_params';
 function RSA_get0_multi_prime_crt_params(r: PRSA; exps: PPBIGNUM; coeffs: PPBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'RSA_get0_multi_prime_crt_params';
 function RSA_get0_n(d: PRSA): PBIGNUM; cdecl external CLibCrypto name 'RSA_get0_n';
 function RSA_get0_e(d: PRSA): PBIGNUM; cdecl external CLibCrypto name 'RSA_get0_e';
@@ -810,9 +833,9 @@ function RSA_get0_dmp1(r: PRSA): PBIGNUM; cdecl external CLibCrypto name 'RSA_ge
 function RSA_get0_dmq1(r: PRSA): PBIGNUM; cdecl external CLibCrypto name 'RSA_get0_dmq1';
 function RSA_get0_iqmp(r: PRSA): PBIGNUM; cdecl external CLibCrypto name 'RSA_get0_iqmp';
 function RSA_get0_pss_params(r: PRSA): PRSA_PSS_PARAMS; cdecl external CLibCrypto name 'RSA_get0_pss_params';
-procedure RSA_clear_flags(r: PRSA; flags: TIdC_INT); cdecl external CLibCrypto name 'RSA_clear_flags';
+function RSA_clear_flags(r: PRSA; flags: TIdC_INT): void; cdecl external CLibCrypto name 'RSA_clear_flags';
 function RSA_test_flags(r: PRSA; flags: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'RSA_test_flags';
-procedure RSA_set_flags(r: PRSA; flags: TIdC_INT); cdecl external CLibCrypto name 'RSA_set_flags';
+function RSA_set_flags(r: PRSA; flags: TIdC_INT): void; cdecl external CLibCrypto name 'RSA_set_flags';
 function RSA_get_version(r: PRSA): TIdC_INT; cdecl external CLibCrypto name 'RSA_get_version';
 function RSA_get0_engine(r: PRSA): PENGINE; cdecl external CLibCrypto name 'RSA_get0_engine';
 function RSA_generate_key_ex(rsa: PRSA; bits: TIdC_INT; e: PBIGNUM; cb: PBN_GENCB): TIdC_INT; cdecl external CLibCrypto name 'RSA_generate_key_ex';
@@ -825,10 +848,10 @@ function RSA_public_encrypt(flen: TIdC_INT; from: PIdAnsiChar; _to: PIdAnsiChar;
 function RSA_private_encrypt(flen: TIdC_INT; from: PIdAnsiChar; _to: PIdAnsiChar; rsa: PRSA; padding: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'RSA_private_encrypt';
 function RSA_public_decrypt(flen: TIdC_INT; from: PIdAnsiChar; _to: PIdAnsiChar; rsa: PRSA; padding: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'RSA_public_decrypt';
 function RSA_private_decrypt(flen: TIdC_INT; from: PIdAnsiChar; _to: PIdAnsiChar; rsa: PRSA; padding: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'RSA_private_decrypt';
-procedure RSA_free(r: PRSA); cdecl external CLibCrypto name 'RSA_free';
+function RSA_free(r: PRSA): void; cdecl external CLibCrypto name 'RSA_free';
 function RSA_up_ref(r: PRSA): TIdC_INT; cdecl external CLibCrypto name 'RSA_up_ref';
 function RSA_flags(r: PRSA): TIdC_INT; cdecl external CLibCrypto name 'RSA_flags';
-procedure RSA_set_default_method(meth: PRSA_METHOD); cdecl external CLibCrypto name 'RSA_set_default_method';
+function RSA_set_default_method(meth: PRSA_METHOD): void; cdecl external CLibCrypto name 'RSA_set_default_method';
 function RSA_get_default_method: PRSA_METHOD; cdecl external CLibCrypto name 'RSA_get_default_method';
 function RSA_null_method: PRSA_METHOD; cdecl external CLibCrypto name 'RSA_null_method';
 function RSA_get_method(rsa: PRSA): PRSA_METHOD; cdecl external CLibCrypto name 'RSA_get_method';
@@ -842,13 +865,13 @@ function i2d_RSAPrivateKey(a: PRSA; _out: PPIdAnsiChar): TIdC_INT; cdecl externa
 function RSAPrivateKey_it: PASN1_ITEM; cdecl external CLibCrypto name 'RSAPrivateKey_it';
 function RSA_pkey_ctx_ctrl(ctx: PEVP_PKEY_CTX; optype: TIdC_INT; cmd: TIdC_INT; p1: TIdC_INT; p2: Pointer): TIdC_INT; cdecl external CLibCrypto name 'RSA_pkey_ctx_ctrl';
 function RSA_PSS_PARAMS_new: PRSA_PSS_PARAMS; cdecl external CLibCrypto name 'RSA_PSS_PARAMS_new';
-procedure RSA_PSS_PARAMS_free(a: PRSA_PSS_PARAMS); cdecl external CLibCrypto name 'RSA_PSS_PARAMS_free';
+function RSA_PSS_PARAMS_free(a: PRSA_PSS_PARAMS): void; cdecl external CLibCrypto name 'RSA_PSS_PARAMS_free';
 function d2i_RSA_PSS_PARAMS(a: PPRSA_PSS_PARAMS; _in: PPIdAnsiChar; len: TIdC_LONG): PRSA_PSS_PARAMS; cdecl external CLibCrypto name 'd2i_RSA_PSS_PARAMS';
 function i2d_RSA_PSS_PARAMS(a: PRSA_PSS_PARAMS; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_RSA_PSS_PARAMS';
 function RSA_PSS_PARAMS_it: PASN1_ITEM; cdecl external CLibCrypto name 'RSA_PSS_PARAMS_it';
 function RSA_PSS_PARAMS_dup(a: PRSA_PSS_PARAMS): PRSA_PSS_PARAMS; cdecl external CLibCrypto name 'RSA_PSS_PARAMS_dup';
 function RSA_OAEP_PARAMS_new: PRSA_OAEP_PARAMS; cdecl external CLibCrypto name 'RSA_OAEP_PARAMS_new';
-procedure RSA_OAEP_PARAMS_free(a: PRSA_OAEP_PARAMS); cdecl external CLibCrypto name 'RSA_OAEP_PARAMS_free';
+function RSA_OAEP_PARAMS_free(a: PRSA_OAEP_PARAMS): void; cdecl external CLibCrypto name 'RSA_OAEP_PARAMS_free';
 function d2i_RSA_OAEP_PARAMS(a: PPRSA_OAEP_PARAMS; _in: PPIdAnsiChar; len: TIdC_LONG): PRSA_OAEP_PARAMS; cdecl external CLibCrypto name 'd2i_RSA_OAEP_PARAMS';
 function i2d_RSA_OAEP_PARAMS(a: PRSA_OAEP_PARAMS; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_RSA_OAEP_PARAMS';
 function RSA_OAEP_PARAMS_it: PASN1_ITEM; cdecl external CLibCrypto name 'RSA_OAEP_PARAMS_it';
@@ -859,7 +882,7 @@ function RSA_verify(_type: TIdC_INT; m: PIdAnsiChar; m_length: TIdC_UINT; sigbuf
 function RSA_sign_ASN1_OCTET_STRING(_type: TIdC_INT; m: PIdAnsiChar; m_length: TIdC_UINT; sigret: PIdAnsiChar; siglen: PIdC_UINT; rsa: PRSA): TIdC_INT; cdecl external CLibCrypto name 'RSA_sign_ASN1_OCTET_STRING';
 function RSA_verify_ASN1_OCTET_STRING(_type: TIdC_INT; m: PIdAnsiChar; m_length: TIdC_UINT; sigbuf: PIdAnsiChar; siglen: TIdC_UINT; rsa: PRSA): TIdC_INT; cdecl external CLibCrypto name 'RSA_verify_ASN1_OCTET_STRING';
 function RSA_blinding_on(rsa: PRSA; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'RSA_blinding_on';
-procedure RSA_blinding_off(rsa: PRSA); cdecl external CLibCrypto name 'RSA_blinding_off';
+function RSA_blinding_off(rsa: PRSA): void; cdecl external CLibCrypto name 'RSA_blinding_off';
 function RSA_setup_blinding(rsa: PRSA; ctx: PBN_CTX): PBN_BLINDING; cdecl external CLibCrypto name 'RSA_setup_blinding';
 function RSA_padding_add_PKCS1_type_1(_to: PIdAnsiChar; tlen: TIdC_INT; f: PIdAnsiChar; fl: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'RSA_padding_add_PKCS1_type_1';
 function RSA_padding_check_PKCS1_type_1(_to: PIdAnsiChar; tlen: TIdC_INT; f: PIdAnsiChar; fl: TIdC_INT; rsa_len: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'RSA_padding_check_PKCS1_type_1';
@@ -884,7 +907,7 @@ function RSA_get_ex_data(r: PRSA; idx: TIdC_INT): Pointer; cdecl external CLibCr
 function RSAPublicKey_dup(a: PRSA): PRSA; cdecl external CLibCrypto name 'RSAPublicKey_dup';
 function RSAPrivateKey_dup(a: PRSA): PRSA; cdecl external CLibCrypto name 'RSAPrivateKey_dup';
 function RSA_meth_new(name: PIdAnsiChar; flags: TIdC_INT): PRSA_METHOD; cdecl external CLibCrypto name 'RSA_meth_new';
-procedure RSA_meth_free(meth: PRSA_METHOD); cdecl external CLibCrypto name 'RSA_meth_free';
+function RSA_meth_free(meth: PRSA_METHOD): void; cdecl external CLibCrypto name 'RSA_meth_free';
 function RSA_meth_dup(meth: PRSA_METHOD): PRSA_METHOD; cdecl external CLibCrypto name 'RSA_meth_dup';
 function RSA_meth_get0_name(meth: PRSA_METHOD): PIdAnsiChar; cdecl external CLibCrypto name 'RSA_meth_get0_name';
 function RSA_meth_set1_name(meth: PRSA_METHOD; name: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'RSA_meth_set1_name';
@@ -1687,12 +1710,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RSA_set0_multi_prime_params_procname);
 end;
 
-procedure ERR_RSA_get0_key(r: PRSA; n: PPBIGNUM; e: PPBIGNUM; d: PPBIGNUM); cdecl
+function ERR_RSA_get0_key(r: PRSA; n: PPBIGNUM; e: PPBIGNUM; d: PPBIGNUM): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RSA_get0_key_procname);
 end;
 
-procedure ERR_RSA_get0_factors(r: PRSA; p: PPBIGNUM; q: PPBIGNUM); cdecl
+function ERR_RSA_get0_factors(r: PRSA; p: PPBIGNUM; q: PPBIGNUM): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RSA_get0_factors_procname);
 end;
@@ -1707,7 +1730,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RSA_get0_multi_prime_factors_procname);
 end;
 
-procedure ERR_RSA_get0_crt_params(r: PRSA; dmp1: PPBIGNUM; dmq1: PPBIGNUM; iqmp: PPBIGNUM); cdecl
+function ERR_RSA_get0_crt_params(r: PRSA; dmp1: PPBIGNUM; dmq1: PPBIGNUM; iqmp: PPBIGNUM): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RSA_get0_crt_params_procname);
 end;
@@ -1762,7 +1785,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RSA_get0_pss_params_procname);
 end;
 
-procedure ERR_RSA_clear_flags(r: PRSA; flags: TIdC_INT); cdecl
+function ERR_RSA_clear_flags(r: PRSA; flags: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RSA_clear_flags_procname);
 end;
@@ -1772,7 +1795,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RSA_test_flags_procname);
 end;
 
-procedure ERR_RSA_set_flags(r: PRSA; flags: TIdC_INT); cdecl
+function ERR_RSA_set_flags(r: PRSA; flags: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RSA_set_flags_procname);
 end;
@@ -1837,7 +1860,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RSA_private_decrypt_procname);
 end;
 
-procedure ERR_RSA_free(r: PRSA); cdecl
+function ERR_RSA_free(r: PRSA): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RSA_free_procname);
 end;
@@ -1852,7 +1875,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RSA_flags_procname);
 end;
 
-procedure ERR_RSA_set_default_method(meth: PRSA_METHOD); cdecl
+function ERR_RSA_set_default_method(meth: PRSA_METHOD): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RSA_set_default_method_procname);
 end;
@@ -1922,7 +1945,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RSA_PSS_PARAMS_new_procname);
 end;
 
-procedure ERR_RSA_PSS_PARAMS_free(a: PRSA_PSS_PARAMS); cdecl
+function ERR_RSA_PSS_PARAMS_free(a: PRSA_PSS_PARAMS): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RSA_PSS_PARAMS_free_procname);
 end;
@@ -1952,7 +1975,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RSA_OAEP_PARAMS_new_procname);
 end;
 
-procedure ERR_RSA_OAEP_PARAMS_free(a: PRSA_OAEP_PARAMS); cdecl
+function ERR_RSA_OAEP_PARAMS_free(a: PRSA_OAEP_PARAMS): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RSA_OAEP_PARAMS_free_procname);
 end;
@@ -2007,7 +2030,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RSA_blinding_on_procname);
 end;
 
-procedure ERR_RSA_blinding_off(rsa: PRSA); cdecl
+function ERR_RSA_blinding_off(rsa: PRSA): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RSA_blinding_off_procname);
 end;
@@ -2132,7 +2155,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RSA_meth_new_procname);
 end;
 
-procedure ERR_RSA_meth_free(meth: PRSA_METHOD); cdecl
+function ERR_RSA_meth_free(meth: PRSA_METHOD): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RSA_meth_free_procname);
 end;

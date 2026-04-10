@@ -26,151 +26,65 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   Pocsp_cert_id_st = ^Tocsp_cert_id_st;
-  Tocsp_cert_id_st = record end;
+  Tocsp_cert_id_st =   record end;
   {$EXTERNALSYM Pocsp_cert_id_st}
 
-  POCSP_CERTID = ^TOCSP_CERTID;
-  TOCSP_CERTID = Tocsp_cert_id_st;
-  {$EXTERNALSYM POCSP_CERTID}
-
   Pocsp_one_request_st = ^Tocsp_one_request_st;
-  Tocsp_one_request_st = record end;
+  Tocsp_one_request_st =   record end;
   {$EXTERNALSYM Pocsp_one_request_st}
 
-  POCSP_ONEREQ = ^TOCSP_ONEREQ;
-  TOCSP_ONEREQ = Tocsp_one_request_st;
-  {$EXTERNALSYM POCSP_ONEREQ}
-
   Pocsp_req_info_st = ^Tocsp_req_info_st;
-  Tocsp_req_info_st = record end;
+  Tocsp_req_info_st =   record end;
   {$EXTERNALSYM Pocsp_req_info_st}
 
-  POCSP_REQINFO = ^TOCSP_REQINFO;
-  TOCSP_REQINFO = Tocsp_req_info_st;
-  {$EXTERNALSYM POCSP_REQINFO}
-
   Pocsp_signature_st = ^Tocsp_signature_st;
-  Tocsp_signature_st = record end;
+  Tocsp_signature_st =   record end;
   {$EXTERNALSYM Pocsp_signature_st}
 
-  POCSP_SIGNATURE = ^TOCSP_SIGNATURE;
-  TOCSP_SIGNATURE = Tocsp_signature_st;
-  {$EXTERNALSYM POCSP_SIGNATURE}
-
   Pocsp_request_st = ^Tocsp_request_st;
-  Tocsp_request_st = record end;
+  Tocsp_request_st =   record end;
   {$EXTERNALSYM Pocsp_request_st}
 
-  POCSP_REQUEST = ^TOCSP_REQUEST;
-  TOCSP_REQUEST = Tocsp_request_st;
-  {$EXTERNALSYM POCSP_REQUEST}
-
-  Pstack_st_OCSP_CERTID = ^Tstack_st_OCSP_CERTID;
-  Tstack_st_OCSP_CERTID = record end;
-  {$EXTERNALSYM Pstack_st_OCSP_CERTID}
-
-  Pstack_st_OCSP_ONEREQ = ^Tstack_st_OCSP_ONEREQ;
-  Tstack_st_OCSP_ONEREQ = record end;
-  {$EXTERNALSYM Pstack_st_OCSP_ONEREQ}
-
   Pocsp_resp_bytes_st = ^Tocsp_resp_bytes_st;
-  Tocsp_resp_bytes_st = record end;
+  Tocsp_resp_bytes_st =   record end;
   {$EXTERNALSYM Pocsp_resp_bytes_st}
 
-  POCSP_RESPBYTES = ^TOCSP_RESPBYTES;
-  TOCSP_RESPBYTES = Tocsp_resp_bytes_st;
-  {$EXTERNALSYM POCSP_RESPBYTES}
-
-  Pstack_st_OCSP_RESPID = ^Tstack_st_OCSP_RESPID;
-  Tstack_st_OCSP_RESPID = record end;
-  {$EXTERNALSYM Pstack_st_OCSP_RESPID}
-
   Pocsp_revoked_info_st = ^Tocsp_revoked_info_st;
-  Tocsp_revoked_info_st = record end;
+  Tocsp_revoked_info_st =   record end;
   {$EXTERNALSYM Pocsp_revoked_info_st}
 
-  POCSP_REVOKEDINFO = ^TOCSP_REVOKEDINFO;
-  TOCSP_REVOKEDINFO = Tocsp_revoked_info_st;
-  {$EXTERNALSYM POCSP_REVOKEDINFO}
-
   Pocsp_cert_status_st = ^Tocsp_cert_status_st;
-  Tocsp_cert_status_st = record end;
+  Tocsp_cert_status_st =   record end;
   {$EXTERNALSYM Pocsp_cert_status_st}
 
-  POCSP_CERTSTATUS = ^TOCSP_CERTSTATUS;
-  TOCSP_CERTSTATUS = Tocsp_cert_status_st;
-  {$EXTERNALSYM POCSP_CERTSTATUS}
-
   Pocsp_single_response_st = ^Tocsp_single_response_st;
-  Tocsp_single_response_st = record end;
+  Tocsp_single_response_st =   record end;
   {$EXTERNALSYM Pocsp_single_response_st}
 
-  POCSP_SINGLERESP = ^TOCSP_SINGLERESP;
-  TOCSP_SINGLERESP = Tocsp_single_response_st;
-  {$EXTERNALSYM POCSP_SINGLERESP}
-
-  Pstack_st_OCSP_SINGLERESP = ^Tstack_st_OCSP_SINGLERESP;
-  Tstack_st_OCSP_SINGLERESP = record end;
-  {$EXTERNALSYM Pstack_st_OCSP_SINGLERESP}
-
   Pocsp_response_data_st = ^Tocsp_response_data_st;
-  Tocsp_response_data_st = record end;
+  Tocsp_response_data_st =   record end;
   {$EXTERNALSYM Pocsp_response_data_st}
 
-  POCSP_RESPDATA = ^TOCSP_RESPDATA;
-  TOCSP_RESPDATA = Tocsp_response_data_st;
-  {$EXTERNALSYM POCSP_RESPDATA}
-
   Pocsp_basic_response_st = ^Tocsp_basic_response_st;
-  Tocsp_basic_response_st = record end;
+  Tocsp_basic_response_st =   record end;
   {$EXTERNALSYM Pocsp_basic_response_st}
 
-  POCSP_BASICRESP = ^TOCSP_BASICRESP;
-  TOCSP_BASICRESP = Tocsp_basic_response_st;
-  {$EXTERNALSYM POCSP_BASICRESP}
-
   Pocsp_crl_id_st = ^Tocsp_crl_id_st;
-  Tocsp_crl_id_st = record end;
+  Tocsp_crl_id_st =   record end;
   {$EXTERNALSYM Pocsp_crl_id_st}
 
-  POCSP_CRLID = ^TOCSP_CRLID;
-  TOCSP_CRLID = Tocsp_crl_id_st;
-  {$EXTERNALSYM POCSP_CRLID}
-
   Pocsp_service_locator_st = ^Tocsp_service_locator_st;
-  Tocsp_service_locator_st = record end;
+  Tocsp_service_locator_st =   record end;
   {$EXTERNALSYM Pocsp_service_locator_st}
 
-  POCSP_SERVICELOC = ^TOCSP_SERVICELOC;
-  TOCSP_SERVICELOC = Tocsp_service_locator_st;
-  {$EXTERNALSYM POCSP_SERVICELOC}
-
-  POCSP_REQ_CTX = ^TOCSP_REQ_CTX;
-  TOCSP_REQ_CTX = TOSSL_HTTP_REQ_CTX;
-  {$EXTERNALSYM POCSP_REQ_CTX}
-
-
-// =============================================================================
-// CALLBACK TYPE DECLARATIONS
-// =============================================================================
-type
-  Tsk_OCSP_CERTID_compfunc_func_cb = function(arg1: PPOCSP_CERTID; arg2: PPOCSP_CERTID): TIdC_INT; cdecl;
-  Tsk_OCSP_CERTID_freefunc_func_cb = procedure(arg1: POCSP_CERTID); cdecl;
-  Tsk_OCSP_CERTID_copyfunc_func_cb = function(arg1: POCSP_CERTID): POCSP_CERTID; cdecl;
-  Tsk_OCSP_ONEREQ_compfunc_func_cb = function(arg1: PPOCSP_ONEREQ; arg2: PPOCSP_ONEREQ): TIdC_INT; cdecl;
-  Tsk_OCSP_ONEREQ_freefunc_func_cb = procedure(arg1: POCSP_ONEREQ); cdecl;
-  Tsk_OCSP_ONEREQ_copyfunc_func_cb = function(arg1: POCSP_ONEREQ): POCSP_ONEREQ; cdecl;
-  Tsk_OCSP_RESPID_compfunc_func_cb = function(arg1: PPOCSP_RESPID; arg2: PPOCSP_RESPID): TIdC_INT; cdecl;
-  Tsk_OCSP_RESPID_freefunc_func_cb = procedure(arg1: POCSP_RESPID); cdecl;
-  Tsk_OCSP_RESPID_copyfunc_func_cb = function(arg1: POCSP_RESPID): POCSP_RESPID; cdecl;
-  Tsk_OCSP_SINGLERESP_compfunc_func_cb = function(arg1: PPOCSP_SINGLERESP; arg2: PPOCSP_SINGLERESP): TIdC_INT; cdecl;
-  Tsk_OCSP_SINGLERESP_freefunc_func_cb = procedure(arg1: POCSP_SINGLERESP); cdecl;
-  Tsk_OCSP_SINGLERESP_copyfunc_func_cb = function(arg1: POCSP_SINGLERESP): POCSP_SINGLERESP; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -495,7 +409,7 @@ var
   OCSP_SINGLERESP_new: function: POCSP_SINGLERESP; cdecl = nil;
   {$EXTERNALSYM OCSP_SINGLERESP_new}
 
-  OCSP_SINGLERESP_free: procedure(a: POCSP_SINGLERESP); cdecl = nil;
+  OCSP_SINGLERESP_free: function(a: POCSP_SINGLERESP): void; cdecl = nil;
   {$EXTERNALSYM OCSP_SINGLERESP_free}
 
   d2i_OCSP_SINGLERESP: function(a: PPOCSP_SINGLERESP; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_SINGLERESP; cdecl = nil;
@@ -510,7 +424,7 @@ var
   OCSP_CERTSTATUS_new: function: POCSP_CERTSTATUS; cdecl = nil;
   {$EXTERNALSYM OCSP_CERTSTATUS_new}
 
-  OCSP_CERTSTATUS_free: procedure(a: POCSP_CERTSTATUS); cdecl = nil;
+  OCSP_CERTSTATUS_free: function(a: POCSP_CERTSTATUS): void; cdecl = nil;
   {$EXTERNALSYM OCSP_CERTSTATUS_free}
 
   d2i_OCSP_CERTSTATUS: function(a: PPOCSP_CERTSTATUS; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_CERTSTATUS; cdecl = nil;
@@ -525,7 +439,7 @@ var
   OCSP_REVOKEDINFO_new: function: POCSP_REVOKEDINFO; cdecl = nil;
   {$EXTERNALSYM OCSP_REVOKEDINFO_new}
 
-  OCSP_REVOKEDINFO_free: procedure(a: POCSP_REVOKEDINFO); cdecl = nil;
+  OCSP_REVOKEDINFO_free: function(a: POCSP_REVOKEDINFO): void; cdecl = nil;
   {$EXTERNALSYM OCSP_REVOKEDINFO_free}
 
   d2i_OCSP_REVOKEDINFO: function(a: PPOCSP_REVOKEDINFO; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_REVOKEDINFO; cdecl = nil;
@@ -540,7 +454,7 @@ var
   OCSP_BASICRESP_new: function: POCSP_BASICRESP; cdecl = nil;
   {$EXTERNALSYM OCSP_BASICRESP_new}
 
-  OCSP_BASICRESP_free: procedure(a: POCSP_BASICRESP); cdecl = nil;
+  OCSP_BASICRESP_free: function(a: POCSP_BASICRESP): void; cdecl = nil;
   {$EXTERNALSYM OCSP_BASICRESP_free}
 
   d2i_OCSP_BASICRESP: function(a: PPOCSP_BASICRESP; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_BASICRESP; cdecl = nil;
@@ -555,7 +469,7 @@ var
   OCSP_RESPDATA_new: function: POCSP_RESPDATA; cdecl = nil;
   {$EXTERNALSYM OCSP_RESPDATA_new}
 
-  OCSP_RESPDATA_free: procedure(a: POCSP_RESPDATA); cdecl = nil;
+  OCSP_RESPDATA_free: function(a: POCSP_RESPDATA): void; cdecl = nil;
   {$EXTERNALSYM OCSP_RESPDATA_free}
 
   d2i_OCSP_RESPDATA: function(a: PPOCSP_RESPDATA; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_RESPDATA; cdecl = nil;
@@ -570,7 +484,7 @@ var
   OCSP_RESPID_new: function: POCSP_RESPID; cdecl = nil;
   {$EXTERNALSYM OCSP_RESPID_new}
 
-  OCSP_RESPID_free: procedure(a: POCSP_RESPID); cdecl = nil;
+  OCSP_RESPID_free: function(a: POCSP_RESPID): void; cdecl = nil;
   {$EXTERNALSYM OCSP_RESPID_free}
 
   d2i_OCSP_RESPID: function(a: PPOCSP_RESPID; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_RESPID; cdecl = nil;
@@ -585,7 +499,7 @@ var
   OCSP_RESPONSE_new: function: POCSP_RESPONSE; cdecl = nil;
   {$EXTERNALSYM OCSP_RESPONSE_new}
 
-  OCSP_RESPONSE_free: procedure(a: POCSP_RESPONSE); cdecl = nil;
+  OCSP_RESPONSE_free: function(a: POCSP_RESPONSE): void; cdecl = nil;
   {$EXTERNALSYM OCSP_RESPONSE_free}
 
   d2i_OCSP_RESPONSE: function(a: PPOCSP_RESPONSE; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_RESPONSE; cdecl = nil;
@@ -600,7 +514,7 @@ var
   OCSP_RESPBYTES_new: function: POCSP_RESPBYTES; cdecl = nil;
   {$EXTERNALSYM OCSP_RESPBYTES_new}
 
-  OCSP_RESPBYTES_free: procedure(a: POCSP_RESPBYTES); cdecl = nil;
+  OCSP_RESPBYTES_free: function(a: POCSP_RESPBYTES): void; cdecl = nil;
   {$EXTERNALSYM OCSP_RESPBYTES_free}
 
   d2i_OCSP_RESPBYTES: function(a: PPOCSP_RESPBYTES; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_RESPBYTES; cdecl = nil;
@@ -615,7 +529,7 @@ var
   OCSP_ONEREQ_new: function: POCSP_ONEREQ; cdecl = nil;
   {$EXTERNALSYM OCSP_ONEREQ_new}
 
-  OCSP_ONEREQ_free: procedure(a: POCSP_ONEREQ); cdecl = nil;
+  OCSP_ONEREQ_free: function(a: POCSP_ONEREQ): void; cdecl = nil;
   {$EXTERNALSYM OCSP_ONEREQ_free}
 
   d2i_OCSP_ONEREQ: function(a: PPOCSP_ONEREQ; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_ONEREQ; cdecl = nil;
@@ -630,7 +544,7 @@ var
   OCSP_CERTID_new: function: POCSP_CERTID; cdecl = nil;
   {$EXTERNALSYM OCSP_CERTID_new}
 
-  OCSP_CERTID_free: procedure(a: POCSP_CERTID); cdecl = nil;
+  OCSP_CERTID_free: function(a: POCSP_CERTID): void; cdecl = nil;
   {$EXTERNALSYM OCSP_CERTID_free}
 
   d2i_OCSP_CERTID: function(a: PPOCSP_CERTID; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_CERTID; cdecl = nil;
@@ -645,7 +559,7 @@ var
   OCSP_REQUEST_new: function: POCSP_REQUEST; cdecl = nil;
   {$EXTERNALSYM OCSP_REQUEST_new}
 
-  OCSP_REQUEST_free: procedure(a: POCSP_REQUEST); cdecl = nil;
+  OCSP_REQUEST_free: function(a: POCSP_REQUEST): void; cdecl = nil;
   {$EXTERNALSYM OCSP_REQUEST_free}
 
   d2i_OCSP_REQUEST: function(a: PPOCSP_REQUEST; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_REQUEST; cdecl = nil;
@@ -660,7 +574,7 @@ var
   OCSP_SIGNATURE_new: function: POCSP_SIGNATURE; cdecl = nil;
   {$EXTERNALSYM OCSP_SIGNATURE_new}
 
-  OCSP_SIGNATURE_free: procedure(a: POCSP_SIGNATURE); cdecl = nil;
+  OCSP_SIGNATURE_free: function(a: POCSP_SIGNATURE): void; cdecl = nil;
   {$EXTERNALSYM OCSP_SIGNATURE_free}
 
   d2i_OCSP_SIGNATURE: function(a: PPOCSP_SIGNATURE; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_SIGNATURE; cdecl = nil;
@@ -675,7 +589,7 @@ var
   OCSP_REQINFO_new: function: POCSP_REQINFO; cdecl = nil;
   {$EXTERNALSYM OCSP_REQINFO_new}
 
-  OCSP_REQINFO_free: procedure(a: POCSP_REQINFO); cdecl = nil;
+  OCSP_REQINFO_free: function(a: POCSP_REQINFO): void; cdecl = nil;
   {$EXTERNALSYM OCSP_REQINFO_free}
 
   d2i_OCSP_REQINFO: function(a: PPOCSP_REQINFO; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_REQINFO; cdecl = nil;
@@ -690,7 +604,7 @@ var
   OCSP_CRLID_new: function: POCSP_CRLID; cdecl = nil;
   {$EXTERNALSYM OCSP_CRLID_new}
 
-  OCSP_CRLID_free: procedure(a: POCSP_CRLID); cdecl = nil;
+  OCSP_CRLID_free: function(a: POCSP_CRLID): void; cdecl = nil;
   {$EXTERNALSYM OCSP_CRLID_free}
 
   d2i_OCSP_CRLID: function(a: PPOCSP_CRLID; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_CRLID; cdecl = nil;
@@ -705,7 +619,7 @@ var
   OCSP_SERVICELOC_new: function: POCSP_SERVICELOC; cdecl = nil;
   {$EXTERNALSYM OCSP_SERVICELOC_new}
 
-  OCSP_SERVICELOC_free: procedure(a: POCSP_SERVICELOC); cdecl = nil;
+  OCSP_SERVICELOC_free: function(a: POCSP_SERVICELOC): void; cdecl = nil;
   {$EXTERNALSYM OCSP_SERVICELOC_free}
 
   d2i_OCSP_SERVICELOC: function(a: PPOCSP_SERVICELOC; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_SERVICELOC; cdecl = nil;
@@ -832,77 +746,77 @@ function OCSP_SINGLERESP_add1_ext_i2d(x: POCSP_SINGLERESP; nid: TIdC_INT; value:
 function OCSP_SINGLERESP_add_ext(x: POCSP_SINGLERESP; ex: PX509_EXTENSION; loc: TIdC_INT): TIdC_INT; cdecl;
 function OCSP_SINGLERESP_get0_id(x: POCSP_SINGLERESP): POCSP_CERTID; cdecl;
 function OCSP_SINGLERESP_new: POCSP_SINGLERESP; cdecl;
-procedure OCSP_SINGLERESP_free(a: POCSP_SINGLERESP); cdecl;
+function OCSP_SINGLERESP_free(a: POCSP_SINGLERESP): void; cdecl;
 function d2i_OCSP_SINGLERESP(a: PPOCSP_SINGLERESP; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_SINGLERESP; cdecl;
 function i2d_OCSP_SINGLERESP(a: POCSP_SINGLERESP; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OCSP_SINGLERESP_it: PASN1_ITEM; cdecl;
 function OCSP_CERTSTATUS_new: POCSP_CERTSTATUS; cdecl;
-procedure OCSP_CERTSTATUS_free(a: POCSP_CERTSTATUS); cdecl;
+function OCSP_CERTSTATUS_free(a: POCSP_CERTSTATUS): void; cdecl;
 function d2i_OCSP_CERTSTATUS(a: PPOCSP_CERTSTATUS; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_CERTSTATUS; cdecl;
 function i2d_OCSP_CERTSTATUS(a: POCSP_CERTSTATUS; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OCSP_CERTSTATUS_it: PASN1_ITEM; cdecl;
 function OCSP_REVOKEDINFO_new: POCSP_REVOKEDINFO; cdecl;
-procedure OCSP_REVOKEDINFO_free(a: POCSP_REVOKEDINFO); cdecl;
+function OCSP_REVOKEDINFO_free(a: POCSP_REVOKEDINFO): void; cdecl;
 function d2i_OCSP_REVOKEDINFO(a: PPOCSP_REVOKEDINFO; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_REVOKEDINFO; cdecl;
 function i2d_OCSP_REVOKEDINFO(a: POCSP_REVOKEDINFO; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OCSP_REVOKEDINFO_it: PASN1_ITEM; cdecl;
 function OCSP_BASICRESP_new: POCSP_BASICRESP; cdecl;
-procedure OCSP_BASICRESP_free(a: POCSP_BASICRESP); cdecl;
+function OCSP_BASICRESP_free(a: POCSP_BASICRESP): void; cdecl;
 function d2i_OCSP_BASICRESP(a: PPOCSP_BASICRESP; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_BASICRESP; cdecl;
 function i2d_OCSP_BASICRESP(a: POCSP_BASICRESP; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OCSP_BASICRESP_it: PASN1_ITEM; cdecl;
 function OCSP_RESPDATA_new: POCSP_RESPDATA; cdecl;
-procedure OCSP_RESPDATA_free(a: POCSP_RESPDATA); cdecl;
+function OCSP_RESPDATA_free(a: POCSP_RESPDATA): void; cdecl;
 function d2i_OCSP_RESPDATA(a: PPOCSP_RESPDATA; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_RESPDATA; cdecl;
 function i2d_OCSP_RESPDATA(a: POCSP_RESPDATA; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OCSP_RESPDATA_it: PASN1_ITEM; cdecl;
 function OCSP_RESPID_new: POCSP_RESPID; cdecl;
-procedure OCSP_RESPID_free(a: POCSP_RESPID); cdecl;
+function OCSP_RESPID_free(a: POCSP_RESPID): void; cdecl;
 function d2i_OCSP_RESPID(a: PPOCSP_RESPID; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_RESPID; cdecl;
 function i2d_OCSP_RESPID(a: POCSP_RESPID; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OCSP_RESPID_it: PASN1_ITEM; cdecl;
 function OCSP_RESPONSE_new: POCSP_RESPONSE; cdecl;
-procedure OCSP_RESPONSE_free(a: POCSP_RESPONSE); cdecl;
+function OCSP_RESPONSE_free(a: POCSP_RESPONSE): void; cdecl;
 function d2i_OCSP_RESPONSE(a: PPOCSP_RESPONSE; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_RESPONSE; cdecl;
 function i2d_OCSP_RESPONSE(a: POCSP_RESPONSE; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OCSP_RESPONSE_it: PASN1_ITEM; cdecl;
 function OCSP_RESPBYTES_new: POCSP_RESPBYTES; cdecl;
-procedure OCSP_RESPBYTES_free(a: POCSP_RESPBYTES); cdecl;
+function OCSP_RESPBYTES_free(a: POCSP_RESPBYTES): void; cdecl;
 function d2i_OCSP_RESPBYTES(a: PPOCSP_RESPBYTES; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_RESPBYTES; cdecl;
 function i2d_OCSP_RESPBYTES(a: POCSP_RESPBYTES; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OCSP_RESPBYTES_it: PASN1_ITEM; cdecl;
 function OCSP_ONEREQ_new: POCSP_ONEREQ; cdecl;
-procedure OCSP_ONEREQ_free(a: POCSP_ONEREQ); cdecl;
+function OCSP_ONEREQ_free(a: POCSP_ONEREQ): void; cdecl;
 function d2i_OCSP_ONEREQ(a: PPOCSP_ONEREQ; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_ONEREQ; cdecl;
 function i2d_OCSP_ONEREQ(a: POCSP_ONEREQ; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OCSP_ONEREQ_it: PASN1_ITEM; cdecl;
 function OCSP_CERTID_new: POCSP_CERTID; cdecl;
-procedure OCSP_CERTID_free(a: POCSP_CERTID); cdecl;
+function OCSP_CERTID_free(a: POCSP_CERTID): void; cdecl;
 function d2i_OCSP_CERTID(a: PPOCSP_CERTID; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_CERTID; cdecl;
 function i2d_OCSP_CERTID(a: POCSP_CERTID; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OCSP_CERTID_it: PASN1_ITEM; cdecl;
 function OCSP_REQUEST_new: POCSP_REQUEST; cdecl;
-procedure OCSP_REQUEST_free(a: POCSP_REQUEST); cdecl;
+function OCSP_REQUEST_free(a: POCSP_REQUEST): void; cdecl;
 function d2i_OCSP_REQUEST(a: PPOCSP_REQUEST; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_REQUEST; cdecl;
 function i2d_OCSP_REQUEST(a: POCSP_REQUEST; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OCSP_REQUEST_it: PASN1_ITEM; cdecl;
 function OCSP_SIGNATURE_new: POCSP_SIGNATURE; cdecl;
-procedure OCSP_SIGNATURE_free(a: POCSP_SIGNATURE); cdecl;
+function OCSP_SIGNATURE_free(a: POCSP_SIGNATURE): void; cdecl;
 function d2i_OCSP_SIGNATURE(a: PPOCSP_SIGNATURE; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_SIGNATURE; cdecl;
 function i2d_OCSP_SIGNATURE(a: POCSP_SIGNATURE; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OCSP_SIGNATURE_it: PASN1_ITEM; cdecl;
 function OCSP_REQINFO_new: POCSP_REQINFO; cdecl;
-procedure OCSP_REQINFO_free(a: POCSP_REQINFO); cdecl;
+function OCSP_REQINFO_free(a: POCSP_REQINFO): void; cdecl;
 function d2i_OCSP_REQINFO(a: PPOCSP_REQINFO; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_REQINFO; cdecl;
 function i2d_OCSP_REQINFO(a: POCSP_REQINFO; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OCSP_REQINFO_it: PASN1_ITEM; cdecl;
 function OCSP_CRLID_new: POCSP_CRLID; cdecl;
-procedure OCSP_CRLID_free(a: POCSP_CRLID); cdecl;
+function OCSP_CRLID_free(a: POCSP_CRLID): void; cdecl;
 function d2i_OCSP_CRLID(a: PPOCSP_CRLID; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_CRLID; cdecl;
 function i2d_OCSP_CRLID(a: POCSP_CRLID; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OCSP_CRLID_it: PASN1_ITEM; cdecl;
 function OCSP_SERVICELOC_new: POCSP_SERVICELOC; cdecl;
-procedure OCSP_SERVICELOC_free(a: POCSP_SERVICELOC); cdecl;
+function OCSP_SERVICELOC_free(a: POCSP_SERVICELOC): void; cdecl;
 function d2i_OCSP_SERVICELOC(a: PPOCSP_SERVICELOC; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_SERVICELOC; cdecl;
 function i2d_OCSP_SERVICELOC(a: POCSP_SERVICELOC; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OCSP_SERVICELOC_it: PASN1_ITEM; cdecl;
@@ -918,20 +832,157 @@ function OCSP_basic_verify(bs: POCSP_BASICRESP; certs: Pstack_st_X509; st: PX509
 // INLINE OR MACRO ROUTINES
 // =============================================================================
 
-function ASN1_BIT_STRING_digest(data: Pointer; _type: Pointer; md: Pointer; len: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function ASN1_BIT_STRING_digest(data: Pointer; _type: Pointer; md: Pointer; len: Pointer): TIdC_INT; cdecl;
 
-function OCSP_REQ_CTX_i2d(r: Pointer; it: Pointer; req: Pointer): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OCSP_REQ_CTX_i2d(r: Pointer; it: Pointer; req: Pointer): TIdC_INT; cdecl;
 
-function OCSP_REQ_CTX_set1_req(r: Pointer; req: Pointer): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OCSP_REQ_CTX_set1_req(r: Pointer; req: Pointer): TIdC_INT; cdecl;
 
-function OCSP_sendreq_nbio(p: Pointer; r: Pointer): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OCSP_sendreq_nbio(p: Pointer; r: Pointer): TIdC_INT; cdecl;
 
-function OCSP_parse_url(url: Pointer; host: Pointer; port: Pointer; path: Pointer; ssl: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OCSP_parse_url(url: Pointer; host: Pointer; port: Pointer; path: Pointer; ssl: Pointer): TIdC_INT; cdecl;
+
+
+// =============================================================================
+// OPENSSL STACK DEFINITIONS
+// =============================================================================
+type
+  { TODO 1 -copenssl stack OCSP_CERTID definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_OCSP_CERTID = Pointer;
+  {$EXTERNALSYM PSTACK_OF_OCSP_CERTID}
+
+  { Original Stack Macros for OCSP_CERTID:
+    SKM_DEFINE_STACK_OF_INTERNAL(OCSP_CERTID, OCSP_CERTID, OCSP_CERTID)
+    sk_OCSP_CERTID_num(sk) OPENSSL_sk_num(ossl_check_const_OCSP_CERTID_sk_type(sk))
+    sk_OCSP_CERTID_value(sk, idx) ((OCSP_CERTID *)OPENSSL_sk_value(ossl_check_const_OCSP_CERTID_sk_type(sk), (idx)))
+    sk_OCSP_CERTID_new(cmp) ((STACK_OF(OCSP_CERTID) *)OPENSSL_sk_new(ossl_check_OCSP_CERTID_compfunc_type(cmp)))
+    sk_OCSP_CERTID_new_null() ((STACK_OF(OCSP_CERTID) *)OPENSSL_sk_new_null())
+    sk_OCSP_CERTID_new_reserve(cmp, n) ((STACK_OF(OCSP_CERTID) *)OPENSSL_sk_new_reserve(ossl_check_OCSP_CERTID_compfunc_type(cmp), (n)))
+    sk_OCSP_CERTID_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_OCSP_CERTID_sk_type(sk), (n))
+    sk_OCSP_CERTID_free(sk) OPENSSL_sk_free(ossl_check_OCSP_CERTID_sk_type(sk))
+    sk_OCSP_CERTID_zero(sk) OPENSSL_sk_zero(ossl_check_OCSP_CERTID_sk_type(sk))
+    sk_OCSP_CERTID_delete(sk, i) ((OCSP_CERTID *)OPENSSL_sk_delete(ossl_check_OCSP_CERTID_sk_type(sk), (i)))
+    sk_OCSP_CERTID_delete_ptr(sk, ptr) ((OCSP_CERTID *)OPENSSL_sk_delete_ptr(ossl_check_OCSP_CERTID_sk_type(sk), ossl_check_OCSP_CERTID_type(ptr)))
+    sk_OCSP_CERTID_push(sk, ptr) OPENSSL_sk_push(ossl_check_OCSP_CERTID_sk_type(sk), ossl_check_OCSP_CERTID_type(ptr))
+    sk_OCSP_CERTID_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_OCSP_CERTID_sk_type(sk), ossl_check_OCSP_CERTID_type(ptr))
+    sk_OCSP_CERTID_pop(sk) ((OCSP_CERTID *)OPENSSL_sk_pop(ossl_check_OCSP_CERTID_sk_type(sk)))
+    sk_OCSP_CERTID_shift(sk) ((OCSP_CERTID *)OPENSSL_sk_shift(ossl_check_OCSP_CERTID_sk_type(sk)))
+    sk_OCSP_CERTID_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_OCSP_CERTID_sk_type(sk), ossl_check_OCSP_CERTID_freefunc_type(freefunc))
+    sk_OCSP_CERTID_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_OCSP_CERTID_sk_type(sk), ossl_check_OCSP_CERTID_type(ptr), (idx))
+    sk_OCSP_CERTID_set(sk, idx, ptr) ((OCSP_CERTID *)OPENSSL_sk_set(ossl_check_OCSP_CERTID_sk_type(sk), (idx), ossl_check_OCSP_CERTID_type(ptr)))
+    sk_OCSP_CERTID_find(sk, ptr) OPENSSL_sk_find(ossl_check_OCSP_CERTID_sk_type(sk), ossl_check_OCSP_CERTID_type(ptr))
+    sk_OCSP_CERTID_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_OCSP_CERTID_sk_type(sk), ossl_check_OCSP_CERTID_type(ptr))
+    sk_OCSP_CERTID_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_OCSP_CERTID_sk_type(sk), ossl_check_OCSP_CERTID_type(ptr), pnum)
+    sk_OCSP_CERTID_sort(sk) OPENSSL_sk_sort(ossl_check_OCSP_CERTID_sk_type(sk))
+    sk_OCSP_CERTID_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_OCSP_CERTID_sk_type(sk))
+    sk_OCSP_CERTID_dup(sk) ((STACK_OF(OCSP_CERTID) *)OPENSSL_sk_dup(ossl_check_const_OCSP_CERTID_sk_type(sk)))
+    sk_OCSP_CERTID_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(OCSP_CERTID) *)OPENSSL_sk_deep_copy(ossl_check_const_OCSP_CERTID_sk_type(sk), ossl_check_OCSP_CERTID_copyfunc_type(copyfunc), ossl_check_OCSP_CERTID_freefunc_type(freefunc)))
+    sk_OCSP_CERTID_set_cmp_func(sk, cmp) ((sk_OCSP_CERTID_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_OCSP_CERTID_sk_type(sk), ossl_check_OCSP_CERTID_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack OCSP_ONEREQ definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_OCSP_ONEREQ = Pointer;
+  {$EXTERNALSYM PSTACK_OF_OCSP_ONEREQ}
+
+  { Original Stack Macros for OCSP_ONEREQ:
+    SKM_DEFINE_STACK_OF_INTERNAL(OCSP_ONEREQ, OCSP_ONEREQ, OCSP_ONEREQ)
+    sk_OCSP_ONEREQ_num(sk) OPENSSL_sk_num(ossl_check_const_OCSP_ONEREQ_sk_type(sk))
+    sk_OCSP_ONEREQ_value(sk, idx) ((OCSP_ONEREQ *)OPENSSL_sk_value(ossl_check_const_OCSP_ONEREQ_sk_type(sk), (idx)))
+    sk_OCSP_ONEREQ_new(cmp) ((STACK_OF(OCSP_ONEREQ) *)OPENSSL_sk_new(ossl_check_OCSP_ONEREQ_compfunc_type(cmp)))
+    sk_OCSP_ONEREQ_new_null() ((STACK_OF(OCSP_ONEREQ) *)OPENSSL_sk_new_null())
+    sk_OCSP_ONEREQ_new_reserve(cmp, n) ((STACK_OF(OCSP_ONEREQ) *)OPENSSL_sk_new_reserve(ossl_check_OCSP_ONEREQ_compfunc_type(cmp), (n)))
+    sk_OCSP_ONEREQ_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_OCSP_ONEREQ_sk_type(sk), (n))
+    sk_OCSP_ONEREQ_free(sk) OPENSSL_sk_free(ossl_check_OCSP_ONEREQ_sk_type(sk))
+    sk_OCSP_ONEREQ_zero(sk) OPENSSL_sk_zero(ossl_check_OCSP_ONEREQ_sk_type(sk))
+    sk_OCSP_ONEREQ_delete(sk, i) ((OCSP_ONEREQ *)OPENSSL_sk_delete(ossl_check_OCSP_ONEREQ_sk_type(sk), (i)))
+    sk_OCSP_ONEREQ_delete_ptr(sk, ptr) ((OCSP_ONEREQ *)OPENSSL_sk_delete_ptr(ossl_check_OCSP_ONEREQ_sk_type(sk), ossl_check_OCSP_ONEREQ_type(ptr)))
+    sk_OCSP_ONEREQ_push(sk, ptr) OPENSSL_sk_push(ossl_check_OCSP_ONEREQ_sk_type(sk), ossl_check_OCSP_ONEREQ_type(ptr))
+    sk_OCSP_ONEREQ_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_OCSP_ONEREQ_sk_type(sk), ossl_check_OCSP_ONEREQ_type(ptr))
+    sk_OCSP_ONEREQ_pop(sk) ((OCSP_ONEREQ *)OPENSSL_sk_pop(ossl_check_OCSP_ONEREQ_sk_type(sk)))
+    sk_OCSP_ONEREQ_shift(sk) ((OCSP_ONEREQ *)OPENSSL_sk_shift(ossl_check_OCSP_ONEREQ_sk_type(sk)))
+    sk_OCSP_ONEREQ_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_OCSP_ONEREQ_sk_type(sk), ossl_check_OCSP_ONEREQ_freefunc_type(freefunc))
+    sk_OCSP_ONEREQ_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_OCSP_ONEREQ_sk_type(sk), ossl_check_OCSP_ONEREQ_type(ptr), (idx))
+    sk_OCSP_ONEREQ_set(sk, idx, ptr) ((OCSP_ONEREQ *)OPENSSL_sk_set(ossl_check_OCSP_ONEREQ_sk_type(sk), (idx), ossl_check_OCSP_ONEREQ_type(ptr)))
+    sk_OCSP_ONEREQ_find(sk, ptr) OPENSSL_sk_find(ossl_check_OCSP_ONEREQ_sk_type(sk), ossl_check_OCSP_ONEREQ_type(ptr))
+    sk_OCSP_ONEREQ_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_OCSP_ONEREQ_sk_type(sk), ossl_check_OCSP_ONEREQ_type(ptr))
+    sk_OCSP_ONEREQ_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_OCSP_ONEREQ_sk_type(sk), ossl_check_OCSP_ONEREQ_type(ptr), pnum)
+    sk_OCSP_ONEREQ_sort(sk) OPENSSL_sk_sort(ossl_check_OCSP_ONEREQ_sk_type(sk))
+    sk_OCSP_ONEREQ_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_OCSP_ONEREQ_sk_type(sk))
+    sk_OCSP_ONEREQ_dup(sk) ((STACK_OF(OCSP_ONEREQ) *)OPENSSL_sk_dup(ossl_check_const_OCSP_ONEREQ_sk_type(sk)))
+    sk_OCSP_ONEREQ_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(OCSP_ONEREQ) *)OPENSSL_sk_deep_copy(ossl_check_const_OCSP_ONEREQ_sk_type(sk), ossl_check_OCSP_ONEREQ_copyfunc_type(copyfunc), ossl_check_OCSP_ONEREQ_freefunc_type(freefunc)))
+    sk_OCSP_ONEREQ_set_cmp_func(sk, cmp) ((sk_OCSP_ONEREQ_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_OCSP_ONEREQ_sk_type(sk), ossl_check_OCSP_ONEREQ_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack OCSP_RESPID definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_OCSP_RESPID = Pointer;
+  {$EXTERNALSYM PSTACK_OF_OCSP_RESPID}
+
+  { Original Stack Macros for OCSP_RESPID:
+    SKM_DEFINE_STACK_OF_INTERNAL(OCSP_RESPID, OCSP_RESPID, OCSP_RESPID)
+    sk_OCSP_RESPID_num(sk) OPENSSL_sk_num(ossl_check_const_OCSP_RESPID_sk_type(sk))
+    sk_OCSP_RESPID_value(sk, idx) ((OCSP_RESPID *)OPENSSL_sk_value(ossl_check_const_OCSP_RESPID_sk_type(sk), (idx)))
+    sk_OCSP_RESPID_new(cmp) ((STACK_OF(OCSP_RESPID) *)OPENSSL_sk_new(ossl_check_OCSP_RESPID_compfunc_type(cmp)))
+    sk_OCSP_RESPID_new_null() ((STACK_OF(OCSP_RESPID) *)OPENSSL_sk_new_null())
+    sk_OCSP_RESPID_new_reserve(cmp, n) ((STACK_OF(OCSP_RESPID) *)OPENSSL_sk_new_reserve(ossl_check_OCSP_RESPID_compfunc_type(cmp), (n)))
+    sk_OCSP_RESPID_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_OCSP_RESPID_sk_type(sk), (n))
+    sk_OCSP_RESPID_free(sk) OPENSSL_sk_free(ossl_check_OCSP_RESPID_sk_type(sk))
+    sk_OCSP_RESPID_zero(sk) OPENSSL_sk_zero(ossl_check_OCSP_RESPID_sk_type(sk))
+    sk_OCSP_RESPID_delete(sk, i) ((OCSP_RESPID *)OPENSSL_sk_delete(ossl_check_OCSP_RESPID_sk_type(sk), (i)))
+    sk_OCSP_RESPID_delete_ptr(sk, ptr) ((OCSP_RESPID *)OPENSSL_sk_delete_ptr(ossl_check_OCSP_RESPID_sk_type(sk), ossl_check_OCSP_RESPID_type(ptr)))
+    sk_OCSP_RESPID_push(sk, ptr) OPENSSL_sk_push(ossl_check_OCSP_RESPID_sk_type(sk), ossl_check_OCSP_RESPID_type(ptr))
+    sk_OCSP_RESPID_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_OCSP_RESPID_sk_type(sk), ossl_check_OCSP_RESPID_type(ptr))
+    sk_OCSP_RESPID_pop(sk) ((OCSP_RESPID *)OPENSSL_sk_pop(ossl_check_OCSP_RESPID_sk_type(sk)))
+    sk_OCSP_RESPID_shift(sk) ((OCSP_RESPID *)OPENSSL_sk_shift(ossl_check_OCSP_RESPID_sk_type(sk)))
+    sk_OCSP_RESPID_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_OCSP_RESPID_sk_type(sk), ossl_check_OCSP_RESPID_freefunc_type(freefunc))
+    sk_OCSP_RESPID_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_OCSP_RESPID_sk_type(sk), ossl_check_OCSP_RESPID_type(ptr), (idx))
+    sk_OCSP_RESPID_set(sk, idx, ptr) ((OCSP_RESPID *)OPENSSL_sk_set(ossl_check_OCSP_RESPID_sk_type(sk), (idx), ossl_check_OCSP_RESPID_type(ptr)))
+    sk_OCSP_RESPID_find(sk, ptr) OPENSSL_sk_find(ossl_check_OCSP_RESPID_sk_type(sk), ossl_check_OCSP_RESPID_type(ptr))
+    sk_OCSP_RESPID_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_OCSP_RESPID_sk_type(sk), ossl_check_OCSP_RESPID_type(ptr))
+    sk_OCSP_RESPID_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_OCSP_RESPID_sk_type(sk), ossl_check_OCSP_RESPID_type(ptr), pnum)
+    sk_OCSP_RESPID_sort(sk) OPENSSL_sk_sort(ossl_check_OCSP_RESPID_sk_type(sk))
+    sk_OCSP_RESPID_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_OCSP_RESPID_sk_type(sk))
+    sk_OCSP_RESPID_dup(sk) ((STACK_OF(OCSP_RESPID) *)OPENSSL_sk_dup(ossl_check_const_OCSP_RESPID_sk_type(sk)))
+    sk_OCSP_RESPID_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(OCSP_RESPID) *)OPENSSL_sk_deep_copy(ossl_check_const_OCSP_RESPID_sk_type(sk), ossl_check_OCSP_RESPID_copyfunc_type(copyfunc), ossl_check_OCSP_RESPID_freefunc_type(freefunc)))
+    sk_OCSP_RESPID_set_cmp_func(sk, cmp) ((sk_OCSP_RESPID_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_OCSP_RESPID_sk_type(sk), ossl_check_OCSP_RESPID_compfunc_type(cmp)))
+  }
+
+  { TODO 1 -copenssl stack OCSP_SINGLERESP definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_OCSP_SINGLERESP = Pointer;
+  {$EXTERNALSYM PSTACK_OF_OCSP_SINGLERESP}
+
+  { Original Stack Macros for OCSP_SINGLERESP:
+    SKM_DEFINE_STACK_OF_INTERNAL(OCSP_SINGLERESP, OCSP_SINGLERESP, OCSP_SINGLERESP)
+    sk_OCSP_SINGLERESP_num(sk) OPENSSL_sk_num(ossl_check_const_OCSP_SINGLERESP_sk_type(sk))
+    sk_OCSP_SINGLERESP_value(sk, idx) ((OCSP_SINGLERESP *)OPENSSL_sk_value(ossl_check_const_OCSP_SINGLERESP_sk_type(sk), (idx)))
+    sk_OCSP_SINGLERESP_new(cmp) ((STACK_OF(OCSP_SINGLERESP) *)OPENSSL_sk_new(ossl_check_OCSP_SINGLERESP_compfunc_type(cmp)))
+    sk_OCSP_SINGLERESP_new_null() ((STACK_OF(OCSP_SINGLERESP) *)OPENSSL_sk_new_null())
+    sk_OCSP_SINGLERESP_new_reserve(cmp, n) ((STACK_OF(OCSP_SINGLERESP) *)OPENSSL_sk_new_reserve(ossl_check_OCSP_SINGLERESP_compfunc_type(cmp), (n)))
+    sk_OCSP_SINGLERESP_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_OCSP_SINGLERESP_sk_type(sk), (n))
+    sk_OCSP_SINGLERESP_free(sk) OPENSSL_sk_free(ossl_check_OCSP_SINGLERESP_sk_type(sk))
+    sk_OCSP_SINGLERESP_zero(sk) OPENSSL_sk_zero(ossl_check_OCSP_SINGLERESP_sk_type(sk))
+    sk_OCSP_SINGLERESP_delete(sk, i) ((OCSP_SINGLERESP *)OPENSSL_sk_delete(ossl_check_OCSP_SINGLERESP_sk_type(sk), (i)))
+    sk_OCSP_SINGLERESP_delete_ptr(sk, ptr) ((OCSP_SINGLERESP *)OPENSSL_sk_delete_ptr(ossl_check_OCSP_SINGLERESP_sk_type(sk), ossl_check_OCSP_SINGLERESP_type(ptr)))
+    sk_OCSP_SINGLERESP_push(sk, ptr) OPENSSL_sk_push(ossl_check_OCSP_SINGLERESP_sk_type(sk), ossl_check_OCSP_SINGLERESP_type(ptr))
+    sk_OCSP_SINGLERESP_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_OCSP_SINGLERESP_sk_type(sk), ossl_check_OCSP_SINGLERESP_type(ptr))
+    sk_OCSP_SINGLERESP_pop(sk) ((OCSP_SINGLERESP *)OPENSSL_sk_pop(ossl_check_OCSP_SINGLERESP_sk_type(sk)))
+    sk_OCSP_SINGLERESP_shift(sk) ((OCSP_SINGLERESP *)OPENSSL_sk_shift(ossl_check_OCSP_SINGLERESP_sk_type(sk)))
+    sk_OCSP_SINGLERESP_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_OCSP_SINGLERESP_sk_type(sk), ossl_check_OCSP_SINGLERESP_freefunc_type(freefunc))
+    sk_OCSP_SINGLERESP_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_OCSP_SINGLERESP_sk_type(sk), ossl_check_OCSP_SINGLERESP_type(ptr), (idx))
+    sk_OCSP_SINGLERESP_set(sk, idx, ptr) ((OCSP_SINGLERESP *)OPENSSL_sk_set(ossl_check_OCSP_SINGLERESP_sk_type(sk), (idx), ossl_check_OCSP_SINGLERESP_type(ptr)))
+    sk_OCSP_SINGLERESP_find(sk, ptr) OPENSSL_sk_find(ossl_check_OCSP_SINGLERESP_sk_type(sk), ossl_check_OCSP_SINGLERESP_type(ptr))
+    sk_OCSP_SINGLERESP_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_OCSP_SINGLERESP_sk_type(sk), ossl_check_OCSP_SINGLERESP_type(ptr))
+    sk_OCSP_SINGLERESP_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_OCSP_SINGLERESP_sk_type(sk), ossl_check_OCSP_SINGLERESP_type(ptr), pnum)
+    sk_OCSP_SINGLERESP_sort(sk) OPENSSL_sk_sort(ossl_check_OCSP_SINGLERESP_sk_type(sk))
+    sk_OCSP_SINGLERESP_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_OCSP_SINGLERESP_sk_type(sk))
+    sk_OCSP_SINGLERESP_dup(sk) ((STACK_OF(OCSP_SINGLERESP) *)OPENSSL_sk_dup(ossl_check_const_OCSP_SINGLERESP_sk_type(sk)))
+    sk_OCSP_SINGLERESP_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(OCSP_SINGLERESP) *)OPENSSL_sk_deep_copy(ossl_check_const_OCSP_SINGLERESP_sk_type(sk), ossl_check_OCSP_SINGLERESP_copyfunc_type(copyfunc), ossl_check_OCSP_SINGLERESP_freefunc_type(freefunc)))
+    sk_OCSP_SINGLERESP_set_cmp_func(sk, cmp) ((sk_OCSP_SINGLERESP_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_OCSP_SINGLERESP_sk_type(sk), ossl_check_OCSP_SINGLERESP_compfunc_type(cmp)))
+  }
 
 
 implementation
@@ -1039,77 +1090,77 @@ function OCSP_SINGLERESP_add1_ext_i2d(x: POCSP_SINGLERESP; nid: TIdC_INT; value:
 function OCSP_SINGLERESP_add_ext(x: POCSP_SINGLERESP; ex: PX509_EXTENSION; loc: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OCSP_SINGLERESP_add_ext';
 function OCSP_SINGLERESP_get0_id(x: POCSP_SINGLERESP): POCSP_CERTID; cdecl external CLibCrypto name 'OCSP_SINGLERESP_get0_id';
 function OCSP_SINGLERESP_new: POCSP_SINGLERESP; cdecl external CLibCrypto name 'OCSP_SINGLERESP_new';
-procedure OCSP_SINGLERESP_free(a: POCSP_SINGLERESP); cdecl external CLibCrypto name 'OCSP_SINGLERESP_free';
+function OCSP_SINGLERESP_free(a: POCSP_SINGLERESP): void; cdecl external CLibCrypto name 'OCSP_SINGLERESP_free';
 function d2i_OCSP_SINGLERESP(a: PPOCSP_SINGLERESP; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_SINGLERESP; cdecl external CLibCrypto name 'd2i_OCSP_SINGLERESP';
 function i2d_OCSP_SINGLERESP(a: POCSP_SINGLERESP; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OCSP_SINGLERESP';
 function OCSP_SINGLERESP_it: PASN1_ITEM; cdecl external CLibCrypto name 'OCSP_SINGLERESP_it';
 function OCSP_CERTSTATUS_new: POCSP_CERTSTATUS; cdecl external CLibCrypto name 'OCSP_CERTSTATUS_new';
-procedure OCSP_CERTSTATUS_free(a: POCSP_CERTSTATUS); cdecl external CLibCrypto name 'OCSP_CERTSTATUS_free';
+function OCSP_CERTSTATUS_free(a: POCSP_CERTSTATUS): void; cdecl external CLibCrypto name 'OCSP_CERTSTATUS_free';
 function d2i_OCSP_CERTSTATUS(a: PPOCSP_CERTSTATUS; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_CERTSTATUS; cdecl external CLibCrypto name 'd2i_OCSP_CERTSTATUS';
 function i2d_OCSP_CERTSTATUS(a: POCSP_CERTSTATUS; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OCSP_CERTSTATUS';
 function OCSP_CERTSTATUS_it: PASN1_ITEM; cdecl external CLibCrypto name 'OCSP_CERTSTATUS_it';
 function OCSP_REVOKEDINFO_new: POCSP_REVOKEDINFO; cdecl external CLibCrypto name 'OCSP_REVOKEDINFO_new';
-procedure OCSP_REVOKEDINFO_free(a: POCSP_REVOKEDINFO); cdecl external CLibCrypto name 'OCSP_REVOKEDINFO_free';
+function OCSP_REVOKEDINFO_free(a: POCSP_REVOKEDINFO): void; cdecl external CLibCrypto name 'OCSP_REVOKEDINFO_free';
 function d2i_OCSP_REVOKEDINFO(a: PPOCSP_REVOKEDINFO; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_REVOKEDINFO; cdecl external CLibCrypto name 'd2i_OCSP_REVOKEDINFO';
 function i2d_OCSP_REVOKEDINFO(a: POCSP_REVOKEDINFO; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OCSP_REVOKEDINFO';
 function OCSP_REVOKEDINFO_it: PASN1_ITEM; cdecl external CLibCrypto name 'OCSP_REVOKEDINFO_it';
 function OCSP_BASICRESP_new: POCSP_BASICRESP; cdecl external CLibCrypto name 'OCSP_BASICRESP_new';
-procedure OCSP_BASICRESP_free(a: POCSP_BASICRESP); cdecl external CLibCrypto name 'OCSP_BASICRESP_free';
+function OCSP_BASICRESP_free(a: POCSP_BASICRESP): void; cdecl external CLibCrypto name 'OCSP_BASICRESP_free';
 function d2i_OCSP_BASICRESP(a: PPOCSP_BASICRESP; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_BASICRESP; cdecl external CLibCrypto name 'd2i_OCSP_BASICRESP';
 function i2d_OCSP_BASICRESP(a: POCSP_BASICRESP; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OCSP_BASICRESP';
 function OCSP_BASICRESP_it: PASN1_ITEM; cdecl external CLibCrypto name 'OCSP_BASICRESP_it';
 function OCSP_RESPDATA_new: POCSP_RESPDATA; cdecl external CLibCrypto name 'OCSP_RESPDATA_new';
-procedure OCSP_RESPDATA_free(a: POCSP_RESPDATA); cdecl external CLibCrypto name 'OCSP_RESPDATA_free';
+function OCSP_RESPDATA_free(a: POCSP_RESPDATA): void; cdecl external CLibCrypto name 'OCSP_RESPDATA_free';
 function d2i_OCSP_RESPDATA(a: PPOCSP_RESPDATA; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_RESPDATA; cdecl external CLibCrypto name 'd2i_OCSP_RESPDATA';
 function i2d_OCSP_RESPDATA(a: POCSP_RESPDATA; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OCSP_RESPDATA';
 function OCSP_RESPDATA_it: PASN1_ITEM; cdecl external CLibCrypto name 'OCSP_RESPDATA_it';
 function OCSP_RESPID_new: POCSP_RESPID; cdecl external CLibCrypto name 'OCSP_RESPID_new';
-procedure OCSP_RESPID_free(a: POCSP_RESPID); cdecl external CLibCrypto name 'OCSP_RESPID_free';
+function OCSP_RESPID_free(a: POCSP_RESPID): void; cdecl external CLibCrypto name 'OCSP_RESPID_free';
 function d2i_OCSP_RESPID(a: PPOCSP_RESPID; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_RESPID; cdecl external CLibCrypto name 'd2i_OCSP_RESPID';
 function i2d_OCSP_RESPID(a: POCSP_RESPID; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OCSP_RESPID';
 function OCSP_RESPID_it: PASN1_ITEM; cdecl external CLibCrypto name 'OCSP_RESPID_it';
 function OCSP_RESPONSE_new: POCSP_RESPONSE; cdecl external CLibCrypto name 'OCSP_RESPONSE_new';
-procedure OCSP_RESPONSE_free(a: POCSP_RESPONSE); cdecl external CLibCrypto name 'OCSP_RESPONSE_free';
+function OCSP_RESPONSE_free(a: POCSP_RESPONSE): void; cdecl external CLibCrypto name 'OCSP_RESPONSE_free';
 function d2i_OCSP_RESPONSE(a: PPOCSP_RESPONSE; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_RESPONSE; cdecl external CLibCrypto name 'd2i_OCSP_RESPONSE';
 function i2d_OCSP_RESPONSE(a: POCSP_RESPONSE; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OCSP_RESPONSE';
 function OCSP_RESPONSE_it: PASN1_ITEM; cdecl external CLibCrypto name 'OCSP_RESPONSE_it';
 function OCSP_RESPBYTES_new: POCSP_RESPBYTES; cdecl external CLibCrypto name 'OCSP_RESPBYTES_new';
-procedure OCSP_RESPBYTES_free(a: POCSP_RESPBYTES); cdecl external CLibCrypto name 'OCSP_RESPBYTES_free';
+function OCSP_RESPBYTES_free(a: POCSP_RESPBYTES): void; cdecl external CLibCrypto name 'OCSP_RESPBYTES_free';
 function d2i_OCSP_RESPBYTES(a: PPOCSP_RESPBYTES; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_RESPBYTES; cdecl external CLibCrypto name 'd2i_OCSP_RESPBYTES';
 function i2d_OCSP_RESPBYTES(a: POCSP_RESPBYTES; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OCSP_RESPBYTES';
 function OCSP_RESPBYTES_it: PASN1_ITEM; cdecl external CLibCrypto name 'OCSP_RESPBYTES_it';
 function OCSP_ONEREQ_new: POCSP_ONEREQ; cdecl external CLibCrypto name 'OCSP_ONEREQ_new';
-procedure OCSP_ONEREQ_free(a: POCSP_ONEREQ); cdecl external CLibCrypto name 'OCSP_ONEREQ_free';
+function OCSP_ONEREQ_free(a: POCSP_ONEREQ): void; cdecl external CLibCrypto name 'OCSP_ONEREQ_free';
 function d2i_OCSP_ONEREQ(a: PPOCSP_ONEREQ; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_ONEREQ; cdecl external CLibCrypto name 'd2i_OCSP_ONEREQ';
 function i2d_OCSP_ONEREQ(a: POCSP_ONEREQ; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OCSP_ONEREQ';
 function OCSP_ONEREQ_it: PASN1_ITEM; cdecl external CLibCrypto name 'OCSP_ONEREQ_it';
 function OCSP_CERTID_new: POCSP_CERTID; cdecl external CLibCrypto name 'OCSP_CERTID_new';
-procedure OCSP_CERTID_free(a: POCSP_CERTID); cdecl external CLibCrypto name 'OCSP_CERTID_free';
+function OCSP_CERTID_free(a: POCSP_CERTID): void; cdecl external CLibCrypto name 'OCSP_CERTID_free';
 function d2i_OCSP_CERTID(a: PPOCSP_CERTID; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_CERTID; cdecl external CLibCrypto name 'd2i_OCSP_CERTID';
 function i2d_OCSP_CERTID(a: POCSP_CERTID; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OCSP_CERTID';
 function OCSP_CERTID_it: PASN1_ITEM; cdecl external CLibCrypto name 'OCSP_CERTID_it';
 function OCSP_REQUEST_new: POCSP_REQUEST; cdecl external CLibCrypto name 'OCSP_REQUEST_new';
-procedure OCSP_REQUEST_free(a: POCSP_REQUEST); cdecl external CLibCrypto name 'OCSP_REQUEST_free';
+function OCSP_REQUEST_free(a: POCSP_REQUEST): void; cdecl external CLibCrypto name 'OCSP_REQUEST_free';
 function d2i_OCSP_REQUEST(a: PPOCSP_REQUEST; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_REQUEST; cdecl external CLibCrypto name 'd2i_OCSP_REQUEST';
 function i2d_OCSP_REQUEST(a: POCSP_REQUEST; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OCSP_REQUEST';
 function OCSP_REQUEST_it: PASN1_ITEM; cdecl external CLibCrypto name 'OCSP_REQUEST_it';
 function OCSP_SIGNATURE_new: POCSP_SIGNATURE; cdecl external CLibCrypto name 'OCSP_SIGNATURE_new';
-procedure OCSP_SIGNATURE_free(a: POCSP_SIGNATURE); cdecl external CLibCrypto name 'OCSP_SIGNATURE_free';
+function OCSP_SIGNATURE_free(a: POCSP_SIGNATURE): void; cdecl external CLibCrypto name 'OCSP_SIGNATURE_free';
 function d2i_OCSP_SIGNATURE(a: PPOCSP_SIGNATURE; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_SIGNATURE; cdecl external CLibCrypto name 'd2i_OCSP_SIGNATURE';
 function i2d_OCSP_SIGNATURE(a: POCSP_SIGNATURE; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OCSP_SIGNATURE';
 function OCSP_SIGNATURE_it: PASN1_ITEM; cdecl external CLibCrypto name 'OCSP_SIGNATURE_it';
 function OCSP_REQINFO_new: POCSP_REQINFO; cdecl external CLibCrypto name 'OCSP_REQINFO_new';
-procedure OCSP_REQINFO_free(a: POCSP_REQINFO); cdecl external CLibCrypto name 'OCSP_REQINFO_free';
+function OCSP_REQINFO_free(a: POCSP_REQINFO): void; cdecl external CLibCrypto name 'OCSP_REQINFO_free';
 function d2i_OCSP_REQINFO(a: PPOCSP_REQINFO; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_REQINFO; cdecl external CLibCrypto name 'd2i_OCSP_REQINFO';
 function i2d_OCSP_REQINFO(a: POCSP_REQINFO; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OCSP_REQINFO';
 function OCSP_REQINFO_it: PASN1_ITEM; cdecl external CLibCrypto name 'OCSP_REQINFO_it';
 function OCSP_CRLID_new: POCSP_CRLID; cdecl external CLibCrypto name 'OCSP_CRLID_new';
-procedure OCSP_CRLID_free(a: POCSP_CRLID); cdecl external CLibCrypto name 'OCSP_CRLID_free';
+function OCSP_CRLID_free(a: POCSP_CRLID): void; cdecl external CLibCrypto name 'OCSP_CRLID_free';
 function d2i_OCSP_CRLID(a: PPOCSP_CRLID; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_CRLID; cdecl external CLibCrypto name 'd2i_OCSP_CRLID';
 function i2d_OCSP_CRLID(a: POCSP_CRLID; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OCSP_CRLID';
 function OCSP_CRLID_it: PASN1_ITEM; cdecl external CLibCrypto name 'OCSP_CRLID_it';
 function OCSP_SERVICELOC_new: POCSP_SERVICELOC; cdecl external CLibCrypto name 'OCSP_SERVICELOC_new';
-procedure OCSP_SERVICELOC_free(a: POCSP_SERVICELOC); cdecl external CLibCrypto name 'OCSP_SERVICELOC_free';
+function OCSP_SERVICELOC_free(a: POCSP_SERVICELOC): void; cdecl external CLibCrypto name 'OCSP_SERVICELOC_free';
 function d2i_OCSP_SERVICELOC(a: PPOCSP_SERVICELOC; _in: PPIdAnsiChar; len: TIdC_LONG): POCSP_SERVICELOC; cdecl external CLibCrypto name 'd2i_OCSP_SERVICELOC';
 function i2d_OCSP_SERVICELOC(a: POCSP_SERVICELOC; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OCSP_SERVICELOC';
 function OCSP_SERVICELOC_it: PASN1_ITEM; cdecl external CLibCrypto name 'OCSP_SERVICELOC_it';
@@ -2146,7 +2197,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_SINGLERESP_new_procname);
 end;
 
-procedure ERR_OCSP_SINGLERESP_free(a: POCSP_SINGLERESP); cdecl
+function ERR_OCSP_SINGLERESP_free(a: POCSP_SINGLERESP): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_SINGLERESP_free_procname);
 end;
@@ -2171,7 +2222,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_CERTSTATUS_new_procname);
 end;
 
-procedure ERR_OCSP_CERTSTATUS_free(a: POCSP_CERTSTATUS); cdecl
+function ERR_OCSP_CERTSTATUS_free(a: POCSP_CERTSTATUS): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_CERTSTATUS_free_procname);
 end;
@@ -2196,7 +2247,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_REVOKEDINFO_new_procname);
 end;
 
-procedure ERR_OCSP_REVOKEDINFO_free(a: POCSP_REVOKEDINFO); cdecl
+function ERR_OCSP_REVOKEDINFO_free(a: POCSP_REVOKEDINFO): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_REVOKEDINFO_free_procname);
 end;
@@ -2221,7 +2272,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_BASICRESP_new_procname);
 end;
 
-procedure ERR_OCSP_BASICRESP_free(a: POCSP_BASICRESP); cdecl
+function ERR_OCSP_BASICRESP_free(a: POCSP_BASICRESP): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_BASICRESP_free_procname);
 end;
@@ -2246,7 +2297,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_RESPDATA_new_procname);
 end;
 
-procedure ERR_OCSP_RESPDATA_free(a: POCSP_RESPDATA); cdecl
+function ERR_OCSP_RESPDATA_free(a: POCSP_RESPDATA): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_RESPDATA_free_procname);
 end;
@@ -2271,7 +2322,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_RESPID_new_procname);
 end;
 
-procedure ERR_OCSP_RESPID_free(a: POCSP_RESPID); cdecl
+function ERR_OCSP_RESPID_free(a: POCSP_RESPID): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_RESPID_free_procname);
 end;
@@ -2296,7 +2347,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_RESPONSE_new_procname);
 end;
 
-procedure ERR_OCSP_RESPONSE_free(a: POCSP_RESPONSE); cdecl
+function ERR_OCSP_RESPONSE_free(a: POCSP_RESPONSE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_RESPONSE_free_procname);
 end;
@@ -2321,7 +2372,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_RESPBYTES_new_procname);
 end;
 
-procedure ERR_OCSP_RESPBYTES_free(a: POCSP_RESPBYTES); cdecl
+function ERR_OCSP_RESPBYTES_free(a: POCSP_RESPBYTES): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_RESPBYTES_free_procname);
 end;
@@ -2346,7 +2397,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_ONEREQ_new_procname);
 end;
 
-procedure ERR_OCSP_ONEREQ_free(a: POCSP_ONEREQ); cdecl
+function ERR_OCSP_ONEREQ_free(a: POCSP_ONEREQ): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_ONEREQ_free_procname);
 end;
@@ -2371,7 +2422,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_CERTID_new_procname);
 end;
 
-procedure ERR_OCSP_CERTID_free(a: POCSP_CERTID); cdecl
+function ERR_OCSP_CERTID_free(a: POCSP_CERTID): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_CERTID_free_procname);
 end;
@@ -2396,7 +2447,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_REQUEST_new_procname);
 end;
 
-procedure ERR_OCSP_REQUEST_free(a: POCSP_REQUEST); cdecl
+function ERR_OCSP_REQUEST_free(a: POCSP_REQUEST): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_REQUEST_free_procname);
 end;
@@ -2421,7 +2472,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_SIGNATURE_new_procname);
 end;
 
-procedure ERR_OCSP_SIGNATURE_free(a: POCSP_SIGNATURE); cdecl
+function ERR_OCSP_SIGNATURE_free(a: POCSP_SIGNATURE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_SIGNATURE_free_procname);
 end;
@@ -2446,7 +2497,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_REQINFO_new_procname);
 end;
 
-procedure ERR_OCSP_REQINFO_free(a: POCSP_REQINFO); cdecl
+function ERR_OCSP_REQINFO_free(a: POCSP_REQINFO): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_REQINFO_free_procname);
 end;
@@ -2471,7 +2522,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_CRLID_new_procname);
 end;
 
-procedure ERR_OCSP_CRLID_free(a: POCSP_CRLID); cdecl
+function ERR_OCSP_CRLID_free(a: POCSP_CRLID): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_CRLID_free_procname);
 end;
@@ -2496,7 +2547,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_SERVICELOC_new_procname);
 end;
 
-procedure ERR_OCSP_SERVICELOC_free(a: POCSP_SERVICELOC); cdecl
+function ERR_OCSP_SERVICELOC_free(a: POCSP_SERVICELOC): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OCSP_SERVICELOC_free_procname);
 end;

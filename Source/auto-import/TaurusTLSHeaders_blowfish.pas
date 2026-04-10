@@ -26,17 +26,19 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   Pbf_key_st = ^Tbf_key_st;
-  Tbf_key_st = record end;
+  Tbf_key_st =   record
+    P: PIdC_UINT;
+    S: PIdC_UINT;
+  end;
   {$EXTERNALSYM Pbf_key_st}
-
-  PBF_KEY = ^TBF_KEY;
-  TBF_KEY = Tbf_key_st;
-  {$EXTERNALSYM PBF_KEY}
 
 
 // =============================================================================
@@ -56,25 +58,25 @@ const
 // =============================================================================
 var
 
-  BF_set_key: procedure(key: PBF_KEY; len: TIdC_INT; data: PIdAnsiChar); cdecl = nil; // Deprecated in 3_0_0
+  BF_set_key: function(key: PBF_KEY; len: TIdC_INT; data: PIdAnsiChar): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM BF_set_key}
 
-  BF_encrypt: procedure(data: PIdC_UINT; key: PBF_KEY); cdecl = nil; // Deprecated in 3_0_0
+  BF_encrypt: function(data: PIdC_UINT; key: PBF_KEY): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM BF_encrypt}
 
-  BF_decrypt: procedure(data: PIdC_UINT; key: PBF_KEY); cdecl = nil; // Deprecated in 3_0_0
+  BF_decrypt: function(data: PIdC_UINT; key: PBF_KEY): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM BF_decrypt}
 
-  BF_ecb_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PBF_KEY; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  BF_ecb_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PBF_KEY; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM BF_ecb_encrypt}
 
-  BF_cbc_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  BF_cbc_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM BF_cbc_encrypt}
 
-  BF_cfb64_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  BF_cfb64_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM BF_cfb64_encrypt}
 
-  BF_ofb64_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; num: PIdC_INT); cdecl = nil; // Deprecated in 3_0_0
+  BF_ofb64_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM BF_ofb64_encrypt}
 
   BF_options: function: PIdAnsiChar; cdecl = nil; // Deprecated in 3_0_0
@@ -88,13 +90,13 @@ var
 // STATIC BINDING ROUTINES
 // =============================================================================
 
-procedure BF_set_key(key: PBF_KEY; len: TIdC_INT; data: PIdAnsiChar); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure BF_encrypt(data: PIdC_UINT; key: PBF_KEY); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure BF_decrypt(data: PIdC_UINT; key: PBF_KEY); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure BF_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PBF_KEY; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure BF_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure BF_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure BF_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; num: PIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+function BF_set_key(key: PBF_KEY; len: TIdC_INT; data: PIdAnsiChar): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function BF_encrypt(data: PIdC_UINT; key: PBF_KEY): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function BF_decrypt(data: PIdC_UINT; key: PBF_KEY): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function BF_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PBF_KEY; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function BF_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function BF_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+function BF_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function BF_options: PIdAnsiChar; cdecl; deprecated 'In OpenSSL 3_0_0';
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
@@ -114,13 +116,13 @@ uses
 // STATIC BINDING ROUTINES IMPORTS
 // =============================================================================
 
-procedure BF_set_key(key: PBF_KEY; len: TIdC_INT; data: PIdAnsiChar); cdecl external CLibCrypto name 'BF_set_key';
-procedure BF_encrypt(data: PIdC_UINT; key: PBF_KEY); cdecl external CLibCrypto name 'BF_encrypt';
-procedure BF_decrypt(data: PIdC_UINT; key: PBF_KEY); cdecl external CLibCrypto name 'BF_decrypt';
-procedure BF_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PBF_KEY; enc: TIdC_INT); cdecl external CLibCrypto name 'BF_ecb_encrypt';
-procedure BF_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl external CLibCrypto name 'BF_cbc_encrypt';
-procedure BF_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl external CLibCrypto name 'BF_cfb64_encrypt';
-procedure BF_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; num: PIdC_INT); cdecl external CLibCrypto name 'BF_ofb64_encrypt';
+function BF_set_key(key: PBF_KEY; len: TIdC_INT; data: PIdAnsiChar): void; cdecl external CLibCrypto name 'BF_set_key';
+function BF_encrypt(data: PIdC_UINT; key: PBF_KEY): void; cdecl external CLibCrypto name 'BF_encrypt';
+function BF_decrypt(data: PIdC_UINT; key: PBF_KEY): void; cdecl external CLibCrypto name 'BF_decrypt';
+function BF_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PBF_KEY; enc: TIdC_INT): void; cdecl external CLibCrypto name 'BF_ecb_encrypt';
+function BF_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl external CLibCrypto name 'BF_cbc_encrypt';
+function BF_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl external CLibCrypto name 'BF_cfb64_encrypt';
+function BF_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl external CLibCrypto name 'BF_ofb64_encrypt';
 function BF_options: PIdAnsiChar; cdecl external CLibCrypto name 'BF_options';
 {$ENDIF}
 
@@ -174,37 +176,37 @@ const
 // ERRORS STUBS
 // =============================================================================
 
-procedure ERR_BF_set_key(key: PBF_KEY; len: TIdC_INT; data: PIdAnsiChar); cdecl
+function ERR_BF_set_key(key: PBF_KEY; len: TIdC_INT; data: PIdAnsiChar): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BF_set_key_procname);
 end;
 
-procedure ERR_BF_encrypt(data: PIdC_UINT; key: PBF_KEY); cdecl
+function ERR_BF_encrypt(data: PIdC_UINT; key: PBF_KEY): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BF_encrypt_procname);
 end;
 
-procedure ERR_BF_decrypt(data: PIdC_UINT; key: PBF_KEY); cdecl
+function ERR_BF_decrypt(data: PIdC_UINT; key: PBF_KEY): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BF_decrypt_procname);
 end;
 
-procedure ERR_BF_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PBF_KEY; enc: TIdC_INT); cdecl
+function ERR_BF_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PBF_KEY; enc: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BF_ecb_encrypt_procname);
 end;
 
-procedure ERR_BF_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl
+function ERR_BF_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BF_cbc_encrypt_procname);
 end;
 
-procedure ERR_BF_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl
+function ERR_BF_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BF_cfb64_encrypt_procname);
 end;
 
-procedure ERR_BF_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; num: PIdC_INT); cdecl
+function ERR_BF_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PBF_KEY; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BF_ofb64_encrypt_procname);
 end;

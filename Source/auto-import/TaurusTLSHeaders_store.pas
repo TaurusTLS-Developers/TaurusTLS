@@ -26,50 +26,45 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   Possl_store_ctx_st = ^Tossl_store_ctx_st;
-  Tossl_store_ctx_st = record end;
+  Tossl_store_ctx_st =   record end;
   {$EXTERNALSYM Possl_store_ctx_st}
 
-  POSSL_STORE_CTX = ^TOSSL_STORE_CTX;
-  TOSSL_STORE_CTX = Tossl_store_ctx_st;
-  {$EXTERNALSYM POSSL_STORE_CTX}
-
   Possl_store_loader_st = ^Tossl_store_loader_st;
-  Tossl_store_loader_st = record end;
+  Tossl_store_loader_st =   record end;
   {$EXTERNALSYM Possl_store_loader_st}
 
-  POSSL_STORE_LOADER = ^TOSSL_STORE_LOADER;
-  TOSSL_STORE_LOADER = Tossl_store_loader_st;
-  {$EXTERNALSYM POSSL_STORE_LOADER}
-
   Possl_store_loader_ctx_st = ^Tossl_store_loader_ctx_st;
-  Tossl_store_loader_ctx_st = record end;
+  Tossl_store_loader_ctx_st =   record end;
   {$EXTERNALSYM Possl_store_loader_ctx_st}
-
-  POSSL_STORE_LOADER_CTX = ^TOSSL_STORE_LOADER_CTX;
-  TOSSL_STORE_LOADER_CTX = Tossl_store_loader_ctx_st;
-  {$EXTERNALSYM POSSL_STORE_LOADER_CTX}
 
 
 // =============================================================================
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  TOSSL_STORE_post_process_info_fn_func_cb = function(arg1: POSSL_STORE_INFO; arg2: Pointer): POSSL_STORE_INFO; cdecl;
-  TOSSL_STORE_LOADER_do_all_provided_fn_cb = procedure(arg1: POSSL_STORE_LOADER; arg2: Pointer); cdecl;
-  TOSSL_STORE_LOADER_names_do_all_fn_cb = procedure(arg1: PIdAnsiChar; arg2: Pointer); cdecl;
-  TOSSL_STORE_open_fn_func_cb = function(arg1: POSSL_STORE_LOADER; arg2: PIdAnsiChar; arg3: PUI_METHOD; arg4: Pointer): POSSL_STORE_LOADER_CTX; cdecl;
-  TOSSL_STORE_open_ex_fn_func_cb = function(arg1: POSSL_STORE_LOADER; arg2: PIdAnsiChar; arg3: POSSL_LIB_CTX; arg4: PIdAnsiChar; arg5: PUI_METHOD; arg6: Pointer): POSSL_STORE_LOADER_CTX; cdecl;
-  TOSSL_STORE_attach_fn_func_cb = function(arg1: POSSL_STORE_LOADER; arg2: PBIO; arg3: POSSL_LIB_CTX; arg4: PIdAnsiChar; arg5: PUI_METHOD; arg6: Pointer): POSSL_STORE_LOADER_CTX; cdecl;
-  TOSSL_STORE_ctrl_fn_func_cb = function(arg1: POSSL_STORE_LOADER_CTX; arg2: TIdC_INT; arg3: Tva_list): TIdC_INT; cdecl;
-  TOSSL_STORE_expect_fn_func_cb = function(arg1: POSSL_STORE_LOADER_CTX; arg2: TIdC_INT): TIdC_INT; cdecl;
-  TOSSL_STORE_find_fn_func_cb = function(arg1: POSSL_STORE_LOADER_CTX; arg2: POSSL_STORE_SEARCH): TIdC_INT; cdecl;
-  TOSSL_STORE_load_fn_func_cb = function(arg1: POSSL_STORE_LOADER_CTX; arg2: PUI_METHOD; arg3: Pointer): POSSL_STORE_INFO; cdecl;
-  TOSSL_STORE_eof_fn_func_cb = function(arg1: POSSL_STORE_LOADER_CTX): TIdC_INT; cdecl;
+  TOSSL_STORE_post_process_info_fn = function(arg1: POSSL_STORE_INFO; arg2: Pointer): Possl_store_info_st; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // OSSL_STORE_LOADER_do_all_provided_fn_cb = function(loader: POSSL_STORE_LOADER; arg: Pointer): void; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // OSSL_STORE_LOADER_names_do_all_fn_cb = function(name: PIdAnsiChar; data: Pointer): void; cdecl;
+  TOSSL_STORE_open_fn = function(loader: POSSL_STORE_LOADER; uri: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer): Possl_store_loader_ctx_st; cdecl;
+  TOSSL_STORE_open_ex_fn = function(loader: POSSL_STORE_LOADER; uri: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer): Possl_store_loader_ctx_st; cdecl;
+  TOSSL_STORE_attach_fn = function(loader: POSSL_STORE_LOADER; bio: PBIO; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer): Possl_store_loader_ctx_st; cdecl;
+  TOSSL_STORE_ctrl_fn = function(ctx: POSSL_STORE_LOADER_CTX; cmd: TIdC_INT; args: Tva_list): TIdC_INT; cdecl;
+  TOSSL_STORE_expect_fn = function(ctx: POSSL_STORE_LOADER_CTX; expected: TIdC_INT): TIdC_INT; cdecl;
+  TOSSL_STORE_find_fn = function(ctx: POSSL_STORE_LOADER_CTX; criteria: POSSL_STORE_SEARCH): TIdC_INT; cdecl;
+  TOSSL_STORE_load_fn = function(ctx: POSSL_STORE_LOADER_CTX; ui_method: PUI_METHOD; ui_data: Pointer): Possl_store_info_st; cdecl;
+  TOSSL_STORE_eof_fn = function(ctx: POSSL_STORE_LOADER_CTX): TIdC_INT; cdecl;
+  TOSSL_STORE_error_fn = function(ctx: POSSL_STORE_LOADER_CTX): TIdC_INT; cdecl;
+  TOSSL_STORE_close_fn = function(ctx: POSSL_STORE_LOADER_CTX): TIdC_INT; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -95,10 +90,10 @@ const
 // =============================================================================
 var
 
-  OSSL_STORE_open: function(uri: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; post_process: TOSSL_STORE_post_process_info_fn_func_cb; post_process_data: Pointer): POSSL_STORE_CTX; cdecl = nil;
+  OSSL_STORE_open: function(uri: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; post_process: TOSSL_STORE_post_process_info_fn; post_process_data: Pointer): POSSL_STORE_CTX; cdecl = nil;
   {$EXTERNALSYM OSSL_STORE_open}
 
-  OSSL_STORE_open_ex: function(uri: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM_ARRAY; post_process: TOSSL_STORE_post_process_info_fn_func_cb; post_process_data: Pointer): POSSL_STORE_CTX; cdecl = nil;
+  OSSL_STORE_open_ex: function(uri: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM; post_process: TOSSL_STORE_post_process_info_fn; post_process_data: Pointer): POSSL_STORE_CTX; cdecl = nil;
   {$EXTERNALSYM OSSL_STORE_open_ex}
 
   OSSL_STORE_ctrl: function(ctx: POSSL_STORE_CTX; cmd: TIdC_INT): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -110,7 +105,7 @@ var
   OSSL_STORE_load: function(ctx: POSSL_STORE_CTX): POSSL_STORE_INFO; cdecl = nil;
   {$EXTERNALSYM OSSL_STORE_load}
 
-  OSSL_STORE_delete: function(uri: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM_ARRAY): TIdC_INT; cdecl = nil;
+  OSSL_STORE_delete: function(uri: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_STORE_delete}
 
   OSSL_STORE_eof: function(ctx: POSSL_STORE_CTX): TIdC_INT; cdecl = nil;
@@ -122,7 +117,7 @@ var
   OSSL_STORE_close: function(ctx: POSSL_STORE_CTX): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_STORE_close}
 
-  OSSL_STORE_attach: function(bio: PBIO; scheme: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM_ARRAY; post_process: TOSSL_STORE_post_process_info_fn_func_cb; post_process_data: Pointer): POSSL_STORE_CTX; cdecl = nil;
+  OSSL_STORE_attach: function(bio: PBIO; scheme: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM; post_process: TOSSL_STORE_post_process_info_fn; post_process_data: Pointer): POSSL_STORE_CTX; cdecl = nil;
   {$EXTERNALSYM OSSL_STORE_attach}
 
   OSSL_STORE_INFO_new: function(_type: TIdC_INT; data: Pointer): POSSL_STORE_INFO; cdecl = nil;
@@ -200,7 +195,7 @@ var
   OSSL_STORE_INFO_type_string: function(_type: TIdC_INT): PIdAnsiChar; cdecl = nil;
   {$EXTERNALSYM OSSL_STORE_INFO_type_string}
 
-  OSSL_STORE_INFO_free: procedure(info: POSSL_STORE_INFO); cdecl = nil;
+  OSSL_STORE_INFO_free: function(info: POSSL_STORE_INFO): void; cdecl = nil;
   {$EXTERNALSYM OSSL_STORE_INFO_free}
 
   OSSL_STORE_supports_search: function(ctx: POSSL_STORE_CTX; search_type: TIdC_INT): TIdC_INT; cdecl = nil;
@@ -218,7 +213,7 @@ var
   OSSL_STORE_SEARCH_by_alias: function(alias: PIdAnsiChar): POSSL_STORE_SEARCH; cdecl = nil;
   {$EXTERNALSYM OSSL_STORE_SEARCH_by_alias}
 
-  OSSL_STORE_SEARCH_free: procedure(search: POSSL_STORE_SEARCH); cdecl = nil;
+  OSSL_STORE_SEARCH_free: function(search: POSSL_STORE_SEARCH): void; cdecl = nil;
   {$EXTERNALSYM OSSL_STORE_SEARCH_free}
 
   OSSL_STORE_SEARCH_get_type: function(criterion: POSSL_STORE_SEARCH): TIdC_INT; cdecl = nil;
@@ -251,7 +246,7 @@ var
   OSSL_STORE_LOADER_up_ref: function(loader: POSSL_STORE_LOADER): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_STORE_LOADER_up_ref}
 
-  OSSL_STORE_LOADER_free: procedure(loader: POSSL_STORE_LOADER); cdecl = nil;
+  OSSL_STORE_LOADER_free: function(loader: POSSL_STORE_LOADER): void; cdecl = nil;
   {$EXTERNALSYM OSSL_STORE_LOADER_free}
 
   OSSL_STORE_LOADER_get0_provider: function(loader: POSSL_STORE_LOADER): POSSL_PROVIDER; cdecl = nil;
@@ -266,46 +261,46 @@ var
   OSSL_STORE_LOADER_is_a: function(loader: POSSL_STORE_LOADER; scheme: PIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_STORE_LOADER_is_a}
 
-  OSSL_STORE_LOADER_do_all_provided: procedure(libctx: POSSL_LIB_CTX; fn: TOSSL_STORE_LOADER_do_all_provided_fn_cb; arg: Pointer); cdecl = nil;
+  OSSL_STORE_LOADER_do_all_provided: function(libctx: POSSL_LIB_CTX; fn: TOSSL_STORE_LOADER_do_all_provided_fn_cb; arg: Pointer): void; cdecl = nil;
   {$EXTERNALSYM OSSL_STORE_LOADER_do_all_provided}
 
   OSSL_STORE_LOADER_names_do_all: function(loader: POSSL_STORE_LOADER; fn: TOSSL_STORE_LOADER_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_STORE_LOADER_names_do_all}
 
-  OSSL_STORE_LOADER_settable_ctx_params: function(loader: POSSL_STORE_LOADER): POSSL_PARAM_ARRAY; cdecl = nil;
+  OSSL_STORE_LOADER_settable_ctx_params: function(loader: POSSL_STORE_LOADER): POSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM OSSL_STORE_LOADER_settable_ctx_params}
 
   OSSL_STORE_LOADER_new: function(e: PENGINE; scheme: PIdAnsiChar): POSSL_STORE_LOADER; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM OSSL_STORE_LOADER_new}
 
-  OSSL_STORE_LOADER_set_open: function(loader: POSSL_STORE_LOADER; open_function: TOSSL_STORE_open_fn_func_cb): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
+  OSSL_STORE_LOADER_set_open: function(loader: POSSL_STORE_LOADER; open_function: TOSSL_STORE_open_fn): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM OSSL_STORE_LOADER_set_open}
 
-  OSSL_STORE_LOADER_set_open_ex: function(loader: POSSL_STORE_LOADER; open_ex_function: TOSSL_STORE_open_ex_fn_func_cb): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
+  OSSL_STORE_LOADER_set_open_ex: function(loader: POSSL_STORE_LOADER; open_ex_function: TOSSL_STORE_open_ex_fn): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM OSSL_STORE_LOADER_set_open_ex}
 
-  OSSL_STORE_LOADER_set_attach: function(loader: POSSL_STORE_LOADER; attach_function: TOSSL_STORE_attach_fn_func_cb): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
+  OSSL_STORE_LOADER_set_attach: function(loader: POSSL_STORE_LOADER; attach_function: TOSSL_STORE_attach_fn): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM OSSL_STORE_LOADER_set_attach}
 
-  OSSL_STORE_LOADER_set_ctrl: function(loader: POSSL_STORE_LOADER; ctrl_function: TOSSL_STORE_ctrl_fn_func_cb): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
+  OSSL_STORE_LOADER_set_ctrl: function(loader: POSSL_STORE_LOADER; ctrl_function: TOSSL_STORE_ctrl_fn): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM OSSL_STORE_LOADER_set_ctrl}
 
-  OSSL_STORE_LOADER_set_expect: function(loader: POSSL_STORE_LOADER; expect_function: TOSSL_STORE_expect_fn_func_cb): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
+  OSSL_STORE_LOADER_set_expect: function(loader: POSSL_STORE_LOADER; expect_function: TOSSL_STORE_expect_fn): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM OSSL_STORE_LOADER_set_expect}
 
-  OSSL_STORE_LOADER_set_find: function(loader: POSSL_STORE_LOADER; find_function: TOSSL_STORE_find_fn_func_cb): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
+  OSSL_STORE_LOADER_set_find: function(loader: POSSL_STORE_LOADER; find_function: TOSSL_STORE_find_fn): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM OSSL_STORE_LOADER_set_find}
 
-  OSSL_STORE_LOADER_set_load: function(loader: POSSL_STORE_LOADER; load_function: TOSSL_STORE_load_fn_func_cb): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
+  OSSL_STORE_LOADER_set_load: function(loader: POSSL_STORE_LOADER; load_function: TOSSL_STORE_load_fn): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM OSSL_STORE_LOADER_set_load}
 
-  OSSL_STORE_LOADER_set_eof: function(loader: POSSL_STORE_LOADER; eof_function: TOSSL_STORE_eof_fn_func_cb): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
+  OSSL_STORE_LOADER_set_eof: function(loader: POSSL_STORE_LOADER; eof_function: TOSSL_STORE_close_fn): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM OSSL_STORE_LOADER_set_eof}
 
-  OSSL_STORE_LOADER_set_error: function(loader: POSSL_STORE_LOADER; error_function: TOSSL_STORE_eof_fn_func_cb): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
+  OSSL_STORE_LOADER_set_error: function(loader: POSSL_STORE_LOADER; error_function: TOSSL_STORE_close_fn): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM OSSL_STORE_LOADER_set_error}
 
-  OSSL_STORE_LOADER_set_close: function(loader: POSSL_STORE_LOADER; close_function: TOSSL_STORE_eof_fn_func_cb): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
+  OSSL_STORE_LOADER_set_close: function(loader: POSSL_STORE_LOADER; close_function: TOSSL_STORE_close_fn): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM OSSL_STORE_LOADER_set_close}
 
   OSSL_STORE_LOADER_get0_engine: function(loader: POSSL_STORE_LOADER): PENGINE; cdecl = nil; // Deprecated in 3_0_0
@@ -331,16 +326,16 @@ var
 // STATIC BINDING ROUTINES
 // =============================================================================
 
-function OSSL_STORE_open(uri: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; post_process: TOSSL_STORE_post_process_info_fn_func_cb; post_process_data: Pointer): POSSL_STORE_CTX; cdecl;
-function OSSL_STORE_open_ex(uri: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM_ARRAY; post_process: TOSSL_STORE_post_process_info_fn_func_cb; post_process_data: Pointer): POSSL_STORE_CTX; cdecl;
+function OSSL_STORE_open(uri: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; post_process: TOSSL_STORE_post_process_info_fn; post_process_data: Pointer): POSSL_STORE_CTX; cdecl;
+function OSSL_STORE_open_ex(uri: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM; post_process: TOSSL_STORE_post_process_info_fn; post_process_data: Pointer): POSSL_STORE_CTX; cdecl;
 function OSSL_STORE_ctrl(ctx: POSSL_STORE_CTX; cmd: TIdC_INT): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function OSSL_STORE_vctrl(ctx: POSSL_STORE_CTX; cmd: TIdC_INT; args: Tva_list): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function OSSL_STORE_load(ctx: POSSL_STORE_CTX): POSSL_STORE_INFO; cdecl;
-function OSSL_STORE_delete(uri: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM_ARRAY): TIdC_INT; cdecl;
+function OSSL_STORE_delete(uri: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl;
 function OSSL_STORE_eof(ctx: POSSL_STORE_CTX): TIdC_INT; cdecl;
 function OSSL_STORE_error(ctx: POSSL_STORE_CTX): TIdC_INT; cdecl;
 function OSSL_STORE_close(ctx: POSSL_STORE_CTX): TIdC_INT; cdecl;
-function OSSL_STORE_attach(bio: PBIO; scheme: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM_ARRAY; post_process: TOSSL_STORE_post_process_info_fn_func_cb; post_process_data: Pointer): POSSL_STORE_CTX; cdecl;
+function OSSL_STORE_attach(bio: PBIO; scheme: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM; post_process: TOSSL_STORE_post_process_info_fn; post_process_data: Pointer): POSSL_STORE_CTX; cdecl;
 function OSSL_STORE_INFO_new(_type: TIdC_INT; data: Pointer): POSSL_STORE_INFO; cdecl;
 function OSSL_STORE_INFO_new_NAME(name: PIdAnsiChar): POSSL_STORE_INFO; cdecl;
 function OSSL_STORE_INFO_set0_NAME_description(info: POSSL_STORE_INFO; desc: PIdAnsiChar): TIdC_INT; cdecl;
@@ -366,13 +361,13 @@ function OSSL_STORE_INFO_get1_CERT(info: POSSL_STORE_INFO): PX509; cdecl;
 function OSSL_STORE_INFO_get0_CRL(info: POSSL_STORE_INFO): PX509_CRL; cdecl;
 function OSSL_STORE_INFO_get1_CRL(info: POSSL_STORE_INFO): PX509_CRL; cdecl;
 function OSSL_STORE_INFO_type_string(_type: TIdC_INT): PIdAnsiChar; cdecl;
-procedure OSSL_STORE_INFO_free(info: POSSL_STORE_INFO); cdecl;
+function OSSL_STORE_INFO_free(info: POSSL_STORE_INFO): void; cdecl;
 function OSSL_STORE_supports_search(ctx: POSSL_STORE_CTX; search_type: TIdC_INT): TIdC_INT; cdecl;
 function OSSL_STORE_SEARCH_by_name(name: PX509_NAME): POSSL_STORE_SEARCH; cdecl;
 function OSSL_STORE_SEARCH_by_issuer_serial(name: PX509_NAME; serial: PASN1_INTEGER): POSSL_STORE_SEARCH; cdecl;
 function OSSL_STORE_SEARCH_by_key_fingerprint(digest: PEVP_MD; bytes: PIdAnsiChar; len: TIdC_SIZET): POSSL_STORE_SEARCH; cdecl;
 function OSSL_STORE_SEARCH_by_alias(alias: PIdAnsiChar): POSSL_STORE_SEARCH; cdecl;
-procedure OSSL_STORE_SEARCH_free(search: POSSL_STORE_SEARCH); cdecl;
+function OSSL_STORE_SEARCH_free(search: POSSL_STORE_SEARCH): void; cdecl;
 function OSSL_STORE_SEARCH_get_type(criterion: POSSL_STORE_SEARCH): TIdC_INT; cdecl;
 function OSSL_STORE_SEARCH_get0_name(criterion: POSSL_STORE_SEARCH): PX509_NAME; cdecl;
 function OSSL_STORE_SEARCH_get0_serial(criterion: POSSL_STORE_SEARCH): PASN1_INTEGER; cdecl;
@@ -383,25 +378,25 @@ function OSSL_STORE_expect(ctx: POSSL_STORE_CTX; expected_type: TIdC_INT): TIdC_
 function OSSL_STORE_find(ctx: POSSL_STORE_CTX; search: POSSL_STORE_SEARCH): TIdC_INT; cdecl;
 function OSSL_STORE_LOADER_fetch(libctx: POSSL_LIB_CTX; scheme: PIdAnsiChar; properties: PIdAnsiChar): POSSL_STORE_LOADER; cdecl;
 function OSSL_STORE_LOADER_up_ref(loader: POSSL_STORE_LOADER): TIdC_INT; cdecl;
-procedure OSSL_STORE_LOADER_free(loader: POSSL_STORE_LOADER); cdecl;
+function OSSL_STORE_LOADER_free(loader: POSSL_STORE_LOADER): void; cdecl;
 function OSSL_STORE_LOADER_get0_provider(loader: POSSL_STORE_LOADER): POSSL_PROVIDER; cdecl;
 function OSSL_STORE_LOADER_get0_properties(loader: POSSL_STORE_LOADER): PIdAnsiChar; cdecl;
 function OSSL_STORE_LOADER_get0_description(loader: POSSL_STORE_LOADER): PIdAnsiChar; cdecl;
 function OSSL_STORE_LOADER_is_a(loader: POSSL_STORE_LOADER; scheme: PIdAnsiChar): TIdC_INT; cdecl;
-procedure OSSL_STORE_LOADER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TOSSL_STORE_LOADER_do_all_provided_fn_cb; arg: Pointer); cdecl;
+function OSSL_STORE_LOADER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TOSSL_STORE_LOADER_do_all_provided_fn_cb; arg: Pointer): void; cdecl;
 function OSSL_STORE_LOADER_names_do_all(loader: POSSL_STORE_LOADER; fn: TOSSL_STORE_LOADER_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl;
-function OSSL_STORE_LOADER_settable_ctx_params(loader: POSSL_STORE_LOADER): POSSL_PARAM_ARRAY; cdecl;
+function OSSL_STORE_LOADER_settable_ctx_params(loader: POSSL_STORE_LOADER): POSSL_PARAM; cdecl;
 function OSSL_STORE_LOADER_new(e: PENGINE; scheme: PIdAnsiChar): POSSL_STORE_LOADER; cdecl; deprecated 'In OpenSSL 3_0_0';
-function OSSL_STORE_LOADER_set_open(loader: POSSL_STORE_LOADER; open_function: TOSSL_STORE_open_fn_func_cb): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function OSSL_STORE_LOADER_set_open_ex(loader: POSSL_STORE_LOADER; open_ex_function: TOSSL_STORE_open_ex_fn_func_cb): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function OSSL_STORE_LOADER_set_attach(loader: POSSL_STORE_LOADER; attach_function: TOSSL_STORE_attach_fn_func_cb): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function OSSL_STORE_LOADER_set_ctrl(loader: POSSL_STORE_LOADER; ctrl_function: TOSSL_STORE_ctrl_fn_func_cb): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function OSSL_STORE_LOADER_set_expect(loader: POSSL_STORE_LOADER; expect_function: TOSSL_STORE_expect_fn_func_cb): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function OSSL_STORE_LOADER_set_find(loader: POSSL_STORE_LOADER; find_function: TOSSL_STORE_find_fn_func_cb): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function OSSL_STORE_LOADER_set_load(loader: POSSL_STORE_LOADER; load_function: TOSSL_STORE_load_fn_func_cb): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function OSSL_STORE_LOADER_set_eof(loader: POSSL_STORE_LOADER; eof_function: TOSSL_STORE_eof_fn_func_cb): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function OSSL_STORE_LOADER_set_error(loader: POSSL_STORE_LOADER; error_function: TOSSL_STORE_eof_fn_func_cb): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function OSSL_STORE_LOADER_set_close(loader: POSSL_STORE_LOADER; close_function: TOSSL_STORE_eof_fn_func_cb): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
+function OSSL_STORE_LOADER_set_open(loader: POSSL_STORE_LOADER; open_function: TOSSL_STORE_open_fn): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
+function OSSL_STORE_LOADER_set_open_ex(loader: POSSL_STORE_LOADER; open_ex_function: TOSSL_STORE_open_ex_fn): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
+function OSSL_STORE_LOADER_set_attach(loader: POSSL_STORE_LOADER; attach_function: TOSSL_STORE_attach_fn): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
+function OSSL_STORE_LOADER_set_ctrl(loader: POSSL_STORE_LOADER; ctrl_function: TOSSL_STORE_ctrl_fn): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
+function OSSL_STORE_LOADER_set_expect(loader: POSSL_STORE_LOADER; expect_function: TOSSL_STORE_expect_fn): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
+function OSSL_STORE_LOADER_set_find(loader: POSSL_STORE_LOADER; find_function: TOSSL_STORE_find_fn): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
+function OSSL_STORE_LOADER_set_load(loader: POSSL_STORE_LOADER; load_function: TOSSL_STORE_load_fn): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
+function OSSL_STORE_LOADER_set_eof(loader: POSSL_STORE_LOADER; eof_function: TOSSL_STORE_close_fn): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
+function OSSL_STORE_LOADER_set_error(loader: POSSL_STORE_LOADER; error_function: TOSSL_STORE_close_fn): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
+function OSSL_STORE_LOADER_set_close(loader: POSSL_STORE_LOADER; close_function: TOSSL_STORE_close_fn): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function OSSL_STORE_LOADER_get0_engine(loader: POSSL_STORE_LOADER): PENGINE; cdecl; deprecated 'In OpenSSL 3_0_0';
 function OSSL_STORE_LOADER_get0_scheme(loader: POSSL_STORE_LOADER): PIdAnsiChar; cdecl; deprecated 'In OpenSSL 3_0_0';
 function OSSL_STORE_register_loader(loader: POSSL_STORE_LOADER): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
@@ -425,16 +420,16 @@ uses
 // STATIC BINDING ROUTINES IMPORTS
 // =============================================================================
 
-function OSSL_STORE_open(uri: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; post_process: TOSSL_STORE_post_process_info_fn_func_cb; post_process_data: Pointer): POSSL_STORE_CTX; cdecl external CLibCrypto name 'OSSL_STORE_open';
-function OSSL_STORE_open_ex(uri: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM_ARRAY; post_process: TOSSL_STORE_post_process_info_fn_func_cb; post_process_data: Pointer): POSSL_STORE_CTX; cdecl external CLibCrypto name 'OSSL_STORE_open_ex';
+function OSSL_STORE_open(uri: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; post_process: TOSSL_STORE_post_process_info_fn; post_process_data: Pointer): POSSL_STORE_CTX; cdecl external CLibCrypto name 'OSSL_STORE_open';
+function OSSL_STORE_open_ex(uri: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM; post_process: TOSSL_STORE_post_process_info_fn; post_process_data: Pointer): POSSL_STORE_CTX; cdecl external CLibCrypto name 'OSSL_STORE_open_ex';
 function OSSL_STORE_ctrl(ctx: POSSL_STORE_CTX; cmd: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_ctrl';
 function OSSL_STORE_vctrl(ctx: POSSL_STORE_CTX; cmd: TIdC_INT; args: Tva_list): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_vctrl';
 function OSSL_STORE_load(ctx: POSSL_STORE_CTX): POSSL_STORE_INFO; cdecl external CLibCrypto name 'OSSL_STORE_load';
-function OSSL_STORE_delete(uri: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM_ARRAY): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_delete';
+function OSSL_STORE_delete(uri: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_delete';
 function OSSL_STORE_eof(ctx: POSSL_STORE_CTX): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_eof';
 function OSSL_STORE_error(ctx: POSSL_STORE_CTX): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_error';
 function OSSL_STORE_close(ctx: POSSL_STORE_CTX): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_close';
-function OSSL_STORE_attach(bio: PBIO; scheme: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM_ARRAY; post_process: TOSSL_STORE_post_process_info_fn_func_cb; post_process_data: Pointer): POSSL_STORE_CTX; cdecl external CLibCrypto name 'OSSL_STORE_attach';
+function OSSL_STORE_attach(bio: PBIO; scheme: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM; post_process: TOSSL_STORE_post_process_info_fn; post_process_data: Pointer): POSSL_STORE_CTX; cdecl external CLibCrypto name 'OSSL_STORE_attach';
 function OSSL_STORE_INFO_new(_type: TIdC_INT; data: Pointer): POSSL_STORE_INFO; cdecl external CLibCrypto name 'OSSL_STORE_INFO_new';
 function OSSL_STORE_INFO_new_NAME(name: PIdAnsiChar): POSSL_STORE_INFO; cdecl external CLibCrypto name 'OSSL_STORE_INFO_new_NAME';
 function OSSL_STORE_INFO_set0_NAME_description(info: POSSL_STORE_INFO; desc: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_INFO_set0_NAME_description';
@@ -460,13 +455,13 @@ function OSSL_STORE_INFO_get1_CERT(info: POSSL_STORE_INFO): PX509; cdecl externa
 function OSSL_STORE_INFO_get0_CRL(info: POSSL_STORE_INFO): PX509_CRL; cdecl external CLibCrypto name 'OSSL_STORE_INFO_get0_CRL';
 function OSSL_STORE_INFO_get1_CRL(info: POSSL_STORE_INFO): PX509_CRL; cdecl external CLibCrypto name 'OSSL_STORE_INFO_get1_CRL';
 function OSSL_STORE_INFO_type_string(_type: TIdC_INT): PIdAnsiChar; cdecl external CLibCrypto name 'OSSL_STORE_INFO_type_string';
-procedure OSSL_STORE_INFO_free(info: POSSL_STORE_INFO); cdecl external CLibCrypto name 'OSSL_STORE_INFO_free';
+function OSSL_STORE_INFO_free(info: POSSL_STORE_INFO): void; cdecl external CLibCrypto name 'OSSL_STORE_INFO_free';
 function OSSL_STORE_supports_search(ctx: POSSL_STORE_CTX; search_type: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_supports_search';
 function OSSL_STORE_SEARCH_by_name(name: PX509_NAME): POSSL_STORE_SEARCH; cdecl external CLibCrypto name 'OSSL_STORE_SEARCH_by_name';
 function OSSL_STORE_SEARCH_by_issuer_serial(name: PX509_NAME; serial: PASN1_INTEGER): POSSL_STORE_SEARCH; cdecl external CLibCrypto name 'OSSL_STORE_SEARCH_by_issuer_serial';
 function OSSL_STORE_SEARCH_by_key_fingerprint(digest: PEVP_MD; bytes: PIdAnsiChar; len: TIdC_SIZET): POSSL_STORE_SEARCH; cdecl external CLibCrypto name 'OSSL_STORE_SEARCH_by_key_fingerprint';
 function OSSL_STORE_SEARCH_by_alias(alias: PIdAnsiChar): POSSL_STORE_SEARCH; cdecl external CLibCrypto name 'OSSL_STORE_SEARCH_by_alias';
-procedure OSSL_STORE_SEARCH_free(search: POSSL_STORE_SEARCH); cdecl external CLibCrypto name 'OSSL_STORE_SEARCH_free';
+function OSSL_STORE_SEARCH_free(search: POSSL_STORE_SEARCH): void; cdecl external CLibCrypto name 'OSSL_STORE_SEARCH_free';
 function OSSL_STORE_SEARCH_get_type(criterion: POSSL_STORE_SEARCH): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_SEARCH_get_type';
 function OSSL_STORE_SEARCH_get0_name(criterion: POSSL_STORE_SEARCH): PX509_NAME; cdecl external CLibCrypto name 'OSSL_STORE_SEARCH_get0_name';
 function OSSL_STORE_SEARCH_get0_serial(criterion: POSSL_STORE_SEARCH): PASN1_INTEGER; cdecl external CLibCrypto name 'OSSL_STORE_SEARCH_get0_serial';
@@ -477,25 +472,25 @@ function OSSL_STORE_expect(ctx: POSSL_STORE_CTX; expected_type: TIdC_INT): TIdC_
 function OSSL_STORE_find(ctx: POSSL_STORE_CTX; search: POSSL_STORE_SEARCH): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_find';
 function OSSL_STORE_LOADER_fetch(libctx: POSSL_LIB_CTX; scheme: PIdAnsiChar; properties: PIdAnsiChar): POSSL_STORE_LOADER; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_fetch';
 function OSSL_STORE_LOADER_up_ref(loader: POSSL_STORE_LOADER): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_up_ref';
-procedure OSSL_STORE_LOADER_free(loader: POSSL_STORE_LOADER); cdecl external CLibCrypto name 'OSSL_STORE_LOADER_free';
+function OSSL_STORE_LOADER_free(loader: POSSL_STORE_LOADER): void; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_free';
 function OSSL_STORE_LOADER_get0_provider(loader: POSSL_STORE_LOADER): POSSL_PROVIDER; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_get0_provider';
 function OSSL_STORE_LOADER_get0_properties(loader: POSSL_STORE_LOADER): PIdAnsiChar; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_get0_properties';
 function OSSL_STORE_LOADER_get0_description(loader: POSSL_STORE_LOADER): PIdAnsiChar; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_get0_description';
 function OSSL_STORE_LOADER_is_a(loader: POSSL_STORE_LOADER; scheme: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_is_a';
-procedure OSSL_STORE_LOADER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TOSSL_STORE_LOADER_do_all_provided_fn_cb; arg: Pointer); cdecl external CLibCrypto name 'OSSL_STORE_LOADER_do_all_provided';
+function OSSL_STORE_LOADER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TOSSL_STORE_LOADER_do_all_provided_fn_cb; arg: Pointer): void; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_do_all_provided';
 function OSSL_STORE_LOADER_names_do_all(loader: POSSL_STORE_LOADER; fn: TOSSL_STORE_LOADER_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_names_do_all';
-function OSSL_STORE_LOADER_settable_ctx_params(loader: POSSL_STORE_LOADER): POSSL_PARAM_ARRAY; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_settable_ctx_params';
+function OSSL_STORE_LOADER_settable_ctx_params(loader: POSSL_STORE_LOADER): POSSL_PARAM; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_settable_ctx_params';
 function OSSL_STORE_LOADER_new(e: PENGINE; scheme: PIdAnsiChar): POSSL_STORE_LOADER; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_new';
-function OSSL_STORE_LOADER_set_open(loader: POSSL_STORE_LOADER; open_function: TOSSL_STORE_open_fn_func_cb): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_set_open';
-function OSSL_STORE_LOADER_set_open_ex(loader: POSSL_STORE_LOADER; open_ex_function: TOSSL_STORE_open_ex_fn_func_cb): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_set_open_ex';
-function OSSL_STORE_LOADER_set_attach(loader: POSSL_STORE_LOADER; attach_function: TOSSL_STORE_attach_fn_func_cb): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_set_attach';
-function OSSL_STORE_LOADER_set_ctrl(loader: POSSL_STORE_LOADER; ctrl_function: TOSSL_STORE_ctrl_fn_func_cb): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_set_ctrl';
-function OSSL_STORE_LOADER_set_expect(loader: POSSL_STORE_LOADER; expect_function: TOSSL_STORE_expect_fn_func_cb): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_set_expect';
-function OSSL_STORE_LOADER_set_find(loader: POSSL_STORE_LOADER; find_function: TOSSL_STORE_find_fn_func_cb): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_set_find';
-function OSSL_STORE_LOADER_set_load(loader: POSSL_STORE_LOADER; load_function: TOSSL_STORE_load_fn_func_cb): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_set_load';
-function OSSL_STORE_LOADER_set_eof(loader: POSSL_STORE_LOADER; eof_function: TOSSL_STORE_eof_fn_func_cb): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_set_eof';
-function OSSL_STORE_LOADER_set_error(loader: POSSL_STORE_LOADER; error_function: TOSSL_STORE_eof_fn_func_cb): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_set_error';
-function OSSL_STORE_LOADER_set_close(loader: POSSL_STORE_LOADER; close_function: TOSSL_STORE_eof_fn_func_cb): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_set_close';
+function OSSL_STORE_LOADER_set_open(loader: POSSL_STORE_LOADER; open_function: TOSSL_STORE_open_fn): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_set_open';
+function OSSL_STORE_LOADER_set_open_ex(loader: POSSL_STORE_LOADER; open_ex_function: TOSSL_STORE_open_ex_fn): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_set_open_ex';
+function OSSL_STORE_LOADER_set_attach(loader: POSSL_STORE_LOADER; attach_function: TOSSL_STORE_attach_fn): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_set_attach';
+function OSSL_STORE_LOADER_set_ctrl(loader: POSSL_STORE_LOADER; ctrl_function: TOSSL_STORE_ctrl_fn): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_set_ctrl';
+function OSSL_STORE_LOADER_set_expect(loader: POSSL_STORE_LOADER; expect_function: TOSSL_STORE_expect_fn): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_set_expect';
+function OSSL_STORE_LOADER_set_find(loader: POSSL_STORE_LOADER; find_function: TOSSL_STORE_find_fn): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_set_find';
+function OSSL_STORE_LOADER_set_load(loader: POSSL_STORE_LOADER; load_function: TOSSL_STORE_load_fn): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_set_load';
+function OSSL_STORE_LOADER_set_eof(loader: POSSL_STORE_LOADER; eof_function: TOSSL_STORE_close_fn): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_set_eof';
+function OSSL_STORE_LOADER_set_error(loader: POSSL_STORE_LOADER; error_function: TOSSL_STORE_close_fn): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_set_error';
+function OSSL_STORE_LOADER_set_close(loader: POSSL_STORE_LOADER; close_function: TOSSL_STORE_close_fn): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_set_close';
 function OSSL_STORE_LOADER_get0_engine(loader: POSSL_STORE_LOADER): PENGINE; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_get0_engine';
 function OSSL_STORE_LOADER_get0_scheme(loader: POSSL_STORE_LOADER): PIdAnsiChar; cdecl external CLibCrypto name 'OSSL_STORE_LOADER_get0_scheme';
 function OSSL_STORE_register_loader(loader: POSSL_STORE_LOADER): TIdC_INT; cdecl external CLibCrypto name 'OSSL_STORE_register_loader';
@@ -765,12 +760,12 @@ const
 // ERRORS STUBS
 // =============================================================================
 
-function ERR_OSSL_STORE_open(uri: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; post_process: TOSSL_STORE_post_process_info_fn_func_cb; post_process_data: Pointer): POSSL_STORE_CTX; cdecl
+function ERR_OSSL_STORE_open(uri: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; post_process: TOSSL_STORE_post_process_info_fn; post_process_data: Pointer): POSSL_STORE_CTX; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_open_procname);
 end;
 
-function ERR_OSSL_STORE_open_ex(uri: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM_ARRAY; post_process: TOSSL_STORE_post_process_info_fn_func_cb; post_process_data: Pointer): POSSL_STORE_CTX; cdecl
+function ERR_OSSL_STORE_open_ex(uri: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM; post_process: TOSSL_STORE_post_process_info_fn; post_process_data: Pointer): POSSL_STORE_CTX; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_open_ex_procname);
 end;
@@ -790,7 +785,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_load_procname);
 end;
 
-function ERR_OSSL_STORE_delete(uri: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM_ARRAY): TIdC_INT; cdecl
+function ERR_OSSL_STORE_delete(uri: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_delete_procname);
 end;
@@ -810,7 +805,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_close_procname);
 end;
 
-function ERR_OSSL_STORE_attach(bio: PBIO; scheme: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM_ARRAY; post_process: TOSSL_STORE_post_process_info_fn_func_cb; post_process_data: Pointer): POSSL_STORE_CTX; cdecl
+function ERR_OSSL_STORE_attach(bio: PBIO; scheme: PIdAnsiChar; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar; ui_method: PUI_METHOD; ui_data: Pointer; params: POSSL_PARAM; post_process: TOSSL_STORE_post_process_info_fn; post_process_data: Pointer): POSSL_STORE_CTX; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_attach_procname);
 end;
@@ -940,7 +935,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_INFO_type_string_procname);
 end;
 
-procedure ERR_OSSL_STORE_INFO_free(info: POSSL_STORE_INFO); cdecl
+function ERR_OSSL_STORE_INFO_free(info: POSSL_STORE_INFO): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_INFO_free_procname);
 end;
@@ -970,7 +965,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_SEARCH_by_alias_procname);
 end;
 
-procedure ERR_OSSL_STORE_SEARCH_free(search: POSSL_STORE_SEARCH); cdecl
+function ERR_OSSL_STORE_SEARCH_free(search: POSSL_STORE_SEARCH): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_SEARCH_free_procname);
 end;
@@ -1025,7 +1020,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_LOADER_up_ref_procname);
 end;
 
-procedure ERR_OSSL_STORE_LOADER_free(loader: POSSL_STORE_LOADER); cdecl
+function ERR_OSSL_STORE_LOADER_free(loader: POSSL_STORE_LOADER): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_LOADER_free_procname);
 end;
@@ -1050,7 +1045,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_LOADER_is_a_procname);
 end;
 
-procedure ERR_OSSL_STORE_LOADER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TOSSL_STORE_LOADER_do_all_provided_fn_cb; arg: Pointer); cdecl
+function ERR_OSSL_STORE_LOADER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TOSSL_STORE_LOADER_do_all_provided_fn_cb; arg: Pointer): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_LOADER_do_all_provided_procname);
 end;
@@ -1060,7 +1055,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_LOADER_names_do_all_procname);
 end;
 
-function ERR_OSSL_STORE_LOADER_settable_ctx_params(loader: POSSL_STORE_LOADER): POSSL_PARAM_ARRAY; cdecl
+function ERR_OSSL_STORE_LOADER_settable_ctx_params(loader: POSSL_STORE_LOADER): POSSL_PARAM; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_LOADER_settable_ctx_params_procname);
 end;
@@ -1070,52 +1065,52 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_LOADER_new_procname);
 end;
 
-function ERR_OSSL_STORE_LOADER_set_open(loader: POSSL_STORE_LOADER; open_function: TOSSL_STORE_open_fn_func_cb): TIdC_INT; cdecl
+function ERR_OSSL_STORE_LOADER_set_open(loader: POSSL_STORE_LOADER; open_function: TOSSL_STORE_open_fn): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_LOADER_set_open_procname);
 end;
 
-function ERR_OSSL_STORE_LOADER_set_open_ex(loader: POSSL_STORE_LOADER; open_ex_function: TOSSL_STORE_open_ex_fn_func_cb): TIdC_INT; cdecl
+function ERR_OSSL_STORE_LOADER_set_open_ex(loader: POSSL_STORE_LOADER; open_ex_function: TOSSL_STORE_open_ex_fn): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_LOADER_set_open_ex_procname);
 end;
 
-function ERR_OSSL_STORE_LOADER_set_attach(loader: POSSL_STORE_LOADER; attach_function: TOSSL_STORE_attach_fn_func_cb): TIdC_INT; cdecl
+function ERR_OSSL_STORE_LOADER_set_attach(loader: POSSL_STORE_LOADER; attach_function: TOSSL_STORE_attach_fn): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_LOADER_set_attach_procname);
 end;
 
-function ERR_OSSL_STORE_LOADER_set_ctrl(loader: POSSL_STORE_LOADER; ctrl_function: TOSSL_STORE_ctrl_fn_func_cb): TIdC_INT; cdecl
+function ERR_OSSL_STORE_LOADER_set_ctrl(loader: POSSL_STORE_LOADER; ctrl_function: TOSSL_STORE_ctrl_fn): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_LOADER_set_ctrl_procname);
 end;
 
-function ERR_OSSL_STORE_LOADER_set_expect(loader: POSSL_STORE_LOADER; expect_function: TOSSL_STORE_expect_fn_func_cb): TIdC_INT; cdecl
+function ERR_OSSL_STORE_LOADER_set_expect(loader: POSSL_STORE_LOADER; expect_function: TOSSL_STORE_expect_fn): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_LOADER_set_expect_procname);
 end;
 
-function ERR_OSSL_STORE_LOADER_set_find(loader: POSSL_STORE_LOADER; find_function: TOSSL_STORE_find_fn_func_cb): TIdC_INT; cdecl
+function ERR_OSSL_STORE_LOADER_set_find(loader: POSSL_STORE_LOADER; find_function: TOSSL_STORE_find_fn): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_LOADER_set_find_procname);
 end;
 
-function ERR_OSSL_STORE_LOADER_set_load(loader: POSSL_STORE_LOADER; load_function: TOSSL_STORE_load_fn_func_cb): TIdC_INT; cdecl
+function ERR_OSSL_STORE_LOADER_set_load(loader: POSSL_STORE_LOADER; load_function: TOSSL_STORE_load_fn): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_LOADER_set_load_procname);
 end;
 
-function ERR_OSSL_STORE_LOADER_set_eof(loader: POSSL_STORE_LOADER; eof_function: TOSSL_STORE_eof_fn_func_cb): TIdC_INT; cdecl
+function ERR_OSSL_STORE_LOADER_set_eof(loader: POSSL_STORE_LOADER; eof_function: TOSSL_STORE_close_fn): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_LOADER_set_eof_procname);
 end;
 
-function ERR_OSSL_STORE_LOADER_set_error(loader: POSSL_STORE_LOADER; error_function: TOSSL_STORE_eof_fn_func_cb): TIdC_INT; cdecl
+function ERR_OSSL_STORE_LOADER_set_error(loader: POSSL_STORE_LOADER; error_function: TOSSL_STORE_close_fn): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_LOADER_set_error_procname);
 end;
 
-function ERR_OSSL_STORE_LOADER_set_close(loader: POSSL_STORE_LOADER; close_function: TOSSL_STORE_eof_fn_func_cb): TIdC_INT; cdecl
+function ERR_OSSL_STORE_LOADER_set_close(loader: POSSL_STORE_LOADER; close_function: TOSSL_STORE_close_fn): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_STORE_LOADER_set_close_procname);
 end;

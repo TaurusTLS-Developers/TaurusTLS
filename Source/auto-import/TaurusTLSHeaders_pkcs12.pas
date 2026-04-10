@@ -26,55 +26,35 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   PPKCS12_MAC_DATA_st = ^TPKCS12_MAC_DATA_st;
-  TPKCS12_MAC_DATA_st = record end;
+  TPKCS12_MAC_DATA_st =   record end;
   {$EXTERNALSYM PPKCS12_MAC_DATA_st}
 
-  PPKCS12_MAC_DATA = ^TPKCS12_MAC_DATA;
-  TPKCS12_MAC_DATA = TPKCS12_MAC_DATA_st;
-  {$EXTERNALSYM PPKCS12_MAC_DATA}
-
   PPKCS12_st = ^TPKCS12_st;
-  TPKCS12_st = record end;
+  TPKCS12_st =   record end;
   {$EXTERNALSYM PPKCS12_st}
 
-  PPKCS12 = ^TPKCS12;
-  TPKCS12 = TPKCS12_st;
-  {$EXTERNALSYM PPKCS12}
-
   PPKCS12_SAFEBAG_st = ^TPKCS12_SAFEBAG_st;
-  TPKCS12_SAFEBAG_st = record end;
+  TPKCS12_SAFEBAG_st =   record end;
   {$EXTERNALSYM PPKCS12_SAFEBAG_st}
 
-  PPKCS12_SAFEBAG = ^TPKCS12_SAFEBAG;
-  TPKCS12_SAFEBAG = TPKCS12_SAFEBAG_st;
-  {$EXTERNALSYM PPKCS12_SAFEBAG}
-
-  Pstack_st_PKCS12_SAFEBAG = ^Tstack_st_PKCS12_SAFEBAG;
-  Tstack_st_PKCS12_SAFEBAG = record end;
-  {$EXTERNALSYM Pstack_st_PKCS12_SAFEBAG}
-
   Ppkcs12_bag_st = ^Tpkcs12_bag_st;
-  Tpkcs12_bag_st = record end;
+  Tpkcs12_bag_st =   record end;
   {$EXTERNALSYM Ppkcs12_bag_st}
-
-  PPKCS12_BAGS = ^TPKCS12_BAGS;
-  TPKCS12_BAGS = Tpkcs12_bag_st;
-  {$EXTERNALSYM PPKCS12_BAGS}
 
 
 // =============================================================================
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  Tsk_PKCS12_SAFEBAG_compfunc_func_cb = function(arg1: PPPKCS12_SAFEBAG; arg2: PPPKCS12_SAFEBAG): TIdC_INT; cdecl;
-  Tsk_PKCS12_SAFEBAG_freefunc_func_cb = procedure(arg1: PPKCS12_SAFEBAG); cdecl;
-  Tsk_PKCS12_SAFEBAG_copyfunc_func_cb = function(arg1: PPKCS12_SAFEBAG): PPKCS12_SAFEBAG; cdecl;
-  TPKCS12_create_cb_func_cb = function(arg1: PPKCS12_SAFEBAG; arg2: Pointer): TIdC_INT; cdecl;
+  TPKCS12_create_cb = function(bag: PPKCS12_SAFEBAG; cbarg: Pointer): TIdC_INT; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -107,7 +87,7 @@ var
   PKCS12_mac_present: function(p12: PPKCS12): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM PKCS12_mac_present}
 
-  PKCS12_get0_mac: procedure(pmac: PPASN1_OCTET_STRING; pmacalg: PPX509_ALGOR; psalt: PPASN1_OCTET_STRING; piter: PPASN1_INTEGER; p12: PPKCS12); cdecl = nil;
+  PKCS12_get0_mac: function(pmac: PPASN1_OCTET_STRING; pmacalg: PPX509_ALGOR; psalt: PPASN1_OCTET_STRING; piter: PPASN1_INTEGER; p12: PPKCS12): void; cdecl = nil;
   {$EXTERNALSYM PKCS12_get0_mac}
 
   PKCS12_SAFEBAG_get0_attr: function(bag: PPKCS12_SAFEBAG; attr_nid: TIdC_INT): PASN1_TYPE; cdecl = nil;
@@ -251,7 +231,7 @@ var
   PKCS12_SAFEBAG_get0_attrs: function(bag: PPKCS12_SAFEBAG): Pstack_st_X509_ATTRIBUTE; cdecl = nil;
   {$EXTERNALSYM PKCS12_SAFEBAG_get0_attrs}
 
-  PKCS12_SAFEBAG_set0_attrs: procedure(bag: PPKCS12_SAFEBAG; attrs: Pstack_st_X509_ATTRIBUTE); cdecl = nil;
+  PKCS12_SAFEBAG_set0_attrs: function(bag: PPKCS12_SAFEBAG; attrs: Pstack_st_X509_ATTRIBUTE): void; cdecl = nil;
   {$EXTERNALSYM PKCS12_SAFEBAG_set0_attrs}
 
   PKCS12_pbe_crypt: function(algor: PX509_ALGOR; pass: PIdAnsiChar; passlen: TIdC_INT; _in: PIdAnsiChar; inlen: TIdC_INT; data: PPIdAnsiChar; datalen: PIdC_INT; en_de: TIdC_INT): PIdAnsiChar; cdecl = nil;
@@ -332,7 +312,7 @@ var
   PKCS12_new: function: PPKCS12; cdecl = nil;
   {$EXTERNALSYM PKCS12_new}
 
-  PKCS12_free: procedure(a: PPKCS12); cdecl = nil;
+  PKCS12_free: function(a: PPKCS12): void; cdecl = nil;
   {$EXTERNALSYM PKCS12_free}
 
   d2i_PKCS12: function(a: PPPKCS12; _in: PPIdAnsiChar; len: TIdC_LONG): PPKCS12; cdecl = nil;
@@ -347,7 +327,7 @@ var
   PKCS12_MAC_DATA_new: function: PPKCS12_MAC_DATA; cdecl = nil;
   {$EXTERNALSYM PKCS12_MAC_DATA_new}
 
-  PKCS12_MAC_DATA_free: procedure(a: PPKCS12_MAC_DATA); cdecl = nil;
+  PKCS12_MAC_DATA_free: function(a: PPKCS12_MAC_DATA): void; cdecl = nil;
   {$EXTERNALSYM PKCS12_MAC_DATA_free}
 
   d2i_PKCS12_MAC_DATA: function(a: PPPKCS12_MAC_DATA; _in: PPIdAnsiChar; len: TIdC_LONG): PPKCS12_MAC_DATA; cdecl = nil;
@@ -362,7 +342,7 @@ var
   PKCS12_SAFEBAG_new: function: PPKCS12_SAFEBAG; cdecl = nil;
   {$EXTERNALSYM PKCS12_SAFEBAG_new}
 
-  PKCS12_SAFEBAG_free: procedure(a: PPKCS12_SAFEBAG); cdecl = nil;
+  PKCS12_SAFEBAG_free: function(a: PPKCS12_SAFEBAG): void; cdecl = nil;
   {$EXTERNALSYM PKCS12_SAFEBAG_free}
 
   d2i_PKCS12_SAFEBAG: function(a: PPPKCS12_SAFEBAG; _in: PPIdAnsiChar; len: TIdC_LONG): PPKCS12_SAFEBAG; cdecl = nil;
@@ -377,7 +357,7 @@ var
   PKCS12_BAGS_new: function: PPKCS12_BAGS; cdecl = nil;
   {$EXTERNALSYM PKCS12_BAGS_new}
 
-  PKCS12_BAGS_free: procedure(a: PPKCS12_BAGS); cdecl = nil;
+  PKCS12_BAGS_free: function(a: PPKCS12_BAGS): void; cdecl = nil;
   {$EXTERNALSYM PKCS12_BAGS_free}
 
   d2i_PKCS12_BAGS: function(a: PPPKCS12_BAGS; _in: PPIdAnsiChar; len: TIdC_LONG): PPKCS12_BAGS; cdecl = nil;
@@ -395,7 +375,7 @@ var
   PKCS12_AUTHSAFES_it: function: PASN1_ITEM; cdecl = nil;
   {$EXTERNALSYM PKCS12_AUTHSAFES_it}
 
-  PKCS12_PBE_add: procedure; cdecl = nil;
+  PKCS12_PBE_add: function: void; cdecl = nil;
   {$EXTERNALSYM PKCS12_PBE_add}
 
   PKCS12_parse: function(p12: PPKCS12; pass: PIdAnsiChar; pkey: PPEVP_PKEY; cert: PPX509; ca: PPstack_st_X509): TIdC_INT; cdecl = nil;
@@ -407,7 +387,7 @@ var
   PKCS12_create_ex: function(pass: PIdAnsiChar; name: PIdAnsiChar; pkey: PEVP_PKEY; cert: PX509; ca: Pstack_st_X509; nid_key: TIdC_INT; nid_cert: TIdC_INT; iter: TIdC_INT; mac_iter: TIdC_INT; keytype: TIdC_INT; ctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PPKCS12; cdecl = nil;
   {$EXTERNALSYM PKCS12_create_ex}
 
-  PKCS12_create_ex2: function(pass: PIdAnsiChar; name: PIdAnsiChar; pkey: PEVP_PKEY; cert: PX509; ca: Pstack_st_X509; nid_key: TIdC_INT; nid_cert: TIdC_INT; iter: TIdC_INT; mac_iter: TIdC_INT; keytype: TIdC_INT; ctx: POSSL_LIB_CTX; propq: PIdAnsiChar; cb: TPKCS12_create_cb_func_cb; cbarg: Pointer): PPKCS12; cdecl = nil;
+  PKCS12_create_ex2: function(pass: PIdAnsiChar; name: PIdAnsiChar; pkey: PEVP_PKEY; cert: PX509; ca: Pstack_st_X509; nid_key: TIdC_INT; nid_cert: TIdC_INT; iter: TIdC_INT; mac_iter: TIdC_INT; keytype: TIdC_INT; ctx: POSSL_LIB_CTX; propq: PIdAnsiChar; cb: TPKCS12_create_cb; cbarg: Pointer): PPKCS12; cdecl = nil;
   {$EXTERNALSYM PKCS12_create_ex2}
 
   PKCS12_add_cert: function(pbags: PPstack_st_PKCS12_SAFEBAG; cert: PX509): PPKCS12_SAFEBAG; cdecl = nil;
@@ -459,7 +439,7 @@ var
 
 function PKCS8_get_attr(p8: PPKCS8_PRIV_KEY_INFO; attr_nid: TIdC_INT): PASN1_TYPE; cdecl;
 function PKCS12_mac_present(p12: PPKCS12): TIdC_INT; cdecl;
-procedure PKCS12_get0_mac(pmac: PPASN1_OCTET_STRING; pmacalg: PPX509_ALGOR; psalt: PPASN1_OCTET_STRING; piter: PPASN1_INTEGER; p12: PPKCS12); cdecl;
+function PKCS12_get0_mac(pmac: PPASN1_OCTET_STRING; pmacalg: PPX509_ALGOR; psalt: PPASN1_OCTET_STRING; piter: PPASN1_INTEGER; p12: PPKCS12): void; cdecl;
 function PKCS12_SAFEBAG_get0_attr(bag: PPKCS12_SAFEBAG; attr_nid: TIdC_INT): PASN1_TYPE; cdecl;
 function PKCS12_SAFEBAG_get0_type(bag: PPKCS12_SAFEBAG): PASN1_OBJECT; cdecl;
 function PKCS12_SAFEBAG_get_nid(bag: PPKCS12_SAFEBAG): TIdC_INT; cdecl;
@@ -507,7 +487,7 @@ function PKCS8_add_keyusage(p8: PPKCS8_PRIV_KEY_INFO; usage: TIdC_INT): TIdC_INT
 function PKCS12_get_attr_gen(attrs: Pstack_st_X509_ATTRIBUTE; attr_nid: TIdC_INT): PASN1_TYPE; cdecl;
 function PKCS12_get_friendlyname(bag: PPKCS12_SAFEBAG): PIdAnsiChar; cdecl;
 function PKCS12_SAFEBAG_get0_attrs(bag: PPKCS12_SAFEBAG): Pstack_st_X509_ATTRIBUTE; cdecl;
-procedure PKCS12_SAFEBAG_set0_attrs(bag: PPKCS12_SAFEBAG; attrs: Pstack_st_X509_ATTRIBUTE); cdecl;
+function PKCS12_SAFEBAG_set0_attrs(bag: PPKCS12_SAFEBAG; attrs: Pstack_st_X509_ATTRIBUTE): void; cdecl;
 function PKCS12_pbe_crypt(algor: PX509_ALGOR; pass: PIdAnsiChar; passlen: TIdC_INT; _in: PIdAnsiChar; inlen: TIdC_INT; data: PPIdAnsiChar; datalen: PIdC_INT; en_de: TIdC_INT): PIdAnsiChar; cdecl;
 function PKCS12_pbe_crypt_ex(algor: PX509_ALGOR; pass: PIdAnsiChar; passlen: TIdC_INT; _in: PIdAnsiChar; inlen: TIdC_INT; data: PPIdAnsiChar; datalen: PIdC_INT; en_de: TIdC_INT; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PIdAnsiChar; cdecl;
 function PKCS12_item_decrypt_d2i(algor: PX509_ALGOR; it: PASN1_ITEM; pass: PIdAnsiChar; passlen: TIdC_INT; oct: PASN1_OCTET_STRING; zbuf: TIdC_INT): Pointer; cdecl;
@@ -534,32 +514,32 @@ function OPENSSL_uni2asc(uni: PIdAnsiChar; unilen: TIdC_INT): PIdAnsiChar; cdecl
 function OPENSSL_utf82uni(asc: PIdAnsiChar; asclen: TIdC_INT; uni: PPIdAnsiChar; unilen: PIdC_INT): PIdAnsiChar; cdecl;
 function OPENSSL_uni2utf8(uni: PIdAnsiChar; unilen: TIdC_INT): PIdAnsiChar; cdecl;
 function PKCS12_new: PPKCS12; cdecl;
-procedure PKCS12_free(a: PPKCS12); cdecl;
+function PKCS12_free(a: PPKCS12): void; cdecl;
 function d2i_PKCS12(a: PPPKCS12; _in: PPIdAnsiChar; len: TIdC_LONG): PPKCS12; cdecl;
 function i2d_PKCS12(a: PPKCS12; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function PKCS12_it: PASN1_ITEM; cdecl;
 function PKCS12_MAC_DATA_new: PPKCS12_MAC_DATA; cdecl;
-procedure PKCS12_MAC_DATA_free(a: PPKCS12_MAC_DATA); cdecl;
+function PKCS12_MAC_DATA_free(a: PPKCS12_MAC_DATA): void; cdecl;
 function d2i_PKCS12_MAC_DATA(a: PPPKCS12_MAC_DATA; _in: PPIdAnsiChar; len: TIdC_LONG): PPKCS12_MAC_DATA; cdecl;
 function i2d_PKCS12_MAC_DATA(a: PPKCS12_MAC_DATA; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function PKCS12_MAC_DATA_it: PASN1_ITEM; cdecl;
 function PKCS12_SAFEBAG_new: PPKCS12_SAFEBAG; cdecl;
-procedure PKCS12_SAFEBAG_free(a: PPKCS12_SAFEBAG); cdecl;
+function PKCS12_SAFEBAG_free(a: PPKCS12_SAFEBAG): void; cdecl;
 function d2i_PKCS12_SAFEBAG(a: PPPKCS12_SAFEBAG; _in: PPIdAnsiChar; len: TIdC_LONG): PPKCS12_SAFEBAG; cdecl;
 function i2d_PKCS12_SAFEBAG(a: PPKCS12_SAFEBAG; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function PKCS12_SAFEBAG_it: PASN1_ITEM; cdecl;
 function PKCS12_BAGS_new: PPKCS12_BAGS; cdecl;
-procedure PKCS12_BAGS_free(a: PPKCS12_BAGS); cdecl;
+function PKCS12_BAGS_free(a: PPKCS12_BAGS): void; cdecl;
 function d2i_PKCS12_BAGS(a: PPPKCS12_BAGS; _in: PPIdAnsiChar; len: TIdC_LONG): PPKCS12_BAGS; cdecl;
 function i2d_PKCS12_BAGS(a: PPKCS12_BAGS; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function PKCS12_BAGS_it: PASN1_ITEM; cdecl;
 function PKCS12_SAFEBAGS_it: PASN1_ITEM; cdecl;
 function PKCS12_AUTHSAFES_it: PASN1_ITEM; cdecl;
-procedure PKCS12_PBE_add; cdecl;
+function PKCS12_PBE_add: void; cdecl;
 function PKCS12_parse(p12: PPKCS12; pass: PIdAnsiChar; pkey: PPEVP_PKEY; cert: PPX509; ca: PPstack_st_X509): TIdC_INT; cdecl;
 function PKCS12_create(pass: PIdAnsiChar; name: PIdAnsiChar; pkey: PEVP_PKEY; cert: PX509; ca: Pstack_st_X509; nid_key: TIdC_INT; nid_cert: TIdC_INT; iter: TIdC_INT; mac_iter: TIdC_INT; keytype: TIdC_INT): PPKCS12; cdecl;
 function PKCS12_create_ex(pass: PIdAnsiChar; name: PIdAnsiChar; pkey: PEVP_PKEY; cert: PX509; ca: Pstack_st_X509; nid_key: TIdC_INT; nid_cert: TIdC_INT; iter: TIdC_INT; mac_iter: TIdC_INT; keytype: TIdC_INT; ctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PPKCS12; cdecl;
-function PKCS12_create_ex2(pass: PIdAnsiChar; name: PIdAnsiChar; pkey: PEVP_PKEY; cert: PX509; ca: Pstack_st_X509; nid_key: TIdC_INT; nid_cert: TIdC_INT; iter: TIdC_INT; mac_iter: TIdC_INT; keytype: TIdC_INT; ctx: POSSL_LIB_CTX; propq: PIdAnsiChar; cb: TPKCS12_create_cb_func_cb; cbarg: Pointer): PPKCS12; cdecl;
+function PKCS12_create_ex2(pass: PIdAnsiChar; name: PIdAnsiChar; pkey: PEVP_PKEY; cert: PX509; ca: Pstack_st_X509; nid_key: TIdC_INT; nid_cert: TIdC_INT; iter: TIdC_INT; mac_iter: TIdC_INT; keytype: TIdC_INT; ctx: POSSL_LIB_CTX; propq: PIdAnsiChar; cb: TPKCS12_create_cb; cbarg: Pointer): PPKCS12; cdecl;
 function PKCS12_add_cert(pbags: PPstack_st_PKCS12_SAFEBAG; cert: PX509): PPKCS12_SAFEBAG; cdecl;
 function PKCS12_add_key(pbags: PPstack_st_PKCS12_SAFEBAG; key: PEVP_PKEY; key_usage: TIdC_INT; iter: TIdC_INT; key_nid: TIdC_INT; pass: PIdAnsiChar): PPKCS12_SAFEBAG; cdecl;
 function PKCS12_add_key_ex(pbags: PPstack_st_PKCS12_SAFEBAG; key: PEVP_PKEY; key_usage: TIdC_INT; iter: TIdC_INT; key_nid: TIdC_INT; pass: PIdAnsiChar; ctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PPKCS12_SAFEBAG; cdecl;
@@ -579,35 +559,73 @@ function PKCS12_newpass(p12: PPKCS12; oldpass: PIdAnsiChar; newpass: PIdAnsiChar
 // INLINE OR MACRO ROUTINES
 // =============================================================================
 
-function PKCS12_key_gen(pass: PIdAnsiChar; passlen: TIdC_INT; salt: PIdAnsiChar; saltlen: TIdC_INT; id: TIdC_INT; iter: TIdC_INT; n: TIdC_INT; _out: PIdAnsiChar; md_type: PEVP_MD): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function PKCS12_key_gen(pass: PIdAnsiChar; passlen: TIdC_INT; salt: PIdAnsiChar; saltlen: TIdC_INT; id: TIdC_INT; iter: TIdC_INT; n: TIdC_INT; _out: PIdAnsiChar; md_type: PEVP_MD): TIdC_INT; cdecl;
 
-function PKCS12_add_friendlyname(bag: PPKCS12_SAFEBAG; name: PIdAnsiChar; namelen: TIdC_INT): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function PKCS12_add_friendlyname(bag: PPKCS12_SAFEBAG; name: PIdAnsiChar; namelen: TIdC_INT): TIdC_INT; cdecl;
 
-function PKCS12_certbag2x509(bag: PPKCS12_SAFEBAG): PX509; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function PKCS12_certbag2x509(bag: PPKCS12_SAFEBAG): PX509; cdecl;
 
-function PKCS12_certbag2scrl(bag: PPKCS12_SAFEBAG): PX509_CRL; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function PKCS12_certbag2scrl(bag: PPKCS12_SAFEBAG): PX509_CRL; cdecl;
 
-function PKCS12_bag_type(bag: PPKCS12_SAFEBAG): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function PKCS12_bag_type(bag: PPKCS12_SAFEBAG): TIdC_INT; cdecl;
 
-function PKCS12_cert_bag_type(bag: PPKCS12_SAFEBAG): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function PKCS12_cert_bag_type(bag: PPKCS12_SAFEBAG): TIdC_INT; cdecl;
 
-function PKCS12_x5092certbag(x509: PX509): PPKCS12_SAFEBAG; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function PKCS12_x5092certbag(x509: PX509): PPKCS12_SAFEBAG; cdecl;
 
-function PKCS12_x509crl2certbag(crl: PX509_CRL): PPKCS12_SAFEBAG; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function PKCS12_x509crl2certbag(crl: PX509_CRL): PPKCS12_SAFEBAG; cdecl;
 
-function PKCS12_MAKE_KEYBAG(p8: PPKCS8_PRIV_KEY_INFO): PPKCS12_SAFEBAG; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function PKCS12_MAKE_KEYBAG(p8: PPKCS8_PRIV_KEY_INFO): PPKCS12_SAFEBAG; cdecl;
 
-function PKCS12_MAKE_SHKEYBAG(pbe_nid: TIdC_INT; pass: PIdAnsiChar; passlen: TIdC_INT; salt: PIdAnsiChar; saltlen: TIdC_INT; iter: TIdC_INT; p8inf: PPKCS8_PRIV_KEY_INFO): PPKCS12_SAFEBAG; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function PKCS12_MAKE_SHKEYBAG(pbe_nid: TIdC_INT; pass: PIdAnsiChar; passlen: TIdC_INT; salt: PIdAnsiChar; saltlen: TIdC_INT; iter: TIdC_INT; p8inf: PPKCS8_PRIV_KEY_INFO): PPKCS12_SAFEBAG; cdecl;
+
+
+// =============================================================================
+// OPENSSL STACK DEFINITIONS
+// =============================================================================
+type
+  { TODO 1 -copenssl stack PKCS12_SAFEBAG definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_PKCS12_SAFEBAG = Pointer;
+  {$EXTERNALSYM PSTACK_OF_PKCS12_SAFEBAG}
+
+  { Original Stack Macros for PKCS12_SAFEBAG:
+    SKM_DEFINE_STACK_OF_INTERNAL(PKCS12_SAFEBAG, PKCS12_SAFEBAG, PKCS12_SAFEBAG)
+    sk_PKCS12_SAFEBAG_num(sk) OPENSSL_sk_num(ossl_check_const_PKCS12_SAFEBAG_sk_type(sk))
+    sk_PKCS12_SAFEBAG_value(sk, idx) ((PKCS12_SAFEBAG *)OPENSSL_sk_value(ossl_check_const_PKCS12_SAFEBAG_sk_type(sk), (idx)))
+    sk_PKCS12_SAFEBAG_new(cmp) ((STACK_OF(PKCS12_SAFEBAG) *)OPENSSL_sk_new(ossl_check_PKCS12_SAFEBAG_compfunc_type(cmp)))
+    sk_PKCS12_SAFEBAG_new_null() ((STACK_OF(PKCS12_SAFEBAG) *)OPENSSL_sk_new_null())
+    sk_PKCS12_SAFEBAG_new_reserve(cmp, n) ((STACK_OF(PKCS12_SAFEBAG) *)OPENSSL_sk_new_reserve(ossl_check_PKCS12_SAFEBAG_compfunc_type(cmp), (n)))
+    sk_PKCS12_SAFEBAG_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_PKCS12_SAFEBAG_sk_type(sk), (n))
+    sk_PKCS12_SAFEBAG_free(sk) OPENSSL_sk_free(ossl_check_PKCS12_SAFEBAG_sk_type(sk))
+    sk_PKCS12_SAFEBAG_zero(sk) OPENSSL_sk_zero(ossl_check_PKCS12_SAFEBAG_sk_type(sk))
+    sk_PKCS12_SAFEBAG_delete(sk, i) ((PKCS12_SAFEBAG *)OPENSSL_sk_delete(ossl_check_PKCS12_SAFEBAG_sk_type(sk), (i)))
+    sk_PKCS12_SAFEBAG_delete_ptr(sk, ptr) ((PKCS12_SAFEBAG *)OPENSSL_sk_delete_ptr(ossl_check_PKCS12_SAFEBAG_sk_type(sk), ossl_check_PKCS12_SAFEBAG_type(ptr)))
+    sk_PKCS12_SAFEBAG_push(sk, ptr) OPENSSL_sk_push(ossl_check_PKCS12_SAFEBAG_sk_type(sk), ossl_check_PKCS12_SAFEBAG_type(ptr))
+    sk_PKCS12_SAFEBAG_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_PKCS12_SAFEBAG_sk_type(sk), ossl_check_PKCS12_SAFEBAG_type(ptr))
+    sk_PKCS12_SAFEBAG_pop(sk) ((PKCS12_SAFEBAG *)OPENSSL_sk_pop(ossl_check_PKCS12_SAFEBAG_sk_type(sk)))
+    sk_PKCS12_SAFEBAG_shift(sk) ((PKCS12_SAFEBAG *)OPENSSL_sk_shift(ossl_check_PKCS12_SAFEBAG_sk_type(sk)))
+    sk_PKCS12_SAFEBAG_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_PKCS12_SAFEBAG_sk_type(sk), ossl_check_PKCS12_SAFEBAG_freefunc_type(freefunc))
+    sk_PKCS12_SAFEBAG_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_PKCS12_SAFEBAG_sk_type(sk), ossl_check_PKCS12_SAFEBAG_type(ptr), (idx))
+    sk_PKCS12_SAFEBAG_set(sk, idx, ptr) ((PKCS12_SAFEBAG *)OPENSSL_sk_set(ossl_check_PKCS12_SAFEBAG_sk_type(sk), (idx), ossl_check_PKCS12_SAFEBAG_type(ptr)))
+    sk_PKCS12_SAFEBAG_find(sk, ptr) OPENSSL_sk_find(ossl_check_PKCS12_SAFEBAG_sk_type(sk), ossl_check_PKCS12_SAFEBAG_type(ptr))
+    sk_PKCS12_SAFEBAG_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_PKCS12_SAFEBAG_sk_type(sk), ossl_check_PKCS12_SAFEBAG_type(ptr))
+    sk_PKCS12_SAFEBAG_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_PKCS12_SAFEBAG_sk_type(sk), ossl_check_PKCS12_SAFEBAG_type(ptr), pnum)
+    sk_PKCS12_SAFEBAG_sort(sk) OPENSSL_sk_sort(ossl_check_PKCS12_SAFEBAG_sk_type(sk))
+    sk_PKCS12_SAFEBAG_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_PKCS12_SAFEBAG_sk_type(sk))
+    sk_PKCS12_SAFEBAG_dup(sk) ((STACK_OF(PKCS12_SAFEBAG) *)OPENSSL_sk_dup(ossl_check_const_PKCS12_SAFEBAG_sk_type(sk)))
+    sk_PKCS12_SAFEBAG_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(PKCS12_SAFEBAG) *)OPENSSL_sk_deep_copy(ossl_check_const_PKCS12_SAFEBAG_sk_type(sk), ossl_check_PKCS12_SAFEBAG_copyfunc_type(copyfunc), ossl_check_PKCS12_SAFEBAG_freefunc_type(freefunc)))
+    sk_PKCS12_SAFEBAG_set_cmp_func(sk, cmp) ((sk_PKCS12_SAFEBAG_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_PKCS12_SAFEBAG_sk_type(sk), ossl_check_PKCS12_SAFEBAG_compfunc_type(cmp)))
+  }
 
 
 implementation
@@ -628,7 +646,7 @@ uses
 
 function PKCS8_get_attr(p8: PPKCS8_PRIV_KEY_INFO; attr_nid: TIdC_INT): PASN1_TYPE; cdecl external CLibCrypto name 'PKCS8_get_attr';
 function PKCS12_mac_present(p12: PPKCS12): TIdC_INT; cdecl external CLibCrypto name 'PKCS12_mac_present';
-procedure PKCS12_get0_mac(pmac: PPASN1_OCTET_STRING; pmacalg: PPX509_ALGOR; psalt: PPASN1_OCTET_STRING; piter: PPASN1_INTEGER; p12: PPKCS12); cdecl external CLibCrypto name 'PKCS12_get0_mac';
+function PKCS12_get0_mac(pmac: PPASN1_OCTET_STRING; pmacalg: PPX509_ALGOR; psalt: PPASN1_OCTET_STRING; piter: PPASN1_INTEGER; p12: PPKCS12): void; cdecl external CLibCrypto name 'PKCS12_get0_mac';
 function PKCS12_SAFEBAG_get0_attr(bag: PPKCS12_SAFEBAG; attr_nid: TIdC_INT): PASN1_TYPE; cdecl external CLibCrypto name 'PKCS12_SAFEBAG_get0_attr';
 function PKCS12_SAFEBAG_get0_type(bag: PPKCS12_SAFEBAG): PASN1_OBJECT; cdecl external CLibCrypto name 'PKCS12_SAFEBAG_get0_type';
 function PKCS12_SAFEBAG_get_nid(bag: PPKCS12_SAFEBAG): TIdC_INT; cdecl external CLibCrypto name 'PKCS12_SAFEBAG_get_nid';
@@ -676,7 +694,7 @@ function PKCS8_add_keyusage(p8: PPKCS8_PRIV_KEY_INFO; usage: TIdC_INT): TIdC_INT
 function PKCS12_get_attr_gen(attrs: Pstack_st_X509_ATTRIBUTE; attr_nid: TIdC_INT): PASN1_TYPE; cdecl external CLibCrypto name 'PKCS12_get_attr_gen';
 function PKCS12_get_friendlyname(bag: PPKCS12_SAFEBAG): PIdAnsiChar; cdecl external CLibCrypto name 'PKCS12_get_friendlyname';
 function PKCS12_SAFEBAG_get0_attrs(bag: PPKCS12_SAFEBAG): Pstack_st_X509_ATTRIBUTE; cdecl external CLibCrypto name 'PKCS12_SAFEBAG_get0_attrs';
-procedure PKCS12_SAFEBAG_set0_attrs(bag: PPKCS12_SAFEBAG; attrs: Pstack_st_X509_ATTRIBUTE); cdecl external CLibCrypto name 'PKCS12_SAFEBAG_set0_attrs';
+function PKCS12_SAFEBAG_set0_attrs(bag: PPKCS12_SAFEBAG; attrs: Pstack_st_X509_ATTRIBUTE): void; cdecl external CLibCrypto name 'PKCS12_SAFEBAG_set0_attrs';
 function PKCS12_pbe_crypt(algor: PX509_ALGOR; pass: PIdAnsiChar; passlen: TIdC_INT; _in: PIdAnsiChar; inlen: TIdC_INT; data: PPIdAnsiChar; datalen: PIdC_INT; en_de: TIdC_INT): PIdAnsiChar; cdecl external CLibCrypto name 'PKCS12_pbe_crypt';
 function PKCS12_pbe_crypt_ex(algor: PX509_ALGOR; pass: PIdAnsiChar; passlen: TIdC_INT; _in: PIdAnsiChar; inlen: TIdC_INT; data: PPIdAnsiChar; datalen: PIdC_INT; en_de: TIdC_INT; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'PKCS12_pbe_crypt_ex';
 function PKCS12_item_decrypt_d2i(algor: PX509_ALGOR; it: PASN1_ITEM; pass: PIdAnsiChar; passlen: TIdC_INT; oct: PASN1_OCTET_STRING; zbuf: TIdC_INT): Pointer; cdecl external CLibCrypto name 'PKCS12_item_decrypt_d2i';
@@ -703,32 +721,32 @@ function OPENSSL_uni2asc(uni: PIdAnsiChar; unilen: TIdC_INT): PIdAnsiChar; cdecl
 function OPENSSL_utf82uni(asc: PIdAnsiChar; asclen: TIdC_INT; uni: PPIdAnsiChar; unilen: PIdC_INT): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_utf82uni';
 function OPENSSL_uni2utf8(uni: PIdAnsiChar; unilen: TIdC_INT): PIdAnsiChar; cdecl external CLibCrypto name 'OPENSSL_uni2utf8';
 function PKCS12_new: PPKCS12; cdecl external CLibCrypto name 'PKCS12_new';
-procedure PKCS12_free(a: PPKCS12); cdecl external CLibCrypto name 'PKCS12_free';
+function PKCS12_free(a: PPKCS12): void; cdecl external CLibCrypto name 'PKCS12_free';
 function d2i_PKCS12(a: PPPKCS12; _in: PPIdAnsiChar; len: TIdC_LONG): PPKCS12; cdecl external CLibCrypto name 'd2i_PKCS12';
 function i2d_PKCS12(a: PPKCS12; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_PKCS12';
 function PKCS12_it: PASN1_ITEM; cdecl external CLibCrypto name 'PKCS12_it';
 function PKCS12_MAC_DATA_new: PPKCS12_MAC_DATA; cdecl external CLibCrypto name 'PKCS12_MAC_DATA_new';
-procedure PKCS12_MAC_DATA_free(a: PPKCS12_MAC_DATA); cdecl external CLibCrypto name 'PKCS12_MAC_DATA_free';
+function PKCS12_MAC_DATA_free(a: PPKCS12_MAC_DATA): void; cdecl external CLibCrypto name 'PKCS12_MAC_DATA_free';
 function d2i_PKCS12_MAC_DATA(a: PPPKCS12_MAC_DATA; _in: PPIdAnsiChar; len: TIdC_LONG): PPKCS12_MAC_DATA; cdecl external CLibCrypto name 'd2i_PKCS12_MAC_DATA';
 function i2d_PKCS12_MAC_DATA(a: PPKCS12_MAC_DATA; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_PKCS12_MAC_DATA';
 function PKCS12_MAC_DATA_it: PASN1_ITEM; cdecl external CLibCrypto name 'PKCS12_MAC_DATA_it';
 function PKCS12_SAFEBAG_new: PPKCS12_SAFEBAG; cdecl external CLibCrypto name 'PKCS12_SAFEBAG_new';
-procedure PKCS12_SAFEBAG_free(a: PPKCS12_SAFEBAG); cdecl external CLibCrypto name 'PKCS12_SAFEBAG_free';
+function PKCS12_SAFEBAG_free(a: PPKCS12_SAFEBAG): void; cdecl external CLibCrypto name 'PKCS12_SAFEBAG_free';
 function d2i_PKCS12_SAFEBAG(a: PPPKCS12_SAFEBAG; _in: PPIdAnsiChar; len: TIdC_LONG): PPKCS12_SAFEBAG; cdecl external CLibCrypto name 'd2i_PKCS12_SAFEBAG';
 function i2d_PKCS12_SAFEBAG(a: PPKCS12_SAFEBAG; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_PKCS12_SAFEBAG';
 function PKCS12_SAFEBAG_it: PASN1_ITEM; cdecl external CLibCrypto name 'PKCS12_SAFEBAG_it';
 function PKCS12_BAGS_new: PPKCS12_BAGS; cdecl external CLibCrypto name 'PKCS12_BAGS_new';
-procedure PKCS12_BAGS_free(a: PPKCS12_BAGS); cdecl external CLibCrypto name 'PKCS12_BAGS_free';
+function PKCS12_BAGS_free(a: PPKCS12_BAGS): void; cdecl external CLibCrypto name 'PKCS12_BAGS_free';
 function d2i_PKCS12_BAGS(a: PPPKCS12_BAGS; _in: PPIdAnsiChar; len: TIdC_LONG): PPKCS12_BAGS; cdecl external CLibCrypto name 'd2i_PKCS12_BAGS';
 function i2d_PKCS12_BAGS(a: PPKCS12_BAGS; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_PKCS12_BAGS';
 function PKCS12_BAGS_it: PASN1_ITEM; cdecl external CLibCrypto name 'PKCS12_BAGS_it';
 function PKCS12_SAFEBAGS_it: PASN1_ITEM; cdecl external CLibCrypto name 'PKCS12_SAFEBAGS_it';
 function PKCS12_AUTHSAFES_it: PASN1_ITEM; cdecl external CLibCrypto name 'PKCS12_AUTHSAFES_it';
-procedure PKCS12_PBE_add; cdecl external CLibCrypto name 'PKCS12_PBE_add';
+function PKCS12_PBE_add: void; cdecl external CLibCrypto name 'PKCS12_PBE_add';
 function PKCS12_parse(p12: PPKCS12; pass: PIdAnsiChar; pkey: PPEVP_PKEY; cert: PPX509; ca: PPstack_st_X509): TIdC_INT; cdecl external CLibCrypto name 'PKCS12_parse';
 function PKCS12_create(pass: PIdAnsiChar; name: PIdAnsiChar; pkey: PEVP_PKEY; cert: PX509; ca: Pstack_st_X509; nid_key: TIdC_INT; nid_cert: TIdC_INT; iter: TIdC_INT; mac_iter: TIdC_INT; keytype: TIdC_INT): PPKCS12; cdecl external CLibCrypto name 'PKCS12_create';
 function PKCS12_create_ex(pass: PIdAnsiChar; name: PIdAnsiChar; pkey: PEVP_PKEY; cert: PX509; ca: Pstack_st_X509; nid_key: TIdC_INT; nid_cert: TIdC_INT; iter: TIdC_INT; mac_iter: TIdC_INT; keytype: TIdC_INT; ctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PPKCS12; cdecl external CLibCrypto name 'PKCS12_create_ex';
-function PKCS12_create_ex2(pass: PIdAnsiChar; name: PIdAnsiChar; pkey: PEVP_PKEY; cert: PX509; ca: Pstack_st_X509; nid_key: TIdC_INT; nid_cert: TIdC_INT; iter: TIdC_INT; mac_iter: TIdC_INT; keytype: TIdC_INT; ctx: POSSL_LIB_CTX; propq: PIdAnsiChar; cb: TPKCS12_create_cb_func_cb; cbarg: Pointer): PPKCS12; cdecl external CLibCrypto name 'PKCS12_create_ex2';
+function PKCS12_create_ex2(pass: PIdAnsiChar; name: PIdAnsiChar; pkey: PEVP_PKEY; cert: PX509; ca: Pstack_st_X509; nid_key: TIdC_INT; nid_cert: TIdC_INT; iter: TIdC_INT; mac_iter: TIdC_INT; keytype: TIdC_INT; ctx: POSSL_LIB_CTX; propq: PIdAnsiChar; cb: TPKCS12_create_cb; cbarg: Pointer): PPKCS12; cdecl external CLibCrypto name 'PKCS12_create_ex2';
 function PKCS12_add_cert(pbags: PPstack_st_PKCS12_SAFEBAG; cert: PX509): PPKCS12_SAFEBAG; cdecl external CLibCrypto name 'PKCS12_add_cert';
 function PKCS12_add_key(pbags: PPstack_st_PKCS12_SAFEBAG; key: PEVP_PKEY; key_usage: TIdC_INT; iter: TIdC_INT; key_nid: TIdC_INT; pass: PIdAnsiChar): PPKCS12_SAFEBAG; cdecl external CLibCrypto name 'PKCS12_add_key';
 function PKCS12_add_key_ex(pbags: PPstack_st_PKCS12_SAFEBAG; key: PEVP_PKEY; key_usage: TIdC_INT; iter: TIdC_INT; key_nid: TIdC_INT; pass: PIdAnsiChar; ctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PPKCS12_SAFEBAG; cdecl external CLibCrypto name 'PKCS12_add_key_ex';
@@ -1214,7 +1232,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKCS12_mac_present_procname);
 end;
 
-procedure ERR_PKCS12_get0_mac(pmac: PPASN1_OCTET_STRING; pmacalg: PPX509_ALGOR; psalt: PPASN1_OCTET_STRING; piter: PPASN1_INTEGER; p12: PPKCS12); cdecl
+function ERR_PKCS12_get0_mac(pmac: PPASN1_OCTET_STRING; pmacalg: PPX509_ALGOR; psalt: PPASN1_OCTET_STRING; piter: PPASN1_INTEGER; p12: PPKCS12): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKCS12_get0_mac_procname);
 end;
@@ -1454,7 +1472,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKCS12_SAFEBAG_get0_attrs_procname);
 end;
 
-procedure ERR_PKCS12_SAFEBAG_set0_attrs(bag: PPKCS12_SAFEBAG; attrs: Pstack_st_X509_ATTRIBUTE); cdecl
+function ERR_PKCS12_SAFEBAG_set0_attrs(bag: PPKCS12_SAFEBAG; attrs: Pstack_st_X509_ATTRIBUTE): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKCS12_SAFEBAG_set0_attrs_procname);
 end;
@@ -1589,7 +1607,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKCS12_new_procname);
 end;
 
-procedure ERR_PKCS12_free(a: PPKCS12); cdecl
+function ERR_PKCS12_free(a: PPKCS12): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKCS12_free_procname);
 end;
@@ -1614,7 +1632,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKCS12_MAC_DATA_new_procname);
 end;
 
-procedure ERR_PKCS12_MAC_DATA_free(a: PPKCS12_MAC_DATA); cdecl
+function ERR_PKCS12_MAC_DATA_free(a: PPKCS12_MAC_DATA): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKCS12_MAC_DATA_free_procname);
 end;
@@ -1639,7 +1657,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKCS12_SAFEBAG_new_procname);
 end;
 
-procedure ERR_PKCS12_SAFEBAG_free(a: PPKCS12_SAFEBAG); cdecl
+function ERR_PKCS12_SAFEBAG_free(a: PPKCS12_SAFEBAG): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKCS12_SAFEBAG_free_procname);
 end;
@@ -1664,7 +1682,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKCS12_BAGS_new_procname);
 end;
 
-procedure ERR_PKCS12_BAGS_free(a: PPKCS12_BAGS); cdecl
+function ERR_PKCS12_BAGS_free(a: PPKCS12_BAGS): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKCS12_BAGS_free_procname);
 end;
@@ -1694,7 +1712,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKCS12_AUTHSAFES_it_procname);
 end;
 
-procedure ERR_PKCS12_PBE_add; cdecl
+function ERR_PKCS12_PBE_add: void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKCS12_PBE_add_procname);
 end;
@@ -1714,7 +1732,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKCS12_create_ex_procname);
 end;
 
-function ERR_PKCS12_create_ex2(pass: PIdAnsiChar; name: PIdAnsiChar; pkey: PEVP_PKEY; cert: PX509; ca: Pstack_st_X509; nid_key: TIdC_INT; nid_cert: TIdC_INT; iter: TIdC_INT; mac_iter: TIdC_INT; keytype: TIdC_INT; ctx: POSSL_LIB_CTX; propq: PIdAnsiChar; cb: TPKCS12_create_cb_func_cb; cbarg: Pointer): PPKCS12; cdecl
+function ERR_PKCS12_create_ex2(pass: PIdAnsiChar; name: PIdAnsiChar; pkey: PEVP_PKEY; cert: PX509; ca: Pstack_st_X509; nid_key: TIdC_INT; nid_cert: TIdC_INT; iter: TIdC_INT; mac_iter: TIdC_INT; keytype: TIdC_INT; ctx: POSSL_LIB_CTX; propq: PIdAnsiChar; cb: TPKCS12_create_cb; cbarg: Pointer): PPKCS12; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKCS12_create_ex2_procname);
 end;

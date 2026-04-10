@@ -27,6 +27,9 @@ uses
   TaurusTLSHeaders_core;
 
 
+
+
+
 // =============================================================================
 // CONSTANTS DECLARATIONS
 // =============================================================================
@@ -47,8 +50,8 @@ const
 // INLINE OR MACRO ROUTINES
 // =============================================================================
 
-function OPENSSL_VERSION_PREREQ(maj: Pointer; min: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OPENSSL_VERSION_PREREQ(maj: Pointer; min: Pointer): TIdC_INT; cdecl;
 
 
 implementation

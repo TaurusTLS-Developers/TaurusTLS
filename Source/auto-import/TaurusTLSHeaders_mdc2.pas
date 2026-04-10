@@ -26,17 +26,22 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   Pmdc2_ctx_st = ^Tmdc2_ctx_st;
-  Tmdc2_ctx_st = record end;
+  Tmdc2_ctx_st =   record
+    num: TIdC_UINT;
+    data: PIdAnsiChar;
+    h: TDES_cblock;
+    hh: TDES_cblock;
+    pad_type: TIdC_UINT;
+  end;
   {$EXTERNALSYM Pmdc2_ctx_st}
-
-  PMDC2_CTX = ^TMDC2_CTX;
-  TMDC2_CTX = Tmdc2_ctx_st;
-  {$EXTERNALSYM PMDC2_CTX}
 
 
 // =============================================================================

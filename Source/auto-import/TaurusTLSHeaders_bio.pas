@@ -26,92 +26,91 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
-  Pbio_addr_st = ^Tbio_addr_st;
-  {$EXTERNALSYM Pbio_addr_st}
-
-  PBIO_ADDR = ^TBIO_ADDR;
-  TBIO_ADDR = Tbio_addr_st;
-  {$EXTERNALSYM PBIO_ADDR}
+  { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
+  // union bio_addr_st
 
   Pbio_addrinfo_st = ^Tbio_addrinfo_st;
-  Tbio_addrinfo_st = record end;
+  Tbio_addrinfo_st =   record end;
   {$EXTERNALSYM Pbio_addrinfo_st}
 
-  PBIO_ADDRINFO = ^TBIO_ADDRINFO;
-  TBIO_ADDRINFO = Tbio_addrinfo_st;
-  {$EXTERNALSYM PBIO_ADDRINFO}
-
   Pbio_method_st = ^Tbio_method_st;
-  Tbio_method_st = record end;
+  Tbio_method_st =   record end;
   {$EXTERNALSYM Pbio_method_st}
 
-  PBIO_METHOD = ^TBIO_METHOD;
-  TBIO_METHOD = Tbio_method_st;
-  {$EXTERNALSYM PBIO_METHOD}
-
-  Pstack_st_BIO = ^Tstack_st_BIO;
-  Tstack_st_BIO = record end;
-  {$EXTERNALSYM Pstack_st_BIO}
-
   Pbio_msg_st = ^Tbio_msg_st;
-  Tbio_msg_st = record end;
+  Tbio_msg_st =   record
+    data: Pointer;
+    data_len: TIdC_SIZET;
+    peer: PBIO_ADDR;
+    local: PBIO_ADDR;
+    flags: TIdC_UINT64;
+  end;
   {$EXTERNALSYM Pbio_msg_st}
 
-  PBIO_MSG = ^TBIO_MSG;
-  TBIO_MSG = Tbio_msg_st;
-  {$EXTERNALSYM PBIO_MSG}
-
   Pbio_mmsg_cb_args_st = ^Tbio_mmsg_cb_args_st;
-  Tbio_mmsg_cb_args_st = record end;
+  Tbio_mmsg_cb_args_st =   record
+    msg: PBIO_MSG;
+    stride: TIdC_SIZET;
+    num_msg: TIdC_SIZET;
+    flags: TIdC_UINT64;
+    msgs_processed: PIdC_SIZET;
+  end;
   {$EXTERNALSYM Pbio_mmsg_cb_args_st}
 
-  PBIO_MMSG_CB_ARGS = ^TBIO_MMSG_CB_ARGS;
-  TBIO_MMSG_CB_ARGS = Tbio_mmsg_cb_args_st;
-  {$EXTERNALSYM PBIO_MMSG_CB_ARGS}
-
-  Pbio_poll_descriptor_st = ^Tbio_poll_descriptor_st;
-  Tbio_poll_descriptor_st = record end;
-  {$EXTERNALSYM Pbio_poll_descriptor_st}
-
-  Punion (unnamed at /home/sasha/dev/openssl/include/openssl/bio.h:422:5) = ^Tunion (unnamed at /home/sasha/dev/openssl/include/openssl/bio.h:422:5);
-  {$EXTERNALSYM Punion (unnamed at /home/sasha/dev/openssl/include/openssl/bio.h:422:5)}
-
-  PBIO_POLL_DESCRIPTOR = ^TBIO_POLL_DESCRIPTOR;
-  TBIO_POLL_DESCRIPTOR = Tbio_poll_descriptor_st;
-  {$EXTERNALSYM PBIO_POLL_DESCRIPTOR}
+  { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
+  // struct bio_poll_descriptor_st {
+  //     uint32_t type;
+  //     union {
+  //         int fd;
+  //         void *custom;
+  //         uintptr_t custom_ui;
+  //         SSL *ssl;
+  //     } value;
+  // }
 
   Phostent = ^Thostent;
-  Thostent = record end;
+  Thostent =   record end;
   {$EXTERNALSYM Phostent}
 
-  PBIO_sock_info_u = ^TBIO_sock_info_u;
-  {$EXTERNALSYM PBIO_sock_info_u}
+  { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
+  // union BIO_sock_info_u {
+  //     BIO_ADDR *addr;
+  // }
 
 
 // =============================================================================
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  TBIO_callback_fn_func_cb = function(arg1: PBIO; arg2: TIdC_INT; arg3: PIdAnsiChar; arg4: TIdC_INT; arg5: TIdC_LONG; arg6: TIdC_LONG): TIdC_LONG; cdecl;
-  TBIO_callback_fn_ex_func_cb = function(arg1: PBIO; arg2: TIdC_INT; arg3: PIdAnsiChar; arg4: TIdC_SIZET; arg5: TIdC_INT; arg6: TIdC_LONG; arg7: TIdC_INT; arg8: PIdC_SIZET): TIdC_LONG; cdecl;
-  TBIO_info_cb_func_cb = function(arg1: PBIO; arg2: TIdC_INT; arg3: TIdC_INT): TIdC_INT; cdecl;
-  Tsk_BIO_compfunc_func_cb = function(arg1: PPBIO; arg2: PPBIO): TIdC_INT; cdecl;
-  Tsk_BIO_freefunc_func_cb = procedure(arg1: PBIO); cdecl;
-  Tsk_BIO_copyfunc_func_cb = function(arg1: PBIO): PBIO; cdecl;
-  Tasn1_ps_func_func_cb = function(arg1: PBIO; arg2: PPIdAnsiChar; arg3: PIdC_INT; arg4: Pointer): TIdC_INT; cdecl;
-  TBIO_dgram_sctp_notification_handler_fn_func_cb = procedure(arg1: PBIO; arg2: Pointer; arg3: Pointer); cdecl;
-  TBIO_dump_cb_cb_cb = function(arg1: Pointer; arg2: TIdC_SIZET; arg3: Pointer): TIdC_INT; cdecl;
-  TBIO_meth_set_write_write_cb = function(arg1: PBIO; arg2: PIdAnsiChar; arg3: TIdC_INT): TIdC_INT; cdecl;
-  TBIO_meth_set_write_ex_bwrite_cb = function(arg1: PBIO; arg2: PIdAnsiChar; arg3: TIdC_SIZET; arg4: PIdC_SIZET): TIdC_INT; cdecl;
-  TBIO_meth_set_sendmmsg_f_cb = function(arg1: PBIO; arg2: PBIO_MSG; arg3: TIdC_SIZET; arg4: TIdC_SIZET; arg5: UInt64; arg6: PIdC_SIZET): TIdC_INT; cdecl;
-  TBIO_meth_set_puts_puts_cb = function(arg1: PBIO; arg2: PIdAnsiChar): TIdC_INT; cdecl;
-  TBIO_meth_set_ctrl_ctrl_cb = function(arg1: PBIO; arg2: TIdC_INT; arg3: TIdC_LONG; arg4: Pointer): TIdC_LONG; cdecl;
-  TBIO_meth_set_create_create_cb = function(arg1: PBIO): TIdC_INT; cdecl;
-  TBIO_meth_set_callback_ctrl_callback_ctrl_cb = function(arg1: PBIO; arg2: TIdC_INT; arg3: TBIO_info_cb_func_cb): TIdC_LONG; cdecl;
+  TBIO_callback_fn = function(b: PBIO; oper: TIdC_INT; argp: PIdAnsiChar; argi: TIdC_INT; argl: TIdC_LONG; ret: TIdC_LONG): TIdC_LONG; cdecl;
+  TBIO_callback_fn_ex = function(b: PBIO; oper: TIdC_INT; argp: PIdAnsiChar; len: TIdC_SIZET; argi: TIdC_INT; argl: TIdC_LONG; ret: TIdC_INT; processed: PIdC_SIZET): TIdC_LONG; cdecl;
+  TBIO_info_cb = function(arg1: PBIO; arg2: TIdC_INT; arg3: TIdC_INT): TIdC_INT; cdecl;
+  Tbio_info_cb = function(arg1: Pbio_st; arg2: TIdC_INT; arg3: TIdC_INT): TIdC_INT; cdecl;
+  Tasn1_ps_func = function(b: PBIO; pbuf: PPIdAnsiChar; plen: PIdC_INT; parg: Pointer): TIdC_INT; cdecl;
+  TBIO_dgram_sctp_notification_handler_fn = function(b: PBIO; context: Pointer; buf: Pointer): void; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // BIO_dump_cb_cb_cb = function(data: Pointer; len: TIdC_SIZET; u: Pointer): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // BIO_meth_set_write_write_cb = function(arg1: PBIO; arg2: PIdAnsiChar; arg3: TIdC_INT): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // BIO_meth_set_write_ex_bwrite_cb = function(arg1: PBIO; arg2: PIdAnsiChar; arg3: TIdC_SIZET; arg4: PIdC_SIZET): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // BIO_meth_set_sendmmsg_f_cb = function(arg1: PBIO; arg2: PBIO_MSG; arg3: TIdC_SIZET; arg4: TIdC_SIZET; arg5: TIdC_UINT64; arg6: PIdC_SIZET): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // BIO_meth_set_puts_puts_cb = function(arg1: PBIO; arg2: PIdAnsiChar): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // BIO_meth_set_ctrl_ctrl_cb = function(arg1: PBIO; arg2: TIdC_INT; arg3: TIdC_LONG; arg4: Pointer): TIdC_LONG; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // BIO_meth_set_create_create_cb = function(arg1: PBIO): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // BIO_meth_set_callback_ctrl_callback_ctrl_cb = function(arg1: PBIO; arg2: TIdC_INT; arg3: Tbio_info_cb): TIdC_LONG; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -321,28 +320,28 @@ var
   BIO_get_new_index: function: TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_get_new_index}
 
-  BIO_set_flags: procedure(b: PBIO; flags: TIdC_INT); cdecl = nil;
+  BIO_set_flags: function(b: PBIO; flags: TIdC_INT): void; cdecl = nil;
   {$EXTERNALSYM BIO_set_flags}
 
   BIO_test_flags: function(b: PBIO; flags: TIdC_INT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_test_flags}
 
-  BIO_clear_flags: procedure(b: PBIO; flags: TIdC_INT); cdecl = nil;
+  BIO_clear_flags: function(b: PBIO; flags: TIdC_INT): void; cdecl = nil;
   {$EXTERNALSYM BIO_clear_flags}
 
-  BIO_get_callback: function(b: PBIO): TBIO_callback_fn_func_cb; cdecl = nil; // Deprecated in 3_0_0
+  BIO_get_callback: function(b: PBIO): TBIO_callback_fn; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM BIO_get_callback}
 
-  BIO_set_callback: procedure(b: PBIO; callback: TBIO_callback_fn_func_cb); cdecl = nil; // Deprecated in 3_0_0
+  BIO_set_callback: function(b: PBIO; callback: TBIO_callback_fn): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM BIO_set_callback}
 
   BIO_debug_callback: function(bio: PBIO; cmd: TIdC_INT; argp: PIdAnsiChar; argi: TIdC_INT; argl: TIdC_LONG; ret: TIdC_LONG): TIdC_LONG; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM BIO_debug_callback}
 
-  BIO_get_callback_ex: function(b: PBIO): TBIO_callback_fn_ex_func_cb; cdecl = nil;
+  BIO_get_callback_ex: function(b: PBIO): TBIO_callback_fn_ex; cdecl = nil;
   {$EXTERNALSYM BIO_get_callback_ex}
 
-  BIO_set_callback_ex: procedure(b: PBIO; callback: TBIO_callback_fn_ex_func_cb); cdecl = nil;
+  BIO_set_callback_ex: function(b: PBIO; callback: TBIO_callback_fn_ex): void; cdecl = nil;
   {$EXTERNALSYM BIO_set_callback_ex}
 
   BIO_debug_callback_ex: function(bio: PBIO; oper: TIdC_INT; argp: PIdAnsiChar; len: TIdC_SIZET; argi: TIdC_INT; argl: TIdC_LONG; ret: TIdC_INT; processed: PIdC_SIZET): TIdC_LONG; cdecl = nil;
@@ -351,7 +350,7 @@ var
   BIO_get_callback_arg: function(b: PBIO): PIdAnsiChar; cdecl = nil;
   {$EXTERNALSYM BIO_get_callback_arg}
 
-  BIO_set_callback_arg: procedure(b: PBIO; arg: PIdAnsiChar); cdecl = nil;
+  BIO_set_callback_arg: function(b: PBIO; arg: PIdAnsiChar): void; cdecl = nil;
   {$EXTERNALSYM BIO_set_callback_arg}
 
   BIO_method_name: function(b: PBIO): PIdAnsiChar; cdecl = nil;
@@ -381,19 +380,19 @@ var
   BIO_get_ex_data: function(bio: PBIO; idx: TIdC_INT): Pointer; cdecl = nil;
   {$EXTERNALSYM BIO_get_ex_data}
 
-  BIO_number_read: function(bio: PBIO): UInt64; cdecl = nil;
+  BIO_number_read: function(bio: PBIO): TIdC_UINT64; cdecl = nil;
   {$EXTERNALSYM BIO_number_read}
 
-  BIO_number_written: function(bio: PBIO): UInt64; cdecl = nil;
+  BIO_number_written: function(bio: PBIO): TIdC_UINT64; cdecl = nil;
   {$EXTERNALSYM BIO_number_written}
 
-  BIO_asn1_set_prefix: function(b: PBIO; prefix: Tasn1_ps_func_func_cb; prefix_free: Tasn1_ps_func_func_cb): TIdC_INT; cdecl = nil;
+  BIO_asn1_set_prefix: function(b: PBIO; prefix: Tasn1_ps_func; prefix_free: Tasn1_ps_func): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_asn1_set_prefix}
 
   BIO_asn1_get_prefix: function(b: PBIO; pprefix: PPasn1_ps_func; pprefix_free: PPasn1_ps_func): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_asn1_get_prefix}
 
-  BIO_asn1_set_suffix: function(b: PBIO; suffix: Tasn1_ps_func_func_cb; suffix_free: Tasn1_ps_func_func_cb): TIdC_INT; cdecl = nil;
+  BIO_asn1_set_suffix: function(b: PBIO; suffix: Tasn1_ps_func; suffix_free: Tasn1_ps_func): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_asn1_set_suffix}
 
   BIO_asn1_get_suffix: function(b: PBIO; psuffix: PPasn1_ps_func; psuffix_free: PPasn1_ps_func): TIdC_INT; cdecl = nil;
@@ -420,25 +419,25 @@ var
   BIO_free: function(a: PBIO): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_free}
 
-  BIO_set_data: procedure(a: PBIO; ptr: Pointer); cdecl = nil;
+  BIO_set_data: function(a: PBIO; ptr: Pointer): void; cdecl = nil;
   {$EXTERNALSYM BIO_set_data}
 
   BIO_get_data: function(a: PBIO): Pointer; cdecl = nil;
   {$EXTERNALSYM BIO_get_data}
 
-  BIO_set_init: procedure(a: PBIO; init: TIdC_INT); cdecl = nil;
+  BIO_set_init: function(a: PBIO; init: TIdC_INT): void; cdecl = nil;
   {$EXTERNALSYM BIO_set_init}
 
   BIO_get_init: function(a: PBIO): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_get_init}
 
-  BIO_set_shutdown: procedure(a: PBIO; shut: TIdC_INT); cdecl = nil;
+  BIO_set_shutdown: function(a: PBIO; shut: TIdC_INT): void; cdecl = nil;
   {$EXTERNALSYM BIO_set_shutdown}
 
   BIO_get_shutdown: function(a: PBIO): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_get_shutdown}
 
-  BIO_vfree: procedure(a: PBIO); cdecl = nil;
+  BIO_vfree: function(a: PBIO): void; cdecl = nil;
   {$EXTERNALSYM BIO_vfree}
 
   BIO_up_ref: function(a: PBIO): TIdC_INT; cdecl = nil;
@@ -450,7 +449,7 @@ var
   BIO_read_ex: function(b: PBIO; data: Pointer; dlen: TIdC_SIZET; readbytes: PIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_read_ex}
 
-  BIO_recvmmsg: function(b: PBIO; msg: PBIO_MSG; stride: TIdC_SIZET; num_msg: TIdC_SIZET; flags: UInt64; msgs_processed: PIdC_SIZET): TIdC_INT; cdecl = nil;
+  BIO_recvmmsg: function(b: PBIO; msg: PBIO_MSG; stride: TIdC_SIZET; num_msg: TIdC_SIZET; flags: TIdC_UINT64; msgs_processed: PIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_recvmmsg}
 
   BIO_gets: function(bp: PBIO; buf: PIdAnsiChar; size: TIdC_INT): TIdC_INT; cdecl = nil;
@@ -465,7 +464,7 @@ var
   BIO_write_ex: function(b: PBIO; data: Pointer; dlen: TIdC_SIZET; written: PIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_write_ex}
 
-  BIO_sendmmsg: function(b: PBIO; msg: PBIO_MSG; stride: TIdC_SIZET; num_msg: TIdC_SIZET; flags: UInt64; msgs_processed: PIdC_SIZET): TIdC_INT; cdecl = nil;
+  BIO_sendmmsg: function(b: PBIO; msg: PBIO_MSG; stride: TIdC_SIZET; num_msg: TIdC_SIZET; flags: TIdC_UINT64; msgs_processed: PIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_sendmmsg}
 
   BIO_get_rpoll_descriptor: function(b: PBIO; desc: PBIO_POLL_DESCRIPTOR): TIdC_INT; cdecl = nil;
@@ -483,7 +482,7 @@ var
   BIO_ctrl: function(bp: PBIO; cmd: TIdC_INT; larg: TIdC_LONG; parg: Pointer): TIdC_LONG; cdecl = nil;
   {$EXTERNALSYM BIO_ctrl}
 
-  BIO_callback_ctrl: function(b: PBIO; cmd: TIdC_INT; fp: TBIO_info_cb_func_cb): TIdC_LONG; cdecl = nil;
+  BIO_callback_ctrl: function(b: PBIO; cmd: TIdC_INT; fp: Tbio_info_cb): TIdC_LONG; cdecl = nil;
   {$EXTERNALSYM BIO_callback_ctrl}
 
   BIO_ptr_ctrl: function(bp: PBIO; cmd: TIdC_INT; larg: TIdC_LONG): Pointer; cdecl = nil;
@@ -498,7 +497,7 @@ var
   BIO_pop: function(b: PBIO): PBIO; cdecl = nil;
   {$EXTERNALSYM BIO_pop}
 
-  BIO_free_all: procedure(a: PBIO); cdecl = nil;
+  BIO_free_all: function(a: PBIO): void; cdecl = nil;
   {$EXTERNALSYM BIO_free_all}
 
   BIO_find_type: function(b: PBIO; bio_type: TIdC_INT): PBIO; cdecl = nil;
@@ -507,7 +506,7 @@ var
   BIO_next: function(b: PBIO): PBIO; cdecl = nil;
   {$EXTERNALSYM BIO_next}
 
-  BIO_set_next: procedure(b: PBIO; next: PBIO); cdecl = nil;
+  BIO_set_next: function(b: PBIO; next: PBIO): void; cdecl = nil;
   {$EXTERNALSYM BIO_set_next}
 
   BIO_get_retry_BIO: function(bio: PBIO; reason: PIdC_INT): PBIO; cdecl = nil;
@@ -516,7 +515,7 @@ var
   BIO_get_retry_reason: function(bio: PBIO): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_get_retry_reason}
 
-  BIO_set_retry_reason: procedure(bio: PBIO; reason: TIdC_INT); cdecl = nil;
+  BIO_set_retry_reason: function(bio: PBIO; reason: TIdC_INT): void; cdecl = nil;
   {$EXTERNALSYM BIO_set_retry_reason}
 
   BIO_dup_chain: function(_in: PBIO): PBIO; cdecl = nil;
@@ -609,10 +608,10 @@ var
   BIO_err_is_non_fatal: function(errcode: TIdC_UINT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_err_is_non_fatal}
 
-  BIO_socket_wait: function(fd: TIdC_INT; for_read: TIdC_INT; max_time: TIdC_TIME_T): TIdC_INT; cdecl = nil;
+  BIO_socket_wait: function(fd: TIdC_INT; for_read: TIdC_INT; max_time: TIdC_TIMET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_socket_wait}
 
-  BIO_wait: function(bio: PBIO; max_time: TIdC_TIME_T; nap_milliseconds: TIdC_UINT): TIdC_INT; cdecl = nil;
+  BIO_wait: function(bio: PBIO; max_time: TIdC_TIMET; nap_milliseconds: TIdC_UINT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_wait}
 
   BIO_do_connect_retry: function(bio: PBIO; timeout: TIdC_INT; nap_milliseconds: TIdC_INT): TIdC_INT; cdecl = nil;
@@ -654,13 +653,13 @@ var
   BIO_ADDR_dup: function(ap: PBIO_ADDR): PBIO_ADDR; cdecl = nil;
   {$EXTERNALSYM BIO_ADDR_dup}
 
-  BIO_ADDR_rawmake: function(ap: PBIO_ADDR; family: TIdC_INT; where: Pointer; wherelen: TIdC_SIZET; port: UInt16): TIdC_INT; cdecl = nil;
+  BIO_ADDR_rawmake: function(ap: PBIO_ADDR; family: TIdC_INT; where: Pointer; wherelen: TIdC_SIZET; port: TIdC_USHORT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_ADDR_rawmake}
 
-  BIO_ADDR_free: procedure(arg1: PBIO_ADDR); cdecl = nil;
+  BIO_ADDR_free: function(arg1: PBIO_ADDR): void; cdecl = nil;
   {$EXTERNALSYM BIO_ADDR_free}
 
-  BIO_ADDR_clear: procedure(ap: PBIO_ADDR); cdecl = nil;
+  BIO_ADDR_clear: function(ap: PBIO_ADDR): void; cdecl = nil;
   {$EXTERNALSYM BIO_ADDR_clear}
 
   BIO_ADDR_family: function(ap: PBIO_ADDR): TIdC_INT; cdecl = nil;
@@ -669,7 +668,7 @@ var
   BIO_ADDR_rawaddress: function(ap: PBIO_ADDR; p: Pointer; l: PIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_ADDR_rawaddress}
 
-  BIO_ADDR_rawport: function(ap: PBIO_ADDR): UInt16; cdecl = nil;
+  BIO_ADDR_rawport: function(ap: PBIO_ADDR): TIdC_USHORT; cdecl = nil;
   {$EXTERNALSYM BIO_ADDR_rawport}
 
   BIO_ADDR_hostname_string: function(ap: PBIO_ADDR; numeric: TIdC_INT): PIdAnsiChar; cdecl = nil;
@@ -696,7 +695,7 @@ var
   BIO_ADDRINFO_address: function(bai: PBIO_ADDRINFO): PBIO_ADDR; cdecl = nil;
   {$EXTERNALSYM BIO_ADDRINFO_address}
 
-  BIO_ADDRINFO_free: procedure(bai: PBIO_ADDRINFO); cdecl = nil;
+  BIO_ADDRINFO_free: function(bai: PBIO_ADDRINFO): void; cdecl = nil;
   {$EXTERNALSYM BIO_ADDRINFO_free}
 
   BIO_parse_hostserv: function(hostserv: PIdAnsiChar; host: PPIdAnsiChar; service: PPIdAnsiChar; hostserv_prio: TBIO_hostserv_priorities): TIdC_INT; cdecl = nil;
@@ -762,7 +761,7 @@ var
   BIO_new_bio_dgram_pair: function(bio1: PPBIO; writebuf1: TIdC_SIZET; bio2: PPBIO; writebuf2: TIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_new_bio_dgram_pair}
 
-  BIO_copy_next_retry: procedure(b: PBIO); cdecl = nil;
+  BIO_copy_next_retry: function(b: PBIO): void; cdecl = nil;
   {$EXTERNALSYM BIO_copy_next_retry}
 
   BIO_printf: function(bio: PBIO; format: PIdAnsiChar): TIdC_INT; cdecl = nil;
@@ -780,7 +779,7 @@ var
   BIO_meth_new: function(_type: TIdC_INT; name: PIdAnsiChar): PBIO_METHOD; cdecl = nil;
   {$EXTERNALSYM BIO_meth_new}
 
-  BIO_meth_free: procedure(biom: PBIO_METHOD); cdecl = nil;
+  BIO_meth_free: function(biom: PBIO_METHOD): void; cdecl = nil;
   {$EXTERNALSYM BIO_meth_free}
 
   BIO_meth_set_write: function(biom: PBIO_METHOD; write: TBIO_meth_set_write_write_cb): TIdC_INT; cdecl = nil;
@@ -864,17 +863,17 @@ var
 // =============================================================================
 
 function BIO_get_new_index: TIdC_INT; cdecl;
-procedure BIO_set_flags(b: PBIO; flags: TIdC_INT); cdecl;
+function BIO_set_flags(b: PBIO; flags: TIdC_INT): void; cdecl;
 function BIO_test_flags(b: PBIO; flags: TIdC_INT): TIdC_INT; cdecl;
-procedure BIO_clear_flags(b: PBIO; flags: TIdC_INT); cdecl;
-function BIO_get_callback(b: PBIO): TBIO_callback_fn_func_cb; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure BIO_set_callback(b: PBIO; callback: TBIO_callback_fn_func_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
+function BIO_clear_flags(b: PBIO; flags: TIdC_INT): void; cdecl;
+function BIO_get_callback(b: PBIO): TBIO_callback_fn; cdecl; deprecated 'In OpenSSL 3_0_0';
+function BIO_set_callback(b: PBIO; callback: TBIO_callback_fn): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 function BIO_debug_callback(bio: PBIO; cmd: TIdC_INT; argp: PIdAnsiChar; argi: TIdC_INT; argl: TIdC_LONG; ret: TIdC_LONG): TIdC_LONG; cdecl; deprecated 'In OpenSSL 3_0_0';
-function BIO_get_callback_ex(b: PBIO): TBIO_callback_fn_ex_func_cb; cdecl;
-procedure BIO_set_callback_ex(b: PBIO; callback: TBIO_callback_fn_ex_func_cb); cdecl;
+function BIO_get_callback_ex(b: PBIO): TBIO_callback_fn_ex; cdecl;
+function BIO_set_callback_ex(b: PBIO; callback: TBIO_callback_fn_ex): void; cdecl;
 function BIO_debug_callback_ex(bio: PBIO; oper: TIdC_INT; argp: PIdAnsiChar; len: TIdC_SIZET; argi: TIdC_INT; argl: TIdC_LONG; ret: TIdC_INT; processed: PIdC_SIZET): TIdC_LONG; cdecl;
 function BIO_get_callback_arg(b: PBIO): PIdAnsiChar; cdecl;
-procedure BIO_set_callback_arg(b: PBIO; arg: PIdAnsiChar); cdecl;
+function BIO_set_callback_arg(b: PBIO; arg: PIdAnsiChar): void; cdecl;
 function BIO_method_name(b: PBIO): PIdAnsiChar; cdecl;
 function BIO_method_type(b: PBIO): TIdC_INT; cdecl;
 function BIO_ctrl_pending(b: PBIO): TIdC_SIZET; cdecl;
@@ -884,11 +883,11 @@ function BIO_ctrl_get_read_request(b: PBIO): TIdC_SIZET; cdecl;
 function BIO_ctrl_reset_read_request(b: PBIO): TIdC_INT; cdecl;
 function BIO_set_ex_data(bio: PBIO; idx: TIdC_INT; data: Pointer): TIdC_INT; cdecl;
 function BIO_get_ex_data(bio: PBIO; idx: TIdC_INT): Pointer; cdecl;
-function BIO_number_read(bio: PBIO): UInt64; cdecl;
-function BIO_number_written(bio: PBIO): UInt64; cdecl;
-function BIO_asn1_set_prefix(b: PBIO; prefix: Tasn1_ps_func_func_cb; prefix_free: Tasn1_ps_func_func_cb): TIdC_INT; cdecl;
+function BIO_number_read(bio: PBIO): TIdC_UINT64; cdecl;
+function BIO_number_written(bio: PBIO): TIdC_UINT64; cdecl;
+function BIO_asn1_set_prefix(b: PBIO; prefix: Tasn1_ps_func; prefix_free: Tasn1_ps_func): TIdC_INT; cdecl;
 function BIO_asn1_get_prefix(b: PBIO; pprefix: PPasn1_ps_func; pprefix_free: PPasn1_ps_func): TIdC_INT; cdecl;
-function BIO_asn1_set_suffix(b: PBIO; suffix: Tasn1_ps_func_func_cb; suffix_free: Tasn1_ps_func_func_cb): TIdC_INT; cdecl;
+function BIO_asn1_set_suffix(b: PBIO; suffix: Tasn1_ps_func; suffix_free: Tasn1_ps_func): TIdC_INT; cdecl;
 function BIO_asn1_get_suffix(b: PBIO; psuffix: PPasn1_ps_func; psuffix_free: PPasn1_ps_func): TIdC_INT; cdecl;
 function BIO_s_file: PBIO_METHOD; cdecl;
 function BIO_new_file(filename: PIdAnsiChar; mode: PIdAnsiChar): PBIO; cdecl;
@@ -897,39 +896,39 @@ function BIO_new_fp(stream: PFILE; close_flag: TIdC_INT): PBIO; cdecl;
 function BIO_new_ex(libctx: POSSL_LIB_CTX; method: PBIO_METHOD): PBIO; cdecl;
 function BIO_new(_type: PBIO_METHOD): PBIO; cdecl;
 function BIO_free(a: PBIO): TIdC_INT; cdecl;
-procedure BIO_set_data(a: PBIO; ptr: Pointer); cdecl;
+function BIO_set_data(a: PBIO; ptr: Pointer): void; cdecl;
 function BIO_get_data(a: PBIO): Pointer; cdecl;
-procedure BIO_set_init(a: PBIO; init: TIdC_INT); cdecl;
+function BIO_set_init(a: PBIO; init: TIdC_INT): void; cdecl;
 function BIO_get_init(a: PBIO): TIdC_INT; cdecl;
-procedure BIO_set_shutdown(a: PBIO; shut: TIdC_INT); cdecl;
+function BIO_set_shutdown(a: PBIO; shut: TIdC_INT): void; cdecl;
 function BIO_get_shutdown(a: PBIO): TIdC_INT; cdecl;
-procedure BIO_vfree(a: PBIO); cdecl;
+function BIO_vfree(a: PBIO): void; cdecl;
 function BIO_up_ref(a: PBIO): TIdC_INT; cdecl;
 function BIO_read(b: PBIO; data: Pointer; dlen: TIdC_INT): TIdC_INT; cdecl;
 function BIO_read_ex(b: PBIO; data: Pointer; dlen: TIdC_SIZET; readbytes: PIdC_SIZET): TIdC_INT; cdecl;
-function BIO_recvmmsg(b: PBIO; msg: PBIO_MSG; stride: TIdC_SIZET; num_msg: TIdC_SIZET; flags: UInt64; msgs_processed: PIdC_SIZET): TIdC_INT; cdecl;
+function BIO_recvmmsg(b: PBIO; msg: PBIO_MSG; stride: TIdC_SIZET; num_msg: TIdC_SIZET; flags: TIdC_UINT64; msgs_processed: PIdC_SIZET): TIdC_INT; cdecl;
 function BIO_gets(bp: PBIO; buf: PIdAnsiChar; size: TIdC_INT): TIdC_INT; cdecl;
 function BIO_get_line(bio: PBIO; buf: PIdAnsiChar; size: TIdC_INT): TIdC_INT; cdecl;
 function BIO_write(b: PBIO; data: Pointer; dlen: TIdC_INT): TIdC_INT; cdecl;
 function BIO_write_ex(b: PBIO; data: Pointer; dlen: TIdC_SIZET; written: PIdC_SIZET): TIdC_INT; cdecl;
-function BIO_sendmmsg(b: PBIO; msg: PBIO_MSG; stride: TIdC_SIZET; num_msg: TIdC_SIZET; flags: UInt64; msgs_processed: PIdC_SIZET): TIdC_INT; cdecl;
+function BIO_sendmmsg(b: PBIO; msg: PBIO_MSG; stride: TIdC_SIZET; num_msg: TIdC_SIZET; flags: TIdC_UINT64; msgs_processed: PIdC_SIZET): TIdC_INT; cdecl;
 function BIO_get_rpoll_descriptor(b: PBIO; desc: PBIO_POLL_DESCRIPTOR): TIdC_INT; cdecl;
 function BIO_get_wpoll_descriptor(b: PBIO; desc: PBIO_POLL_DESCRIPTOR): TIdC_INT; cdecl;
 function BIO_puts(bp: PBIO; buf: PIdAnsiChar): TIdC_INT; cdecl;
 function BIO_indent(b: PBIO; indent: TIdC_INT; max: TIdC_INT): TIdC_INT; cdecl;
 function BIO_ctrl(bp: PBIO; cmd: TIdC_INT; larg: TIdC_LONG; parg: Pointer): TIdC_LONG; cdecl;
-function BIO_callback_ctrl(b: PBIO; cmd: TIdC_INT; fp: TBIO_info_cb_func_cb): TIdC_LONG; cdecl;
+function BIO_callback_ctrl(b: PBIO; cmd: TIdC_INT; fp: Tbio_info_cb): TIdC_LONG; cdecl;
 function BIO_ptr_ctrl(bp: PBIO; cmd: TIdC_INT; larg: TIdC_LONG): Pointer; cdecl;
 function BIO_int_ctrl(bp: PBIO; cmd: TIdC_INT; larg: TIdC_LONG; iarg: TIdC_INT): TIdC_LONG; cdecl;
 function BIO_push(b: PBIO; append: PBIO): PBIO; cdecl;
 function BIO_pop(b: PBIO): PBIO; cdecl;
-procedure BIO_free_all(a: PBIO); cdecl;
+function BIO_free_all(a: PBIO): void; cdecl;
 function BIO_find_type(b: PBIO; bio_type: TIdC_INT): PBIO; cdecl;
 function BIO_next(b: PBIO): PBIO; cdecl;
-procedure BIO_set_next(b: PBIO; next: PBIO); cdecl;
+function BIO_set_next(b: PBIO; next: PBIO): void; cdecl;
 function BIO_get_retry_BIO(bio: PBIO; reason: PIdC_INT): PBIO; cdecl;
 function BIO_get_retry_reason(bio: PBIO): TIdC_INT; cdecl;
-procedure BIO_set_retry_reason(bio: PBIO; reason: TIdC_INT); cdecl;
+function BIO_set_retry_reason(bio: PBIO; reason: TIdC_INT): void; cdecl;
 function BIO_dup_chain(_in: PBIO): PBIO; cdecl;
 function BIO_nread0(bio: PBIO; buf: PPIdAnsiChar): TIdC_INT; cdecl;
 function BIO_nread(bio: PBIO; buf: PPIdAnsiChar; num: TIdC_INT): TIdC_INT; cdecl;
@@ -960,8 +959,8 @@ function BIO_new_dgram(fd: TIdC_INT; close_flag: TIdC_INT): PBIO; cdecl;
 function BIO_sock_should_retry(i: TIdC_INT): TIdC_INT; cdecl;
 function BIO_sock_non_fatal_error(error: TIdC_INT): TIdC_INT; cdecl;
 function BIO_err_is_non_fatal(errcode: TIdC_UINT): TIdC_INT; cdecl;
-function BIO_socket_wait(fd: TIdC_INT; for_read: TIdC_INT; max_time: TIdC_TIME_T): TIdC_INT; cdecl;
-function BIO_wait(bio: PBIO; max_time: TIdC_TIME_T; nap_milliseconds: TIdC_UINT): TIdC_INT; cdecl;
+function BIO_socket_wait(fd: TIdC_INT; for_read: TIdC_INT; max_time: TIdC_TIMET): TIdC_INT; cdecl;
+function BIO_wait(bio: PBIO; max_time: TIdC_TIMET; nap_milliseconds: TIdC_UINT): TIdC_INT; cdecl;
 function BIO_do_connect_retry(bio: PBIO; timeout: TIdC_INT; nap_milliseconds: TIdC_INT): TIdC_INT; cdecl;
 function BIO_fd_should_retry(i: TIdC_INT): TIdC_INT; cdecl;
 function BIO_fd_non_fatal_error(error: TIdC_INT): TIdC_INT; cdecl;
@@ -975,12 +974,12 @@ function BIO_hex_string(_out: PBIO; indent: TIdC_INT; width: TIdC_INT; data: Poi
 function BIO_ADDR_new: PBIO_ADDR; cdecl;
 function BIO_ADDR_copy(dst: PBIO_ADDR; src: PBIO_ADDR): TIdC_INT; cdecl;
 function BIO_ADDR_dup(ap: PBIO_ADDR): PBIO_ADDR; cdecl;
-function BIO_ADDR_rawmake(ap: PBIO_ADDR; family: TIdC_INT; where: Pointer; wherelen: TIdC_SIZET; port: UInt16): TIdC_INT; cdecl;
-procedure BIO_ADDR_free(arg1: PBIO_ADDR); cdecl;
-procedure BIO_ADDR_clear(ap: PBIO_ADDR); cdecl;
+function BIO_ADDR_rawmake(ap: PBIO_ADDR; family: TIdC_INT; where: Pointer; wherelen: TIdC_SIZET; port: TIdC_USHORT): TIdC_INT; cdecl;
+function BIO_ADDR_free(arg1: PBIO_ADDR): void; cdecl;
+function BIO_ADDR_clear(ap: PBIO_ADDR): void; cdecl;
 function BIO_ADDR_family(ap: PBIO_ADDR): TIdC_INT; cdecl;
 function BIO_ADDR_rawaddress(ap: PBIO_ADDR; p: Pointer; l: PIdC_SIZET): TIdC_INT; cdecl;
-function BIO_ADDR_rawport(ap: PBIO_ADDR): UInt16; cdecl;
+function BIO_ADDR_rawport(ap: PBIO_ADDR): TIdC_USHORT; cdecl;
 function BIO_ADDR_hostname_string(ap: PBIO_ADDR; numeric: TIdC_INT): PIdAnsiChar; cdecl;
 function BIO_ADDR_service_string(ap: PBIO_ADDR; numeric: TIdC_INT): PIdAnsiChar; cdecl;
 function BIO_ADDR_path_string(ap: PBIO_ADDR): PIdAnsiChar; cdecl;
@@ -989,7 +988,7 @@ function BIO_ADDRINFO_family(bai: PBIO_ADDRINFO): TIdC_INT; cdecl;
 function BIO_ADDRINFO_socktype(bai: PBIO_ADDRINFO): TIdC_INT; cdecl;
 function BIO_ADDRINFO_protocol(bai: PBIO_ADDRINFO): TIdC_INT; cdecl;
 function BIO_ADDRINFO_address(bai: PBIO_ADDRINFO): PBIO_ADDR; cdecl;
-procedure BIO_ADDRINFO_free(bai: PBIO_ADDRINFO); cdecl;
+function BIO_ADDRINFO_free(bai: PBIO_ADDRINFO): void; cdecl;
 function BIO_parse_hostserv(hostserv: PIdAnsiChar; host: PPIdAnsiChar; service: PPIdAnsiChar; hostserv_prio: TBIO_hostserv_priorities): TIdC_INT; cdecl;
 function BIO_lookup(host: PIdAnsiChar; service: PIdAnsiChar; lookup_type: TBIO_lookup_type; family: TIdC_INT; socktype: TIdC_INT; res: PPBIO_ADDRINFO): TIdC_INT; cdecl;
 function BIO_lookup_ex(host: PIdAnsiChar; service: PIdAnsiChar; lookup_type: TIdC_INT; family: TIdC_INT; socktype: TIdC_INT; protocol: TIdC_INT; res: PPBIO_ADDRINFO): TIdC_INT; cdecl;
@@ -1011,13 +1010,13 @@ function BIO_new_accept(host_port: PIdAnsiChar): PBIO; cdecl;
 function BIO_new_fd(fd: TIdC_INT; close_flag: TIdC_INT): PBIO; cdecl;
 function BIO_new_bio_pair(bio1: PPBIO; writebuf1: TIdC_SIZET; bio2: PPBIO; writebuf2: TIdC_SIZET): TIdC_INT; cdecl;
 function BIO_new_bio_dgram_pair(bio1: PPBIO; writebuf1: TIdC_SIZET; bio2: PPBIO; writebuf2: TIdC_SIZET): TIdC_INT; cdecl;
-procedure BIO_copy_next_retry(b: PBIO); cdecl;
+function BIO_copy_next_retry(b: PBIO): void; cdecl;
 function BIO_printf(bio: PBIO; format: PIdAnsiChar): TIdC_INT; cdecl;
 function BIO_vprintf(bio: PBIO; format: PIdAnsiChar; args: Tva_list): TIdC_INT; cdecl;
 function BIO_snprintf(buf: PIdAnsiChar; n: TIdC_SIZET; format: PIdAnsiChar): TIdC_INT; cdecl;
 function BIO_vsnprintf(buf: PIdAnsiChar; n: TIdC_SIZET; format: PIdAnsiChar; args: Tva_list): TIdC_INT; cdecl;
 function BIO_meth_new(_type: TIdC_INT; name: PIdAnsiChar): PBIO_METHOD; cdecl;
-procedure BIO_meth_free(biom: PBIO_METHOD); cdecl;
+function BIO_meth_free(biom: PBIO_METHOD): void; cdecl;
 function BIO_meth_set_write(biom: PBIO_METHOD; write: TBIO_meth_set_write_write_cb): TIdC_INT; cdecl;
 function BIO_meth_set_write_ex(biom: PBIO_METHOD; bwrite: TBIO_meth_set_write_ex_bwrite_cb): TIdC_INT; cdecl;
 function BIO_meth_set_sendmmsg(biom: PBIO_METHOD; f: TBIO_meth_set_sendmmsg_f_cb): TIdC_INT; cdecl;
@@ -1048,335 +1047,373 @@ function BIO_meth_get_callback_ctrl(biom: PBIO_METHOD): TBIO_meth_set_callback_c
 // INLINE OR MACRO ROUTINES
 // =============================================================================
 
-function BIO_get_ktls_send(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_ktls_send(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_ktls_recv(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_ktls_recv(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_flags(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_flags(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_retry_special(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_retry_special(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_retry_read(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_retry_read(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_retry_write(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_retry_write(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_clear_retry_flags(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_clear_retry_flags(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_retry_flags(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_retry_flags(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_should_read(a: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_should_read(a: Pointer): TIdC_INT; cdecl;
 
-function BIO_should_write(a: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_should_write(a: Pointer): TIdC_INT; cdecl;
 
-function BIO_should_io_special(a: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_should_io_special(a: Pointer): TIdC_INT; cdecl;
 
-function BIO_retry_type(a: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_retry_type(a: Pointer): TIdC_INT; cdecl;
 
-function BIO_should_retry(a: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_should_retry(a: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_app_data(s: Pointer; arg: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_app_data(s: Pointer; arg: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_app_data(s: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_app_data(s: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_nbio(b: Pointer; n: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_nbio(b: Pointer; n: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_tfo(b: Pointer; n: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_tfo(b: Pointer; n: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_conn_hostname(b: Pointer; name: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_conn_hostname(b: Pointer; name: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_conn_port(b: Pointer; port: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_conn_port(b: Pointer; port: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_conn_address(b: Pointer; addr: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_conn_address(b: Pointer; addr: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_conn_ip_family(b: Pointer; f: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_conn_ip_family(b: Pointer; f: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_conn_hostname(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_conn_hostname(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_conn_port(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_conn_port(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_conn_address(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_conn_address(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_conn_ip_family(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_conn_ip_family(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_conn_mode(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_conn_mode(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_conn_mode(b: Pointer; n: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_conn_mode(b: Pointer; n: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_sock_type(b: Pointer; t: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_sock_type(b: Pointer; t: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_sock_type(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_sock_type(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_get0_dgram_bio(b: Pointer; p: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get0_dgram_bio(b: Pointer; p: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_accept_name(b: Pointer; name: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_accept_name(b: Pointer; name: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_accept_port(b: Pointer; port: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_accept_port(b: Pointer; port: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_accept_name(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_accept_name(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_accept_port(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_accept_port(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_peer_name(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_peer_name(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_peer_port(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_peer_port(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_nbio_accept(b: Pointer; n: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_nbio_accept(b: Pointer; n: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_accept_bios(b: Pointer; bio: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_accept_bios(b: Pointer; bio: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_accept_ip_family(b: Pointer; f: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_accept_ip_family(b: Pointer; f: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_accept_ip_family(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_accept_ip_family(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_tfo_accept(b: Pointer; n: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_tfo_accept(b: Pointer; n: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_bind_mode(b: Pointer; mode: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_bind_mode(b: Pointer; mode: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_bind_mode(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_bind_mode(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_do_connect(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_do_connect(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_do_accept(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_do_accept(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_do_handshake(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_do_handshake(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_fd(b: Pointer; fd: Pointer; c: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_fd(b: Pointer; fd: Pointer; c: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_fd(b: Pointer; c: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_fd(b: Pointer; c: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_fp(b: Pointer; fp: Pointer; c: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_fp(b: Pointer; fp: Pointer; c: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_fp(b: Pointer; fpp: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_fp(b: Pointer; fpp: Pointer): TIdC_INT; cdecl;
 
-function BIO_seek(b: Pointer; ofs: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_seek(b: Pointer; ofs: Pointer): TIdC_INT; cdecl;
 
-function BIO_tell(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_tell(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_read_filename(b: Pointer; name: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_read_filename(b: Pointer; name: Pointer): TIdC_INT; cdecl;
 
-function BIO_write_filename(b: Pointer; name: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_write_filename(b: Pointer; name: Pointer): TIdC_INT; cdecl;
 
-function BIO_append_filename(b: Pointer; name: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_append_filename(b: Pointer; name: Pointer): TIdC_INT; cdecl;
 
-function BIO_rw_filename(b: Pointer; name: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_rw_filename(b: Pointer; name: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_ssl(b: Pointer; ssl: Pointer; c: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_ssl(b: Pointer; ssl: Pointer; c: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_ssl(b: Pointer; sslp: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_ssl(b: Pointer; sslp: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_ssl_mode(b: Pointer; client: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_ssl_mode(b: Pointer; client: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_ssl_renegotiate_bytes(b: Pointer; num: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_ssl_renegotiate_bytes(b: Pointer; num: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_num_renegotiates(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_num_renegotiates(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_ssl_renegotiate_timeout(b: Pointer; seconds: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_ssl_renegotiate_timeout(b: Pointer; seconds: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_mem_data(b: Pointer; pp: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_mem_data(b: Pointer; pp: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_mem_buf(b: Pointer; bm: Pointer; c: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_mem_buf(b: Pointer; bm: Pointer; c: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_mem_ptr(b: Pointer; pp: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_mem_ptr(b: Pointer; pp: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_mem_eof_return(b: Pointer; v: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_mem_eof_return(b: Pointer; v: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_buffer_num_lines(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_buffer_num_lines(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_buffer_size(b: Pointer; size: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_buffer_size(b: Pointer; size: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_read_buffer_size(b: Pointer; size: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_read_buffer_size(b: Pointer; size: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_write_buffer_size(b: Pointer; size: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_write_buffer_size(b: Pointer; size: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_buffer_read_data(b: Pointer; buf: Pointer; num: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_buffer_read_data(b: Pointer; buf: Pointer; num: Pointer): TIdC_INT; cdecl;
 
-function BIO_reset(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_reset(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_eof(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_eof(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_close(b: Pointer; c: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_close(b: Pointer; c: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_close(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_close(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_pending(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_pending(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_wpending(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_wpending(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_flush(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_flush(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_info_callback(b: Pointer; cbp: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_info_callback(b: Pointer; cbp: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_info_callback(b: Pointer; cb: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_info_callback(b: Pointer; cb: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_write_buf_size(b: Pointer; size: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_write_buf_size(b: Pointer; size: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_write_buf_size(b: Pointer; size: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_write_buf_size(b: Pointer; size: Pointer): TIdC_INT; cdecl;
 
-function BIO_make_bio_pair(b1: Pointer; b2: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_make_bio_pair(b1: Pointer; b2: Pointer): TIdC_INT; cdecl;
 
-function BIO_destroy_bio_pair(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_destroy_bio_pair(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_shutdown_wr(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_shutdown_wr(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_write_guarantee(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_write_guarantee(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_read_request(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_read_request(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_ctrl_dgram_connect(b: Pointer; peer: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_ctrl_dgram_connect(b: Pointer; peer: Pointer): TIdC_INT; cdecl;
 
-function BIO_ctrl_set_connected(b: Pointer; peer: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_ctrl_set_connected(b: Pointer; peer: Pointer): TIdC_INT; cdecl;
 
-function BIO_dgram_recv_timedout(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_dgram_recv_timedout(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_dgram_send_timedout(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_dgram_send_timedout(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_dgram_get_peer(b: Pointer; peer: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_dgram_get_peer(b: Pointer; peer: Pointer): TIdC_INT; cdecl;
 
-function BIO_dgram_set_peer(b: Pointer; peer: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_dgram_set_peer(b: Pointer; peer: Pointer): TIdC_INT; cdecl;
 
-function BIO_dgram_detect_peer_addr(b: Pointer; peer: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_dgram_detect_peer_addr(b: Pointer; peer: Pointer): TIdC_INT; cdecl;
 
-function BIO_dgram_get_mtu_overhead(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_dgram_get_mtu_overhead(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_dgram_get_local_addr_cap(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_dgram_get_local_addr_cap(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_dgram_get_local_addr_enable(b: Pointer; penable: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_dgram_get_local_addr_enable(b: Pointer; penable: Pointer): TIdC_INT; cdecl;
 
-function BIO_dgram_set_local_addr_enable(b: Pointer; enable: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_dgram_set_local_addr_enable(b: Pointer; enable: Pointer): TIdC_INT; cdecl;
 
-function BIO_dgram_get_effective_caps(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_dgram_get_effective_caps(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_dgram_get_caps(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_dgram_get_caps(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_dgram_set_caps(b: Pointer; caps: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_dgram_set_caps(b: Pointer; caps: Pointer): TIdC_INT; cdecl;
 
-function BIO_dgram_get_no_trunc(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_dgram_get_no_trunc(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_dgram_set_no_trunc(b: Pointer; enable: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_dgram_set_no_trunc(b: Pointer; enable: Pointer): TIdC_INT; cdecl;
 
-function BIO_dgram_get_mtu(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_dgram_get_mtu(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_dgram_set_mtu(b: Pointer; mtu: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_dgram_set_mtu(b: Pointer; mtu: Pointer): TIdC_INT; cdecl;
 
-function BIO_dgram_set0_local_addr(b: Pointer; addr: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_dgram_set0_local_addr(b: Pointer; addr: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_prefix(b: Pointer; p: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_prefix(b: Pointer; p: Pointer): TIdC_INT; cdecl;
 
-function BIO_set_indent(b: Pointer; i: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_set_indent(b: Pointer; i: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_indent(b: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_indent(b: Pointer): TIdC_INT; cdecl;
 
-function BIO_get_ex_new_index(l: Pointer; p: Pointer; newf: Pointer; dupf: Pointer; freef: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function BIO_get_ex_new_index(l: Pointer; p: Pointer; newf: Pointer; dupf: Pointer; freef: Pointer): TIdC_INT; cdecl;
+
+
+// =============================================================================
+// OPENSSL STACK DEFINITIONS
+// =============================================================================
+type
+  { TODO 1 -copenssl stack BIO definitions : To replace placeholder body with the actual type and callbacks. }
+  PSTACK_OF_BIO = Pointer;
+  {$EXTERNALSYM PSTACK_OF_BIO}
+
+  { Original Stack Macros for BIO:
+    SKM_DEFINE_STACK_OF_INTERNAL(BIO, BIO, BIO)
+    sk_BIO_num(sk) OPENSSL_sk_num(ossl_check_const_BIO_sk_type(sk))
+    sk_BIO_value(sk, idx) ((BIO *)OPENSSL_sk_value(ossl_check_const_BIO_sk_type(sk), (idx)))
+    sk_BIO_new(cmp) ((STACK_OF(BIO) *)OPENSSL_sk_new(ossl_check_BIO_compfunc_type(cmp)))
+    sk_BIO_new_null() ((STACK_OF(BIO) *)OPENSSL_sk_new_null())
+    sk_BIO_new_reserve(cmp, n) ((STACK_OF(BIO) *)OPENSSL_sk_new_reserve(ossl_check_BIO_compfunc_type(cmp), (n)))
+    sk_BIO_reserve(sk, n) OPENSSL_sk_reserve(ossl_check_BIO_sk_type(sk), (n))
+    sk_BIO_free(sk) OPENSSL_sk_free(ossl_check_BIO_sk_type(sk))
+    sk_BIO_zero(sk) OPENSSL_sk_zero(ossl_check_BIO_sk_type(sk))
+    sk_BIO_delete(sk, i) ((BIO *)OPENSSL_sk_delete(ossl_check_BIO_sk_type(sk), (i)))
+    sk_BIO_delete_ptr(sk, ptr) ((BIO *)OPENSSL_sk_delete_ptr(ossl_check_BIO_sk_type(sk), ossl_check_BIO_type(ptr)))
+    sk_BIO_push(sk, ptr) OPENSSL_sk_push(ossl_check_BIO_sk_type(sk), ossl_check_BIO_type(ptr))
+    sk_BIO_unshift(sk, ptr) OPENSSL_sk_unshift(ossl_check_BIO_sk_type(sk), ossl_check_BIO_type(ptr))
+    sk_BIO_pop(sk) ((BIO *)OPENSSL_sk_pop(ossl_check_BIO_sk_type(sk)))
+    sk_BIO_shift(sk) ((BIO *)OPENSSL_sk_shift(ossl_check_BIO_sk_type(sk)))
+    sk_BIO_pop_free(sk, freefunc) OPENSSL_sk_pop_free(ossl_check_BIO_sk_type(sk), ossl_check_BIO_freefunc_type(freefunc))
+    sk_BIO_insert(sk, ptr, idx) OPENSSL_sk_insert(ossl_check_BIO_sk_type(sk), ossl_check_BIO_type(ptr), (idx))
+    sk_BIO_set(sk, idx, ptr) ((BIO *)OPENSSL_sk_set(ossl_check_BIO_sk_type(sk), (idx), ossl_check_BIO_type(ptr)))
+    sk_BIO_find(sk, ptr) OPENSSL_sk_find(ossl_check_BIO_sk_type(sk), ossl_check_BIO_type(ptr))
+    sk_BIO_find_ex(sk, ptr) OPENSSL_sk_find_ex(ossl_check_BIO_sk_type(sk), ossl_check_BIO_type(ptr))
+    sk_BIO_find_all(sk, ptr, pnum) OPENSSL_sk_find_all(ossl_check_BIO_sk_type(sk), ossl_check_BIO_type(ptr), pnum)
+    sk_BIO_sort(sk) OPENSSL_sk_sort(ossl_check_BIO_sk_type(sk))
+    sk_BIO_is_sorted(sk) OPENSSL_sk_is_sorted(ossl_check_const_BIO_sk_type(sk))
+    sk_BIO_dup(sk) ((STACK_OF(BIO) *)OPENSSL_sk_dup(ossl_check_const_BIO_sk_type(sk)))
+    sk_BIO_deep_copy(sk, copyfunc, freefunc) ((STACK_OF(BIO) *)OPENSSL_sk_deep_copy(ossl_check_const_BIO_sk_type(sk), ossl_check_BIO_copyfunc_type(copyfunc), ossl_check_BIO_freefunc_type(freefunc)))
+    sk_BIO_set_cmp_func(sk, cmp) ((sk_BIO_compfunc)OPENSSL_sk_set_cmp_func(ossl_check_BIO_sk_type(sk), ossl_check_BIO_compfunc_type(cmp)))
+  }
 
 
 implementation
@@ -1396,17 +1433,17 @@ uses
 // =============================================================================
 
 function BIO_get_new_index: TIdC_INT; cdecl external CLibCrypto name 'BIO_get_new_index';
-procedure BIO_set_flags(b: PBIO; flags: TIdC_INT); cdecl external CLibCrypto name 'BIO_set_flags';
+function BIO_set_flags(b: PBIO; flags: TIdC_INT): void; cdecl external CLibCrypto name 'BIO_set_flags';
 function BIO_test_flags(b: PBIO; flags: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'BIO_test_flags';
-procedure BIO_clear_flags(b: PBIO; flags: TIdC_INT); cdecl external CLibCrypto name 'BIO_clear_flags';
-function BIO_get_callback(b: PBIO): TBIO_callback_fn_func_cb; cdecl external CLibCrypto name 'BIO_get_callback';
-procedure BIO_set_callback(b: PBIO; callback: TBIO_callback_fn_func_cb); cdecl external CLibCrypto name 'BIO_set_callback';
+function BIO_clear_flags(b: PBIO; flags: TIdC_INT): void; cdecl external CLibCrypto name 'BIO_clear_flags';
+function BIO_get_callback(b: PBIO): TBIO_callback_fn; cdecl external CLibCrypto name 'BIO_get_callback';
+function BIO_set_callback(b: PBIO; callback: TBIO_callback_fn): void; cdecl external CLibCrypto name 'BIO_set_callback';
 function BIO_debug_callback(bio: PBIO; cmd: TIdC_INT; argp: PIdAnsiChar; argi: TIdC_INT; argl: TIdC_LONG; ret: TIdC_LONG): TIdC_LONG; cdecl external CLibCrypto name 'BIO_debug_callback';
-function BIO_get_callback_ex(b: PBIO): TBIO_callback_fn_ex_func_cb; cdecl external CLibCrypto name 'BIO_get_callback_ex';
-procedure BIO_set_callback_ex(b: PBIO; callback: TBIO_callback_fn_ex_func_cb); cdecl external CLibCrypto name 'BIO_set_callback_ex';
+function BIO_get_callback_ex(b: PBIO): TBIO_callback_fn_ex; cdecl external CLibCrypto name 'BIO_get_callback_ex';
+function BIO_set_callback_ex(b: PBIO; callback: TBIO_callback_fn_ex): void; cdecl external CLibCrypto name 'BIO_set_callback_ex';
 function BIO_debug_callback_ex(bio: PBIO; oper: TIdC_INT; argp: PIdAnsiChar; len: TIdC_SIZET; argi: TIdC_INT; argl: TIdC_LONG; ret: TIdC_INT; processed: PIdC_SIZET): TIdC_LONG; cdecl external CLibCrypto name 'BIO_debug_callback_ex';
 function BIO_get_callback_arg(b: PBIO): PIdAnsiChar; cdecl external CLibCrypto name 'BIO_get_callback_arg';
-procedure BIO_set_callback_arg(b: PBIO; arg: PIdAnsiChar); cdecl external CLibCrypto name 'BIO_set_callback_arg';
+function BIO_set_callback_arg(b: PBIO; arg: PIdAnsiChar): void; cdecl external CLibCrypto name 'BIO_set_callback_arg';
 function BIO_method_name(b: PBIO): PIdAnsiChar; cdecl external CLibCrypto name 'BIO_method_name';
 function BIO_method_type(b: PBIO): TIdC_INT; cdecl external CLibCrypto name 'BIO_method_type';
 function BIO_ctrl_pending(b: PBIO): TIdC_SIZET; cdecl external CLibCrypto name 'BIO_ctrl_pending';
@@ -1416,11 +1453,11 @@ function BIO_ctrl_get_read_request(b: PBIO): TIdC_SIZET; cdecl external CLibCryp
 function BIO_ctrl_reset_read_request(b: PBIO): TIdC_INT; cdecl external CLibCrypto name 'BIO_ctrl_reset_read_request';
 function BIO_set_ex_data(bio: PBIO; idx: TIdC_INT; data: Pointer): TIdC_INT; cdecl external CLibCrypto name 'BIO_set_ex_data';
 function BIO_get_ex_data(bio: PBIO; idx: TIdC_INT): Pointer; cdecl external CLibCrypto name 'BIO_get_ex_data';
-function BIO_number_read(bio: PBIO): UInt64; cdecl external CLibCrypto name 'BIO_number_read';
-function BIO_number_written(bio: PBIO): UInt64; cdecl external CLibCrypto name 'BIO_number_written';
-function BIO_asn1_set_prefix(b: PBIO; prefix: Tasn1_ps_func_func_cb; prefix_free: Tasn1_ps_func_func_cb): TIdC_INT; cdecl external CLibCrypto name 'BIO_asn1_set_prefix';
+function BIO_number_read(bio: PBIO): TIdC_UINT64; cdecl external CLibCrypto name 'BIO_number_read';
+function BIO_number_written(bio: PBIO): TIdC_UINT64; cdecl external CLibCrypto name 'BIO_number_written';
+function BIO_asn1_set_prefix(b: PBIO; prefix: Tasn1_ps_func; prefix_free: Tasn1_ps_func): TIdC_INT; cdecl external CLibCrypto name 'BIO_asn1_set_prefix';
 function BIO_asn1_get_prefix(b: PBIO; pprefix: PPasn1_ps_func; pprefix_free: PPasn1_ps_func): TIdC_INT; cdecl external CLibCrypto name 'BIO_asn1_get_prefix';
-function BIO_asn1_set_suffix(b: PBIO; suffix: Tasn1_ps_func_func_cb; suffix_free: Tasn1_ps_func_func_cb): TIdC_INT; cdecl external CLibCrypto name 'BIO_asn1_set_suffix';
+function BIO_asn1_set_suffix(b: PBIO; suffix: Tasn1_ps_func; suffix_free: Tasn1_ps_func): TIdC_INT; cdecl external CLibCrypto name 'BIO_asn1_set_suffix';
 function BIO_asn1_get_suffix(b: PBIO; psuffix: PPasn1_ps_func; psuffix_free: PPasn1_ps_func): TIdC_INT; cdecl external CLibCrypto name 'BIO_asn1_get_suffix';
 function BIO_s_file: PBIO_METHOD; cdecl external CLibCrypto name 'BIO_s_file';
 function BIO_new_file(filename: PIdAnsiChar; mode: PIdAnsiChar): PBIO; cdecl external CLibCrypto name 'BIO_new_file';
@@ -1429,39 +1466,39 @@ function BIO_new_fp(stream: PFILE; close_flag: TIdC_INT): PBIO; cdecl external C
 function BIO_new_ex(libctx: POSSL_LIB_CTX; method: PBIO_METHOD): PBIO; cdecl external CLibCrypto name 'BIO_new_ex';
 function BIO_new(_type: PBIO_METHOD): PBIO; cdecl external CLibCrypto name 'BIO_new';
 function BIO_free(a: PBIO): TIdC_INT; cdecl external CLibCrypto name 'BIO_free';
-procedure BIO_set_data(a: PBIO; ptr: Pointer); cdecl external CLibCrypto name 'BIO_set_data';
+function BIO_set_data(a: PBIO; ptr: Pointer): void; cdecl external CLibCrypto name 'BIO_set_data';
 function BIO_get_data(a: PBIO): Pointer; cdecl external CLibCrypto name 'BIO_get_data';
-procedure BIO_set_init(a: PBIO; init: TIdC_INT); cdecl external CLibCrypto name 'BIO_set_init';
+function BIO_set_init(a: PBIO; init: TIdC_INT): void; cdecl external CLibCrypto name 'BIO_set_init';
 function BIO_get_init(a: PBIO): TIdC_INT; cdecl external CLibCrypto name 'BIO_get_init';
-procedure BIO_set_shutdown(a: PBIO; shut: TIdC_INT); cdecl external CLibCrypto name 'BIO_set_shutdown';
+function BIO_set_shutdown(a: PBIO; shut: TIdC_INT): void; cdecl external CLibCrypto name 'BIO_set_shutdown';
 function BIO_get_shutdown(a: PBIO): TIdC_INT; cdecl external CLibCrypto name 'BIO_get_shutdown';
-procedure BIO_vfree(a: PBIO); cdecl external CLibCrypto name 'BIO_vfree';
+function BIO_vfree(a: PBIO): void; cdecl external CLibCrypto name 'BIO_vfree';
 function BIO_up_ref(a: PBIO): TIdC_INT; cdecl external CLibCrypto name 'BIO_up_ref';
 function BIO_read(b: PBIO; data: Pointer; dlen: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'BIO_read';
 function BIO_read_ex(b: PBIO; data: Pointer; dlen: TIdC_SIZET; readbytes: PIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'BIO_read_ex';
-function BIO_recvmmsg(b: PBIO; msg: PBIO_MSG; stride: TIdC_SIZET; num_msg: TIdC_SIZET; flags: UInt64; msgs_processed: PIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'BIO_recvmmsg';
+function BIO_recvmmsg(b: PBIO; msg: PBIO_MSG; stride: TIdC_SIZET; num_msg: TIdC_SIZET; flags: TIdC_UINT64; msgs_processed: PIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'BIO_recvmmsg';
 function BIO_gets(bp: PBIO; buf: PIdAnsiChar; size: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'BIO_gets';
 function BIO_get_line(bio: PBIO; buf: PIdAnsiChar; size: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'BIO_get_line';
 function BIO_write(b: PBIO; data: Pointer; dlen: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'BIO_write';
 function BIO_write_ex(b: PBIO; data: Pointer; dlen: TIdC_SIZET; written: PIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'BIO_write_ex';
-function BIO_sendmmsg(b: PBIO; msg: PBIO_MSG; stride: TIdC_SIZET; num_msg: TIdC_SIZET; flags: UInt64; msgs_processed: PIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'BIO_sendmmsg';
+function BIO_sendmmsg(b: PBIO; msg: PBIO_MSG; stride: TIdC_SIZET; num_msg: TIdC_SIZET; flags: TIdC_UINT64; msgs_processed: PIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'BIO_sendmmsg';
 function BIO_get_rpoll_descriptor(b: PBIO; desc: PBIO_POLL_DESCRIPTOR): TIdC_INT; cdecl external CLibCrypto name 'BIO_get_rpoll_descriptor';
 function BIO_get_wpoll_descriptor(b: PBIO; desc: PBIO_POLL_DESCRIPTOR): TIdC_INT; cdecl external CLibCrypto name 'BIO_get_wpoll_descriptor';
 function BIO_puts(bp: PBIO; buf: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'BIO_puts';
 function BIO_indent(b: PBIO; indent: TIdC_INT; max: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'BIO_indent';
 function BIO_ctrl(bp: PBIO; cmd: TIdC_INT; larg: TIdC_LONG; parg: Pointer): TIdC_LONG; cdecl external CLibCrypto name 'BIO_ctrl';
-function BIO_callback_ctrl(b: PBIO; cmd: TIdC_INT; fp: TBIO_info_cb_func_cb): TIdC_LONG; cdecl external CLibCrypto name 'BIO_callback_ctrl';
+function BIO_callback_ctrl(b: PBIO; cmd: TIdC_INT; fp: Tbio_info_cb): TIdC_LONG; cdecl external CLibCrypto name 'BIO_callback_ctrl';
 function BIO_ptr_ctrl(bp: PBIO; cmd: TIdC_INT; larg: TIdC_LONG): Pointer; cdecl external CLibCrypto name 'BIO_ptr_ctrl';
 function BIO_int_ctrl(bp: PBIO; cmd: TIdC_INT; larg: TIdC_LONG; iarg: TIdC_INT): TIdC_LONG; cdecl external CLibCrypto name 'BIO_int_ctrl';
 function BIO_push(b: PBIO; append: PBIO): PBIO; cdecl external CLibCrypto name 'BIO_push';
 function BIO_pop(b: PBIO): PBIO; cdecl external CLibCrypto name 'BIO_pop';
-procedure BIO_free_all(a: PBIO); cdecl external CLibCrypto name 'BIO_free_all';
+function BIO_free_all(a: PBIO): void; cdecl external CLibCrypto name 'BIO_free_all';
 function BIO_find_type(b: PBIO; bio_type: TIdC_INT): PBIO; cdecl external CLibCrypto name 'BIO_find_type';
 function BIO_next(b: PBIO): PBIO; cdecl external CLibCrypto name 'BIO_next';
-procedure BIO_set_next(b: PBIO; next: PBIO); cdecl external CLibCrypto name 'BIO_set_next';
+function BIO_set_next(b: PBIO; next: PBIO): void; cdecl external CLibCrypto name 'BIO_set_next';
 function BIO_get_retry_BIO(bio: PBIO; reason: PIdC_INT): PBIO; cdecl external CLibCrypto name 'BIO_get_retry_BIO';
 function BIO_get_retry_reason(bio: PBIO): TIdC_INT; cdecl external CLibCrypto name 'BIO_get_retry_reason';
-procedure BIO_set_retry_reason(bio: PBIO; reason: TIdC_INT); cdecl external CLibCrypto name 'BIO_set_retry_reason';
+function BIO_set_retry_reason(bio: PBIO; reason: TIdC_INT): void; cdecl external CLibCrypto name 'BIO_set_retry_reason';
 function BIO_dup_chain(_in: PBIO): PBIO; cdecl external CLibCrypto name 'BIO_dup_chain';
 function BIO_nread0(bio: PBIO; buf: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'BIO_nread0';
 function BIO_nread(bio: PBIO; buf: PPIdAnsiChar; num: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'BIO_nread';
@@ -1492,8 +1529,8 @@ function BIO_new_dgram(fd: TIdC_INT; close_flag: TIdC_INT): PBIO; cdecl external
 function BIO_sock_should_retry(i: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'BIO_sock_should_retry';
 function BIO_sock_non_fatal_error(error: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'BIO_sock_non_fatal_error';
 function BIO_err_is_non_fatal(errcode: TIdC_UINT): TIdC_INT; cdecl external CLibCrypto name 'BIO_err_is_non_fatal';
-function BIO_socket_wait(fd: TIdC_INT; for_read: TIdC_INT; max_time: TIdC_TIME_T): TIdC_INT; cdecl external CLibCrypto name 'BIO_socket_wait';
-function BIO_wait(bio: PBIO; max_time: TIdC_TIME_T; nap_milliseconds: TIdC_UINT): TIdC_INT; cdecl external CLibCrypto name 'BIO_wait';
+function BIO_socket_wait(fd: TIdC_INT; for_read: TIdC_INT; max_time: TIdC_TIMET): TIdC_INT; cdecl external CLibCrypto name 'BIO_socket_wait';
+function BIO_wait(bio: PBIO; max_time: TIdC_TIMET; nap_milliseconds: TIdC_UINT): TIdC_INT; cdecl external CLibCrypto name 'BIO_wait';
 function BIO_do_connect_retry(bio: PBIO; timeout: TIdC_INT; nap_milliseconds: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'BIO_do_connect_retry';
 function BIO_fd_should_retry(i: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'BIO_fd_should_retry';
 function BIO_fd_non_fatal_error(error: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'BIO_fd_non_fatal_error';
@@ -1507,12 +1544,12 @@ function BIO_hex_string(_out: PBIO; indent: TIdC_INT; width: TIdC_INT; data: Poi
 function BIO_ADDR_new: PBIO_ADDR; cdecl external CLibCrypto name 'BIO_ADDR_new';
 function BIO_ADDR_copy(dst: PBIO_ADDR; src: PBIO_ADDR): TIdC_INT; cdecl external CLibCrypto name 'BIO_ADDR_copy';
 function BIO_ADDR_dup(ap: PBIO_ADDR): PBIO_ADDR; cdecl external CLibCrypto name 'BIO_ADDR_dup';
-function BIO_ADDR_rawmake(ap: PBIO_ADDR; family: TIdC_INT; where: Pointer; wherelen: TIdC_SIZET; port: UInt16): TIdC_INT; cdecl external CLibCrypto name 'BIO_ADDR_rawmake';
-procedure BIO_ADDR_free(arg1: PBIO_ADDR); cdecl external CLibCrypto name 'BIO_ADDR_free';
-procedure BIO_ADDR_clear(ap: PBIO_ADDR); cdecl external CLibCrypto name 'BIO_ADDR_clear';
+function BIO_ADDR_rawmake(ap: PBIO_ADDR; family: TIdC_INT; where: Pointer; wherelen: TIdC_SIZET; port: TIdC_USHORT): TIdC_INT; cdecl external CLibCrypto name 'BIO_ADDR_rawmake';
+function BIO_ADDR_free(arg1: PBIO_ADDR): void; cdecl external CLibCrypto name 'BIO_ADDR_free';
+function BIO_ADDR_clear(ap: PBIO_ADDR): void; cdecl external CLibCrypto name 'BIO_ADDR_clear';
 function BIO_ADDR_family(ap: PBIO_ADDR): TIdC_INT; cdecl external CLibCrypto name 'BIO_ADDR_family';
 function BIO_ADDR_rawaddress(ap: PBIO_ADDR; p: Pointer; l: PIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'BIO_ADDR_rawaddress';
-function BIO_ADDR_rawport(ap: PBIO_ADDR): UInt16; cdecl external CLibCrypto name 'BIO_ADDR_rawport';
+function BIO_ADDR_rawport(ap: PBIO_ADDR): TIdC_USHORT; cdecl external CLibCrypto name 'BIO_ADDR_rawport';
 function BIO_ADDR_hostname_string(ap: PBIO_ADDR; numeric: TIdC_INT): PIdAnsiChar; cdecl external CLibCrypto name 'BIO_ADDR_hostname_string';
 function BIO_ADDR_service_string(ap: PBIO_ADDR; numeric: TIdC_INT): PIdAnsiChar; cdecl external CLibCrypto name 'BIO_ADDR_service_string';
 function BIO_ADDR_path_string(ap: PBIO_ADDR): PIdAnsiChar; cdecl external CLibCrypto name 'BIO_ADDR_path_string';
@@ -1521,7 +1558,7 @@ function BIO_ADDRINFO_family(bai: PBIO_ADDRINFO): TIdC_INT; cdecl external CLibC
 function BIO_ADDRINFO_socktype(bai: PBIO_ADDRINFO): TIdC_INT; cdecl external CLibCrypto name 'BIO_ADDRINFO_socktype';
 function BIO_ADDRINFO_protocol(bai: PBIO_ADDRINFO): TIdC_INT; cdecl external CLibCrypto name 'BIO_ADDRINFO_protocol';
 function BIO_ADDRINFO_address(bai: PBIO_ADDRINFO): PBIO_ADDR; cdecl external CLibCrypto name 'BIO_ADDRINFO_address';
-procedure BIO_ADDRINFO_free(bai: PBIO_ADDRINFO); cdecl external CLibCrypto name 'BIO_ADDRINFO_free';
+function BIO_ADDRINFO_free(bai: PBIO_ADDRINFO): void; cdecl external CLibCrypto name 'BIO_ADDRINFO_free';
 function BIO_parse_hostserv(hostserv: PIdAnsiChar; host: PPIdAnsiChar; service: PPIdAnsiChar; hostserv_prio: TBIO_hostserv_priorities): TIdC_INT; cdecl external CLibCrypto name 'BIO_parse_hostserv';
 function BIO_lookup(host: PIdAnsiChar; service: PIdAnsiChar; lookup_type: TBIO_lookup_type; family: TIdC_INT; socktype: TIdC_INT; res: PPBIO_ADDRINFO): TIdC_INT; cdecl external CLibCrypto name 'BIO_lookup';
 function BIO_lookup_ex(host: PIdAnsiChar; service: PIdAnsiChar; lookup_type: TIdC_INT; family: TIdC_INT; socktype: TIdC_INT; protocol: TIdC_INT; res: PPBIO_ADDRINFO): TIdC_INT; cdecl external CLibCrypto name 'BIO_lookup_ex';
@@ -1543,13 +1580,13 @@ function BIO_new_accept(host_port: PIdAnsiChar): PBIO; cdecl external CLibCrypto
 function BIO_new_fd(fd: TIdC_INT; close_flag: TIdC_INT): PBIO; cdecl external CLibCrypto name 'BIO_new_fd';
 function BIO_new_bio_pair(bio1: PPBIO; writebuf1: TIdC_SIZET; bio2: PPBIO; writebuf2: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'BIO_new_bio_pair';
 function BIO_new_bio_dgram_pair(bio1: PPBIO; writebuf1: TIdC_SIZET; bio2: PPBIO; writebuf2: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'BIO_new_bio_dgram_pair';
-procedure BIO_copy_next_retry(b: PBIO); cdecl external CLibCrypto name 'BIO_copy_next_retry';
+function BIO_copy_next_retry(b: PBIO): void; cdecl external CLibCrypto name 'BIO_copy_next_retry';
 function BIO_printf(bio: PBIO; format: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'BIO_printf';
 function BIO_vprintf(bio: PBIO; format: PIdAnsiChar; args: Tva_list): TIdC_INT; cdecl external CLibCrypto name 'BIO_vprintf';
 function BIO_snprintf(buf: PIdAnsiChar; n: TIdC_SIZET; format: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'BIO_snprintf';
 function BIO_vsnprintf(buf: PIdAnsiChar; n: TIdC_SIZET; format: PIdAnsiChar; args: Tva_list): TIdC_INT; cdecl external CLibCrypto name 'BIO_vsnprintf';
 function BIO_meth_new(_type: TIdC_INT; name: PIdAnsiChar): PBIO_METHOD; cdecl external CLibCrypto name 'BIO_meth_new';
-procedure BIO_meth_free(biom: PBIO_METHOD); cdecl external CLibCrypto name 'BIO_meth_free';
+function BIO_meth_free(biom: PBIO_METHOD): void; cdecl external CLibCrypto name 'BIO_meth_free';
 function BIO_meth_set_write(biom: PBIO_METHOD; write: TBIO_meth_set_write_write_cb): TIdC_INT; cdecl external CLibCrypto name 'BIO_meth_set_write';
 function BIO_meth_set_write_ex(biom: PBIO_METHOD; bwrite: TBIO_meth_set_write_ex_bwrite_cb): TIdC_INT; cdecl external CLibCrypto name 'BIO_meth_set_write_ex';
 function BIO_meth_set_sendmmsg(biom: PBIO_METHOD; f: TBIO_meth_set_sendmmsg_f_cb): TIdC_INT; cdecl external CLibCrypto name 'BIO_meth_set_sendmmsg';
@@ -3186,7 +3223,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_get_new_index_procname);
 end;
 
-procedure ERR_BIO_set_flags(b: PBIO; flags: TIdC_INT); cdecl
+function ERR_BIO_set_flags(b: PBIO; flags: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_set_flags_procname);
 end;
@@ -3196,17 +3233,17 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_test_flags_procname);
 end;
 
-procedure ERR_BIO_clear_flags(b: PBIO; flags: TIdC_INT); cdecl
+function ERR_BIO_clear_flags(b: PBIO; flags: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_clear_flags_procname);
 end;
 
-function ERR_BIO_get_callback(b: PBIO): TBIO_callback_fn_func_cb; cdecl
+function ERR_BIO_get_callback(b: PBIO): TBIO_callback_fn; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_get_callback_procname);
 end;
 
-procedure ERR_BIO_set_callback(b: PBIO; callback: TBIO_callback_fn_func_cb); cdecl
+function ERR_BIO_set_callback(b: PBIO; callback: TBIO_callback_fn): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_set_callback_procname);
 end;
@@ -3216,12 +3253,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_debug_callback_procname);
 end;
 
-function ERR_BIO_get_callback_ex(b: PBIO): TBIO_callback_fn_ex_func_cb; cdecl
+function ERR_BIO_get_callback_ex(b: PBIO): TBIO_callback_fn_ex; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_get_callback_ex_procname);
 end;
 
-procedure ERR_BIO_set_callback_ex(b: PBIO; callback: TBIO_callback_fn_ex_func_cb); cdecl
+function ERR_BIO_set_callback_ex(b: PBIO; callback: TBIO_callback_fn_ex): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_set_callback_ex_procname);
 end;
@@ -3236,7 +3273,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_get_callback_arg_procname);
 end;
 
-procedure ERR_BIO_set_callback_arg(b: PBIO; arg: PIdAnsiChar); cdecl
+function ERR_BIO_set_callback_arg(b: PBIO; arg: PIdAnsiChar): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_set_callback_arg_procname);
 end;
@@ -3286,17 +3323,17 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_get_ex_data_procname);
 end;
 
-function ERR_BIO_number_read(bio: PBIO): UInt64; cdecl
+function ERR_BIO_number_read(bio: PBIO): TIdC_UINT64; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_number_read_procname);
 end;
 
-function ERR_BIO_number_written(bio: PBIO): UInt64; cdecl
+function ERR_BIO_number_written(bio: PBIO): TIdC_UINT64; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_number_written_procname);
 end;
 
-function ERR_BIO_asn1_set_prefix(b: PBIO; prefix: Tasn1_ps_func_func_cb; prefix_free: Tasn1_ps_func_func_cb): TIdC_INT; cdecl
+function ERR_BIO_asn1_set_prefix(b: PBIO; prefix: Tasn1_ps_func; prefix_free: Tasn1_ps_func): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_asn1_set_prefix_procname);
 end;
@@ -3306,7 +3343,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_asn1_get_prefix_procname);
 end;
 
-function ERR_BIO_asn1_set_suffix(b: PBIO; suffix: Tasn1_ps_func_func_cb; suffix_free: Tasn1_ps_func_func_cb): TIdC_INT; cdecl
+function ERR_BIO_asn1_set_suffix(b: PBIO; suffix: Tasn1_ps_func; suffix_free: Tasn1_ps_func): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_asn1_set_suffix_procname);
 end;
@@ -3351,7 +3388,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_free_procname);
 end;
 
-procedure ERR_BIO_set_data(a: PBIO; ptr: Pointer); cdecl
+function ERR_BIO_set_data(a: PBIO; ptr: Pointer): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_set_data_procname);
 end;
@@ -3361,7 +3398,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_get_data_procname);
 end;
 
-procedure ERR_BIO_set_init(a: PBIO; init: TIdC_INT); cdecl
+function ERR_BIO_set_init(a: PBIO; init: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_set_init_procname);
 end;
@@ -3371,7 +3408,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_get_init_procname);
 end;
 
-procedure ERR_BIO_set_shutdown(a: PBIO; shut: TIdC_INT); cdecl
+function ERR_BIO_set_shutdown(a: PBIO; shut: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_set_shutdown_procname);
 end;
@@ -3381,7 +3418,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_get_shutdown_procname);
 end;
 
-procedure ERR_BIO_vfree(a: PBIO); cdecl
+function ERR_BIO_vfree(a: PBIO): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_vfree_procname);
 end;
@@ -3401,7 +3438,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_read_ex_procname);
 end;
 
-function ERR_BIO_recvmmsg(b: PBIO; msg: PBIO_MSG; stride: TIdC_SIZET; num_msg: TIdC_SIZET; flags: UInt64; msgs_processed: PIdC_SIZET): TIdC_INT; cdecl
+function ERR_BIO_recvmmsg(b: PBIO; msg: PBIO_MSG; stride: TIdC_SIZET; num_msg: TIdC_SIZET; flags: TIdC_UINT64; msgs_processed: PIdC_SIZET): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_recvmmsg_procname);
 end;
@@ -3426,7 +3463,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_write_ex_procname);
 end;
 
-function ERR_BIO_sendmmsg(b: PBIO; msg: PBIO_MSG; stride: TIdC_SIZET; num_msg: TIdC_SIZET; flags: UInt64; msgs_processed: PIdC_SIZET): TIdC_INT; cdecl
+function ERR_BIO_sendmmsg(b: PBIO; msg: PBIO_MSG; stride: TIdC_SIZET; num_msg: TIdC_SIZET; flags: TIdC_UINT64; msgs_processed: PIdC_SIZET): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_sendmmsg_procname);
 end;
@@ -3456,7 +3493,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_ctrl_procname);
 end;
 
-function ERR_BIO_callback_ctrl(b: PBIO; cmd: TIdC_INT; fp: TBIO_info_cb_func_cb): TIdC_LONG; cdecl
+function ERR_BIO_callback_ctrl(b: PBIO; cmd: TIdC_INT; fp: Tbio_info_cb): TIdC_LONG; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_callback_ctrl_procname);
 end;
@@ -3481,7 +3518,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_pop_procname);
 end;
 
-procedure ERR_BIO_free_all(a: PBIO); cdecl
+function ERR_BIO_free_all(a: PBIO): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_free_all_procname);
 end;
@@ -3496,7 +3533,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_next_procname);
 end;
 
-procedure ERR_BIO_set_next(b: PBIO; next: PBIO); cdecl
+function ERR_BIO_set_next(b: PBIO; next: PBIO): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_set_next_procname);
 end;
@@ -3511,7 +3548,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_get_retry_reason_procname);
 end;
 
-procedure ERR_BIO_set_retry_reason(bio: PBIO; reason: TIdC_INT); cdecl
+function ERR_BIO_set_retry_reason(bio: PBIO; reason: TIdC_INT): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_set_retry_reason_procname);
 end;
@@ -3666,12 +3703,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_err_is_non_fatal_procname);
 end;
 
-function ERR_BIO_socket_wait(fd: TIdC_INT; for_read: TIdC_INT; max_time: TIdC_TIME_T): TIdC_INT; cdecl
+function ERR_BIO_socket_wait(fd: TIdC_INT; for_read: TIdC_INT; max_time: TIdC_TIMET): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_socket_wait_procname);
 end;
 
-function ERR_BIO_wait(bio: PBIO; max_time: TIdC_TIME_T; nap_milliseconds: TIdC_UINT): TIdC_INT; cdecl
+function ERR_BIO_wait(bio: PBIO; max_time: TIdC_TIMET; nap_milliseconds: TIdC_UINT): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_wait_procname);
 end;
@@ -3741,17 +3778,17 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_ADDR_dup_procname);
 end;
 
-function ERR_BIO_ADDR_rawmake(ap: PBIO_ADDR; family: TIdC_INT; where: Pointer; wherelen: TIdC_SIZET; port: UInt16): TIdC_INT; cdecl
+function ERR_BIO_ADDR_rawmake(ap: PBIO_ADDR; family: TIdC_INT; where: Pointer; wherelen: TIdC_SIZET; port: TIdC_USHORT): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_ADDR_rawmake_procname);
 end;
 
-procedure ERR_BIO_ADDR_free(arg1: PBIO_ADDR); cdecl
+function ERR_BIO_ADDR_free(arg1: PBIO_ADDR): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_ADDR_free_procname);
 end;
 
-procedure ERR_BIO_ADDR_clear(ap: PBIO_ADDR); cdecl
+function ERR_BIO_ADDR_clear(ap: PBIO_ADDR): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_ADDR_clear_procname);
 end;
@@ -3766,7 +3803,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_ADDR_rawaddress_procname);
 end;
 
-function ERR_BIO_ADDR_rawport(ap: PBIO_ADDR): UInt16; cdecl
+function ERR_BIO_ADDR_rawport(ap: PBIO_ADDR): TIdC_USHORT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_ADDR_rawport_procname);
 end;
@@ -3811,7 +3848,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_ADDRINFO_address_procname);
 end;
 
-procedure ERR_BIO_ADDRINFO_free(bai: PBIO_ADDRINFO); cdecl
+function ERR_BIO_ADDRINFO_free(bai: PBIO_ADDRINFO): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_ADDRINFO_free_procname);
 end;
@@ -3921,7 +3958,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_new_bio_dgram_pair_procname);
 end;
 
-procedure ERR_BIO_copy_next_retry(b: PBIO); cdecl
+function ERR_BIO_copy_next_retry(b: PBIO): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_copy_next_retry_procname);
 end;
@@ -3951,7 +3988,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_meth_new_procname);
 end;
 
-procedure ERR_BIO_meth_free(biom: PBIO_METHOD); cdecl
+function ERR_BIO_meth_free(biom: PBIO_METHOD): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_meth_free_procname);
 end;

@@ -27,6 +27,9 @@ uses
   TaurusTLSHeaders_core;
 
 
+
+
+
 // =============================================================================
 // CONSTANTS DECLARATIONS
 // =============================================================================
@@ -41,10 +44,10 @@ const
 // =============================================================================
 var
 
-  OSSL_PARAM_locate: function(p: POSSL_PARAM_ARRAY; key: PIdAnsiChar): POSSL_PARAM_ARRAY; cdecl = nil;
+  OSSL_PARAM_locate: function(p: POSSL_PARAM; key: PIdAnsiChar): POSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_locate}
 
-  OSSL_PARAM_locate_const: function(p: POSSL_PARAM_ARRAY; key: PIdAnsiChar): POSSL_PARAM_ARRAY; cdecl = nil;
+  OSSL_PARAM_locate_const: function(p: POSSL_PARAM; key: PIdAnsiChar): POSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_locate_const}
 
   OSSL_PARAM_construct_int: function(key: PIdAnsiChar; buf: PIdC_INT): TOSSL_PARAM; cdecl = nil;
@@ -59,28 +62,28 @@ var
   OSSL_PARAM_construct_ulong: function(key: PIdAnsiChar; buf: PIdC_ULONG): TOSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_construct_ulong}
 
-  OSSL_PARAM_construct_int32: function(key: PIdAnsiChar; buf: PInt32): TOSSL_PARAM; cdecl = nil;
+  OSSL_PARAM_construct_int32: function(key: PIdAnsiChar; buf: PIdC_INT32): TOSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_construct_int32}
 
-  OSSL_PARAM_construct_uint32: function(key: PIdAnsiChar; buf: PUInt32): TOSSL_PARAM; cdecl = nil;
+  OSSL_PARAM_construct_uint32: function(key: PIdAnsiChar; buf: PIdC_UINT32): TOSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_construct_uint32}
 
-  OSSL_PARAM_construct_int64: function(key: PIdAnsiChar; buf: PInt64): TOSSL_PARAM; cdecl = nil;
+  OSSL_PARAM_construct_int64: function(key: PIdAnsiChar; buf: PIdC_INT64): TOSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_construct_int64}
 
-  OSSL_PARAM_construct_uint64: function(key: PIdAnsiChar; buf: PUInt64): TOSSL_PARAM; cdecl = nil;
+  OSSL_PARAM_construct_uint64: function(key: PIdAnsiChar; buf: PIdC_UINT64): TOSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_construct_uint64}
 
   OSSL_PARAM_construct_size_t: function(key: PIdAnsiChar; buf: PIdC_SIZET): TOSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_construct_size_t}
 
-  OSSL_PARAM_construct_time_t: function(key: PIdAnsiChar; buf: PIdC_TIME_T): TOSSL_PARAM; cdecl = nil;
+  OSSL_PARAM_construct_time_t: function(key: PIdAnsiChar; buf: PIdC_TIMET): TOSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_construct_time_t}
 
   OSSL_PARAM_construct_BN: function(key: PIdAnsiChar; buf: PIdAnsiChar; bsize: TIdC_SIZET): TOSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_construct_BN}
 
-  OSSL_PARAM_construct_double: function(key: PIdAnsiChar; buf: PDouble): TOSSL_PARAM; cdecl = nil;
+  OSSL_PARAM_construct_double: function(key: PIdAnsiChar; buf: PIdC_DOUBLE): TOSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_construct_double}
 
   OSSL_PARAM_construct_utf8_string: function(key: PIdAnsiChar; buf: PIdAnsiChar; bsize: TIdC_SIZET): TOSSL_PARAM; cdecl = nil;
@@ -98,130 +101,130 @@ var
   OSSL_PARAM_construct_end: function: TOSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_construct_end}
 
-  OSSL_PARAM_allocate_from_text: function(_to: POSSL_PARAM_ARRAY; paramdefs: POSSL_PARAM_ARRAY; key: PIdAnsiChar; value: PIdAnsiChar; value_n: TIdC_SIZET; found: PIdC_INT): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_allocate_from_text: function(_to: POSSL_PARAM; paramdefs: POSSL_PARAM; key: PIdAnsiChar; value: PIdAnsiChar; value_n: TIdC_SIZET; found: PIdC_INT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_allocate_from_text}
 
-  OSSL_PARAM_print_to_bio: function(params: POSSL_PARAM_ARRAY; bio: PBIO; print_values: TIdC_INT): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_print_to_bio: function(params: POSSL_PARAM; bio: PBIO; print_values: TIdC_INT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_print_to_bio}
 
-  OSSL_PARAM_get_int: function(p: POSSL_PARAM_ARRAY; val: PIdC_INT): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_get_int: function(p: POSSL_PARAM; val: PIdC_INT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_get_int}
 
-  OSSL_PARAM_get_uint: function(p: POSSL_PARAM_ARRAY; val: PIdC_UINT): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_get_uint: function(p: POSSL_PARAM; val: PIdC_UINT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_get_uint}
 
-  OSSL_PARAM_get_long: function(p: POSSL_PARAM_ARRAY; val: PIdC_LONG): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_get_long: function(p: POSSL_PARAM; val: PIdC_LONG): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_get_long}
 
-  OSSL_PARAM_get_ulong: function(p: POSSL_PARAM_ARRAY; val: PIdC_ULONG): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_get_ulong: function(p: POSSL_PARAM; val: PIdC_ULONG): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_get_ulong}
 
-  OSSL_PARAM_get_int32: function(p: POSSL_PARAM_ARRAY; val: PInt32): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_get_int32: function(p: POSSL_PARAM; val: PIdC_INT32): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_get_int32}
 
-  OSSL_PARAM_get_uint32: function(p: POSSL_PARAM_ARRAY; val: PUInt32): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_get_uint32: function(p: POSSL_PARAM; val: PIdC_UINT32): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_get_uint32}
 
-  OSSL_PARAM_get_int64: function(p: POSSL_PARAM_ARRAY; val: PInt64): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_get_int64: function(p: POSSL_PARAM; val: PIdC_INT64): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_get_int64}
 
-  OSSL_PARAM_get_uint64: function(p: POSSL_PARAM_ARRAY; val: PUInt64): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_get_uint64: function(p: POSSL_PARAM; val: PIdC_UINT64): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_get_uint64}
 
-  OSSL_PARAM_get_size_t: function(p: POSSL_PARAM_ARRAY; val: PIdC_SIZET): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_get_size_t: function(p: POSSL_PARAM; val: PIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_get_size_t}
 
-  OSSL_PARAM_get_time_t: function(p: POSSL_PARAM_ARRAY; val: PIdC_TIME_T): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_get_time_t: function(p: POSSL_PARAM; val: PIdC_TIMET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_get_time_t}
 
-  OSSL_PARAM_set_int: function(p: POSSL_PARAM_ARRAY; val: TIdC_INT): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_set_int: function(p: POSSL_PARAM; val: TIdC_INT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_set_int}
 
-  OSSL_PARAM_set_uint: function(p: POSSL_PARAM_ARRAY; val: TIdC_UINT): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_set_uint: function(p: POSSL_PARAM; val: TIdC_UINT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_set_uint}
 
-  OSSL_PARAM_set_long: function(p: POSSL_PARAM_ARRAY; val: TIdC_LONG): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_set_long: function(p: POSSL_PARAM; val: TIdC_LONG): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_set_long}
 
-  OSSL_PARAM_set_ulong: function(p: POSSL_PARAM_ARRAY; val: TIdC_ULONG): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_set_ulong: function(p: POSSL_PARAM; val: TIdC_ULONG): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_set_ulong}
 
-  OSSL_PARAM_set_int32: function(p: POSSL_PARAM_ARRAY; val: Int32): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_set_int32: function(p: POSSL_PARAM; val: TIdC_INT32): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_set_int32}
 
-  OSSL_PARAM_set_uint32: function(p: POSSL_PARAM_ARRAY; val: UInt32): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_set_uint32: function(p: POSSL_PARAM; val: TIdC_UINT32): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_set_uint32}
 
-  OSSL_PARAM_set_int64: function(p: POSSL_PARAM_ARRAY; val: Int64): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_set_int64: function(p: POSSL_PARAM; val: TIdC_INT64): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_set_int64}
 
-  OSSL_PARAM_set_uint64: function(p: POSSL_PARAM_ARRAY; val: UInt64): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_set_uint64: function(p: POSSL_PARAM; val: TIdC_UINT64): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_set_uint64}
 
-  OSSL_PARAM_set_size_t: function(p: POSSL_PARAM_ARRAY; val: TIdC_SIZET): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_set_size_t: function(p: POSSL_PARAM; val: TIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_set_size_t}
 
-  OSSL_PARAM_set_time_t: function(p: POSSL_PARAM_ARRAY; val: TIdC_TIME_T): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_set_time_t: function(p: POSSL_PARAM; val: TIdC_TIMET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_set_time_t}
 
-  OSSL_PARAM_get_double: function(p: POSSL_PARAM_ARRAY; val: PDouble): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_get_double: function(p: POSSL_PARAM; val: PIdC_DOUBLE): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_get_double}
 
-  OSSL_PARAM_set_double: function(p: POSSL_PARAM_ARRAY; val: Double): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_set_double: function(p: POSSL_PARAM; val: TIdC_DOUBLE): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_set_double}
 
-  OSSL_PARAM_get_BN: function(p: POSSL_PARAM_ARRAY; val: PPBIGNUM): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_get_BN: function(p: POSSL_PARAM; val: PPBIGNUM): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_get_BN}
 
-  OSSL_PARAM_set_BN: function(p: POSSL_PARAM_ARRAY; val: PBIGNUM): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_set_BN: function(p: POSSL_PARAM; val: PBIGNUM): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_set_BN}
 
-  OSSL_PARAM_get_utf8_string: function(p: POSSL_PARAM_ARRAY; val: PPIdAnsiChar; max_len: TIdC_SIZET): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_get_utf8_string: function(p: POSSL_PARAM; val: PPIdAnsiChar; max_len: TIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_get_utf8_string}
 
-  OSSL_PARAM_set_utf8_string: function(p: POSSL_PARAM_ARRAY; val: PIdAnsiChar): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_set_utf8_string: function(p: POSSL_PARAM; val: PIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_set_utf8_string}
 
-  OSSL_PARAM_get_octet_string: function(p: POSSL_PARAM_ARRAY; val: PPointer; max_len: TIdC_SIZET; used_len: PIdC_SIZET): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_get_octet_string: function(p: POSSL_PARAM; val: PPointer; max_len: TIdC_SIZET; used_len: PIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_get_octet_string}
 
-  OSSL_PARAM_set_octet_string: function(p: POSSL_PARAM_ARRAY; val: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_set_octet_string: function(p: POSSL_PARAM; val: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_set_octet_string}
 
-  OSSL_PARAM_get_utf8_ptr: function(p: POSSL_PARAM_ARRAY; val: PPIdAnsiChar): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_get_utf8_ptr: function(p: POSSL_PARAM; val: PPIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_get_utf8_ptr}
 
-  OSSL_PARAM_set_utf8_ptr: function(p: POSSL_PARAM_ARRAY; val: PIdAnsiChar): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_set_utf8_ptr: function(p: POSSL_PARAM; val: PIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_set_utf8_ptr}
 
-  OSSL_PARAM_get_octet_ptr: function(p: POSSL_PARAM_ARRAY; val: PPointer; used_len: PIdC_SIZET): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_get_octet_ptr: function(p: POSSL_PARAM; val: PPointer; used_len: PIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_get_octet_ptr}
 
-  OSSL_PARAM_set_octet_ptr: function(p: POSSL_PARAM_ARRAY; val: Pointer; used_len: TIdC_SIZET): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_set_octet_ptr: function(p: POSSL_PARAM; val: Pointer; used_len: TIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_set_octet_ptr}
 
-  OSSL_PARAM_get_utf8_string_ptr: function(p: POSSL_PARAM_ARRAY; val: PPIdAnsiChar): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_get_utf8_string_ptr: function(p: POSSL_PARAM; val: PPIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_get_utf8_string_ptr}
 
-  OSSL_PARAM_get_octet_string_ptr: function(p: POSSL_PARAM_ARRAY; val: PPointer; used_len: PIdC_SIZET): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_get_octet_string_ptr: function(p: POSSL_PARAM; val: PPointer; used_len: PIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_get_octet_string_ptr}
 
-  OSSL_PARAM_modified: function(p: POSSL_PARAM_ARRAY): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_modified: function(p: POSSL_PARAM): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_modified}
 
-  OSSL_PARAM_set_all_unmodified: procedure(p: POSSL_PARAM_ARRAY); cdecl = nil;
+  OSSL_PARAM_set_all_unmodified: function(p: POSSL_PARAM): void; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_set_all_unmodified}
 
-  OSSL_PARAM_dup: function(p: POSSL_PARAM_ARRAY): POSSL_PARAM_ARRAY; cdecl = nil;
+  OSSL_PARAM_dup: function(p: POSSL_PARAM): POSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_dup}
 
-  OSSL_PARAM_merge: function(p1: POSSL_PARAM_ARRAY; p2: POSSL_PARAM_ARRAY): POSSL_PARAM_ARRAY; cdecl = nil;
+  OSSL_PARAM_merge: function(p1: POSSL_PARAM; p2: POSSL_PARAM): POSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_merge}
 
-  OSSL_PARAM_free: procedure(p: POSSL_PARAM_ARRAY); cdecl = nil;
+  OSSL_PARAM_free: function(p: POSSL_PARAM): void; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_free}
 
-  OSSL_PARAM_set_octet_string_or_ptr: function(p: POSSL_PARAM_ARRAY; val: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_set_octet_string_or_ptr: function(p: POSSL_PARAM; val: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_set_octet_string_or_ptr}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -232,87 +235,87 @@ var
 // STATIC BINDING ROUTINES
 // =============================================================================
 
-function OSSL_PARAM_locate(p: POSSL_PARAM_ARRAY; key: PIdAnsiChar): POSSL_PARAM_ARRAY; cdecl;
-function OSSL_PARAM_locate_const(p: POSSL_PARAM_ARRAY; key: PIdAnsiChar): POSSL_PARAM_ARRAY; cdecl;
+function OSSL_PARAM_locate(p: POSSL_PARAM; key: PIdAnsiChar): POSSL_PARAM; cdecl;
+function OSSL_PARAM_locate_const(p: POSSL_PARAM; key: PIdAnsiChar): POSSL_PARAM; cdecl;
 function OSSL_PARAM_construct_int(key: PIdAnsiChar; buf: PIdC_INT): TOSSL_PARAM; cdecl;
 function OSSL_PARAM_construct_uint(key: PIdAnsiChar; buf: PIdC_UINT): TOSSL_PARAM; cdecl;
 function OSSL_PARAM_construct_long(key: PIdAnsiChar; buf: PIdC_LONG): TOSSL_PARAM; cdecl;
 function OSSL_PARAM_construct_ulong(key: PIdAnsiChar; buf: PIdC_ULONG): TOSSL_PARAM; cdecl;
-function OSSL_PARAM_construct_int32(key: PIdAnsiChar; buf: PInt32): TOSSL_PARAM; cdecl;
-function OSSL_PARAM_construct_uint32(key: PIdAnsiChar; buf: PUInt32): TOSSL_PARAM; cdecl;
-function OSSL_PARAM_construct_int64(key: PIdAnsiChar; buf: PInt64): TOSSL_PARAM; cdecl;
-function OSSL_PARAM_construct_uint64(key: PIdAnsiChar; buf: PUInt64): TOSSL_PARAM; cdecl;
+function OSSL_PARAM_construct_int32(key: PIdAnsiChar; buf: PIdC_INT32): TOSSL_PARAM; cdecl;
+function OSSL_PARAM_construct_uint32(key: PIdAnsiChar; buf: PIdC_UINT32): TOSSL_PARAM; cdecl;
+function OSSL_PARAM_construct_int64(key: PIdAnsiChar; buf: PIdC_INT64): TOSSL_PARAM; cdecl;
+function OSSL_PARAM_construct_uint64(key: PIdAnsiChar; buf: PIdC_UINT64): TOSSL_PARAM; cdecl;
 function OSSL_PARAM_construct_size_t(key: PIdAnsiChar; buf: PIdC_SIZET): TOSSL_PARAM; cdecl;
-function OSSL_PARAM_construct_time_t(key: PIdAnsiChar; buf: PIdC_TIME_T): TOSSL_PARAM; cdecl;
+function OSSL_PARAM_construct_time_t(key: PIdAnsiChar; buf: PIdC_TIMET): TOSSL_PARAM; cdecl;
 function OSSL_PARAM_construct_BN(key: PIdAnsiChar; buf: PIdAnsiChar; bsize: TIdC_SIZET): TOSSL_PARAM; cdecl;
-function OSSL_PARAM_construct_double(key: PIdAnsiChar; buf: PDouble): TOSSL_PARAM; cdecl;
+function OSSL_PARAM_construct_double(key: PIdAnsiChar; buf: PIdC_DOUBLE): TOSSL_PARAM; cdecl;
 function OSSL_PARAM_construct_utf8_string(key: PIdAnsiChar; buf: PIdAnsiChar; bsize: TIdC_SIZET): TOSSL_PARAM; cdecl;
 function OSSL_PARAM_construct_utf8_ptr(key: PIdAnsiChar; buf: PPIdAnsiChar; bsize: TIdC_SIZET): TOSSL_PARAM; cdecl;
 function OSSL_PARAM_construct_octet_string(key: PIdAnsiChar; buf: Pointer; bsize: TIdC_SIZET): TOSSL_PARAM; cdecl;
 function OSSL_PARAM_construct_octet_ptr(key: PIdAnsiChar; buf: PPointer; bsize: TIdC_SIZET): TOSSL_PARAM; cdecl;
 function OSSL_PARAM_construct_end: TOSSL_PARAM; cdecl;
-function OSSL_PARAM_allocate_from_text(_to: POSSL_PARAM_ARRAY; paramdefs: POSSL_PARAM_ARRAY; key: PIdAnsiChar; value: PIdAnsiChar; value_n: TIdC_SIZET; found: PIdC_INT): TIdC_INT; cdecl;
-function OSSL_PARAM_print_to_bio(params: POSSL_PARAM_ARRAY; bio: PBIO; print_values: TIdC_INT): TIdC_INT; cdecl;
-function OSSL_PARAM_get_int(p: POSSL_PARAM_ARRAY; val: PIdC_INT): TIdC_INT; cdecl;
-function OSSL_PARAM_get_uint(p: POSSL_PARAM_ARRAY; val: PIdC_UINT): TIdC_INT; cdecl;
-function OSSL_PARAM_get_long(p: POSSL_PARAM_ARRAY; val: PIdC_LONG): TIdC_INT; cdecl;
-function OSSL_PARAM_get_ulong(p: POSSL_PARAM_ARRAY; val: PIdC_ULONG): TIdC_INT; cdecl;
-function OSSL_PARAM_get_int32(p: POSSL_PARAM_ARRAY; val: PInt32): TIdC_INT; cdecl;
-function OSSL_PARAM_get_uint32(p: POSSL_PARAM_ARRAY; val: PUInt32): TIdC_INT; cdecl;
-function OSSL_PARAM_get_int64(p: POSSL_PARAM_ARRAY; val: PInt64): TIdC_INT; cdecl;
-function OSSL_PARAM_get_uint64(p: POSSL_PARAM_ARRAY; val: PUInt64): TIdC_INT; cdecl;
-function OSSL_PARAM_get_size_t(p: POSSL_PARAM_ARRAY; val: PIdC_SIZET): TIdC_INT; cdecl;
-function OSSL_PARAM_get_time_t(p: POSSL_PARAM_ARRAY; val: PIdC_TIME_T): TIdC_INT; cdecl;
-function OSSL_PARAM_set_int(p: POSSL_PARAM_ARRAY; val: TIdC_INT): TIdC_INT; cdecl;
-function OSSL_PARAM_set_uint(p: POSSL_PARAM_ARRAY; val: TIdC_UINT): TIdC_INT; cdecl;
-function OSSL_PARAM_set_long(p: POSSL_PARAM_ARRAY; val: TIdC_LONG): TIdC_INT; cdecl;
-function OSSL_PARAM_set_ulong(p: POSSL_PARAM_ARRAY; val: TIdC_ULONG): TIdC_INT; cdecl;
-function OSSL_PARAM_set_int32(p: POSSL_PARAM_ARRAY; val: Int32): TIdC_INT; cdecl;
-function OSSL_PARAM_set_uint32(p: POSSL_PARAM_ARRAY; val: UInt32): TIdC_INT; cdecl;
-function OSSL_PARAM_set_int64(p: POSSL_PARAM_ARRAY; val: Int64): TIdC_INT; cdecl;
-function OSSL_PARAM_set_uint64(p: POSSL_PARAM_ARRAY; val: UInt64): TIdC_INT; cdecl;
-function OSSL_PARAM_set_size_t(p: POSSL_PARAM_ARRAY; val: TIdC_SIZET): TIdC_INT; cdecl;
-function OSSL_PARAM_set_time_t(p: POSSL_PARAM_ARRAY; val: TIdC_TIME_T): TIdC_INT; cdecl;
-function OSSL_PARAM_get_double(p: POSSL_PARAM_ARRAY; val: PDouble): TIdC_INT; cdecl;
-function OSSL_PARAM_set_double(p: POSSL_PARAM_ARRAY; val: Double): TIdC_INT; cdecl;
-function OSSL_PARAM_get_BN(p: POSSL_PARAM_ARRAY; val: PPBIGNUM): TIdC_INT; cdecl;
-function OSSL_PARAM_set_BN(p: POSSL_PARAM_ARRAY; val: PBIGNUM): TIdC_INT; cdecl;
-function OSSL_PARAM_get_utf8_string(p: POSSL_PARAM_ARRAY; val: PPIdAnsiChar; max_len: TIdC_SIZET): TIdC_INT; cdecl;
-function OSSL_PARAM_set_utf8_string(p: POSSL_PARAM_ARRAY; val: PIdAnsiChar): TIdC_INT; cdecl;
-function OSSL_PARAM_get_octet_string(p: POSSL_PARAM_ARRAY; val: PPointer; max_len: TIdC_SIZET; used_len: PIdC_SIZET): TIdC_INT; cdecl;
-function OSSL_PARAM_set_octet_string(p: POSSL_PARAM_ARRAY; val: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl;
-function OSSL_PARAM_get_utf8_ptr(p: POSSL_PARAM_ARRAY; val: PPIdAnsiChar): TIdC_INT; cdecl;
-function OSSL_PARAM_set_utf8_ptr(p: POSSL_PARAM_ARRAY; val: PIdAnsiChar): TIdC_INT; cdecl;
-function OSSL_PARAM_get_octet_ptr(p: POSSL_PARAM_ARRAY; val: PPointer; used_len: PIdC_SIZET): TIdC_INT; cdecl;
-function OSSL_PARAM_set_octet_ptr(p: POSSL_PARAM_ARRAY; val: Pointer; used_len: TIdC_SIZET): TIdC_INT; cdecl;
-function OSSL_PARAM_get_utf8_string_ptr(p: POSSL_PARAM_ARRAY; val: PPIdAnsiChar): TIdC_INT; cdecl;
-function OSSL_PARAM_get_octet_string_ptr(p: POSSL_PARAM_ARRAY; val: PPointer; used_len: PIdC_SIZET): TIdC_INT; cdecl;
-function OSSL_PARAM_modified(p: POSSL_PARAM_ARRAY): TIdC_INT; cdecl;
-procedure OSSL_PARAM_set_all_unmodified(p: POSSL_PARAM_ARRAY); cdecl;
-function OSSL_PARAM_dup(p: POSSL_PARAM_ARRAY): POSSL_PARAM_ARRAY; cdecl;
-function OSSL_PARAM_merge(p1: POSSL_PARAM_ARRAY; p2: POSSL_PARAM_ARRAY): POSSL_PARAM_ARRAY; cdecl;
-procedure OSSL_PARAM_free(p: POSSL_PARAM_ARRAY); cdecl;
-function OSSL_PARAM_set_octet_string_or_ptr(p: POSSL_PARAM_ARRAY; val: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl;
+function OSSL_PARAM_allocate_from_text(_to: POSSL_PARAM; paramdefs: POSSL_PARAM; key: PIdAnsiChar; value: PIdAnsiChar; value_n: TIdC_SIZET; found: PIdC_INT): TIdC_INT; cdecl;
+function OSSL_PARAM_print_to_bio(params: POSSL_PARAM; bio: PBIO; print_values: TIdC_INT): TIdC_INT; cdecl;
+function OSSL_PARAM_get_int(p: POSSL_PARAM; val: PIdC_INT): TIdC_INT; cdecl;
+function OSSL_PARAM_get_uint(p: POSSL_PARAM; val: PIdC_UINT): TIdC_INT; cdecl;
+function OSSL_PARAM_get_long(p: POSSL_PARAM; val: PIdC_LONG): TIdC_INT; cdecl;
+function OSSL_PARAM_get_ulong(p: POSSL_PARAM; val: PIdC_ULONG): TIdC_INT; cdecl;
+function OSSL_PARAM_get_int32(p: POSSL_PARAM; val: PIdC_INT32): TIdC_INT; cdecl;
+function OSSL_PARAM_get_uint32(p: POSSL_PARAM; val: PIdC_UINT32): TIdC_INT; cdecl;
+function OSSL_PARAM_get_int64(p: POSSL_PARAM; val: PIdC_INT64): TIdC_INT; cdecl;
+function OSSL_PARAM_get_uint64(p: POSSL_PARAM; val: PIdC_UINT64): TIdC_INT; cdecl;
+function OSSL_PARAM_get_size_t(p: POSSL_PARAM; val: PIdC_SIZET): TIdC_INT; cdecl;
+function OSSL_PARAM_get_time_t(p: POSSL_PARAM; val: PIdC_TIMET): TIdC_INT; cdecl;
+function OSSL_PARAM_set_int(p: POSSL_PARAM; val: TIdC_INT): TIdC_INT; cdecl;
+function OSSL_PARAM_set_uint(p: POSSL_PARAM; val: TIdC_UINT): TIdC_INT; cdecl;
+function OSSL_PARAM_set_long(p: POSSL_PARAM; val: TIdC_LONG): TIdC_INT; cdecl;
+function OSSL_PARAM_set_ulong(p: POSSL_PARAM; val: TIdC_ULONG): TIdC_INT; cdecl;
+function OSSL_PARAM_set_int32(p: POSSL_PARAM; val: TIdC_INT32): TIdC_INT; cdecl;
+function OSSL_PARAM_set_uint32(p: POSSL_PARAM; val: TIdC_UINT32): TIdC_INT; cdecl;
+function OSSL_PARAM_set_int64(p: POSSL_PARAM; val: TIdC_INT64): TIdC_INT; cdecl;
+function OSSL_PARAM_set_uint64(p: POSSL_PARAM; val: TIdC_UINT64): TIdC_INT; cdecl;
+function OSSL_PARAM_set_size_t(p: POSSL_PARAM; val: TIdC_SIZET): TIdC_INT; cdecl;
+function OSSL_PARAM_set_time_t(p: POSSL_PARAM; val: TIdC_TIMET): TIdC_INT; cdecl;
+function OSSL_PARAM_get_double(p: POSSL_PARAM; val: PIdC_DOUBLE): TIdC_INT; cdecl;
+function OSSL_PARAM_set_double(p: POSSL_PARAM; val: TIdC_DOUBLE): TIdC_INT; cdecl;
+function OSSL_PARAM_get_BN(p: POSSL_PARAM; val: PPBIGNUM): TIdC_INT; cdecl;
+function OSSL_PARAM_set_BN(p: POSSL_PARAM; val: PBIGNUM): TIdC_INT; cdecl;
+function OSSL_PARAM_get_utf8_string(p: POSSL_PARAM; val: PPIdAnsiChar; max_len: TIdC_SIZET): TIdC_INT; cdecl;
+function OSSL_PARAM_set_utf8_string(p: POSSL_PARAM; val: PIdAnsiChar): TIdC_INT; cdecl;
+function OSSL_PARAM_get_octet_string(p: POSSL_PARAM; val: PPointer; max_len: TIdC_SIZET; used_len: PIdC_SIZET): TIdC_INT; cdecl;
+function OSSL_PARAM_set_octet_string(p: POSSL_PARAM; val: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl;
+function OSSL_PARAM_get_utf8_ptr(p: POSSL_PARAM; val: PPIdAnsiChar): TIdC_INT; cdecl;
+function OSSL_PARAM_set_utf8_ptr(p: POSSL_PARAM; val: PIdAnsiChar): TIdC_INT; cdecl;
+function OSSL_PARAM_get_octet_ptr(p: POSSL_PARAM; val: PPointer; used_len: PIdC_SIZET): TIdC_INT; cdecl;
+function OSSL_PARAM_set_octet_ptr(p: POSSL_PARAM; val: Pointer; used_len: TIdC_SIZET): TIdC_INT; cdecl;
+function OSSL_PARAM_get_utf8_string_ptr(p: POSSL_PARAM; val: PPIdAnsiChar): TIdC_INT; cdecl;
+function OSSL_PARAM_get_octet_string_ptr(p: POSSL_PARAM; val: PPointer; used_len: PIdC_SIZET): TIdC_INT; cdecl;
+function OSSL_PARAM_modified(p: POSSL_PARAM): TIdC_INT; cdecl;
+function OSSL_PARAM_set_all_unmodified(p: POSSL_PARAM): void; cdecl;
+function OSSL_PARAM_dup(p: POSSL_PARAM): POSSL_PARAM; cdecl;
+function OSSL_PARAM_merge(p1: POSSL_PARAM; p2: POSSL_PARAM): POSSL_PARAM; cdecl;
+function OSSL_PARAM_free(p: POSSL_PARAM): void; cdecl;
+function OSSL_PARAM_set_octet_string_or_ptr(p: POSSL_PARAM; val: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 // =============================================================================
 // INLINE OR MACRO ROUTINES
 // =============================================================================
 
-function OSSL_PARAM_BN(key: Pointer; bn: Pointer; sz: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OSSL_PARAM_BN(key: Pointer; bn: Pointer; sz: Pointer): TIdC_INT; cdecl;
 
-function OSSL_PARAM_utf8_string(key: Pointer; addr: Pointer; sz: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OSSL_PARAM_utf8_string(key: Pointer; addr: Pointer; sz: Pointer): TIdC_INT; cdecl;
 
-function OSSL_PARAM_octet_string(key: Pointer; addr: Pointer; sz: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OSSL_PARAM_octet_string(key: Pointer; addr: Pointer; sz: Pointer): TIdC_INT; cdecl;
 
-function OSSL_PARAM_utf8_ptr(key: Pointer; addr: Pointer; sz: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OSSL_PARAM_utf8_ptr(key: Pointer; addr: Pointer; sz: Pointer): TIdC_INT; cdecl;
 
-function OSSL_PARAM_octet_ptr(key: Pointer; addr: Pointer; sz: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function OSSL_PARAM_octet_ptr(key: Pointer; addr: Pointer; sz: Pointer): TIdC_INT; cdecl;
 
 
 implementation
@@ -331,67 +334,67 @@ uses
 // STATIC BINDING ROUTINES IMPORTS
 // =============================================================================
 
-function OSSL_PARAM_locate(p: POSSL_PARAM_ARRAY; key: PIdAnsiChar): POSSL_PARAM_ARRAY; cdecl external CLibCrypto name 'OSSL_PARAM_locate';
-function OSSL_PARAM_locate_const(p: POSSL_PARAM_ARRAY; key: PIdAnsiChar): POSSL_PARAM_ARRAY; cdecl external CLibCrypto name 'OSSL_PARAM_locate_const';
+function OSSL_PARAM_locate(p: POSSL_PARAM; key: PIdAnsiChar): POSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_locate';
+function OSSL_PARAM_locate_const(p: POSSL_PARAM; key: PIdAnsiChar): POSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_locate_const';
 function OSSL_PARAM_construct_int(key: PIdAnsiChar; buf: PIdC_INT): TOSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_construct_int';
 function OSSL_PARAM_construct_uint(key: PIdAnsiChar; buf: PIdC_UINT): TOSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_construct_uint';
 function OSSL_PARAM_construct_long(key: PIdAnsiChar; buf: PIdC_LONG): TOSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_construct_long';
 function OSSL_PARAM_construct_ulong(key: PIdAnsiChar; buf: PIdC_ULONG): TOSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_construct_ulong';
-function OSSL_PARAM_construct_int32(key: PIdAnsiChar; buf: PInt32): TOSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_construct_int32';
-function OSSL_PARAM_construct_uint32(key: PIdAnsiChar; buf: PUInt32): TOSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_construct_uint32';
-function OSSL_PARAM_construct_int64(key: PIdAnsiChar; buf: PInt64): TOSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_construct_int64';
-function OSSL_PARAM_construct_uint64(key: PIdAnsiChar; buf: PUInt64): TOSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_construct_uint64';
+function OSSL_PARAM_construct_int32(key: PIdAnsiChar; buf: PIdC_INT32): TOSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_construct_int32';
+function OSSL_PARAM_construct_uint32(key: PIdAnsiChar; buf: PIdC_UINT32): TOSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_construct_uint32';
+function OSSL_PARAM_construct_int64(key: PIdAnsiChar; buf: PIdC_INT64): TOSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_construct_int64';
+function OSSL_PARAM_construct_uint64(key: PIdAnsiChar; buf: PIdC_UINT64): TOSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_construct_uint64';
 function OSSL_PARAM_construct_size_t(key: PIdAnsiChar; buf: PIdC_SIZET): TOSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_construct_size_t';
-function OSSL_PARAM_construct_time_t(key: PIdAnsiChar; buf: PIdC_TIME_T): TOSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_construct_time_t';
+function OSSL_PARAM_construct_time_t(key: PIdAnsiChar; buf: PIdC_TIMET): TOSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_construct_time_t';
 function OSSL_PARAM_construct_BN(key: PIdAnsiChar; buf: PIdAnsiChar; bsize: TIdC_SIZET): TOSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_construct_BN';
-function OSSL_PARAM_construct_double(key: PIdAnsiChar; buf: PDouble): TOSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_construct_double';
+function OSSL_PARAM_construct_double(key: PIdAnsiChar; buf: PIdC_DOUBLE): TOSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_construct_double';
 function OSSL_PARAM_construct_utf8_string(key: PIdAnsiChar; buf: PIdAnsiChar; bsize: TIdC_SIZET): TOSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_construct_utf8_string';
 function OSSL_PARAM_construct_utf8_ptr(key: PIdAnsiChar; buf: PPIdAnsiChar; bsize: TIdC_SIZET): TOSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_construct_utf8_ptr';
 function OSSL_PARAM_construct_octet_string(key: PIdAnsiChar; buf: Pointer; bsize: TIdC_SIZET): TOSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_construct_octet_string';
 function OSSL_PARAM_construct_octet_ptr(key: PIdAnsiChar; buf: PPointer; bsize: TIdC_SIZET): TOSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_construct_octet_ptr';
 function OSSL_PARAM_construct_end: TOSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_construct_end';
-function OSSL_PARAM_allocate_from_text(_to: POSSL_PARAM_ARRAY; paramdefs: POSSL_PARAM_ARRAY; key: PIdAnsiChar; value: PIdAnsiChar; value_n: TIdC_SIZET; found: PIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_allocate_from_text';
-function OSSL_PARAM_print_to_bio(params: POSSL_PARAM_ARRAY; bio: PBIO; print_values: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_print_to_bio';
-function OSSL_PARAM_get_int(p: POSSL_PARAM_ARRAY; val: PIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_int';
-function OSSL_PARAM_get_uint(p: POSSL_PARAM_ARRAY; val: PIdC_UINT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_uint';
-function OSSL_PARAM_get_long(p: POSSL_PARAM_ARRAY; val: PIdC_LONG): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_long';
-function OSSL_PARAM_get_ulong(p: POSSL_PARAM_ARRAY; val: PIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_ulong';
-function OSSL_PARAM_get_int32(p: POSSL_PARAM_ARRAY; val: PInt32): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_int32';
-function OSSL_PARAM_get_uint32(p: POSSL_PARAM_ARRAY; val: PUInt32): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_uint32';
-function OSSL_PARAM_get_int64(p: POSSL_PARAM_ARRAY; val: PInt64): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_int64';
-function OSSL_PARAM_get_uint64(p: POSSL_PARAM_ARRAY; val: PUInt64): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_uint64';
-function OSSL_PARAM_get_size_t(p: POSSL_PARAM_ARRAY; val: PIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_size_t';
-function OSSL_PARAM_get_time_t(p: POSSL_PARAM_ARRAY; val: PIdC_TIME_T): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_time_t';
-function OSSL_PARAM_set_int(p: POSSL_PARAM_ARRAY; val: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_int';
-function OSSL_PARAM_set_uint(p: POSSL_PARAM_ARRAY; val: TIdC_UINT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_uint';
-function OSSL_PARAM_set_long(p: POSSL_PARAM_ARRAY; val: TIdC_LONG): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_long';
-function OSSL_PARAM_set_ulong(p: POSSL_PARAM_ARRAY; val: TIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_ulong';
-function OSSL_PARAM_set_int32(p: POSSL_PARAM_ARRAY; val: Int32): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_int32';
-function OSSL_PARAM_set_uint32(p: POSSL_PARAM_ARRAY; val: UInt32): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_uint32';
-function OSSL_PARAM_set_int64(p: POSSL_PARAM_ARRAY; val: Int64): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_int64';
-function OSSL_PARAM_set_uint64(p: POSSL_PARAM_ARRAY; val: UInt64): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_uint64';
-function OSSL_PARAM_set_size_t(p: POSSL_PARAM_ARRAY; val: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_size_t';
-function OSSL_PARAM_set_time_t(p: POSSL_PARAM_ARRAY; val: TIdC_TIME_T): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_time_t';
-function OSSL_PARAM_get_double(p: POSSL_PARAM_ARRAY; val: PDouble): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_double';
-function OSSL_PARAM_set_double(p: POSSL_PARAM_ARRAY; val: Double): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_double';
-function OSSL_PARAM_get_BN(p: POSSL_PARAM_ARRAY; val: PPBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_BN';
-function OSSL_PARAM_set_BN(p: POSSL_PARAM_ARRAY; val: PBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_BN';
-function OSSL_PARAM_get_utf8_string(p: POSSL_PARAM_ARRAY; val: PPIdAnsiChar; max_len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_utf8_string';
-function OSSL_PARAM_set_utf8_string(p: POSSL_PARAM_ARRAY; val: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_utf8_string';
-function OSSL_PARAM_get_octet_string(p: POSSL_PARAM_ARRAY; val: PPointer; max_len: TIdC_SIZET; used_len: PIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_octet_string';
-function OSSL_PARAM_set_octet_string(p: POSSL_PARAM_ARRAY; val: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_octet_string';
-function OSSL_PARAM_get_utf8_ptr(p: POSSL_PARAM_ARRAY; val: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_utf8_ptr';
-function OSSL_PARAM_set_utf8_ptr(p: POSSL_PARAM_ARRAY; val: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_utf8_ptr';
-function OSSL_PARAM_get_octet_ptr(p: POSSL_PARAM_ARRAY; val: PPointer; used_len: PIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_octet_ptr';
-function OSSL_PARAM_set_octet_ptr(p: POSSL_PARAM_ARRAY; val: Pointer; used_len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_octet_ptr';
-function OSSL_PARAM_get_utf8_string_ptr(p: POSSL_PARAM_ARRAY; val: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_utf8_string_ptr';
-function OSSL_PARAM_get_octet_string_ptr(p: POSSL_PARAM_ARRAY; val: PPointer; used_len: PIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_octet_string_ptr';
-function OSSL_PARAM_modified(p: POSSL_PARAM_ARRAY): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_modified';
-procedure OSSL_PARAM_set_all_unmodified(p: POSSL_PARAM_ARRAY); cdecl external CLibCrypto name 'OSSL_PARAM_set_all_unmodified';
-function OSSL_PARAM_dup(p: POSSL_PARAM_ARRAY): POSSL_PARAM_ARRAY; cdecl external CLibCrypto name 'OSSL_PARAM_dup';
-function OSSL_PARAM_merge(p1: POSSL_PARAM_ARRAY; p2: POSSL_PARAM_ARRAY): POSSL_PARAM_ARRAY; cdecl external CLibCrypto name 'OSSL_PARAM_merge';
-procedure OSSL_PARAM_free(p: POSSL_PARAM_ARRAY); cdecl external CLibCrypto name 'OSSL_PARAM_free';
-function OSSL_PARAM_set_octet_string_or_ptr(p: POSSL_PARAM_ARRAY; val: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_octet_string_or_ptr';
+function OSSL_PARAM_allocate_from_text(_to: POSSL_PARAM; paramdefs: POSSL_PARAM; key: PIdAnsiChar; value: PIdAnsiChar; value_n: TIdC_SIZET; found: PIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_allocate_from_text';
+function OSSL_PARAM_print_to_bio(params: POSSL_PARAM; bio: PBIO; print_values: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_print_to_bio';
+function OSSL_PARAM_get_int(p: POSSL_PARAM; val: PIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_int';
+function OSSL_PARAM_get_uint(p: POSSL_PARAM; val: PIdC_UINT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_uint';
+function OSSL_PARAM_get_long(p: POSSL_PARAM; val: PIdC_LONG): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_long';
+function OSSL_PARAM_get_ulong(p: POSSL_PARAM; val: PIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_ulong';
+function OSSL_PARAM_get_int32(p: POSSL_PARAM; val: PIdC_INT32): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_int32';
+function OSSL_PARAM_get_uint32(p: POSSL_PARAM; val: PIdC_UINT32): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_uint32';
+function OSSL_PARAM_get_int64(p: POSSL_PARAM; val: PIdC_INT64): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_int64';
+function OSSL_PARAM_get_uint64(p: POSSL_PARAM; val: PIdC_UINT64): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_uint64';
+function OSSL_PARAM_get_size_t(p: POSSL_PARAM; val: PIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_size_t';
+function OSSL_PARAM_get_time_t(p: POSSL_PARAM; val: PIdC_TIMET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_time_t';
+function OSSL_PARAM_set_int(p: POSSL_PARAM; val: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_int';
+function OSSL_PARAM_set_uint(p: POSSL_PARAM; val: TIdC_UINT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_uint';
+function OSSL_PARAM_set_long(p: POSSL_PARAM; val: TIdC_LONG): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_long';
+function OSSL_PARAM_set_ulong(p: POSSL_PARAM; val: TIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_ulong';
+function OSSL_PARAM_set_int32(p: POSSL_PARAM; val: TIdC_INT32): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_int32';
+function OSSL_PARAM_set_uint32(p: POSSL_PARAM; val: TIdC_UINT32): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_uint32';
+function OSSL_PARAM_set_int64(p: POSSL_PARAM; val: TIdC_INT64): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_int64';
+function OSSL_PARAM_set_uint64(p: POSSL_PARAM; val: TIdC_UINT64): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_uint64';
+function OSSL_PARAM_set_size_t(p: POSSL_PARAM; val: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_size_t';
+function OSSL_PARAM_set_time_t(p: POSSL_PARAM; val: TIdC_TIMET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_time_t';
+function OSSL_PARAM_get_double(p: POSSL_PARAM; val: PIdC_DOUBLE): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_double';
+function OSSL_PARAM_set_double(p: POSSL_PARAM; val: TIdC_DOUBLE): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_double';
+function OSSL_PARAM_get_BN(p: POSSL_PARAM; val: PPBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_BN';
+function OSSL_PARAM_set_BN(p: POSSL_PARAM; val: PBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_BN';
+function OSSL_PARAM_get_utf8_string(p: POSSL_PARAM; val: PPIdAnsiChar; max_len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_utf8_string';
+function OSSL_PARAM_set_utf8_string(p: POSSL_PARAM; val: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_utf8_string';
+function OSSL_PARAM_get_octet_string(p: POSSL_PARAM; val: PPointer; max_len: TIdC_SIZET; used_len: PIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_octet_string';
+function OSSL_PARAM_set_octet_string(p: POSSL_PARAM; val: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_octet_string';
+function OSSL_PARAM_get_utf8_ptr(p: POSSL_PARAM; val: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_utf8_ptr';
+function OSSL_PARAM_set_utf8_ptr(p: POSSL_PARAM; val: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_utf8_ptr';
+function OSSL_PARAM_get_octet_ptr(p: POSSL_PARAM; val: PPointer; used_len: PIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_octet_ptr';
+function OSSL_PARAM_set_octet_ptr(p: POSSL_PARAM; val: Pointer; used_len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_octet_ptr';
+function OSSL_PARAM_get_utf8_string_ptr(p: POSSL_PARAM; val: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_utf8_string_ptr';
+function OSSL_PARAM_get_octet_string_ptr(p: POSSL_PARAM; val: PPointer; used_len: PIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_octet_string_ptr';
+function OSSL_PARAM_modified(p: POSSL_PARAM): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_modified';
+function OSSL_PARAM_set_all_unmodified(p: POSSL_PARAM): void; cdecl external CLibCrypto name 'OSSL_PARAM_set_all_unmodified';
+function OSSL_PARAM_dup(p: POSSL_PARAM): POSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_dup';
+function OSSL_PARAM_merge(p1: POSSL_PARAM; p2: POSSL_PARAM): POSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_merge';
+function OSSL_PARAM_free(p: POSSL_PARAM): void; cdecl external CLibCrypto name 'OSSL_PARAM_free';
+function OSSL_PARAM_set_octet_string_or_ptr(p: POSSL_PARAM; val: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_octet_string_or_ptr';
 {$ENDIF}
 
 // =============================================================================
@@ -649,12 +652,12 @@ end;
 // ERRORS STUBS
 // =============================================================================
 
-function ERR_OSSL_PARAM_locate(p: POSSL_PARAM_ARRAY; key: PIdAnsiChar): POSSL_PARAM_ARRAY; cdecl
+function ERR_OSSL_PARAM_locate(p: POSSL_PARAM; key: PIdAnsiChar): POSSL_PARAM; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_locate_procname);
 end;
 
-function ERR_OSSL_PARAM_locate_const(p: POSSL_PARAM_ARRAY; key: PIdAnsiChar): POSSL_PARAM_ARRAY; cdecl
+function ERR_OSSL_PARAM_locate_const(p: POSSL_PARAM; key: PIdAnsiChar): POSSL_PARAM; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_locate_const_procname);
 end;
@@ -679,22 +682,22 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_construct_ulong_procname);
 end;
 
-function ERR_OSSL_PARAM_construct_int32(key: PIdAnsiChar; buf: PInt32): TOSSL_PARAM; cdecl
+function ERR_OSSL_PARAM_construct_int32(key: PIdAnsiChar; buf: PIdC_INT32): TOSSL_PARAM; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_construct_int32_procname);
 end;
 
-function ERR_OSSL_PARAM_construct_uint32(key: PIdAnsiChar; buf: PUInt32): TOSSL_PARAM; cdecl
+function ERR_OSSL_PARAM_construct_uint32(key: PIdAnsiChar; buf: PIdC_UINT32): TOSSL_PARAM; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_construct_uint32_procname);
 end;
 
-function ERR_OSSL_PARAM_construct_int64(key: PIdAnsiChar; buf: PInt64): TOSSL_PARAM; cdecl
+function ERR_OSSL_PARAM_construct_int64(key: PIdAnsiChar; buf: PIdC_INT64): TOSSL_PARAM; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_construct_int64_procname);
 end;
 
-function ERR_OSSL_PARAM_construct_uint64(key: PIdAnsiChar; buf: PUInt64): TOSSL_PARAM; cdecl
+function ERR_OSSL_PARAM_construct_uint64(key: PIdAnsiChar; buf: PIdC_UINT64): TOSSL_PARAM; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_construct_uint64_procname);
 end;
@@ -704,7 +707,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_construct_size_t_procname);
 end;
 
-function ERR_OSSL_PARAM_construct_time_t(key: PIdAnsiChar; buf: PIdC_TIME_T): TOSSL_PARAM; cdecl
+function ERR_OSSL_PARAM_construct_time_t(key: PIdAnsiChar; buf: PIdC_TIMET): TOSSL_PARAM; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_construct_time_t_procname);
 end;
@@ -714,7 +717,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_construct_BN_procname);
 end;
 
-function ERR_OSSL_PARAM_construct_double(key: PIdAnsiChar; buf: PDouble): TOSSL_PARAM; cdecl
+function ERR_OSSL_PARAM_construct_double(key: PIdAnsiChar; buf: PIdC_DOUBLE): TOSSL_PARAM; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_construct_double_procname);
 end;
@@ -744,212 +747,212 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_construct_end_procname);
 end;
 
-function ERR_OSSL_PARAM_allocate_from_text(_to: POSSL_PARAM_ARRAY; paramdefs: POSSL_PARAM_ARRAY; key: PIdAnsiChar; value: PIdAnsiChar; value_n: TIdC_SIZET; found: PIdC_INT): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_allocate_from_text(_to: POSSL_PARAM; paramdefs: POSSL_PARAM; key: PIdAnsiChar; value: PIdAnsiChar; value_n: TIdC_SIZET; found: PIdC_INT): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_allocate_from_text_procname);
 end;
 
-function ERR_OSSL_PARAM_print_to_bio(params: POSSL_PARAM_ARRAY; bio: PBIO; print_values: TIdC_INT): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_print_to_bio(params: POSSL_PARAM; bio: PBIO; print_values: TIdC_INT): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_print_to_bio_procname);
 end;
 
-function ERR_OSSL_PARAM_get_int(p: POSSL_PARAM_ARRAY; val: PIdC_INT): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_get_int(p: POSSL_PARAM; val: PIdC_INT): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_get_int_procname);
 end;
 
-function ERR_OSSL_PARAM_get_uint(p: POSSL_PARAM_ARRAY; val: PIdC_UINT): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_get_uint(p: POSSL_PARAM; val: PIdC_UINT): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_get_uint_procname);
 end;
 
-function ERR_OSSL_PARAM_get_long(p: POSSL_PARAM_ARRAY; val: PIdC_LONG): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_get_long(p: POSSL_PARAM; val: PIdC_LONG): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_get_long_procname);
 end;
 
-function ERR_OSSL_PARAM_get_ulong(p: POSSL_PARAM_ARRAY; val: PIdC_ULONG): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_get_ulong(p: POSSL_PARAM; val: PIdC_ULONG): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_get_ulong_procname);
 end;
 
-function ERR_OSSL_PARAM_get_int32(p: POSSL_PARAM_ARRAY; val: PInt32): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_get_int32(p: POSSL_PARAM; val: PIdC_INT32): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_get_int32_procname);
 end;
 
-function ERR_OSSL_PARAM_get_uint32(p: POSSL_PARAM_ARRAY; val: PUInt32): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_get_uint32(p: POSSL_PARAM; val: PIdC_UINT32): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_get_uint32_procname);
 end;
 
-function ERR_OSSL_PARAM_get_int64(p: POSSL_PARAM_ARRAY; val: PInt64): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_get_int64(p: POSSL_PARAM; val: PIdC_INT64): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_get_int64_procname);
 end;
 
-function ERR_OSSL_PARAM_get_uint64(p: POSSL_PARAM_ARRAY; val: PUInt64): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_get_uint64(p: POSSL_PARAM; val: PIdC_UINT64): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_get_uint64_procname);
 end;
 
-function ERR_OSSL_PARAM_get_size_t(p: POSSL_PARAM_ARRAY; val: PIdC_SIZET): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_get_size_t(p: POSSL_PARAM; val: PIdC_SIZET): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_get_size_t_procname);
 end;
 
-function ERR_OSSL_PARAM_get_time_t(p: POSSL_PARAM_ARRAY; val: PIdC_TIME_T): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_get_time_t(p: POSSL_PARAM; val: PIdC_TIMET): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_get_time_t_procname);
 end;
 
-function ERR_OSSL_PARAM_set_int(p: POSSL_PARAM_ARRAY; val: TIdC_INT): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_set_int(p: POSSL_PARAM; val: TIdC_INT): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_set_int_procname);
 end;
 
-function ERR_OSSL_PARAM_set_uint(p: POSSL_PARAM_ARRAY; val: TIdC_UINT): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_set_uint(p: POSSL_PARAM; val: TIdC_UINT): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_set_uint_procname);
 end;
 
-function ERR_OSSL_PARAM_set_long(p: POSSL_PARAM_ARRAY; val: TIdC_LONG): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_set_long(p: POSSL_PARAM; val: TIdC_LONG): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_set_long_procname);
 end;
 
-function ERR_OSSL_PARAM_set_ulong(p: POSSL_PARAM_ARRAY; val: TIdC_ULONG): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_set_ulong(p: POSSL_PARAM; val: TIdC_ULONG): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_set_ulong_procname);
 end;
 
-function ERR_OSSL_PARAM_set_int32(p: POSSL_PARAM_ARRAY; val: Int32): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_set_int32(p: POSSL_PARAM; val: TIdC_INT32): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_set_int32_procname);
 end;
 
-function ERR_OSSL_PARAM_set_uint32(p: POSSL_PARAM_ARRAY; val: UInt32): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_set_uint32(p: POSSL_PARAM; val: TIdC_UINT32): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_set_uint32_procname);
 end;
 
-function ERR_OSSL_PARAM_set_int64(p: POSSL_PARAM_ARRAY; val: Int64): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_set_int64(p: POSSL_PARAM; val: TIdC_INT64): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_set_int64_procname);
 end;
 
-function ERR_OSSL_PARAM_set_uint64(p: POSSL_PARAM_ARRAY; val: UInt64): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_set_uint64(p: POSSL_PARAM; val: TIdC_UINT64): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_set_uint64_procname);
 end;
 
-function ERR_OSSL_PARAM_set_size_t(p: POSSL_PARAM_ARRAY; val: TIdC_SIZET): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_set_size_t(p: POSSL_PARAM; val: TIdC_SIZET): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_set_size_t_procname);
 end;
 
-function ERR_OSSL_PARAM_set_time_t(p: POSSL_PARAM_ARRAY; val: TIdC_TIME_T): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_set_time_t(p: POSSL_PARAM; val: TIdC_TIMET): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_set_time_t_procname);
 end;
 
-function ERR_OSSL_PARAM_get_double(p: POSSL_PARAM_ARRAY; val: PDouble): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_get_double(p: POSSL_PARAM; val: PIdC_DOUBLE): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_get_double_procname);
 end;
 
-function ERR_OSSL_PARAM_set_double(p: POSSL_PARAM_ARRAY; val: Double): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_set_double(p: POSSL_PARAM; val: TIdC_DOUBLE): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_set_double_procname);
 end;
 
-function ERR_OSSL_PARAM_get_BN(p: POSSL_PARAM_ARRAY; val: PPBIGNUM): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_get_BN(p: POSSL_PARAM; val: PPBIGNUM): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_get_BN_procname);
 end;
 
-function ERR_OSSL_PARAM_set_BN(p: POSSL_PARAM_ARRAY; val: PBIGNUM): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_set_BN(p: POSSL_PARAM; val: PBIGNUM): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_set_BN_procname);
 end;
 
-function ERR_OSSL_PARAM_get_utf8_string(p: POSSL_PARAM_ARRAY; val: PPIdAnsiChar; max_len: TIdC_SIZET): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_get_utf8_string(p: POSSL_PARAM; val: PPIdAnsiChar; max_len: TIdC_SIZET): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_get_utf8_string_procname);
 end;
 
-function ERR_OSSL_PARAM_set_utf8_string(p: POSSL_PARAM_ARRAY; val: PIdAnsiChar): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_set_utf8_string(p: POSSL_PARAM; val: PIdAnsiChar): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_set_utf8_string_procname);
 end;
 
-function ERR_OSSL_PARAM_get_octet_string(p: POSSL_PARAM_ARRAY; val: PPointer; max_len: TIdC_SIZET; used_len: PIdC_SIZET): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_get_octet_string(p: POSSL_PARAM; val: PPointer; max_len: TIdC_SIZET; used_len: PIdC_SIZET): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_get_octet_string_procname);
 end;
 
-function ERR_OSSL_PARAM_set_octet_string(p: POSSL_PARAM_ARRAY; val: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_set_octet_string(p: POSSL_PARAM; val: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_set_octet_string_procname);
 end;
 
-function ERR_OSSL_PARAM_get_utf8_ptr(p: POSSL_PARAM_ARRAY; val: PPIdAnsiChar): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_get_utf8_ptr(p: POSSL_PARAM; val: PPIdAnsiChar): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_get_utf8_ptr_procname);
 end;
 
-function ERR_OSSL_PARAM_set_utf8_ptr(p: POSSL_PARAM_ARRAY; val: PIdAnsiChar): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_set_utf8_ptr(p: POSSL_PARAM; val: PIdAnsiChar): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_set_utf8_ptr_procname);
 end;
 
-function ERR_OSSL_PARAM_get_octet_ptr(p: POSSL_PARAM_ARRAY; val: PPointer; used_len: PIdC_SIZET): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_get_octet_ptr(p: POSSL_PARAM; val: PPointer; used_len: PIdC_SIZET): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_get_octet_ptr_procname);
 end;
 
-function ERR_OSSL_PARAM_set_octet_ptr(p: POSSL_PARAM_ARRAY; val: Pointer; used_len: TIdC_SIZET): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_set_octet_ptr(p: POSSL_PARAM; val: Pointer; used_len: TIdC_SIZET): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_set_octet_ptr_procname);
 end;
 
-function ERR_OSSL_PARAM_get_utf8_string_ptr(p: POSSL_PARAM_ARRAY; val: PPIdAnsiChar): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_get_utf8_string_ptr(p: POSSL_PARAM; val: PPIdAnsiChar): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_get_utf8_string_ptr_procname);
 end;
 
-function ERR_OSSL_PARAM_get_octet_string_ptr(p: POSSL_PARAM_ARRAY; val: PPointer; used_len: PIdC_SIZET): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_get_octet_string_ptr(p: POSSL_PARAM; val: PPointer; used_len: PIdC_SIZET): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_get_octet_string_ptr_procname);
 end;
 
-function ERR_OSSL_PARAM_modified(p: POSSL_PARAM_ARRAY): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_modified(p: POSSL_PARAM): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_modified_procname);
 end;
 
-procedure ERR_OSSL_PARAM_set_all_unmodified(p: POSSL_PARAM_ARRAY); cdecl
+function ERR_OSSL_PARAM_set_all_unmodified(p: POSSL_PARAM): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_set_all_unmodified_procname);
 end;
 
-function ERR_OSSL_PARAM_dup(p: POSSL_PARAM_ARRAY): POSSL_PARAM_ARRAY; cdecl
+function ERR_OSSL_PARAM_dup(p: POSSL_PARAM): POSSL_PARAM; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_dup_procname);
 end;
 
-function ERR_OSSL_PARAM_merge(p1: POSSL_PARAM_ARRAY; p2: POSSL_PARAM_ARRAY): POSSL_PARAM_ARRAY; cdecl
+function ERR_OSSL_PARAM_merge(p1: POSSL_PARAM; p2: POSSL_PARAM): POSSL_PARAM; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_merge_procname);
 end;
 
-procedure ERR_OSSL_PARAM_free(p: POSSL_PARAM_ARRAY); cdecl
+function ERR_OSSL_PARAM_free(p: POSSL_PARAM): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_free_procname);
 end;
 
-function ERR_OSSL_PARAM_set_octet_string_or_ptr(p: POSSL_PARAM_ARRAY; val: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl
+function ERR_OSSL_PARAM_set_octet_string_or_ptr(p: POSSL_PARAM; val: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_set_octet_string_or_ptr_procname);
 end;

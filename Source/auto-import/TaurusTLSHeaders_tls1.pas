@@ -26,12 +26,18 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   Ptls_session_ticket_ext_st = ^Ttls_session_ticket_ext_st;
-  Ttls_session_ticket_ext_st = record end;
+  Ttls_session_ticket_ext_st =   record
+    length: TIdC_USHORT;
+    data: Pointer;
+  end;
   {$EXTERNALSYM Ptls_session_ticket_ext_st}
 
 
@@ -39,7 +45,8 @@ type
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  TSSL_CTX_set_tlsext_ticket_key_evp_cb_fp_cb = function(arg1: PSSL; arg2: PIdAnsiChar; arg3: PIdAnsiChar; arg4: PEVP_CIPHER_CTX; arg5: PEVP_MAC_CTX; arg6: TIdC_INT): TIdC_INT; cdecl;
+  { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
+  // SSL_CTX_set_tlsext_ticket_key_evp_cb_fp_cb = function(arg1: PSSL; arg2: PIdAnsiChar; arg3: PIdAnsiChar; arg4: PEVP_CIPHER_CTX; arg5: PEVP_MAC_CTX; arg6: TIdC_INT): TIdC_INT; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -858,10 +865,10 @@ const
 // =============================================================================
 var
 
-  SSL_CTX_set_tlsext_max_fragment_length: function(ctx: PSSL_CTX; mode: Tuint8_t): TIdC_INT; cdecl = nil;
+  SSL_CTX_set_tlsext_max_fragment_length: function(ctx: PSSL_CTX; mode: TIdC_UINT8): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM SSL_CTX_set_tlsext_max_fragment_length}
 
-  SSL_set_tlsext_max_fragment_length: function(ssl: PSSL; mode: Tuint8_t): TIdC_INT; cdecl = nil;
+  SSL_set_tlsext_max_fragment_length: function(ssl: PSSL; mode: TIdC_UINT8): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM SSL_set_tlsext_max_fragment_length}
 
   SSL_get_servername: function(s: PSSL; _type: TIdC_INT): PIdAnsiChar; cdecl = nil;
@@ -905,8 +912,8 @@ var
 // STATIC BINDING ROUTINES
 // =============================================================================
 
-function SSL_CTX_set_tlsext_max_fragment_length(ctx: PSSL_CTX; mode: Tuint8_t): TIdC_INT; cdecl;
-function SSL_set_tlsext_max_fragment_length(ssl: PSSL; mode: Tuint8_t): TIdC_INT; cdecl;
+function SSL_CTX_set_tlsext_max_fragment_length(ctx: PSSL_CTX; mode: TIdC_UINT8): TIdC_INT; cdecl;
+function SSL_set_tlsext_max_fragment_length(ssl: PSSL; mode: TIdC_UINT8): TIdC_INT; cdecl;
 function SSL_get_servername(s: PSSL; _type: TIdC_INT): PIdAnsiChar; cdecl;
 function SSL_get_servername_type(s: PSSL): TIdC_INT; cdecl;
 function SSL_export_keying_material(s: PSSL; _out: PIdAnsiChar; olen: TIdC_SIZET; _label: PIdAnsiChar; llen: TIdC_SIZET; context: PIdAnsiChar; contextlen: TIdC_SIZET; use_context: TIdC_INT): TIdC_INT; cdecl;
@@ -924,53 +931,53 @@ function SSL_CTX_set_tlsext_ticket_key_evp_cb(ctx: PSSL_CTX; fp: TSSL_CTX_set_tl
 // INLINE OR MACRO ROUTINES
 // =============================================================================
 
-function SSL_set_tlsext_host_name(s: Pointer; name: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function SSL_set_tlsext_host_name(s: Pointer; name: Pointer): TIdC_INT; cdecl;
 
-function SSL_get_tlsext_status_type(ssl: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function SSL_get_tlsext_status_type(ssl: Pointer): TIdC_INT; cdecl;
 
-function SSL_set_tlsext_status_type(ssl: Pointer; _type: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function SSL_set_tlsext_status_type(ssl: Pointer; _type: Pointer): TIdC_INT; cdecl;
 
-function SSL_get_tlsext_status_ocsp_resp(ssl: Pointer; arg: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function SSL_get_tlsext_status_ocsp_resp(ssl: Pointer; arg: Pointer): TIdC_INT; cdecl;
 
-function SSL_set_tlsext_status_ocsp_resp(ssl: Pointer; arg: Pointer; arglen: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function SSL_set_tlsext_status_ocsp_resp(ssl: Pointer; arg: Pointer; arglen: Pointer): TIdC_INT; cdecl;
 
-function SSL_get0_tlsext_status_ocsp_resp_ex(ssl: Pointer; arg: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function SSL_get0_tlsext_status_ocsp_resp_ex(ssl: Pointer; arg: Pointer): TIdC_INT; cdecl;
 
-function SSL_set0_tlsext_status_ocsp_resp_ex(ssl: Pointer; arg: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function SSL_set0_tlsext_status_ocsp_resp_ex(ssl: Pointer; arg: Pointer): TIdC_INT; cdecl;
 
-function SSL_CTX_set_tlsext_servername_callback(ctx: Pointer; cb: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function SSL_CTX_set_tlsext_servername_callback(ctx: Pointer; cb: Pointer): TIdC_INT; cdecl;
 
-function SSL_CTX_set_tlsext_servername_arg(ctx: Pointer; arg: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function SSL_CTX_set_tlsext_servername_arg(ctx: Pointer; arg: Pointer): TIdC_INT; cdecl;
 
-function SSL_CTX_get_tlsext_status_cb(ssl: Pointer; cb: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function SSL_CTX_get_tlsext_status_cb(ssl: Pointer; cb: Pointer): TIdC_INT; cdecl;
 
-function SSL_CTX_set_tlsext_status_cb(ssl: Pointer; cb: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function SSL_CTX_set_tlsext_status_cb(ssl: Pointer; cb: Pointer): TIdC_INT; cdecl;
 
-function SSL_CTX_get_tlsext_status_arg(ssl: Pointer; arg: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function SSL_CTX_get_tlsext_status_arg(ssl: Pointer; arg: Pointer): TIdC_INT; cdecl;
 
-function SSL_CTX_set_tlsext_status_arg(ssl: Pointer; arg: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function SSL_CTX_set_tlsext_status_arg(ssl: Pointer; arg: Pointer): TIdC_INT; cdecl;
 
-function SSL_CTX_set_tlsext_status_type(ssl: Pointer; _type: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function SSL_CTX_set_tlsext_status_type(ssl: Pointer; _type: Pointer): TIdC_INT; cdecl;
 
-function SSL_CTX_get_tlsext_status_type(ssl: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function SSL_CTX_get_tlsext_status_type(ssl: Pointer): TIdC_INT; cdecl;
 
-function SSL_CTX_set_tlsext_ticket_key_cb(ssl: Pointer; cb: Pointer): TIdC_INT; cdecl;
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
+  // function SSL_CTX_set_tlsext_ticket_key_cb(ssl: Pointer; cb: Pointer): TIdC_INT; cdecl;
 
 
 implementation
@@ -989,8 +996,8 @@ uses
 // STATIC BINDING ROUTINES IMPORTS
 // =============================================================================
 
-function SSL_CTX_set_tlsext_max_fragment_length(ctx: PSSL_CTX; mode: Tuint8_t): TIdC_INT; cdecl external CLibCrypto name 'SSL_CTX_set_tlsext_max_fragment_length';
-function SSL_set_tlsext_max_fragment_length(ssl: PSSL; mode: Tuint8_t): TIdC_INT; cdecl external CLibCrypto name 'SSL_set_tlsext_max_fragment_length';
+function SSL_CTX_set_tlsext_max_fragment_length(ctx: PSSL_CTX; mode: TIdC_UINT8): TIdC_INT; cdecl external CLibCrypto name 'SSL_CTX_set_tlsext_max_fragment_length';
+function SSL_set_tlsext_max_fragment_length(ssl: PSSL; mode: TIdC_UINT8): TIdC_INT; cdecl external CLibCrypto name 'SSL_set_tlsext_max_fragment_length';
 function SSL_get_servername(s: PSSL; _type: TIdC_INT): PIdAnsiChar; cdecl external CLibCrypto name 'SSL_get_servername';
 function SSL_get_servername_type(s: PSSL): TIdC_INT; cdecl external CLibCrypto name 'SSL_get_servername_type';
 function SSL_export_keying_material(s: PSSL; _out: PIdAnsiChar; olen: TIdC_SIZET; _label: PIdAnsiChar; llen: TIdC_SIZET; context: PIdAnsiChar; contextlen: TIdC_SIZET; use_context: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'SSL_export_keying_material';
@@ -1229,12 +1236,12 @@ end;
 // ERRORS STUBS
 // =============================================================================
 
-function ERR_SSL_CTX_set_tlsext_max_fragment_length(ctx: PSSL_CTX; mode: Tuint8_t): TIdC_INT; cdecl
+function ERR_SSL_CTX_set_tlsext_max_fragment_length(ctx: PSSL_CTX; mode: TIdC_UINT8): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SSL_CTX_set_tlsext_max_fragment_length_procname);
 end;
 
-function ERR_SSL_set_tlsext_max_fragment_length(ssl: PSSL; mode: Tuint8_t): TIdC_INT; cdecl
+function ERR_SSL_set_tlsext_max_fragment_length(ssl: PSSL; mode: TIdC_UINT8): TIdC_INT; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SSL_set_tlsext_max_fragment_length_procname);
 end;

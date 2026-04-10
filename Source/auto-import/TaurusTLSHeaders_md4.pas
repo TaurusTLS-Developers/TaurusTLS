@@ -26,17 +26,25 @@ uses
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
 
+
+
+
 // =============================================================================
 // TYPE DECLARATIONS
 // =============================================================================
 type
   PMD4state_st = ^TMD4state_st;
-  TMD4state_st = record end;
+  TMD4state_st =   record
+    A: TIdC_UINT;
+    B: TIdC_UINT;
+    C: TIdC_UINT;
+    D: TIdC_UINT;
+    Nl: TIdC_UINT;
+    Nh: TIdC_UINT;
+    data: PIdC_UINT;
+    num: TIdC_UINT;
+  end;
   {$EXTERNALSYM PMD4state_st}
-
-  PMD4_CTX = ^TMD4_CTX;
-  TMD4_CTX = TMD4state_st;
-  {$EXTERNALSYM PMD4_CTX}
 
 
 // =============================================================================
@@ -67,7 +75,7 @@ var
   MD4: function(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM MD4}
 
-  MD4_Transform: procedure(c: PMD4_CTX; b: PIdAnsiChar); cdecl = nil; // Deprecated in 3_0_0
+  MD4_Transform: function(c: PMD4_CTX; b: PIdAnsiChar): void; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM MD4_Transform}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -82,7 +90,7 @@ function MD4_Init(c: PMD4_CTX): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function MD4_Update(c: PMD4_CTX; data: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function MD4_Final(md: PIdAnsiChar; c: PMD4_CTX): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function MD4(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl; deprecated 'In OpenSSL 3_0_0';
-procedure MD4_Transform(c: PMD4_CTX; b: PIdAnsiChar); cdecl; deprecated 'In OpenSSL 3_0_0';
+function MD4_Transform(c: PMD4_CTX; b: PIdAnsiChar): void; cdecl; deprecated 'In OpenSSL 3_0_0';
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 implementation
@@ -105,7 +113,7 @@ function MD4_Init(c: PMD4_CTX): TIdC_INT; cdecl external CLibCrypto name 'MD4_In
 function MD4_Update(c: PMD4_CTX; data: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'MD4_Update';
 function MD4_Final(md: PIdAnsiChar; c: PMD4_CTX): TIdC_INT; cdecl external CLibCrypto name 'MD4_Final';
 function MD4(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'MD4';
-procedure MD4_Transform(c: PMD4_CTX; b: PIdAnsiChar); cdecl external CLibCrypto name 'MD4_Transform';
+function MD4_Transform(c: PMD4_CTX; b: PIdAnsiChar): void; cdecl external CLibCrypto name 'MD4_Transform';
 {$ENDIF}
 
 // =============================================================================
@@ -166,7 +174,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(MD4_procname);
 end;
 
-procedure ERR_MD4_Transform(c: PMD4_CTX; b: PIdAnsiChar); cdecl
+function ERR_MD4_Transform(c: PMD4_CTX; b: PIdAnsiChar): void; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(MD4_Transform_procname);
 end;
