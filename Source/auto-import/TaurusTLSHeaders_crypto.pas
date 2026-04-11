@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -57,14 +57,14 @@ type
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  TCRYPTO_EX_new = function(parent: Pointer; ptr: Pointer; ad: PCRYPTO_EX_DATA; idx: TIdC_INT; argl: TIdC_LONG; argp: Pointer): void; cdecl;
-  TCRYPTO_EX_free = function(parent: Pointer; ptr: Pointer; ad: PCRYPTO_EX_DATA; idx: TIdC_INT; argl: TIdC_LONG; argp: Pointer): void; cdecl;
+  TCRYPTO_EX_new = procedure(parent: Pointer; ptr: Pointer; ad: PCRYPTO_EX_DATA; idx: TIdC_INT; argl: TIdC_LONG; argp: Pointer); cdecl;
+  TCRYPTO_EX_free = procedure(parent: Pointer; ptr: Pointer; ad: PCRYPTO_EX_DATA; idx: TIdC_INT; argl: TIdC_LONG; argp: Pointer); cdecl;
   TCRYPTO_EX_dup = function(_to: PCRYPTO_EX_DATA; from: PCRYPTO_EX_DATA; from_d: PPointer; idx: TIdC_INT; argl: TIdC_LONG; argp: Pointer): TIdC_INT; cdecl;
   TCRYPTO_malloc_fn = function(num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl;
   TCRYPTO_realloc_fn = function(addr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl;
-  TCRYPTO_free_fn = function(addr: Pointer; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl;
+  TCRYPTO_free_fn = procedure(addr: Pointer; _file: PIdAnsiChar; line: TIdC_INT); cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // OPENSSL_atexit_handler_cb = function: void; cdecl;
+  // OPENSSL_atexit_handler_cb = procedure; cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -160,7 +160,7 @@ var
   CRYPTO_THREAD_unlock: function(lock: PCRYPTO_RWLOCK): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CRYPTO_THREAD_unlock}
 
-  CRYPTO_THREAD_lock_free: function(lock: PCRYPTO_RWLOCK): void; cdecl = nil;
+  CRYPTO_THREAD_lock_free: procedure(lock: PCRYPTO_RWLOCK); cdecl = nil;
   {$EXTERNALSYM CRYPTO_THREAD_lock_free}
 
   CRYPTO_atomic_add: function(val: PIdC_INT; amount: TIdC_INT; ret: PIdC_INT; lock: PCRYPTO_RWLOCK): TIdC_INT; cdecl = nil;
@@ -256,7 +256,7 @@ var
   CRYPTO_dup_ex_data: function(class_index: TIdC_INT; _to: PCRYPTO_EX_DATA; from: PCRYPTO_EX_DATA): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CRYPTO_dup_ex_data}
 
-  CRYPTO_free_ex_data: function(class_index: TIdC_INT; obj: Pointer; ad: PCRYPTO_EX_DATA): void; cdecl = nil;
+  CRYPTO_free_ex_data: procedure(class_index: TIdC_INT; obj: Pointer; ad: PCRYPTO_EX_DATA); cdecl = nil;
   {$EXTERNALSYM CRYPTO_free_ex_data}
 
   CRYPTO_alloc_ex_data: function(class_index: TIdC_INT; obj: Pointer; ad: PCRYPTO_EX_DATA; idx: TIdC_INT): TIdC_INT; cdecl = nil;
@@ -271,7 +271,7 @@ var
   CRYPTO_set_mem_functions: function(malloc_fn: TCRYPTO_malloc_fn; realloc_fn: TCRYPTO_realloc_fn; free_fn: TCRYPTO_free_fn): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CRYPTO_set_mem_functions}
 
-  CRYPTO_get_mem_functions: function(malloc_fn: PCRYPTO_malloc_fn; realloc_fn: PCRYPTO_realloc_fn; free_fn: PCRYPTO_free_fn): void; cdecl = nil;
+  CRYPTO_get_mem_functions: procedure(malloc_fn: PCRYPTO_malloc_fn; realloc_fn: PCRYPTO_realloc_fn; free_fn: PCRYPTO_free_fn); cdecl = nil;
   {$EXTERNALSYM CRYPTO_get_mem_functions}
 
   CRYPTO_malloc: function(num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl = nil;
@@ -301,10 +301,10 @@ var
   CRYPTO_strndup: function(str: PIdAnsiChar; s: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): PIdAnsiChar; cdecl = nil;
   {$EXTERNALSYM CRYPTO_strndup}
 
-  CRYPTO_free: function(ptr: Pointer; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl = nil;
+  CRYPTO_free: procedure(ptr: Pointer; _file: PIdAnsiChar; line: TIdC_INT); cdecl = nil;
   {$EXTERNALSYM CRYPTO_free}
 
-  CRYPTO_clear_free: function(ptr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl = nil;
+  CRYPTO_clear_free: procedure(ptr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT); cdecl = nil;
   {$EXTERNALSYM CRYPTO_clear_free}
 
   CRYPTO_realloc: function(addr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl = nil;
@@ -337,10 +337,10 @@ var
   CRYPTO_secure_calloc: function(num: TIdC_SIZET; size: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl = nil;
   {$EXTERNALSYM CRYPTO_secure_calloc}
 
-  CRYPTO_secure_free: function(ptr: Pointer; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl = nil;
+  CRYPTO_secure_free: procedure(ptr: Pointer; _file: PIdAnsiChar; line: TIdC_INT); cdecl = nil;
   {$EXTERNALSYM CRYPTO_secure_free}
 
-  CRYPTO_secure_clear_free: function(ptr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl = nil;
+  CRYPTO_secure_clear_free: procedure(ptr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT); cdecl = nil;
   {$EXTERNALSYM CRYPTO_secure_clear_free}
 
   CRYPTO_secure_allocated: function(ptr: Pointer): TIdC_INT; cdecl = nil;
@@ -355,25 +355,25 @@ var
   CRYPTO_secure_used: function: TIdC_SIZET; cdecl = nil;
   {$EXTERNALSYM CRYPTO_secure_used}
 
-  OPENSSL_cleanse: function(ptr: Pointer; len: TIdC_SIZET): void; cdecl = nil;
+  OPENSSL_cleanse: procedure(ptr: Pointer; len: TIdC_SIZET); cdecl = nil;
   {$EXTERNALSYM OPENSSL_cleanse}
 
-  OPENSSL_die: function(assertion: PIdAnsiChar; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl = nil;
+  OPENSSL_die: procedure(assertion: PIdAnsiChar; _file: PIdAnsiChar; line: TIdC_INT); cdecl = nil;
   {$EXTERNALSYM OPENSSL_die}
 
   OPENSSL_isservice: function: TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OPENSSL_isservice}
 
-  OPENSSL_init: function: void; cdecl = nil;
+  OPENSSL_init: procedure; cdecl = nil;
   {$EXTERNALSYM OPENSSL_init}
 
-  OPENSSL_fork_prepare: function: void; cdecl = nil; // Deprecated in 3_0_0
+  OPENSSL_fork_prepare: procedure; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM OPENSSL_fork_prepare}
 
-  OPENSSL_fork_parent: function: void; cdecl = nil; // Deprecated in 3_0_0
+  OPENSSL_fork_parent: procedure; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM OPENSSL_fork_parent}
 
-  OPENSSL_fork_child: function: void; cdecl = nil; // Deprecated in 3_0_0
+  OPENSSL_fork_child: procedure; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM OPENSSL_fork_child}
 
   OPENSSL_gmtime: function(timer: PIdC_TIMET; result: Ptm): Ptm; cdecl = nil;
@@ -388,7 +388,7 @@ var
   CRYPTO_memcmp: function(in_a: Pointer; in_b: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CRYPTO_memcmp}
 
-  OPENSSL_cleanup: function: void; cdecl = nil;
+  OPENSSL_cleanup: procedure; cdecl = nil;
   {$EXTERNALSYM OPENSSL_cleanup}
 
   OPENSSL_init_crypto: function(opts: TIdC_UINT64; settings: POPENSSL_INIT_SETTINGS): TIdC_INT; cdecl = nil;
@@ -397,10 +397,10 @@ var
   OPENSSL_atexit: function(handler: TOPENSSL_atexit_handler_cb): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OPENSSL_atexit}
 
-  OPENSSL_thread_stop: function: void; cdecl = nil;
+  OPENSSL_thread_stop: procedure; cdecl = nil;
   {$EXTERNALSYM OPENSSL_thread_stop}
 
-  OPENSSL_thread_stop_ex: function(ctx: POSSL_LIB_CTX): void; cdecl = nil;
+  OPENSSL_thread_stop_ex: procedure(ctx: POSSL_LIB_CTX); cdecl = nil;
   {$EXTERNALSYM OPENSSL_thread_stop_ex}
 
   OPENSSL_INIT_new: function: POPENSSL_INIT_SETTINGS; cdecl = nil;
@@ -409,13 +409,13 @@ var
   OPENSSL_INIT_set_config_filename: function(settings: POPENSSL_INIT_SETTINGS; config_filename: PIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OPENSSL_INIT_set_config_filename}
 
-  OPENSSL_INIT_set_config_file_flags: function(settings: POPENSSL_INIT_SETTINGS; flags: TIdC_ULONG): void; cdecl = nil;
+  OPENSSL_INIT_set_config_file_flags: procedure(settings: POPENSSL_INIT_SETTINGS; flags: TIdC_ULONG); cdecl = nil;
   {$EXTERNALSYM OPENSSL_INIT_set_config_file_flags}
 
   OPENSSL_INIT_set_config_appname: function(settings: POPENSSL_INIT_SETTINGS; config_appname: PIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OPENSSL_INIT_set_config_appname}
 
-  OPENSSL_INIT_free: function(settings: POPENSSL_INIT_SETTINGS): void; cdecl = nil;
+  OPENSSL_INIT_free: procedure(settings: POPENSSL_INIT_SETTINGS); cdecl = nil;
   {$EXTERNALSYM OPENSSL_INIT_free}
 
   CRYPTO_THREAD_run_once: function(once: PCRYPTO_ONCE; init: TOPENSSL_atexit_handler_cb): TIdC_INT; cdecl = nil;
@@ -451,7 +451,7 @@ var
   OSSL_LIB_CTX_load_config: function(ctx: POSSL_LIB_CTX; config_file: PIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_LIB_CTX_load_config}
 
-  OSSL_LIB_CTX_free: function(arg1: POSSL_LIB_CTX): void; cdecl = nil;
+  OSSL_LIB_CTX_free: procedure(arg1: POSSL_LIB_CTX); cdecl = nil;
   {$EXTERNALSYM OSSL_LIB_CTX_free}
 
   OSSL_LIB_CTX_get0_global_default: function: POSSL_LIB_CTX; cdecl = nil;
@@ -463,10 +463,10 @@ var
   OSSL_LIB_CTX_get_conf_diagnostics: function(ctx: POSSL_LIB_CTX): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_LIB_CTX_get_conf_diagnostics}
 
-  OSSL_LIB_CTX_set_conf_diagnostics: function(ctx: POSSL_LIB_CTX; value: TIdC_INT): void; cdecl = nil;
+  OSSL_LIB_CTX_set_conf_diagnostics: procedure(ctx: POSSL_LIB_CTX; value: TIdC_INT); cdecl = nil;
   {$EXTERNALSYM OSSL_LIB_CTX_set_conf_diagnostics}
 
-  OSSL_sleep: function(millis: TIdC_UINT64): void; cdecl = nil;
+  OSSL_sleep: procedure(millis: TIdC_UINT64); cdecl = nil;
   {$EXTERNALSYM OSSL_sleep}
 
   OSSL_LIB_CTX_get_data: function(ctx: POSSL_LIB_CTX; index: TIdC_INT): Pointer; cdecl = nil;
@@ -484,7 +484,7 @@ function CRYPTO_THREAD_lock_new: PCRYPTO_RWLOCK; cdecl;
 function CRYPTO_THREAD_read_lock(lock: PCRYPTO_RWLOCK): TIdC_INT; cdecl;
 function CRYPTO_THREAD_write_lock(lock: PCRYPTO_RWLOCK): TIdC_INT; cdecl;
 function CRYPTO_THREAD_unlock(lock: PCRYPTO_RWLOCK): TIdC_INT; cdecl;
-function CRYPTO_THREAD_lock_free(lock: PCRYPTO_RWLOCK): void; cdecl;
+procedure CRYPTO_THREAD_lock_free(lock: PCRYPTO_RWLOCK); cdecl;
 function CRYPTO_atomic_add(val: PIdC_INT; amount: TIdC_INT; ret: PIdC_INT; lock: PCRYPTO_RWLOCK): TIdC_INT; cdecl;
 function CRYPTO_atomic_add64(val: PIdC_UINT64; op: TIdC_UINT64; ret: PIdC_UINT64; lock: PCRYPTO_RWLOCK): TIdC_INT; cdecl;
 function CRYPTO_atomic_and(val: PIdC_UINT64; op: TIdC_UINT64; ret: PIdC_UINT64; lock: PCRYPTO_RWLOCK): TIdC_INT; cdecl;
@@ -516,12 +516,12 @@ function CRYPTO_get_ex_new_index(class_index: TIdC_INT; argl: TIdC_LONG; argp: P
 function CRYPTO_free_ex_index(class_index: TIdC_INT; idx: TIdC_INT): TIdC_INT; cdecl;
 function CRYPTO_new_ex_data(class_index: TIdC_INT; obj: Pointer; ad: PCRYPTO_EX_DATA): TIdC_INT; cdecl;
 function CRYPTO_dup_ex_data(class_index: TIdC_INT; _to: PCRYPTO_EX_DATA; from: PCRYPTO_EX_DATA): TIdC_INT; cdecl;
-function CRYPTO_free_ex_data(class_index: TIdC_INT; obj: Pointer; ad: PCRYPTO_EX_DATA): void; cdecl;
+procedure CRYPTO_free_ex_data(class_index: TIdC_INT; obj: Pointer; ad: PCRYPTO_EX_DATA); cdecl;
 function CRYPTO_alloc_ex_data(class_index: TIdC_INT; obj: Pointer; ad: PCRYPTO_EX_DATA; idx: TIdC_INT): TIdC_INT; cdecl;
 function CRYPTO_set_ex_data(ad: PCRYPTO_EX_DATA; idx: TIdC_INT; val: Pointer): TIdC_INT; cdecl;
 function CRYPTO_get_ex_data(ad: PCRYPTO_EX_DATA; idx: TIdC_INT): Pointer; cdecl;
 function CRYPTO_set_mem_functions(malloc_fn: TCRYPTO_malloc_fn; realloc_fn: TCRYPTO_realloc_fn; free_fn: TCRYPTO_free_fn): TIdC_INT; cdecl;
-function CRYPTO_get_mem_functions(malloc_fn: PCRYPTO_malloc_fn; realloc_fn: PCRYPTO_realloc_fn; free_fn: PCRYPTO_free_fn): void; cdecl;
+procedure CRYPTO_get_mem_functions(malloc_fn: PCRYPTO_malloc_fn; realloc_fn: PCRYPTO_realloc_fn; free_fn: PCRYPTO_free_fn); cdecl;
 function CRYPTO_malloc(num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl;
 function CRYPTO_zalloc(num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl;
 function CRYPTO_malloc_array(num: TIdC_SIZET; size: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl;
@@ -531,8 +531,8 @@ function CRYPTO_aligned_alloc_array(num: TIdC_SIZET; size: TIdC_SIZET; align: TI
 function CRYPTO_memdup(str: Pointer; siz: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl;
 function CRYPTO_strdup(str: PIdAnsiChar; _file: PIdAnsiChar; line: TIdC_INT): PIdAnsiChar; cdecl;
 function CRYPTO_strndup(str: PIdAnsiChar; s: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): PIdAnsiChar; cdecl;
-function CRYPTO_free(ptr: Pointer; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl;
-function CRYPTO_clear_free(ptr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl;
+procedure CRYPTO_free(ptr: Pointer; _file: PIdAnsiChar; line: TIdC_INT); cdecl;
+procedure CRYPTO_clear_free(ptr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT); cdecl;
 function CRYPTO_realloc(addr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl;
 function CRYPTO_clear_realloc(addr: Pointer; old_num: TIdC_SIZET; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl;
 function CRYPTO_realloc_array(addr: Pointer; num: TIdC_SIZET; size: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl;
@@ -543,33 +543,33 @@ function CRYPTO_secure_malloc(num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_IN
 function CRYPTO_secure_zalloc(num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl;
 function CRYPTO_secure_malloc_array(num: TIdC_SIZET; size: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl;
 function CRYPTO_secure_calloc(num: TIdC_SIZET; size: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl;
-function CRYPTO_secure_free(ptr: Pointer; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl;
-function CRYPTO_secure_clear_free(ptr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl;
+procedure CRYPTO_secure_free(ptr: Pointer; _file: PIdAnsiChar; line: TIdC_INT); cdecl;
+procedure CRYPTO_secure_clear_free(ptr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT); cdecl;
 function CRYPTO_secure_allocated(ptr: Pointer): TIdC_INT; cdecl;
 function CRYPTO_secure_malloc_initialized: TIdC_INT; cdecl;
 function CRYPTO_secure_actual_size(ptr: Pointer): TIdC_SIZET; cdecl;
 function CRYPTO_secure_used: TIdC_SIZET; cdecl;
-function OPENSSL_cleanse(ptr: Pointer; len: TIdC_SIZET): void; cdecl;
-function OPENSSL_die(assertion: PIdAnsiChar; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl;
+procedure OPENSSL_cleanse(ptr: Pointer; len: TIdC_SIZET); cdecl;
+procedure OPENSSL_die(assertion: PIdAnsiChar; _file: PIdAnsiChar; line: TIdC_INT); cdecl;
 function OPENSSL_isservice: TIdC_INT; cdecl;
-function OPENSSL_init: void; cdecl;
-function OPENSSL_fork_prepare: void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function OPENSSL_fork_parent: void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function OPENSSL_fork_child: void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure OPENSSL_init; cdecl;
+procedure OPENSSL_fork_prepare; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure OPENSSL_fork_parent; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure OPENSSL_fork_child; cdecl; deprecated 'In OpenSSL 3_0_0';
 function OPENSSL_gmtime(timer: PIdC_TIMET; result: Ptm): Ptm; cdecl;
 function OPENSSL_gmtime_adj(tm: Ptm; offset_day: TIdC_INT; offset_sec: TIdC_LONG): TIdC_INT; cdecl;
 function OPENSSL_gmtime_diff(pday: PIdC_INT; psec: PIdC_INT; from: Ptm; _to: Ptm): TIdC_INT; cdecl;
 function CRYPTO_memcmp(in_a: Pointer; in_b: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl;
-function OPENSSL_cleanup: void; cdecl;
+procedure OPENSSL_cleanup; cdecl;
 function OPENSSL_init_crypto(opts: TIdC_UINT64; settings: POPENSSL_INIT_SETTINGS): TIdC_INT; cdecl;
 function OPENSSL_atexit(handler: TOPENSSL_atexit_handler_cb): TIdC_INT; cdecl;
-function OPENSSL_thread_stop: void; cdecl;
-function OPENSSL_thread_stop_ex(ctx: POSSL_LIB_CTX): void; cdecl;
+procedure OPENSSL_thread_stop; cdecl;
+procedure OPENSSL_thread_stop_ex(ctx: POSSL_LIB_CTX); cdecl;
 function OPENSSL_INIT_new: POPENSSL_INIT_SETTINGS; cdecl;
 function OPENSSL_INIT_set_config_filename(settings: POPENSSL_INIT_SETTINGS; config_filename: PIdAnsiChar): TIdC_INT; cdecl;
-function OPENSSL_INIT_set_config_file_flags(settings: POPENSSL_INIT_SETTINGS; flags: TIdC_ULONG): void; cdecl;
+procedure OPENSSL_INIT_set_config_file_flags(settings: POPENSSL_INIT_SETTINGS; flags: TIdC_ULONG); cdecl;
 function OPENSSL_INIT_set_config_appname(settings: POPENSSL_INIT_SETTINGS; config_appname: PIdAnsiChar): TIdC_INT; cdecl;
-function OPENSSL_INIT_free(settings: POPENSSL_INIT_SETTINGS): void; cdecl;
+procedure OPENSSL_INIT_free(settings: POPENSSL_INIT_SETTINGS); cdecl;
 function CRYPTO_THREAD_run_once(once: PCRYPTO_ONCE; init: TOPENSSL_atexit_handler_cb): TIdC_INT; cdecl;
 function CRYPTO_THREAD_init_local(key: PCRYPTO_THREAD_LOCAL; cleanup: Tsk_void_freefunc): TIdC_INT; cdecl;
 function CRYPTO_THREAD_get_local(key: PCRYPTO_THREAD_LOCAL): Pointer; cdecl;
@@ -581,12 +581,12 @@ function OSSL_LIB_CTX_new: POSSL_LIB_CTX; cdecl;
 function OSSL_LIB_CTX_new_from_dispatch(handle: POSSL_CORE_HANDLE; _in: POSSL_DISPATCH): POSSL_LIB_CTX; cdecl;
 function OSSL_LIB_CTX_new_child(handle: POSSL_CORE_HANDLE; _in: POSSL_DISPATCH): POSSL_LIB_CTX; cdecl;
 function OSSL_LIB_CTX_load_config(ctx: POSSL_LIB_CTX; config_file: PIdAnsiChar): TIdC_INT; cdecl;
-function OSSL_LIB_CTX_free(arg1: POSSL_LIB_CTX): void; cdecl;
+procedure OSSL_LIB_CTX_free(arg1: POSSL_LIB_CTX); cdecl;
 function OSSL_LIB_CTX_get0_global_default: POSSL_LIB_CTX; cdecl;
 function OSSL_LIB_CTX_set0_default(libctx: POSSL_LIB_CTX): POSSL_LIB_CTX; cdecl;
 function OSSL_LIB_CTX_get_conf_diagnostics(ctx: POSSL_LIB_CTX): TIdC_INT; cdecl;
-function OSSL_LIB_CTX_set_conf_diagnostics(ctx: POSSL_LIB_CTX; value: TIdC_INT): void; cdecl;
-function OSSL_sleep(millis: TIdC_UINT64): void; cdecl;
+procedure OSSL_LIB_CTX_set_conf_diagnostics(ctx: POSSL_LIB_CTX; value: TIdC_INT); cdecl;
+procedure OSSL_sleep(millis: TIdC_UINT64); cdecl;
 function OSSL_LIB_CTX_get_data(ctx: POSSL_LIB_CTX; index: TIdC_INT): Pointer; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
@@ -728,7 +728,7 @@ function CRYPTO_THREAD_lock_new: PCRYPTO_RWLOCK; cdecl external CLibCrypto name 
 function CRYPTO_THREAD_read_lock(lock: PCRYPTO_RWLOCK): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_THREAD_read_lock';
 function CRYPTO_THREAD_write_lock(lock: PCRYPTO_RWLOCK): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_THREAD_write_lock';
 function CRYPTO_THREAD_unlock(lock: PCRYPTO_RWLOCK): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_THREAD_unlock';
-function CRYPTO_THREAD_lock_free(lock: PCRYPTO_RWLOCK): void; cdecl external CLibCrypto name 'CRYPTO_THREAD_lock_free';
+procedure CRYPTO_THREAD_lock_free(lock: PCRYPTO_RWLOCK); cdecl external CLibCrypto name 'CRYPTO_THREAD_lock_free';
 function CRYPTO_atomic_add(val: PIdC_INT; amount: TIdC_INT; ret: PIdC_INT; lock: PCRYPTO_RWLOCK): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_atomic_add';
 function CRYPTO_atomic_add64(val: PIdC_UINT64; op: TIdC_UINT64; ret: PIdC_UINT64; lock: PCRYPTO_RWLOCK): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_atomic_add64';
 function CRYPTO_atomic_and(val: PIdC_UINT64; op: TIdC_UINT64; ret: PIdC_UINT64; lock: PCRYPTO_RWLOCK): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_atomic_and';
@@ -760,12 +760,12 @@ function CRYPTO_get_ex_new_index(class_index: TIdC_INT; argl: TIdC_LONG; argp: P
 function CRYPTO_free_ex_index(class_index: TIdC_INT; idx: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_free_ex_index';
 function CRYPTO_new_ex_data(class_index: TIdC_INT; obj: Pointer; ad: PCRYPTO_EX_DATA): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_new_ex_data';
 function CRYPTO_dup_ex_data(class_index: TIdC_INT; _to: PCRYPTO_EX_DATA; from: PCRYPTO_EX_DATA): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_dup_ex_data';
-function CRYPTO_free_ex_data(class_index: TIdC_INT; obj: Pointer; ad: PCRYPTO_EX_DATA): void; cdecl external CLibCrypto name 'CRYPTO_free_ex_data';
+procedure CRYPTO_free_ex_data(class_index: TIdC_INT; obj: Pointer; ad: PCRYPTO_EX_DATA); cdecl external CLibCrypto name 'CRYPTO_free_ex_data';
 function CRYPTO_alloc_ex_data(class_index: TIdC_INT; obj: Pointer; ad: PCRYPTO_EX_DATA; idx: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_alloc_ex_data';
 function CRYPTO_set_ex_data(ad: PCRYPTO_EX_DATA; idx: TIdC_INT; val: Pointer): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_set_ex_data';
 function CRYPTO_get_ex_data(ad: PCRYPTO_EX_DATA; idx: TIdC_INT): Pointer; cdecl external CLibCrypto name 'CRYPTO_get_ex_data';
 function CRYPTO_set_mem_functions(malloc_fn: TCRYPTO_malloc_fn; realloc_fn: TCRYPTO_realloc_fn; free_fn: TCRYPTO_free_fn): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_set_mem_functions';
-function CRYPTO_get_mem_functions(malloc_fn: PCRYPTO_malloc_fn; realloc_fn: PCRYPTO_realloc_fn; free_fn: PCRYPTO_free_fn): void; cdecl external CLibCrypto name 'CRYPTO_get_mem_functions';
+procedure CRYPTO_get_mem_functions(malloc_fn: PCRYPTO_malloc_fn; realloc_fn: PCRYPTO_realloc_fn; free_fn: PCRYPTO_free_fn); cdecl external CLibCrypto name 'CRYPTO_get_mem_functions';
 function CRYPTO_malloc(num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl external CLibCrypto name 'CRYPTO_malloc';
 function CRYPTO_zalloc(num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl external CLibCrypto name 'CRYPTO_zalloc';
 function CRYPTO_malloc_array(num: TIdC_SIZET; size: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl external CLibCrypto name 'CRYPTO_malloc_array';
@@ -775,8 +775,8 @@ function CRYPTO_aligned_alloc_array(num: TIdC_SIZET; size: TIdC_SIZET; align: TI
 function CRYPTO_memdup(str: Pointer; siz: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl external CLibCrypto name 'CRYPTO_memdup';
 function CRYPTO_strdup(str: PIdAnsiChar; _file: PIdAnsiChar; line: TIdC_INT): PIdAnsiChar; cdecl external CLibCrypto name 'CRYPTO_strdup';
 function CRYPTO_strndup(str: PIdAnsiChar; s: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): PIdAnsiChar; cdecl external CLibCrypto name 'CRYPTO_strndup';
-function CRYPTO_free(ptr: Pointer; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl external CLibCrypto name 'CRYPTO_free';
-function CRYPTO_clear_free(ptr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl external CLibCrypto name 'CRYPTO_clear_free';
+procedure CRYPTO_free(ptr: Pointer; _file: PIdAnsiChar; line: TIdC_INT); cdecl external CLibCrypto name 'CRYPTO_free';
+procedure CRYPTO_clear_free(ptr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT); cdecl external CLibCrypto name 'CRYPTO_clear_free';
 function CRYPTO_realloc(addr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl external CLibCrypto name 'CRYPTO_realloc';
 function CRYPTO_clear_realloc(addr: Pointer; old_num: TIdC_SIZET; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl external CLibCrypto name 'CRYPTO_clear_realloc';
 function CRYPTO_realloc_array(addr: Pointer; num: TIdC_SIZET; size: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl external CLibCrypto name 'CRYPTO_realloc_array';
@@ -787,33 +787,33 @@ function CRYPTO_secure_malloc(num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_IN
 function CRYPTO_secure_zalloc(num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl external CLibCrypto name 'CRYPTO_secure_zalloc';
 function CRYPTO_secure_malloc_array(num: TIdC_SIZET; size: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl external CLibCrypto name 'CRYPTO_secure_malloc_array';
 function CRYPTO_secure_calloc(num: TIdC_SIZET; size: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl external CLibCrypto name 'CRYPTO_secure_calloc';
-function CRYPTO_secure_free(ptr: Pointer; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl external CLibCrypto name 'CRYPTO_secure_free';
-function CRYPTO_secure_clear_free(ptr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl external CLibCrypto name 'CRYPTO_secure_clear_free';
+procedure CRYPTO_secure_free(ptr: Pointer; _file: PIdAnsiChar; line: TIdC_INT); cdecl external CLibCrypto name 'CRYPTO_secure_free';
+procedure CRYPTO_secure_clear_free(ptr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT); cdecl external CLibCrypto name 'CRYPTO_secure_clear_free';
 function CRYPTO_secure_allocated(ptr: Pointer): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_secure_allocated';
 function CRYPTO_secure_malloc_initialized: TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_secure_malloc_initialized';
 function CRYPTO_secure_actual_size(ptr: Pointer): TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_secure_actual_size';
 function CRYPTO_secure_used: TIdC_SIZET; cdecl external CLibCrypto name 'CRYPTO_secure_used';
-function OPENSSL_cleanse(ptr: Pointer; len: TIdC_SIZET): void; cdecl external CLibCrypto name 'OPENSSL_cleanse';
-function OPENSSL_die(assertion: PIdAnsiChar; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl external CLibCrypto name 'OPENSSL_die';
+procedure OPENSSL_cleanse(ptr: Pointer; len: TIdC_SIZET); cdecl external CLibCrypto name 'OPENSSL_cleanse';
+procedure OPENSSL_die(assertion: PIdAnsiChar; _file: PIdAnsiChar; line: TIdC_INT); cdecl external CLibCrypto name 'OPENSSL_die';
 function OPENSSL_isservice: TIdC_INT; cdecl external CLibCrypto name 'OPENSSL_isservice';
-function OPENSSL_init: void; cdecl external CLibCrypto name 'OPENSSL_init';
-function OPENSSL_fork_prepare: void; cdecl external CLibCrypto name 'OPENSSL_fork_prepare';
-function OPENSSL_fork_parent: void; cdecl external CLibCrypto name 'OPENSSL_fork_parent';
-function OPENSSL_fork_child: void; cdecl external CLibCrypto name 'OPENSSL_fork_child';
+procedure OPENSSL_init; cdecl external CLibCrypto name 'OPENSSL_init';
+procedure OPENSSL_fork_prepare; cdecl external CLibCrypto name 'OPENSSL_fork_prepare';
+procedure OPENSSL_fork_parent; cdecl external CLibCrypto name 'OPENSSL_fork_parent';
+procedure OPENSSL_fork_child; cdecl external CLibCrypto name 'OPENSSL_fork_child';
 function OPENSSL_gmtime(timer: PIdC_TIMET; result: Ptm): Ptm; cdecl external CLibCrypto name 'OPENSSL_gmtime';
 function OPENSSL_gmtime_adj(tm: Ptm; offset_day: TIdC_INT; offset_sec: TIdC_LONG): TIdC_INT; cdecl external CLibCrypto name 'OPENSSL_gmtime_adj';
 function OPENSSL_gmtime_diff(pday: PIdC_INT; psec: PIdC_INT; from: Ptm; _to: Ptm): TIdC_INT; cdecl external CLibCrypto name 'OPENSSL_gmtime_diff';
 function CRYPTO_memcmp(in_a: Pointer; in_b: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_memcmp';
-function OPENSSL_cleanup: void; cdecl external CLibCrypto name 'OPENSSL_cleanup';
+procedure OPENSSL_cleanup; cdecl external CLibCrypto name 'OPENSSL_cleanup';
 function OPENSSL_init_crypto(opts: TIdC_UINT64; settings: POPENSSL_INIT_SETTINGS): TIdC_INT; cdecl external CLibCrypto name 'OPENSSL_init_crypto';
 function OPENSSL_atexit(handler: TOPENSSL_atexit_handler_cb): TIdC_INT; cdecl external CLibCrypto name 'OPENSSL_atexit';
-function OPENSSL_thread_stop: void; cdecl external CLibCrypto name 'OPENSSL_thread_stop';
-function OPENSSL_thread_stop_ex(ctx: POSSL_LIB_CTX): void; cdecl external CLibCrypto name 'OPENSSL_thread_stop_ex';
+procedure OPENSSL_thread_stop; cdecl external CLibCrypto name 'OPENSSL_thread_stop';
+procedure OPENSSL_thread_stop_ex(ctx: POSSL_LIB_CTX); cdecl external CLibCrypto name 'OPENSSL_thread_stop_ex';
 function OPENSSL_INIT_new: POPENSSL_INIT_SETTINGS; cdecl external CLibCrypto name 'OPENSSL_INIT_new';
 function OPENSSL_INIT_set_config_filename(settings: POPENSSL_INIT_SETTINGS; config_filename: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OPENSSL_INIT_set_config_filename';
-function OPENSSL_INIT_set_config_file_flags(settings: POPENSSL_INIT_SETTINGS; flags: TIdC_ULONG): void; cdecl external CLibCrypto name 'OPENSSL_INIT_set_config_file_flags';
+procedure OPENSSL_INIT_set_config_file_flags(settings: POPENSSL_INIT_SETTINGS; flags: TIdC_ULONG); cdecl external CLibCrypto name 'OPENSSL_INIT_set_config_file_flags';
 function OPENSSL_INIT_set_config_appname(settings: POPENSSL_INIT_SETTINGS; config_appname: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OPENSSL_INIT_set_config_appname';
-function OPENSSL_INIT_free(settings: POPENSSL_INIT_SETTINGS): void; cdecl external CLibCrypto name 'OPENSSL_INIT_free';
+procedure OPENSSL_INIT_free(settings: POPENSSL_INIT_SETTINGS); cdecl external CLibCrypto name 'OPENSSL_INIT_free';
 function CRYPTO_THREAD_run_once(once: PCRYPTO_ONCE; init: TOPENSSL_atexit_handler_cb): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_THREAD_run_once';
 function CRYPTO_THREAD_init_local(key: PCRYPTO_THREAD_LOCAL; cleanup: Tsk_void_freefunc): TIdC_INT; cdecl external CLibCrypto name 'CRYPTO_THREAD_init_local';
 function CRYPTO_THREAD_get_local(key: PCRYPTO_THREAD_LOCAL): Pointer; cdecl external CLibCrypto name 'CRYPTO_THREAD_get_local';
@@ -825,12 +825,12 @@ function OSSL_LIB_CTX_new: POSSL_LIB_CTX; cdecl external CLibCrypto name 'OSSL_L
 function OSSL_LIB_CTX_new_from_dispatch(handle: POSSL_CORE_HANDLE; _in: POSSL_DISPATCH): POSSL_LIB_CTX; cdecl external CLibCrypto name 'OSSL_LIB_CTX_new_from_dispatch';
 function OSSL_LIB_CTX_new_child(handle: POSSL_CORE_HANDLE; _in: POSSL_DISPATCH): POSSL_LIB_CTX; cdecl external CLibCrypto name 'OSSL_LIB_CTX_new_child';
 function OSSL_LIB_CTX_load_config(ctx: POSSL_LIB_CTX; config_file: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_LIB_CTX_load_config';
-function OSSL_LIB_CTX_free(arg1: POSSL_LIB_CTX): void; cdecl external CLibCrypto name 'OSSL_LIB_CTX_free';
+procedure OSSL_LIB_CTX_free(arg1: POSSL_LIB_CTX); cdecl external CLibCrypto name 'OSSL_LIB_CTX_free';
 function OSSL_LIB_CTX_get0_global_default: POSSL_LIB_CTX; cdecl external CLibCrypto name 'OSSL_LIB_CTX_get0_global_default';
 function OSSL_LIB_CTX_set0_default(libctx: POSSL_LIB_CTX): POSSL_LIB_CTX; cdecl external CLibCrypto name 'OSSL_LIB_CTX_set0_default';
 function OSSL_LIB_CTX_get_conf_diagnostics(ctx: POSSL_LIB_CTX): TIdC_INT; cdecl external CLibCrypto name 'OSSL_LIB_CTX_get_conf_diagnostics';
-function OSSL_LIB_CTX_set_conf_diagnostics(ctx: POSSL_LIB_CTX; value: TIdC_INT): void; cdecl external CLibCrypto name 'OSSL_LIB_CTX_set_conf_diagnostics';
-function OSSL_sleep(millis: TIdC_UINT64): void; cdecl external CLibCrypto name 'OSSL_sleep';
+procedure OSSL_LIB_CTX_set_conf_diagnostics(ctx: POSSL_LIB_CTX; value: TIdC_INT); cdecl external CLibCrypto name 'OSSL_LIB_CTX_set_conf_diagnostics';
+procedure OSSL_sleep(millis: TIdC_UINT64); cdecl external CLibCrypto name 'OSSL_sleep';
 function OSSL_LIB_CTX_get_data(ctx: POSSL_LIB_CTX; index: TIdC_INT): Pointer; cdecl external CLibCrypto name 'OSSL_LIB_CTX_get_data';
 {$ENDIF}
 
@@ -1455,7 +1455,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_THREAD_unlock_procname);
 end;
 
-function ERR_CRYPTO_THREAD_lock_free(lock: PCRYPTO_RWLOCK): void; cdecl
+procedure ERR_CRYPTO_THREAD_lock_free(lock: PCRYPTO_RWLOCK); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_THREAD_lock_free_procname);
 end;
@@ -1615,7 +1615,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_dup_ex_data_procname);
 end;
 
-function ERR_CRYPTO_free_ex_data(class_index: TIdC_INT; obj: Pointer; ad: PCRYPTO_EX_DATA): void; cdecl
+procedure ERR_CRYPTO_free_ex_data(class_index: TIdC_INT; obj: Pointer; ad: PCRYPTO_EX_DATA); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_free_ex_data_procname);
 end;
@@ -1640,7 +1640,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_set_mem_functions_procname);
 end;
 
-function ERR_CRYPTO_get_mem_functions(malloc_fn: PCRYPTO_malloc_fn; realloc_fn: PCRYPTO_realloc_fn; free_fn: PCRYPTO_free_fn): void; cdecl
+procedure ERR_CRYPTO_get_mem_functions(malloc_fn: PCRYPTO_malloc_fn; realloc_fn: PCRYPTO_realloc_fn; free_fn: PCRYPTO_free_fn); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_get_mem_functions_procname);
 end;
@@ -1690,12 +1690,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_strndup_procname);
 end;
 
-function ERR_CRYPTO_free(ptr: Pointer; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl
+procedure ERR_CRYPTO_free(ptr: Pointer; _file: PIdAnsiChar; line: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_free_procname);
 end;
 
-function ERR_CRYPTO_clear_free(ptr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl
+procedure ERR_CRYPTO_clear_free(ptr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_clear_free_procname);
 end;
@@ -1750,12 +1750,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_secure_calloc_procname);
 end;
 
-function ERR_CRYPTO_secure_free(ptr: Pointer; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl
+procedure ERR_CRYPTO_secure_free(ptr: Pointer; _file: PIdAnsiChar; line: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_secure_free_procname);
 end;
 
-function ERR_CRYPTO_secure_clear_free(ptr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl
+procedure ERR_CRYPTO_secure_clear_free(ptr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_secure_clear_free_procname);
 end;
@@ -1780,12 +1780,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_secure_used_procname);
 end;
 
-function ERR_OPENSSL_cleanse(ptr: Pointer; len: TIdC_SIZET): void; cdecl
+procedure ERR_OPENSSL_cleanse(ptr: Pointer; len: TIdC_SIZET); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_cleanse_procname);
 end;
 
-function ERR_OPENSSL_die(assertion: PIdAnsiChar; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl
+procedure ERR_OPENSSL_die(assertion: PIdAnsiChar; _file: PIdAnsiChar; line: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_die_procname);
 end;
@@ -1795,22 +1795,22 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_isservice_procname);
 end;
 
-function ERR_OPENSSL_init: void; cdecl
+procedure ERR_OPENSSL_init; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_init_procname);
 end;
 
-function ERR_OPENSSL_fork_prepare: void; cdecl
+procedure ERR_OPENSSL_fork_prepare; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_fork_prepare_procname);
 end;
 
-function ERR_OPENSSL_fork_parent: void; cdecl
+procedure ERR_OPENSSL_fork_parent; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_fork_parent_procname);
 end;
 
-function ERR_OPENSSL_fork_child: void; cdecl
+procedure ERR_OPENSSL_fork_child; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_fork_child_procname);
 end;
@@ -1835,7 +1835,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_memcmp_procname);
 end;
 
-function ERR_OPENSSL_cleanup: void; cdecl
+procedure ERR_OPENSSL_cleanup; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_cleanup_procname);
 end;
@@ -1850,12 +1850,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_atexit_procname);
 end;
 
-function ERR_OPENSSL_thread_stop: void; cdecl
+procedure ERR_OPENSSL_thread_stop; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_thread_stop_procname);
 end;
 
-function ERR_OPENSSL_thread_stop_ex(ctx: POSSL_LIB_CTX): void; cdecl
+procedure ERR_OPENSSL_thread_stop_ex(ctx: POSSL_LIB_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_thread_stop_ex_procname);
 end;
@@ -1870,7 +1870,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_INIT_set_config_filename_procname);
 end;
 
-function ERR_OPENSSL_INIT_set_config_file_flags(settings: POPENSSL_INIT_SETTINGS; flags: TIdC_ULONG): void; cdecl
+procedure ERR_OPENSSL_INIT_set_config_file_flags(settings: POPENSSL_INIT_SETTINGS; flags: TIdC_ULONG); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_INIT_set_config_file_flags_procname);
 end;
@@ -1880,7 +1880,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_INIT_set_config_appname_procname);
 end;
 
-function ERR_OPENSSL_INIT_free(settings: POPENSSL_INIT_SETTINGS): void; cdecl
+procedure ERR_OPENSSL_INIT_free(settings: POPENSSL_INIT_SETTINGS); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_INIT_free_procname);
 end;
@@ -1940,7 +1940,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_LIB_CTX_load_config_procname);
 end;
 
-function ERR_OSSL_LIB_CTX_free(arg1: POSSL_LIB_CTX): void; cdecl
+procedure ERR_OSSL_LIB_CTX_free(arg1: POSSL_LIB_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_LIB_CTX_free_procname);
 end;
@@ -1960,12 +1960,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_LIB_CTX_get_conf_diagnostics_procname);
 end;
 
-function ERR_OSSL_LIB_CTX_set_conf_diagnostics(ctx: POSSL_LIB_CTX; value: TIdC_INT): void; cdecl
+procedure ERR_OSSL_LIB_CTX_set_conf_diagnostics(ctx: POSSL_LIB_CTX; value: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_LIB_CTX_set_conf_diagnostics_procname);
 end;
 
-function ERR_OSSL_sleep(millis: TIdC_UINT64): void; cdecl
+procedure ERR_OSSL_sleep(millis: TIdC_UINT64); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_sleep_procname);
 end;

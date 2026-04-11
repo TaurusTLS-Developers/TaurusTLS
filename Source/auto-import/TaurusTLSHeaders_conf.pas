@@ -23,9 +23,10 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
-  TaurusTLSHeaders_core;
-
+  TaurusTLSHeaders_core,
+  ossl_types;
 
 
 
@@ -33,17 +34,6 @@ uses
 // TYPE DECLARATIONS
 // =============================================================================
 type
-  PCONF_VALUE = ^TCONF_VALUE;
-  TCONF_VALUE =   record
-    section: PIdAnsiChar;
-    name: PIdAnsiChar;
-    value: PIdAnsiChar;
-  end;
-  {$EXTERNALSYM PCONF_VALUE}
-
-  { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
-  // DEFINE_LHASH_OF_INTERNAL(CONF_VALUE)
-
   { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
   // DEFINE_LHASH_OF_INTERNAL(CONF_VALUE)
 
@@ -78,9 +68,9 @@ type
 type
   Tlh_CONF_VALUE_compfunc = function(a: PCONF_VALUE; b: PCONF_VALUE): TIdC_INT; cdecl;
   Tlh_CONF_VALUE_hashfunc = function(a: PCONF_VALUE): TIdC_ULONG; cdecl;
-  Tlh_CONF_VALUE_doallfunc = function(a: PCONF_VALUE): void; cdecl;
+  Tlh_CONF_VALUE_doallfunc = procedure(a: PCONF_VALUE); cdecl;
   Tconf_init_func = function(md: PCONF_IMODULE; cnf: PCONF): TIdC_INT; cdecl;
-  Tconf_finish_func = function(md: PCONF_IMODULE): void; cdecl;
+  Tconf_finish_func = procedure(md: PCONF_IMODULE); cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
   // CONF_parse_list_list_cb_cb = function(elem: PIdAnsiChar; len: TIdC_INT; usr: Pointer): TIdC_INT; cdecl;
 
@@ -105,7 +95,7 @@ var
   CONF_set_default_method: function(meth: PCONF_METHOD): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CONF_set_default_method}
 
-  CONF_set_nconf: function(conf: PCONF; hash: Plhash_st_CONF_VALUE): void; cdecl = nil;
+  CONF_set_nconf: procedure(conf: PCONF; hash: Plhash_st_CONF_VALUE); cdecl = nil;
   {$EXTERNALSYM CONF_set_nconf}
 
   CONF_load: function(conf: Plhash_st_CONF_VALUE; _file: PIdAnsiChar; eline: PIdC_LONG): Plhash_st_CONF_VALUE; cdecl = nil;
@@ -126,7 +116,7 @@ var
   CONF_get_number: function(conf: Plhash_st_CONF_VALUE; group: PIdAnsiChar; name: PIdAnsiChar): TIdC_LONG; cdecl = nil;
   {$EXTERNALSYM CONF_get_number}
 
-  CONF_free: function(conf: Plhash_st_CONF_VALUE): void; cdecl = nil;
+  CONF_free: procedure(conf: Plhash_st_CONF_VALUE); cdecl = nil;
   {$EXTERNALSYM CONF_free}
 
   CONF_dump_fp: function(conf: Plhash_st_CONF_VALUE; _out: PFILE): TIdC_INT; cdecl = nil;
@@ -150,10 +140,10 @@ var
   NCONF_WIN32: function: PCONF_METHOD; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM NCONF_WIN32}
 
-  NCONF_free: function(conf: PCONF): void; cdecl = nil;
+  NCONF_free: procedure(conf: PCONF); cdecl = nil;
   {$EXTERNALSYM NCONF_free}
 
-  NCONF_free_data: function(conf: PCONF): void; cdecl = nil;
+  NCONF_free_data: procedure(conf: PCONF); cdecl = nil;
   {$EXTERNALSYM NCONF_free_data}
 
   NCONF_load: function(conf: PCONF; _file: PIdAnsiChar; eline: PIdC_LONG): TIdC_INT; cdecl = nil;
@@ -192,10 +182,10 @@ var
   CONF_modules_load_file: function(filename: PIdAnsiChar; appname: PIdAnsiChar; flags: TIdC_ULONG): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CONF_modules_load_file}
 
-  CONF_modules_unload: function(all: TIdC_INT): void; cdecl = nil;
+  CONF_modules_unload: procedure(all: TIdC_INT); cdecl = nil;
   {$EXTERNALSYM CONF_modules_unload}
 
-  CONF_modules_finish: function: void; cdecl = nil;
+  CONF_modules_finish: procedure; cdecl = nil;
   {$EXTERNALSYM CONF_modules_finish}
 
   CONF_module_add: function(name: PIdAnsiChar; ifunc: Tconf_init_func; ffunc: Tconf_finish_func): TIdC_INT; cdecl = nil;
@@ -210,7 +200,7 @@ var
   CONF_imodule_get_usr_data: function(md: PCONF_IMODULE): Pointer; cdecl = nil;
   {$EXTERNALSYM CONF_imodule_get_usr_data}
 
-  CONF_imodule_set_usr_data: function(md: PCONF_IMODULE; usr_data: Pointer): void; cdecl = nil;
+  CONF_imodule_set_usr_data: procedure(md: PCONF_IMODULE; usr_data: Pointer); cdecl = nil;
   {$EXTERNALSYM CONF_imodule_set_usr_data}
 
   CONF_imodule_get_module: function(md: PCONF_IMODULE): PCONF_MODULE; cdecl = nil;
@@ -219,13 +209,13 @@ var
   CONF_imodule_get_flags: function(md: PCONF_IMODULE): TIdC_ULONG; cdecl = nil;
   {$EXTERNALSYM CONF_imodule_get_flags}
 
-  CONF_imodule_set_flags: function(md: PCONF_IMODULE; flags: TIdC_ULONG): void; cdecl = nil;
+  CONF_imodule_set_flags: procedure(md: PCONF_IMODULE; flags: TIdC_ULONG); cdecl = nil;
   {$EXTERNALSYM CONF_imodule_set_flags}
 
   CONF_module_get_usr_data: function(pmod: PCONF_MODULE): Pointer; cdecl = nil;
   {$EXTERNALSYM CONF_module_get_usr_data}
 
-  CONF_module_set_usr_data: function(pmod: PCONF_MODULE; usr_data: Pointer): void; cdecl = nil;
+  CONF_module_set_usr_data: procedure(pmod: PCONF_MODULE; usr_data: Pointer); cdecl = nil;
   {$EXTERNALSYM CONF_module_set_usr_data}
 
   CONF_get1_default_config_file: function: PIdAnsiChar; cdecl = nil;
@@ -234,7 +224,7 @@ var
   CONF_parse_list: function(list: PIdAnsiChar; sep: TIdC_INT; nospc: TIdC_INT; list_cb: TCONF_parse_list_list_cb_cb; arg: Pointer): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CONF_parse_list}
 
-  OPENSSL_load_builtin_modules: function: void; cdecl = nil;
+  OPENSSL_load_builtin_modules: procedure; cdecl = nil;
   {$EXTERNALSYM OPENSSL_load_builtin_modules}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -246,14 +236,14 @@ var
 // =============================================================================
 
 function CONF_set_default_method(meth: PCONF_METHOD): TIdC_INT; cdecl;
-function CONF_set_nconf(conf: PCONF; hash: Plhash_st_CONF_VALUE): void; cdecl;
+procedure CONF_set_nconf(conf: PCONF; hash: Plhash_st_CONF_VALUE); cdecl;
 function CONF_load(conf: Plhash_st_CONF_VALUE; _file: PIdAnsiChar; eline: PIdC_LONG): Plhash_st_CONF_VALUE; cdecl;
 function CONF_load_fp(conf: Plhash_st_CONF_VALUE; fp: PFILE; eline: PIdC_LONG): Plhash_st_CONF_VALUE; cdecl;
 function CONF_load_bio(conf: Plhash_st_CONF_VALUE; bp: PBIO; eline: PIdC_LONG): Plhash_st_CONF_VALUE; cdecl;
 function CONF_get_section(conf: Plhash_st_CONF_VALUE; section: PIdAnsiChar): Pstack_st_CONF_VALUE; cdecl;
 function CONF_get_string(conf: Plhash_st_CONF_VALUE; group: PIdAnsiChar; name: PIdAnsiChar): PIdAnsiChar; cdecl;
 function CONF_get_number(conf: Plhash_st_CONF_VALUE; group: PIdAnsiChar; name: PIdAnsiChar): TIdC_LONG; cdecl;
-function CONF_free(conf: Plhash_st_CONF_VALUE): void; cdecl;
+procedure CONF_free(conf: Plhash_st_CONF_VALUE); cdecl;
 function CONF_dump_fp(conf: Plhash_st_CONF_VALUE; _out: PFILE): TIdC_INT; cdecl;
 function CONF_dump_bio(conf: Plhash_st_CONF_VALUE; _out: PBIO): TIdC_INT; cdecl;
 function NCONF_new_ex(libctx: POSSL_LIB_CTX; meth: PCONF_METHOD): PCONF; cdecl;
@@ -261,8 +251,8 @@ function NCONF_get0_libctx(conf: PCONF): POSSL_LIB_CTX; cdecl;
 function NCONF_new(meth: PCONF_METHOD): PCONF; cdecl;
 function NCONF_default: PCONF_METHOD; cdecl;
 function NCONF_WIN32: PCONF_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
-function NCONF_free(conf: PCONF): void; cdecl;
-function NCONF_free_data(conf: PCONF): void; cdecl;
+procedure NCONF_free(conf: PCONF); cdecl;
+procedure NCONF_free_data(conf: PCONF); cdecl;
 function NCONF_load(conf: PCONF; _file: PIdAnsiChar; eline: PIdC_LONG): TIdC_INT; cdecl;
 function NCONF_load_fp(conf: PCONF; fp: PFILE; eline: PIdC_LONG): TIdC_INT; cdecl;
 function NCONF_load_bio(conf: PCONF; bp: PBIO; eline: PIdC_LONG): TIdC_INT; cdecl;
@@ -275,21 +265,21 @@ function NCONF_dump_bio(conf: PCONF; _out: PBIO): TIdC_INT; cdecl;
 function CONF_modules_load(cnf: PCONF; appname: PIdAnsiChar; flags: TIdC_ULONG): TIdC_INT; cdecl;
 function CONF_modules_load_file_ex(libctx: POSSL_LIB_CTX; filename: PIdAnsiChar; appname: PIdAnsiChar; flags: TIdC_ULONG): TIdC_INT; cdecl;
 function CONF_modules_load_file(filename: PIdAnsiChar; appname: PIdAnsiChar; flags: TIdC_ULONG): TIdC_INT; cdecl;
-function CONF_modules_unload(all: TIdC_INT): void; cdecl;
-function CONF_modules_finish: void; cdecl;
+procedure CONF_modules_unload(all: TIdC_INT); cdecl;
+procedure CONF_modules_finish; cdecl;
 function CONF_module_add(name: PIdAnsiChar; ifunc: Tconf_init_func; ffunc: Tconf_finish_func): TIdC_INT; cdecl;
 function CONF_imodule_get_name(md: PCONF_IMODULE): PIdAnsiChar; cdecl;
 function CONF_imodule_get_value(md: PCONF_IMODULE): PIdAnsiChar; cdecl;
 function CONF_imodule_get_usr_data(md: PCONF_IMODULE): Pointer; cdecl;
-function CONF_imodule_set_usr_data(md: PCONF_IMODULE; usr_data: Pointer): void; cdecl;
+procedure CONF_imodule_set_usr_data(md: PCONF_IMODULE; usr_data: Pointer); cdecl;
 function CONF_imodule_get_module(md: PCONF_IMODULE): PCONF_MODULE; cdecl;
 function CONF_imodule_get_flags(md: PCONF_IMODULE): TIdC_ULONG; cdecl;
-function CONF_imodule_set_flags(md: PCONF_IMODULE; flags: TIdC_ULONG): void; cdecl;
+procedure CONF_imodule_set_flags(md: PCONF_IMODULE; flags: TIdC_ULONG); cdecl;
 function CONF_module_get_usr_data(pmod: PCONF_MODULE): Pointer; cdecl;
-function CONF_module_set_usr_data(pmod: PCONF_MODULE; usr_data: Pointer): void; cdecl;
+procedure CONF_module_set_usr_data(pmod: PCONF_MODULE; usr_data: Pointer); cdecl;
 function CONF_get1_default_config_file: PIdAnsiChar; cdecl;
 function CONF_parse_list(list: PIdAnsiChar; sep: TIdC_INT; nospc: TIdC_INT; list_cb: TCONF_parse_list_list_cb_cb; arg: Pointer): TIdC_INT; cdecl;
-function OPENSSL_load_builtin_modules: void; cdecl;
+procedure OPENSSL_load_builtin_modules; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 // =============================================================================
@@ -358,14 +348,14 @@ uses
 // =============================================================================
 
 function CONF_set_default_method(meth: PCONF_METHOD): TIdC_INT; cdecl external CLibCrypto name 'CONF_set_default_method';
-function CONF_set_nconf(conf: PCONF; hash: Plhash_st_CONF_VALUE): void; cdecl external CLibCrypto name 'CONF_set_nconf';
+procedure CONF_set_nconf(conf: PCONF; hash: Plhash_st_CONF_VALUE); cdecl external CLibCrypto name 'CONF_set_nconf';
 function CONF_load(conf: Plhash_st_CONF_VALUE; _file: PIdAnsiChar; eline: PIdC_LONG): Plhash_st_CONF_VALUE; cdecl external CLibCrypto name 'CONF_load';
 function CONF_load_fp(conf: Plhash_st_CONF_VALUE; fp: PFILE; eline: PIdC_LONG): Plhash_st_CONF_VALUE; cdecl external CLibCrypto name 'CONF_load_fp';
 function CONF_load_bio(conf: Plhash_st_CONF_VALUE; bp: PBIO; eline: PIdC_LONG): Plhash_st_CONF_VALUE; cdecl external CLibCrypto name 'CONF_load_bio';
 function CONF_get_section(conf: Plhash_st_CONF_VALUE; section: PIdAnsiChar): Pstack_st_CONF_VALUE; cdecl external CLibCrypto name 'CONF_get_section';
 function CONF_get_string(conf: Plhash_st_CONF_VALUE; group: PIdAnsiChar; name: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'CONF_get_string';
 function CONF_get_number(conf: Plhash_st_CONF_VALUE; group: PIdAnsiChar; name: PIdAnsiChar): TIdC_LONG; cdecl external CLibCrypto name 'CONF_get_number';
-function CONF_free(conf: Plhash_st_CONF_VALUE): void; cdecl external CLibCrypto name 'CONF_free';
+procedure CONF_free(conf: Plhash_st_CONF_VALUE); cdecl external CLibCrypto name 'CONF_free';
 function CONF_dump_fp(conf: Plhash_st_CONF_VALUE; _out: PFILE): TIdC_INT; cdecl external CLibCrypto name 'CONF_dump_fp';
 function CONF_dump_bio(conf: Plhash_st_CONF_VALUE; _out: PBIO): TIdC_INT; cdecl external CLibCrypto name 'CONF_dump_bio';
 function NCONF_new_ex(libctx: POSSL_LIB_CTX; meth: PCONF_METHOD): PCONF; cdecl external CLibCrypto name 'NCONF_new_ex';
@@ -373,8 +363,8 @@ function NCONF_get0_libctx(conf: PCONF): POSSL_LIB_CTX; cdecl external CLibCrypt
 function NCONF_new(meth: PCONF_METHOD): PCONF; cdecl external CLibCrypto name 'NCONF_new';
 function NCONF_default: PCONF_METHOD; cdecl external CLibCrypto name 'NCONF_default';
 function NCONF_WIN32: PCONF_METHOD; cdecl external CLibCrypto name 'NCONF_WIN32';
-function NCONF_free(conf: PCONF): void; cdecl external CLibCrypto name 'NCONF_free';
-function NCONF_free_data(conf: PCONF): void; cdecl external CLibCrypto name 'NCONF_free_data';
+procedure NCONF_free(conf: PCONF); cdecl external CLibCrypto name 'NCONF_free';
+procedure NCONF_free_data(conf: PCONF); cdecl external CLibCrypto name 'NCONF_free_data';
 function NCONF_load(conf: PCONF; _file: PIdAnsiChar; eline: PIdC_LONG): TIdC_INT; cdecl external CLibCrypto name 'NCONF_load';
 function NCONF_load_fp(conf: PCONF; fp: PFILE; eline: PIdC_LONG): TIdC_INT; cdecl external CLibCrypto name 'NCONF_load_fp';
 function NCONF_load_bio(conf: PCONF; bp: PBIO; eline: PIdC_LONG): TIdC_INT; cdecl external CLibCrypto name 'NCONF_load_bio';
@@ -387,21 +377,21 @@ function NCONF_dump_bio(conf: PCONF; _out: PBIO): TIdC_INT; cdecl external CLibC
 function CONF_modules_load(cnf: PCONF; appname: PIdAnsiChar; flags: TIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'CONF_modules_load';
 function CONF_modules_load_file_ex(libctx: POSSL_LIB_CTX; filename: PIdAnsiChar; appname: PIdAnsiChar; flags: TIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'CONF_modules_load_file_ex';
 function CONF_modules_load_file(filename: PIdAnsiChar; appname: PIdAnsiChar; flags: TIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'CONF_modules_load_file';
-function CONF_modules_unload(all: TIdC_INT): void; cdecl external CLibCrypto name 'CONF_modules_unload';
-function CONF_modules_finish: void; cdecl external CLibCrypto name 'CONF_modules_finish';
+procedure CONF_modules_unload(all: TIdC_INT); cdecl external CLibCrypto name 'CONF_modules_unload';
+procedure CONF_modules_finish; cdecl external CLibCrypto name 'CONF_modules_finish';
 function CONF_module_add(name: PIdAnsiChar; ifunc: Tconf_init_func; ffunc: Tconf_finish_func): TIdC_INT; cdecl external CLibCrypto name 'CONF_module_add';
 function CONF_imodule_get_name(md: PCONF_IMODULE): PIdAnsiChar; cdecl external CLibCrypto name 'CONF_imodule_get_name';
 function CONF_imodule_get_value(md: PCONF_IMODULE): PIdAnsiChar; cdecl external CLibCrypto name 'CONF_imodule_get_value';
 function CONF_imodule_get_usr_data(md: PCONF_IMODULE): Pointer; cdecl external CLibCrypto name 'CONF_imodule_get_usr_data';
-function CONF_imodule_set_usr_data(md: PCONF_IMODULE; usr_data: Pointer): void; cdecl external CLibCrypto name 'CONF_imodule_set_usr_data';
+procedure CONF_imodule_set_usr_data(md: PCONF_IMODULE; usr_data: Pointer); cdecl external CLibCrypto name 'CONF_imodule_set_usr_data';
 function CONF_imodule_get_module(md: PCONF_IMODULE): PCONF_MODULE; cdecl external CLibCrypto name 'CONF_imodule_get_module';
 function CONF_imodule_get_flags(md: PCONF_IMODULE): TIdC_ULONG; cdecl external CLibCrypto name 'CONF_imodule_get_flags';
-function CONF_imodule_set_flags(md: PCONF_IMODULE; flags: TIdC_ULONG): void; cdecl external CLibCrypto name 'CONF_imodule_set_flags';
+procedure CONF_imodule_set_flags(md: PCONF_IMODULE; flags: TIdC_ULONG); cdecl external CLibCrypto name 'CONF_imodule_set_flags';
 function CONF_module_get_usr_data(pmod: PCONF_MODULE): Pointer; cdecl external CLibCrypto name 'CONF_module_get_usr_data';
-function CONF_module_set_usr_data(pmod: PCONF_MODULE; usr_data: Pointer): void; cdecl external CLibCrypto name 'CONF_module_set_usr_data';
+procedure CONF_module_set_usr_data(pmod: PCONF_MODULE; usr_data: Pointer); cdecl external CLibCrypto name 'CONF_module_set_usr_data';
 function CONF_get1_default_config_file: PIdAnsiChar; cdecl external CLibCrypto name 'CONF_get1_default_config_file';
 function CONF_parse_list(list: PIdAnsiChar; sep: TIdC_INT; nospc: TIdC_INT; list_cb: TCONF_parse_list_list_cb_cb; arg: Pointer): TIdC_INT; cdecl external CLibCrypto name 'CONF_parse_list';
-function OPENSSL_load_builtin_modules: void; cdecl external CLibCrypto name 'OPENSSL_load_builtin_modules';
+procedure OPENSSL_load_builtin_modules; cdecl external CLibCrypto name 'OPENSSL_load_builtin_modules';
 {$ENDIF}
 
 // =============================================================================
@@ -588,7 +578,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CONF_set_default_method_procname);
 end;
 
-function ERR_CONF_set_nconf(conf: PCONF; hash: Plhash_st_CONF_VALUE): void; cdecl
+procedure ERR_CONF_set_nconf(conf: PCONF; hash: Plhash_st_CONF_VALUE); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CONF_set_nconf_procname);
 end;
@@ -623,7 +613,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CONF_get_number_procname);
 end;
 
-function ERR_CONF_free(conf: Plhash_st_CONF_VALUE): void; cdecl
+procedure ERR_CONF_free(conf: Plhash_st_CONF_VALUE); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CONF_free_procname);
 end;
@@ -663,12 +653,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(NCONF_WIN32_procname);
 end;
 
-function ERR_NCONF_free(conf: PCONF): void; cdecl
+procedure ERR_NCONF_free(conf: PCONF); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(NCONF_free_procname);
 end;
 
-function ERR_NCONF_free_data(conf: PCONF): void; cdecl
+procedure ERR_NCONF_free_data(conf: PCONF); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(NCONF_free_data_procname);
 end;
@@ -733,12 +723,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CONF_modules_load_file_procname);
 end;
 
-function ERR_CONF_modules_unload(all: TIdC_INT): void; cdecl
+procedure ERR_CONF_modules_unload(all: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CONF_modules_unload_procname);
 end;
 
-function ERR_CONF_modules_finish: void; cdecl
+procedure ERR_CONF_modules_finish; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CONF_modules_finish_procname);
 end;
@@ -763,7 +753,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CONF_imodule_get_usr_data_procname);
 end;
 
-function ERR_CONF_imodule_set_usr_data(md: PCONF_IMODULE; usr_data: Pointer): void; cdecl
+procedure ERR_CONF_imodule_set_usr_data(md: PCONF_IMODULE; usr_data: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CONF_imodule_set_usr_data_procname);
 end;
@@ -778,7 +768,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CONF_imodule_get_flags_procname);
 end;
 
-function ERR_CONF_imodule_set_flags(md: PCONF_IMODULE; flags: TIdC_ULONG): void; cdecl
+procedure ERR_CONF_imodule_set_flags(md: PCONF_IMODULE; flags: TIdC_ULONG); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CONF_imodule_set_flags_procname);
 end;
@@ -788,7 +778,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CONF_module_get_usr_data_procname);
 end;
 
-function ERR_CONF_module_set_usr_data(pmod: PCONF_MODULE; usr_data: Pointer): void; cdecl
+procedure ERR_CONF_module_set_usr_data(pmod: PCONF_MODULE; usr_data: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CONF_module_set_usr_data_procname);
 end;
@@ -803,7 +793,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CONF_parse_list_procname);
 end;
 
-function ERR_OPENSSL_load_builtin_modules: void; cdecl
+procedure ERR_OPENSSL_load_builtin_modules; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_load_builtin_modules_procname);
 end;

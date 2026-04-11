@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -52,7 +52,7 @@ var
   HMAC_CTX_reset: function(ctx: PHMAC_CTX): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM HMAC_CTX_reset}
 
-  HMAC_CTX_free: function(ctx: PHMAC_CTX): void; cdecl = nil; // Deprecated in 3_0_0
+  HMAC_CTX_free: procedure(ctx: PHMAC_CTX); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM HMAC_CTX_free}
 
   HMAC_Init_ex: function(ctx: PHMAC_CTX; key: Pointer; len: TIdC_INT; md: PEVP_MD; impl: PENGINE): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -67,7 +67,7 @@ var
   HMAC_CTX_copy: function(dctx: PHMAC_CTX; sctx: PHMAC_CTX): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM HMAC_CTX_copy}
 
-  HMAC_CTX_set_flags: function(ctx: PHMAC_CTX; flags: TIdC_ULONG): void; cdecl = nil; // Deprecated in 3_0_0
+  HMAC_CTX_set_flags: procedure(ctx: PHMAC_CTX; flags: TIdC_ULONG); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM HMAC_CTX_set_flags}
 
   HMAC_CTX_get_md: function(ctx: PHMAC_CTX): PEVP_MD; cdecl = nil; // Deprecated in 3_0_0
@@ -87,12 +87,12 @@ var
 function HMAC_size(e: PHMAC_CTX): TIdC_SIZET; cdecl; deprecated 'In OpenSSL 3_0_0';
 function HMAC_CTX_new: PHMAC_CTX; cdecl; deprecated 'In OpenSSL 3_0_0';
 function HMAC_CTX_reset(ctx: PHMAC_CTX): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function HMAC_CTX_free(ctx: PHMAC_CTX): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure HMAC_CTX_free(ctx: PHMAC_CTX); cdecl; deprecated 'In OpenSSL 3_0_0';
 function HMAC_Init_ex(ctx: PHMAC_CTX; key: Pointer; len: TIdC_INT; md: PEVP_MD; impl: PENGINE): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function HMAC_Update(ctx: PHMAC_CTX; data: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function HMAC_Final(ctx: PHMAC_CTX; md: PIdAnsiChar; len: PIdC_UINT): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function HMAC_CTX_copy(dctx: PHMAC_CTX; sctx: PHMAC_CTX): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function HMAC_CTX_set_flags(ctx: PHMAC_CTX; flags: TIdC_ULONG): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure HMAC_CTX_set_flags(ctx: PHMAC_CTX; flags: TIdC_ULONG); cdecl; deprecated 'In OpenSSL 3_0_0';
 function HMAC_CTX_get_md(ctx: PHMAC_CTX): PEVP_MD; cdecl; deprecated 'In OpenSSL 3_0_0';
 function HMAC(evp_md: PEVP_MD; key: Pointer; key_len: TIdC_INT; data: PIdAnsiChar; data_len: TIdC_SIZET; md: PIdAnsiChar; md_len: PIdC_UINT): PIdAnsiChar; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -116,12 +116,12 @@ uses
 function HMAC_size(e: PHMAC_CTX): TIdC_SIZET; cdecl external CLibCrypto name 'HMAC_size';
 function HMAC_CTX_new: PHMAC_CTX; cdecl external CLibCrypto name 'HMAC_CTX_new';
 function HMAC_CTX_reset(ctx: PHMAC_CTX): TIdC_INT; cdecl external CLibCrypto name 'HMAC_CTX_reset';
-function HMAC_CTX_free(ctx: PHMAC_CTX): void; cdecl external CLibCrypto name 'HMAC_CTX_free';
+procedure HMAC_CTX_free(ctx: PHMAC_CTX); cdecl external CLibCrypto name 'HMAC_CTX_free';
 function HMAC_Init_ex(ctx: PHMAC_CTX; key: Pointer; len: TIdC_INT; md: PEVP_MD; impl: PENGINE): TIdC_INT; cdecl external CLibCrypto name 'HMAC_Init_ex';
 function HMAC_Update(ctx: PHMAC_CTX; data: PIdAnsiChar; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'HMAC_Update';
 function HMAC_Final(ctx: PHMAC_CTX; md: PIdAnsiChar; len: PIdC_UINT): TIdC_INT; cdecl external CLibCrypto name 'HMAC_Final';
 function HMAC_CTX_copy(dctx: PHMAC_CTX; sctx: PHMAC_CTX): TIdC_INT; cdecl external CLibCrypto name 'HMAC_CTX_copy';
-function HMAC_CTX_set_flags(ctx: PHMAC_CTX; flags: TIdC_ULONG): void; cdecl external CLibCrypto name 'HMAC_CTX_set_flags';
+procedure HMAC_CTX_set_flags(ctx: PHMAC_CTX; flags: TIdC_ULONG); cdecl external CLibCrypto name 'HMAC_CTX_set_flags';
 function HMAC_CTX_get_md(ctx: PHMAC_CTX): PEVP_MD; cdecl external CLibCrypto name 'HMAC_CTX_get_md';
 function HMAC(evp_md: PEVP_MD; key: Pointer; key_len: TIdC_INT; data: PIdAnsiChar; data_len: TIdC_SIZET; md: PIdAnsiChar; md_len: PIdC_UINT): PIdAnsiChar; cdecl external CLibCrypto name 'HMAC';
 {$ENDIF}
@@ -202,7 +202,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(HMAC_CTX_reset_procname);
 end;
 
-function ERR_HMAC_CTX_free(ctx: PHMAC_CTX): void; cdecl
+procedure ERR_HMAC_CTX_free(ctx: PHMAC_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(HMAC_CTX_free_procname);
 end;
@@ -227,7 +227,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(HMAC_CTX_copy_procname);
 end;
 
-function ERR_HMAC_CTX_set_flags(ctx: PHMAC_CTX; flags: TIdC_ULONG): void; cdecl
+procedure ERR_HMAC_CTX_set_flags(ctx: PHMAC_CTX; flags: TIdC_ULONG); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(HMAC_CTX_set_flags_procname);
 end;

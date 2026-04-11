@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -112,7 +112,7 @@ var
   X509_ACERT_new: function: PX509_ACERT; cdecl = nil;
   {$EXTERNALSYM X509_ACERT_new}
 
-  X509_ACERT_free: function(a: PX509_ACERT): void; cdecl = nil;
+  X509_ACERT_free: procedure(a: PX509_ACERT); cdecl = nil;
   {$EXTERNALSYM X509_ACERT_free}
 
   d2i_X509_ACERT: function(a: PPX509_ACERT; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_ACERT; cdecl = nil;
@@ -133,25 +133,25 @@ var
   X509_ACERT_INFO_new: function: PX509_ACERT_INFO; cdecl = nil;
   {$EXTERNALSYM X509_ACERT_INFO_new}
 
-  X509_ACERT_INFO_free: function(a: PX509_ACERT_INFO): void; cdecl = nil;
+  X509_ACERT_INFO_free: procedure(a: PX509_ACERT_INFO); cdecl = nil;
   {$EXTERNALSYM X509_ACERT_INFO_free}
 
   OSSL_OBJECT_DIGEST_INFO_new: function: POSSL_OBJECT_DIGEST_INFO; cdecl = nil;
   {$EXTERNALSYM OSSL_OBJECT_DIGEST_INFO_new}
 
-  OSSL_OBJECT_DIGEST_INFO_free: function(a: POSSL_OBJECT_DIGEST_INFO): void; cdecl = nil;
+  OSSL_OBJECT_DIGEST_INFO_free: procedure(a: POSSL_OBJECT_DIGEST_INFO); cdecl = nil;
   {$EXTERNALSYM OSSL_OBJECT_DIGEST_INFO_free}
 
   OSSL_ISSUER_SERIAL_new: function: POSSL_ISSUER_SERIAL; cdecl = nil;
   {$EXTERNALSYM OSSL_ISSUER_SERIAL_new}
 
-  OSSL_ISSUER_SERIAL_free: function(a: POSSL_ISSUER_SERIAL): void; cdecl = nil;
+  OSSL_ISSUER_SERIAL_free: procedure(a: POSSL_ISSUER_SERIAL); cdecl = nil;
   {$EXTERNALSYM OSSL_ISSUER_SERIAL_free}
 
   X509_ACERT_ISSUER_V2FORM_new: function: PX509_ACERT_ISSUER_V2FORM; cdecl = nil;
   {$EXTERNALSYM X509_ACERT_ISSUER_V2FORM_new}
 
-  X509_ACERT_ISSUER_V2FORM_free: function(a: PX509_ACERT_ISSUER_V2FORM): void; cdecl = nil;
+  X509_ACERT_ISSUER_V2FORM_free: procedure(a: PX509_ACERT_ISSUER_V2FORM); cdecl = nil;
   {$EXTERNALSYM X509_ACERT_ISSUER_V2FORM_free}
 
   d2i_X509_ACERT_fp: function(fp: PFILE; acert: PPX509_ACERT): PX509_ACERT; cdecl = nil;
@@ -202,7 +202,7 @@ var
   X509_ACERT_get_version: function(x: PX509_ACERT): TIdC_LONG; cdecl = nil;
   {$EXTERNALSYM X509_ACERT_get_version}
 
-  X509_ACERT_get0_signature: function(x: PX509_ACERT; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR): void; cdecl = nil;
+  X509_ACERT_get0_signature: procedure(x: PX509_ACERT; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR); cdecl = nil;
   {$EXTERNALSYM X509_ACERT_get0_signature}
 
   X509_ACERT_get_signature_nid: function(x: PX509_ACERT): TIdC_INT; cdecl = nil;
@@ -256,13 +256,13 @@ var
   X509_ACERT_set_version: function(x: PX509_ACERT; version: TIdC_LONG): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM X509_ACERT_set_version}
 
-  X509_ACERT_set0_holder_entityName: function(x: PX509_ACERT; name: PGENERAL_NAMES): void; cdecl = nil;
+  X509_ACERT_set0_holder_entityName: procedure(x: PX509_ACERT; name: PGENERAL_NAMES); cdecl = nil;
   {$EXTERNALSYM X509_ACERT_set0_holder_entityName}
 
-  X509_ACERT_set0_holder_baseCertId: function(x: PX509_ACERT; isss: POSSL_ISSUER_SERIAL): void; cdecl = nil;
+  X509_ACERT_set0_holder_baseCertId: procedure(x: PX509_ACERT; isss: POSSL_ISSUER_SERIAL); cdecl = nil;
   {$EXTERNALSYM X509_ACERT_set0_holder_baseCertId}
 
-  X509_ACERT_set0_holder_digest: function(x: PX509_ACERT; dinfo: POSSL_OBJECT_DIGEST_INFO): void; cdecl = nil;
+  X509_ACERT_set0_holder_digest: procedure(x: PX509_ACERT; dinfo: POSSL_OBJECT_DIGEST_INFO); cdecl = nil;
   {$EXTERNALSYM X509_ACERT_set0_holder_digest}
 
   X509_ACERT_add1_attr: function(x: PX509_ACERT; attr: PX509_ATTRIBUTE): TIdC_INT; cdecl = nil;
@@ -292,7 +292,7 @@ var
   X509_ACERT_set1_notAfter: function(x: PX509_ACERT; time: PASN1_GENERALIZEDTIME): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM X509_ACERT_set1_notAfter}
 
-  OSSL_OBJECT_DIGEST_INFO_get0_digest: function(o: POSSL_OBJECT_DIGEST_INFO; digestedObjectType: PIdC_INT; digestAlgorithm: PPX509_ALGOR; digest: PPASN1_BIT_STRING): void; cdecl = nil;
+  OSSL_OBJECT_DIGEST_INFO_get0_digest: procedure(o: POSSL_OBJECT_DIGEST_INFO; digestedObjectType: PIdC_INT; digestAlgorithm: PPX509_ALGOR; digest: PPASN1_BIT_STRING); cdecl = nil;
   {$EXTERNALSYM OSSL_OBJECT_DIGEST_INFO_get0_digest}
 
   OSSL_OBJECT_DIGEST_INFO_set1_digest: function(o: POSSL_OBJECT_DIGEST_INFO; digestedObjectType: TIdC_INT; digestAlgorithm: PX509_ALGOR; digest: PASN1_BIT_STRING): TIdC_INT; cdecl = nil;
@@ -322,13 +322,13 @@ var
   OSSL_IETF_ATTR_SYNTAX_VALUE_new: function: POSSL_IETF_ATTR_SYNTAX_VALUE; cdecl = nil;
   {$EXTERNALSYM OSSL_IETF_ATTR_SYNTAX_VALUE_new}
 
-  OSSL_IETF_ATTR_SYNTAX_VALUE_free: function(a: POSSL_IETF_ATTR_SYNTAX_VALUE): void; cdecl = nil;
+  OSSL_IETF_ATTR_SYNTAX_VALUE_free: procedure(a: POSSL_IETF_ATTR_SYNTAX_VALUE); cdecl = nil;
   {$EXTERNALSYM OSSL_IETF_ATTR_SYNTAX_VALUE_free}
 
   OSSL_IETF_ATTR_SYNTAX_new: function: POSSL_IETF_ATTR_SYNTAX; cdecl = nil;
   {$EXTERNALSYM OSSL_IETF_ATTR_SYNTAX_new}
 
-  OSSL_IETF_ATTR_SYNTAX_free: function(a: POSSL_IETF_ATTR_SYNTAX): void; cdecl = nil;
+  OSSL_IETF_ATTR_SYNTAX_free: procedure(a: POSSL_IETF_ATTR_SYNTAX); cdecl = nil;
   {$EXTERNALSYM OSSL_IETF_ATTR_SYNTAX_free}
 
   d2i_OSSL_IETF_ATTR_SYNTAX: function(a: PPOSSL_IETF_ATTR_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_IETF_ATTR_SYNTAX; cdecl = nil;
@@ -343,7 +343,7 @@ var
   OSSL_IETF_ATTR_SYNTAX_get0_policyAuthority: function(a: POSSL_IETF_ATTR_SYNTAX): PGENERAL_NAMES; cdecl = nil;
   {$EXTERNALSYM OSSL_IETF_ATTR_SYNTAX_get0_policyAuthority}
 
-  OSSL_IETF_ATTR_SYNTAX_set0_policyAuthority: function(a: POSSL_IETF_ATTR_SYNTAX; names: PGENERAL_NAMES): void; cdecl = nil;
+  OSSL_IETF_ATTR_SYNTAX_set0_policyAuthority: procedure(a: POSSL_IETF_ATTR_SYNTAX; names: PGENERAL_NAMES); cdecl = nil;
   {$EXTERNALSYM OSSL_IETF_ATTR_SYNTAX_set0_policyAuthority}
 
   OSSL_IETF_ATTR_SYNTAX_get_value_num: function(a: POSSL_IETF_ATTR_SYNTAX): TIdC_INT; cdecl = nil;
@@ -361,7 +361,7 @@ var
   OSSL_TARGET_new: function: POSSL_TARGET; cdecl = nil;
   {$EXTERNALSYM OSSL_TARGET_new}
 
-  OSSL_TARGET_free: function(a: POSSL_TARGET): void; cdecl = nil;
+  OSSL_TARGET_free: procedure(a: POSSL_TARGET); cdecl = nil;
   {$EXTERNALSYM OSSL_TARGET_free}
 
   d2i_OSSL_TARGET: function(a: PPOSSL_TARGET; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TARGET; cdecl = nil;
@@ -376,7 +376,7 @@ var
   OSSL_TARGETS_new: function: POSSL_TARGETS; cdecl = nil;
   {$EXTERNALSYM OSSL_TARGETS_new}
 
-  OSSL_TARGETS_free: function(a: POSSL_TARGETS): void; cdecl = nil;
+  OSSL_TARGETS_free: procedure(a: POSSL_TARGETS); cdecl = nil;
   {$EXTERNALSYM OSSL_TARGETS_free}
 
   d2i_OSSL_TARGETS: function(a: PPOSSL_TARGETS; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TARGETS; cdecl = nil;
@@ -391,7 +391,7 @@ var
   OSSL_TARGETING_INFORMATION_new: function: POSSL_TARGETING_INFORMATION; cdecl = nil;
   {$EXTERNALSYM OSSL_TARGETING_INFORMATION_new}
 
-  OSSL_TARGETING_INFORMATION_free: function(a: POSSL_TARGETING_INFORMATION): void; cdecl = nil;
+  OSSL_TARGETING_INFORMATION_free: procedure(a: POSSL_TARGETING_INFORMATION); cdecl = nil;
   {$EXTERNALSYM OSSL_TARGETING_INFORMATION_free}
 
   d2i_OSSL_TARGETING_INFORMATION: function(a: PPOSSL_TARGETING_INFORMATION; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TARGETING_INFORMATION; cdecl = nil;
@@ -406,7 +406,7 @@ var
   OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX_new: function: POSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX; cdecl = nil;
   {$EXTERNALSYM OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX_new}
 
-  OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX_free: function(a: POSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX): void; cdecl = nil;
+  OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX_free: procedure(a: POSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX); cdecl = nil;
   {$EXTERNALSYM OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX_free}
 
   d2i_OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX: function(a: PPOSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX; cdecl = nil;
@@ -427,20 +427,20 @@ var
 // =============================================================================
 
 function X509_ACERT_new: PX509_ACERT; cdecl;
-function X509_ACERT_free(a: PX509_ACERT): void; cdecl;
+procedure X509_ACERT_free(a: PX509_ACERT); cdecl;
 function d2i_X509_ACERT(a: PPX509_ACERT; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_ACERT; cdecl;
 function i2d_X509_ACERT(a: PX509_ACERT; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function X509_ACERT_it: PASN1_ITEM; cdecl;
 function X509_ACERT_dup(a: PX509_ACERT): PX509_ACERT; cdecl;
 function X509_ACERT_INFO_it: PASN1_ITEM; cdecl;
 function X509_ACERT_INFO_new: PX509_ACERT_INFO; cdecl;
-function X509_ACERT_INFO_free(a: PX509_ACERT_INFO): void; cdecl;
+procedure X509_ACERT_INFO_free(a: PX509_ACERT_INFO); cdecl;
 function OSSL_OBJECT_DIGEST_INFO_new: POSSL_OBJECT_DIGEST_INFO; cdecl;
-function OSSL_OBJECT_DIGEST_INFO_free(a: POSSL_OBJECT_DIGEST_INFO): void; cdecl;
+procedure OSSL_OBJECT_DIGEST_INFO_free(a: POSSL_OBJECT_DIGEST_INFO); cdecl;
 function OSSL_ISSUER_SERIAL_new: POSSL_ISSUER_SERIAL; cdecl;
-function OSSL_ISSUER_SERIAL_free(a: POSSL_ISSUER_SERIAL): void; cdecl;
+procedure OSSL_ISSUER_SERIAL_free(a: POSSL_ISSUER_SERIAL); cdecl;
 function X509_ACERT_ISSUER_V2FORM_new: PX509_ACERT_ISSUER_V2FORM; cdecl;
-function X509_ACERT_ISSUER_V2FORM_free(a: PX509_ACERT_ISSUER_V2FORM): void; cdecl;
+procedure X509_ACERT_ISSUER_V2FORM_free(a: PX509_ACERT_ISSUER_V2FORM); cdecl;
 function d2i_X509_ACERT_fp(fp: PFILE; acert: PPX509_ACERT): PX509_ACERT; cdecl;
 function i2d_X509_ACERT_fp(fp: PFILE; acert: PX509_ACERT): TIdC_INT; cdecl;
 function PEM_read_bio_X509_ACERT(_out: PBIO; x: PPX509_ACERT; cb: TPEM_read_bio_X509_ACERT_cb_cb; u: Pointer): PX509_ACERT; cdecl;
@@ -457,7 +457,7 @@ function X509_ACERT_get0_holder_baseCertId(x: PX509_ACERT): POSSL_ISSUER_SERIAL;
 function X509_ACERT_get0_holder_digest(x: PX509_ACERT): POSSL_OBJECT_DIGEST_INFO; cdecl;
 function X509_ACERT_get0_issuerName(x: PX509_ACERT): PX509_NAME; cdecl;
 function X509_ACERT_get_version(x: PX509_ACERT): TIdC_LONG; cdecl;
-function X509_ACERT_get0_signature(x: PX509_ACERT; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR): void; cdecl;
+procedure X509_ACERT_get0_signature(x: PX509_ACERT; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR); cdecl;
 function X509_ACERT_get_signature_nid(x: PX509_ACERT): TIdC_INT; cdecl;
 function X509_ACERT_get0_info_sigalg(x: PX509_ACERT): PX509_ALGOR; cdecl;
 function X509_ACERT_get0_serialNumber(x: PX509_ACERT): PASN1_INTEGER; cdecl;
@@ -475,9 +475,9 @@ function X509_ACERT_get_ext_d2i(x: PX509_ACERT; nid: TIdC_INT; crit: PIdC_INT; i
 function X509_ACERT_add1_ext_i2d(x: PX509_ACERT; nid: TIdC_INT; value: Pointer; crit: TIdC_INT; flags: TIdC_ULONG): TIdC_INT; cdecl;
 function X509_ACERT_get0_extensions(x: PX509_ACERT): Pstack_st_X509_EXTENSION; cdecl;
 function X509_ACERT_set_version(x: PX509_ACERT; version: TIdC_LONG): TIdC_INT; cdecl;
-function X509_ACERT_set0_holder_entityName(x: PX509_ACERT; name: PGENERAL_NAMES): void; cdecl;
-function X509_ACERT_set0_holder_baseCertId(x: PX509_ACERT; isss: POSSL_ISSUER_SERIAL): void; cdecl;
-function X509_ACERT_set0_holder_digest(x: PX509_ACERT; dinfo: POSSL_OBJECT_DIGEST_INFO): void; cdecl;
+procedure X509_ACERT_set0_holder_entityName(x: PX509_ACERT; name: PGENERAL_NAMES); cdecl;
+procedure X509_ACERT_set0_holder_baseCertId(x: PX509_ACERT; isss: POSSL_ISSUER_SERIAL); cdecl;
+procedure X509_ACERT_set0_holder_digest(x: PX509_ACERT; dinfo: POSSL_OBJECT_DIGEST_INFO); cdecl;
 function X509_ACERT_add1_attr(x: PX509_ACERT; attr: PX509_ATTRIBUTE): TIdC_INT; cdecl;
 function X509_ACERT_add1_attr_by_OBJ(x: PX509_ACERT; obj: PASN1_OBJECT; _type: TIdC_INT; bytes: Pointer; len: TIdC_INT): TIdC_INT; cdecl;
 function X509_ACERT_add1_attr_by_NID(x: PX509_ACERT; nid: TIdC_INT; _type: TIdC_INT; bytes: Pointer; len: TIdC_INT): TIdC_INT; cdecl;
@@ -487,7 +487,7 @@ function X509_ACERT_set1_issuerName(x: PX509_ACERT; name: PX509_NAME): TIdC_INT;
 function X509_ACERT_set1_serialNumber(x: PX509_ACERT; serial: PASN1_INTEGER): TIdC_INT; cdecl;
 function X509_ACERT_set1_notBefore(x: PX509_ACERT; time: PASN1_GENERALIZEDTIME): TIdC_INT; cdecl;
 function X509_ACERT_set1_notAfter(x: PX509_ACERT; time: PASN1_GENERALIZEDTIME): TIdC_INT; cdecl;
-function OSSL_OBJECT_DIGEST_INFO_get0_digest(o: POSSL_OBJECT_DIGEST_INFO; digestedObjectType: PIdC_INT; digestAlgorithm: PPX509_ALGOR; digest: PPASN1_BIT_STRING): void; cdecl;
+procedure OSSL_OBJECT_DIGEST_INFO_get0_digest(o: POSSL_OBJECT_DIGEST_INFO; digestedObjectType: PIdC_INT; digestAlgorithm: PPX509_ALGOR; digest: PPASN1_BIT_STRING); cdecl;
 function OSSL_OBJECT_DIGEST_INFO_set1_digest(o: POSSL_OBJECT_DIGEST_INFO; digestedObjectType: TIdC_INT; digestAlgorithm: PX509_ALGOR; digest: PASN1_BIT_STRING): TIdC_INT; cdecl;
 function OSSL_ISSUER_SERIAL_get0_issuer(isss: POSSL_ISSUER_SERIAL): PX509_NAME; cdecl;
 function OSSL_ISSUER_SERIAL_get0_serial(isss: POSSL_ISSUER_SERIAL): PASN1_INTEGER; cdecl;
@@ -497,35 +497,35 @@ function OSSL_ISSUER_SERIAL_set1_serial(isss: POSSL_ISSUER_SERIAL; serial: PASN1
 function OSSL_ISSUER_SERIAL_set1_issuerUID(isss: POSSL_ISSUER_SERIAL; uid: PASN1_BIT_STRING): TIdC_INT; cdecl;
 function OSSL_IETF_ATTR_SYNTAX_VALUE_it: PASN1_ITEM; cdecl;
 function OSSL_IETF_ATTR_SYNTAX_VALUE_new: POSSL_IETF_ATTR_SYNTAX_VALUE; cdecl;
-function OSSL_IETF_ATTR_SYNTAX_VALUE_free(a: POSSL_IETF_ATTR_SYNTAX_VALUE): void; cdecl;
+procedure OSSL_IETF_ATTR_SYNTAX_VALUE_free(a: POSSL_IETF_ATTR_SYNTAX_VALUE); cdecl;
 function OSSL_IETF_ATTR_SYNTAX_new: POSSL_IETF_ATTR_SYNTAX; cdecl;
-function OSSL_IETF_ATTR_SYNTAX_free(a: POSSL_IETF_ATTR_SYNTAX): void; cdecl;
+procedure OSSL_IETF_ATTR_SYNTAX_free(a: POSSL_IETF_ATTR_SYNTAX); cdecl;
 function d2i_OSSL_IETF_ATTR_SYNTAX(a: PPOSSL_IETF_ATTR_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_IETF_ATTR_SYNTAX; cdecl;
 function i2d_OSSL_IETF_ATTR_SYNTAX(a: POSSL_IETF_ATTR_SYNTAX; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_IETF_ATTR_SYNTAX_it: PASN1_ITEM; cdecl;
 function OSSL_IETF_ATTR_SYNTAX_get0_policyAuthority(a: POSSL_IETF_ATTR_SYNTAX): PGENERAL_NAMES; cdecl;
-function OSSL_IETF_ATTR_SYNTAX_set0_policyAuthority(a: POSSL_IETF_ATTR_SYNTAX; names: PGENERAL_NAMES): void; cdecl;
+procedure OSSL_IETF_ATTR_SYNTAX_set0_policyAuthority(a: POSSL_IETF_ATTR_SYNTAX; names: PGENERAL_NAMES); cdecl;
 function OSSL_IETF_ATTR_SYNTAX_get_value_num(a: POSSL_IETF_ATTR_SYNTAX): TIdC_INT; cdecl;
 function OSSL_IETF_ATTR_SYNTAX_get0_value(a: POSSL_IETF_ATTR_SYNTAX; ind: TIdC_INT; _type: PIdC_INT): Pointer; cdecl;
 function OSSL_IETF_ATTR_SYNTAX_add1_value(a: POSSL_IETF_ATTR_SYNTAX; _type: TIdC_INT; data: Pointer): TIdC_INT; cdecl;
 function OSSL_IETF_ATTR_SYNTAX_print(bp: PBIO; a: POSSL_IETF_ATTR_SYNTAX; indent: TIdC_INT): TIdC_INT; cdecl;
 function OSSL_TARGET_new: POSSL_TARGET; cdecl;
-function OSSL_TARGET_free(a: POSSL_TARGET): void; cdecl;
+procedure OSSL_TARGET_free(a: POSSL_TARGET); cdecl;
 function d2i_OSSL_TARGET(a: PPOSSL_TARGET; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TARGET; cdecl;
 function i2d_OSSL_TARGET(a: POSSL_TARGET; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_TARGET_it: PASN1_ITEM; cdecl;
 function OSSL_TARGETS_new: POSSL_TARGETS; cdecl;
-function OSSL_TARGETS_free(a: POSSL_TARGETS): void; cdecl;
+procedure OSSL_TARGETS_free(a: POSSL_TARGETS); cdecl;
 function d2i_OSSL_TARGETS(a: PPOSSL_TARGETS; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TARGETS; cdecl;
 function i2d_OSSL_TARGETS(a: POSSL_TARGETS; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_TARGETS_it: PASN1_ITEM; cdecl;
 function OSSL_TARGETING_INFORMATION_new: POSSL_TARGETING_INFORMATION; cdecl;
-function OSSL_TARGETING_INFORMATION_free(a: POSSL_TARGETING_INFORMATION): void; cdecl;
+procedure OSSL_TARGETING_INFORMATION_free(a: POSSL_TARGETING_INFORMATION); cdecl;
 function d2i_OSSL_TARGETING_INFORMATION(a: PPOSSL_TARGETING_INFORMATION; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TARGETING_INFORMATION; cdecl;
 function i2d_OSSL_TARGETING_INFORMATION(a: POSSL_TARGETING_INFORMATION; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_TARGETING_INFORMATION_it: PASN1_ITEM; cdecl;
 function OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX_new: POSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX; cdecl;
-function OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX_free(a: POSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX): void; cdecl;
+procedure OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX_free(a: POSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX); cdecl;
 function d2i_OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX(a: PPOSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX; cdecl;
 function i2d_OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX(a: POSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX_it: PASN1_ITEM; cdecl;
@@ -685,20 +685,20 @@ uses
 // =============================================================================
 
 function X509_ACERT_new: PX509_ACERT; cdecl external CLibCrypto name 'X509_ACERT_new';
-function X509_ACERT_free(a: PX509_ACERT): void; cdecl external CLibCrypto name 'X509_ACERT_free';
+procedure X509_ACERT_free(a: PX509_ACERT); cdecl external CLibCrypto name 'X509_ACERT_free';
 function d2i_X509_ACERT(a: PPX509_ACERT; _in: PPIdAnsiChar; len: TIdC_LONG): PX509_ACERT; cdecl external CLibCrypto name 'd2i_X509_ACERT';
 function i2d_X509_ACERT(a: PX509_ACERT; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_X509_ACERT';
 function X509_ACERT_it: PASN1_ITEM; cdecl external CLibCrypto name 'X509_ACERT_it';
 function X509_ACERT_dup(a: PX509_ACERT): PX509_ACERT; cdecl external CLibCrypto name 'X509_ACERT_dup';
 function X509_ACERT_INFO_it: PASN1_ITEM; cdecl external CLibCrypto name 'X509_ACERT_INFO_it';
 function X509_ACERT_INFO_new: PX509_ACERT_INFO; cdecl external CLibCrypto name 'X509_ACERT_INFO_new';
-function X509_ACERT_INFO_free(a: PX509_ACERT_INFO): void; cdecl external CLibCrypto name 'X509_ACERT_INFO_free';
+procedure X509_ACERT_INFO_free(a: PX509_ACERT_INFO); cdecl external CLibCrypto name 'X509_ACERT_INFO_free';
 function OSSL_OBJECT_DIGEST_INFO_new: POSSL_OBJECT_DIGEST_INFO; cdecl external CLibCrypto name 'OSSL_OBJECT_DIGEST_INFO_new';
-function OSSL_OBJECT_DIGEST_INFO_free(a: POSSL_OBJECT_DIGEST_INFO): void; cdecl external CLibCrypto name 'OSSL_OBJECT_DIGEST_INFO_free';
+procedure OSSL_OBJECT_DIGEST_INFO_free(a: POSSL_OBJECT_DIGEST_INFO); cdecl external CLibCrypto name 'OSSL_OBJECT_DIGEST_INFO_free';
 function OSSL_ISSUER_SERIAL_new: POSSL_ISSUER_SERIAL; cdecl external CLibCrypto name 'OSSL_ISSUER_SERIAL_new';
-function OSSL_ISSUER_SERIAL_free(a: POSSL_ISSUER_SERIAL): void; cdecl external CLibCrypto name 'OSSL_ISSUER_SERIAL_free';
+procedure OSSL_ISSUER_SERIAL_free(a: POSSL_ISSUER_SERIAL); cdecl external CLibCrypto name 'OSSL_ISSUER_SERIAL_free';
 function X509_ACERT_ISSUER_V2FORM_new: PX509_ACERT_ISSUER_V2FORM; cdecl external CLibCrypto name 'X509_ACERT_ISSUER_V2FORM_new';
-function X509_ACERT_ISSUER_V2FORM_free(a: PX509_ACERT_ISSUER_V2FORM): void; cdecl external CLibCrypto name 'X509_ACERT_ISSUER_V2FORM_free';
+procedure X509_ACERT_ISSUER_V2FORM_free(a: PX509_ACERT_ISSUER_V2FORM); cdecl external CLibCrypto name 'X509_ACERT_ISSUER_V2FORM_free';
 function d2i_X509_ACERT_fp(fp: PFILE; acert: PPX509_ACERT): PX509_ACERT; cdecl external CLibCrypto name 'd2i_X509_ACERT_fp';
 function i2d_X509_ACERT_fp(fp: PFILE; acert: PX509_ACERT): TIdC_INT; cdecl external CLibCrypto name 'i2d_X509_ACERT_fp';
 function PEM_read_bio_X509_ACERT(_out: PBIO; x: PPX509_ACERT; cb: TPEM_read_bio_X509_ACERT_cb_cb; u: Pointer): PX509_ACERT; cdecl external CLibCrypto name 'PEM_read_bio_X509_ACERT';
@@ -715,7 +715,7 @@ function X509_ACERT_get0_holder_baseCertId(x: PX509_ACERT): POSSL_ISSUER_SERIAL;
 function X509_ACERT_get0_holder_digest(x: PX509_ACERT): POSSL_OBJECT_DIGEST_INFO; cdecl external CLibCrypto name 'X509_ACERT_get0_holder_digest';
 function X509_ACERT_get0_issuerName(x: PX509_ACERT): PX509_NAME; cdecl external CLibCrypto name 'X509_ACERT_get0_issuerName';
 function X509_ACERT_get_version(x: PX509_ACERT): TIdC_LONG; cdecl external CLibCrypto name 'X509_ACERT_get_version';
-function X509_ACERT_get0_signature(x: PX509_ACERT; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR): void; cdecl external CLibCrypto name 'X509_ACERT_get0_signature';
+procedure X509_ACERT_get0_signature(x: PX509_ACERT; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR); cdecl external CLibCrypto name 'X509_ACERT_get0_signature';
 function X509_ACERT_get_signature_nid(x: PX509_ACERT): TIdC_INT; cdecl external CLibCrypto name 'X509_ACERT_get_signature_nid';
 function X509_ACERT_get0_info_sigalg(x: PX509_ACERT): PX509_ALGOR; cdecl external CLibCrypto name 'X509_ACERT_get0_info_sigalg';
 function X509_ACERT_get0_serialNumber(x: PX509_ACERT): PASN1_INTEGER; cdecl external CLibCrypto name 'X509_ACERT_get0_serialNumber';
@@ -733,9 +733,9 @@ function X509_ACERT_get_ext_d2i(x: PX509_ACERT; nid: TIdC_INT; crit: PIdC_INT; i
 function X509_ACERT_add1_ext_i2d(x: PX509_ACERT; nid: TIdC_INT; value: Pointer; crit: TIdC_INT; flags: TIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'X509_ACERT_add1_ext_i2d';
 function X509_ACERT_get0_extensions(x: PX509_ACERT): Pstack_st_X509_EXTENSION; cdecl external CLibCrypto name 'X509_ACERT_get0_extensions';
 function X509_ACERT_set_version(x: PX509_ACERT; version: TIdC_LONG): TIdC_INT; cdecl external CLibCrypto name 'X509_ACERT_set_version';
-function X509_ACERT_set0_holder_entityName(x: PX509_ACERT; name: PGENERAL_NAMES): void; cdecl external CLibCrypto name 'X509_ACERT_set0_holder_entityName';
-function X509_ACERT_set0_holder_baseCertId(x: PX509_ACERT; isss: POSSL_ISSUER_SERIAL): void; cdecl external CLibCrypto name 'X509_ACERT_set0_holder_baseCertId';
-function X509_ACERT_set0_holder_digest(x: PX509_ACERT; dinfo: POSSL_OBJECT_DIGEST_INFO): void; cdecl external CLibCrypto name 'X509_ACERT_set0_holder_digest';
+procedure X509_ACERT_set0_holder_entityName(x: PX509_ACERT; name: PGENERAL_NAMES); cdecl external CLibCrypto name 'X509_ACERT_set0_holder_entityName';
+procedure X509_ACERT_set0_holder_baseCertId(x: PX509_ACERT; isss: POSSL_ISSUER_SERIAL); cdecl external CLibCrypto name 'X509_ACERT_set0_holder_baseCertId';
+procedure X509_ACERT_set0_holder_digest(x: PX509_ACERT; dinfo: POSSL_OBJECT_DIGEST_INFO); cdecl external CLibCrypto name 'X509_ACERT_set0_holder_digest';
 function X509_ACERT_add1_attr(x: PX509_ACERT; attr: PX509_ATTRIBUTE): TIdC_INT; cdecl external CLibCrypto name 'X509_ACERT_add1_attr';
 function X509_ACERT_add1_attr_by_OBJ(x: PX509_ACERT; obj: PASN1_OBJECT; _type: TIdC_INT; bytes: Pointer; len: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'X509_ACERT_add1_attr_by_OBJ';
 function X509_ACERT_add1_attr_by_NID(x: PX509_ACERT; nid: TIdC_INT; _type: TIdC_INT; bytes: Pointer; len: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'X509_ACERT_add1_attr_by_NID';
@@ -745,7 +745,7 @@ function X509_ACERT_set1_issuerName(x: PX509_ACERT; name: PX509_NAME): TIdC_INT;
 function X509_ACERT_set1_serialNumber(x: PX509_ACERT; serial: PASN1_INTEGER): TIdC_INT; cdecl external CLibCrypto name 'X509_ACERT_set1_serialNumber';
 function X509_ACERT_set1_notBefore(x: PX509_ACERT; time: PASN1_GENERALIZEDTIME): TIdC_INT; cdecl external CLibCrypto name 'X509_ACERT_set1_notBefore';
 function X509_ACERT_set1_notAfter(x: PX509_ACERT; time: PASN1_GENERALIZEDTIME): TIdC_INT; cdecl external CLibCrypto name 'X509_ACERT_set1_notAfter';
-function OSSL_OBJECT_DIGEST_INFO_get0_digest(o: POSSL_OBJECT_DIGEST_INFO; digestedObjectType: PIdC_INT; digestAlgorithm: PPX509_ALGOR; digest: PPASN1_BIT_STRING): void; cdecl external CLibCrypto name 'OSSL_OBJECT_DIGEST_INFO_get0_digest';
+procedure OSSL_OBJECT_DIGEST_INFO_get0_digest(o: POSSL_OBJECT_DIGEST_INFO; digestedObjectType: PIdC_INT; digestAlgorithm: PPX509_ALGOR; digest: PPASN1_BIT_STRING); cdecl external CLibCrypto name 'OSSL_OBJECT_DIGEST_INFO_get0_digest';
 function OSSL_OBJECT_DIGEST_INFO_set1_digest(o: POSSL_OBJECT_DIGEST_INFO; digestedObjectType: TIdC_INT; digestAlgorithm: PX509_ALGOR; digest: PASN1_BIT_STRING): TIdC_INT; cdecl external CLibCrypto name 'OSSL_OBJECT_DIGEST_INFO_set1_digest';
 function OSSL_ISSUER_SERIAL_get0_issuer(isss: POSSL_ISSUER_SERIAL): PX509_NAME; cdecl external CLibCrypto name 'OSSL_ISSUER_SERIAL_get0_issuer';
 function OSSL_ISSUER_SERIAL_get0_serial(isss: POSSL_ISSUER_SERIAL): PASN1_INTEGER; cdecl external CLibCrypto name 'OSSL_ISSUER_SERIAL_get0_serial';
@@ -755,35 +755,35 @@ function OSSL_ISSUER_SERIAL_set1_serial(isss: POSSL_ISSUER_SERIAL; serial: PASN1
 function OSSL_ISSUER_SERIAL_set1_issuerUID(isss: POSSL_ISSUER_SERIAL; uid: PASN1_BIT_STRING): TIdC_INT; cdecl external CLibCrypto name 'OSSL_ISSUER_SERIAL_set1_issuerUID';
 function OSSL_IETF_ATTR_SYNTAX_VALUE_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_IETF_ATTR_SYNTAX_VALUE_it';
 function OSSL_IETF_ATTR_SYNTAX_VALUE_new: POSSL_IETF_ATTR_SYNTAX_VALUE; cdecl external CLibCrypto name 'OSSL_IETF_ATTR_SYNTAX_VALUE_new';
-function OSSL_IETF_ATTR_SYNTAX_VALUE_free(a: POSSL_IETF_ATTR_SYNTAX_VALUE): void; cdecl external CLibCrypto name 'OSSL_IETF_ATTR_SYNTAX_VALUE_free';
+procedure OSSL_IETF_ATTR_SYNTAX_VALUE_free(a: POSSL_IETF_ATTR_SYNTAX_VALUE); cdecl external CLibCrypto name 'OSSL_IETF_ATTR_SYNTAX_VALUE_free';
 function OSSL_IETF_ATTR_SYNTAX_new: POSSL_IETF_ATTR_SYNTAX; cdecl external CLibCrypto name 'OSSL_IETF_ATTR_SYNTAX_new';
-function OSSL_IETF_ATTR_SYNTAX_free(a: POSSL_IETF_ATTR_SYNTAX): void; cdecl external CLibCrypto name 'OSSL_IETF_ATTR_SYNTAX_free';
+procedure OSSL_IETF_ATTR_SYNTAX_free(a: POSSL_IETF_ATTR_SYNTAX); cdecl external CLibCrypto name 'OSSL_IETF_ATTR_SYNTAX_free';
 function d2i_OSSL_IETF_ATTR_SYNTAX(a: PPOSSL_IETF_ATTR_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_IETF_ATTR_SYNTAX; cdecl external CLibCrypto name 'd2i_OSSL_IETF_ATTR_SYNTAX';
 function i2d_OSSL_IETF_ATTR_SYNTAX(a: POSSL_IETF_ATTR_SYNTAX; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_IETF_ATTR_SYNTAX';
 function OSSL_IETF_ATTR_SYNTAX_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_IETF_ATTR_SYNTAX_it';
 function OSSL_IETF_ATTR_SYNTAX_get0_policyAuthority(a: POSSL_IETF_ATTR_SYNTAX): PGENERAL_NAMES; cdecl external CLibCrypto name 'OSSL_IETF_ATTR_SYNTAX_get0_policyAuthority';
-function OSSL_IETF_ATTR_SYNTAX_set0_policyAuthority(a: POSSL_IETF_ATTR_SYNTAX; names: PGENERAL_NAMES): void; cdecl external CLibCrypto name 'OSSL_IETF_ATTR_SYNTAX_set0_policyAuthority';
+procedure OSSL_IETF_ATTR_SYNTAX_set0_policyAuthority(a: POSSL_IETF_ATTR_SYNTAX; names: PGENERAL_NAMES); cdecl external CLibCrypto name 'OSSL_IETF_ATTR_SYNTAX_set0_policyAuthority';
 function OSSL_IETF_ATTR_SYNTAX_get_value_num(a: POSSL_IETF_ATTR_SYNTAX): TIdC_INT; cdecl external CLibCrypto name 'OSSL_IETF_ATTR_SYNTAX_get_value_num';
 function OSSL_IETF_ATTR_SYNTAX_get0_value(a: POSSL_IETF_ATTR_SYNTAX; ind: TIdC_INT; _type: PIdC_INT): Pointer; cdecl external CLibCrypto name 'OSSL_IETF_ATTR_SYNTAX_get0_value';
 function OSSL_IETF_ATTR_SYNTAX_add1_value(a: POSSL_IETF_ATTR_SYNTAX; _type: TIdC_INT; data: Pointer): TIdC_INT; cdecl external CLibCrypto name 'OSSL_IETF_ATTR_SYNTAX_add1_value';
 function OSSL_IETF_ATTR_SYNTAX_print(bp: PBIO; a: POSSL_IETF_ATTR_SYNTAX; indent: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_IETF_ATTR_SYNTAX_print';
 function OSSL_TARGET_new: POSSL_TARGET; cdecl external CLibCrypto name 'OSSL_TARGET_new';
-function OSSL_TARGET_free(a: POSSL_TARGET): void; cdecl external CLibCrypto name 'OSSL_TARGET_free';
+procedure OSSL_TARGET_free(a: POSSL_TARGET); cdecl external CLibCrypto name 'OSSL_TARGET_free';
 function d2i_OSSL_TARGET(a: PPOSSL_TARGET; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TARGET; cdecl external CLibCrypto name 'd2i_OSSL_TARGET';
 function i2d_OSSL_TARGET(a: POSSL_TARGET; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_TARGET';
 function OSSL_TARGET_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_TARGET_it';
 function OSSL_TARGETS_new: POSSL_TARGETS; cdecl external CLibCrypto name 'OSSL_TARGETS_new';
-function OSSL_TARGETS_free(a: POSSL_TARGETS): void; cdecl external CLibCrypto name 'OSSL_TARGETS_free';
+procedure OSSL_TARGETS_free(a: POSSL_TARGETS); cdecl external CLibCrypto name 'OSSL_TARGETS_free';
 function d2i_OSSL_TARGETS(a: PPOSSL_TARGETS; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TARGETS; cdecl external CLibCrypto name 'd2i_OSSL_TARGETS';
 function i2d_OSSL_TARGETS(a: POSSL_TARGETS; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_TARGETS';
 function OSSL_TARGETS_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_TARGETS_it';
 function OSSL_TARGETING_INFORMATION_new: POSSL_TARGETING_INFORMATION; cdecl external CLibCrypto name 'OSSL_TARGETING_INFORMATION_new';
-function OSSL_TARGETING_INFORMATION_free(a: POSSL_TARGETING_INFORMATION): void; cdecl external CLibCrypto name 'OSSL_TARGETING_INFORMATION_free';
+procedure OSSL_TARGETING_INFORMATION_free(a: POSSL_TARGETING_INFORMATION); cdecl external CLibCrypto name 'OSSL_TARGETING_INFORMATION_free';
 function d2i_OSSL_TARGETING_INFORMATION(a: PPOSSL_TARGETING_INFORMATION; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_TARGETING_INFORMATION; cdecl external CLibCrypto name 'd2i_OSSL_TARGETING_INFORMATION';
 function i2d_OSSL_TARGETING_INFORMATION(a: POSSL_TARGETING_INFORMATION; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_TARGETING_INFORMATION';
 function OSSL_TARGETING_INFORMATION_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_TARGETING_INFORMATION_it';
 function OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX_new: POSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX; cdecl external CLibCrypto name 'OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX_new';
-function OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX_free(a: POSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX): void; cdecl external CLibCrypto name 'OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX_free';
+procedure OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX_free(a: POSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX); cdecl external CLibCrypto name 'OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX_free';
 function d2i_OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX(a: PPOSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX; cdecl external CLibCrypto name 'd2i_OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX';
 function i2d_OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX(a: POSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX';
 function OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX_it';
@@ -1121,7 +1121,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_ACERT_new_procname);
 end;
 
-function ERR_X509_ACERT_free(a: PX509_ACERT): void; cdecl
+procedure ERR_X509_ACERT_free(a: PX509_ACERT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_ACERT_free_procname);
 end;
@@ -1156,7 +1156,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_ACERT_INFO_new_procname);
 end;
 
-function ERR_X509_ACERT_INFO_free(a: PX509_ACERT_INFO): void; cdecl
+procedure ERR_X509_ACERT_INFO_free(a: PX509_ACERT_INFO); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_ACERT_INFO_free_procname);
 end;
@@ -1166,7 +1166,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_OBJECT_DIGEST_INFO_new_procname);
 end;
 
-function ERR_OSSL_OBJECT_DIGEST_INFO_free(a: POSSL_OBJECT_DIGEST_INFO): void; cdecl
+procedure ERR_OSSL_OBJECT_DIGEST_INFO_free(a: POSSL_OBJECT_DIGEST_INFO); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_OBJECT_DIGEST_INFO_free_procname);
 end;
@@ -1176,7 +1176,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ISSUER_SERIAL_new_procname);
 end;
 
-function ERR_OSSL_ISSUER_SERIAL_free(a: POSSL_ISSUER_SERIAL): void; cdecl
+procedure ERR_OSSL_ISSUER_SERIAL_free(a: POSSL_ISSUER_SERIAL); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ISSUER_SERIAL_free_procname);
 end;
@@ -1186,7 +1186,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_ACERT_ISSUER_V2FORM_new_procname);
 end;
 
-function ERR_X509_ACERT_ISSUER_V2FORM_free(a: PX509_ACERT_ISSUER_V2FORM): void; cdecl
+procedure ERR_X509_ACERT_ISSUER_V2FORM_free(a: PX509_ACERT_ISSUER_V2FORM); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_ACERT_ISSUER_V2FORM_free_procname);
 end;
@@ -1271,7 +1271,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_ACERT_get_version_procname);
 end;
 
-function ERR_X509_ACERT_get0_signature(x: PX509_ACERT; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR): void; cdecl
+procedure ERR_X509_ACERT_get0_signature(x: PX509_ACERT; psig: PPASN1_BIT_STRING; palg: PPX509_ALGOR); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_ACERT_get0_signature_procname);
 end;
@@ -1361,17 +1361,17 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_ACERT_set_version_procname);
 end;
 
-function ERR_X509_ACERT_set0_holder_entityName(x: PX509_ACERT; name: PGENERAL_NAMES): void; cdecl
+procedure ERR_X509_ACERT_set0_holder_entityName(x: PX509_ACERT; name: PGENERAL_NAMES); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_ACERT_set0_holder_entityName_procname);
 end;
 
-function ERR_X509_ACERT_set0_holder_baseCertId(x: PX509_ACERT; isss: POSSL_ISSUER_SERIAL): void; cdecl
+procedure ERR_X509_ACERT_set0_holder_baseCertId(x: PX509_ACERT; isss: POSSL_ISSUER_SERIAL); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_ACERT_set0_holder_baseCertId_procname);
 end;
 
-function ERR_X509_ACERT_set0_holder_digest(x: PX509_ACERT; dinfo: POSSL_OBJECT_DIGEST_INFO): void; cdecl
+procedure ERR_X509_ACERT_set0_holder_digest(x: PX509_ACERT; dinfo: POSSL_OBJECT_DIGEST_INFO); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_ACERT_set0_holder_digest_procname);
 end;
@@ -1421,7 +1421,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_ACERT_set1_notAfter_procname);
 end;
 
-function ERR_OSSL_OBJECT_DIGEST_INFO_get0_digest(o: POSSL_OBJECT_DIGEST_INFO; digestedObjectType: PIdC_INT; digestAlgorithm: PPX509_ALGOR; digest: PPASN1_BIT_STRING): void; cdecl
+procedure ERR_OSSL_OBJECT_DIGEST_INFO_get0_digest(o: POSSL_OBJECT_DIGEST_INFO; digestedObjectType: PIdC_INT; digestAlgorithm: PPX509_ALGOR; digest: PPASN1_BIT_STRING); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_OBJECT_DIGEST_INFO_get0_digest_procname);
 end;
@@ -1471,7 +1471,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_IETF_ATTR_SYNTAX_VALUE_new_procname);
 end;
 
-function ERR_OSSL_IETF_ATTR_SYNTAX_VALUE_free(a: POSSL_IETF_ATTR_SYNTAX_VALUE): void; cdecl
+procedure ERR_OSSL_IETF_ATTR_SYNTAX_VALUE_free(a: POSSL_IETF_ATTR_SYNTAX_VALUE); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_IETF_ATTR_SYNTAX_VALUE_free_procname);
 end;
@@ -1481,7 +1481,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_IETF_ATTR_SYNTAX_new_procname);
 end;
 
-function ERR_OSSL_IETF_ATTR_SYNTAX_free(a: POSSL_IETF_ATTR_SYNTAX): void; cdecl
+procedure ERR_OSSL_IETF_ATTR_SYNTAX_free(a: POSSL_IETF_ATTR_SYNTAX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_IETF_ATTR_SYNTAX_free_procname);
 end;
@@ -1506,7 +1506,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_IETF_ATTR_SYNTAX_get0_policyAuthority_procname);
 end;
 
-function ERR_OSSL_IETF_ATTR_SYNTAX_set0_policyAuthority(a: POSSL_IETF_ATTR_SYNTAX; names: PGENERAL_NAMES): void; cdecl
+procedure ERR_OSSL_IETF_ATTR_SYNTAX_set0_policyAuthority(a: POSSL_IETF_ATTR_SYNTAX; names: PGENERAL_NAMES); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_IETF_ATTR_SYNTAX_set0_policyAuthority_procname);
 end;
@@ -1536,7 +1536,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_TARGET_new_procname);
 end;
 
-function ERR_OSSL_TARGET_free(a: POSSL_TARGET): void; cdecl
+procedure ERR_OSSL_TARGET_free(a: POSSL_TARGET); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_TARGET_free_procname);
 end;
@@ -1561,7 +1561,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_TARGETS_new_procname);
 end;
 
-function ERR_OSSL_TARGETS_free(a: POSSL_TARGETS): void; cdecl
+procedure ERR_OSSL_TARGETS_free(a: POSSL_TARGETS); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_TARGETS_free_procname);
 end;
@@ -1586,7 +1586,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_TARGETING_INFORMATION_new_procname);
 end;
 
-function ERR_OSSL_TARGETING_INFORMATION_free(a: POSSL_TARGETING_INFORMATION): void; cdecl
+procedure ERR_OSSL_TARGETING_INFORMATION_free(a: POSSL_TARGETING_INFORMATION); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_TARGETING_INFORMATION_free_procname);
 end;
@@ -1611,7 +1611,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX_new_procname);
 end;
 
-function ERR_OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX_free(a: POSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX): void; cdecl
+procedure ERR_OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX_free(a: POSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_AUTHORITY_ATTRIBUTE_ID_SYNTAX_free_procname);
 end;

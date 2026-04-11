@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -132,13 +132,13 @@ var
   CMS_SignedData_new: function: PCMS_SignedData; cdecl = nil;
   {$EXTERNALSYM CMS_SignedData_new}
 
-  CMS_SignedData_free: function(a: PCMS_SignedData): void; cdecl = nil;
+  CMS_SignedData_free: procedure(a: PCMS_SignedData); cdecl = nil;
   {$EXTERNALSYM CMS_SignedData_free}
 
   CMS_ContentInfo_new: function: PCMS_ContentInfo; cdecl = nil;
   {$EXTERNALSYM CMS_ContentInfo_new}
 
-  CMS_ContentInfo_free: function(a: PCMS_ContentInfo): void; cdecl = nil;
+  CMS_ContentInfo_free: procedure(a: PCMS_ContentInfo); cdecl = nil;
   {$EXTERNALSYM CMS_ContentInfo_free}
 
   d2i_CMS_ContentInfo: function(a: PPCMS_ContentInfo; _in: PPIdAnsiChar; len: TIdC_LONG): PCMS_ContentInfo; cdecl = nil;
@@ -153,7 +153,7 @@ var
   CMS_ReceiptRequest_new: function: PCMS_ReceiptRequest; cdecl = nil;
   {$EXTERNALSYM CMS_ReceiptRequest_new}
 
-  CMS_ReceiptRequest_free: function(a: PCMS_ReceiptRequest): void; cdecl = nil;
+  CMS_ReceiptRequest_free: procedure(a: PCMS_ReceiptRequest); cdecl = nil;
   {$EXTERNALSYM CMS_ReceiptRequest_free}
 
   d2i_CMS_ReceiptRequest: function(a: PPCMS_ReceiptRequest; _in: PPIdAnsiChar; len: TIdC_LONG): PCMS_ReceiptRequest; cdecl = nil;
@@ -411,7 +411,7 @@ var
   CMS_get0_SignerInfos: function(cms: PCMS_ContentInfo): Pstack_st_CMS_SignerInfo; cdecl = nil;
   {$EXTERNALSYM CMS_get0_SignerInfos}
 
-  CMS_SignerInfo_set1_signer_cert: function(si: PCMS_SignerInfo; signer: PX509): void; cdecl = nil;
+  CMS_SignerInfo_set1_signer_cert: procedure(si: PCMS_SignerInfo; signer: PX509); cdecl = nil;
   {$EXTERNALSYM CMS_SignerInfo_set1_signer_cert}
 
   CMS_SignerInfo_get0_signer_id: function(si: PCMS_SignerInfo; keyid: PPASN1_OCTET_STRING; issuer: PPX509_NAME; sno: PPASN1_INTEGER): TIdC_INT; cdecl = nil;
@@ -423,7 +423,7 @@ var
   CMS_set1_signers_certs: function(cms: PCMS_ContentInfo; certs: Pstack_st_X509; flags: TIdC_UINT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CMS_set1_signers_certs}
 
-  CMS_SignerInfo_get0_algs: function(si: PCMS_SignerInfo; pk: PPEVP_PKEY; signer: PPX509; pdig: PPX509_ALGOR; psig: PPX509_ALGOR): void; cdecl = nil;
+  CMS_SignerInfo_get0_algs: procedure(si: PCMS_SignerInfo; pk: PPEVP_PKEY; signer: PPX509; pdig: PPX509_ALGOR; psig: PPX509_ALGOR); cdecl = nil;
   {$EXTERNALSYM CMS_SignerInfo_get0_algs}
 
   CMS_SignerInfo_get0_signature: function(si: PCMS_SignerInfo): PASN1_OCTET_STRING; cdecl = nil;
@@ -522,7 +522,7 @@ var
   CMS_add1_ReceiptRequest: function(si: PCMS_SignerInfo; rr: PCMS_ReceiptRequest): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CMS_add1_ReceiptRequest}
 
-  CMS_ReceiptRequest_get0_values: function(rr: PCMS_ReceiptRequest; pcid: PPASN1_STRING; pallorfirst: PIdC_INT; plist: PPstack_st_GENERAL_NAMES; prto: PPstack_st_GENERAL_NAMES): void; cdecl = nil;
+  CMS_ReceiptRequest_get0_values: procedure(rr: PCMS_ReceiptRequest; pcid: PPASN1_STRING; pallorfirst: PIdC_INT; plist: PPstack_st_GENERAL_NAMES; prto: PPstack_st_GENERAL_NAMES); cdecl = nil;
   {$EXTERNALSYM CMS_ReceiptRequest_get0_values}
 
   CMS_RecipientInfo_kari_get0_alg: function(ri: PCMS_RecipientInfo; palg: PPX509_ALGOR; pukm: PPASN1_OCTET_STRING): TIdC_INT; cdecl = nil;
@@ -583,14 +583,14 @@ var
 
 function CMS_EnvelopedData_it: PASN1_ITEM; cdecl;
 function CMS_SignedData_new: PCMS_SignedData; cdecl;
-function CMS_SignedData_free(a: PCMS_SignedData): void; cdecl;
+procedure CMS_SignedData_free(a: PCMS_SignedData); cdecl;
 function CMS_ContentInfo_new: PCMS_ContentInfo; cdecl;
-function CMS_ContentInfo_free(a: PCMS_ContentInfo): void; cdecl;
+procedure CMS_ContentInfo_free(a: PCMS_ContentInfo); cdecl;
 function d2i_CMS_ContentInfo(a: PPCMS_ContentInfo; _in: PPIdAnsiChar; len: TIdC_LONG): PCMS_ContentInfo; cdecl;
 function i2d_CMS_ContentInfo(a: PCMS_ContentInfo; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function CMS_ContentInfo_it: PASN1_ITEM; cdecl;
 function CMS_ReceiptRequest_new: PCMS_ReceiptRequest; cdecl;
-function CMS_ReceiptRequest_free(a: PCMS_ReceiptRequest): void; cdecl;
+procedure CMS_ReceiptRequest_free(a: PCMS_ReceiptRequest); cdecl;
 function d2i_CMS_ReceiptRequest(a: PPCMS_ReceiptRequest; _in: PPIdAnsiChar; len: TIdC_LONG): PCMS_ReceiptRequest; cdecl;
 function i2d_CMS_ReceiptRequest(a: PCMS_ReceiptRequest; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function CMS_ReceiptRequest_it: PASN1_ITEM; cdecl;
@@ -676,11 +676,11 @@ function CMS_add1_signer(cms: PCMS_ContentInfo; signer: PX509; pk: PEVP_PKEY; md
 function CMS_SignerInfo_get0_pkey_ctx(si: PCMS_SignerInfo): PEVP_PKEY_CTX; cdecl;
 function CMS_SignerInfo_get0_md_ctx(si: PCMS_SignerInfo): PEVP_MD_CTX; cdecl;
 function CMS_get0_SignerInfos(cms: PCMS_ContentInfo): Pstack_st_CMS_SignerInfo; cdecl;
-function CMS_SignerInfo_set1_signer_cert(si: PCMS_SignerInfo; signer: PX509): void; cdecl;
+procedure CMS_SignerInfo_set1_signer_cert(si: PCMS_SignerInfo; signer: PX509); cdecl;
 function CMS_SignerInfo_get0_signer_id(si: PCMS_SignerInfo; keyid: PPASN1_OCTET_STRING; issuer: PPX509_NAME; sno: PPASN1_INTEGER): TIdC_INT; cdecl;
 function CMS_SignerInfo_cert_cmp(si: PCMS_SignerInfo; cert: PX509): TIdC_INT; cdecl;
 function CMS_set1_signers_certs(cms: PCMS_ContentInfo; certs: Pstack_st_X509; flags: TIdC_UINT): TIdC_INT; cdecl;
-function CMS_SignerInfo_get0_algs(si: PCMS_SignerInfo; pk: PPEVP_PKEY; signer: PPX509; pdig: PPX509_ALGOR; psig: PPX509_ALGOR): void; cdecl;
+procedure CMS_SignerInfo_get0_algs(si: PCMS_SignerInfo; pk: PPEVP_PKEY; signer: PPX509; pdig: PPX509_ALGOR; psig: PPX509_ALGOR); cdecl;
 function CMS_SignerInfo_get0_signature(si: PCMS_SignerInfo): PASN1_OCTET_STRING; cdecl;
 function CMS_SignerInfo_sign(si: PCMS_SignerInfo): TIdC_INT; cdecl;
 function CMS_SignerInfo_verify(si: PCMS_SignerInfo): TIdC_INT; cdecl;
@@ -713,7 +713,7 @@ function CMS_get1_ReceiptRequest(si: PCMS_SignerInfo; prr: PPCMS_ReceiptRequest)
 function CMS_ReceiptRequest_create0(id: PIdAnsiChar; idlen: TIdC_INT; allorfirst: TIdC_INT; receiptList: Pstack_st_GENERAL_NAMES; receiptsTo: Pstack_st_GENERAL_NAMES): PCMS_ReceiptRequest; cdecl;
 function CMS_ReceiptRequest_create0_ex(id: PIdAnsiChar; idlen: TIdC_INT; allorfirst: TIdC_INT; receiptList: Pstack_st_GENERAL_NAMES; receiptsTo: Pstack_st_GENERAL_NAMES; libctx: POSSL_LIB_CTX): PCMS_ReceiptRequest; cdecl;
 function CMS_add1_ReceiptRequest(si: PCMS_SignerInfo; rr: PCMS_ReceiptRequest): TIdC_INT; cdecl;
-function CMS_ReceiptRequest_get0_values(rr: PCMS_ReceiptRequest; pcid: PPASN1_STRING; pallorfirst: PIdC_INT; plist: PPstack_st_GENERAL_NAMES; prto: PPstack_st_GENERAL_NAMES): void; cdecl;
+procedure CMS_ReceiptRequest_get0_values(rr: PCMS_ReceiptRequest; pcid: PPASN1_STRING; pallorfirst: PIdC_INT; plist: PPstack_st_GENERAL_NAMES; prto: PPstack_st_GENERAL_NAMES); cdecl;
 function CMS_RecipientInfo_kari_get0_alg(ri: PCMS_RecipientInfo; palg: PPX509_ALGOR; pukm: PPASN1_OCTET_STRING): TIdC_INT; cdecl;
 function CMS_RecipientInfo_kari_get0_reks(ri: PCMS_RecipientInfo): Pstack_st_CMS_RecipientEncryptedKey; cdecl;
 function CMS_RecipientInfo_kari_get0_orig_id(ri: PCMS_RecipientInfo; pubalg: PPX509_ALGOR; pubkey: PPASN1_BIT_STRING; keyid: PPASN1_OCTET_STRING; issuer: PPX509_NAME; sno: PPASN1_INTEGER): TIdC_INT; cdecl;
@@ -887,14 +887,14 @@ uses
 
 function CMS_EnvelopedData_it: PASN1_ITEM; cdecl external CLibCrypto name 'CMS_EnvelopedData_it';
 function CMS_SignedData_new: PCMS_SignedData; cdecl external CLibCrypto name 'CMS_SignedData_new';
-function CMS_SignedData_free(a: PCMS_SignedData): void; cdecl external CLibCrypto name 'CMS_SignedData_free';
+procedure CMS_SignedData_free(a: PCMS_SignedData); cdecl external CLibCrypto name 'CMS_SignedData_free';
 function CMS_ContentInfo_new: PCMS_ContentInfo; cdecl external CLibCrypto name 'CMS_ContentInfo_new';
-function CMS_ContentInfo_free(a: PCMS_ContentInfo): void; cdecl external CLibCrypto name 'CMS_ContentInfo_free';
+procedure CMS_ContentInfo_free(a: PCMS_ContentInfo); cdecl external CLibCrypto name 'CMS_ContentInfo_free';
 function d2i_CMS_ContentInfo(a: PPCMS_ContentInfo; _in: PPIdAnsiChar; len: TIdC_LONG): PCMS_ContentInfo; cdecl external CLibCrypto name 'd2i_CMS_ContentInfo';
 function i2d_CMS_ContentInfo(a: PCMS_ContentInfo; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_CMS_ContentInfo';
 function CMS_ContentInfo_it: PASN1_ITEM; cdecl external CLibCrypto name 'CMS_ContentInfo_it';
 function CMS_ReceiptRequest_new: PCMS_ReceiptRequest; cdecl external CLibCrypto name 'CMS_ReceiptRequest_new';
-function CMS_ReceiptRequest_free(a: PCMS_ReceiptRequest): void; cdecl external CLibCrypto name 'CMS_ReceiptRequest_free';
+procedure CMS_ReceiptRequest_free(a: PCMS_ReceiptRequest); cdecl external CLibCrypto name 'CMS_ReceiptRequest_free';
 function d2i_CMS_ReceiptRequest(a: PPCMS_ReceiptRequest; _in: PPIdAnsiChar; len: TIdC_LONG): PCMS_ReceiptRequest; cdecl external CLibCrypto name 'd2i_CMS_ReceiptRequest';
 function i2d_CMS_ReceiptRequest(a: PCMS_ReceiptRequest; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_CMS_ReceiptRequest';
 function CMS_ReceiptRequest_it: PASN1_ITEM; cdecl external CLibCrypto name 'CMS_ReceiptRequest_it';
@@ -980,11 +980,11 @@ function CMS_add1_signer(cms: PCMS_ContentInfo; signer: PX509; pk: PEVP_PKEY; md
 function CMS_SignerInfo_get0_pkey_ctx(si: PCMS_SignerInfo): PEVP_PKEY_CTX; cdecl external CLibCrypto name 'CMS_SignerInfo_get0_pkey_ctx';
 function CMS_SignerInfo_get0_md_ctx(si: PCMS_SignerInfo): PEVP_MD_CTX; cdecl external CLibCrypto name 'CMS_SignerInfo_get0_md_ctx';
 function CMS_get0_SignerInfos(cms: PCMS_ContentInfo): Pstack_st_CMS_SignerInfo; cdecl external CLibCrypto name 'CMS_get0_SignerInfos';
-function CMS_SignerInfo_set1_signer_cert(si: PCMS_SignerInfo; signer: PX509): void; cdecl external CLibCrypto name 'CMS_SignerInfo_set1_signer_cert';
+procedure CMS_SignerInfo_set1_signer_cert(si: PCMS_SignerInfo; signer: PX509); cdecl external CLibCrypto name 'CMS_SignerInfo_set1_signer_cert';
 function CMS_SignerInfo_get0_signer_id(si: PCMS_SignerInfo; keyid: PPASN1_OCTET_STRING; issuer: PPX509_NAME; sno: PPASN1_INTEGER): TIdC_INT; cdecl external CLibCrypto name 'CMS_SignerInfo_get0_signer_id';
 function CMS_SignerInfo_cert_cmp(si: PCMS_SignerInfo; cert: PX509): TIdC_INT; cdecl external CLibCrypto name 'CMS_SignerInfo_cert_cmp';
 function CMS_set1_signers_certs(cms: PCMS_ContentInfo; certs: Pstack_st_X509; flags: TIdC_UINT): TIdC_INT; cdecl external CLibCrypto name 'CMS_set1_signers_certs';
-function CMS_SignerInfo_get0_algs(si: PCMS_SignerInfo; pk: PPEVP_PKEY; signer: PPX509; pdig: PPX509_ALGOR; psig: PPX509_ALGOR): void; cdecl external CLibCrypto name 'CMS_SignerInfo_get0_algs';
+procedure CMS_SignerInfo_get0_algs(si: PCMS_SignerInfo; pk: PPEVP_PKEY; signer: PPX509; pdig: PPX509_ALGOR; psig: PPX509_ALGOR); cdecl external CLibCrypto name 'CMS_SignerInfo_get0_algs';
 function CMS_SignerInfo_get0_signature(si: PCMS_SignerInfo): PASN1_OCTET_STRING; cdecl external CLibCrypto name 'CMS_SignerInfo_get0_signature';
 function CMS_SignerInfo_sign(si: PCMS_SignerInfo): TIdC_INT; cdecl external CLibCrypto name 'CMS_SignerInfo_sign';
 function CMS_SignerInfo_verify(si: PCMS_SignerInfo): TIdC_INT; cdecl external CLibCrypto name 'CMS_SignerInfo_verify';
@@ -1017,7 +1017,7 @@ function CMS_get1_ReceiptRequest(si: PCMS_SignerInfo; prr: PPCMS_ReceiptRequest)
 function CMS_ReceiptRequest_create0(id: PIdAnsiChar; idlen: TIdC_INT; allorfirst: TIdC_INT; receiptList: Pstack_st_GENERAL_NAMES; receiptsTo: Pstack_st_GENERAL_NAMES): PCMS_ReceiptRequest; cdecl external CLibCrypto name 'CMS_ReceiptRequest_create0';
 function CMS_ReceiptRequest_create0_ex(id: PIdAnsiChar; idlen: TIdC_INT; allorfirst: TIdC_INT; receiptList: Pstack_st_GENERAL_NAMES; receiptsTo: Pstack_st_GENERAL_NAMES; libctx: POSSL_LIB_CTX): PCMS_ReceiptRequest; cdecl external CLibCrypto name 'CMS_ReceiptRequest_create0_ex';
 function CMS_add1_ReceiptRequest(si: PCMS_SignerInfo; rr: PCMS_ReceiptRequest): TIdC_INT; cdecl external CLibCrypto name 'CMS_add1_ReceiptRequest';
-function CMS_ReceiptRequest_get0_values(rr: PCMS_ReceiptRequest; pcid: PPASN1_STRING; pallorfirst: PIdC_INT; plist: PPstack_st_GENERAL_NAMES; prto: PPstack_st_GENERAL_NAMES): void; cdecl external CLibCrypto name 'CMS_ReceiptRequest_get0_values';
+procedure CMS_ReceiptRequest_get0_values(rr: PCMS_ReceiptRequest; pcid: PPASN1_STRING; pallorfirst: PIdC_INT; plist: PPstack_st_GENERAL_NAMES; prto: PPstack_st_GENERAL_NAMES); cdecl external CLibCrypto name 'CMS_ReceiptRequest_get0_values';
 function CMS_RecipientInfo_kari_get0_alg(ri: PCMS_RecipientInfo; palg: PPX509_ALGOR; pukm: PPASN1_OCTET_STRING): TIdC_INT; cdecl external CLibCrypto name 'CMS_RecipientInfo_kari_get0_alg';
 function CMS_RecipientInfo_kari_get0_reks(ri: PCMS_RecipientInfo): Pstack_st_CMS_RecipientEncryptedKey; cdecl external CLibCrypto name 'CMS_RecipientInfo_kari_get0_reks';
 function CMS_RecipientInfo_kari_get0_orig_id(ri: PCMS_RecipientInfo; pubalg: PPX509_ALGOR; pubkey: PPASN1_BIT_STRING; keyid: PPASN1_OCTET_STRING; issuer: PPX509_NAME; sno: PPASN1_INTEGER): TIdC_INT; cdecl external CLibCrypto name 'CMS_RecipientInfo_kari_get0_orig_id';
@@ -1511,7 +1511,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_SignedData_new_procname);
 end;
 
-function ERR_CMS_SignedData_free(a: PCMS_SignedData): void; cdecl
+procedure ERR_CMS_SignedData_free(a: PCMS_SignedData); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_SignedData_free_procname);
 end;
@@ -1521,7 +1521,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_ContentInfo_new_procname);
 end;
 
-function ERR_CMS_ContentInfo_free(a: PCMS_ContentInfo): void; cdecl
+procedure ERR_CMS_ContentInfo_free(a: PCMS_ContentInfo); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_ContentInfo_free_procname);
 end;
@@ -1546,7 +1546,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_ReceiptRequest_new_procname);
 end;
 
-function ERR_CMS_ReceiptRequest_free(a: PCMS_ReceiptRequest): void; cdecl
+procedure ERR_CMS_ReceiptRequest_free(a: PCMS_ReceiptRequest); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_ReceiptRequest_free_procname);
 end;
@@ -1976,7 +1976,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_get0_SignerInfos_procname);
 end;
 
-function ERR_CMS_SignerInfo_set1_signer_cert(si: PCMS_SignerInfo; signer: PX509): void; cdecl
+procedure ERR_CMS_SignerInfo_set1_signer_cert(si: PCMS_SignerInfo; signer: PX509); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_SignerInfo_set1_signer_cert_procname);
 end;
@@ -1996,7 +1996,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_set1_signers_certs_procname);
 end;
 
-function ERR_CMS_SignerInfo_get0_algs(si: PCMS_SignerInfo; pk: PPEVP_PKEY; signer: PPX509; pdig: PPX509_ALGOR; psig: PPX509_ALGOR): void; cdecl
+procedure ERR_CMS_SignerInfo_get0_algs(si: PCMS_SignerInfo; pk: PPEVP_PKEY; signer: PPX509; pdig: PPX509_ALGOR; psig: PPX509_ALGOR); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_SignerInfo_get0_algs_procname);
 end;
@@ -2161,7 +2161,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_add1_ReceiptRequest_procname);
 end;
 
-function ERR_CMS_ReceiptRequest_get0_values(rr: PCMS_ReceiptRequest; pcid: PPASN1_STRING; pallorfirst: PIdC_INT; plist: PPstack_st_GENERAL_NAMES; prto: PPstack_st_GENERAL_NAMES): void; cdecl
+procedure ERR_CMS_ReceiptRequest_get0_values(rr: PCMS_ReceiptRequest; pcid: PPASN1_STRING; pallorfirst: PIdC_INT; plist: PPstack_st_GENERAL_NAMES; prto: PPstack_st_GENERAL_NAMES); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_ReceiptRequest_get0_values_procname);
 end;

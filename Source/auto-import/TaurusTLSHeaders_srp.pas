@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -102,10 +102,10 @@ var
   SRP_user_pwd_new: function: PSRP_user_pwd; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM SRP_user_pwd_new}
 
-  SRP_user_pwd_free: function(user_pwd: PSRP_user_pwd): void; cdecl = nil; // Deprecated in 3_0_0
+  SRP_user_pwd_free: procedure(user_pwd: PSRP_user_pwd); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM SRP_user_pwd_free}
 
-  SRP_user_pwd_set_gN: function(user_pwd: PSRP_user_pwd; g: PBIGNUM; N: PBIGNUM): void; cdecl = nil; // Deprecated in 3_0_0
+  SRP_user_pwd_set_gN: procedure(user_pwd: PSRP_user_pwd; g: PBIGNUM; N: PBIGNUM); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM SRP_user_pwd_set_gN}
 
   SRP_user_pwd_set1_ids: function(user_pwd: PSRP_user_pwd; id: PIdAnsiChar; info: PIdAnsiChar): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -117,7 +117,7 @@ var
   SRP_VBASE_new: function(seed_key: PIdAnsiChar): PSRP_VBASE; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM SRP_VBASE_new}
 
-  SRP_VBASE_free: function(vb: PSRP_VBASE): void; cdecl = nil; // Deprecated in 3_0_0
+  SRP_VBASE_free: procedure(vb: PSRP_VBASE); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM SRP_VBASE_free}
 
   SRP_VBASE_init: function(vb: PSRP_VBASE; verifier_file: PIdAnsiChar): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -192,12 +192,12 @@ var
 // =============================================================================
 
 function SRP_user_pwd_new: PSRP_user_pwd; cdecl; deprecated 'In OpenSSL 3_0_0';
-function SRP_user_pwd_free(user_pwd: PSRP_user_pwd): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function SRP_user_pwd_set_gN(user_pwd: PSRP_user_pwd; g: PBIGNUM; N: PBIGNUM): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure SRP_user_pwd_free(user_pwd: PSRP_user_pwd); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure SRP_user_pwd_set_gN(user_pwd: PSRP_user_pwd; g: PBIGNUM; N: PBIGNUM); cdecl; deprecated 'In OpenSSL 3_0_0';
 function SRP_user_pwd_set1_ids(user_pwd: PSRP_user_pwd; id: PIdAnsiChar; info: PIdAnsiChar): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function SRP_user_pwd_set0_sv(user_pwd: PSRP_user_pwd; s: PBIGNUM; v: PBIGNUM): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function SRP_VBASE_new(seed_key: PIdAnsiChar): PSRP_VBASE; cdecl; deprecated 'In OpenSSL 3_0_0';
-function SRP_VBASE_free(vb: PSRP_VBASE): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure SRP_VBASE_free(vb: PSRP_VBASE); cdecl; deprecated 'In OpenSSL 3_0_0';
 function SRP_VBASE_init(vb: PSRP_VBASE; verifier_file: PIdAnsiChar): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function SRP_VBASE_add0_user(vb: PSRP_VBASE; user_pwd: PSRP_user_pwd): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function SRP_VBASE_get1_by_user(vb: PSRP_VBASE; username: PIdAnsiChar): PSRP_user_pwd; cdecl; deprecated 'In OpenSSL 3_0_0';
@@ -342,12 +342,12 @@ uses
 // =============================================================================
 
 function SRP_user_pwd_new: PSRP_user_pwd; cdecl external CLibCrypto name 'SRP_user_pwd_new';
-function SRP_user_pwd_free(user_pwd: PSRP_user_pwd): void; cdecl external CLibCrypto name 'SRP_user_pwd_free';
-function SRP_user_pwd_set_gN(user_pwd: PSRP_user_pwd; g: PBIGNUM; N: PBIGNUM): void; cdecl external CLibCrypto name 'SRP_user_pwd_set_gN';
+procedure SRP_user_pwd_free(user_pwd: PSRP_user_pwd); cdecl external CLibCrypto name 'SRP_user_pwd_free';
+procedure SRP_user_pwd_set_gN(user_pwd: PSRP_user_pwd; g: PBIGNUM; N: PBIGNUM); cdecl external CLibCrypto name 'SRP_user_pwd_set_gN';
 function SRP_user_pwd_set1_ids(user_pwd: PSRP_user_pwd; id: PIdAnsiChar; info: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'SRP_user_pwd_set1_ids';
 function SRP_user_pwd_set0_sv(user_pwd: PSRP_user_pwd; s: PBIGNUM; v: PBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'SRP_user_pwd_set0_sv';
 function SRP_VBASE_new(seed_key: PIdAnsiChar): PSRP_VBASE; cdecl external CLibCrypto name 'SRP_VBASE_new';
-function SRP_VBASE_free(vb: PSRP_VBASE): void; cdecl external CLibCrypto name 'SRP_VBASE_free';
+procedure SRP_VBASE_free(vb: PSRP_VBASE); cdecl external CLibCrypto name 'SRP_VBASE_free';
 function SRP_VBASE_init(vb: PSRP_VBASE; verifier_file: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'SRP_VBASE_init';
 function SRP_VBASE_add0_user(vb: PSRP_VBASE; user_pwd: PSRP_user_pwd): TIdC_INT; cdecl external CLibCrypto name 'SRP_VBASE_add0_user';
 function SRP_VBASE_get1_by_user(vb: PSRP_VBASE; username: PIdAnsiChar): PSRP_user_pwd; cdecl external CLibCrypto name 'SRP_VBASE_get1_by_user';
@@ -495,12 +495,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SRP_user_pwd_new_procname);
 end;
 
-function ERR_SRP_user_pwd_free(user_pwd: PSRP_user_pwd): void; cdecl
+procedure ERR_SRP_user_pwd_free(user_pwd: PSRP_user_pwd); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SRP_user_pwd_free_procname);
 end;
 
-function ERR_SRP_user_pwd_set_gN(user_pwd: PSRP_user_pwd; g: PBIGNUM; N: PBIGNUM): void; cdecl
+procedure ERR_SRP_user_pwd_set_gN(user_pwd: PSRP_user_pwd; g: PBIGNUM; N: PBIGNUM); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SRP_user_pwd_set_gN_procname);
 end;
@@ -520,7 +520,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SRP_VBASE_new_procname);
 end;
 
-function ERR_SRP_VBASE_free(vb: PSRP_VBASE): void; cdecl
+procedure ERR_SRP_VBASE_free(vb: PSRP_VBASE); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SRP_VBASE_free_procname);
 end;

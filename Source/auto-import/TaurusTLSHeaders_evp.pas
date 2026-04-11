@@ -23,9 +23,10 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
-  TaurusTLSHeaders_core;
-
+  TaurusTLSHeaders_core,
+  ossl_types;
 
 
 
@@ -48,22 +49,6 @@ type
     iv: PIdAnsiChar;
   end;
   {$EXTERNALSYM Pevp_cipher_info_st}
-
-  Prsa_st = ^Trsa_st;
-  Trsa_st =   record end;
-  {$EXTERNALSYM Prsa_st}
-
-  Pdsa_st = ^Tdsa_st;
-  Tdsa_st =   record end;
-  {$EXTERNALSYM Pdsa_st}
-
-  Pdh_st = ^Tdh_st;
-  Tdh_st =   record end;
-  {$EXTERNALSYM Pdh_st}
-
-  Pec_key_st = ^Tec_key_st;
-  Tec_key_st =   record end;
-  {$EXTERNALSYM Pec_key_st}
 
 
 // =============================================================================
@@ -93,19 +78,19 @@ type
   TEVP_PBE_KEYGEN = function(ctx: PEVP_CIPHER_CTX; pass: PIdAnsiChar; passlen: TIdC_INT; param: PASN1_TYPE; cipher: PEVP_CIPHER; md: PEVP_MD; en_de: TIdC_INT): TIdC_INT; cdecl;
   TEVP_PBE_KEYGEN_EX = function(ctx: PEVP_CIPHER_CTX; pass: PIdAnsiChar; passlen: TIdC_INT; param: PASN1_TYPE; cipher: PEVP_CIPHER; md: PEVP_MD; en_de: TIdC_INT; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): TIdC_INT; cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // EVP_MD_names_do_all_fn_cb = function(name: PIdAnsiChar; data: Pointer): void; cdecl;
+  // EVP_MD_names_do_all_fn_cb = procedure(name: PIdAnsiChar; data: Pointer); cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // EVP_CIPHER_do_all_fn_cb = function(ciph: PEVP_CIPHER; from: PIdAnsiChar; _to: PIdAnsiChar; x: Pointer): void; cdecl;
+  // EVP_CIPHER_do_all_fn_cb = procedure(ciph: PEVP_CIPHER; from: PIdAnsiChar; _to: PIdAnsiChar; x: Pointer); cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // EVP_CIPHER_do_all_provided_fn_cb = function(cipher: PEVP_CIPHER; arg: Pointer): void; cdecl;
+  // EVP_CIPHER_do_all_provided_fn_cb = procedure(cipher: PEVP_CIPHER; arg: Pointer); cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // EVP_MD_do_all_fn_cb = function(ciph: PEVP_MD; from: PIdAnsiChar; _to: PIdAnsiChar; x: Pointer): void; cdecl;
+  // EVP_MD_do_all_fn_cb = procedure(ciph: PEVP_MD; from: PIdAnsiChar; _to: PIdAnsiChar; x: Pointer); cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // EVP_MD_do_all_provided_fn_cb = function(md: PEVP_MD; arg: Pointer): void; cdecl;
+  // EVP_MD_do_all_provided_fn_cb = procedure(md: PEVP_MD; arg: Pointer); cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // EVP_MAC_do_all_provided_fn_cb = function(mac: PEVP_MAC; arg: Pointer): void; cdecl;
+  // EVP_MAC_do_all_provided_fn_cb = procedure(mac: PEVP_MAC; arg: Pointer); cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // EVP_RAND_do_all_provided_fn_cb = function(rand: PEVP_RAND; arg: Pointer): void; cdecl;
+  // EVP_RAND_do_all_provided_fn_cb = procedure(rand: PEVP_RAND; arg: Pointer); cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
   // EVP_PKEY_asn1_set_public_pub_decode_cb = function(pk: PEVP_PKEY; pub: PX509_PUBKEY): TIdC_INT; cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
@@ -125,7 +110,7 @@ type
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
   // EVP_PKEY_asn1_set_param_param_encode_cb = function(pkey: PEVP_PKEY; pder: PPIdAnsiChar): TIdC_INT; cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // EVP_PKEY_asn1_set_free_pkey_free_cb = function(pkey: PEVP_PKEY): void; cdecl;
+  // EVP_PKEY_asn1_set_free_pkey_free_cb = procedure(pkey: PEVP_PKEY); cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
   // EVP_PKEY_asn1_set_ctrl_pkey_ctrl_cb = function(pkey: PEVP_PKEY; op: TIdC_INT; arg1: TIdC_LONG; arg2: Pointer): TIdC_INT; cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
@@ -139,22 +124,22 @@ type
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
   // EVP_PKEY_asn1_set_get_priv_key_get_priv_key_cb = function(pk: PEVP_PKEY; priv: PIdAnsiChar; len: PIdC_SIZET): TIdC_INT; cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // EVP_KEYMGMT_do_all_provided_fn_cb = function(keymgmt: PEVP_KEYMGMT; arg: Pointer): void; cdecl;
+  // EVP_KEYMGMT_do_all_provided_fn_cb = procedure(keymgmt: PEVP_KEYMGMT; arg: Pointer); cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // EVP_SKEYMGMT_do_all_provided_fn_cb = function(keymgmt: PEVP_SKEYMGMT; arg: Pointer): void; cdecl;
+  // EVP_SKEYMGMT_do_all_provided_fn_cb = procedure(keymgmt: PEVP_SKEYMGMT; arg: Pointer); cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // EVP_SIGNATURE_do_all_provided_fn_cb = function(signature: PEVP_SIGNATURE; data: Pointer): void; cdecl;
+  // EVP_SIGNATURE_do_all_provided_fn_cb = procedure(signature: PEVP_SIGNATURE; data: Pointer); cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // EVP_ASYM_CIPHER_do_all_provided_fn_cb = function(cipher: PEVP_ASYM_CIPHER; arg: Pointer): void; cdecl;
+  // EVP_ASYM_CIPHER_do_all_provided_fn_cb = procedure(cipher: PEVP_ASYM_CIPHER; arg: Pointer); cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // EVP_KEM_do_all_provided_fn_cb = function(wrap: PEVP_KEM; arg: Pointer): void; cdecl;
+  // EVP_KEM_do_all_provided_fn_cb = procedure(wrap: PEVP_KEM; arg: Pointer); cdecl;
   TEVP_PKEY_gen_cb = function(ctx: PEVP_PKEY_CTX): TIdC_INT; cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
   // EVP_PKEY_export_export_cb_cb = function(arg1: Possl_param_st; arg2: Pointer): TIdC_INT; cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
   // EVP_PKEY_meth_set_copy_copy_cb = function(dst: PEVP_PKEY_CTX; src: PEVP_PKEY_CTX): TIdC_INT; cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // EVP_PKEY_meth_set_cleanup_cleanup_cb = function(ctx: PEVP_PKEY_CTX): void; cdecl;
+  // EVP_PKEY_meth_set_cleanup_cleanup_cb = procedure(ctx: PEVP_PKEY_CTX); cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
   // EVP_PKEY_meth_set_paramgen_paramgen_cb = function(ctx: PEVP_PKEY_CTX; pkey: PEVP_PKEY): TIdC_INT; cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
@@ -178,7 +163,7 @@ type
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
   // EVP_PKEY_meth_set_digestverify_digestverify_cb = function(ctx: PEVP_MD_CTX; sig: PIdAnsiChar; siglen: TIdC_SIZET; tbs: PIdAnsiChar; tbslen: TIdC_SIZET): TIdC_INT; cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // EVP_KEYEXCH_do_all_provided_fn_cb = function(keyexch: PEVP_KEYEXCH; data: Pointer): void; cdecl;
+  // EVP_KEYEXCH_do_all_provided_fn_cb = procedure(keyexch: PEVP_KEYEXCH; data: Pointer); cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -459,7 +444,7 @@ var
   EVP_MD_meth_dup: function(md: PEVP_MD): PEVP_MD; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_MD_meth_dup}
 
-  EVP_MD_meth_free: function(md: PEVP_MD): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_MD_meth_free: procedure(md: PEVP_MD); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_MD_meth_free}
 
   EVP_MD_meth_set_input_blocksize: function(md: PEVP_MD; blocksize: TIdC_INT): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -528,7 +513,7 @@ var
   EVP_CIPHER_meth_dup: function(cipher: PEVP_CIPHER): PEVP_CIPHER; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_CIPHER_meth_dup}
 
-  EVP_CIPHER_meth_free: function(cipher: PEVP_CIPHER): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_CIPHER_meth_free: procedure(cipher: PEVP_CIPHER); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_CIPHER_meth_free}
 
   EVP_CIPHER_meth_set_iv_length: function(cipher: PEVP_CIPHER; iv_len: TIdC_INT): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -621,7 +606,7 @@ var
   EVP_MD_CTX_update_fn: function(ctx: PEVP_MD_CTX): TEVP_MD_meth_set_update_update_cb; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_MD_CTX_update_fn}
 
-  EVP_MD_CTX_set_update_fn: function(ctx: PEVP_MD_CTX; update: TEVP_MD_meth_set_update_update_cb): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_MD_CTX_set_update_fn: procedure(ctx: PEVP_MD_CTX; update: TEVP_MD_meth_set_update_update_cb); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_MD_CTX_set_update_fn}
 
   EVP_MD_CTX_get_size_ex: function(ctx: PEVP_MD_CTX): TIdC_INT; cdecl = nil;
@@ -630,7 +615,7 @@ var
   EVP_MD_CTX_get_pkey_ctx: function(ctx: PEVP_MD_CTX): PEVP_PKEY_CTX; cdecl = nil;
   {$EXTERNALSYM EVP_MD_CTX_get_pkey_ctx}
 
-  EVP_MD_CTX_set_pkey_ctx: function(ctx: PEVP_MD_CTX; pctx: PEVP_PKEY_CTX): void; cdecl = nil;
+  EVP_MD_CTX_set_pkey_ctx: procedure(ctx: PEVP_MD_CTX; pctx: PEVP_PKEY_CTX); cdecl = nil;
   {$EXTERNALSYM EVP_MD_CTX_set_pkey_ctx}
 
   EVP_MD_CTX_get0_md_data: function(ctx: PEVP_MD_CTX): Pointer; cdecl = nil;
@@ -684,7 +669,7 @@ var
   EVP_CIPHER_up_ref: function(cipher: PEVP_CIPHER): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_CIPHER_up_ref}
 
-  EVP_CIPHER_free: function(cipher: PEVP_CIPHER): void; cdecl = nil;
+  EVP_CIPHER_free: procedure(cipher: PEVP_CIPHER); cdecl = nil;
   {$EXTERNALSYM EVP_CIPHER_free}
 
   EVP_CIPHER_CTX_get0_cipher: function(ctx: PEVP_CIPHER_CTX): PEVP_CIPHER; cdecl = nil;
@@ -747,7 +732,7 @@ var
   EVP_CIPHER_CTX_get_app_data: function(ctx: PEVP_CIPHER_CTX): Pointer; cdecl = nil;
   {$EXTERNALSYM EVP_CIPHER_CTX_get_app_data}
 
-  EVP_CIPHER_CTX_set_app_data: function(ctx: PEVP_CIPHER_CTX; data: Pointer): void; cdecl = nil;
+  EVP_CIPHER_CTX_set_app_data: procedure(ctx: PEVP_CIPHER_CTX; data: Pointer); cdecl = nil;
   {$EXTERNALSYM EVP_CIPHER_CTX_set_app_data}
 
   EVP_CIPHER_CTX_get_cipher_data: function(ctx: PEVP_CIPHER_CTX): Pointer; cdecl = nil;
@@ -792,7 +777,7 @@ var
   EVP_MD_CTX_reset: function(ctx: PEVP_MD_CTX): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_MD_CTX_reset}
 
-  EVP_MD_CTX_free: function(ctx: PEVP_MD_CTX): void; cdecl = nil;
+  EVP_MD_CTX_free: procedure(ctx: PEVP_MD_CTX); cdecl = nil;
   {$EXTERNALSYM EVP_MD_CTX_free}
 
   EVP_MD_CTX_dup: function(_in: PEVP_MD_CTX): PEVP_MD_CTX; cdecl = nil;
@@ -801,10 +786,10 @@ var
   EVP_MD_CTX_copy_ex: function(_out: PEVP_MD_CTX; _in: PEVP_MD_CTX): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_MD_CTX_copy_ex}
 
-  EVP_MD_CTX_set_flags: function(ctx: PEVP_MD_CTX; flags: TIdC_INT): void; cdecl = nil;
+  EVP_MD_CTX_set_flags: procedure(ctx: PEVP_MD_CTX; flags: TIdC_INT); cdecl = nil;
   {$EXTERNALSYM EVP_MD_CTX_set_flags}
 
-  EVP_MD_CTX_clear_flags: function(ctx: PEVP_MD_CTX; flags: TIdC_INT): void; cdecl = nil;
+  EVP_MD_CTX_clear_flags: procedure(ctx: PEVP_MD_CTX; flags: TIdC_INT); cdecl = nil;
   {$EXTERNALSYM EVP_MD_CTX_clear_flags}
 
   EVP_MD_CTX_test_flags: function(ctx: PEVP_MD_CTX; flags: TIdC_INT): TIdC_INT; cdecl = nil;
@@ -849,7 +834,7 @@ var
   EVP_MD_up_ref: function(md: PEVP_MD): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_MD_up_ref}
 
-  EVP_MD_free: function(md: PEVP_MD): void; cdecl = nil;
+  EVP_MD_free: procedure(md: PEVP_MD); cdecl = nil;
   {$EXTERNALSYM EVP_MD_free}
 
   EVP_read_pw_string: function(buf: PIdAnsiChar; length: TIdC_INT; prompt: PIdAnsiChar; verify: TIdC_INT): TIdC_INT; cdecl = nil;
@@ -858,7 +843,7 @@ var
   EVP_read_pw_string_min: function(buf: PIdAnsiChar; minlen: TIdC_INT; maxlen: TIdC_INT; prompt: PIdAnsiChar; verify: TIdC_INT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_read_pw_string_min}
 
-  EVP_set_pw_prompt: function(prompt: PIdAnsiChar): void; cdecl = nil;
+  EVP_set_pw_prompt: procedure(prompt: PIdAnsiChar); cdecl = nil;
   {$EXTERNALSYM EVP_set_pw_prompt}
 
   EVP_get_pw_prompt: function: PIdAnsiChar; cdecl = nil;
@@ -867,10 +852,10 @@ var
   EVP_BytesToKey: function(_type: PEVP_CIPHER; md: PEVP_MD; salt: PIdAnsiChar; data: PIdAnsiChar; datal: TIdC_INT; count: TIdC_INT; key: PIdAnsiChar; iv: PIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_BytesToKey}
 
-  EVP_CIPHER_CTX_set_flags: function(ctx: PEVP_CIPHER_CTX; flags: TIdC_INT): void; cdecl = nil;
+  EVP_CIPHER_CTX_set_flags: procedure(ctx: PEVP_CIPHER_CTX; flags: TIdC_INT); cdecl = nil;
   {$EXTERNALSYM EVP_CIPHER_CTX_set_flags}
 
-  EVP_CIPHER_CTX_clear_flags: function(ctx: PEVP_CIPHER_CTX; flags: TIdC_INT): void; cdecl = nil;
+  EVP_CIPHER_CTX_clear_flags: procedure(ctx: PEVP_CIPHER_CTX; flags: TIdC_INT); cdecl = nil;
   {$EXTERNALSYM EVP_CIPHER_CTX_clear_flags}
 
   EVP_CIPHER_CTX_test_flags: function(ctx: PEVP_CIPHER_CTX; flags: TIdC_INT): TIdC_INT; cdecl = nil;
@@ -1002,7 +987,7 @@ var
   EVP_ENCODE_CTX_new: function: PEVP_ENCODE_CTX; cdecl = nil;
   {$EXTERNALSYM EVP_ENCODE_CTX_new}
 
-  EVP_ENCODE_CTX_free: function(ctx: PEVP_ENCODE_CTX): void; cdecl = nil;
+  EVP_ENCODE_CTX_free: procedure(ctx: PEVP_ENCODE_CTX); cdecl = nil;
   {$EXTERNALSYM EVP_ENCODE_CTX_free}
 
   EVP_ENCODE_CTX_copy: function(dctx: PEVP_ENCODE_CTX; sctx: PEVP_ENCODE_CTX): TIdC_INT; cdecl = nil;
@@ -1011,19 +996,19 @@ var
   EVP_ENCODE_CTX_num: function(ctx: PEVP_ENCODE_CTX): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_ENCODE_CTX_num}
 
-  EVP_EncodeInit: function(ctx: PEVP_ENCODE_CTX): void; cdecl = nil;
+  EVP_EncodeInit: procedure(ctx: PEVP_ENCODE_CTX); cdecl = nil;
   {$EXTERNALSYM EVP_EncodeInit}
 
   EVP_EncodeUpdate: function(ctx: PEVP_ENCODE_CTX; _out: PIdAnsiChar; outl: PIdC_INT; _in: PIdAnsiChar; inl: TIdC_INT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_EncodeUpdate}
 
-  EVP_EncodeFinal: function(ctx: PEVP_ENCODE_CTX; _out: PIdAnsiChar; outl: PIdC_INT): void; cdecl = nil;
+  EVP_EncodeFinal: procedure(ctx: PEVP_ENCODE_CTX; _out: PIdAnsiChar; outl: PIdC_INT); cdecl = nil;
   {$EXTERNALSYM EVP_EncodeFinal}
 
   EVP_EncodeBlock: function(t: PIdAnsiChar; f: PIdAnsiChar; n: TIdC_INT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_EncodeBlock}
 
-  EVP_DecodeInit: function(ctx: PEVP_ENCODE_CTX): void; cdecl = nil;
+  EVP_DecodeInit: procedure(ctx: PEVP_ENCODE_CTX); cdecl = nil;
   {$EXTERNALSYM EVP_DecodeInit}
 
   EVP_DecodeUpdate: function(ctx: PEVP_ENCODE_CTX; _out: PIdAnsiChar; outl: PIdC_INT; _in: PIdAnsiChar; inl: TIdC_INT): TIdC_INT; cdecl = nil;
@@ -1041,7 +1026,7 @@ var
   EVP_CIPHER_CTX_reset: function(c: PEVP_CIPHER_CTX): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_CIPHER_CTX_reset}
 
-  EVP_CIPHER_CTX_free: function(c: PEVP_CIPHER_CTX): void; cdecl = nil;
+  EVP_CIPHER_CTX_free: procedure(c: PEVP_CIPHER_CTX); cdecl = nil;
   {$EXTERNALSYM EVP_CIPHER_CTX_free}
 
   EVP_CIPHER_CTX_set_key_length: function(x: PEVP_CIPHER_CTX; keylen: TIdC_INT): TIdC_INT; cdecl = nil;
@@ -1614,22 +1599,22 @@ var
   EVP_get_digestbyname: function(name: PIdAnsiChar): PEVP_MD; cdecl = nil;
   {$EXTERNALSYM EVP_get_digestbyname}
 
-  EVP_CIPHER_do_all: function(fn: TEVP_CIPHER_do_all_fn_cb; arg: Pointer): void; cdecl = nil;
+  EVP_CIPHER_do_all: procedure(fn: TEVP_CIPHER_do_all_fn_cb; arg: Pointer); cdecl = nil;
   {$EXTERNALSYM EVP_CIPHER_do_all}
 
-  EVP_CIPHER_do_all_sorted: function(fn: TEVP_CIPHER_do_all_fn_cb; arg: Pointer): void; cdecl = nil;
+  EVP_CIPHER_do_all_sorted: procedure(fn: TEVP_CIPHER_do_all_fn_cb; arg: Pointer); cdecl = nil;
   {$EXTERNALSYM EVP_CIPHER_do_all_sorted}
 
-  EVP_CIPHER_do_all_provided: function(libctx: POSSL_LIB_CTX; fn: TEVP_CIPHER_do_all_provided_fn_cb; arg: Pointer): void; cdecl = nil;
+  EVP_CIPHER_do_all_provided: procedure(libctx: POSSL_LIB_CTX; fn: TEVP_CIPHER_do_all_provided_fn_cb; arg: Pointer); cdecl = nil;
   {$EXTERNALSYM EVP_CIPHER_do_all_provided}
 
-  EVP_MD_do_all: function(fn: TEVP_MD_do_all_fn_cb; arg: Pointer): void; cdecl = nil;
+  EVP_MD_do_all: procedure(fn: TEVP_MD_do_all_fn_cb; arg: Pointer); cdecl = nil;
   {$EXTERNALSYM EVP_MD_do_all}
 
-  EVP_MD_do_all_sorted: function(fn: TEVP_MD_do_all_fn_cb; arg: Pointer): void; cdecl = nil;
+  EVP_MD_do_all_sorted: procedure(fn: TEVP_MD_do_all_fn_cb; arg: Pointer); cdecl = nil;
   {$EXTERNALSYM EVP_MD_do_all_sorted}
 
-  EVP_MD_do_all_provided: function(libctx: POSSL_LIB_CTX; fn: TEVP_MD_do_all_provided_fn_cb; arg: Pointer): void; cdecl = nil;
+  EVP_MD_do_all_provided: procedure(libctx: POSSL_LIB_CTX; fn: TEVP_MD_do_all_provided_fn_cb; arg: Pointer); cdecl = nil;
   {$EXTERNALSYM EVP_MD_do_all_provided}
 
   EVP_MAC_fetch: function(libctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_MAC; cdecl = nil;
@@ -1638,7 +1623,7 @@ var
   EVP_MAC_up_ref: function(mac: PEVP_MAC): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_MAC_up_ref}
 
-  EVP_MAC_free: function(mac: PEVP_MAC): void; cdecl = nil;
+  EVP_MAC_free: procedure(mac: PEVP_MAC); cdecl = nil;
   {$EXTERNALSYM EVP_MAC_free}
 
   EVP_MAC_get0_name: function(mac: PEVP_MAC): PIdAnsiChar; cdecl = nil;
@@ -1659,7 +1644,7 @@ var
   EVP_MAC_CTX_new: function(mac: PEVP_MAC): PEVP_MAC_CTX; cdecl = nil;
   {$EXTERNALSYM EVP_MAC_CTX_new}
 
-  EVP_MAC_CTX_free: function(ctx: PEVP_MAC_CTX): void; cdecl = nil;
+  EVP_MAC_CTX_free: procedure(ctx: PEVP_MAC_CTX); cdecl = nil;
   {$EXTERNALSYM EVP_MAC_CTX_free}
 
   EVP_MAC_CTX_dup: function(src: PEVP_MAC_CTX): PEVP_MAC_CTX; cdecl = nil;
@@ -1713,7 +1698,7 @@ var
   EVP_MAC_CTX_settable_params: function(ctx: PEVP_MAC_CTX): POSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM EVP_MAC_CTX_settable_params}
 
-  EVP_MAC_do_all_provided: function(libctx: POSSL_LIB_CTX; fn: TEVP_MAC_do_all_provided_fn_cb; arg: Pointer): void; cdecl = nil;
+  EVP_MAC_do_all_provided: procedure(libctx: POSSL_LIB_CTX; fn: TEVP_MAC_do_all_provided_fn_cb; arg: Pointer); cdecl = nil;
   {$EXTERNALSYM EVP_MAC_do_all_provided}
 
   EVP_MAC_names_do_all: function(mac: PEVP_MAC; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl = nil;
@@ -1725,7 +1710,7 @@ var
   EVP_RAND_up_ref: function(rand: PEVP_RAND): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_RAND_up_ref}
 
-  EVP_RAND_free: function(rand: PEVP_RAND): void; cdecl = nil;
+  EVP_RAND_free: procedure(rand: PEVP_RAND); cdecl = nil;
   {$EXTERNALSYM EVP_RAND_free}
 
   EVP_RAND_get0_name: function(rand: PEVP_RAND): PIdAnsiChar; cdecl = nil;
@@ -1749,7 +1734,7 @@ var
   EVP_RAND_CTX_up_ref: function(ctx: PEVP_RAND_CTX): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_RAND_CTX_up_ref}
 
-  EVP_RAND_CTX_free: function(ctx: PEVP_RAND_CTX): void; cdecl = nil;
+  EVP_RAND_CTX_free: procedure(ctx: PEVP_RAND_CTX); cdecl = nil;
   {$EXTERNALSYM EVP_RAND_CTX_free}
 
   EVP_RAND_CTX_get0_rand: function(ctx: PEVP_RAND_CTX): PEVP_RAND; cdecl = nil;
@@ -1776,7 +1761,7 @@ var
   EVP_RAND_CTX_settable_params: function(ctx: PEVP_RAND_CTX): POSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM EVP_RAND_CTX_settable_params}
 
-  EVP_RAND_do_all_provided: function(libctx: POSSL_LIB_CTX; fn: TEVP_RAND_do_all_provided_fn_cb; arg: Pointer): void; cdecl = nil;
+  EVP_RAND_do_all_provided: procedure(libctx: POSSL_LIB_CTX; fn: TEVP_RAND_do_all_provided_fn_cb; arg: Pointer); cdecl = nil;
   {$EXTERNALSYM EVP_RAND_do_all_provided}
 
   EVP_RAND_names_do_all: function(rand: PEVP_RAND; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl = nil;
@@ -1920,7 +1905,7 @@ var
   EVP_PKEY_dup: function(pkey: PEVP_PKEY): PEVP_PKEY; cdecl = nil;
   {$EXTERNALSYM EVP_PKEY_dup}
 
-  EVP_PKEY_free: function(pkey: PEVP_PKEY): void; cdecl = nil;
+  EVP_PKEY_free: procedure(pkey: PEVP_PKEY); cdecl = nil;
   {$EXTERNALSYM EVP_PKEY_free}
 
   EVP_PKEY_get0_description: function(pkey: PEVP_PKEY): PIdAnsiChar; cdecl = nil;
@@ -2061,7 +2046,7 @@ var
   PKCS5_v2_scrypt_keyivgen_ex: function(ctx: PEVP_CIPHER_CTX; pass: PIdAnsiChar; passlen: TIdC_INT; param: PASN1_TYPE; c: PEVP_CIPHER; md: PEVP_MD; en_de: TIdC_INT; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM PKCS5_v2_scrypt_keyivgen_ex}
 
-  PKCS5_PBE_add: function: void; cdecl = nil;
+  PKCS5_PBE_add: procedure; cdecl = nil;
   {$EXTERNALSYM PKCS5_PBE_add}
 
   EVP_PBE_CipherInit: function(pbe_obj: PASN1_OBJECT; pass: PIdAnsiChar; passlen: TIdC_INT; param: PASN1_TYPE; ctx: PEVP_CIPHER_CTX; en_de: TIdC_INT): TIdC_INT; cdecl = nil;
@@ -2082,7 +2067,7 @@ var
   EVP_PBE_find_ex: function(_type: TIdC_INT; pbe_nid: TIdC_INT; pcnid: PIdC_INT; pmnid: PIdC_INT; pkeygen: PPEVP_PBE_KEYGEN; pkeygen_ex: PPEVP_PBE_KEYGEN_EX): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_PBE_find_ex}
 
-  EVP_PBE_cleanup: function: void; cdecl = nil;
+  EVP_PBE_cleanup: procedure; cdecl = nil;
   {$EXTERNALSYM EVP_PBE_cleanup}
 
   EVP_PBE_get: function(ptype: PIdC_INT; ppbe_nid: PIdC_INT; num: TIdC_SIZET): TIdC_INT; cdecl = nil;
@@ -2115,55 +2100,55 @@ var
   EVP_PKEY_asn1_new: function(id: TIdC_INT; flags: TIdC_INT; pem_str: PIdAnsiChar; info: PIdAnsiChar): PEVP_PKEY_ASN1_METHOD; cdecl = nil; // Deprecated in 3_6_0
   {$EXTERNALSYM EVP_PKEY_asn1_new}
 
-  EVP_PKEY_asn1_copy: function(dst: PEVP_PKEY_ASN1_METHOD; src: PEVP_PKEY_ASN1_METHOD): void; cdecl = nil; // Deprecated in 3_6_0
+  EVP_PKEY_asn1_copy: procedure(dst: PEVP_PKEY_ASN1_METHOD; src: PEVP_PKEY_ASN1_METHOD); cdecl = nil; // Deprecated in 3_6_0
   {$EXTERNALSYM EVP_PKEY_asn1_copy}
 
-  EVP_PKEY_asn1_free: function(ameth: PEVP_PKEY_ASN1_METHOD): void; cdecl = nil; // Deprecated in 3_6_0
+  EVP_PKEY_asn1_free: procedure(ameth: PEVP_PKEY_ASN1_METHOD); cdecl = nil; // Deprecated in 3_6_0
   {$EXTERNALSYM EVP_PKEY_asn1_free}
 
-  EVP_PKEY_asn1_set_public: function(ameth: PEVP_PKEY_ASN1_METHOD; pub_decode: TEVP_PKEY_asn1_set_public_pub_decode_cb; pub_encode: TEVP_PKEY_asn1_set_public_pub_encode_cb; pub_cmp: TEVP_PKEY_asn1_set_public_pub_cmp_cb; pub_print: TEVP_PKEY_asn1_set_public_pub_print_cb; pkey_size: TEVP_PKEY_asn1_set_public_pkey_size_cb; pkey_bits: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl = nil; // Deprecated in 3_6_0
+  EVP_PKEY_asn1_set_public: procedure(ameth: PEVP_PKEY_ASN1_METHOD; pub_decode: TEVP_PKEY_asn1_set_public_pub_decode_cb; pub_encode: TEVP_PKEY_asn1_set_public_pub_encode_cb; pub_cmp: TEVP_PKEY_asn1_set_public_pub_cmp_cb; pub_print: TEVP_PKEY_asn1_set_public_pub_print_cb; pkey_size: TEVP_PKEY_asn1_set_public_pkey_size_cb; pkey_bits: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl = nil; // Deprecated in 3_6_0
   {$EXTERNALSYM EVP_PKEY_asn1_set_public}
 
-  EVP_PKEY_asn1_set_private: function(ameth: PEVP_PKEY_ASN1_METHOD; priv_decode: TEVP_PKEY_asn1_set_private_priv_decode_cb; priv_encode: TEVP_PKEY_asn1_set_private_priv_encode_cb; priv_print: TEVP_PKEY_asn1_set_public_pub_print_cb): void; cdecl = nil; // Deprecated in 3_6_0
+  EVP_PKEY_asn1_set_private: procedure(ameth: PEVP_PKEY_ASN1_METHOD; priv_decode: TEVP_PKEY_asn1_set_private_priv_decode_cb; priv_encode: TEVP_PKEY_asn1_set_private_priv_encode_cb; priv_print: TEVP_PKEY_asn1_set_public_pub_print_cb); cdecl = nil; // Deprecated in 3_6_0
   {$EXTERNALSYM EVP_PKEY_asn1_set_private}
 
-  EVP_PKEY_asn1_set_param: function(ameth: PEVP_PKEY_ASN1_METHOD; param_decode: TEVP_PKEY_asn1_set_param_param_decode_cb; param_encode: TEVP_PKEY_asn1_set_param_param_encode_cb; param_missing: TEVP_PKEY_asn1_set_public_pkey_size_cb; param_copy: TEVP_PKEY_asn1_set_public_pub_cmp_cb; param_cmp: TEVP_PKEY_asn1_set_public_pub_cmp_cb; param_print: TEVP_PKEY_asn1_set_public_pub_print_cb): void; cdecl = nil; // Deprecated in 3_6_0
+  EVP_PKEY_asn1_set_param: procedure(ameth: PEVP_PKEY_ASN1_METHOD; param_decode: TEVP_PKEY_asn1_set_param_param_decode_cb; param_encode: TEVP_PKEY_asn1_set_param_param_encode_cb; param_missing: TEVP_PKEY_asn1_set_public_pkey_size_cb; param_copy: TEVP_PKEY_asn1_set_public_pub_cmp_cb; param_cmp: TEVP_PKEY_asn1_set_public_pub_cmp_cb; param_print: TEVP_PKEY_asn1_set_public_pub_print_cb); cdecl = nil; // Deprecated in 3_6_0
   {$EXTERNALSYM EVP_PKEY_asn1_set_param}
 
-  EVP_PKEY_asn1_set_free: function(ameth: PEVP_PKEY_ASN1_METHOD; pkey_free: TEVP_PKEY_asn1_set_free_pkey_free_cb): void; cdecl = nil; // Deprecated in 3_6_0
+  EVP_PKEY_asn1_set_free: procedure(ameth: PEVP_PKEY_ASN1_METHOD; pkey_free: TEVP_PKEY_asn1_set_free_pkey_free_cb); cdecl = nil; // Deprecated in 3_6_0
   {$EXTERNALSYM EVP_PKEY_asn1_set_free}
 
-  EVP_PKEY_asn1_set_ctrl: function(ameth: PEVP_PKEY_ASN1_METHOD; pkey_ctrl: TEVP_PKEY_asn1_set_ctrl_pkey_ctrl_cb): void; cdecl = nil; // Deprecated in 3_6_0
+  EVP_PKEY_asn1_set_ctrl: procedure(ameth: PEVP_PKEY_ASN1_METHOD; pkey_ctrl: TEVP_PKEY_asn1_set_ctrl_pkey_ctrl_cb); cdecl = nil; // Deprecated in 3_6_0
   {$EXTERNALSYM EVP_PKEY_asn1_set_ctrl}
 
-  EVP_PKEY_asn1_set_item: function(ameth: PEVP_PKEY_ASN1_METHOD; item_verify: TEVP_PKEY_asn1_set_item_item_verify_cb; item_sign: TEVP_PKEY_asn1_set_item_item_sign_cb): void; cdecl = nil; // Deprecated in 3_6_0
+  EVP_PKEY_asn1_set_item: procedure(ameth: PEVP_PKEY_ASN1_METHOD; item_verify: TEVP_PKEY_asn1_set_item_item_verify_cb; item_sign: TEVP_PKEY_asn1_set_item_item_sign_cb); cdecl = nil; // Deprecated in 3_6_0
   {$EXTERNALSYM EVP_PKEY_asn1_set_item}
 
-  EVP_PKEY_asn1_set_siginf: function(ameth: PEVP_PKEY_ASN1_METHOD; siginf_set: TEVP_PKEY_asn1_set_siginf_siginf_set_cb): void; cdecl = nil; // Deprecated in 3_6_0
+  EVP_PKEY_asn1_set_siginf: procedure(ameth: PEVP_PKEY_ASN1_METHOD; siginf_set: TEVP_PKEY_asn1_set_siginf_siginf_set_cb); cdecl = nil; // Deprecated in 3_6_0
   {$EXTERNALSYM EVP_PKEY_asn1_set_siginf}
 
-  EVP_PKEY_asn1_set_check: function(ameth: PEVP_PKEY_ASN1_METHOD; pkey_check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl = nil; // Deprecated in 3_6_0
+  EVP_PKEY_asn1_set_check: procedure(ameth: PEVP_PKEY_ASN1_METHOD; pkey_check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl = nil; // Deprecated in 3_6_0
   {$EXTERNALSYM EVP_PKEY_asn1_set_check}
 
-  EVP_PKEY_asn1_set_public_check: function(ameth: PEVP_PKEY_ASN1_METHOD; pkey_pub_check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl = nil; // Deprecated in 3_6_0
+  EVP_PKEY_asn1_set_public_check: procedure(ameth: PEVP_PKEY_ASN1_METHOD; pkey_pub_check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl = nil; // Deprecated in 3_6_0
   {$EXTERNALSYM EVP_PKEY_asn1_set_public_check}
 
-  EVP_PKEY_asn1_set_param_check: function(ameth: PEVP_PKEY_ASN1_METHOD; pkey_param_check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl = nil; // Deprecated in 3_6_0
+  EVP_PKEY_asn1_set_param_check: procedure(ameth: PEVP_PKEY_ASN1_METHOD; pkey_param_check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl = nil; // Deprecated in 3_6_0
   {$EXTERNALSYM EVP_PKEY_asn1_set_param_check}
 
-  EVP_PKEY_asn1_set_set_priv_key: function(ameth: PEVP_PKEY_ASN1_METHOD; set_priv_key: TEVP_PKEY_asn1_set_set_priv_key_set_priv_key_cb): void; cdecl = nil; // Deprecated in 3_6_0
+  EVP_PKEY_asn1_set_set_priv_key: procedure(ameth: PEVP_PKEY_ASN1_METHOD; set_priv_key: TEVP_PKEY_asn1_set_set_priv_key_set_priv_key_cb); cdecl = nil; // Deprecated in 3_6_0
   {$EXTERNALSYM EVP_PKEY_asn1_set_set_priv_key}
 
-  EVP_PKEY_asn1_set_set_pub_key: function(ameth: PEVP_PKEY_ASN1_METHOD; set_pub_key: TEVP_PKEY_asn1_set_set_priv_key_set_priv_key_cb): void; cdecl = nil; // Deprecated in 3_6_0
+  EVP_PKEY_asn1_set_set_pub_key: procedure(ameth: PEVP_PKEY_ASN1_METHOD; set_pub_key: TEVP_PKEY_asn1_set_set_priv_key_set_priv_key_cb); cdecl = nil; // Deprecated in 3_6_0
   {$EXTERNALSYM EVP_PKEY_asn1_set_set_pub_key}
 
-  EVP_PKEY_asn1_set_get_priv_key: function(ameth: PEVP_PKEY_ASN1_METHOD; get_priv_key: TEVP_PKEY_asn1_set_get_priv_key_get_priv_key_cb): void; cdecl = nil; // Deprecated in 3_6_0
+  EVP_PKEY_asn1_set_get_priv_key: procedure(ameth: PEVP_PKEY_ASN1_METHOD; get_priv_key: TEVP_PKEY_asn1_set_get_priv_key_get_priv_key_cb); cdecl = nil; // Deprecated in 3_6_0
   {$EXTERNALSYM EVP_PKEY_asn1_set_get_priv_key}
 
-  EVP_PKEY_asn1_set_get_pub_key: function(ameth: PEVP_PKEY_ASN1_METHOD; get_pub_key: TEVP_PKEY_asn1_set_get_priv_key_get_priv_key_cb): void; cdecl = nil; // Deprecated in 3_6_0
+  EVP_PKEY_asn1_set_get_pub_key: procedure(ameth: PEVP_PKEY_ASN1_METHOD; get_pub_key: TEVP_PKEY_asn1_set_get_priv_key_get_priv_key_cb); cdecl = nil; // Deprecated in 3_6_0
   {$EXTERNALSYM EVP_PKEY_asn1_set_get_pub_key}
 
-  EVP_PKEY_asn1_set_security_bits: function(ameth: PEVP_PKEY_ASN1_METHOD; pkey_security_bits: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl = nil; // Deprecated in 3_6_0
+  EVP_PKEY_asn1_set_security_bits: procedure(ameth: PEVP_PKEY_ASN1_METHOD; pkey_security_bits: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl = nil; // Deprecated in 3_6_0
   {$EXTERNALSYM EVP_PKEY_asn1_set_security_bits}
 
   EVP_PKEY_CTX_get_signature_md: function(ctx: PEVP_PKEY_CTX; md: PPEVP_MD): TIdC_INT; cdecl = nil;
@@ -2196,13 +2181,13 @@ var
   EVP_PKEY_meth_new: function(id: TIdC_INT; flags: TIdC_INT): PEVP_PKEY_METHOD; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_new}
 
-  EVP_PKEY_meth_get0_info: function(ppkey_id: PIdC_INT; pflags: PIdC_INT; meth: PEVP_PKEY_METHOD): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_get0_info: procedure(ppkey_id: PIdC_INT; pflags: PIdC_INT; meth: PEVP_PKEY_METHOD); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_get0_info}
 
-  EVP_PKEY_meth_copy: function(dst: PEVP_PKEY_METHOD; src: PEVP_PKEY_METHOD): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_copy: procedure(dst: PEVP_PKEY_METHOD; src: PEVP_PKEY_METHOD); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_copy}
 
-  EVP_PKEY_meth_free: function(pmeth: PEVP_PKEY_METHOD): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_free: procedure(pmeth: PEVP_PKEY_METHOD); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_free}
 
   EVP_PKEY_meth_add0: function(pmeth: PEVP_PKEY_METHOD): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -2223,7 +2208,7 @@ var
   EVP_KEYMGMT_up_ref: function(keymgmt: PEVP_KEYMGMT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_KEYMGMT_up_ref}
 
-  EVP_KEYMGMT_free: function(keymgmt: PEVP_KEYMGMT): void; cdecl = nil;
+  EVP_KEYMGMT_free: procedure(keymgmt: PEVP_KEYMGMT); cdecl = nil;
   {$EXTERNALSYM EVP_KEYMGMT_free}
 
   EVP_KEYMGMT_get0_provider: function(keymgmt: PEVP_KEYMGMT): POSSL_PROVIDER; cdecl = nil;
@@ -2238,7 +2223,7 @@ var
   EVP_KEYMGMT_is_a: function(keymgmt: PEVP_KEYMGMT; name: PIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_KEYMGMT_is_a}
 
-  EVP_KEYMGMT_do_all_provided: function(libctx: POSSL_LIB_CTX; fn: TEVP_KEYMGMT_do_all_provided_fn_cb; arg: Pointer): void; cdecl = nil;
+  EVP_KEYMGMT_do_all_provided: procedure(libctx: POSSL_LIB_CTX; fn: TEVP_KEYMGMT_do_all_provided_fn_cb; arg: Pointer); cdecl = nil;
   {$EXTERNALSYM EVP_KEYMGMT_do_all_provided}
 
   EVP_KEYMGMT_names_do_all: function(keymgmt: PEVP_KEYMGMT; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl = nil;
@@ -2262,7 +2247,7 @@ var
   EVP_SKEYMGMT_up_ref: function(keymgmt: PEVP_SKEYMGMT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_SKEYMGMT_up_ref}
 
-  EVP_SKEYMGMT_free: function(keymgmt: PEVP_SKEYMGMT): void; cdecl = nil;
+  EVP_SKEYMGMT_free: procedure(keymgmt: PEVP_SKEYMGMT); cdecl = nil;
   {$EXTERNALSYM EVP_SKEYMGMT_free}
 
   EVP_SKEYMGMT_get0_provider: function(keymgmt: PEVP_SKEYMGMT): POSSL_PROVIDER; cdecl = nil;
@@ -2277,7 +2262,7 @@ var
   EVP_SKEYMGMT_is_a: function(keymgmt: PEVP_SKEYMGMT; name: PIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_SKEYMGMT_is_a}
 
-  EVP_SKEYMGMT_do_all_provided: function(libctx: POSSL_LIB_CTX; fn: TEVP_SKEYMGMT_do_all_provided_fn_cb; arg: Pointer): void; cdecl = nil;
+  EVP_SKEYMGMT_do_all_provided: procedure(libctx: POSSL_LIB_CTX; fn: TEVP_SKEYMGMT_do_all_provided_fn_cb; arg: Pointer); cdecl = nil;
   {$EXTERNALSYM EVP_SKEYMGMT_do_all_provided}
 
   EVP_SKEYMGMT_names_do_all: function(keymgmt: PEVP_SKEYMGMT; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl = nil;
@@ -2304,7 +2289,7 @@ var
   EVP_PKEY_CTX_dup: function(ctx: PEVP_PKEY_CTX): PEVP_PKEY_CTX; cdecl = nil;
   {$EXTERNALSYM EVP_PKEY_CTX_dup}
 
-  EVP_PKEY_CTX_free: function(ctx: PEVP_PKEY_CTX): void; cdecl = nil;
+  EVP_PKEY_CTX_free: procedure(ctx: PEVP_PKEY_CTX); cdecl = nil;
   {$EXTERNALSYM EVP_PKEY_CTX_free}
 
   EVP_PKEY_CTX_is_a: function(ctx: PEVP_PKEY_CTX; keytype: PIdAnsiChar): TIdC_INT; cdecl = nil;
@@ -2352,7 +2337,7 @@ var
   EVP_PKEY_CTX_get_operation: function(ctx: PEVP_PKEY_CTX): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_PKEY_CTX_get_operation}
 
-  EVP_PKEY_CTX_set0_keygen_info: function(ctx: PEVP_PKEY_CTX; dat: PIdC_INT; datlen: TIdC_INT): void; cdecl = nil;
+  EVP_PKEY_CTX_set0_keygen_info: procedure(ctx: PEVP_PKEY_CTX; dat: PIdC_INT; datlen: TIdC_INT); cdecl = nil;
   {$EXTERNALSYM EVP_PKEY_CTX_set0_keygen_info}
 
   EVP_PKEY_new_mac_key: function(_type: TIdC_INT; e: PENGINE; key: PIdAnsiChar; keylen: TIdC_INT): PEVP_PKEY; cdecl = nil;
@@ -2379,7 +2364,7 @@ var
   EVP_PKEY_new_CMAC_key: function(e: PENGINE; priv: PIdAnsiChar; len: TIdC_SIZET; cipher: PEVP_CIPHER): PEVP_PKEY; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_new_CMAC_key}
 
-  EVP_PKEY_CTX_set_data: function(ctx: PEVP_PKEY_CTX; data: Pointer): void; cdecl = nil;
+  EVP_PKEY_CTX_set_data: procedure(ctx: PEVP_PKEY_CTX; data: Pointer); cdecl = nil;
   {$EXTERNALSYM EVP_PKEY_CTX_set_data}
 
   EVP_PKEY_CTX_get_data: function(ctx: PEVP_PKEY_CTX): Pointer; cdecl = nil;
@@ -2391,7 +2376,7 @@ var
   EVP_PKEY_CTX_get0_peerkey: function(ctx: PEVP_PKEY_CTX): PEVP_PKEY; cdecl = nil;
   {$EXTERNALSYM EVP_PKEY_CTX_get0_peerkey}
 
-  EVP_PKEY_CTX_set_app_data: function(ctx: PEVP_PKEY_CTX; data: Pointer): void; cdecl = nil;
+  EVP_PKEY_CTX_set_app_data: procedure(ctx: PEVP_PKEY_CTX; data: Pointer); cdecl = nil;
   {$EXTERNALSYM EVP_PKEY_CTX_set_app_data}
 
   EVP_PKEY_CTX_get_app_data: function(ctx: PEVP_PKEY_CTX): Pointer; cdecl = nil;
@@ -2400,7 +2385,7 @@ var
   EVP_PKEY_CTX_set_signature: function(pctx: PEVP_PKEY_CTX; sig: PIdAnsiChar; siglen: TIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_PKEY_CTX_set_signature}
 
-  EVP_SIGNATURE_free: function(signature: PEVP_SIGNATURE): void; cdecl = nil;
+  EVP_SIGNATURE_free: procedure(signature: PEVP_SIGNATURE); cdecl = nil;
   {$EXTERNALSYM EVP_SIGNATURE_free}
 
   EVP_SIGNATURE_up_ref: function(signature: PEVP_SIGNATURE): TIdC_INT; cdecl = nil;
@@ -2421,7 +2406,7 @@ var
   EVP_SIGNATURE_get0_description: function(signature: PEVP_SIGNATURE): PIdAnsiChar; cdecl = nil;
   {$EXTERNALSYM EVP_SIGNATURE_get0_description}
 
-  EVP_SIGNATURE_do_all_provided: function(libctx: POSSL_LIB_CTX; fn: TEVP_SIGNATURE_do_all_provided_fn_cb; data: Pointer): void; cdecl = nil;
+  EVP_SIGNATURE_do_all_provided: procedure(libctx: POSSL_LIB_CTX; fn: TEVP_SIGNATURE_do_all_provided_fn_cb; data: Pointer); cdecl = nil;
   {$EXTERNALSYM EVP_SIGNATURE_do_all_provided}
 
   EVP_SIGNATURE_names_do_all: function(signature: PEVP_SIGNATURE; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl = nil;
@@ -2433,7 +2418,7 @@ var
   EVP_SIGNATURE_settable_ctx_params: function(sig: PEVP_SIGNATURE): POSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM EVP_SIGNATURE_settable_ctx_params}
 
-  EVP_ASYM_CIPHER_free: function(cipher: PEVP_ASYM_CIPHER): void; cdecl = nil;
+  EVP_ASYM_CIPHER_free: procedure(cipher: PEVP_ASYM_CIPHER); cdecl = nil;
   {$EXTERNALSYM EVP_ASYM_CIPHER_free}
 
   EVP_ASYM_CIPHER_up_ref: function(cipher: PEVP_ASYM_CIPHER): TIdC_INT; cdecl = nil;
@@ -2454,7 +2439,7 @@ var
   EVP_ASYM_CIPHER_get0_description: function(cipher: PEVP_ASYM_CIPHER): PIdAnsiChar; cdecl = nil;
   {$EXTERNALSYM EVP_ASYM_CIPHER_get0_description}
 
-  EVP_ASYM_CIPHER_do_all_provided: function(libctx: POSSL_LIB_CTX; fn: TEVP_ASYM_CIPHER_do_all_provided_fn_cb; arg: Pointer): void; cdecl = nil;
+  EVP_ASYM_CIPHER_do_all_provided: procedure(libctx: POSSL_LIB_CTX; fn: TEVP_ASYM_CIPHER_do_all_provided_fn_cb; arg: Pointer); cdecl = nil;
   {$EXTERNALSYM EVP_ASYM_CIPHER_do_all_provided}
 
   EVP_ASYM_CIPHER_names_do_all: function(cipher: PEVP_ASYM_CIPHER; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl = nil;
@@ -2466,7 +2451,7 @@ var
   EVP_ASYM_CIPHER_settable_ctx_params: function(ciph: PEVP_ASYM_CIPHER): POSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM EVP_ASYM_CIPHER_settable_ctx_params}
 
-  EVP_KEM_free: function(wrap: PEVP_KEM): void; cdecl = nil;
+  EVP_KEM_free: procedure(wrap: PEVP_KEM); cdecl = nil;
   {$EXTERNALSYM EVP_KEM_free}
 
   EVP_KEM_up_ref: function(wrap: PEVP_KEM): TIdC_INT; cdecl = nil;
@@ -2487,7 +2472,7 @@ var
   EVP_KEM_get0_description: function(wrap: PEVP_KEM): PIdAnsiChar; cdecl = nil;
   {$EXTERNALSYM EVP_KEM_get0_description}
 
-  EVP_KEM_do_all_provided: function(libctx: POSSL_LIB_CTX; fn: TEVP_KEM_do_all_provided_fn_cb; arg: Pointer): void; cdecl = nil;
+  EVP_KEM_do_all_provided: procedure(libctx: POSSL_LIB_CTX; fn: TEVP_KEM_do_all_provided_fn_cb; arg: Pointer); cdecl = nil;
   {$EXTERNALSYM EVP_KEM_do_all_provided}
 
   EVP_KEM_names_do_all: function(wrap: PEVP_KEM; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl = nil;
@@ -2715,7 +2700,7 @@ var
   EVP_PKEY_get_ex_data: function(key: PEVP_PKEY; idx: TIdC_INT): Pointer; cdecl = nil;
   {$EXTERNALSYM EVP_PKEY_get_ex_data}
 
-  EVP_PKEY_CTX_set_cb: function(ctx: PEVP_PKEY_CTX; cb: TEVP_PKEY_gen_cb): void; cdecl = nil;
+  EVP_PKEY_CTX_set_cb: procedure(ctx: PEVP_PKEY_CTX; cb: TEVP_PKEY_gen_cb); cdecl = nil;
   {$EXTERNALSYM EVP_PKEY_CTX_set_cb}
 
   EVP_PKEY_CTX_get_cb: function(ctx: PEVP_PKEY_CTX): TEVP_PKEY_gen_cb; cdecl = nil;
@@ -2724,127 +2709,127 @@ var
   EVP_PKEY_CTX_get_keygen_info: function(ctx: PEVP_PKEY_CTX; idx: TIdC_INT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_PKEY_CTX_get_keygen_info}
 
-  EVP_PKEY_meth_set_init: function(pmeth: PEVP_PKEY_METHOD; init: TEVP_PKEY_gen_cb): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_set_init: procedure(pmeth: PEVP_PKEY_METHOD; init: TEVP_PKEY_gen_cb); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_set_init}
 
-  EVP_PKEY_meth_set_copy: function(pmeth: PEVP_PKEY_METHOD; copy: TEVP_PKEY_meth_set_copy_copy_cb): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_set_copy: procedure(pmeth: PEVP_PKEY_METHOD; copy: TEVP_PKEY_meth_set_copy_copy_cb); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_set_copy}
 
-  EVP_PKEY_meth_set_cleanup: function(pmeth: PEVP_PKEY_METHOD; cleanup: TEVP_PKEY_meth_set_cleanup_cleanup_cb): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_set_cleanup: procedure(pmeth: PEVP_PKEY_METHOD; cleanup: TEVP_PKEY_meth_set_cleanup_cleanup_cb); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_set_cleanup}
 
-  EVP_PKEY_meth_set_paramgen: function(pmeth: PEVP_PKEY_METHOD; paramgen_init: TEVP_PKEY_gen_cb; paramgen: TEVP_PKEY_meth_set_paramgen_paramgen_cb): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_set_paramgen: procedure(pmeth: PEVP_PKEY_METHOD; paramgen_init: TEVP_PKEY_gen_cb; paramgen: TEVP_PKEY_meth_set_paramgen_paramgen_cb); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_set_paramgen}
 
-  EVP_PKEY_meth_set_keygen: function(pmeth: PEVP_PKEY_METHOD; keygen_init: TEVP_PKEY_gen_cb; keygen: TEVP_PKEY_meth_set_paramgen_paramgen_cb): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_set_keygen: procedure(pmeth: PEVP_PKEY_METHOD; keygen_init: TEVP_PKEY_gen_cb; keygen: TEVP_PKEY_meth_set_paramgen_paramgen_cb); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_set_keygen}
 
-  EVP_PKEY_meth_set_sign: function(pmeth: PEVP_PKEY_METHOD; sign_init: TEVP_PKEY_gen_cb; sign: TEVP_PKEY_meth_set_sign_sign_cb): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_set_sign: procedure(pmeth: PEVP_PKEY_METHOD; sign_init: TEVP_PKEY_gen_cb; sign: TEVP_PKEY_meth_set_sign_sign_cb); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_set_sign}
 
-  EVP_PKEY_meth_set_verify: function(pmeth: PEVP_PKEY_METHOD; verify_init: TEVP_PKEY_gen_cb; verify: TEVP_PKEY_meth_set_verify_verify_cb): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_set_verify: procedure(pmeth: PEVP_PKEY_METHOD; verify_init: TEVP_PKEY_gen_cb; verify: TEVP_PKEY_meth_set_verify_verify_cb); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_set_verify}
 
-  EVP_PKEY_meth_set_verify_recover: function(pmeth: PEVP_PKEY_METHOD; verify_recover_init: TEVP_PKEY_gen_cb; verify_recover: TEVP_PKEY_meth_set_sign_sign_cb): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_set_verify_recover: procedure(pmeth: PEVP_PKEY_METHOD; verify_recover_init: TEVP_PKEY_gen_cb; verify_recover: TEVP_PKEY_meth_set_sign_sign_cb); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_set_verify_recover}
 
-  EVP_PKEY_meth_set_signctx: function(pmeth: PEVP_PKEY_METHOD; signctx_init: TEVP_PKEY_meth_set_signctx_signctx_init_cb; signctx: TEVP_PKEY_meth_set_signctx_signctx_cb): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_set_signctx: procedure(pmeth: PEVP_PKEY_METHOD; signctx_init: TEVP_PKEY_meth_set_signctx_signctx_init_cb; signctx: TEVP_PKEY_meth_set_signctx_signctx_cb); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_set_signctx}
 
-  EVP_PKEY_meth_set_verifyctx: function(pmeth: PEVP_PKEY_METHOD; verifyctx_init: TEVP_PKEY_meth_set_signctx_signctx_init_cb; verifyctx: TEVP_PKEY_meth_set_verifyctx_verifyctx_cb): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_set_verifyctx: procedure(pmeth: PEVP_PKEY_METHOD; verifyctx_init: TEVP_PKEY_meth_set_signctx_signctx_init_cb; verifyctx: TEVP_PKEY_meth_set_verifyctx_verifyctx_cb); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_set_verifyctx}
 
-  EVP_PKEY_meth_set_encrypt: function(pmeth: PEVP_PKEY_METHOD; encrypt_init: TEVP_PKEY_gen_cb; encryptfn: TEVP_PKEY_meth_set_sign_sign_cb): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_set_encrypt: procedure(pmeth: PEVP_PKEY_METHOD; encrypt_init: TEVP_PKEY_gen_cb; encryptfn: TEVP_PKEY_meth_set_sign_sign_cb); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_set_encrypt}
 
-  EVP_PKEY_meth_set_decrypt: function(pmeth: PEVP_PKEY_METHOD; decrypt_init: TEVP_PKEY_gen_cb; decrypt: TEVP_PKEY_meth_set_sign_sign_cb): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_set_decrypt: procedure(pmeth: PEVP_PKEY_METHOD; decrypt_init: TEVP_PKEY_gen_cb; decrypt: TEVP_PKEY_meth_set_sign_sign_cb); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_set_decrypt}
 
-  EVP_PKEY_meth_set_derive: function(pmeth: PEVP_PKEY_METHOD; derive_init: TEVP_PKEY_gen_cb; derive: TEVP_PKEY_meth_set_derive_derive_cb): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_set_derive: procedure(pmeth: PEVP_PKEY_METHOD; derive_init: TEVP_PKEY_gen_cb; derive: TEVP_PKEY_meth_set_derive_derive_cb); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_set_derive}
 
-  EVP_PKEY_meth_set_ctrl: function(pmeth: PEVP_PKEY_METHOD; ctrl: TEVP_PKEY_meth_set_ctrl_ctrl_cb; ctrl_str: TEVP_PKEY_meth_set_ctrl_ctrl_str_cb): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_set_ctrl: procedure(pmeth: PEVP_PKEY_METHOD; ctrl: TEVP_PKEY_meth_set_ctrl_ctrl_cb; ctrl_str: TEVP_PKEY_meth_set_ctrl_ctrl_str_cb); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_set_ctrl}
 
-  EVP_PKEY_meth_set_digestsign: function(pmeth: PEVP_PKEY_METHOD; digestsign: TEVP_PKEY_meth_set_digestsign_digestsign_cb): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_set_digestsign: procedure(pmeth: PEVP_PKEY_METHOD; digestsign: TEVP_PKEY_meth_set_digestsign_digestsign_cb); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_set_digestsign}
 
-  EVP_PKEY_meth_set_digestverify: function(pmeth: PEVP_PKEY_METHOD; digestverify: TEVP_PKEY_meth_set_digestverify_digestverify_cb): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_set_digestverify: procedure(pmeth: PEVP_PKEY_METHOD; digestverify: TEVP_PKEY_meth_set_digestverify_digestverify_cb); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_set_digestverify}
 
-  EVP_PKEY_meth_set_check: function(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_set_check: procedure(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_set_check}
 
-  EVP_PKEY_meth_set_public_check: function(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_set_public_check: procedure(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_set_public_check}
 
-  EVP_PKEY_meth_set_param_check: function(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_set_param_check: procedure(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_set_param_check}
 
-  EVP_PKEY_meth_set_digest_custom: function(pmeth: PEVP_PKEY_METHOD; digest_custom: TEVP_PKEY_meth_set_signctx_signctx_init_cb): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_set_digest_custom: procedure(pmeth: PEVP_PKEY_METHOD; digest_custom: TEVP_PKEY_meth_set_signctx_signctx_init_cb); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_set_digest_custom}
 
-  EVP_PKEY_meth_get_init: function(pmeth: PEVP_PKEY_METHOD; pinit: PPIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_get_init: procedure(pmeth: PEVP_PKEY_METHOD; pinit: PPIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_get_init}
 
-  EVP_PKEY_meth_get_copy: function(pmeth: PEVP_PKEY_METHOD; pcopy: PPIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_get_copy: procedure(pmeth: PEVP_PKEY_METHOD; pcopy: PPIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_get_copy}
 
-  EVP_PKEY_meth_get_cleanup: function(pmeth: PEVP_PKEY_METHOD; pcleanup: PPointer): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_get_cleanup: procedure(pmeth: PEVP_PKEY_METHOD; pcleanup: PPointer); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_get_cleanup}
 
-  EVP_PKEY_meth_get_paramgen: function(pmeth: PEVP_PKEY_METHOD; pparamgen_init: PPIdC_INT; pparamgen: PPIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_get_paramgen: procedure(pmeth: PEVP_PKEY_METHOD; pparamgen_init: PPIdC_INT; pparamgen: PPIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_get_paramgen}
 
-  EVP_PKEY_meth_get_keygen: function(pmeth: PEVP_PKEY_METHOD; pkeygen_init: PPIdC_INT; pkeygen: PPIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_get_keygen: procedure(pmeth: PEVP_PKEY_METHOD; pkeygen_init: PPIdC_INT; pkeygen: PPIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_get_keygen}
 
-  EVP_PKEY_meth_get_sign: function(pmeth: PEVP_PKEY_METHOD; psign_init: PPIdC_INT; psign: PPIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_get_sign: procedure(pmeth: PEVP_PKEY_METHOD; psign_init: PPIdC_INT; psign: PPIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_get_sign}
 
-  EVP_PKEY_meth_get_verify: function(pmeth: PEVP_PKEY_METHOD; pverify_init: PPIdC_INT; pverify: PPIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_get_verify: procedure(pmeth: PEVP_PKEY_METHOD; pverify_init: PPIdC_INT; pverify: PPIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_get_verify}
 
-  EVP_PKEY_meth_get_verify_recover: function(pmeth: PEVP_PKEY_METHOD; pverify_recover_init: PPIdC_INT; pverify_recover: PPIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_get_verify_recover: procedure(pmeth: PEVP_PKEY_METHOD; pverify_recover_init: PPIdC_INT; pverify_recover: PPIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_get_verify_recover}
 
-  EVP_PKEY_meth_get_signctx: function(pmeth: PEVP_PKEY_METHOD; psignctx_init: PPIdC_INT; psignctx: PPIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_get_signctx: procedure(pmeth: PEVP_PKEY_METHOD; psignctx_init: PPIdC_INT; psignctx: PPIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_get_signctx}
 
-  EVP_PKEY_meth_get_verifyctx: function(pmeth: PEVP_PKEY_METHOD; pverifyctx_init: PPIdC_INT; pverifyctx: PPIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_get_verifyctx: procedure(pmeth: PEVP_PKEY_METHOD; pverifyctx_init: PPIdC_INT; pverifyctx: PPIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_get_verifyctx}
 
-  EVP_PKEY_meth_get_encrypt: function(pmeth: PEVP_PKEY_METHOD; pencrypt_init: PPIdC_INT; pencryptfn: PPIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_get_encrypt: procedure(pmeth: PEVP_PKEY_METHOD; pencrypt_init: PPIdC_INT; pencryptfn: PPIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_get_encrypt}
 
-  EVP_PKEY_meth_get_decrypt: function(pmeth: PEVP_PKEY_METHOD; pdecrypt_init: PPIdC_INT; pdecrypt: PPIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_get_decrypt: procedure(pmeth: PEVP_PKEY_METHOD; pdecrypt_init: PPIdC_INT; pdecrypt: PPIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_get_decrypt}
 
-  EVP_PKEY_meth_get_derive: function(pmeth: PEVP_PKEY_METHOD; pderive_init: PPIdC_INT; pderive: PPIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_get_derive: procedure(pmeth: PEVP_PKEY_METHOD; pderive_init: PPIdC_INT; pderive: PPIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_get_derive}
 
-  EVP_PKEY_meth_get_ctrl: function(pmeth: PEVP_PKEY_METHOD; pctrl: PPIdC_INT; pctrl_str: PPIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_get_ctrl: procedure(pmeth: PEVP_PKEY_METHOD; pctrl: PPIdC_INT; pctrl_str: PPIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_get_ctrl}
 
-  EVP_PKEY_meth_get_digestsign: function(pmeth: PEVP_PKEY_METHOD; digestsign: PPIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_get_digestsign: procedure(pmeth: PEVP_PKEY_METHOD; digestsign: PPIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_get_digestsign}
 
-  EVP_PKEY_meth_get_digestverify: function(pmeth: PEVP_PKEY_METHOD; digestverify: PPIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_get_digestverify: procedure(pmeth: PEVP_PKEY_METHOD; digestverify: PPIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_get_digestverify}
 
-  EVP_PKEY_meth_get_check: function(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_get_check: procedure(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_get_check}
 
-  EVP_PKEY_meth_get_public_check: function(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_get_public_check: procedure(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_get_public_check}
 
-  EVP_PKEY_meth_get_param_check: function(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_get_param_check: procedure(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_get_param_check}
 
-  EVP_PKEY_meth_get_digest_custom: function(pmeth: PEVP_PKEY_METHOD; pdigest_custom: PPIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  EVP_PKEY_meth_get_digest_custom: procedure(pmeth: PEVP_PKEY_METHOD; pdigest_custom: PPIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM EVP_PKEY_meth_get_digest_custom}
 
-  EVP_KEYEXCH_free: function(exchange: PEVP_KEYEXCH): void; cdecl = nil;
+  EVP_KEYEXCH_free: procedure(exchange: PEVP_KEYEXCH); cdecl = nil;
   {$EXTERNALSYM EVP_KEYEXCH_free}
 
   EVP_KEYEXCH_up_ref: function(exchange: PEVP_KEYEXCH): TIdC_INT; cdecl = nil;
@@ -2865,7 +2850,7 @@ var
   EVP_KEYEXCH_get0_description: function(keyexch: PEVP_KEYEXCH): PIdAnsiChar; cdecl = nil;
   {$EXTERNALSYM EVP_KEYEXCH_get0_description}
 
-  EVP_KEYEXCH_do_all_provided: function(libctx: POSSL_LIB_CTX; fn: TEVP_KEYEXCH_do_all_provided_fn_cb; data: Pointer): void; cdecl = nil;
+  EVP_KEYEXCH_do_all_provided: procedure(libctx: POSSL_LIB_CTX; fn: TEVP_KEYEXCH_do_all_provided_fn_cb; data: Pointer); cdecl = nil;
   {$EXTERNALSYM EVP_KEYEXCH_do_all_provided}
 
   EVP_KEYEXCH_names_do_all: function(keyexch: PEVP_KEYEXCH; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl = nil;
@@ -2877,7 +2862,7 @@ var
   EVP_KEYEXCH_settable_ctx_params: function(keyexch: PEVP_KEYEXCH): POSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM EVP_KEYEXCH_settable_ctx_params}
 
-  EVP_add_alg_module: function: void; cdecl = nil;
+  EVP_add_alg_module: procedure; cdecl = nil;
   {$EXTERNALSYM EVP_add_alg_module}
 
   EVP_PKEY_CTX_set_group_name: function(ctx: PEVP_PKEY_CTX; name: PIdAnsiChar): TIdC_INT; cdecl = nil;
@@ -2925,7 +2910,7 @@ var
   EVP_SKEY_up_ref: function(skey: PEVP_SKEY): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_SKEY_up_ref}
 
-  EVP_SKEY_free: function(skey: PEVP_SKEY): void; cdecl = nil;
+  EVP_SKEY_free: procedure(skey: PEVP_SKEY); cdecl = nil;
   {$EXTERNALSYM EVP_SKEY_free}
 
   EVP_SKEY_get0_skeymgmt_name: function(skey: PEVP_SKEY): PIdAnsiChar; cdecl = nil;
@@ -2951,7 +2936,7 @@ function EVP_default_properties_is_fips_enabled(libctx: POSSL_LIB_CTX): TIdC_INT
 function EVP_default_properties_enable_fips(libctx: POSSL_LIB_CTX; enable: TIdC_INT): TIdC_INT; cdecl;
 function EVP_MD_meth_new(md_type: TIdC_INT; pkey_type: TIdC_INT): PEVP_MD; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EVP_MD_meth_dup(md: PEVP_MD): PEVP_MD; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_MD_meth_free(md: PEVP_MD): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_MD_meth_free(md: PEVP_MD); cdecl; deprecated 'In OpenSSL 3_0_0';
 function EVP_MD_meth_set_input_blocksize(md: PEVP_MD; blocksize: TIdC_INT): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EVP_MD_meth_set_result_size(md: PEVP_MD; resultsize: TIdC_INT): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EVP_MD_meth_set_app_datasize(md: PEVP_MD; datasize: TIdC_INT): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
@@ -2974,7 +2959,7 @@ function EVP_MD_meth_get_cleanup(md: PEVP_MD): TEVP_MD_meth_set_init_init_cb; cd
 function EVP_MD_meth_get_ctrl(md: PEVP_MD): TEVP_MD_meth_set_ctrl_ctrl_cb; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EVP_CIPHER_meth_new(cipher_type: TIdC_INT; block_size: TIdC_INT; key_len: TIdC_INT): PEVP_CIPHER; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EVP_CIPHER_meth_dup(cipher: PEVP_CIPHER): PEVP_CIPHER; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_CIPHER_meth_free(cipher: PEVP_CIPHER): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_CIPHER_meth_free(cipher: PEVP_CIPHER); cdecl; deprecated 'In OpenSSL 3_0_0';
 function EVP_CIPHER_meth_set_iv_length(cipher: PEVP_CIPHER; iv_len: TIdC_INT): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EVP_CIPHER_meth_set_flags(cipher: PEVP_CIPHER; flags: TIdC_ULONG): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EVP_CIPHER_meth_set_impl_ctx_size(cipher: PEVP_CIPHER; ctx_size: TIdC_INT): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
@@ -3005,10 +2990,10 @@ function EVP_MD_CTX_get0_md(ctx: PEVP_MD_CTX): PEVP_MD; cdecl;
 function EVP_MD_CTX_get1_md(ctx: PEVP_MD_CTX): PEVP_MD; cdecl;
 function EVP_MD_CTX_md(ctx: PEVP_MD_CTX): PEVP_MD; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EVP_MD_CTX_update_fn(ctx: PEVP_MD_CTX): TEVP_MD_meth_set_update_update_cb; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_MD_CTX_set_update_fn(ctx: PEVP_MD_CTX; update: TEVP_MD_meth_set_update_update_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_MD_CTX_set_update_fn(ctx: PEVP_MD_CTX; update: TEVP_MD_meth_set_update_update_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
 function EVP_MD_CTX_get_size_ex(ctx: PEVP_MD_CTX): TIdC_INT; cdecl;
 function EVP_MD_CTX_get_pkey_ctx(ctx: PEVP_MD_CTX): PEVP_PKEY_CTX; cdecl;
-function EVP_MD_CTX_set_pkey_ctx(ctx: PEVP_MD_CTX; pctx: PEVP_PKEY_CTX): void; cdecl;
+procedure EVP_MD_CTX_set_pkey_ctx(ctx: PEVP_MD_CTX; pctx: PEVP_PKEY_CTX); cdecl;
 function EVP_MD_CTX_get0_md_data(ctx: PEVP_MD_CTX): Pointer; cdecl;
 function EVP_CIPHER_get_nid(cipher: PEVP_CIPHER): TIdC_INT; cdecl;
 function EVP_CIPHER_get0_name(cipher: PEVP_CIPHER): PIdAnsiChar; cdecl;
@@ -3026,7 +3011,7 @@ function EVP_CIPHER_get_type(cipher: PEVP_CIPHER): TIdC_INT; cdecl;
 function EVP_CIPHER_fetch(ctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_CIPHER; cdecl;
 function EVP_CIPHER_can_pipeline(cipher: PEVP_CIPHER; enc: TIdC_INT): TIdC_INT; cdecl;
 function EVP_CIPHER_up_ref(cipher: PEVP_CIPHER): TIdC_INT; cdecl;
-function EVP_CIPHER_free(cipher: PEVP_CIPHER): void; cdecl;
+procedure EVP_CIPHER_free(cipher: PEVP_CIPHER); cdecl;
 function EVP_CIPHER_CTX_get0_cipher(ctx: PEVP_CIPHER_CTX): PEVP_CIPHER; cdecl;
 function EVP_CIPHER_CTX_get1_cipher(ctx: PEVP_CIPHER_CTX): PEVP_CIPHER; cdecl;
 function EVP_CIPHER_CTX_is_encrypting(ctx: PEVP_CIPHER_CTX): TIdC_INT; cdecl;
@@ -3047,7 +3032,7 @@ function EVP_CIPHER_CTX_set_num(ctx: PEVP_CIPHER_CTX; num: TIdC_INT): TIdC_INT; 
 function EVP_CIPHER_CTX_dup(_in: PEVP_CIPHER_CTX): PEVP_CIPHER_CTX; cdecl;
 function EVP_CIPHER_CTX_copy(_out: PEVP_CIPHER_CTX; _in: PEVP_CIPHER_CTX): TIdC_INT; cdecl;
 function EVP_CIPHER_CTX_get_app_data(ctx: PEVP_CIPHER_CTX): Pointer; cdecl;
-function EVP_CIPHER_CTX_set_app_data(ctx: PEVP_CIPHER_CTX; data: Pointer): void; cdecl;
+procedure EVP_CIPHER_CTX_set_app_data(ctx: PEVP_CIPHER_CTX; data: Pointer); cdecl;
 function EVP_CIPHER_CTX_get_cipher_data(ctx: PEVP_CIPHER_CTX): Pointer; cdecl;
 function EVP_CIPHER_CTX_set_cipher_data(ctx: PEVP_CIPHER_CTX; cipher_data: Pointer): Pointer; cdecl;
 function EVP_Cipher(c: PEVP_CIPHER_CTX; _out: PIdAnsiChar; _in: PIdAnsiChar; inl: TIdC_UINT): TIdC_INT; cdecl;
@@ -3062,11 +3047,11 @@ function EVP_MD_CTX_gettable_params(ctx: PEVP_MD_CTX): POSSL_PARAM; cdecl;
 function EVP_MD_CTX_ctrl(ctx: PEVP_MD_CTX; cmd: TIdC_INT; p1: TIdC_INT; p2: Pointer): TIdC_INT; cdecl;
 function EVP_MD_CTX_new: PEVP_MD_CTX; cdecl;
 function EVP_MD_CTX_reset(ctx: PEVP_MD_CTX): TIdC_INT; cdecl;
-function EVP_MD_CTX_free(ctx: PEVP_MD_CTX): void; cdecl;
+procedure EVP_MD_CTX_free(ctx: PEVP_MD_CTX); cdecl;
 function EVP_MD_CTX_dup(_in: PEVP_MD_CTX): PEVP_MD_CTX; cdecl;
 function EVP_MD_CTX_copy_ex(_out: PEVP_MD_CTX; _in: PEVP_MD_CTX): TIdC_INT; cdecl;
-function EVP_MD_CTX_set_flags(ctx: PEVP_MD_CTX; flags: TIdC_INT): void; cdecl;
-function EVP_MD_CTX_clear_flags(ctx: PEVP_MD_CTX; flags: TIdC_INT): void; cdecl;
+procedure EVP_MD_CTX_set_flags(ctx: PEVP_MD_CTX; flags: TIdC_INT); cdecl;
+procedure EVP_MD_CTX_clear_flags(ctx: PEVP_MD_CTX; flags: TIdC_INT); cdecl;
 function EVP_MD_CTX_test_flags(ctx: PEVP_MD_CTX; flags: TIdC_INT): TIdC_INT; cdecl;
 function EVP_DigestInit_ex2(ctx: PEVP_MD_CTX; _type: PEVP_MD; params: POSSL_PARAM): TIdC_INT; cdecl;
 function EVP_DigestInit_ex(ctx: PEVP_MD_CTX; _type: PEVP_MD; impl: PENGINE): TIdC_INT; cdecl;
@@ -3081,14 +3066,14 @@ function EVP_DigestFinalXOF(ctx: PEVP_MD_CTX; _out: PIdAnsiChar; outlen: TIdC_SI
 function EVP_DigestSqueeze(ctx: PEVP_MD_CTX; _out: PIdAnsiChar; outlen: TIdC_SIZET): TIdC_INT; cdecl;
 function EVP_MD_fetch(ctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_MD; cdecl;
 function EVP_MD_up_ref(md: PEVP_MD): TIdC_INT; cdecl;
-function EVP_MD_free(md: PEVP_MD): void; cdecl;
+procedure EVP_MD_free(md: PEVP_MD); cdecl;
 function EVP_read_pw_string(buf: PIdAnsiChar; length: TIdC_INT; prompt: PIdAnsiChar; verify: TIdC_INT): TIdC_INT; cdecl;
 function EVP_read_pw_string_min(buf: PIdAnsiChar; minlen: TIdC_INT; maxlen: TIdC_INT; prompt: PIdAnsiChar; verify: TIdC_INT): TIdC_INT; cdecl;
-function EVP_set_pw_prompt(prompt: PIdAnsiChar): void; cdecl;
+procedure EVP_set_pw_prompt(prompt: PIdAnsiChar); cdecl;
 function EVP_get_pw_prompt: PIdAnsiChar; cdecl;
 function EVP_BytesToKey(_type: PEVP_CIPHER; md: PEVP_MD; salt: PIdAnsiChar; data: PIdAnsiChar; datal: TIdC_INT; count: TIdC_INT; key: PIdAnsiChar; iv: PIdAnsiChar): TIdC_INT; cdecl;
-function EVP_CIPHER_CTX_set_flags(ctx: PEVP_CIPHER_CTX; flags: TIdC_INT): void; cdecl;
-function EVP_CIPHER_CTX_clear_flags(ctx: PEVP_CIPHER_CTX; flags: TIdC_INT): void; cdecl;
+procedure EVP_CIPHER_CTX_set_flags(ctx: PEVP_CIPHER_CTX; flags: TIdC_INT); cdecl;
+procedure EVP_CIPHER_CTX_clear_flags(ctx: PEVP_CIPHER_CTX; flags: TIdC_INT); cdecl;
 function EVP_CIPHER_CTX_test_flags(ctx: PEVP_CIPHER_CTX; flags: TIdC_INT): TIdC_INT; cdecl;
 function EVP_EncryptInit(ctx: PEVP_CIPHER_CTX; cipher: PEVP_CIPHER; key: PIdAnsiChar; iv: PIdAnsiChar): TIdC_INT; cdecl;
 function EVP_EncryptInit_ex(ctx: PEVP_CIPHER_CTX; cipher: PEVP_CIPHER; impl: PENGINE; key: PIdAnsiChar; iv: PIdAnsiChar): TIdC_INT; cdecl;
@@ -3132,20 +3117,20 @@ function EVP_OpenFinal(ctx: PEVP_CIPHER_CTX; _out: PIdAnsiChar; outl: PIdC_INT):
 function EVP_SealInit(ctx: PEVP_CIPHER_CTX; _type: PEVP_CIPHER; ek: PPIdAnsiChar; ekl: PIdC_INT; iv: PIdAnsiChar; pubk: PPEVP_PKEY; npubk: TIdC_INT): TIdC_INT; cdecl;
 function EVP_SealFinal(ctx: PEVP_CIPHER_CTX; _out: PIdAnsiChar; outl: PIdC_INT): TIdC_INT; cdecl;
 function EVP_ENCODE_CTX_new: PEVP_ENCODE_CTX; cdecl;
-function EVP_ENCODE_CTX_free(ctx: PEVP_ENCODE_CTX): void; cdecl;
+procedure EVP_ENCODE_CTX_free(ctx: PEVP_ENCODE_CTX); cdecl;
 function EVP_ENCODE_CTX_copy(dctx: PEVP_ENCODE_CTX; sctx: PEVP_ENCODE_CTX): TIdC_INT; cdecl;
 function EVP_ENCODE_CTX_num(ctx: PEVP_ENCODE_CTX): TIdC_INT; cdecl;
-function EVP_EncodeInit(ctx: PEVP_ENCODE_CTX): void; cdecl;
+procedure EVP_EncodeInit(ctx: PEVP_ENCODE_CTX); cdecl;
 function EVP_EncodeUpdate(ctx: PEVP_ENCODE_CTX; _out: PIdAnsiChar; outl: PIdC_INT; _in: PIdAnsiChar; inl: TIdC_INT): TIdC_INT; cdecl;
-function EVP_EncodeFinal(ctx: PEVP_ENCODE_CTX; _out: PIdAnsiChar; outl: PIdC_INT): void; cdecl;
+procedure EVP_EncodeFinal(ctx: PEVP_ENCODE_CTX; _out: PIdAnsiChar; outl: PIdC_INT); cdecl;
 function EVP_EncodeBlock(t: PIdAnsiChar; f: PIdAnsiChar; n: TIdC_INT): TIdC_INT; cdecl;
-function EVP_DecodeInit(ctx: PEVP_ENCODE_CTX): void; cdecl;
+procedure EVP_DecodeInit(ctx: PEVP_ENCODE_CTX); cdecl;
 function EVP_DecodeUpdate(ctx: PEVP_ENCODE_CTX; _out: PIdAnsiChar; outl: PIdC_INT; _in: PIdAnsiChar; inl: TIdC_INT): TIdC_INT; cdecl;
 function EVP_DecodeFinal(ctx: PEVP_ENCODE_CTX; _out: PIdAnsiChar; outl: PIdC_INT): TIdC_INT; cdecl;
 function EVP_DecodeBlock(t: PIdAnsiChar; f: PIdAnsiChar; n: TIdC_INT): TIdC_INT; cdecl;
 function EVP_CIPHER_CTX_new: PEVP_CIPHER_CTX; cdecl;
 function EVP_CIPHER_CTX_reset(c: PEVP_CIPHER_CTX): TIdC_INT; cdecl;
-function EVP_CIPHER_CTX_free(c: PEVP_CIPHER_CTX): void; cdecl;
+procedure EVP_CIPHER_CTX_free(c: PEVP_CIPHER_CTX); cdecl;
 function EVP_CIPHER_CTX_set_key_length(x: PEVP_CIPHER_CTX; keylen: TIdC_INT): TIdC_INT; cdecl;
 function EVP_CIPHER_CTX_set_padding(c: PEVP_CIPHER_CTX; pad: TIdC_INT): TIdC_INT; cdecl;
 function EVP_CIPHER_CTX_ctrl(ctx: PEVP_CIPHER_CTX; _type: TIdC_INT; arg: TIdC_INT; ptr: Pointer): TIdC_INT; cdecl;
@@ -3336,22 +3321,22 @@ function EVP_add_cipher(cipher: PEVP_CIPHER): TIdC_INT; cdecl;
 function EVP_add_digest(digest: PEVP_MD): TIdC_INT; cdecl;
 function EVP_get_cipherbyname(name: PIdAnsiChar): PEVP_CIPHER; cdecl;
 function EVP_get_digestbyname(name: PIdAnsiChar): PEVP_MD; cdecl;
-function EVP_CIPHER_do_all(fn: TEVP_CIPHER_do_all_fn_cb; arg: Pointer): void; cdecl;
-function EVP_CIPHER_do_all_sorted(fn: TEVP_CIPHER_do_all_fn_cb; arg: Pointer): void; cdecl;
-function EVP_CIPHER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_CIPHER_do_all_provided_fn_cb; arg: Pointer): void; cdecl;
-function EVP_MD_do_all(fn: TEVP_MD_do_all_fn_cb; arg: Pointer): void; cdecl;
-function EVP_MD_do_all_sorted(fn: TEVP_MD_do_all_fn_cb; arg: Pointer): void; cdecl;
-function EVP_MD_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_MD_do_all_provided_fn_cb; arg: Pointer): void; cdecl;
+procedure EVP_CIPHER_do_all(fn: TEVP_CIPHER_do_all_fn_cb; arg: Pointer); cdecl;
+procedure EVP_CIPHER_do_all_sorted(fn: TEVP_CIPHER_do_all_fn_cb; arg: Pointer); cdecl;
+procedure EVP_CIPHER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_CIPHER_do_all_provided_fn_cb; arg: Pointer); cdecl;
+procedure EVP_MD_do_all(fn: TEVP_MD_do_all_fn_cb; arg: Pointer); cdecl;
+procedure EVP_MD_do_all_sorted(fn: TEVP_MD_do_all_fn_cb; arg: Pointer); cdecl;
+procedure EVP_MD_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_MD_do_all_provided_fn_cb; arg: Pointer); cdecl;
 function EVP_MAC_fetch(libctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_MAC; cdecl;
 function EVP_MAC_up_ref(mac: PEVP_MAC): TIdC_INT; cdecl;
-function EVP_MAC_free(mac: PEVP_MAC): void; cdecl;
+procedure EVP_MAC_free(mac: PEVP_MAC); cdecl;
 function EVP_MAC_get0_name(mac: PEVP_MAC): PIdAnsiChar; cdecl;
 function EVP_MAC_get0_description(mac: PEVP_MAC): PIdAnsiChar; cdecl;
 function EVP_MAC_is_a(mac: PEVP_MAC; name: PIdAnsiChar): TIdC_INT; cdecl;
 function EVP_MAC_get0_provider(mac: PEVP_MAC): POSSL_PROVIDER; cdecl;
 function EVP_MAC_get_params(mac: PEVP_MAC; params: POSSL_PARAM): TIdC_INT; cdecl;
 function EVP_MAC_CTX_new(mac: PEVP_MAC): PEVP_MAC_CTX; cdecl;
-function EVP_MAC_CTX_free(ctx: PEVP_MAC_CTX): void; cdecl;
+procedure EVP_MAC_CTX_free(ctx: PEVP_MAC_CTX); cdecl;
 function EVP_MAC_CTX_dup(src: PEVP_MAC_CTX): PEVP_MAC_CTX; cdecl;
 function EVP_MAC_CTX_get0_mac(ctx: PEVP_MAC_CTX): PEVP_MAC; cdecl;
 function EVP_MAC_CTX_get_params(ctx: PEVP_MAC_CTX; params: POSSL_PARAM): TIdC_INT; cdecl;
@@ -3369,11 +3354,11 @@ function EVP_MAC_gettable_ctx_params(mac: PEVP_MAC): POSSL_PARAM; cdecl;
 function EVP_MAC_settable_ctx_params(mac: PEVP_MAC): POSSL_PARAM; cdecl;
 function EVP_MAC_CTX_gettable_params(ctx: PEVP_MAC_CTX): POSSL_PARAM; cdecl;
 function EVP_MAC_CTX_settable_params(ctx: PEVP_MAC_CTX): POSSL_PARAM; cdecl;
-function EVP_MAC_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_MAC_do_all_provided_fn_cb; arg: Pointer): void; cdecl;
+procedure EVP_MAC_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_MAC_do_all_provided_fn_cb; arg: Pointer); cdecl;
 function EVP_MAC_names_do_all(mac: PEVP_MAC; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl;
 function EVP_RAND_fetch(libctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_RAND; cdecl;
 function EVP_RAND_up_ref(rand: PEVP_RAND): TIdC_INT; cdecl;
-function EVP_RAND_free(rand: PEVP_RAND): void; cdecl;
+procedure EVP_RAND_free(rand: PEVP_RAND); cdecl;
 function EVP_RAND_get0_name(rand: PEVP_RAND): PIdAnsiChar; cdecl;
 function EVP_RAND_get0_description(md: PEVP_RAND): PIdAnsiChar; cdecl;
 function EVP_RAND_is_a(rand: PEVP_RAND; name: PIdAnsiChar): TIdC_INT; cdecl;
@@ -3381,7 +3366,7 @@ function EVP_RAND_get0_provider(rand: PEVP_RAND): POSSL_PROVIDER; cdecl;
 function EVP_RAND_get_params(rand: PEVP_RAND; params: POSSL_PARAM): TIdC_INT; cdecl;
 function EVP_RAND_CTX_new(rand: PEVP_RAND; parent: PEVP_RAND_CTX): PEVP_RAND_CTX; cdecl;
 function EVP_RAND_CTX_up_ref(ctx: PEVP_RAND_CTX): TIdC_INT; cdecl;
-function EVP_RAND_CTX_free(ctx: PEVP_RAND_CTX): void; cdecl;
+procedure EVP_RAND_CTX_free(ctx: PEVP_RAND_CTX); cdecl;
 function EVP_RAND_CTX_get0_rand(ctx: PEVP_RAND_CTX): PEVP_RAND; cdecl;
 function EVP_RAND_CTX_get_params(ctx: PEVP_RAND_CTX; params: POSSL_PARAM): TIdC_INT; cdecl;
 function EVP_RAND_CTX_set_params(ctx: PEVP_RAND_CTX; params: POSSL_PARAM): TIdC_INT; cdecl;
@@ -3390,7 +3375,7 @@ function EVP_RAND_gettable_ctx_params(rand: PEVP_RAND): POSSL_PARAM; cdecl;
 function EVP_RAND_settable_ctx_params(rand: PEVP_RAND): POSSL_PARAM; cdecl;
 function EVP_RAND_CTX_gettable_params(ctx: PEVP_RAND_CTX): POSSL_PARAM; cdecl;
 function EVP_RAND_CTX_settable_params(ctx: PEVP_RAND_CTX): POSSL_PARAM; cdecl;
-function EVP_RAND_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_RAND_do_all_provided_fn_cb; arg: Pointer): void; cdecl;
+procedure EVP_RAND_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_RAND_do_all_provided_fn_cb; arg: Pointer); cdecl;
 function EVP_RAND_names_do_all(rand: PEVP_RAND; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl;
 function EVP_RAND_instantiate(ctx: PEVP_RAND_CTX; strength: TIdC_UINT; prediction_resistance: TIdC_INT; pstr: PIdAnsiChar; pstr_len: TIdC_SIZET; params: POSSL_PARAM): TIdC_INT; cdecl;
 function EVP_RAND_uninstantiate(ctx: PEVP_RAND_CTX): TIdC_INT; cdecl;
@@ -3438,7 +3423,7 @@ function EVP_PKEY_get1_EC_KEY(pkey: PEVP_PKEY): Pec_key_st; cdecl; deprecated 'I
 function EVP_PKEY_new: PEVP_PKEY; cdecl;
 function EVP_PKEY_up_ref(pkey: PEVP_PKEY): TIdC_INT; cdecl;
 function EVP_PKEY_dup(pkey: PEVP_PKEY): PEVP_PKEY; cdecl;
-function EVP_PKEY_free(pkey: PEVP_PKEY): void; cdecl;
+procedure EVP_PKEY_free(pkey: PEVP_PKEY); cdecl;
 function EVP_PKEY_get0_description(pkey: PEVP_PKEY): PIdAnsiChar; cdecl;
 function EVP_PKEY_get0_provider(key: PEVP_PKEY): POSSL_PROVIDER; cdecl;
 function d2i_PublicKey(_type: TIdC_INT; a: PPEVP_PKEY; pp: PPIdAnsiChar; length: TIdC_LONG): PEVP_PKEY; cdecl;
@@ -3485,14 +3470,14 @@ function EVP_PBE_scrypt(pass: PIdAnsiChar; passlen: TIdC_SIZET; salt: PIdAnsiCha
 function EVP_PBE_scrypt_ex(pass: PIdAnsiChar; passlen: TIdC_SIZET; salt: PIdAnsiChar; saltlen: TIdC_SIZET; N: TIdC_UINT64; r: TIdC_UINT64; p: TIdC_UINT64; maxmem: TIdC_UINT64; key: PIdAnsiChar; keylen: TIdC_SIZET; ctx: POSSL_LIB_CTX; propq: PIdAnsiChar): TIdC_INT; cdecl;
 function PKCS5_v2_scrypt_keyivgen(ctx: PEVP_CIPHER_CTX; pass: PIdAnsiChar; passlen: TIdC_INT; param: PASN1_TYPE; c: PEVP_CIPHER; md: PEVP_MD; en_de: TIdC_INT): TIdC_INT; cdecl;
 function PKCS5_v2_scrypt_keyivgen_ex(ctx: PEVP_CIPHER_CTX; pass: PIdAnsiChar; passlen: TIdC_INT; param: PASN1_TYPE; c: PEVP_CIPHER; md: PEVP_MD; en_de: TIdC_INT; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): TIdC_INT; cdecl;
-function PKCS5_PBE_add: void; cdecl;
+procedure PKCS5_PBE_add; cdecl;
 function EVP_PBE_CipherInit(pbe_obj: PASN1_OBJECT; pass: PIdAnsiChar; passlen: TIdC_INT; param: PASN1_TYPE; ctx: PEVP_CIPHER_CTX; en_de: TIdC_INT): TIdC_INT; cdecl;
 function EVP_PBE_CipherInit_ex(pbe_obj: PASN1_OBJECT; pass: PIdAnsiChar; passlen: TIdC_INT; param: PASN1_TYPE; ctx: PEVP_CIPHER_CTX; en_de: TIdC_INT; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): TIdC_INT; cdecl;
 function EVP_PBE_alg_add_type(pbe_type: TIdC_INT; pbe_nid: TIdC_INT; cipher_nid: TIdC_INT; md_nid: TIdC_INT; keygen: TEVP_PBE_KEYGEN): TIdC_INT; cdecl;
 function EVP_PBE_alg_add(nid: TIdC_INT; cipher: PEVP_CIPHER; md: PEVP_MD; keygen: TEVP_PBE_KEYGEN): TIdC_INT; cdecl;
 function EVP_PBE_find(_type: TIdC_INT; pbe_nid: TIdC_INT; pcnid: PIdC_INT; pmnid: PIdC_INT; pkeygen: PPEVP_PBE_KEYGEN): TIdC_INT; cdecl;
 function EVP_PBE_find_ex(_type: TIdC_INT; pbe_nid: TIdC_INT; pcnid: PIdC_INT; pmnid: PIdC_INT; pkeygen: PPEVP_PBE_KEYGEN; pkeygen_ex: PPEVP_PBE_KEYGEN_EX): TIdC_INT; cdecl;
-function EVP_PBE_cleanup: void; cdecl;
+procedure EVP_PBE_cleanup; cdecl;
 function EVP_PBE_get(ptype: PIdC_INT; ppbe_nid: PIdC_INT; num: TIdC_SIZET): TIdC_INT; cdecl;
 function EVP_PKEY_asn1_get_count: TIdC_INT; cdecl; deprecated 'In OpenSSL 3_6_0';
 function EVP_PKEY_asn1_get0(idx: TIdC_INT): PEVP_PKEY_ASN1_METHOD; cdecl; deprecated 'In OpenSSL 3_6_0';
@@ -3503,23 +3488,23 @@ function EVP_PKEY_asn1_add_alias(_to: TIdC_INT; from: TIdC_INT): TIdC_INT; cdecl
 function EVP_PKEY_asn1_get0_info(ppkey_id: PIdC_INT; pkey_base_id: PIdC_INT; ppkey_flags: PIdC_INT; pinfo: PPIdAnsiChar; ppem_str: PPIdAnsiChar; ameth: PEVP_PKEY_ASN1_METHOD): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_6_0';
 function EVP_PKEY_get0_asn1(pkey: PEVP_PKEY): PEVP_PKEY_ASN1_METHOD; cdecl; deprecated 'In OpenSSL 3_6_0';
 function EVP_PKEY_asn1_new(id: TIdC_INT; flags: TIdC_INT; pem_str: PIdAnsiChar; info: PIdAnsiChar): PEVP_PKEY_ASN1_METHOD; cdecl; deprecated 'In OpenSSL 3_6_0';
-function EVP_PKEY_asn1_copy(dst: PEVP_PKEY_ASN1_METHOD; src: PEVP_PKEY_ASN1_METHOD): void; cdecl; deprecated 'In OpenSSL 3_6_0';
-function EVP_PKEY_asn1_free(ameth: PEVP_PKEY_ASN1_METHOD): void; cdecl; deprecated 'In OpenSSL 3_6_0';
-function EVP_PKEY_asn1_set_public(ameth: PEVP_PKEY_ASN1_METHOD; pub_decode: TEVP_PKEY_asn1_set_public_pub_decode_cb; pub_encode: TEVP_PKEY_asn1_set_public_pub_encode_cb; pub_cmp: TEVP_PKEY_asn1_set_public_pub_cmp_cb; pub_print: TEVP_PKEY_asn1_set_public_pub_print_cb; pkey_size: TEVP_PKEY_asn1_set_public_pkey_size_cb; pkey_bits: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl; deprecated 'In OpenSSL 3_6_0';
-function EVP_PKEY_asn1_set_private(ameth: PEVP_PKEY_ASN1_METHOD; priv_decode: TEVP_PKEY_asn1_set_private_priv_decode_cb; priv_encode: TEVP_PKEY_asn1_set_private_priv_encode_cb; priv_print: TEVP_PKEY_asn1_set_public_pub_print_cb): void; cdecl; deprecated 'In OpenSSL 3_6_0';
-function EVP_PKEY_asn1_set_param(ameth: PEVP_PKEY_ASN1_METHOD; param_decode: TEVP_PKEY_asn1_set_param_param_decode_cb; param_encode: TEVP_PKEY_asn1_set_param_param_encode_cb; param_missing: TEVP_PKEY_asn1_set_public_pkey_size_cb; param_copy: TEVP_PKEY_asn1_set_public_pub_cmp_cb; param_cmp: TEVP_PKEY_asn1_set_public_pub_cmp_cb; param_print: TEVP_PKEY_asn1_set_public_pub_print_cb): void; cdecl; deprecated 'In OpenSSL 3_6_0';
-function EVP_PKEY_asn1_set_free(ameth: PEVP_PKEY_ASN1_METHOD; pkey_free: TEVP_PKEY_asn1_set_free_pkey_free_cb): void; cdecl; deprecated 'In OpenSSL 3_6_0';
-function EVP_PKEY_asn1_set_ctrl(ameth: PEVP_PKEY_ASN1_METHOD; pkey_ctrl: TEVP_PKEY_asn1_set_ctrl_pkey_ctrl_cb): void; cdecl; deprecated 'In OpenSSL 3_6_0';
-function EVP_PKEY_asn1_set_item(ameth: PEVP_PKEY_ASN1_METHOD; item_verify: TEVP_PKEY_asn1_set_item_item_verify_cb; item_sign: TEVP_PKEY_asn1_set_item_item_sign_cb): void; cdecl; deprecated 'In OpenSSL 3_6_0';
-function EVP_PKEY_asn1_set_siginf(ameth: PEVP_PKEY_ASN1_METHOD; siginf_set: TEVP_PKEY_asn1_set_siginf_siginf_set_cb): void; cdecl; deprecated 'In OpenSSL 3_6_0';
-function EVP_PKEY_asn1_set_check(ameth: PEVP_PKEY_ASN1_METHOD; pkey_check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl; deprecated 'In OpenSSL 3_6_0';
-function EVP_PKEY_asn1_set_public_check(ameth: PEVP_PKEY_ASN1_METHOD; pkey_pub_check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl; deprecated 'In OpenSSL 3_6_0';
-function EVP_PKEY_asn1_set_param_check(ameth: PEVP_PKEY_ASN1_METHOD; pkey_param_check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl; deprecated 'In OpenSSL 3_6_0';
-function EVP_PKEY_asn1_set_set_priv_key(ameth: PEVP_PKEY_ASN1_METHOD; set_priv_key: TEVP_PKEY_asn1_set_set_priv_key_set_priv_key_cb): void; cdecl; deprecated 'In OpenSSL 3_6_0';
-function EVP_PKEY_asn1_set_set_pub_key(ameth: PEVP_PKEY_ASN1_METHOD; set_pub_key: TEVP_PKEY_asn1_set_set_priv_key_set_priv_key_cb): void; cdecl; deprecated 'In OpenSSL 3_6_0';
-function EVP_PKEY_asn1_set_get_priv_key(ameth: PEVP_PKEY_ASN1_METHOD; get_priv_key: TEVP_PKEY_asn1_set_get_priv_key_get_priv_key_cb): void; cdecl; deprecated 'In OpenSSL 3_6_0';
-function EVP_PKEY_asn1_set_get_pub_key(ameth: PEVP_PKEY_ASN1_METHOD; get_pub_key: TEVP_PKEY_asn1_set_get_priv_key_get_priv_key_cb): void; cdecl; deprecated 'In OpenSSL 3_6_0';
-function EVP_PKEY_asn1_set_security_bits(ameth: PEVP_PKEY_ASN1_METHOD; pkey_security_bits: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl; deprecated 'In OpenSSL 3_6_0';
+procedure EVP_PKEY_asn1_copy(dst: PEVP_PKEY_ASN1_METHOD; src: PEVP_PKEY_ASN1_METHOD); cdecl; deprecated 'In OpenSSL 3_6_0';
+procedure EVP_PKEY_asn1_free(ameth: PEVP_PKEY_ASN1_METHOD); cdecl; deprecated 'In OpenSSL 3_6_0';
+procedure EVP_PKEY_asn1_set_public(ameth: PEVP_PKEY_ASN1_METHOD; pub_decode: TEVP_PKEY_asn1_set_public_pub_decode_cb; pub_encode: TEVP_PKEY_asn1_set_public_pub_encode_cb; pub_cmp: TEVP_PKEY_asn1_set_public_pub_cmp_cb; pub_print: TEVP_PKEY_asn1_set_public_pub_print_cb; pkey_size: TEVP_PKEY_asn1_set_public_pkey_size_cb; pkey_bits: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl; deprecated 'In OpenSSL 3_6_0';
+procedure EVP_PKEY_asn1_set_private(ameth: PEVP_PKEY_ASN1_METHOD; priv_decode: TEVP_PKEY_asn1_set_private_priv_decode_cb; priv_encode: TEVP_PKEY_asn1_set_private_priv_encode_cb; priv_print: TEVP_PKEY_asn1_set_public_pub_print_cb); cdecl; deprecated 'In OpenSSL 3_6_0';
+procedure EVP_PKEY_asn1_set_param(ameth: PEVP_PKEY_ASN1_METHOD; param_decode: TEVP_PKEY_asn1_set_param_param_decode_cb; param_encode: TEVP_PKEY_asn1_set_param_param_encode_cb; param_missing: TEVP_PKEY_asn1_set_public_pkey_size_cb; param_copy: TEVP_PKEY_asn1_set_public_pub_cmp_cb; param_cmp: TEVP_PKEY_asn1_set_public_pub_cmp_cb; param_print: TEVP_PKEY_asn1_set_public_pub_print_cb); cdecl; deprecated 'In OpenSSL 3_6_0';
+procedure EVP_PKEY_asn1_set_free(ameth: PEVP_PKEY_ASN1_METHOD; pkey_free: TEVP_PKEY_asn1_set_free_pkey_free_cb); cdecl; deprecated 'In OpenSSL 3_6_0';
+procedure EVP_PKEY_asn1_set_ctrl(ameth: PEVP_PKEY_ASN1_METHOD; pkey_ctrl: TEVP_PKEY_asn1_set_ctrl_pkey_ctrl_cb); cdecl; deprecated 'In OpenSSL 3_6_0';
+procedure EVP_PKEY_asn1_set_item(ameth: PEVP_PKEY_ASN1_METHOD; item_verify: TEVP_PKEY_asn1_set_item_item_verify_cb; item_sign: TEVP_PKEY_asn1_set_item_item_sign_cb); cdecl; deprecated 'In OpenSSL 3_6_0';
+procedure EVP_PKEY_asn1_set_siginf(ameth: PEVP_PKEY_ASN1_METHOD; siginf_set: TEVP_PKEY_asn1_set_siginf_siginf_set_cb); cdecl; deprecated 'In OpenSSL 3_6_0';
+procedure EVP_PKEY_asn1_set_check(ameth: PEVP_PKEY_ASN1_METHOD; pkey_check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl; deprecated 'In OpenSSL 3_6_0';
+procedure EVP_PKEY_asn1_set_public_check(ameth: PEVP_PKEY_ASN1_METHOD; pkey_pub_check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl; deprecated 'In OpenSSL 3_6_0';
+procedure EVP_PKEY_asn1_set_param_check(ameth: PEVP_PKEY_ASN1_METHOD; pkey_param_check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl; deprecated 'In OpenSSL 3_6_0';
+procedure EVP_PKEY_asn1_set_set_priv_key(ameth: PEVP_PKEY_ASN1_METHOD; set_priv_key: TEVP_PKEY_asn1_set_set_priv_key_set_priv_key_cb); cdecl; deprecated 'In OpenSSL 3_6_0';
+procedure EVP_PKEY_asn1_set_set_pub_key(ameth: PEVP_PKEY_ASN1_METHOD; set_pub_key: TEVP_PKEY_asn1_set_set_priv_key_set_priv_key_cb); cdecl; deprecated 'In OpenSSL 3_6_0';
+procedure EVP_PKEY_asn1_set_get_priv_key(ameth: PEVP_PKEY_ASN1_METHOD; get_priv_key: TEVP_PKEY_asn1_set_get_priv_key_get_priv_key_cb); cdecl; deprecated 'In OpenSSL 3_6_0';
+procedure EVP_PKEY_asn1_set_get_pub_key(ameth: PEVP_PKEY_ASN1_METHOD; get_pub_key: TEVP_PKEY_asn1_set_get_priv_key_get_priv_key_cb); cdecl; deprecated 'In OpenSSL 3_6_0';
+procedure EVP_PKEY_asn1_set_security_bits(ameth: PEVP_PKEY_ASN1_METHOD; pkey_security_bits: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl; deprecated 'In OpenSSL 3_6_0';
 function EVP_PKEY_CTX_get_signature_md(ctx: PEVP_PKEY_CTX; md: PPEVP_MD): TIdC_INT; cdecl;
 function EVP_PKEY_CTX_set_signature_md(ctx: PEVP_PKEY_CTX; md: PEVP_MD): TIdC_INT; cdecl;
 function EVP_PKEY_CTX_set1_id(ctx: PEVP_PKEY_CTX; id: Pointer; len: TIdC_INT): TIdC_INT; cdecl;
@@ -3530,21 +3515,21 @@ function EVP_PKEY_get0_type_name(key: PEVP_PKEY): PIdAnsiChar; cdecl;
 function EVP_PKEY_CTX_set_mac_key(ctx: PEVP_PKEY_CTX; key: PIdAnsiChar; keylen: TIdC_INT): TIdC_INT; cdecl;
 function EVP_PKEY_meth_find(_type: TIdC_INT): PEVP_PKEY_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EVP_PKEY_meth_new(id: TIdC_INT; flags: TIdC_INT): PEVP_PKEY_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_get0_info(ppkey_id: PIdC_INT; pflags: PIdC_INT; meth: PEVP_PKEY_METHOD): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_copy(dst: PEVP_PKEY_METHOD; src: PEVP_PKEY_METHOD): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_free(pmeth: PEVP_PKEY_METHOD): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_get0_info(ppkey_id: PIdC_INT; pflags: PIdC_INT; meth: PEVP_PKEY_METHOD); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_copy(dst: PEVP_PKEY_METHOD; src: PEVP_PKEY_METHOD); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_free(pmeth: PEVP_PKEY_METHOD); cdecl; deprecated 'In OpenSSL 3_0_0';
 function EVP_PKEY_meth_add0(pmeth: PEVP_PKEY_METHOD): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EVP_PKEY_meth_remove(pmeth: PEVP_PKEY_METHOD): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EVP_PKEY_meth_get_count: TIdC_SIZET; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EVP_PKEY_meth_get0(idx: TIdC_SIZET): PEVP_PKEY_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
 function EVP_KEYMGMT_fetch(ctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_KEYMGMT; cdecl;
 function EVP_KEYMGMT_up_ref(keymgmt: PEVP_KEYMGMT): TIdC_INT; cdecl;
-function EVP_KEYMGMT_free(keymgmt: PEVP_KEYMGMT): void; cdecl;
+procedure EVP_KEYMGMT_free(keymgmt: PEVP_KEYMGMT); cdecl;
 function EVP_KEYMGMT_get0_provider(keymgmt: PEVP_KEYMGMT): POSSL_PROVIDER; cdecl;
 function EVP_KEYMGMT_get0_name(keymgmt: PEVP_KEYMGMT): PIdAnsiChar; cdecl;
 function EVP_KEYMGMT_get0_description(keymgmt: PEVP_KEYMGMT): PIdAnsiChar; cdecl;
 function EVP_KEYMGMT_is_a(keymgmt: PEVP_KEYMGMT; name: PIdAnsiChar): TIdC_INT; cdecl;
-function EVP_KEYMGMT_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KEYMGMT_do_all_provided_fn_cb; arg: Pointer): void; cdecl;
+procedure EVP_KEYMGMT_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KEYMGMT_do_all_provided_fn_cb; arg: Pointer); cdecl;
 function EVP_KEYMGMT_names_do_all(keymgmt: PEVP_KEYMGMT; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl;
 function EVP_KEYMGMT_gettable_params(keymgmt: PEVP_KEYMGMT): POSSL_PARAM; cdecl;
 function EVP_KEYMGMT_settable_params(keymgmt: PEVP_KEYMGMT): POSSL_PARAM; cdecl;
@@ -3552,12 +3537,12 @@ function EVP_KEYMGMT_gen_settable_params(keymgmt: PEVP_KEYMGMT): POSSL_PARAM; cd
 function EVP_KEYMGMT_gen_gettable_params(keymgmt: PEVP_KEYMGMT): POSSL_PARAM; cdecl;
 function EVP_SKEYMGMT_fetch(ctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_SKEYMGMT; cdecl;
 function EVP_SKEYMGMT_up_ref(keymgmt: PEVP_SKEYMGMT): TIdC_INT; cdecl;
-function EVP_SKEYMGMT_free(keymgmt: PEVP_SKEYMGMT): void; cdecl;
+procedure EVP_SKEYMGMT_free(keymgmt: PEVP_SKEYMGMT); cdecl;
 function EVP_SKEYMGMT_get0_provider(keymgmt: PEVP_SKEYMGMT): POSSL_PROVIDER; cdecl;
 function EVP_SKEYMGMT_get0_name(keymgmt: PEVP_SKEYMGMT): PIdAnsiChar; cdecl;
 function EVP_SKEYMGMT_get0_description(keymgmt: PEVP_SKEYMGMT): PIdAnsiChar; cdecl;
 function EVP_SKEYMGMT_is_a(keymgmt: PEVP_SKEYMGMT; name: PIdAnsiChar): TIdC_INT; cdecl;
-function EVP_SKEYMGMT_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_SKEYMGMT_do_all_provided_fn_cb; arg: Pointer): void; cdecl;
+procedure EVP_SKEYMGMT_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_SKEYMGMT_do_all_provided_fn_cb; arg: Pointer); cdecl;
 function EVP_SKEYMGMT_names_do_all(keymgmt: PEVP_SKEYMGMT; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl;
 function EVP_SKEYMGMT_get0_gen_settable_params(skeymgmt: PEVP_SKEYMGMT): POSSL_PARAM; cdecl;
 function EVP_SKEYMGMT_get0_imp_settable_params(skeymgmt: PEVP_SKEYMGMT): POSSL_PARAM; cdecl;
@@ -3566,7 +3551,7 @@ function EVP_PKEY_CTX_new_id(id: TIdC_INT; e: PENGINE): PEVP_PKEY_CTX; cdecl;
 function EVP_PKEY_CTX_new_from_name(libctx: POSSL_LIB_CTX; name: PIdAnsiChar; propquery: PIdAnsiChar): PEVP_PKEY_CTX; cdecl;
 function EVP_PKEY_CTX_new_from_pkey(libctx: POSSL_LIB_CTX; pkey: PEVP_PKEY; propquery: PIdAnsiChar): PEVP_PKEY_CTX; cdecl;
 function EVP_PKEY_CTX_dup(ctx: PEVP_PKEY_CTX): PEVP_PKEY_CTX; cdecl;
-function EVP_PKEY_CTX_free(ctx: PEVP_PKEY_CTX): void; cdecl;
+procedure EVP_PKEY_CTX_free(ctx: PEVP_PKEY_CTX); cdecl;
 function EVP_PKEY_CTX_is_a(ctx: PEVP_PKEY_CTX; keytype: PIdAnsiChar): TIdC_INT; cdecl;
 function EVP_PKEY_CTX_get_params(ctx: PEVP_PKEY_CTX; params: POSSL_PARAM): TIdC_INT; cdecl;
 function EVP_PKEY_CTX_gettable_params(ctx: PEVP_PKEY_CTX): POSSL_PARAM; cdecl;
@@ -3582,7 +3567,7 @@ function EVP_PKEY_CTX_str2ctrl(ctx: PEVP_PKEY_CTX; cmd: TIdC_INT; str: PIdAnsiCh
 function EVP_PKEY_CTX_hex2ctrl(ctx: PEVP_PKEY_CTX; cmd: TIdC_INT; hex: PIdAnsiChar): TIdC_INT; cdecl;
 function EVP_PKEY_CTX_md(ctx: PEVP_PKEY_CTX; optype: TIdC_INT; cmd: TIdC_INT; md: PIdAnsiChar): TIdC_INT; cdecl;
 function EVP_PKEY_CTX_get_operation(ctx: PEVP_PKEY_CTX): TIdC_INT; cdecl;
-function EVP_PKEY_CTX_set0_keygen_info(ctx: PEVP_PKEY_CTX; dat: PIdC_INT; datlen: TIdC_INT): void; cdecl;
+procedure EVP_PKEY_CTX_set0_keygen_info(ctx: PEVP_PKEY_CTX; dat: PIdC_INT; datlen: TIdC_INT); cdecl;
 function EVP_PKEY_new_mac_key(_type: TIdC_INT; e: PENGINE; key: PIdAnsiChar; keylen: TIdC_INT): PEVP_PKEY; cdecl;
 function EVP_PKEY_new_raw_private_key_ex(libctx: POSSL_LIB_CTX; keytype: PIdAnsiChar; propq: PIdAnsiChar; priv: PIdAnsiChar; len: TIdC_SIZET): PEVP_PKEY; cdecl;
 function EVP_PKEY_new_raw_private_key(_type: TIdC_INT; e: PENGINE; priv: PIdAnsiChar; len: TIdC_SIZET): PEVP_PKEY; cdecl;
@@ -3591,43 +3576,43 @@ function EVP_PKEY_new_raw_public_key(_type: TIdC_INT; e: PENGINE; pub: PIdAnsiCh
 function EVP_PKEY_get_raw_private_key(pkey: PEVP_PKEY; priv: PIdAnsiChar; len: PIdC_SIZET): TIdC_INT; cdecl;
 function EVP_PKEY_get_raw_public_key(pkey: PEVP_PKEY; pub: PIdAnsiChar; len: PIdC_SIZET): TIdC_INT; cdecl;
 function EVP_PKEY_new_CMAC_key(e: PENGINE; priv: PIdAnsiChar; len: TIdC_SIZET; cipher: PEVP_CIPHER): PEVP_PKEY; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_CTX_set_data(ctx: PEVP_PKEY_CTX; data: Pointer): void; cdecl;
+procedure EVP_PKEY_CTX_set_data(ctx: PEVP_PKEY_CTX; data: Pointer); cdecl;
 function EVP_PKEY_CTX_get_data(ctx: PEVP_PKEY_CTX): Pointer; cdecl;
 function EVP_PKEY_CTX_get0_pkey(ctx: PEVP_PKEY_CTX): PEVP_PKEY; cdecl;
 function EVP_PKEY_CTX_get0_peerkey(ctx: PEVP_PKEY_CTX): PEVP_PKEY; cdecl;
-function EVP_PKEY_CTX_set_app_data(ctx: PEVP_PKEY_CTX; data: Pointer): void; cdecl;
+procedure EVP_PKEY_CTX_set_app_data(ctx: PEVP_PKEY_CTX; data: Pointer); cdecl;
 function EVP_PKEY_CTX_get_app_data(ctx: PEVP_PKEY_CTX): Pointer; cdecl;
 function EVP_PKEY_CTX_set_signature(pctx: PEVP_PKEY_CTX; sig: PIdAnsiChar; siglen: TIdC_SIZET): TIdC_INT; cdecl;
-function EVP_SIGNATURE_free(signature: PEVP_SIGNATURE): void; cdecl;
+procedure EVP_SIGNATURE_free(signature: PEVP_SIGNATURE); cdecl;
 function EVP_SIGNATURE_up_ref(signature: PEVP_SIGNATURE): TIdC_INT; cdecl;
 function EVP_SIGNATURE_get0_provider(signature: PEVP_SIGNATURE): POSSL_PROVIDER; cdecl;
 function EVP_SIGNATURE_fetch(ctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_SIGNATURE; cdecl;
 function EVP_SIGNATURE_is_a(signature: PEVP_SIGNATURE; name: PIdAnsiChar): TIdC_INT; cdecl;
 function EVP_SIGNATURE_get0_name(signature: PEVP_SIGNATURE): PIdAnsiChar; cdecl;
 function EVP_SIGNATURE_get0_description(signature: PEVP_SIGNATURE): PIdAnsiChar; cdecl;
-function EVP_SIGNATURE_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_SIGNATURE_do_all_provided_fn_cb; data: Pointer): void; cdecl;
+procedure EVP_SIGNATURE_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_SIGNATURE_do_all_provided_fn_cb; data: Pointer); cdecl;
 function EVP_SIGNATURE_names_do_all(signature: PEVP_SIGNATURE; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl;
 function EVP_SIGNATURE_gettable_ctx_params(sig: PEVP_SIGNATURE): POSSL_PARAM; cdecl;
 function EVP_SIGNATURE_settable_ctx_params(sig: PEVP_SIGNATURE): POSSL_PARAM; cdecl;
-function EVP_ASYM_CIPHER_free(cipher: PEVP_ASYM_CIPHER): void; cdecl;
+procedure EVP_ASYM_CIPHER_free(cipher: PEVP_ASYM_CIPHER); cdecl;
 function EVP_ASYM_CIPHER_up_ref(cipher: PEVP_ASYM_CIPHER): TIdC_INT; cdecl;
 function EVP_ASYM_CIPHER_get0_provider(cipher: PEVP_ASYM_CIPHER): POSSL_PROVIDER; cdecl;
 function EVP_ASYM_CIPHER_fetch(ctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_ASYM_CIPHER; cdecl;
 function EVP_ASYM_CIPHER_is_a(cipher: PEVP_ASYM_CIPHER; name: PIdAnsiChar): TIdC_INT; cdecl;
 function EVP_ASYM_CIPHER_get0_name(cipher: PEVP_ASYM_CIPHER): PIdAnsiChar; cdecl;
 function EVP_ASYM_CIPHER_get0_description(cipher: PEVP_ASYM_CIPHER): PIdAnsiChar; cdecl;
-function EVP_ASYM_CIPHER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_ASYM_CIPHER_do_all_provided_fn_cb; arg: Pointer): void; cdecl;
+procedure EVP_ASYM_CIPHER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_ASYM_CIPHER_do_all_provided_fn_cb; arg: Pointer); cdecl;
 function EVP_ASYM_CIPHER_names_do_all(cipher: PEVP_ASYM_CIPHER; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl;
 function EVP_ASYM_CIPHER_gettable_ctx_params(ciph: PEVP_ASYM_CIPHER): POSSL_PARAM; cdecl;
 function EVP_ASYM_CIPHER_settable_ctx_params(ciph: PEVP_ASYM_CIPHER): POSSL_PARAM; cdecl;
-function EVP_KEM_free(wrap: PEVP_KEM): void; cdecl;
+procedure EVP_KEM_free(wrap: PEVP_KEM); cdecl;
 function EVP_KEM_up_ref(wrap: PEVP_KEM): TIdC_INT; cdecl;
 function EVP_KEM_get0_provider(wrap: PEVP_KEM): POSSL_PROVIDER; cdecl;
 function EVP_KEM_fetch(ctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_KEM; cdecl;
 function EVP_KEM_is_a(wrap: PEVP_KEM; name: PIdAnsiChar): TIdC_INT; cdecl;
 function EVP_KEM_get0_name(wrap: PEVP_KEM): PIdAnsiChar; cdecl;
 function EVP_KEM_get0_description(wrap: PEVP_KEM): PIdAnsiChar; cdecl;
-function EVP_KEM_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KEM_do_all_provided_fn_cb; arg: Pointer): void; cdecl;
+procedure EVP_KEM_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KEM_do_all_provided_fn_cb; arg: Pointer); cdecl;
 function EVP_KEM_names_do_all(wrap: PEVP_KEM; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl;
 function EVP_KEM_gettable_ctx_params(kem: PEVP_KEM): POSSL_PARAM; cdecl;
 function EVP_KEM_settable_ctx_params(kem: PEVP_KEM): POSSL_PARAM; cdecl;
@@ -3703,61 +3688,61 @@ function EVP_PKEY_private_check(ctx: PEVP_PKEY_CTX): TIdC_INT; cdecl;
 function EVP_PKEY_pairwise_check(ctx: PEVP_PKEY_CTX): TIdC_INT; cdecl;
 function EVP_PKEY_set_ex_data(key: PEVP_PKEY; idx: TIdC_INT; arg: Pointer): TIdC_INT; cdecl;
 function EVP_PKEY_get_ex_data(key: PEVP_PKEY; idx: TIdC_INT): Pointer; cdecl;
-function EVP_PKEY_CTX_set_cb(ctx: PEVP_PKEY_CTX; cb: TEVP_PKEY_gen_cb): void; cdecl;
+procedure EVP_PKEY_CTX_set_cb(ctx: PEVP_PKEY_CTX; cb: TEVP_PKEY_gen_cb); cdecl;
 function EVP_PKEY_CTX_get_cb(ctx: PEVP_PKEY_CTX): TEVP_PKEY_gen_cb; cdecl;
 function EVP_PKEY_CTX_get_keygen_info(ctx: PEVP_PKEY_CTX; idx: TIdC_INT): TIdC_INT; cdecl;
-function EVP_PKEY_meth_set_init(pmeth: PEVP_PKEY_METHOD; init: TEVP_PKEY_gen_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_set_copy(pmeth: PEVP_PKEY_METHOD; copy: TEVP_PKEY_meth_set_copy_copy_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_set_cleanup(pmeth: PEVP_PKEY_METHOD; cleanup: TEVP_PKEY_meth_set_cleanup_cleanup_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_set_paramgen(pmeth: PEVP_PKEY_METHOD; paramgen_init: TEVP_PKEY_gen_cb; paramgen: TEVP_PKEY_meth_set_paramgen_paramgen_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_set_keygen(pmeth: PEVP_PKEY_METHOD; keygen_init: TEVP_PKEY_gen_cb; keygen: TEVP_PKEY_meth_set_paramgen_paramgen_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_set_sign(pmeth: PEVP_PKEY_METHOD; sign_init: TEVP_PKEY_gen_cb; sign: TEVP_PKEY_meth_set_sign_sign_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_set_verify(pmeth: PEVP_PKEY_METHOD; verify_init: TEVP_PKEY_gen_cb; verify: TEVP_PKEY_meth_set_verify_verify_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_set_verify_recover(pmeth: PEVP_PKEY_METHOD; verify_recover_init: TEVP_PKEY_gen_cb; verify_recover: TEVP_PKEY_meth_set_sign_sign_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_set_signctx(pmeth: PEVP_PKEY_METHOD; signctx_init: TEVP_PKEY_meth_set_signctx_signctx_init_cb; signctx: TEVP_PKEY_meth_set_signctx_signctx_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_set_verifyctx(pmeth: PEVP_PKEY_METHOD; verifyctx_init: TEVP_PKEY_meth_set_signctx_signctx_init_cb; verifyctx: TEVP_PKEY_meth_set_verifyctx_verifyctx_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_set_encrypt(pmeth: PEVP_PKEY_METHOD; encrypt_init: TEVP_PKEY_gen_cb; encryptfn: TEVP_PKEY_meth_set_sign_sign_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_set_decrypt(pmeth: PEVP_PKEY_METHOD; decrypt_init: TEVP_PKEY_gen_cb; decrypt: TEVP_PKEY_meth_set_sign_sign_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_set_derive(pmeth: PEVP_PKEY_METHOD; derive_init: TEVP_PKEY_gen_cb; derive: TEVP_PKEY_meth_set_derive_derive_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_set_ctrl(pmeth: PEVP_PKEY_METHOD; ctrl: TEVP_PKEY_meth_set_ctrl_ctrl_cb; ctrl_str: TEVP_PKEY_meth_set_ctrl_ctrl_str_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_set_digestsign(pmeth: PEVP_PKEY_METHOD; digestsign: TEVP_PKEY_meth_set_digestsign_digestsign_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_set_digestverify(pmeth: PEVP_PKEY_METHOD; digestverify: TEVP_PKEY_meth_set_digestverify_digestverify_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_set_check(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_set_public_check(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_set_param_check(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_set_digest_custom(pmeth: PEVP_PKEY_METHOD; digest_custom: TEVP_PKEY_meth_set_signctx_signctx_init_cb): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_get_init(pmeth: PEVP_PKEY_METHOD; pinit: PPIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_get_copy(pmeth: PEVP_PKEY_METHOD; pcopy: PPIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_get_cleanup(pmeth: PEVP_PKEY_METHOD; pcleanup: PPointer): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_get_paramgen(pmeth: PEVP_PKEY_METHOD; pparamgen_init: PPIdC_INT; pparamgen: PPIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_get_keygen(pmeth: PEVP_PKEY_METHOD; pkeygen_init: PPIdC_INT; pkeygen: PPIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_get_sign(pmeth: PEVP_PKEY_METHOD; psign_init: PPIdC_INT; psign: PPIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_get_verify(pmeth: PEVP_PKEY_METHOD; pverify_init: PPIdC_INT; pverify: PPIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_get_verify_recover(pmeth: PEVP_PKEY_METHOD; pverify_recover_init: PPIdC_INT; pverify_recover: PPIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_get_signctx(pmeth: PEVP_PKEY_METHOD; psignctx_init: PPIdC_INT; psignctx: PPIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_get_verifyctx(pmeth: PEVP_PKEY_METHOD; pverifyctx_init: PPIdC_INT; pverifyctx: PPIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_get_encrypt(pmeth: PEVP_PKEY_METHOD; pencrypt_init: PPIdC_INT; pencryptfn: PPIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_get_decrypt(pmeth: PEVP_PKEY_METHOD; pdecrypt_init: PPIdC_INT; pdecrypt: PPIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_get_derive(pmeth: PEVP_PKEY_METHOD; pderive_init: PPIdC_INT; pderive: PPIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_get_ctrl(pmeth: PEVP_PKEY_METHOD; pctrl: PPIdC_INT; pctrl_str: PPIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_get_digestsign(pmeth: PEVP_PKEY_METHOD; digestsign: PPIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_get_digestverify(pmeth: PEVP_PKEY_METHOD; digestverify: PPIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_get_check(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_get_public_check(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_get_param_check(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_PKEY_meth_get_digest_custom(pmeth: PEVP_PKEY_METHOD; pdigest_custom: PPIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function EVP_KEYEXCH_free(exchange: PEVP_KEYEXCH): void; cdecl;
+procedure EVP_PKEY_meth_set_init(pmeth: PEVP_PKEY_METHOD; init: TEVP_PKEY_gen_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_set_copy(pmeth: PEVP_PKEY_METHOD; copy: TEVP_PKEY_meth_set_copy_copy_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_set_cleanup(pmeth: PEVP_PKEY_METHOD; cleanup: TEVP_PKEY_meth_set_cleanup_cleanup_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_set_paramgen(pmeth: PEVP_PKEY_METHOD; paramgen_init: TEVP_PKEY_gen_cb; paramgen: TEVP_PKEY_meth_set_paramgen_paramgen_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_set_keygen(pmeth: PEVP_PKEY_METHOD; keygen_init: TEVP_PKEY_gen_cb; keygen: TEVP_PKEY_meth_set_paramgen_paramgen_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_set_sign(pmeth: PEVP_PKEY_METHOD; sign_init: TEVP_PKEY_gen_cb; sign: TEVP_PKEY_meth_set_sign_sign_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_set_verify(pmeth: PEVP_PKEY_METHOD; verify_init: TEVP_PKEY_gen_cb; verify: TEVP_PKEY_meth_set_verify_verify_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_set_verify_recover(pmeth: PEVP_PKEY_METHOD; verify_recover_init: TEVP_PKEY_gen_cb; verify_recover: TEVP_PKEY_meth_set_sign_sign_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_set_signctx(pmeth: PEVP_PKEY_METHOD; signctx_init: TEVP_PKEY_meth_set_signctx_signctx_init_cb; signctx: TEVP_PKEY_meth_set_signctx_signctx_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_set_verifyctx(pmeth: PEVP_PKEY_METHOD; verifyctx_init: TEVP_PKEY_meth_set_signctx_signctx_init_cb; verifyctx: TEVP_PKEY_meth_set_verifyctx_verifyctx_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_set_encrypt(pmeth: PEVP_PKEY_METHOD; encrypt_init: TEVP_PKEY_gen_cb; encryptfn: TEVP_PKEY_meth_set_sign_sign_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_set_decrypt(pmeth: PEVP_PKEY_METHOD; decrypt_init: TEVP_PKEY_gen_cb; decrypt: TEVP_PKEY_meth_set_sign_sign_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_set_derive(pmeth: PEVP_PKEY_METHOD; derive_init: TEVP_PKEY_gen_cb; derive: TEVP_PKEY_meth_set_derive_derive_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_set_ctrl(pmeth: PEVP_PKEY_METHOD; ctrl: TEVP_PKEY_meth_set_ctrl_ctrl_cb; ctrl_str: TEVP_PKEY_meth_set_ctrl_ctrl_str_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_set_digestsign(pmeth: PEVP_PKEY_METHOD; digestsign: TEVP_PKEY_meth_set_digestsign_digestsign_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_set_digestverify(pmeth: PEVP_PKEY_METHOD; digestverify: TEVP_PKEY_meth_set_digestverify_digestverify_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_set_check(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_set_public_check(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_set_param_check(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_set_digest_custom(pmeth: PEVP_PKEY_METHOD; digest_custom: TEVP_PKEY_meth_set_signctx_signctx_init_cb); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_get_init(pmeth: PEVP_PKEY_METHOD; pinit: PPIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_get_copy(pmeth: PEVP_PKEY_METHOD; pcopy: PPIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_get_cleanup(pmeth: PEVP_PKEY_METHOD; pcleanup: PPointer); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_get_paramgen(pmeth: PEVP_PKEY_METHOD; pparamgen_init: PPIdC_INT; pparamgen: PPIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_get_keygen(pmeth: PEVP_PKEY_METHOD; pkeygen_init: PPIdC_INT; pkeygen: PPIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_get_sign(pmeth: PEVP_PKEY_METHOD; psign_init: PPIdC_INT; psign: PPIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_get_verify(pmeth: PEVP_PKEY_METHOD; pverify_init: PPIdC_INT; pverify: PPIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_get_verify_recover(pmeth: PEVP_PKEY_METHOD; pverify_recover_init: PPIdC_INT; pverify_recover: PPIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_get_signctx(pmeth: PEVP_PKEY_METHOD; psignctx_init: PPIdC_INT; psignctx: PPIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_get_verifyctx(pmeth: PEVP_PKEY_METHOD; pverifyctx_init: PPIdC_INT; pverifyctx: PPIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_get_encrypt(pmeth: PEVP_PKEY_METHOD; pencrypt_init: PPIdC_INT; pencryptfn: PPIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_get_decrypt(pmeth: PEVP_PKEY_METHOD; pdecrypt_init: PPIdC_INT; pdecrypt: PPIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_get_derive(pmeth: PEVP_PKEY_METHOD; pderive_init: PPIdC_INT; pderive: PPIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_get_ctrl(pmeth: PEVP_PKEY_METHOD; pctrl: PPIdC_INT; pctrl_str: PPIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_get_digestsign(pmeth: PEVP_PKEY_METHOD; digestsign: PPIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_get_digestverify(pmeth: PEVP_PKEY_METHOD; digestverify: PPIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_get_check(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_get_public_check(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_get_param_check(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_PKEY_meth_get_digest_custom(pmeth: PEVP_PKEY_METHOD; pdigest_custom: PPIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure EVP_KEYEXCH_free(exchange: PEVP_KEYEXCH); cdecl;
 function EVP_KEYEXCH_up_ref(exchange: PEVP_KEYEXCH): TIdC_INT; cdecl;
 function EVP_KEYEXCH_fetch(ctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_KEYEXCH; cdecl;
 function EVP_KEYEXCH_get0_provider(exchange: PEVP_KEYEXCH): POSSL_PROVIDER; cdecl;
 function EVP_KEYEXCH_is_a(keyexch: PEVP_KEYEXCH; name: PIdAnsiChar): TIdC_INT; cdecl;
 function EVP_KEYEXCH_get0_name(keyexch: PEVP_KEYEXCH): PIdAnsiChar; cdecl;
 function EVP_KEYEXCH_get0_description(keyexch: PEVP_KEYEXCH): PIdAnsiChar; cdecl;
-function EVP_KEYEXCH_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KEYEXCH_do_all_provided_fn_cb; data: Pointer): void; cdecl;
+procedure EVP_KEYEXCH_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KEYEXCH_do_all_provided_fn_cb; data: Pointer); cdecl;
 function EVP_KEYEXCH_names_do_all(keyexch: PEVP_KEYEXCH; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl;
 function EVP_KEYEXCH_gettable_ctx_params(keyexch: PEVP_KEYEXCH): POSSL_PARAM; cdecl;
 function EVP_KEYEXCH_settable_ctx_params(keyexch: PEVP_KEYEXCH): POSSL_PARAM; cdecl;
-function EVP_add_alg_module: void; cdecl;
+procedure EVP_add_alg_module; cdecl;
 function EVP_PKEY_CTX_set_group_name(ctx: PEVP_PKEY_CTX; name: PIdAnsiChar): TIdC_INT; cdecl;
 function EVP_PKEY_CTX_get_group_name(ctx: PEVP_PKEY_CTX; name: PIdAnsiChar; namelen: TIdC_SIZET): TIdC_INT; cdecl;
 function EVP_PKEY_get_group_name(pkey: PEVP_PKEY; name: PIdAnsiChar; name_sz: TIdC_SIZET; gname_len: PIdC_SIZET): TIdC_INT; cdecl;
@@ -3773,7 +3758,7 @@ function EVP_SKEY_get0_raw_key(skey: PEVP_SKEY; key: PPIdAnsiChar; len: PIdC_SIZ
 function EVP_SKEY_get0_key_id(skey: PEVP_SKEY): PIdAnsiChar; cdecl;
 function EVP_SKEY_export(skey: PEVP_SKEY; selection: TIdC_INT; export_cb: TEVP_PKEY_export_export_cb_cb; export_cbarg: Pointer): TIdC_INT; cdecl;
 function EVP_SKEY_up_ref(skey: PEVP_SKEY): TIdC_INT; cdecl;
-function EVP_SKEY_free(skey: PEVP_SKEY): void; cdecl;
+procedure EVP_SKEY_free(skey: PEVP_SKEY); cdecl;
 function EVP_SKEY_get0_skeymgmt_name(skey: PEVP_SKEY): PIdAnsiChar; cdecl;
 function EVP_SKEY_get0_provider_name(skey: PEVP_SKEY): PIdAnsiChar; cdecl;
 function EVP_SKEY_to_provider(skey: PEVP_SKEY; libctx: POSSL_LIB_CTX; prov: POSSL_PROVIDER; propquery: PIdAnsiChar): PEVP_SKEY; cdecl;
@@ -4049,7 +4034,7 @@ function EVP_default_properties_is_fips_enabled(libctx: POSSL_LIB_CTX): TIdC_INT
 function EVP_default_properties_enable_fips(libctx: POSSL_LIB_CTX; enable: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_default_properties_enable_fips';
 function EVP_MD_meth_new(md_type: TIdC_INT; pkey_type: TIdC_INT): PEVP_MD; cdecl external CLibCrypto name 'EVP_MD_meth_new';
 function EVP_MD_meth_dup(md: PEVP_MD): PEVP_MD; cdecl external CLibCrypto name 'EVP_MD_meth_dup';
-function EVP_MD_meth_free(md: PEVP_MD): void; cdecl external CLibCrypto name 'EVP_MD_meth_free';
+procedure EVP_MD_meth_free(md: PEVP_MD); cdecl external CLibCrypto name 'EVP_MD_meth_free';
 function EVP_MD_meth_set_input_blocksize(md: PEVP_MD; blocksize: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_MD_meth_set_input_blocksize';
 function EVP_MD_meth_set_result_size(md: PEVP_MD; resultsize: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_MD_meth_set_result_size';
 function EVP_MD_meth_set_app_datasize(md: PEVP_MD; datasize: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_MD_meth_set_app_datasize';
@@ -4072,7 +4057,7 @@ function EVP_MD_meth_get_cleanup(md: PEVP_MD): TEVP_MD_meth_set_init_init_cb; cd
 function EVP_MD_meth_get_ctrl(md: PEVP_MD): TEVP_MD_meth_set_ctrl_ctrl_cb; cdecl external CLibCrypto name 'EVP_MD_meth_get_ctrl';
 function EVP_CIPHER_meth_new(cipher_type: TIdC_INT; block_size: TIdC_INT; key_len: TIdC_INT): PEVP_CIPHER; cdecl external CLibCrypto name 'EVP_CIPHER_meth_new';
 function EVP_CIPHER_meth_dup(cipher: PEVP_CIPHER): PEVP_CIPHER; cdecl external CLibCrypto name 'EVP_CIPHER_meth_dup';
-function EVP_CIPHER_meth_free(cipher: PEVP_CIPHER): void; cdecl external CLibCrypto name 'EVP_CIPHER_meth_free';
+procedure EVP_CIPHER_meth_free(cipher: PEVP_CIPHER); cdecl external CLibCrypto name 'EVP_CIPHER_meth_free';
 function EVP_CIPHER_meth_set_iv_length(cipher: PEVP_CIPHER; iv_len: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_CIPHER_meth_set_iv_length';
 function EVP_CIPHER_meth_set_flags(cipher: PEVP_CIPHER; flags: TIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'EVP_CIPHER_meth_set_flags';
 function EVP_CIPHER_meth_set_impl_ctx_size(cipher: PEVP_CIPHER; ctx_size: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_CIPHER_meth_set_impl_ctx_size';
@@ -4103,10 +4088,10 @@ function EVP_MD_CTX_get0_md(ctx: PEVP_MD_CTX): PEVP_MD; cdecl external CLibCrypt
 function EVP_MD_CTX_get1_md(ctx: PEVP_MD_CTX): PEVP_MD; cdecl external CLibCrypto name 'EVP_MD_CTX_get1_md';
 function EVP_MD_CTX_md(ctx: PEVP_MD_CTX): PEVP_MD; cdecl external CLibCrypto name 'EVP_MD_CTX_md';
 function EVP_MD_CTX_update_fn(ctx: PEVP_MD_CTX): TEVP_MD_meth_set_update_update_cb; cdecl external CLibCrypto name 'EVP_MD_CTX_update_fn';
-function EVP_MD_CTX_set_update_fn(ctx: PEVP_MD_CTX; update: TEVP_MD_meth_set_update_update_cb): void; cdecl external CLibCrypto name 'EVP_MD_CTX_set_update_fn';
+procedure EVP_MD_CTX_set_update_fn(ctx: PEVP_MD_CTX; update: TEVP_MD_meth_set_update_update_cb); cdecl external CLibCrypto name 'EVP_MD_CTX_set_update_fn';
 function EVP_MD_CTX_get_size_ex(ctx: PEVP_MD_CTX): TIdC_INT; cdecl external CLibCrypto name 'EVP_MD_CTX_get_size_ex';
 function EVP_MD_CTX_get_pkey_ctx(ctx: PEVP_MD_CTX): PEVP_PKEY_CTX; cdecl external CLibCrypto name 'EVP_MD_CTX_get_pkey_ctx';
-function EVP_MD_CTX_set_pkey_ctx(ctx: PEVP_MD_CTX; pctx: PEVP_PKEY_CTX): void; cdecl external CLibCrypto name 'EVP_MD_CTX_set_pkey_ctx';
+procedure EVP_MD_CTX_set_pkey_ctx(ctx: PEVP_MD_CTX; pctx: PEVP_PKEY_CTX); cdecl external CLibCrypto name 'EVP_MD_CTX_set_pkey_ctx';
 function EVP_MD_CTX_get0_md_data(ctx: PEVP_MD_CTX): Pointer; cdecl external CLibCrypto name 'EVP_MD_CTX_get0_md_data';
 function EVP_CIPHER_get_nid(cipher: PEVP_CIPHER): TIdC_INT; cdecl external CLibCrypto name 'EVP_CIPHER_get_nid';
 function EVP_CIPHER_get0_name(cipher: PEVP_CIPHER): PIdAnsiChar; cdecl external CLibCrypto name 'EVP_CIPHER_get0_name';
@@ -4124,7 +4109,7 @@ function EVP_CIPHER_get_type(cipher: PEVP_CIPHER): TIdC_INT; cdecl external CLib
 function EVP_CIPHER_fetch(ctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_CIPHER; cdecl external CLibCrypto name 'EVP_CIPHER_fetch';
 function EVP_CIPHER_can_pipeline(cipher: PEVP_CIPHER; enc: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_CIPHER_can_pipeline';
 function EVP_CIPHER_up_ref(cipher: PEVP_CIPHER): TIdC_INT; cdecl external CLibCrypto name 'EVP_CIPHER_up_ref';
-function EVP_CIPHER_free(cipher: PEVP_CIPHER): void; cdecl external CLibCrypto name 'EVP_CIPHER_free';
+procedure EVP_CIPHER_free(cipher: PEVP_CIPHER); cdecl external CLibCrypto name 'EVP_CIPHER_free';
 function EVP_CIPHER_CTX_get0_cipher(ctx: PEVP_CIPHER_CTX): PEVP_CIPHER; cdecl external CLibCrypto name 'EVP_CIPHER_CTX_get0_cipher';
 function EVP_CIPHER_CTX_get1_cipher(ctx: PEVP_CIPHER_CTX): PEVP_CIPHER; cdecl external CLibCrypto name 'EVP_CIPHER_CTX_get1_cipher';
 function EVP_CIPHER_CTX_is_encrypting(ctx: PEVP_CIPHER_CTX): TIdC_INT; cdecl external CLibCrypto name 'EVP_CIPHER_CTX_is_encrypting';
@@ -4145,7 +4130,7 @@ function EVP_CIPHER_CTX_set_num(ctx: PEVP_CIPHER_CTX; num: TIdC_INT): TIdC_INT; 
 function EVP_CIPHER_CTX_dup(_in: PEVP_CIPHER_CTX): PEVP_CIPHER_CTX; cdecl external CLibCrypto name 'EVP_CIPHER_CTX_dup';
 function EVP_CIPHER_CTX_copy(_out: PEVP_CIPHER_CTX; _in: PEVP_CIPHER_CTX): TIdC_INT; cdecl external CLibCrypto name 'EVP_CIPHER_CTX_copy';
 function EVP_CIPHER_CTX_get_app_data(ctx: PEVP_CIPHER_CTX): Pointer; cdecl external CLibCrypto name 'EVP_CIPHER_CTX_get_app_data';
-function EVP_CIPHER_CTX_set_app_data(ctx: PEVP_CIPHER_CTX; data: Pointer): void; cdecl external CLibCrypto name 'EVP_CIPHER_CTX_set_app_data';
+procedure EVP_CIPHER_CTX_set_app_data(ctx: PEVP_CIPHER_CTX; data: Pointer); cdecl external CLibCrypto name 'EVP_CIPHER_CTX_set_app_data';
 function EVP_CIPHER_CTX_get_cipher_data(ctx: PEVP_CIPHER_CTX): Pointer; cdecl external CLibCrypto name 'EVP_CIPHER_CTX_get_cipher_data';
 function EVP_CIPHER_CTX_set_cipher_data(ctx: PEVP_CIPHER_CTX; cipher_data: Pointer): Pointer; cdecl external CLibCrypto name 'EVP_CIPHER_CTX_set_cipher_data';
 function EVP_Cipher(c: PEVP_CIPHER_CTX; _out: PIdAnsiChar; _in: PIdAnsiChar; inl: TIdC_UINT): TIdC_INT; cdecl external CLibCrypto name 'EVP_Cipher';
@@ -4160,11 +4145,11 @@ function EVP_MD_CTX_gettable_params(ctx: PEVP_MD_CTX): POSSL_PARAM; cdecl extern
 function EVP_MD_CTX_ctrl(ctx: PEVP_MD_CTX; cmd: TIdC_INT; p1: TIdC_INT; p2: Pointer): TIdC_INT; cdecl external CLibCrypto name 'EVP_MD_CTX_ctrl';
 function EVP_MD_CTX_new: PEVP_MD_CTX; cdecl external CLibCrypto name 'EVP_MD_CTX_new';
 function EVP_MD_CTX_reset(ctx: PEVP_MD_CTX): TIdC_INT; cdecl external CLibCrypto name 'EVP_MD_CTX_reset';
-function EVP_MD_CTX_free(ctx: PEVP_MD_CTX): void; cdecl external CLibCrypto name 'EVP_MD_CTX_free';
+procedure EVP_MD_CTX_free(ctx: PEVP_MD_CTX); cdecl external CLibCrypto name 'EVP_MD_CTX_free';
 function EVP_MD_CTX_dup(_in: PEVP_MD_CTX): PEVP_MD_CTX; cdecl external CLibCrypto name 'EVP_MD_CTX_dup';
 function EVP_MD_CTX_copy_ex(_out: PEVP_MD_CTX; _in: PEVP_MD_CTX): TIdC_INT; cdecl external CLibCrypto name 'EVP_MD_CTX_copy_ex';
-function EVP_MD_CTX_set_flags(ctx: PEVP_MD_CTX; flags: TIdC_INT): void; cdecl external CLibCrypto name 'EVP_MD_CTX_set_flags';
-function EVP_MD_CTX_clear_flags(ctx: PEVP_MD_CTX; flags: TIdC_INT): void; cdecl external CLibCrypto name 'EVP_MD_CTX_clear_flags';
+procedure EVP_MD_CTX_set_flags(ctx: PEVP_MD_CTX; flags: TIdC_INT); cdecl external CLibCrypto name 'EVP_MD_CTX_set_flags';
+procedure EVP_MD_CTX_clear_flags(ctx: PEVP_MD_CTX; flags: TIdC_INT); cdecl external CLibCrypto name 'EVP_MD_CTX_clear_flags';
 function EVP_MD_CTX_test_flags(ctx: PEVP_MD_CTX; flags: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_MD_CTX_test_flags';
 function EVP_DigestInit_ex2(ctx: PEVP_MD_CTX; _type: PEVP_MD; params: POSSL_PARAM): TIdC_INT; cdecl external CLibCrypto name 'EVP_DigestInit_ex2';
 function EVP_DigestInit_ex(ctx: PEVP_MD_CTX; _type: PEVP_MD; impl: PENGINE): TIdC_INT; cdecl external CLibCrypto name 'EVP_DigestInit_ex';
@@ -4179,14 +4164,14 @@ function EVP_DigestFinalXOF(ctx: PEVP_MD_CTX; _out: PIdAnsiChar; outlen: TIdC_SI
 function EVP_DigestSqueeze(ctx: PEVP_MD_CTX; _out: PIdAnsiChar; outlen: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'EVP_DigestSqueeze';
 function EVP_MD_fetch(ctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_MD; cdecl external CLibCrypto name 'EVP_MD_fetch';
 function EVP_MD_up_ref(md: PEVP_MD): TIdC_INT; cdecl external CLibCrypto name 'EVP_MD_up_ref';
-function EVP_MD_free(md: PEVP_MD): void; cdecl external CLibCrypto name 'EVP_MD_free';
+procedure EVP_MD_free(md: PEVP_MD); cdecl external CLibCrypto name 'EVP_MD_free';
 function EVP_read_pw_string(buf: PIdAnsiChar; length: TIdC_INT; prompt: PIdAnsiChar; verify: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_read_pw_string';
 function EVP_read_pw_string_min(buf: PIdAnsiChar; minlen: TIdC_INT; maxlen: TIdC_INT; prompt: PIdAnsiChar; verify: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_read_pw_string_min';
-function EVP_set_pw_prompt(prompt: PIdAnsiChar): void; cdecl external CLibCrypto name 'EVP_set_pw_prompt';
+procedure EVP_set_pw_prompt(prompt: PIdAnsiChar); cdecl external CLibCrypto name 'EVP_set_pw_prompt';
 function EVP_get_pw_prompt: PIdAnsiChar; cdecl external CLibCrypto name 'EVP_get_pw_prompt';
 function EVP_BytesToKey(_type: PEVP_CIPHER; md: PEVP_MD; salt: PIdAnsiChar; data: PIdAnsiChar; datal: TIdC_INT; count: TIdC_INT; key: PIdAnsiChar; iv: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'EVP_BytesToKey';
-function EVP_CIPHER_CTX_set_flags(ctx: PEVP_CIPHER_CTX; flags: TIdC_INT): void; cdecl external CLibCrypto name 'EVP_CIPHER_CTX_set_flags';
-function EVP_CIPHER_CTX_clear_flags(ctx: PEVP_CIPHER_CTX; flags: TIdC_INT): void; cdecl external CLibCrypto name 'EVP_CIPHER_CTX_clear_flags';
+procedure EVP_CIPHER_CTX_set_flags(ctx: PEVP_CIPHER_CTX; flags: TIdC_INT); cdecl external CLibCrypto name 'EVP_CIPHER_CTX_set_flags';
+procedure EVP_CIPHER_CTX_clear_flags(ctx: PEVP_CIPHER_CTX; flags: TIdC_INT); cdecl external CLibCrypto name 'EVP_CIPHER_CTX_clear_flags';
 function EVP_CIPHER_CTX_test_flags(ctx: PEVP_CIPHER_CTX; flags: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_CIPHER_CTX_test_flags';
 function EVP_EncryptInit(ctx: PEVP_CIPHER_CTX; cipher: PEVP_CIPHER; key: PIdAnsiChar; iv: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'EVP_EncryptInit';
 function EVP_EncryptInit_ex(ctx: PEVP_CIPHER_CTX; cipher: PEVP_CIPHER; impl: PENGINE; key: PIdAnsiChar; iv: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'EVP_EncryptInit_ex';
@@ -4230,20 +4215,20 @@ function EVP_OpenFinal(ctx: PEVP_CIPHER_CTX; _out: PIdAnsiChar; outl: PIdC_INT):
 function EVP_SealInit(ctx: PEVP_CIPHER_CTX; _type: PEVP_CIPHER; ek: PPIdAnsiChar; ekl: PIdC_INT; iv: PIdAnsiChar; pubk: PPEVP_PKEY; npubk: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_SealInit';
 function EVP_SealFinal(ctx: PEVP_CIPHER_CTX; _out: PIdAnsiChar; outl: PIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_SealFinal';
 function EVP_ENCODE_CTX_new: PEVP_ENCODE_CTX; cdecl external CLibCrypto name 'EVP_ENCODE_CTX_new';
-function EVP_ENCODE_CTX_free(ctx: PEVP_ENCODE_CTX): void; cdecl external CLibCrypto name 'EVP_ENCODE_CTX_free';
+procedure EVP_ENCODE_CTX_free(ctx: PEVP_ENCODE_CTX); cdecl external CLibCrypto name 'EVP_ENCODE_CTX_free';
 function EVP_ENCODE_CTX_copy(dctx: PEVP_ENCODE_CTX; sctx: PEVP_ENCODE_CTX): TIdC_INT; cdecl external CLibCrypto name 'EVP_ENCODE_CTX_copy';
 function EVP_ENCODE_CTX_num(ctx: PEVP_ENCODE_CTX): TIdC_INT; cdecl external CLibCrypto name 'EVP_ENCODE_CTX_num';
-function EVP_EncodeInit(ctx: PEVP_ENCODE_CTX): void; cdecl external CLibCrypto name 'EVP_EncodeInit';
+procedure EVP_EncodeInit(ctx: PEVP_ENCODE_CTX); cdecl external CLibCrypto name 'EVP_EncodeInit';
 function EVP_EncodeUpdate(ctx: PEVP_ENCODE_CTX; _out: PIdAnsiChar; outl: PIdC_INT; _in: PIdAnsiChar; inl: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_EncodeUpdate';
-function EVP_EncodeFinal(ctx: PEVP_ENCODE_CTX; _out: PIdAnsiChar; outl: PIdC_INT): void; cdecl external CLibCrypto name 'EVP_EncodeFinal';
+procedure EVP_EncodeFinal(ctx: PEVP_ENCODE_CTX; _out: PIdAnsiChar; outl: PIdC_INT); cdecl external CLibCrypto name 'EVP_EncodeFinal';
 function EVP_EncodeBlock(t: PIdAnsiChar; f: PIdAnsiChar; n: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_EncodeBlock';
-function EVP_DecodeInit(ctx: PEVP_ENCODE_CTX): void; cdecl external CLibCrypto name 'EVP_DecodeInit';
+procedure EVP_DecodeInit(ctx: PEVP_ENCODE_CTX); cdecl external CLibCrypto name 'EVP_DecodeInit';
 function EVP_DecodeUpdate(ctx: PEVP_ENCODE_CTX; _out: PIdAnsiChar; outl: PIdC_INT; _in: PIdAnsiChar; inl: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_DecodeUpdate';
 function EVP_DecodeFinal(ctx: PEVP_ENCODE_CTX; _out: PIdAnsiChar; outl: PIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_DecodeFinal';
 function EVP_DecodeBlock(t: PIdAnsiChar; f: PIdAnsiChar; n: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_DecodeBlock';
 function EVP_CIPHER_CTX_new: PEVP_CIPHER_CTX; cdecl external CLibCrypto name 'EVP_CIPHER_CTX_new';
 function EVP_CIPHER_CTX_reset(c: PEVP_CIPHER_CTX): TIdC_INT; cdecl external CLibCrypto name 'EVP_CIPHER_CTX_reset';
-function EVP_CIPHER_CTX_free(c: PEVP_CIPHER_CTX): void; cdecl external CLibCrypto name 'EVP_CIPHER_CTX_free';
+procedure EVP_CIPHER_CTX_free(c: PEVP_CIPHER_CTX); cdecl external CLibCrypto name 'EVP_CIPHER_CTX_free';
 function EVP_CIPHER_CTX_set_key_length(x: PEVP_CIPHER_CTX; keylen: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_CIPHER_CTX_set_key_length';
 function EVP_CIPHER_CTX_set_padding(c: PEVP_CIPHER_CTX; pad: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_CIPHER_CTX_set_padding';
 function EVP_CIPHER_CTX_ctrl(ctx: PEVP_CIPHER_CTX; _type: TIdC_INT; arg: TIdC_INT; ptr: Pointer): TIdC_INT; cdecl external CLibCrypto name 'EVP_CIPHER_CTX_ctrl';
@@ -4434,22 +4419,22 @@ function EVP_add_cipher(cipher: PEVP_CIPHER): TIdC_INT; cdecl external CLibCrypt
 function EVP_add_digest(digest: PEVP_MD): TIdC_INT; cdecl external CLibCrypto name 'EVP_add_digest';
 function EVP_get_cipherbyname(name: PIdAnsiChar): PEVP_CIPHER; cdecl external CLibCrypto name 'EVP_get_cipherbyname';
 function EVP_get_digestbyname(name: PIdAnsiChar): PEVP_MD; cdecl external CLibCrypto name 'EVP_get_digestbyname';
-function EVP_CIPHER_do_all(fn: TEVP_CIPHER_do_all_fn_cb; arg: Pointer): void; cdecl external CLibCrypto name 'EVP_CIPHER_do_all';
-function EVP_CIPHER_do_all_sorted(fn: TEVP_CIPHER_do_all_fn_cb; arg: Pointer): void; cdecl external CLibCrypto name 'EVP_CIPHER_do_all_sorted';
-function EVP_CIPHER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_CIPHER_do_all_provided_fn_cb; arg: Pointer): void; cdecl external CLibCrypto name 'EVP_CIPHER_do_all_provided';
-function EVP_MD_do_all(fn: TEVP_MD_do_all_fn_cb; arg: Pointer): void; cdecl external CLibCrypto name 'EVP_MD_do_all';
-function EVP_MD_do_all_sorted(fn: TEVP_MD_do_all_fn_cb; arg: Pointer): void; cdecl external CLibCrypto name 'EVP_MD_do_all_sorted';
-function EVP_MD_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_MD_do_all_provided_fn_cb; arg: Pointer): void; cdecl external CLibCrypto name 'EVP_MD_do_all_provided';
+procedure EVP_CIPHER_do_all(fn: TEVP_CIPHER_do_all_fn_cb; arg: Pointer); cdecl external CLibCrypto name 'EVP_CIPHER_do_all';
+procedure EVP_CIPHER_do_all_sorted(fn: TEVP_CIPHER_do_all_fn_cb; arg: Pointer); cdecl external CLibCrypto name 'EVP_CIPHER_do_all_sorted';
+procedure EVP_CIPHER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_CIPHER_do_all_provided_fn_cb; arg: Pointer); cdecl external CLibCrypto name 'EVP_CIPHER_do_all_provided';
+procedure EVP_MD_do_all(fn: TEVP_MD_do_all_fn_cb; arg: Pointer); cdecl external CLibCrypto name 'EVP_MD_do_all';
+procedure EVP_MD_do_all_sorted(fn: TEVP_MD_do_all_fn_cb; arg: Pointer); cdecl external CLibCrypto name 'EVP_MD_do_all_sorted';
+procedure EVP_MD_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_MD_do_all_provided_fn_cb; arg: Pointer); cdecl external CLibCrypto name 'EVP_MD_do_all_provided';
 function EVP_MAC_fetch(libctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_MAC; cdecl external CLibCrypto name 'EVP_MAC_fetch';
 function EVP_MAC_up_ref(mac: PEVP_MAC): TIdC_INT; cdecl external CLibCrypto name 'EVP_MAC_up_ref';
-function EVP_MAC_free(mac: PEVP_MAC): void; cdecl external CLibCrypto name 'EVP_MAC_free';
+procedure EVP_MAC_free(mac: PEVP_MAC); cdecl external CLibCrypto name 'EVP_MAC_free';
 function EVP_MAC_get0_name(mac: PEVP_MAC): PIdAnsiChar; cdecl external CLibCrypto name 'EVP_MAC_get0_name';
 function EVP_MAC_get0_description(mac: PEVP_MAC): PIdAnsiChar; cdecl external CLibCrypto name 'EVP_MAC_get0_description';
 function EVP_MAC_is_a(mac: PEVP_MAC; name: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'EVP_MAC_is_a';
 function EVP_MAC_get0_provider(mac: PEVP_MAC): POSSL_PROVIDER; cdecl external CLibCrypto name 'EVP_MAC_get0_provider';
 function EVP_MAC_get_params(mac: PEVP_MAC; params: POSSL_PARAM): TIdC_INT; cdecl external CLibCrypto name 'EVP_MAC_get_params';
 function EVP_MAC_CTX_new(mac: PEVP_MAC): PEVP_MAC_CTX; cdecl external CLibCrypto name 'EVP_MAC_CTX_new';
-function EVP_MAC_CTX_free(ctx: PEVP_MAC_CTX): void; cdecl external CLibCrypto name 'EVP_MAC_CTX_free';
+procedure EVP_MAC_CTX_free(ctx: PEVP_MAC_CTX); cdecl external CLibCrypto name 'EVP_MAC_CTX_free';
 function EVP_MAC_CTX_dup(src: PEVP_MAC_CTX): PEVP_MAC_CTX; cdecl external CLibCrypto name 'EVP_MAC_CTX_dup';
 function EVP_MAC_CTX_get0_mac(ctx: PEVP_MAC_CTX): PEVP_MAC; cdecl external CLibCrypto name 'EVP_MAC_CTX_get0_mac';
 function EVP_MAC_CTX_get_params(ctx: PEVP_MAC_CTX; params: POSSL_PARAM): TIdC_INT; cdecl external CLibCrypto name 'EVP_MAC_CTX_get_params';
@@ -4467,11 +4452,11 @@ function EVP_MAC_gettable_ctx_params(mac: PEVP_MAC): POSSL_PARAM; cdecl external
 function EVP_MAC_settable_ctx_params(mac: PEVP_MAC): POSSL_PARAM; cdecl external CLibCrypto name 'EVP_MAC_settable_ctx_params';
 function EVP_MAC_CTX_gettable_params(ctx: PEVP_MAC_CTX): POSSL_PARAM; cdecl external CLibCrypto name 'EVP_MAC_CTX_gettable_params';
 function EVP_MAC_CTX_settable_params(ctx: PEVP_MAC_CTX): POSSL_PARAM; cdecl external CLibCrypto name 'EVP_MAC_CTX_settable_params';
-function EVP_MAC_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_MAC_do_all_provided_fn_cb; arg: Pointer): void; cdecl external CLibCrypto name 'EVP_MAC_do_all_provided';
+procedure EVP_MAC_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_MAC_do_all_provided_fn_cb; arg: Pointer); cdecl external CLibCrypto name 'EVP_MAC_do_all_provided';
 function EVP_MAC_names_do_all(mac: PEVP_MAC; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl external CLibCrypto name 'EVP_MAC_names_do_all';
 function EVP_RAND_fetch(libctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_RAND; cdecl external CLibCrypto name 'EVP_RAND_fetch';
 function EVP_RAND_up_ref(rand: PEVP_RAND): TIdC_INT; cdecl external CLibCrypto name 'EVP_RAND_up_ref';
-function EVP_RAND_free(rand: PEVP_RAND): void; cdecl external CLibCrypto name 'EVP_RAND_free';
+procedure EVP_RAND_free(rand: PEVP_RAND); cdecl external CLibCrypto name 'EVP_RAND_free';
 function EVP_RAND_get0_name(rand: PEVP_RAND): PIdAnsiChar; cdecl external CLibCrypto name 'EVP_RAND_get0_name';
 function EVP_RAND_get0_description(md: PEVP_RAND): PIdAnsiChar; cdecl external CLibCrypto name 'EVP_RAND_get0_description';
 function EVP_RAND_is_a(rand: PEVP_RAND; name: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'EVP_RAND_is_a';
@@ -4479,7 +4464,7 @@ function EVP_RAND_get0_provider(rand: PEVP_RAND): POSSL_PROVIDER; cdecl external
 function EVP_RAND_get_params(rand: PEVP_RAND; params: POSSL_PARAM): TIdC_INT; cdecl external CLibCrypto name 'EVP_RAND_get_params';
 function EVP_RAND_CTX_new(rand: PEVP_RAND; parent: PEVP_RAND_CTX): PEVP_RAND_CTX; cdecl external CLibCrypto name 'EVP_RAND_CTX_new';
 function EVP_RAND_CTX_up_ref(ctx: PEVP_RAND_CTX): TIdC_INT; cdecl external CLibCrypto name 'EVP_RAND_CTX_up_ref';
-function EVP_RAND_CTX_free(ctx: PEVP_RAND_CTX): void; cdecl external CLibCrypto name 'EVP_RAND_CTX_free';
+procedure EVP_RAND_CTX_free(ctx: PEVP_RAND_CTX); cdecl external CLibCrypto name 'EVP_RAND_CTX_free';
 function EVP_RAND_CTX_get0_rand(ctx: PEVP_RAND_CTX): PEVP_RAND; cdecl external CLibCrypto name 'EVP_RAND_CTX_get0_rand';
 function EVP_RAND_CTX_get_params(ctx: PEVP_RAND_CTX; params: POSSL_PARAM): TIdC_INT; cdecl external CLibCrypto name 'EVP_RAND_CTX_get_params';
 function EVP_RAND_CTX_set_params(ctx: PEVP_RAND_CTX; params: POSSL_PARAM): TIdC_INT; cdecl external CLibCrypto name 'EVP_RAND_CTX_set_params';
@@ -4488,7 +4473,7 @@ function EVP_RAND_gettable_ctx_params(rand: PEVP_RAND): POSSL_PARAM; cdecl exter
 function EVP_RAND_settable_ctx_params(rand: PEVP_RAND): POSSL_PARAM; cdecl external CLibCrypto name 'EVP_RAND_settable_ctx_params';
 function EVP_RAND_CTX_gettable_params(ctx: PEVP_RAND_CTX): POSSL_PARAM; cdecl external CLibCrypto name 'EVP_RAND_CTX_gettable_params';
 function EVP_RAND_CTX_settable_params(ctx: PEVP_RAND_CTX): POSSL_PARAM; cdecl external CLibCrypto name 'EVP_RAND_CTX_settable_params';
-function EVP_RAND_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_RAND_do_all_provided_fn_cb; arg: Pointer): void; cdecl external CLibCrypto name 'EVP_RAND_do_all_provided';
+procedure EVP_RAND_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_RAND_do_all_provided_fn_cb; arg: Pointer); cdecl external CLibCrypto name 'EVP_RAND_do_all_provided';
 function EVP_RAND_names_do_all(rand: PEVP_RAND; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl external CLibCrypto name 'EVP_RAND_names_do_all';
 function EVP_RAND_instantiate(ctx: PEVP_RAND_CTX; strength: TIdC_UINT; prediction_resistance: TIdC_INT; pstr: PIdAnsiChar; pstr_len: TIdC_SIZET; params: POSSL_PARAM): TIdC_INT; cdecl external CLibCrypto name 'EVP_RAND_instantiate';
 function EVP_RAND_uninstantiate(ctx: PEVP_RAND_CTX): TIdC_INT; cdecl external CLibCrypto name 'EVP_RAND_uninstantiate';
@@ -4536,7 +4521,7 @@ function EVP_PKEY_get1_EC_KEY(pkey: PEVP_PKEY): Pec_key_st; cdecl external CLibC
 function EVP_PKEY_new: PEVP_PKEY; cdecl external CLibCrypto name 'EVP_PKEY_new';
 function EVP_PKEY_up_ref(pkey: PEVP_PKEY): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_up_ref';
 function EVP_PKEY_dup(pkey: PEVP_PKEY): PEVP_PKEY; cdecl external CLibCrypto name 'EVP_PKEY_dup';
-function EVP_PKEY_free(pkey: PEVP_PKEY): void; cdecl external CLibCrypto name 'EVP_PKEY_free';
+procedure EVP_PKEY_free(pkey: PEVP_PKEY); cdecl external CLibCrypto name 'EVP_PKEY_free';
 function EVP_PKEY_get0_description(pkey: PEVP_PKEY): PIdAnsiChar; cdecl external CLibCrypto name 'EVP_PKEY_get0_description';
 function EVP_PKEY_get0_provider(key: PEVP_PKEY): POSSL_PROVIDER; cdecl external CLibCrypto name 'EVP_PKEY_get0_provider';
 function d2i_PublicKey(_type: TIdC_INT; a: PPEVP_PKEY; pp: PPIdAnsiChar; length: TIdC_LONG): PEVP_PKEY; cdecl external CLibCrypto name 'd2i_PublicKey';
@@ -4583,14 +4568,14 @@ function EVP_PBE_scrypt(pass: PIdAnsiChar; passlen: TIdC_SIZET; salt: PIdAnsiCha
 function EVP_PBE_scrypt_ex(pass: PIdAnsiChar; passlen: TIdC_SIZET; salt: PIdAnsiChar; saltlen: TIdC_SIZET; N: TIdC_UINT64; r: TIdC_UINT64; p: TIdC_UINT64; maxmem: TIdC_UINT64; key: PIdAnsiChar; keylen: TIdC_SIZET; ctx: POSSL_LIB_CTX; propq: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'EVP_PBE_scrypt_ex';
 function PKCS5_v2_scrypt_keyivgen(ctx: PEVP_CIPHER_CTX; pass: PIdAnsiChar; passlen: TIdC_INT; param: PASN1_TYPE; c: PEVP_CIPHER; md: PEVP_MD; en_de: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'PKCS5_v2_scrypt_keyivgen';
 function PKCS5_v2_scrypt_keyivgen_ex(ctx: PEVP_CIPHER_CTX; pass: PIdAnsiChar; passlen: TIdC_INT; param: PASN1_TYPE; c: PEVP_CIPHER; md: PEVP_MD; en_de: TIdC_INT; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'PKCS5_v2_scrypt_keyivgen_ex';
-function PKCS5_PBE_add: void; cdecl external CLibCrypto name 'PKCS5_PBE_add';
+procedure PKCS5_PBE_add; cdecl external CLibCrypto name 'PKCS5_PBE_add';
 function EVP_PBE_CipherInit(pbe_obj: PASN1_OBJECT; pass: PIdAnsiChar; passlen: TIdC_INT; param: PASN1_TYPE; ctx: PEVP_CIPHER_CTX; en_de: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_PBE_CipherInit';
 function EVP_PBE_CipherInit_ex(pbe_obj: PASN1_OBJECT; pass: PIdAnsiChar; passlen: TIdC_INT; param: PASN1_TYPE; ctx: PEVP_CIPHER_CTX; en_de: TIdC_INT; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'EVP_PBE_CipherInit_ex';
 function EVP_PBE_alg_add_type(pbe_type: TIdC_INT; pbe_nid: TIdC_INT; cipher_nid: TIdC_INT; md_nid: TIdC_INT; keygen: TEVP_PBE_KEYGEN): TIdC_INT; cdecl external CLibCrypto name 'EVP_PBE_alg_add_type';
 function EVP_PBE_alg_add(nid: TIdC_INT; cipher: PEVP_CIPHER; md: PEVP_MD; keygen: TEVP_PBE_KEYGEN): TIdC_INT; cdecl external CLibCrypto name 'EVP_PBE_alg_add';
 function EVP_PBE_find(_type: TIdC_INT; pbe_nid: TIdC_INT; pcnid: PIdC_INT; pmnid: PIdC_INT; pkeygen: PPEVP_PBE_KEYGEN): TIdC_INT; cdecl external CLibCrypto name 'EVP_PBE_find';
 function EVP_PBE_find_ex(_type: TIdC_INT; pbe_nid: TIdC_INT; pcnid: PIdC_INT; pmnid: PIdC_INT; pkeygen: PPEVP_PBE_KEYGEN; pkeygen_ex: PPEVP_PBE_KEYGEN_EX): TIdC_INT; cdecl external CLibCrypto name 'EVP_PBE_find_ex';
-function EVP_PBE_cleanup: void; cdecl external CLibCrypto name 'EVP_PBE_cleanup';
+procedure EVP_PBE_cleanup; cdecl external CLibCrypto name 'EVP_PBE_cleanup';
 function EVP_PBE_get(ptype: PIdC_INT; ppbe_nid: PIdC_INT; num: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'EVP_PBE_get';
 function EVP_PKEY_asn1_get_count: TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_asn1_get_count';
 function EVP_PKEY_asn1_get0(idx: TIdC_INT): PEVP_PKEY_ASN1_METHOD; cdecl external CLibCrypto name 'EVP_PKEY_asn1_get0';
@@ -4601,23 +4586,23 @@ function EVP_PKEY_asn1_add_alias(_to: TIdC_INT; from: TIdC_INT): TIdC_INT; cdecl
 function EVP_PKEY_asn1_get0_info(ppkey_id: PIdC_INT; pkey_base_id: PIdC_INT; ppkey_flags: PIdC_INT; pinfo: PPIdAnsiChar; ppem_str: PPIdAnsiChar; ameth: PEVP_PKEY_ASN1_METHOD): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_asn1_get0_info';
 function EVP_PKEY_get0_asn1(pkey: PEVP_PKEY): PEVP_PKEY_ASN1_METHOD; cdecl external CLibCrypto name 'EVP_PKEY_get0_asn1';
 function EVP_PKEY_asn1_new(id: TIdC_INT; flags: TIdC_INT; pem_str: PIdAnsiChar; info: PIdAnsiChar): PEVP_PKEY_ASN1_METHOD; cdecl external CLibCrypto name 'EVP_PKEY_asn1_new';
-function EVP_PKEY_asn1_copy(dst: PEVP_PKEY_ASN1_METHOD; src: PEVP_PKEY_ASN1_METHOD): void; cdecl external CLibCrypto name 'EVP_PKEY_asn1_copy';
-function EVP_PKEY_asn1_free(ameth: PEVP_PKEY_ASN1_METHOD): void; cdecl external CLibCrypto name 'EVP_PKEY_asn1_free';
-function EVP_PKEY_asn1_set_public(ameth: PEVP_PKEY_ASN1_METHOD; pub_decode: TEVP_PKEY_asn1_set_public_pub_decode_cb; pub_encode: TEVP_PKEY_asn1_set_public_pub_encode_cb; pub_cmp: TEVP_PKEY_asn1_set_public_pub_cmp_cb; pub_print: TEVP_PKEY_asn1_set_public_pub_print_cb; pkey_size: TEVP_PKEY_asn1_set_public_pkey_size_cb; pkey_bits: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_public';
-function EVP_PKEY_asn1_set_private(ameth: PEVP_PKEY_ASN1_METHOD; priv_decode: TEVP_PKEY_asn1_set_private_priv_decode_cb; priv_encode: TEVP_PKEY_asn1_set_private_priv_encode_cb; priv_print: TEVP_PKEY_asn1_set_public_pub_print_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_private';
-function EVP_PKEY_asn1_set_param(ameth: PEVP_PKEY_ASN1_METHOD; param_decode: TEVP_PKEY_asn1_set_param_param_decode_cb; param_encode: TEVP_PKEY_asn1_set_param_param_encode_cb; param_missing: TEVP_PKEY_asn1_set_public_pkey_size_cb; param_copy: TEVP_PKEY_asn1_set_public_pub_cmp_cb; param_cmp: TEVP_PKEY_asn1_set_public_pub_cmp_cb; param_print: TEVP_PKEY_asn1_set_public_pub_print_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_param';
-function EVP_PKEY_asn1_set_free(ameth: PEVP_PKEY_ASN1_METHOD; pkey_free: TEVP_PKEY_asn1_set_free_pkey_free_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_free';
-function EVP_PKEY_asn1_set_ctrl(ameth: PEVP_PKEY_ASN1_METHOD; pkey_ctrl: TEVP_PKEY_asn1_set_ctrl_pkey_ctrl_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_ctrl';
-function EVP_PKEY_asn1_set_item(ameth: PEVP_PKEY_ASN1_METHOD; item_verify: TEVP_PKEY_asn1_set_item_item_verify_cb; item_sign: TEVP_PKEY_asn1_set_item_item_sign_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_item';
-function EVP_PKEY_asn1_set_siginf(ameth: PEVP_PKEY_ASN1_METHOD; siginf_set: TEVP_PKEY_asn1_set_siginf_siginf_set_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_siginf';
-function EVP_PKEY_asn1_set_check(ameth: PEVP_PKEY_ASN1_METHOD; pkey_check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_check';
-function EVP_PKEY_asn1_set_public_check(ameth: PEVP_PKEY_ASN1_METHOD; pkey_pub_check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_public_check';
-function EVP_PKEY_asn1_set_param_check(ameth: PEVP_PKEY_ASN1_METHOD; pkey_param_check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_param_check';
-function EVP_PKEY_asn1_set_set_priv_key(ameth: PEVP_PKEY_ASN1_METHOD; set_priv_key: TEVP_PKEY_asn1_set_set_priv_key_set_priv_key_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_set_priv_key';
-function EVP_PKEY_asn1_set_set_pub_key(ameth: PEVP_PKEY_ASN1_METHOD; set_pub_key: TEVP_PKEY_asn1_set_set_priv_key_set_priv_key_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_set_pub_key';
-function EVP_PKEY_asn1_set_get_priv_key(ameth: PEVP_PKEY_ASN1_METHOD; get_priv_key: TEVP_PKEY_asn1_set_get_priv_key_get_priv_key_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_get_priv_key';
-function EVP_PKEY_asn1_set_get_pub_key(ameth: PEVP_PKEY_ASN1_METHOD; get_pub_key: TEVP_PKEY_asn1_set_get_priv_key_get_priv_key_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_get_pub_key';
-function EVP_PKEY_asn1_set_security_bits(ameth: PEVP_PKEY_ASN1_METHOD; pkey_security_bits: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_security_bits';
+procedure EVP_PKEY_asn1_copy(dst: PEVP_PKEY_ASN1_METHOD; src: PEVP_PKEY_ASN1_METHOD); cdecl external CLibCrypto name 'EVP_PKEY_asn1_copy';
+procedure EVP_PKEY_asn1_free(ameth: PEVP_PKEY_ASN1_METHOD); cdecl external CLibCrypto name 'EVP_PKEY_asn1_free';
+procedure EVP_PKEY_asn1_set_public(ameth: PEVP_PKEY_ASN1_METHOD; pub_decode: TEVP_PKEY_asn1_set_public_pub_decode_cb; pub_encode: TEVP_PKEY_asn1_set_public_pub_encode_cb; pub_cmp: TEVP_PKEY_asn1_set_public_pub_cmp_cb; pub_print: TEVP_PKEY_asn1_set_public_pub_print_cb; pkey_size: TEVP_PKEY_asn1_set_public_pkey_size_cb; pkey_bits: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_public';
+procedure EVP_PKEY_asn1_set_private(ameth: PEVP_PKEY_ASN1_METHOD; priv_decode: TEVP_PKEY_asn1_set_private_priv_decode_cb; priv_encode: TEVP_PKEY_asn1_set_private_priv_encode_cb; priv_print: TEVP_PKEY_asn1_set_public_pub_print_cb); cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_private';
+procedure EVP_PKEY_asn1_set_param(ameth: PEVP_PKEY_ASN1_METHOD; param_decode: TEVP_PKEY_asn1_set_param_param_decode_cb; param_encode: TEVP_PKEY_asn1_set_param_param_encode_cb; param_missing: TEVP_PKEY_asn1_set_public_pkey_size_cb; param_copy: TEVP_PKEY_asn1_set_public_pub_cmp_cb; param_cmp: TEVP_PKEY_asn1_set_public_pub_cmp_cb; param_print: TEVP_PKEY_asn1_set_public_pub_print_cb); cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_param';
+procedure EVP_PKEY_asn1_set_free(ameth: PEVP_PKEY_ASN1_METHOD; pkey_free: TEVP_PKEY_asn1_set_free_pkey_free_cb); cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_free';
+procedure EVP_PKEY_asn1_set_ctrl(ameth: PEVP_PKEY_ASN1_METHOD; pkey_ctrl: TEVP_PKEY_asn1_set_ctrl_pkey_ctrl_cb); cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_ctrl';
+procedure EVP_PKEY_asn1_set_item(ameth: PEVP_PKEY_ASN1_METHOD; item_verify: TEVP_PKEY_asn1_set_item_item_verify_cb; item_sign: TEVP_PKEY_asn1_set_item_item_sign_cb); cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_item';
+procedure EVP_PKEY_asn1_set_siginf(ameth: PEVP_PKEY_ASN1_METHOD; siginf_set: TEVP_PKEY_asn1_set_siginf_siginf_set_cb); cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_siginf';
+procedure EVP_PKEY_asn1_set_check(ameth: PEVP_PKEY_ASN1_METHOD; pkey_check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_check';
+procedure EVP_PKEY_asn1_set_public_check(ameth: PEVP_PKEY_ASN1_METHOD; pkey_pub_check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_public_check';
+procedure EVP_PKEY_asn1_set_param_check(ameth: PEVP_PKEY_ASN1_METHOD; pkey_param_check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_param_check';
+procedure EVP_PKEY_asn1_set_set_priv_key(ameth: PEVP_PKEY_ASN1_METHOD; set_priv_key: TEVP_PKEY_asn1_set_set_priv_key_set_priv_key_cb); cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_set_priv_key';
+procedure EVP_PKEY_asn1_set_set_pub_key(ameth: PEVP_PKEY_ASN1_METHOD; set_pub_key: TEVP_PKEY_asn1_set_set_priv_key_set_priv_key_cb); cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_set_pub_key';
+procedure EVP_PKEY_asn1_set_get_priv_key(ameth: PEVP_PKEY_ASN1_METHOD; get_priv_key: TEVP_PKEY_asn1_set_get_priv_key_get_priv_key_cb); cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_get_priv_key';
+procedure EVP_PKEY_asn1_set_get_pub_key(ameth: PEVP_PKEY_ASN1_METHOD; get_pub_key: TEVP_PKEY_asn1_set_get_priv_key_get_priv_key_cb); cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_get_pub_key';
+procedure EVP_PKEY_asn1_set_security_bits(ameth: PEVP_PKEY_ASN1_METHOD; pkey_security_bits: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl external CLibCrypto name 'EVP_PKEY_asn1_set_security_bits';
 function EVP_PKEY_CTX_get_signature_md(ctx: PEVP_PKEY_CTX; md: PPEVP_MD): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_CTX_get_signature_md';
 function EVP_PKEY_CTX_set_signature_md(ctx: PEVP_PKEY_CTX; md: PEVP_MD): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_CTX_set_signature_md';
 function EVP_PKEY_CTX_set1_id(ctx: PEVP_PKEY_CTX; id: Pointer; len: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_CTX_set1_id';
@@ -4628,21 +4613,21 @@ function EVP_PKEY_get0_type_name(key: PEVP_PKEY): PIdAnsiChar; cdecl external CL
 function EVP_PKEY_CTX_set_mac_key(ctx: PEVP_PKEY_CTX; key: PIdAnsiChar; keylen: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_CTX_set_mac_key';
 function EVP_PKEY_meth_find(_type: TIdC_INT): PEVP_PKEY_METHOD; cdecl external CLibCrypto name 'EVP_PKEY_meth_find';
 function EVP_PKEY_meth_new(id: TIdC_INT; flags: TIdC_INT): PEVP_PKEY_METHOD; cdecl external CLibCrypto name 'EVP_PKEY_meth_new';
-function EVP_PKEY_meth_get0_info(ppkey_id: PIdC_INT; pflags: PIdC_INT; meth: PEVP_PKEY_METHOD): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_get0_info';
-function EVP_PKEY_meth_copy(dst: PEVP_PKEY_METHOD; src: PEVP_PKEY_METHOD): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_copy';
-function EVP_PKEY_meth_free(pmeth: PEVP_PKEY_METHOD): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_free';
+procedure EVP_PKEY_meth_get0_info(ppkey_id: PIdC_INT; pflags: PIdC_INT; meth: PEVP_PKEY_METHOD); cdecl external CLibCrypto name 'EVP_PKEY_meth_get0_info';
+procedure EVP_PKEY_meth_copy(dst: PEVP_PKEY_METHOD; src: PEVP_PKEY_METHOD); cdecl external CLibCrypto name 'EVP_PKEY_meth_copy';
+procedure EVP_PKEY_meth_free(pmeth: PEVP_PKEY_METHOD); cdecl external CLibCrypto name 'EVP_PKEY_meth_free';
 function EVP_PKEY_meth_add0(pmeth: PEVP_PKEY_METHOD): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_meth_add0';
 function EVP_PKEY_meth_remove(pmeth: PEVP_PKEY_METHOD): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_meth_remove';
 function EVP_PKEY_meth_get_count: TIdC_SIZET; cdecl external CLibCrypto name 'EVP_PKEY_meth_get_count';
 function EVP_PKEY_meth_get0(idx: TIdC_SIZET): PEVP_PKEY_METHOD; cdecl external CLibCrypto name 'EVP_PKEY_meth_get0';
 function EVP_KEYMGMT_fetch(ctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_KEYMGMT; cdecl external CLibCrypto name 'EVP_KEYMGMT_fetch';
 function EVP_KEYMGMT_up_ref(keymgmt: PEVP_KEYMGMT): TIdC_INT; cdecl external CLibCrypto name 'EVP_KEYMGMT_up_ref';
-function EVP_KEYMGMT_free(keymgmt: PEVP_KEYMGMT): void; cdecl external CLibCrypto name 'EVP_KEYMGMT_free';
+procedure EVP_KEYMGMT_free(keymgmt: PEVP_KEYMGMT); cdecl external CLibCrypto name 'EVP_KEYMGMT_free';
 function EVP_KEYMGMT_get0_provider(keymgmt: PEVP_KEYMGMT): POSSL_PROVIDER; cdecl external CLibCrypto name 'EVP_KEYMGMT_get0_provider';
 function EVP_KEYMGMT_get0_name(keymgmt: PEVP_KEYMGMT): PIdAnsiChar; cdecl external CLibCrypto name 'EVP_KEYMGMT_get0_name';
 function EVP_KEYMGMT_get0_description(keymgmt: PEVP_KEYMGMT): PIdAnsiChar; cdecl external CLibCrypto name 'EVP_KEYMGMT_get0_description';
 function EVP_KEYMGMT_is_a(keymgmt: PEVP_KEYMGMT; name: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'EVP_KEYMGMT_is_a';
-function EVP_KEYMGMT_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KEYMGMT_do_all_provided_fn_cb; arg: Pointer): void; cdecl external CLibCrypto name 'EVP_KEYMGMT_do_all_provided';
+procedure EVP_KEYMGMT_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KEYMGMT_do_all_provided_fn_cb; arg: Pointer); cdecl external CLibCrypto name 'EVP_KEYMGMT_do_all_provided';
 function EVP_KEYMGMT_names_do_all(keymgmt: PEVP_KEYMGMT; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl external CLibCrypto name 'EVP_KEYMGMT_names_do_all';
 function EVP_KEYMGMT_gettable_params(keymgmt: PEVP_KEYMGMT): POSSL_PARAM; cdecl external CLibCrypto name 'EVP_KEYMGMT_gettable_params';
 function EVP_KEYMGMT_settable_params(keymgmt: PEVP_KEYMGMT): POSSL_PARAM; cdecl external CLibCrypto name 'EVP_KEYMGMT_settable_params';
@@ -4650,12 +4635,12 @@ function EVP_KEYMGMT_gen_settable_params(keymgmt: PEVP_KEYMGMT): POSSL_PARAM; cd
 function EVP_KEYMGMT_gen_gettable_params(keymgmt: PEVP_KEYMGMT): POSSL_PARAM; cdecl external CLibCrypto name 'EVP_KEYMGMT_gen_gettable_params';
 function EVP_SKEYMGMT_fetch(ctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_SKEYMGMT; cdecl external CLibCrypto name 'EVP_SKEYMGMT_fetch';
 function EVP_SKEYMGMT_up_ref(keymgmt: PEVP_SKEYMGMT): TIdC_INT; cdecl external CLibCrypto name 'EVP_SKEYMGMT_up_ref';
-function EVP_SKEYMGMT_free(keymgmt: PEVP_SKEYMGMT): void; cdecl external CLibCrypto name 'EVP_SKEYMGMT_free';
+procedure EVP_SKEYMGMT_free(keymgmt: PEVP_SKEYMGMT); cdecl external CLibCrypto name 'EVP_SKEYMGMT_free';
 function EVP_SKEYMGMT_get0_provider(keymgmt: PEVP_SKEYMGMT): POSSL_PROVIDER; cdecl external CLibCrypto name 'EVP_SKEYMGMT_get0_provider';
 function EVP_SKEYMGMT_get0_name(keymgmt: PEVP_SKEYMGMT): PIdAnsiChar; cdecl external CLibCrypto name 'EVP_SKEYMGMT_get0_name';
 function EVP_SKEYMGMT_get0_description(keymgmt: PEVP_SKEYMGMT): PIdAnsiChar; cdecl external CLibCrypto name 'EVP_SKEYMGMT_get0_description';
 function EVP_SKEYMGMT_is_a(keymgmt: PEVP_SKEYMGMT; name: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'EVP_SKEYMGMT_is_a';
-function EVP_SKEYMGMT_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_SKEYMGMT_do_all_provided_fn_cb; arg: Pointer): void; cdecl external CLibCrypto name 'EVP_SKEYMGMT_do_all_provided';
+procedure EVP_SKEYMGMT_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_SKEYMGMT_do_all_provided_fn_cb; arg: Pointer); cdecl external CLibCrypto name 'EVP_SKEYMGMT_do_all_provided';
 function EVP_SKEYMGMT_names_do_all(keymgmt: PEVP_SKEYMGMT; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl external CLibCrypto name 'EVP_SKEYMGMT_names_do_all';
 function EVP_SKEYMGMT_get0_gen_settable_params(skeymgmt: PEVP_SKEYMGMT): POSSL_PARAM; cdecl external CLibCrypto name 'EVP_SKEYMGMT_get0_gen_settable_params';
 function EVP_SKEYMGMT_get0_imp_settable_params(skeymgmt: PEVP_SKEYMGMT): POSSL_PARAM; cdecl external CLibCrypto name 'EVP_SKEYMGMT_get0_imp_settable_params';
@@ -4664,7 +4649,7 @@ function EVP_PKEY_CTX_new_id(id: TIdC_INT; e: PENGINE): PEVP_PKEY_CTX; cdecl ext
 function EVP_PKEY_CTX_new_from_name(libctx: POSSL_LIB_CTX; name: PIdAnsiChar; propquery: PIdAnsiChar): PEVP_PKEY_CTX; cdecl external CLibCrypto name 'EVP_PKEY_CTX_new_from_name';
 function EVP_PKEY_CTX_new_from_pkey(libctx: POSSL_LIB_CTX; pkey: PEVP_PKEY; propquery: PIdAnsiChar): PEVP_PKEY_CTX; cdecl external CLibCrypto name 'EVP_PKEY_CTX_new_from_pkey';
 function EVP_PKEY_CTX_dup(ctx: PEVP_PKEY_CTX): PEVP_PKEY_CTX; cdecl external CLibCrypto name 'EVP_PKEY_CTX_dup';
-function EVP_PKEY_CTX_free(ctx: PEVP_PKEY_CTX): void; cdecl external CLibCrypto name 'EVP_PKEY_CTX_free';
+procedure EVP_PKEY_CTX_free(ctx: PEVP_PKEY_CTX); cdecl external CLibCrypto name 'EVP_PKEY_CTX_free';
 function EVP_PKEY_CTX_is_a(ctx: PEVP_PKEY_CTX; keytype: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_CTX_is_a';
 function EVP_PKEY_CTX_get_params(ctx: PEVP_PKEY_CTX; params: POSSL_PARAM): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_CTX_get_params';
 function EVP_PKEY_CTX_gettable_params(ctx: PEVP_PKEY_CTX): POSSL_PARAM; cdecl external CLibCrypto name 'EVP_PKEY_CTX_gettable_params';
@@ -4680,7 +4665,7 @@ function EVP_PKEY_CTX_str2ctrl(ctx: PEVP_PKEY_CTX; cmd: TIdC_INT; str: PIdAnsiCh
 function EVP_PKEY_CTX_hex2ctrl(ctx: PEVP_PKEY_CTX; cmd: TIdC_INT; hex: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_CTX_hex2ctrl';
 function EVP_PKEY_CTX_md(ctx: PEVP_PKEY_CTX; optype: TIdC_INT; cmd: TIdC_INT; md: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_CTX_md';
 function EVP_PKEY_CTX_get_operation(ctx: PEVP_PKEY_CTX): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_CTX_get_operation';
-function EVP_PKEY_CTX_set0_keygen_info(ctx: PEVP_PKEY_CTX; dat: PIdC_INT; datlen: TIdC_INT): void; cdecl external CLibCrypto name 'EVP_PKEY_CTX_set0_keygen_info';
+procedure EVP_PKEY_CTX_set0_keygen_info(ctx: PEVP_PKEY_CTX; dat: PIdC_INT; datlen: TIdC_INT); cdecl external CLibCrypto name 'EVP_PKEY_CTX_set0_keygen_info';
 function EVP_PKEY_new_mac_key(_type: TIdC_INT; e: PENGINE; key: PIdAnsiChar; keylen: TIdC_INT): PEVP_PKEY; cdecl external CLibCrypto name 'EVP_PKEY_new_mac_key';
 function EVP_PKEY_new_raw_private_key_ex(libctx: POSSL_LIB_CTX; keytype: PIdAnsiChar; propq: PIdAnsiChar; priv: PIdAnsiChar; len: TIdC_SIZET): PEVP_PKEY; cdecl external CLibCrypto name 'EVP_PKEY_new_raw_private_key_ex';
 function EVP_PKEY_new_raw_private_key(_type: TIdC_INT; e: PENGINE; priv: PIdAnsiChar; len: TIdC_SIZET): PEVP_PKEY; cdecl external CLibCrypto name 'EVP_PKEY_new_raw_private_key';
@@ -4689,43 +4674,43 @@ function EVP_PKEY_new_raw_public_key(_type: TIdC_INT; e: PENGINE; pub: PIdAnsiCh
 function EVP_PKEY_get_raw_private_key(pkey: PEVP_PKEY; priv: PIdAnsiChar; len: PIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_get_raw_private_key';
 function EVP_PKEY_get_raw_public_key(pkey: PEVP_PKEY; pub: PIdAnsiChar; len: PIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_get_raw_public_key';
 function EVP_PKEY_new_CMAC_key(e: PENGINE; priv: PIdAnsiChar; len: TIdC_SIZET; cipher: PEVP_CIPHER): PEVP_PKEY; cdecl external CLibCrypto name 'EVP_PKEY_new_CMAC_key';
-function EVP_PKEY_CTX_set_data(ctx: PEVP_PKEY_CTX; data: Pointer): void; cdecl external CLibCrypto name 'EVP_PKEY_CTX_set_data';
+procedure EVP_PKEY_CTX_set_data(ctx: PEVP_PKEY_CTX; data: Pointer); cdecl external CLibCrypto name 'EVP_PKEY_CTX_set_data';
 function EVP_PKEY_CTX_get_data(ctx: PEVP_PKEY_CTX): Pointer; cdecl external CLibCrypto name 'EVP_PKEY_CTX_get_data';
 function EVP_PKEY_CTX_get0_pkey(ctx: PEVP_PKEY_CTX): PEVP_PKEY; cdecl external CLibCrypto name 'EVP_PKEY_CTX_get0_pkey';
 function EVP_PKEY_CTX_get0_peerkey(ctx: PEVP_PKEY_CTX): PEVP_PKEY; cdecl external CLibCrypto name 'EVP_PKEY_CTX_get0_peerkey';
-function EVP_PKEY_CTX_set_app_data(ctx: PEVP_PKEY_CTX; data: Pointer): void; cdecl external CLibCrypto name 'EVP_PKEY_CTX_set_app_data';
+procedure EVP_PKEY_CTX_set_app_data(ctx: PEVP_PKEY_CTX; data: Pointer); cdecl external CLibCrypto name 'EVP_PKEY_CTX_set_app_data';
 function EVP_PKEY_CTX_get_app_data(ctx: PEVP_PKEY_CTX): Pointer; cdecl external CLibCrypto name 'EVP_PKEY_CTX_get_app_data';
 function EVP_PKEY_CTX_set_signature(pctx: PEVP_PKEY_CTX; sig: PIdAnsiChar; siglen: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_CTX_set_signature';
-function EVP_SIGNATURE_free(signature: PEVP_SIGNATURE): void; cdecl external CLibCrypto name 'EVP_SIGNATURE_free';
+procedure EVP_SIGNATURE_free(signature: PEVP_SIGNATURE); cdecl external CLibCrypto name 'EVP_SIGNATURE_free';
 function EVP_SIGNATURE_up_ref(signature: PEVP_SIGNATURE): TIdC_INT; cdecl external CLibCrypto name 'EVP_SIGNATURE_up_ref';
 function EVP_SIGNATURE_get0_provider(signature: PEVP_SIGNATURE): POSSL_PROVIDER; cdecl external CLibCrypto name 'EVP_SIGNATURE_get0_provider';
 function EVP_SIGNATURE_fetch(ctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_SIGNATURE; cdecl external CLibCrypto name 'EVP_SIGNATURE_fetch';
 function EVP_SIGNATURE_is_a(signature: PEVP_SIGNATURE; name: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'EVP_SIGNATURE_is_a';
 function EVP_SIGNATURE_get0_name(signature: PEVP_SIGNATURE): PIdAnsiChar; cdecl external CLibCrypto name 'EVP_SIGNATURE_get0_name';
 function EVP_SIGNATURE_get0_description(signature: PEVP_SIGNATURE): PIdAnsiChar; cdecl external CLibCrypto name 'EVP_SIGNATURE_get0_description';
-function EVP_SIGNATURE_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_SIGNATURE_do_all_provided_fn_cb; data: Pointer): void; cdecl external CLibCrypto name 'EVP_SIGNATURE_do_all_provided';
+procedure EVP_SIGNATURE_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_SIGNATURE_do_all_provided_fn_cb; data: Pointer); cdecl external CLibCrypto name 'EVP_SIGNATURE_do_all_provided';
 function EVP_SIGNATURE_names_do_all(signature: PEVP_SIGNATURE; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl external CLibCrypto name 'EVP_SIGNATURE_names_do_all';
 function EVP_SIGNATURE_gettable_ctx_params(sig: PEVP_SIGNATURE): POSSL_PARAM; cdecl external CLibCrypto name 'EVP_SIGNATURE_gettable_ctx_params';
 function EVP_SIGNATURE_settable_ctx_params(sig: PEVP_SIGNATURE): POSSL_PARAM; cdecl external CLibCrypto name 'EVP_SIGNATURE_settable_ctx_params';
-function EVP_ASYM_CIPHER_free(cipher: PEVP_ASYM_CIPHER): void; cdecl external CLibCrypto name 'EVP_ASYM_CIPHER_free';
+procedure EVP_ASYM_CIPHER_free(cipher: PEVP_ASYM_CIPHER); cdecl external CLibCrypto name 'EVP_ASYM_CIPHER_free';
 function EVP_ASYM_CIPHER_up_ref(cipher: PEVP_ASYM_CIPHER): TIdC_INT; cdecl external CLibCrypto name 'EVP_ASYM_CIPHER_up_ref';
 function EVP_ASYM_CIPHER_get0_provider(cipher: PEVP_ASYM_CIPHER): POSSL_PROVIDER; cdecl external CLibCrypto name 'EVP_ASYM_CIPHER_get0_provider';
 function EVP_ASYM_CIPHER_fetch(ctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_ASYM_CIPHER; cdecl external CLibCrypto name 'EVP_ASYM_CIPHER_fetch';
 function EVP_ASYM_CIPHER_is_a(cipher: PEVP_ASYM_CIPHER; name: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'EVP_ASYM_CIPHER_is_a';
 function EVP_ASYM_CIPHER_get0_name(cipher: PEVP_ASYM_CIPHER): PIdAnsiChar; cdecl external CLibCrypto name 'EVP_ASYM_CIPHER_get0_name';
 function EVP_ASYM_CIPHER_get0_description(cipher: PEVP_ASYM_CIPHER): PIdAnsiChar; cdecl external CLibCrypto name 'EVP_ASYM_CIPHER_get0_description';
-function EVP_ASYM_CIPHER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_ASYM_CIPHER_do_all_provided_fn_cb; arg: Pointer): void; cdecl external CLibCrypto name 'EVP_ASYM_CIPHER_do_all_provided';
+procedure EVP_ASYM_CIPHER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_ASYM_CIPHER_do_all_provided_fn_cb; arg: Pointer); cdecl external CLibCrypto name 'EVP_ASYM_CIPHER_do_all_provided';
 function EVP_ASYM_CIPHER_names_do_all(cipher: PEVP_ASYM_CIPHER; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl external CLibCrypto name 'EVP_ASYM_CIPHER_names_do_all';
 function EVP_ASYM_CIPHER_gettable_ctx_params(ciph: PEVP_ASYM_CIPHER): POSSL_PARAM; cdecl external CLibCrypto name 'EVP_ASYM_CIPHER_gettable_ctx_params';
 function EVP_ASYM_CIPHER_settable_ctx_params(ciph: PEVP_ASYM_CIPHER): POSSL_PARAM; cdecl external CLibCrypto name 'EVP_ASYM_CIPHER_settable_ctx_params';
-function EVP_KEM_free(wrap: PEVP_KEM): void; cdecl external CLibCrypto name 'EVP_KEM_free';
+procedure EVP_KEM_free(wrap: PEVP_KEM); cdecl external CLibCrypto name 'EVP_KEM_free';
 function EVP_KEM_up_ref(wrap: PEVP_KEM): TIdC_INT; cdecl external CLibCrypto name 'EVP_KEM_up_ref';
 function EVP_KEM_get0_provider(wrap: PEVP_KEM): POSSL_PROVIDER; cdecl external CLibCrypto name 'EVP_KEM_get0_provider';
 function EVP_KEM_fetch(ctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_KEM; cdecl external CLibCrypto name 'EVP_KEM_fetch';
 function EVP_KEM_is_a(wrap: PEVP_KEM; name: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'EVP_KEM_is_a';
 function EVP_KEM_get0_name(wrap: PEVP_KEM): PIdAnsiChar; cdecl external CLibCrypto name 'EVP_KEM_get0_name';
 function EVP_KEM_get0_description(wrap: PEVP_KEM): PIdAnsiChar; cdecl external CLibCrypto name 'EVP_KEM_get0_description';
-function EVP_KEM_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KEM_do_all_provided_fn_cb; arg: Pointer): void; cdecl external CLibCrypto name 'EVP_KEM_do_all_provided';
+procedure EVP_KEM_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KEM_do_all_provided_fn_cb; arg: Pointer); cdecl external CLibCrypto name 'EVP_KEM_do_all_provided';
 function EVP_KEM_names_do_all(wrap: PEVP_KEM; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl external CLibCrypto name 'EVP_KEM_names_do_all';
 function EVP_KEM_gettable_ctx_params(kem: PEVP_KEM): POSSL_PARAM; cdecl external CLibCrypto name 'EVP_KEM_gettable_ctx_params';
 function EVP_KEM_settable_ctx_params(kem: PEVP_KEM): POSSL_PARAM; cdecl external CLibCrypto name 'EVP_KEM_settable_ctx_params';
@@ -4801,61 +4786,61 @@ function EVP_PKEY_private_check(ctx: PEVP_PKEY_CTX): TIdC_INT; cdecl external CL
 function EVP_PKEY_pairwise_check(ctx: PEVP_PKEY_CTX): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_pairwise_check';
 function EVP_PKEY_set_ex_data(key: PEVP_PKEY; idx: TIdC_INT; arg: Pointer): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_set_ex_data';
 function EVP_PKEY_get_ex_data(key: PEVP_PKEY; idx: TIdC_INT): Pointer; cdecl external CLibCrypto name 'EVP_PKEY_get_ex_data';
-function EVP_PKEY_CTX_set_cb(ctx: PEVP_PKEY_CTX; cb: TEVP_PKEY_gen_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_CTX_set_cb';
+procedure EVP_PKEY_CTX_set_cb(ctx: PEVP_PKEY_CTX; cb: TEVP_PKEY_gen_cb); cdecl external CLibCrypto name 'EVP_PKEY_CTX_set_cb';
 function EVP_PKEY_CTX_get_cb(ctx: PEVP_PKEY_CTX): TEVP_PKEY_gen_cb; cdecl external CLibCrypto name 'EVP_PKEY_CTX_get_cb';
 function EVP_PKEY_CTX_get_keygen_info(ctx: PEVP_PKEY_CTX; idx: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_CTX_get_keygen_info';
-function EVP_PKEY_meth_set_init(pmeth: PEVP_PKEY_METHOD; init: TEVP_PKEY_gen_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_set_init';
-function EVP_PKEY_meth_set_copy(pmeth: PEVP_PKEY_METHOD; copy: TEVP_PKEY_meth_set_copy_copy_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_set_copy';
-function EVP_PKEY_meth_set_cleanup(pmeth: PEVP_PKEY_METHOD; cleanup: TEVP_PKEY_meth_set_cleanup_cleanup_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_set_cleanup';
-function EVP_PKEY_meth_set_paramgen(pmeth: PEVP_PKEY_METHOD; paramgen_init: TEVP_PKEY_gen_cb; paramgen: TEVP_PKEY_meth_set_paramgen_paramgen_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_set_paramgen';
-function EVP_PKEY_meth_set_keygen(pmeth: PEVP_PKEY_METHOD; keygen_init: TEVP_PKEY_gen_cb; keygen: TEVP_PKEY_meth_set_paramgen_paramgen_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_set_keygen';
-function EVP_PKEY_meth_set_sign(pmeth: PEVP_PKEY_METHOD; sign_init: TEVP_PKEY_gen_cb; sign: TEVP_PKEY_meth_set_sign_sign_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_set_sign';
-function EVP_PKEY_meth_set_verify(pmeth: PEVP_PKEY_METHOD; verify_init: TEVP_PKEY_gen_cb; verify: TEVP_PKEY_meth_set_verify_verify_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_set_verify';
-function EVP_PKEY_meth_set_verify_recover(pmeth: PEVP_PKEY_METHOD; verify_recover_init: TEVP_PKEY_gen_cb; verify_recover: TEVP_PKEY_meth_set_sign_sign_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_set_verify_recover';
-function EVP_PKEY_meth_set_signctx(pmeth: PEVP_PKEY_METHOD; signctx_init: TEVP_PKEY_meth_set_signctx_signctx_init_cb; signctx: TEVP_PKEY_meth_set_signctx_signctx_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_set_signctx';
-function EVP_PKEY_meth_set_verifyctx(pmeth: PEVP_PKEY_METHOD; verifyctx_init: TEVP_PKEY_meth_set_signctx_signctx_init_cb; verifyctx: TEVP_PKEY_meth_set_verifyctx_verifyctx_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_set_verifyctx';
-function EVP_PKEY_meth_set_encrypt(pmeth: PEVP_PKEY_METHOD; encrypt_init: TEVP_PKEY_gen_cb; encryptfn: TEVP_PKEY_meth_set_sign_sign_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_set_encrypt';
-function EVP_PKEY_meth_set_decrypt(pmeth: PEVP_PKEY_METHOD; decrypt_init: TEVP_PKEY_gen_cb; decrypt: TEVP_PKEY_meth_set_sign_sign_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_set_decrypt';
-function EVP_PKEY_meth_set_derive(pmeth: PEVP_PKEY_METHOD; derive_init: TEVP_PKEY_gen_cb; derive: TEVP_PKEY_meth_set_derive_derive_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_set_derive';
-function EVP_PKEY_meth_set_ctrl(pmeth: PEVP_PKEY_METHOD; ctrl: TEVP_PKEY_meth_set_ctrl_ctrl_cb; ctrl_str: TEVP_PKEY_meth_set_ctrl_ctrl_str_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_set_ctrl';
-function EVP_PKEY_meth_set_digestsign(pmeth: PEVP_PKEY_METHOD; digestsign: TEVP_PKEY_meth_set_digestsign_digestsign_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_set_digestsign';
-function EVP_PKEY_meth_set_digestverify(pmeth: PEVP_PKEY_METHOD; digestverify: TEVP_PKEY_meth_set_digestverify_digestverify_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_set_digestverify';
-function EVP_PKEY_meth_set_check(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_set_check';
-function EVP_PKEY_meth_set_public_check(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_set_public_check';
-function EVP_PKEY_meth_set_param_check(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_set_param_check';
-function EVP_PKEY_meth_set_digest_custom(pmeth: PEVP_PKEY_METHOD; digest_custom: TEVP_PKEY_meth_set_signctx_signctx_init_cb): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_set_digest_custom';
-function EVP_PKEY_meth_get_init(pmeth: PEVP_PKEY_METHOD; pinit: PPIdC_INT): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_get_init';
-function EVP_PKEY_meth_get_copy(pmeth: PEVP_PKEY_METHOD; pcopy: PPIdC_INT): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_get_copy';
-function EVP_PKEY_meth_get_cleanup(pmeth: PEVP_PKEY_METHOD; pcleanup: PPointer): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_get_cleanup';
-function EVP_PKEY_meth_get_paramgen(pmeth: PEVP_PKEY_METHOD; pparamgen_init: PPIdC_INT; pparamgen: PPIdC_INT): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_get_paramgen';
-function EVP_PKEY_meth_get_keygen(pmeth: PEVP_PKEY_METHOD; pkeygen_init: PPIdC_INT; pkeygen: PPIdC_INT): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_get_keygen';
-function EVP_PKEY_meth_get_sign(pmeth: PEVP_PKEY_METHOD; psign_init: PPIdC_INT; psign: PPIdC_INT): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_get_sign';
-function EVP_PKEY_meth_get_verify(pmeth: PEVP_PKEY_METHOD; pverify_init: PPIdC_INT; pverify: PPIdC_INT): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_get_verify';
-function EVP_PKEY_meth_get_verify_recover(pmeth: PEVP_PKEY_METHOD; pverify_recover_init: PPIdC_INT; pverify_recover: PPIdC_INT): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_get_verify_recover';
-function EVP_PKEY_meth_get_signctx(pmeth: PEVP_PKEY_METHOD; psignctx_init: PPIdC_INT; psignctx: PPIdC_INT): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_get_signctx';
-function EVP_PKEY_meth_get_verifyctx(pmeth: PEVP_PKEY_METHOD; pverifyctx_init: PPIdC_INT; pverifyctx: PPIdC_INT): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_get_verifyctx';
-function EVP_PKEY_meth_get_encrypt(pmeth: PEVP_PKEY_METHOD; pencrypt_init: PPIdC_INT; pencryptfn: PPIdC_INT): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_get_encrypt';
-function EVP_PKEY_meth_get_decrypt(pmeth: PEVP_PKEY_METHOD; pdecrypt_init: PPIdC_INT; pdecrypt: PPIdC_INT): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_get_decrypt';
-function EVP_PKEY_meth_get_derive(pmeth: PEVP_PKEY_METHOD; pderive_init: PPIdC_INT; pderive: PPIdC_INT): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_get_derive';
-function EVP_PKEY_meth_get_ctrl(pmeth: PEVP_PKEY_METHOD; pctrl: PPIdC_INT; pctrl_str: PPIdC_INT): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_get_ctrl';
-function EVP_PKEY_meth_get_digestsign(pmeth: PEVP_PKEY_METHOD; digestsign: PPIdC_INT): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_get_digestsign';
-function EVP_PKEY_meth_get_digestverify(pmeth: PEVP_PKEY_METHOD; digestverify: PPIdC_INT): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_get_digestverify';
-function EVP_PKEY_meth_get_check(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_get_check';
-function EVP_PKEY_meth_get_public_check(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_get_public_check';
-function EVP_PKEY_meth_get_param_check(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_get_param_check';
-function EVP_PKEY_meth_get_digest_custom(pmeth: PEVP_PKEY_METHOD; pdigest_custom: PPIdC_INT): void; cdecl external CLibCrypto name 'EVP_PKEY_meth_get_digest_custom';
-function EVP_KEYEXCH_free(exchange: PEVP_KEYEXCH): void; cdecl external CLibCrypto name 'EVP_KEYEXCH_free';
+procedure EVP_PKEY_meth_set_init(pmeth: PEVP_PKEY_METHOD; init: TEVP_PKEY_gen_cb); cdecl external CLibCrypto name 'EVP_PKEY_meth_set_init';
+procedure EVP_PKEY_meth_set_copy(pmeth: PEVP_PKEY_METHOD; copy: TEVP_PKEY_meth_set_copy_copy_cb); cdecl external CLibCrypto name 'EVP_PKEY_meth_set_copy';
+procedure EVP_PKEY_meth_set_cleanup(pmeth: PEVP_PKEY_METHOD; cleanup: TEVP_PKEY_meth_set_cleanup_cleanup_cb); cdecl external CLibCrypto name 'EVP_PKEY_meth_set_cleanup';
+procedure EVP_PKEY_meth_set_paramgen(pmeth: PEVP_PKEY_METHOD; paramgen_init: TEVP_PKEY_gen_cb; paramgen: TEVP_PKEY_meth_set_paramgen_paramgen_cb); cdecl external CLibCrypto name 'EVP_PKEY_meth_set_paramgen';
+procedure EVP_PKEY_meth_set_keygen(pmeth: PEVP_PKEY_METHOD; keygen_init: TEVP_PKEY_gen_cb; keygen: TEVP_PKEY_meth_set_paramgen_paramgen_cb); cdecl external CLibCrypto name 'EVP_PKEY_meth_set_keygen';
+procedure EVP_PKEY_meth_set_sign(pmeth: PEVP_PKEY_METHOD; sign_init: TEVP_PKEY_gen_cb; sign: TEVP_PKEY_meth_set_sign_sign_cb); cdecl external CLibCrypto name 'EVP_PKEY_meth_set_sign';
+procedure EVP_PKEY_meth_set_verify(pmeth: PEVP_PKEY_METHOD; verify_init: TEVP_PKEY_gen_cb; verify: TEVP_PKEY_meth_set_verify_verify_cb); cdecl external CLibCrypto name 'EVP_PKEY_meth_set_verify';
+procedure EVP_PKEY_meth_set_verify_recover(pmeth: PEVP_PKEY_METHOD; verify_recover_init: TEVP_PKEY_gen_cb; verify_recover: TEVP_PKEY_meth_set_sign_sign_cb); cdecl external CLibCrypto name 'EVP_PKEY_meth_set_verify_recover';
+procedure EVP_PKEY_meth_set_signctx(pmeth: PEVP_PKEY_METHOD; signctx_init: TEVP_PKEY_meth_set_signctx_signctx_init_cb; signctx: TEVP_PKEY_meth_set_signctx_signctx_cb); cdecl external CLibCrypto name 'EVP_PKEY_meth_set_signctx';
+procedure EVP_PKEY_meth_set_verifyctx(pmeth: PEVP_PKEY_METHOD; verifyctx_init: TEVP_PKEY_meth_set_signctx_signctx_init_cb; verifyctx: TEVP_PKEY_meth_set_verifyctx_verifyctx_cb); cdecl external CLibCrypto name 'EVP_PKEY_meth_set_verifyctx';
+procedure EVP_PKEY_meth_set_encrypt(pmeth: PEVP_PKEY_METHOD; encrypt_init: TEVP_PKEY_gen_cb; encryptfn: TEVP_PKEY_meth_set_sign_sign_cb); cdecl external CLibCrypto name 'EVP_PKEY_meth_set_encrypt';
+procedure EVP_PKEY_meth_set_decrypt(pmeth: PEVP_PKEY_METHOD; decrypt_init: TEVP_PKEY_gen_cb; decrypt: TEVP_PKEY_meth_set_sign_sign_cb); cdecl external CLibCrypto name 'EVP_PKEY_meth_set_decrypt';
+procedure EVP_PKEY_meth_set_derive(pmeth: PEVP_PKEY_METHOD; derive_init: TEVP_PKEY_gen_cb; derive: TEVP_PKEY_meth_set_derive_derive_cb); cdecl external CLibCrypto name 'EVP_PKEY_meth_set_derive';
+procedure EVP_PKEY_meth_set_ctrl(pmeth: PEVP_PKEY_METHOD; ctrl: TEVP_PKEY_meth_set_ctrl_ctrl_cb; ctrl_str: TEVP_PKEY_meth_set_ctrl_ctrl_str_cb); cdecl external CLibCrypto name 'EVP_PKEY_meth_set_ctrl';
+procedure EVP_PKEY_meth_set_digestsign(pmeth: PEVP_PKEY_METHOD; digestsign: TEVP_PKEY_meth_set_digestsign_digestsign_cb); cdecl external CLibCrypto name 'EVP_PKEY_meth_set_digestsign';
+procedure EVP_PKEY_meth_set_digestverify(pmeth: PEVP_PKEY_METHOD; digestverify: TEVP_PKEY_meth_set_digestverify_digestverify_cb); cdecl external CLibCrypto name 'EVP_PKEY_meth_set_digestverify';
+procedure EVP_PKEY_meth_set_check(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl external CLibCrypto name 'EVP_PKEY_meth_set_check';
+procedure EVP_PKEY_meth_set_public_check(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl external CLibCrypto name 'EVP_PKEY_meth_set_public_check';
+procedure EVP_PKEY_meth_set_param_check(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl external CLibCrypto name 'EVP_PKEY_meth_set_param_check';
+procedure EVP_PKEY_meth_set_digest_custom(pmeth: PEVP_PKEY_METHOD; digest_custom: TEVP_PKEY_meth_set_signctx_signctx_init_cb); cdecl external CLibCrypto name 'EVP_PKEY_meth_set_digest_custom';
+procedure EVP_PKEY_meth_get_init(pmeth: PEVP_PKEY_METHOD; pinit: PPIdC_INT); cdecl external CLibCrypto name 'EVP_PKEY_meth_get_init';
+procedure EVP_PKEY_meth_get_copy(pmeth: PEVP_PKEY_METHOD; pcopy: PPIdC_INT); cdecl external CLibCrypto name 'EVP_PKEY_meth_get_copy';
+procedure EVP_PKEY_meth_get_cleanup(pmeth: PEVP_PKEY_METHOD; pcleanup: PPointer); cdecl external CLibCrypto name 'EVP_PKEY_meth_get_cleanup';
+procedure EVP_PKEY_meth_get_paramgen(pmeth: PEVP_PKEY_METHOD; pparamgen_init: PPIdC_INT; pparamgen: PPIdC_INT); cdecl external CLibCrypto name 'EVP_PKEY_meth_get_paramgen';
+procedure EVP_PKEY_meth_get_keygen(pmeth: PEVP_PKEY_METHOD; pkeygen_init: PPIdC_INT; pkeygen: PPIdC_INT); cdecl external CLibCrypto name 'EVP_PKEY_meth_get_keygen';
+procedure EVP_PKEY_meth_get_sign(pmeth: PEVP_PKEY_METHOD; psign_init: PPIdC_INT; psign: PPIdC_INT); cdecl external CLibCrypto name 'EVP_PKEY_meth_get_sign';
+procedure EVP_PKEY_meth_get_verify(pmeth: PEVP_PKEY_METHOD; pverify_init: PPIdC_INT; pverify: PPIdC_INT); cdecl external CLibCrypto name 'EVP_PKEY_meth_get_verify';
+procedure EVP_PKEY_meth_get_verify_recover(pmeth: PEVP_PKEY_METHOD; pverify_recover_init: PPIdC_INT; pverify_recover: PPIdC_INT); cdecl external CLibCrypto name 'EVP_PKEY_meth_get_verify_recover';
+procedure EVP_PKEY_meth_get_signctx(pmeth: PEVP_PKEY_METHOD; psignctx_init: PPIdC_INT; psignctx: PPIdC_INT); cdecl external CLibCrypto name 'EVP_PKEY_meth_get_signctx';
+procedure EVP_PKEY_meth_get_verifyctx(pmeth: PEVP_PKEY_METHOD; pverifyctx_init: PPIdC_INT; pverifyctx: PPIdC_INT); cdecl external CLibCrypto name 'EVP_PKEY_meth_get_verifyctx';
+procedure EVP_PKEY_meth_get_encrypt(pmeth: PEVP_PKEY_METHOD; pencrypt_init: PPIdC_INT; pencryptfn: PPIdC_INT); cdecl external CLibCrypto name 'EVP_PKEY_meth_get_encrypt';
+procedure EVP_PKEY_meth_get_decrypt(pmeth: PEVP_PKEY_METHOD; pdecrypt_init: PPIdC_INT; pdecrypt: PPIdC_INT); cdecl external CLibCrypto name 'EVP_PKEY_meth_get_decrypt';
+procedure EVP_PKEY_meth_get_derive(pmeth: PEVP_PKEY_METHOD; pderive_init: PPIdC_INT; pderive: PPIdC_INT); cdecl external CLibCrypto name 'EVP_PKEY_meth_get_derive';
+procedure EVP_PKEY_meth_get_ctrl(pmeth: PEVP_PKEY_METHOD; pctrl: PPIdC_INT; pctrl_str: PPIdC_INT); cdecl external CLibCrypto name 'EVP_PKEY_meth_get_ctrl';
+procedure EVP_PKEY_meth_get_digestsign(pmeth: PEVP_PKEY_METHOD; digestsign: PPIdC_INT); cdecl external CLibCrypto name 'EVP_PKEY_meth_get_digestsign';
+procedure EVP_PKEY_meth_get_digestverify(pmeth: PEVP_PKEY_METHOD; digestverify: PPIdC_INT); cdecl external CLibCrypto name 'EVP_PKEY_meth_get_digestverify';
+procedure EVP_PKEY_meth_get_check(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT); cdecl external CLibCrypto name 'EVP_PKEY_meth_get_check';
+procedure EVP_PKEY_meth_get_public_check(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT); cdecl external CLibCrypto name 'EVP_PKEY_meth_get_public_check';
+procedure EVP_PKEY_meth_get_param_check(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT); cdecl external CLibCrypto name 'EVP_PKEY_meth_get_param_check';
+procedure EVP_PKEY_meth_get_digest_custom(pmeth: PEVP_PKEY_METHOD; pdigest_custom: PPIdC_INT); cdecl external CLibCrypto name 'EVP_PKEY_meth_get_digest_custom';
+procedure EVP_KEYEXCH_free(exchange: PEVP_KEYEXCH); cdecl external CLibCrypto name 'EVP_KEYEXCH_free';
 function EVP_KEYEXCH_up_ref(exchange: PEVP_KEYEXCH): TIdC_INT; cdecl external CLibCrypto name 'EVP_KEYEXCH_up_ref';
 function EVP_KEYEXCH_fetch(ctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_KEYEXCH; cdecl external CLibCrypto name 'EVP_KEYEXCH_fetch';
 function EVP_KEYEXCH_get0_provider(exchange: PEVP_KEYEXCH): POSSL_PROVIDER; cdecl external CLibCrypto name 'EVP_KEYEXCH_get0_provider';
 function EVP_KEYEXCH_is_a(keyexch: PEVP_KEYEXCH; name: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'EVP_KEYEXCH_is_a';
 function EVP_KEYEXCH_get0_name(keyexch: PEVP_KEYEXCH): PIdAnsiChar; cdecl external CLibCrypto name 'EVP_KEYEXCH_get0_name';
 function EVP_KEYEXCH_get0_description(keyexch: PEVP_KEYEXCH): PIdAnsiChar; cdecl external CLibCrypto name 'EVP_KEYEXCH_get0_description';
-function EVP_KEYEXCH_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KEYEXCH_do_all_provided_fn_cb; data: Pointer): void; cdecl external CLibCrypto name 'EVP_KEYEXCH_do_all_provided';
+procedure EVP_KEYEXCH_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KEYEXCH_do_all_provided_fn_cb; data: Pointer); cdecl external CLibCrypto name 'EVP_KEYEXCH_do_all_provided';
 function EVP_KEYEXCH_names_do_all(keyexch: PEVP_KEYEXCH; fn: TEVP_MD_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl external CLibCrypto name 'EVP_KEYEXCH_names_do_all';
 function EVP_KEYEXCH_gettable_ctx_params(keyexch: PEVP_KEYEXCH): POSSL_PARAM; cdecl external CLibCrypto name 'EVP_KEYEXCH_gettable_ctx_params';
 function EVP_KEYEXCH_settable_ctx_params(keyexch: PEVP_KEYEXCH): POSSL_PARAM; cdecl external CLibCrypto name 'EVP_KEYEXCH_settable_ctx_params';
-function EVP_add_alg_module: void; cdecl external CLibCrypto name 'EVP_add_alg_module';
+procedure EVP_add_alg_module; cdecl external CLibCrypto name 'EVP_add_alg_module';
 function EVP_PKEY_CTX_set_group_name(ctx: PEVP_PKEY_CTX; name: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_CTX_set_group_name';
 function EVP_PKEY_CTX_get_group_name(ctx: PEVP_PKEY_CTX; name: PIdAnsiChar; namelen: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_CTX_get_group_name';
 function EVP_PKEY_get_group_name(pkey: PEVP_PKEY; name: PIdAnsiChar; name_sz: TIdC_SIZET; gname_len: PIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_get_group_name';
@@ -4871,7 +4856,7 @@ function EVP_SKEY_get0_raw_key(skey: PEVP_SKEY; key: PPIdAnsiChar; len: PIdC_SIZ
 function EVP_SKEY_get0_key_id(skey: PEVP_SKEY): PIdAnsiChar; cdecl external CLibCrypto name 'EVP_SKEY_get0_key_id';
 function EVP_SKEY_export(skey: PEVP_SKEY; selection: TIdC_INT; export_cb: TEVP_PKEY_export_export_cb_cb; export_cbarg: Pointer): TIdC_INT; cdecl external CLibCrypto name 'EVP_SKEY_export';
 function EVP_SKEY_up_ref(skey: PEVP_SKEY): TIdC_INT; cdecl external CLibCrypto name 'EVP_SKEY_up_ref';
-function EVP_SKEY_free(skey: PEVP_SKEY): void; cdecl external CLibCrypto name 'EVP_SKEY_free';
+procedure EVP_SKEY_free(skey: PEVP_SKEY); cdecl external CLibCrypto name 'EVP_SKEY_free';
 function EVP_SKEY_get0_skeymgmt_name(skey: PEVP_SKEY): PIdAnsiChar; cdecl external CLibCrypto name 'EVP_SKEY_get0_skeymgmt_name';
 function EVP_SKEY_get0_provider_name(skey: PEVP_SKEY): PIdAnsiChar; cdecl external CLibCrypto name 'EVP_SKEY_get0_provider_name';
 function EVP_SKEY_to_provider(skey: PEVP_SKEY; libctx: POSSL_LIB_CTX; prov: POSSL_PROVIDER; propquery: PIdAnsiChar): PEVP_SKEY; cdecl external CLibCrypto name 'EVP_SKEY_to_provider';
@@ -8317,7 +8302,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MD_meth_dup_procname);
 end;
 
-function ERR_EVP_MD_meth_free(md: PEVP_MD): void; cdecl
+procedure ERR_EVP_MD_meth_free(md: PEVP_MD); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MD_meth_free_procname);
 end;
@@ -8432,7 +8417,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_CIPHER_meth_dup_procname);
 end;
 
-function ERR_EVP_CIPHER_meth_free(cipher: PEVP_CIPHER): void; cdecl
+procedure ERR_EVP_CIPHER_meth_free(cipher: PEVP_CIPHER); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_CIPHER_meth_free_procname);
 end;
@@ -8587,7 +8572,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MD_CTX_update_fn_procname);
 end;
 
-function ERR_EVP_MD_CTX_set_update_fn(ctx: PEVP_MD_CTX; update: TEVP_MD_meth_set_update_update_cb): void; cdecl
+procedure ERR_EVP_MD_CTX_set_update_fn(ctx: PEVP_MD_CTX; update: TEVP_MD_meth_set_update_update_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MD_CTX_set_update_fn_procname);
 end;
@@ -8602,7 +8587,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MD_CTX_get_pkey_ctx_procname);
 end;
 
-function ERR_EVP_MD_CTX_set_pkey_ctx(ctx: PEVP_MD_CTX; pctx: PEVP_PKEY_CTX): void; cdecl
+procedure ERR_EVP_MD_CTX_set_pkey_ctx(ctx: PEVP_MD_CTX; pctx: PEVP_PKEY_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MD_CTX_set_pkey_ctx_procname);
 end;
@@ -8692,7 +8677,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_CIPHER_up_ref_procname);
 end;
 
-function ERR_EVP_CIPHER_free(cipher: PEVP_CIPHER): void; cdecl
+procedure ERR_EVP_CIPHER_free(cipher: PEVP_CIPHER); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_CIPHER_free_procname);
 end;
@@ -8797,7 +8782,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_CIPHER_CTX_get_app_data_procname);
 end;
 
-function ERR_EVP_CIPHER_CTX_set_app_data(ctx: PEVP_CIPHER_CTX; data: Pointer): void; cdecl
+procedure ERR_EVP_CIPHER_CTX_set_app_data(ctx: PEVP_CIPHER_CTX; data: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_CIPHER_CTX_set_app_data_procname);
 end;
@@ -8872,7 +8857,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MD_CTX_reset_procname);
 end;
 
-function ERR_EVP_MD_CTX_free(ctx: PEVP_MD_CTX): void; cdecl
+procedure ERR_EVP_MD_CTX_free(ctx: PEVP_MD_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MD_CTX_free_procname);
 end;
@@ -8887,12 +8872,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MD_CTX_copy_ex_procname);
 end;
 
-function ERR_EVP_MD_CTX_set_flags(ctx: PEVP_MD_CTX; flags: TIdC_INT): void; cdecl
+procedure ERR_EVP_MD_CTX_set_flags(ctx: PEVP_MD_CTX; flags: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MD_CTX_set_flags_procname);
 end;
 
-function ERR_EVP_MD_CTX_clear_flags(ctx: PEVP_MD_CTX; flags: TIdC_INT): void; cdecl
+procedure ERR_EVP_MD_CTX_clear_flags(ctx: PEVP_MD_CTX; flags: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MD_CTX_clear_flags_procname);
 end;
@@ -8967,7 +8952,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MD_up_ref_procname);
 end;
 
-function ERR_EVP_MD_free(md: PEVP_MD): void; cdecl
+procedure ERR_EVP_MD_free(md: PEVP_MD); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MD_free_procname);
 end;
@@ -8982,7 +8967,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_read_pw_string_min_procname);
 end;
 
-function ERR_EVP_set_pw_prompt(prompt: PIdAnsiChar): void; cdecl
+procedure ERR_EVP_set_pw_prompt(prompt: PIdAnsiChar); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_set_pw_prompt_procname);
 end;
@@ -8997,12 +8982,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_BytesToKey_procname);
 end;
 
-function ERR_EVP_CIPHER_CTX_set_flags(ctx: PEVP_CIPHER_CTX; flags: TIdC_INT): void; cdecl
+procedure ERR_EVP_CIPHER_CTX_set_flags(ctx: PEVP_CIPHER_CTX; flags: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_CIPHER_CTX_set_flags_procname);
 end;
 
-function ERR_EVP_CIPHER_CTX_clear_flags(ctx: PEVP_CIPHER_CTX; flags: TIdC_INT): void; cdecl
+procedure ERR_EVP_CIPHER_CTX_clear_flags(ctx: PEVP_CIPHER_CTX; flags: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_CIPHER_CTX_clear_flags_procname);
 end;
@@ -9222,7 +9207,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_ENCODE_CTX_new_procname);
 end;
 
-function ERR_EVP_ENCODE_CTX_free(ctx: PEVP_ENCODE_CTX): void; cdecl
+procedure ERR_EVP_ENCODE_CTX_free(ctx: PEVP_ENCODE_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_ENCODE_CTX_free_procname);
 end;
@@ -9237,7 +9222,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_ENCODE_CTX_num_procname);
 end;
 
-function ERR_EVP_EncodeInit(ctx: PEVP_ENCODE_CTX): void; cdecl
+procedure ERR_EVP_EncodeInit(ctx: PEVP_ENCODE_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_EncodeInit_procname);
 end;
@@ -9247,7 +9232,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_EncodeUpdate_procname);
 end;
 
-function ERR_EVP_EncodeFinal(ctx: PEVP_ENCODE_CTX; _out: PIdAnsiChar; outl: PIdC_INT): void; cdecl
+procedure ERR_EVP_EncodeFinal(ctx: PEVP_ENCODE_CTX; _out: PIdAnsiChar; outl: PIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_EncodeFinal_procname);
 end;
@@ -9257,7 +9242,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_EncodeBlock_procname);
 end;
 
-function ERR_EVP_DecodeInit(ctx: PEVP_ENCODE_CTX): void; cdecl
+procedure ERR_EVP_DecodeInit(ctx: PEVP_ENCODE_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_DecodeInit_procname);
 end;
@@ -9287,7 +9272,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_CIPHER_CTX_reset_procname);
 end;
 
-function ERR_EVP_CIPHER_CTX_free(c: PEVP_CIPHER_CTX): void; cdecl
+procedure ERR_EVP_CIPHER_CTX_free(c: PEVP_CIPHER_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_CIPHER_CTX_free_procname);
 end;
@@ -10242,32 +10227,32 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_get_digestbyname_procname);
 end;
 
-function ERR_EVP_CIPHER_do_all(fn: TEVP_CIPHER_do_all_fn_cb; arg: Pointer): void; cdecl
+procedure ERR_EVP_CIPHER_do_all(fn: TEVP_CIPHER_do_all_fn_cb; arg: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_CIPHER_do_all_procname);
 end;
 
-function ERR_EVP_CIPHER_do_all_sorted(fn: TEVP_CIPHER_do_all_fn_cb; arg: Pointer): void; cdecl
+procedure ERR_EVP_CIPHER_do_all_sorted(fn: TEVP_CIPHER_do_all_fn_cb; arg: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_CIPHER_do_all_sorted_procname);
 end;
 
-function ERR_EVP_CIPHER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_CIPHER_do_all_provided_fn_cb; arg: Pointer): void; cdecl
+procedure ERR_EVP_CIPHER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_CIPHER_do_all_provided_fn_cb; arg: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_CIPHER_do_all_provided_procname);
 end;
 
-function ERR_EVP_MD_do_all(fn: TEVP_MD_do_all_fn_cb; arg: Pointer): void; cdecl
+procedure ERR_EVP_MD_do_all(fn: TEVP_MD_do_all_fn_cb; arg: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MD_do_all_procname);
 end;
 
-function ERR_EVP_MD_do_all_sorted(fn: TEVP_MD_do_all_fn_cb; arg: Pointer): void; cdecl
+procedure ERR_EVP_MD_do_all_sorted(fn: TEVP_MD_do_all_fn_cb; arg: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MD_do_all_sorted_procname);
 end;
 
-function ERR_EVP_MD_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_MD_do_all_provided_fn_cb; arg: Pointer): void; cdecl
+procedure ERR_EVP_MD_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_MD_do_all_provided_fn_cb; arg: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MD_do_all_provided_procname);
 end;
@@ -10282,7 +10267,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MAC_up_ref_procname);
 end;
 
-function ERR_EVP_MAC_free(mac: PEVP_MAC): void; cdecl
+procedure ERR_EVP_MAC_free(mac: PEVP_MAC); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MAC_free_procname);
 end;
@@ -10317,7 +10302,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MAC_CTX_new_procname);
 end;
 
-function ERR_EVP_MAC_CTX_free(ctx: PEVP_MAC_CTX): void; cdecl
+procedure ERR_EVP_MAC_CTX_free(ctx: PEVP_MAC_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MAC_CTX_free_procname);
 end;
@@ -10407,7 +10392,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MAC_CTX_settable_params_procname);
 end;
 
-function ERR_EVP_MAC_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_MAC_do_all_provided_fn_cb; arg: Pointer): void; cdecl
+procedure ERR_EVP_MAC_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_MAC_do_all_provided_fn_cb; arg: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MAC_do_all_provided_procname);
 end;
@@ -10427,7 +10412,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_RAND_up_ref_procname);
 end;
 
-function ERR_EVP_RAND_free(rand: PEVP_RAND): void; cdecl
+procedure ERR_EVP_RAND_free(rand: PEVP_RAND); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_RAND_free_procname);
 end;
@@ -10467,7 +10452,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_RAND_CTX_up_ref_procname);
 end;
 
-function ERR_EVP_RAND_CTX_free(ctx: PEVP_RAND_CTX): void; cdecl
+procedure ERR_EVP_RAND_CTX_free(ctx: PEVP_RAND_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_RAND_CTX_free_procname);
 end;
@@ -10512,7 +10497,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_RAND_CTX_settable_params_procname);
 end;
 
-function ERR_EVP_RAND_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_RAND_do_all_provided_fn_cb; arg: Pointer): void; cdecl
+procedure ERR_EVP_RAND_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_RAND_do_all_provided_fn_cb; arg: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_RAND_do_all_provided_procname);
 end;
@@ -10752,7 +10737,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_dup_procname);
 end;
 
-function ERR_EVP_PKEY_free(pkey: PEVP_PKEY): void; cdecl
+procedure ERR_EVP_PKEY_free(pkey: PEVP_PKEY); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_free_procname);
 end;
@@ -10987,7 +10972,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKCS5_v2_scrypt_keyivgen_ex_procname);
 end;
 
-function ERR_PKCS5_PBE_add: void; cdecl
+procedure ERR_PKCS5_PBE_add; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PKCS5_PBE_add_procname);
 end;
@@ -11022,7 +11007,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PBE_find_ex_procname);
 end;
 
-function ERR_EVP_PBE_cleanup: void; cdecl
+procedure ERR_EVP_PBE_cleanup; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PBE_cleanup_procname);
 end;
@@ -11077,87 +11062,87 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_asn1_new_procname);
 end;
 
-function ERR_EVP_PKEY_asn1_copy(dst: PEVP_PKEY_ASN1_METHOD; src: PEVP_PKEY_ASN1_METHOD): void; cdecl
+procedure ERR_EVP_PKEY_asn1_copy(dst: PEVP_PKEY_ASN1_METHOD; src: PEVP_PKEY_ASN1_METHOD); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_asn1_copy_procname);
 end;
 
-function ERR_EVP_PKEY_asn1_free(ameth: PEVP_PKEY_ASN1_METHOD): void; cdecl
+procedure ERR_EVP_PKEY_asn1_free(ameth: PEVP_PKEY_ASN1_METHOD); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_asn1_free_procname);
 end;
 
-function ERR_EVP_PKEY_asn1_set_public(ameth: PEVP_PKEY_ASN1_METHOD; pub_decode: TEVP_PKEY_asn1_set_public_pub_decode_cb; pub_encode: TEVP_PKEY_asn1_set_public_pub_encode_cb; pub_cmp: TEVP_PKEY_asn1_set_public_pub_cmp_cb; pub_print: TEVP_PKEY_asn1_set_public_pub_print_cb; pkey_size: TEVP_PKEY_asn1_set_public_pkey_size_cb; pkey_bits: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl
+procedure ERR_EVP_PKEY_asn1_set_public(ameth: PEVP_PKEY_ASN1_METHOD; pub_decode: TEVP_PKEY_asn1_set_public_pub_decode_cb; pub_encode: TEVP_PKEY_asn1_set_public_pub_encode_cb; pub_cmp: TEVP_PKEY_asn1_set_public_pub_cmp_cb; pub_print: TEVP_PKEY_asn1_set_public_pub_print_cb; pkey_size: TEVP_PKEY_asn1_set_public_pkey_size_cb; pkey_bits: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_asn1_set_public_procname);
 end;
 
-function ERR_EVP_PKEY_asn1_set_private(ameth: PEVP_PKEY_ASN1_METHOD; priv_decode: TEVP_PKEY_asn1_set_private_priv_decode_cb; priv_encode: TEVP_PKEY_asn1_set_private_priv_encode_cb; priv_print: TEVP_PKEY_asn1_set_public_pub_print_cb): void; cdecl
+procedure ERR_EVP_PKEY_asn1_set_private(ameth: PEVP_PKEY_ASN1_METHOD; priv_decode: TEVP_PKEY_asn1_set_private_priv_decode_cb; priv_encode: TEVP_PKEY_asn1_set_private_priv_encode_cb; priv_print: TEVP_PKEY_asn1_set_public_pub_print_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_asn1_set_private_procname);
 end;
 
-function ERR_EVP_PKEY_asn1_set_param(ameth: PEVP_PKEY_ASN1_METHOD; param_decode: TEVP_PKEY_asn1_set_param_param_decode_cb; param_encode: TEVP_PKEY_asn1_set_param_param_encode_cb; param_missing: TEVP_PKEY_asn1_set_public_pkey_size_cb; param_copy: TEVP_PKEY_asn1_set_public_pub_cmp_cb; param_cmp: TEVP_PKEY_asn1_set_public_pub_cmp_cb; param_print: TEVP_PKEY_asn1_set_public_pub_print_cb): void; cdecl
+procedure ERR_EVP_PKEY_asn1_set_param(ameth: PEVP_PKEY_ASN1_METHOD; param_decode: TEVP_PKEY_asn1_set_param_param_decode_cb; param_encode: TEVP_PKEY_asn1_set_param_param_encode_cb; param_missing: TEVP_PKEY_asn1_set_public_pkey_size_cb; param_copy: TEVP_PKEY_asn1_set_public_pub_cmp_cb; param_cmp: TEVP_PKEY_asn1_set_public_pub_cmp_cb; param_print: TEVP_PKEY_asn1_set_public_pub_print_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_asn1_set_param_procname);
 end;
 
-function ERR_EVP_PKEY_asn1_set_free(ameth: PEVP_PKEY_ASN1_METHOD; pkey_free: TEVP_PKEY_asn1_set_free_pkey_free_cb): void; cdecl
+procedure ERR_EVP_PKEY_asn1_set_free(ameth: PEVP_PKEY_ASN1_METHOD; pkey_free: TEVP_PKEY_asn1_set_free_pkey_free_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_asn1_set_free_procname);
 end;
 
-function ERR_EVP_PKEY_asn1_set_ctrl(ameth: PEVP_PKEY_ASN1_METHOD; pkey_ctrl: TEVP_PKEY_asn1_set_ctrl_pkey_ctrl_cb): void; cdecl
+procedure ERR_EVP_PKEY_asn1_set_ctrl(ameth: PEVP_PKEY_ASN1_METHOD; pkey_ctrl: TEVP_PKEY_asn1_set_ctrl_pkey_ctrl_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_asn1_set_ctrl_procname);
 end;
 
-function ERR_EVP_PKEY_asn1_set_item(ameth: PEVP_PKEY_ASN1_METHOD; item_verify: TEVP_PKEY_asn1_set_item_item_verify_cb; item_sign: TEVP_PKEY_asn1_set_item_item_sign_cb): void; cdecl
+procedure ERR_EVP_PKEY_asn1_set_item(ameth: PEVP_PKEY_ASN1_METHOD; item_verify: TEVP_PKEY_asn1_set_item_item_verify_cb; item_sign: TEVP_PKEY_asn1_set_item_item_sign_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_asn1_set_item_procname);
 end;
 
-function ERR_EVP_PKEY_asn1_set_siginf(ameth: PEVP_PKEY_ASN1_METHOD; siginf_set: TEVP_PKEY_asn1_set_siginf_siginf_set_cb): void; cdecl
+procedure ERR_EVP_PKEY_asn1_set_siginf(ameth: PEVP_PKEY_ASN1_METHOD; siginf_set: TEVP_PKEY_asn1_set_siginf_siginf_set_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_asn1_set_siginf_procname);
 end;
 
-function ERR_EVP_PKEY_asn1_set_check(ameth: PEVP_PKEY_ASN1_METHOD; pkey_check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl
+procedure ERR_EVP_PKEY_asn1_set_check(ameth: PEVP_PKEY_ASN1_METHOD; pkey_check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_asn1_set_check_procname);
 end;
 
-function ERR_EVP_PKEY_asn1_set_public_check(ameth: PEVP_PKEY_ASN1_METHOD; pkey_pub_check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl
+procedure ERR_EVP_PKEY_asn1_set_public_check(ameth: PEVP_PKEY_ASN1_METHOD; pkey_pub_check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_asn1_set_public_check_procname);
 end;
 
-function ERR_EVP_PKEY_asn1_set_param_check(ameth: PEVP_PKEY_ASN1_METHOD; pkey_param_check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl
+procedure ERR_EVP_PKEY_asn1_set_param_check(ameth: PEVP_PKEY_ASN1_METHOD; pkey_param_check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_asn1_set_param_check_procname);
 end;
 
-function ERR_EVP_PKEY_asn1_set_set_priv_key(ameth: PEVP_PKEY_ASN1_METHOD; set_priv_key: TEVP_PKEY_asn1_set_set_priv_key_set_priv_key_cb): void; cdecl
+procedure ERR_EVP_PKEY_asn1_set_set_priv_key(ameth: PEVP_PKEY_ASN1_METHOD; set_priv_key: TEVP_PKEY_asn1_set_set_priv_key_set_priv_key_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_asn1_set_set_priv_key_procname);
 end;
 
-function ERR_EVP_PKEY_asn1_set_set_pub_key(ameth: PEVP_PKEY_ASN1_METHOD; set_pub_key: TEVP_PKEY_asn1_set_set_priv_key_set_priv_key_cb): void; cdecl
+procedure ERR_EVP_PKEY_asn1_set_set_pub_key(ameth: PEVP_PKEY_ASN1_METHOD; set_pub_key: TEVP_PKEY_asn1_set_set_priv_key_set_priv_key_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_asn1_set_set_pub_key_procname);
 end;
 
-function ERR_EVP_PKEY_asn1_set_get_priv_key(ameth: PEVP_PKEY_ASN1_METHOD; get_priv_key: TEVP_PKEY_asn1_set_get_priv_key_get_priv_key_cb): void; cdecl
+procedure ERR_EVP_PKEY_asn1_set_get_priv_key(ameth: PEVP_PKEY_ASN1_METHOD; get_priv_key: TEVP_PKEY_asn1_set_get_priv_key_get_priv_key_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_asn1_set_get_priv_key_procname);
 end;
 
-function ERR_EVP_PKEY_asn1_set_get_pub_key(ameth: PEVP_PKEY_ASN1_METHOD; get_pub_key: TEVP_PKEY_asn1_set_get_priv_key_get_priv_key_cb): void; cdecl
+procedure ERR_EVP_PKEY_asn1_set_get_pub_key(ameth: PEVP_PKEY_ASN1_METHOD; get_pub_key: TEVP_PKEY_asn1_set_get_priv_key_get_priv_key_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_asn1_set_get_pub_key_procname);
 end;
 
-function ERR_EVP_PKEY_asn1_set_security_bits(ameth: PEVP_PKEY_ASN1_METHOD; pkey_security_bits: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl
+procedure ERR_EVP_PKEY_asn1_set_security_bits(ameth: PEVP_PKEY_ASN1_METHOD; pkey_security_bits: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_asn1_set_security_bits_procname);
 end;
@@ -11212,17 +11197,17 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_new_procname);
 end;
 
-function ERR_EVP_PKEY_meth_get0_info(ppkey_id: PIdC_INT; pflags: PIdC_INT; meth: PEVP_PKEY_METHOD): void; cdecl
+procedure ERR_EVP_PKEY_meth_get0_info(ppkey_id: PIdC_INT; pflags: PIdC_INT; meth: PEVP_PKEY_METHOD); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_get0_info_procname);
 end;
 
-function ERR_EVP_PKEY_meth_copy(dst: PEVP_PKEY_METHOD; src: PEVP_PKEY_METHOD): void; cdecl
+procedure ERR_EVP_PKEY_meth_copy(dst: PEVP_PKEY_METHOD; src: PEVP_PKEY_METHOD); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_copy_procname);
 end;
 
-function ERR_EVP_PKEY_meth_free(pmeth: PEVP_PKEY_METHOD): void; cdecl
+procedure ERR_EVP_PKEY_meth_free(pmeth: PEVP_PKEY_METHOD); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_free_procname);
 end;
@@ -11257,7 +11242,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_KEYMGMT_up_ref_procname);
 end;
 
-function ERR_EVP_KEYMGMT_free(keymgmt: PEVP_KEYMGMT): void; cdecl
+procedure ERR_EVP_KEYMGMT_free(keymgmt: PEVP_KEYMGMT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_KEYMGMT_free_procname);
 end;
@@ -11282,7 +11267,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_KEYMGMT_is_a_procname);
 end;
 
-function ERR_EVP_KEYMGMT_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KEYMGMT_do_all_provided_fn_cb; arg: Pointer): void; cdecl
+procedure ERR_EVP_KEYMGMT_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KEYMGMT_do_all_provided_fn_cb; arg: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_KEYMGMT_do_all_provided_procname);
 end;
@@ -11322,7 +11307,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_SKEYMGMT_up_ref_procname);
 end;
 
-function ERR_EVP_SKEYMGMT_free(keymgmt: PEVP_SKEYMGMT): void; cdecl
+procedure ERR_EVP_SKEYMGMT_free(keymgmt: PEVP_SKEYMGMT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_SKEYMGMT_free_procname);
 end;
@@ -11347,7 +11332,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_SKEYMGMT_is_a_procname);
 end;
 
-function ERR_EVP_SKEYMGMT_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_SKEYMGMT_do_all_provided_fn_cb; arg: Pointer): void; cdecl
+procedure ERR_EVP_SKEYMGMT_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_SKEYMGMT_do_all_provided_fn_cb; arg: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_SKEYMGMT_do_all_provided_procname);
 end;
@@ -11392,7 +11377,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_CTX_dup_procname);
 end;
 
-function ERR_EVP_PKEY_CTX_free(ctx: PEVP_PKEY_CTX): void; cdecl
+procedure ERR_EVP_PKEY_CTX_free(ctx: PEVP_PKEY_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_CTX_free_procname);
 end;
@@ -11472,7 +11457,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_CTX_get_operation_procname);
 end;
 
-function ERR_EVP_PKEY_CTX_set0_keygen_info(ctx: PEVP_PKEY_CTX; dat: PIdC_INT; datlen: TIdC_INT): void; cdecl
+procedure ERR_EVP_PKEY_CTX_set0_keygen_info(ctx: PEVP_PKEY_CTX; dat: PIdC_INT; datlen: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_CTX_set0_keygen_info_procname);
 end;
@@ -11517,7 +11502,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_new_CMAC_key_procname);
 end;
 
-function ERR_EVP_PKEY_CTX_set_data(ctx: PEVP_PKEY_CTX; data: Pointer): void; cdecl
+procedure ERR_EVP_PKEY_CTX_set_data(ctx: PEVP_PKEY_CTX; data: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_CTX_set_data_procname);
 end;
@@ -11537,7 +11522,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_CTX_get0_peerkey_procname);
 end;
 
-function ERR_EVP_PKEY_CTX_set_app_data(ctx: PEVP_PKEY_CTX; data: Pointer): void; cdecl
+procedure ERR_EVP_PKEY_CTX_set_app_data(ctx: PEVP_PKEY_CTX; data: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_CTX_set_app_data_procname);
 end;
@@ -11552,7 +11537,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_CTX_set_signature_procname);
 end;
 
-function ERR_EVP_SIGNATURE_free(signature: PEVP_SIGNATURE): void; cdecl
+procedure ERR_EVP_SIGNATURE_free(signature: PEVP_SIGNATURE); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_SIGNATURE_free_procname);
 end;
@@ -11587,7 +11572,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_SIGNATURE_get0_description_procname);
 end;
 
-function ERR_EVP_SIGNATURE_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_SIGNATURE_do_all_provided_fn_cb; data: Pointer): void; cdecl
+procedure ERR_EVP_SIGNATURE_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_SIGNATURE_do_all_provided_fn_cb; data: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_SIGNATURE_do_all_provided_procname);
 end;
@@ -11607,7 +11592,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_SIGNATURE_settable_ctx_params_procname);
 end;
 
-function ERR_EVP_ASYM_CIPHER_free(cipher: PEVP_ASYM_CIPHER): void; cdecl
+procedure ERR_EVP_ASYM_CIPHER_free(cipher: PEVP_ASYM_CIPHER); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_ASYM_CIPHER_free_procname);
 end;
@@ -11642,7 +11627,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_ASYM_CIPHER_get0_description_procname);
 end;
 
-function ERR_EVP_ASYM_CIPHER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_ASYM_CIPHER_do_all_provided_fn_cb; arg: Pointer): void; cdecl
+procedure ERR_EVP_ASYM_CIPHER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_ASYM_CIPHER_do_all_provided_fn_cb; arg: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_ASYM_CIPHER_do_all_provided_procname);
 end;
@@ -11662,7 +11647,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_ASYM_CIPHER_settable_ctx_params_procname);
 end;
 
-function ERR_EVP_KEM_free(wrap: PEVP_KEM): void; cdecl
+procedure ERR_EVP_KEM_free(wrap: PEVP_KEM); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_KEM_free_procname);
 end;
@@ -11697,7 +11682,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_KEM_get0_description_procname);
 end;
 
-function ERR_EVP_KEM_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KEM_do_all_provided_fn_cb; arg: Pointer): void; cdecl
+procedure ERR_EVP_KEM_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KEM_do_all_provided_fn_cb; arg: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_KEM_do_all_provided_procname);
 end;
@@ -12077,7 +12062,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_get_ex_data_procname);
 end;
 
-function ERR_EVP_PKEY_CTX_set_cb(ctx: PEVP_PKEY_CTX; cb: TEVP_PKEY_gen_cb): void; cdecl
+procedure ERR_EVP_PKEY_CTX_set_cb(ctx: PEVP_PKEY_CTX; cb: TEVP_PKEY_gen_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_CTX_set_cb_procname);
 end;
@@ -12092,207 +12077,207 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_CTX_get_keygen_info_procname);
 end;
 
-function ERR_EVP_PKEY_meth_set_init(pmeth: PEVP_PKEY_METHOD; init: TEVP_PKEY_gen_cb): void; cdecl
+procedure ERR_EVP_PKEY_meth_set_init(pmeth: PEVP_PKEY_METHOD; init: TEVP_PKEY_gen_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_set_init_procname);
 end;
 
-function ERR_EVP_PKEY_meth_set_copy(pmeth: PEVP_PKEY_METHOD; copy: TEVP_PKEY_meth_set_copy_copy_cb): void; cdecl
+procedure ERR_EVP_PKEY_meth_set_copy(pmeth: PEVP_PKEY_METHOD; copy: TEVP_PKEY_meth_set_copy_copy_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_set_copy_procname);
 end;
 
-function ERR_EVP_PKEY_meth_set_cleanup(pmeth: PEVP_PKEY_METHOD; cleanup: TEVP_PKEY_meth_set_cleanup_cleanup_cb): void; cdecl
+procedure ERR_EVP_PKEY_meth_set_cleanup(pmeth: PEVP_PKEY_METHOD; cleanup: TEVP_PKEY_meth_set_cleanup_cleanup_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_set_cleanup_procname);
 end;
 
-function ERR_EVP_PKEY_meth_set_paramgen(pmeth: PEVP_PKEY_METHOD; paramgen_init: TEVP_PKEY_gen_cb; paramgen: TEVP_PKEY_meth_set_paramgen_paramgen_cb): void; cdecl
+procedure ERR_EVP_PKEY_meth_set_paramgen(pmeth: PEVP_PKEY_METHOD; paramgen_init: TEVP_PKEY_gen_cb; paramgen: TEVP_PKEY_meth_set_paramgen_paramgen_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_set_paramgen_procname);
 end;
 
-function ERR_EVP_PKEY_meth_set_keygen(pmeth: PEVP_PKEY_METHOD; keygen_init: TEVP_PKEY_gen_cb; keygen: TEVP_PKEY_meth_set_paramgen_paramgen_cb): void; cdecl
+procedure ERR_EVP_PKEY_meth_set_keygen(pmeth: PEVP_PKEY_METHOD; keygen_init: TEVP_PKEY_gen_cb; keygen: TEVP_PKEY_meth_set_paramgen_paramgen_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_set_keygen_procname);
 end;
 
-function ERR_EVP_PKEY_meth_set_sign(pmeth: PEVP_PKEY_METHOD; sign_init: TEVP_PKEY_gen_cb; sign: TEVP_PKEY_meth_set_sign_sign_cb): void; cdecl
+procedure ERR_EVP_PKEY_meth_set_sign(pmeth: PEVP_PKEY_METHOD; sign_init: TEVP_PKEY_gen_cb; sign: TEVP_PKEY_meth_set_sign_sign_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_set_sign_procname);
 end;
 
-function ERR_EVP_PKEY_meth_set_verify(pmeth: PEVP_PKEY_METHOD; verify_init: TEVP_PKEY_gen_cb; verify: TEVP_PKEY_meth_set_verify_verify_cb): void; cdecl
+procedure ERR_EVP_PKEY_meth_set_verify(pmeth: PEVP_PKEY_METHOD; verify_init: TEVP_PKEY_gen_cb; verify: TEVP_PKEY_meth_set_verify_verify_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_set_verify_procname);
 end;
 
-function ERR_EVP_PKEY_meth_set_verify_recover(pmeth: PEVP_PKEY_METHOD; verify_recover_init: TEVP_PKEY_gen_cb; verify_recover: TEVP_PKEY_meth_set_sign_sign_cb): void; cdecl
+procedure ERR_EVP_PKEY_meth_set_verify_recover(pmeth: PEVP_PKEY_METHOD; verify_recover_init: TEVP_PKEY_gen_cb; verify_recover: TEVP_PKEY_meth_set_sign_sign_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_set_verify_recover_procname);
 end;
 
-function ERR_EVP_PKEY_meth_set_signctx(pmeth: PEVP_PKEY_METHOD; signctx_init: TEVP_PKEY_meth_set_signctx_signctx_init_cb; signctx: TEVP_PKEY_meth_set_signctx_signctx_cb): void; cdecl
+procedure ERR_EVP_PKEY_meth_set_signctx(pmeth: PEVP_PKEY_METHOD; signctx_init: TEVP_PKEY_meth_set_signctx_signctx_init_cb; signctx: TEVP_PKEY_meth_set_signctx_signctx_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_set_signctx_procname);
 end;
 
-function ERR_EVP_PKEY_meth_set_verifyctx(pmeth: PEVP_PKEY_METHOD; verifyctx_init: TEVP_PKEY_meth_set_signctx_signctx_init_cb; verifyctx: TEVP_PKEY_meth_set_verifyctx_verifyctx_cb): void; cdecl
+procedure ERR_EVP_PKEY_meth_set_verifyctx(pmeth: PEVP_PKEY_METHOD; verifyctx_init: TEVP_PKEY_meth_set_signctx_signctx_init_cb; verifyctx: TEVP_PKEY_meth_set_verifyctx_verifyctx_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_set_verifyctx_procname);
 end;
 
-function ERR_EVP_PKEY_meth_set_encrypt(pmeth: PEVP_PKEY_METHOD; encrypt_init: TEVP_PKEY_gen_cb; encryptfn: TEVP_PKEY_meth_set_sign_sign_cb): void; cdecl
+procedure ERR_EVP_PKEY_meth_set_encrypt(pmeth: PEVP_PKEY_METHOD; encrypt_init: TEVP_PKEY_gen_cb; encryptfn: TEVP_PKEY_meth_set_sign_sign_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_set_encrypt_procname);
 end;
 
-function ERR_EVP_PKEY_meth_set_decrypt(pmeth: PEVP_PKEY_METHOD; decrypt_init: TEVP_PKEY_gen_cb; decrypt: TEVP_PKEY_meth_set_sign_sign_cb): void; cdecl
+procedure ERR_EVP_PKEY_meth_set_decrypt(pmeth: PEVP_PKEY_METHOD; decrypt_init: TEVP_PKEY_gen_cb; decrypt: TEVP_PKEY_meth_set_sign_sign_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_set_decrypt_procname);
 end;
 
-function ERR_EVP_PKEY_meth_set_derive(pmeth: PEVP_PKEY_METHOD; derive_init: TEVP_PKEY_gen_cb; derive: TEVP_PKEY_meth_set_derive_derive_cb): void; cdecl
+procedure ERR_EVP_PKEY_meth_set_derive(pmeth: PEVP_PKEY_METHOD; derive_init: TEVP_PKEY_gen_cb; derive: TEVP_PKEY_meth_set_derive_derive_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_set_derive_procname);
 end;
 
-function ERR_EVP_PKEY_meth_set_ctrl(pmeth: PEVP_PKEY_METHOD; ctrl: TEVP_PKEY_meth_set_ctrl_ctrl_cb; ctrl_str: TEVP_PKEY_meth_set_ctrl_ctrl_str_cb): void; cdecl
+procedure ERR_EVP_PKEY_meth_set_ctrl(pmeth: PEVP_PKEY_METHOD; ctrl: TEVP_PKEY_meth_set_ctrl_ctrl_cb; ctrl_str: TEVP_PKEY_meth_set_ctrl_ctrl_str_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_set_ctrl_procname);
 end;
 
-function ERR_EVP_PKEY_meth_set_digestsign(pmeth: PEVP_PKEY_METHOD; digestsign: TEVP_PKEY_meth_set_digestsign_digestsign_cb): void; cdecl
+procedure ERR_EVP_PKEY_meth_set_digestsign(pmeth: PEVP_PKEY_METHOD; digestsign: TEVP_PKEY_meth_set_digestsign_digestsign_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_set_digestsign_procname);
 end;
 
-function ERR_EVP_PKEY_meth_set_digestverify(pmeth: PEVP_PKEY_METHOD; digestverify: TEVP_PKEY_meth_set_digestverify_digestverify_cb): void; cdecl
+procedure ERR_EVP_PKEY_meth_set_digestverify(pmeth: PEVP_PKEY_METHOD; digestverify: TEVP_PKEY_meth_set_digestverify_digestverify_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_set_digestverify_procname);
 end;
 
-function ERR_EVP_PKEY_meth_set_check(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl
+procedure ERR_EVP_PKEY_meth_set_check(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_set_check_procname);
 end;
 
-function ERR_EVP_PKEY_meth_set_public_check(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl
+procedure ERR_EVP_PKEY_meth_set_public_check(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_set_public_check_procname);
 end;
 
-function ERR_EVP_PKEY_meth_set_param_check(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb): void; cdecl
+procedure ERR_EVP_PKEY_meth_set_param_check(pmeth: PEVP_PKEY_METHOD; check: TEVP_PKEY_asn1_set_public_pkey_size_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_set_param_check_procname);
 end;
 
-function ERR_EVP_PKEY_meth_set_digest_custom(pmeth: PEVP_PKEY_METHOD; digest_custom: TEVP_PKEY_meth_set_signctx_signctx_init_cb): void; cdecl
+procedure ERR_EVP_PKEY_meth_set_digest_custom(pmeth: PEVP_PKEY_METHOD; digest_custom: TEVP_PKEY_meth_set_signctx_signctx_init_cb); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_set_digest_custom_procname);
 end;
 
-function ERR_EVP_PKEY_meth_get_init(pmeth: PEVP_PKEY_METHOD; pinit: PPIdC_INT): void; cdecl
+procedure ERR_EVP_PKEY_meth_get_init(pmeth: PEVP_PKEY_METHOD; pinit: PPIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_get_init_procname);
 end;
 
-function ERR_EVP_PKEY_meth_get_copy(pmeth: PEVP_PKEY_METHOD; pcopy: PPIdC_INT): void; cdecl
+procedure ERR_EVP_PKEY_meth_get_copy(pmeth: PEVP_PKEY_METHOD; pcopy: PPIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_get_copy_procname);
 end;
 
-function ERR_EVP_PKEY_meth_get_cleanup(pmeth: PEVP_PKEY_METHOD; pcleanup: PPointer): void; cdecl
+procedure ERR_EVP_PKEY_meth_get_cleanup(pmeth: PEVP_PKEY_METHOD; pcleanup: PPointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_get_cleanup_procname);
 end;
 
-function ERR_EVP_PKEY_meth_get_paramgen(pmeth: PEVP_PKEY_METHOD; pparamgen_init: PPIdC_INT; pparamgen: PPIdC_INT): void; cdecl
+procedure ERR_EVP_PKEY_meth_get_paramgen(pmeth: PEVP_PKEY_METHOD; pparamgen_init: PPIdC_INT; pparamgen: PPIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_get_paramgen_procname);
 end;
 
-function ERR_EVP_PKEY_meth_get_keygen(pmeth: PEVP_PKEY_METHOD; pkeygen_init: PPIdC_INT; pkeygen: PPIdC_INT): void; cdecl
+procedure ERR_EVP_PKEY_meth_get_keygen(pmeth: PEVP_PKEY_METHOD; pkeygen_init: PPIdC_INT; pkeygen: PPIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_get_keygen_procname);
 end;
 
-function ERR_EVP_PKEY_meth_get_sign(pmeth: PEVP_PKEY_METHOD; psign_init: PPIdC_INT; psign: PPIdC_INT): void; cdecl
+procedure ERR_EVP_PKEY_meth_get_sign(pmeth: PEVP_PKEY_METHOD; psign_init: PPIdC_INT; psign: PPIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_get_sign_procname);
 end;
 
-function ERR_EVP_PKEY_meth_get_verify(pmeth: PEVP_PKEY_METHOD; pverify_init: PPIdC_INT; pverify: PPIdC_INT): void; cdecl
+procedure ERR_EVP_PKEY_meth_get_verify(pmeth: PEVP_PKEY_METHOD; pverify_init: PPIdC_INT; pverify: PPIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_get_verify_procname);
 end;
 
-function ERR_EVP_PKEY_meth_get_verify_recover(pmeth: PEVP_PKEY_METHOD; pverify_recover_init: PPIdC_INT; pverify_recover: PPIdC_INT): void; cdecl
+procedure ERR_EVP_PKEY_meth_get_verify_recover(pmeth: PEVP_PKEY_METHOD; pverify_recover_init: PPIdC_INT; pverify_recover: PPIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_get_verify_recover_procname);
 end;
 
-function ERR_EVP_PKEY_meth_get_signctx(pmeth: PEVP_PKEY_METHOD; psignctx_init: PPIdC_INT; psignctx: PPIdC_INT): void; cdecl
+procedure ERR_EVP_PKEY_meth_get_signctx(pmeth: PEVP_PKEY_METHOD; psignctx_init: PPIdC_INT; psignctx: PPIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_get_signctx_procname);
 end;
 
-function ERR_EVP_PKEY_meth_get_verifyctx(pmeth: PEVP_PKEY_METHOD; pverifyctx_init: PPIdC_INT; pverifyctx: PPIdC_INT): void; cdecl
+procedure ERR_EVP_PKEY_meth_get_verifyctx(pmeth: PEVP_PKEY_METHOD; pverifyctx_init: PPIdC_INT; pverifyctx: PPIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_get_verifyctx_procname);
 end;
 
-function ERR_EVP_PKEY_meth_get_encrypt(pmeth: PEVP_PKEY_METHOD; pencrypt_init: PPIdC_INT; pencryptfn: PPIdC_INT): void; cdecl
+procedure ERR_EVP_PKEY_meth_get_encrypt(pmeth: PEVP_PKEY_METHOD; pencrypt_init: PPIdC_INT; pencryptfn: PPIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_get_encrypt_procname);
 end;
 
-function ERR_EVP_PKEY_meth_get_decrypt(pmeth: PEVP_PKEY_METHOD; pdecrypt_init: PPIdC_INT; pdecrypt: PPIdC_INT): void; cdecl
+procedure ERR_EVP_PKEY_meth_get_decrypt(pmeth: PEVP_PKEY_METHOD; pdecrypt_init: PPIdC_INT; pdecrypt: PPIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_get_decrypt_procname);
 end;
 
-function ERR_EVP_PKEY_meth_get_derive(pmeth: PEVP_PKEY_METHOD; pderive_init: PPIdC_INT; pderive: PPIdC_INT): void; cdecl
+procedure ERR_EVP_PKEY_meth_get_derive(pmeth: PEVP_PKEY_METHOD; pderive_init: PPIdC_INT; pderive: PPIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_get_derive_procname);
 end;
 
-function ERR_EVP_PKEY_meth_get_ctrl(pmeth: PEVP_PKEY_METHOD; pctrl: PPIdC_INT; pctrl_str: PPIdC_INT): void; cdecl
+procedure ERR_EVP_PKEY_meth_get_ctrl(pmeth: PEVP_PKEY_METHOD; pctrl: PPIdC_INT; pctrl_str: PPIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_get_ctrl_procname);
 end;
 
-function ERR_EVP_PKEY_meth_get_digestsign(pmeth: PEVP_PKEY_METHOD; digestsign: PPIdC_INT): void; cdecl
+procedure ERR_EVP_PKEY_meth_get_digestsign(pmeth: PEVP_PKEY_METHOD; digestsign: PPIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_get_digestsign_procname);
 end;
 
-function ERR_EVP_PKEY_meth_get_digestverify(pmeth: PEVP_PKEY_METHOD; digestverify: PPIdC_INT): void; cdecl
+procedure ERR_EVP_PKEY_meth_get_digestverify(pmeth: PEVP_PKEY_METHOD; digestverify: PPIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_get_digestverify_procname);
 end;
 
-function ERR_EVP_PKEY_meth_get_check(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT): void; cdecl
+procedure ERR_EVP_PKEY_meth_get_check(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_get_check_procname);
 end;
 
-function ERR_EVP_PKEY_meth_get_public_check(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT): void; cdecl
+procedure ERR_EVP_PKEY_meth_get_public_check(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_get_public_check_procname);
 end;
 
-function ERR_EVP_PKEY_meth_get_param_check(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT): void; cdecl
+procedure ERR_EVP_PKEY_meth_get_param_check(pmeth: PEVP_PKEY_METHOD; pcheck: PPIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_get_param_check_procname);
 end;
 
-function ERR_EVP_PKEY_meth_get_digest_custom(pmeth: PEVP_PKEY_METHOD; pdigest_custom: PPIdC_INT): void; cdecl
+procedure ERR_EVP_PKEY_meth_get_digest_custom(pmeth: PEVP_PKEY_METHOD; pdigest_custom: PPIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_meth_get_digest_custom_procname);
 end;
 
-function ERR_EVP_KEYEXCH_free(exchange: PEVP_KEYEXCH): void; cdecl
+procedure ERR_EVP_KEYEXCH_free(exchange: PEVP_KEYEXCH); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_KEYEXCH_free_procname);
 end;
@@ -12327,7 +12312,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_KEYEXCH_get0_description_procname);
 end;
 
-function ERR_EVP_KEYEXCH_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KEYEXCH_do_all_provided_fn_cb; data: Pointer): void; cdecl
+procedure ERR_EVP_KEYEXCH_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KEYEXCH_do_all_provided_fn_cb; data: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_KEYEXCH_do_all_provided_procname);
 end;
@@ -12347,7 +12332,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_KEYEXCH_settable_ctx_params_procname);
 end;
 
-function ERR_EVP_add_alg_module: void; cdecl
+procedure ERR_EVP_add_alg_module; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_add_alg_module_procname);
 end;
@@ -12427,7 +12412,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_SKEY_up_ref_procname);
 end;
 
-function ERR_EVP_SKEY_free(skey: PEVP_SKEY): void; cdecl
+procedure ERR_EVP_SKEY_free(skey: PEVP_SKEY); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_SKEY_free_procname);
 end;

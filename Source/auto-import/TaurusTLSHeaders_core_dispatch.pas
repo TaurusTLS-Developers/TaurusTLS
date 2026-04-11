@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -34,16 +34,16 @@ uses
 // CALLBACK TYPE DECLARATIONS
 // =============================================================================
 type
-  TOSSL_FUNC = function: void; cdecl;
+  TOSSL_FUNC = procedure; cdecl;
   TOSSL_FUNC_core_gettable_params_fn = function(prov: POSSL_CORE_HANDLE): POSSL_PARAM; cdecl;
   TOSSL_FUNC_core_get_params_fn = function(prov: POSSL_CORE_HANDLE; params: POSSL_PARAM): TIdC_INT; cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // OSSL_FUNC_core_thread_start_fn_func_cb = function(arg1: Pointer): void; cdecl;
+  // OSSL_FUNC_core_thread_start_fn_func_cb = procedure(arg1: Pointer); cdecl;
   TOSSL_FUNC_core_thread_start_fn = function(prov: POSSL_CORE_HANDLE; handfn: TOSSL_FUNC_core_thread_start_fn_func_cb; arg: Pointer): TIdC_INT; cdecl;
   TOSSL_FUNC_core_get_libctx_fn = function(prov: POSSL_CORE_HANDLE): POPENSSL_CORE_CTX; cdecl;
-  TOSSL_FUNC_core_new_error_fn = function(prov: POSSL_CORE_HANDLE): void; cdecl;
-  TOSSL_FUNC_core_set_error_debug_fn = function(prov: POSSL_CORE_HANDLE; _file: PIdAnsiChar; line: TIdC_INT; func: PIdAnsiChar): void; cdecl;
-  TOSSL_FUNC_core_vset_error_fn = function(prov: POSSL_CORE_HANDLE; reason: TIdC_UINT32; fmt: PIdAnsiChar; args: Tva_list): void; cdecl;
+  TOSSL_FUNC_core_new_error_fn = procedure(prov: POSSL_CORE_HANDLE); cdecl;
+  TOSSL_FUNC_core_set_error_debug_fn = procedure(prov: POSSL_CORE_HANDLE; _file: PIdAnsiChar; line: TIdC_INT; func: PIdAnsiChar); cdecl;
+  TOSSL_FUNC_core_vset_error_fn = procedure(prov: POSSL_CORE_HANDLE; reason: TIdC_UINT32; fmt: PIdAnsiChar; args: Tva_list); cdecl;
   TOSSL_FUNC_core_set_error_mark_fn = function(prov: POSSL_CORE_HANDLE): TIdC_INT; cdecl;
   TOSSL_FUNC_core_clear_last_error_mark_fn = function(prov: POSSL_CORE_HANDLE): TIdC_INT; cdecl;
   TOSSL_FUNC_core_pop_error_to_mark_fn = function(prov: POSSL_CORE_HANDLE): TIdC_INT; cdecl;
@@ -51,16 +51,16 @@ type
   TOSSL_FUNC_core_obj_create_fn = function(prov: POSSL_CORE_HANDLE; oid: PIdAnsiChar; sn: PIdAnsiChar; ln: PIdAnsiChar): TIdC_INT; cdecl;
   TOSSL_FUNC_CRYPTO_malloc_fn = function(num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl;
   TOSSL_FUNC_CRYPTO_zalloc_fn = function(num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl;
-  TOSSL_FUNC_CRYPTO_free_fn = function(ptr: Pointer; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl;
-  TOSSL_FUNC_CRYPTO_clear_free_fn = function(ptr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl;
+  TOSSL_FUNC_CRYPTO_free_fn = procedure(ptr: Pointer; _file: PIdAnsiChar; line: TIdC_INT); cdecl;
+  TOSSL_FUNC_CRYPTO_clear_free_fn = procedure(ptr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT); cdecl;
   TOSSL_FUNC_CRYPTO_realloc_fn = function(addr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl;
   TOSSL_FUNC_CRYPTO_clear_realloc_fn = function(addr: Pointer; old_num: TIdC_SIZET; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl;
   TOSSL_FUNC_CRYPTO_secure_malloc_fn = function(num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl;
   TOSSL_FUNC_CRYPTO_secure_zalloc_fn = function(num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl;
-  TOSSL_FUNC_CRYPTO_secure_free_fn = function(ptr: Pointer; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl;
-  TOSSL_FUNC_CRYPTO_secure_clear_free_fn = function(ptr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT): void; cdecl;
+  TOSSL_FUNC_CRYPTO_secure_free_fn = procedure(ptr: Pointer; _file: PIdAnsiChar; line: TIdC_INT); cdecl;
+  TOSSL_FUNC_CRYPTO_secure_clear_free_fn = procedure(ptr: Pointer; num: TIdC_SIZET; _file: PIdAnsiChar; line: TIdC_INT); cdecl;
   TOSSL_FUNC_CRYPTO_secure_allocated_fn = function(ptr: Pointer): TIdC_INT; cdecl;
-  TOSSL_FUNC_OPENSSL_cleanse_fn = function(ptr: Pointer; len: TIdC_SIZET): void; cdecl;
+  TOSSL_FUNC_OPENSSL_cleanse_fn = procedure(ptr: Pointer; len: TIdC_SIZET); cdecl;
   TOSSL_FUNC_BIO_new_file_fn = function(filename: PIdAnsiChar; mode: PIdAnsiChar): POSSL_CORE_BIO; cdecl;
   TOSSL_FUNC_BIO_new_membuf_fn = function(buf: Pointer; len: TIdC_INT): POSSL_CORE_BIO; cdecl;
   TOSSL_FUNC_BIO_read_ex_fn = function(bio: POSSL_CORE_BIO; data: Pointer; data_len: TIdC_SIZET; bytes_read: PIdC_SIZET): TIdC_INT; cdecl;
@@ -72,31 +72,31 @@ type
   TOSSL_FUNC_BIO_vprintf_fn = function(bio: POSSL_CORE_BIO; format: PIdAnsiChar; args: Tva_list): TIdC_INT; cdecl;
   TOSSL_FUNC_BIO_vsnprintf_fn = function(buf: PIdAnsiChar; n: TIdC_SIZET; fmt: PIdAnsiChar; args: Tva_list): TIdC_INT; cdecl;
   TOSSL_FUNC_BIO_ctrl_fn = function(bio: POSSL_CORE_BIO; cmd: TIdC_INT; num: TIdC_LONG; ptr: Pointer): TIdC_INT; cdecl;
-  TOSSL_FUNC_indicator_cb_fn = function(ctx: POPENSSL_CORE_CTX; cb: PPOSSL_INDICATOR_CALLBACK): void; cdecl;
-  TOSSL_FUNC_self_test_cb_fn = function(ctx: POPENSSL_CORE_CTX; cb: PPOSSL_CALLBACK; cbarg: PPointer): void; cdecl;
+  TOSSL_FUNC_indicator_cb_fn = procedure(ctx: POPENSSL_CORE_CTX; cb: PPOSSL_INDICATOR_CALLBACK); cdecl;
+  TOSSL_FUNC_self_test_cb_fn = procedure(ctx: POPENSSL_CORE_CTX; cb: PPOSSL_CALLBACK; cbarg: PPointer); cdecl;
   TOSSL_FUNC_get_entropy_fn = function(handle: POSSL_CORE_HANDLE; pout: PPIdAnsiChar; entropy: TIdC_INT; min_len: TIdC_SIZET; max_len: TIdC_SIZET): TIdC_SIZET; cdecl;
   TOSSL_FUNC_get_user_entropy_fn = function(handle: POSSL_CORE_HANDLE; pout: PPIdAnsiChar; entropy: TIdC_INT; min_len: TIdC_SIZET; max_len: TIdC_SIZET): TIdC_SIZET; cdecl;
-  TOSSL_FUNC_cleanup_entropy_fn = function(handle: POSSL_CORE_HANDLE; buf: PIdAnsiChar; len: TIdC_SIZET): void; cdecl;
-  TOSSL_FUNC_cleanup_user_entropy_fn = function(handle: POSSL_CORE_HANDLE; buf: PIdAnsiChar; len: TIdC_SIZET): void; cdecl;
+  TOSSL_FUNC_cleanup_entropy_fn = procedure(handle: POSSL_CORE_HANDLE; buf: PIdAnsiChar; len: TIdC_SIZET); cdecl;
+  TOSSL_FUNC_cleanup_user_entropy_fn = procedure(handle: POSSL_CORE_HANDLE; buf: PIdAnsiChar; len: TIdC_SIZET); cdecl;
   TOSSL_FUNC_get_nonce_fn = function(handle: POSSL_CORE_HANDLE; pout: PPIdAnsiChar; min_len: TIdC_SIZET; max_len: TIdC_SIZET; salt: Pointer; salt_len: TIdC_SIZET): TIdC_SIZET; cdecl;
   TOSSL_FUNC_get_user_nonce_fn = function(handle: POSSL_CORE_HANDLE; pout: PPIdAnsiChar; min_len: TIdC_SIZET; max_len: TIdC_SIZET; salt: Pointer; salt_len: TIdC_SIZET): TIdC_SIZET; cdecl;
-  TOSSL_FUNC_cleanup_nonce_fn = function(handle: POSSL_CORE_HANDLE; buf: PIdAnsiChar; len: TIdC_SIZET): void; cdecl;
-  TOSSL_FUNC_cleanup_user_nonce_fn = function(handle: POSSL_CORE_HANDLE; buf: PIdAnsiChar; len: TIdC_SIZET): void; cdecl;
+  TOSSL_FUNC_cleanup_nonce_fn = procedure(handle: POSSL_CORE_HANDLE; buf: PIdAnsiChar; len: TIdC_SIZET); cdecl;
+  TOSSL_FUNC_cleanup_user_nonce_fn = procedure(handle: POSSL_CORE_HANDLE; buf: PIdAnsiChar; len: TIdC_SIZET); cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
   // OSSL_FUNC_provider_register_child_cb_fn_func_cb = function(arg1: Possl_core_handle_st; arg2: Pointer): TIdC_INT; cdecl;
   TOSSL_FUNC_provider_register_child_cb_fn = function(handle: POSSL_CORE_HANDLE; create_cb: TOSSL_FUNC_provider_register_child_cb_fn_func_cb; remove_cb: TOSSL_FUNC_provider_register_child_cb_fn_func_cb; global_props_cb: TOSSL_FUNC_provider_register_child_cb_fn_func_cb; cbdata: Pointer): TIdC_INT; cdecl;
-  TOSSL_FUNC_provider_deregister_child_cb_fn = function(handle: POSSL_CORE_HANDLE): void; cdecl;
+  TOSSL_FUNC_provider_deregister_child_cb_fn = procedure(handle: POSSL_CORE_HANDLE); cdecl;
   TOSSL_FUNC_provider_name_fn = function(prov: POSSL_CORE_HANDLE): PIdAnsiChar; cdecl;
   TOSSL_FUNC_provider_get0_provider_ctx_fn = function(prov: POSSL_CORE_HANDLE): Pointer; cdecl;
   TOSSL_FUNC_provider_get0_dispatch_fn = function(prov: POSSL_CORE_HANDLE): POSSL_DISPATCH; cdecl;
   TOSSL_FUNC_provider_up_ref_fn = function(prov: POSSL_CORE_HANDLE; activate: TIdC_INT): TIdC_INT; cdecl;
   TOSSL_FUNC_provider_free_fn = function(prov: POSSL_CORE_HANDLE; deactivate: TIdC_INT): TIdC_INT; cdecl;
   TOSSL_FUNC_core_count_to_mark_fn = function(prov: POSSL_CORE_HANDLE): TIdC_INT; cdecl;
-  TOSSL_FUNC_provider_teardown_fn = function(provctx: Pointer): void; cdecl;
+  TOSSL_FUNC_provider_teardown_fn = procedure(provctx: Pointer); cdecl;
   TOSSL_FUNC_provider_gettable_params_fn = function(provctx: Pointer): POSSL_PARAM; cdecl;
   TOSSL_FUNC_provider_get_params_fn = function(provctx: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_provider_query_operation_fn = function(provctx: Pointer; operation_id: TIdC_INT; no_store: PIdC_INT): POSSL_ALGORITHM; cdecl;
-  TOSSL_FUNC_provider_unquery_operation_fn = function(provctx: Pointer; operation_id: TIdC_INT; arg3: POSSL_ALGORITHM): void; cdecl;
+  TOSSL_FUNC_provider_unquery_operation_fn = procedure(provctx: Pointer; operation_id: TIdC_INT; arg3: POSSL_ALGORITHM); cdecl;
   TOSSL_FUNC_provider_get_reason_strings_fn = function(provctx: Pointer): POSSL_ITEM; cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
   // OSSL_FUNC_provider_get_capabilities_fn_func_cb = function(arg1: Possl_param_st; arg2: Pointer): TIdC_INT; cdecl;
@@ -115,9 +115,9 @@ type
   TOSSL_FUNC_digest_final_fn = function(dctx: Pointer; _out: PIdAnsiChar; outl: PIdC_SIZET; outsz: TIdC_SIZET): TIdC_INT; cdecl;
   TOSSL_FUNC_digest_squeeze_fn = function(dctx: Pointer; _out: PIdAnsiChar; outl: PIdC_SIZET; outsz: TIdC_SIZET): TIdC_INT; cdecl;
   TOSSL_FUNC_digest_digest_fn = function(provctx: Pointer; _in: PIdAnsiChar; inl: TIdC_SIZET; _out: PIdAnsiChar; outl: PIdC_SIZET; outsz: TIdC_SIZET): TIdC_INT; cdecl;
-  TOSSL_FUNC_digest_freectx_fn = function(dctx: Pointer): void; cdecl;
+  TOSSL_FUNC_digest_freectx_fn = procedure(dctx: Pointer); cdecl;
   TOSSL_FUNC_digest_dupctx_fn = function(dctx: Pointer): Pointer; cdecl;
-  TOSSL_FUNC_digest_copyctx_fn = function(outctx: Pointer; inctx: Pointer): void; cdecl;
+  TOSSL_FUNC_digest_copyctx_fn = procedure(outctx: Pointer; inctx: Pointer); cdecl;
   TOSSL_FUNC_digest_get_params_fn = function(params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_digest_set_ctx_params_fn = function(vctx: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_digest_get_ctx_params_fn = function(vctx: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl;
@@ -134,7 +134,7 @@ type
   TOSSL_FUNC_cipher_pipeline_decrypt_init_fn = function(cctx: Pointer; key: PIdAnsiChar; keylen: TIdC_SIZET; numpipes: TIdC_SIZET; iv: PPIdAnsiChar; ivlen: TIdC_SIZET; params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_cipher_pipeline_update_fn = function(cctx: Pointer; numpipes: TIdC_SIZET; _out: PPIdAnsiChar; outl: PIdC_SIZET; outsize: PIdC_SIZET; _in: PPIdAnsiChar; inl: PIdC_SIZET): TIdC_INT; cdecl;
   TOSSL_FUNC_cipher_pipeline_final_fn = function(cctx: Pointer; numpipes: TIdC_SIZET; _out: PPIdAnsiChar; outl: PIdC_SIZET; outsize: PIdC_SIZET): TIdC_INT; cdecl;
-  TOSSL_FUNC_cipher_freectx_fn = function(cctx: Pointer): void; cdecl;
+  TOSSL_FUNC_cipher_freectx_fn = procedure(cctx: Pointer); cdecl;
   TOSSL_FUNC_cipher_dupctx_fn = function(cctx: Pointer): Pointer; cdecl;
   TOSSL_FUNC_cipher_get_params_fn = function(params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_cipher_get_ctx_params_fn = function(cctx: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl;
@@ -146,7 +146,7 @@ type
   TOSSL_FUNC_cipher_decrypt_skey_init_fn = function(cctx: Pointer; skeydata: Pointer; iv: PIdAnsiChar; ivlen: TIdC_SIZET; params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_mac_newctx_fn = function(provctx: Pointer): Pointer; cdecl;
   TOSSL_FUNC_mac_dupctx_fn = function(src: Pointer): Pointer; cdecl;
-  TOSSL_FUNC_mac_freectx_fn = function(mctx: Pointer): void; cdecl;
+  TOSSL_FUNC_mac_freectx_fn = procedure(mctx: Pointer); cdecl;
   TOSSL_FUNC_mac_init_fn = function(mctx: Pointer; key: PIdAnsiChar; keylen: TIdC_SIZET; params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_mac_update_fn = function(mctx: Pointer; _in: PIdAnsiChar; inl: TIdC_SIZET): TIdC_INT; cdecl;
   TOSSL_FUNC_mac_final_fn = function(mctx: Pointer; _out: PIdAnsiChar; outl: PIdC_SIZET; outsize: TIdC_SIZET): TIdC_INT; cdecl;
@@ -157,7 +157,7 @@ type
   TOSSL_FUNC_mac_get_ctx_params_fn = function(mctx: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_mac_set_ctx_params_fn = function(mctx: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_mac_init_skey_fn = function(mctx: Pointer; key: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl;
-  TOSSL_FUNC_skeymgmt_free_fn = function(keydata: Pointer): void; cdecl;
+  TOSSL_FUNC_skeymgmt_free_fn = procedure(keydata: Pointer); cdecl;
   TOSSL_FUNC_skeymgmt_imp_settable_params_fn = function(provctx: Pointer): POSSL_PARAM; cdecl;
   TOSSL_FUNC_skeymgmt_import_fn = function(provctx: Pointer; selection: TIdC_INT; params: POSSL_PARAM): Pointer; cdecl;
   TOSSL_FUNC_skeymgmt_export_fn = function(keydata: Pointer; selection: TIdC_INT; param_cb: TOSSL_FUNC_provider_get_capabilities_fn_func_cb; cbarg: Pointer): TIdC_INT; cdecl;
@@ -166,8 +166,8 @@ type
   TOSSL_FUNC_skeymgmt_get_key_id_fn = function(keydata: Pointer): PIdAnsiChar; cdecl;
   TOSSL_FUNC_kdf_newctx_fn = function(provctx: Pointer): Pointer; cdecl;
   TOSSL_FUNC_kdf_dupctx_fn = function(src: Pointer): Pointer; cdecl;
-  TOSSL_FUNC_kdf_freectx_fn = function(kctx: Pointer): void; cdecl;
-  TOSSL_FUNC_kdf_reset_fn = function(kctx: Pointer): void; cdecl;
+  TOSSL_FUNC_kdf_freectx_fn = procedure(kctx: Pointer); cdecl;
+  TOSSL_FUNC_kdf_reset_fn = procedure(kctx: Pointer); cdecl;
   TOSSL_FUNC_kdf_derive_fn = function(kctx: Pointer; key: PIdAnsiChar; keylen: TIdC_SIZET; params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_kdf_gettable_params_fn = function(provctx: Pointer): POSSL_PARAM; cdecl;
   TOSSL_FUNC_kdf_gettable_ctx_params_fn = function(kctx: Pointer; provctx: Pointer): POSSL_PARAM; cdecl;
@@ -178,7 +178,7 @@ type
   TOSSL_FUNC_kdf_set_skey_fn = function(kctx: Pointer; skeydata: Pointer; paramname: PIdAnsiChar): TIdC_INT; cdecl;
   TOSSL_FUNC_kdf_derive_skey_fn = function(ctx: Pointer; key_type: PIdAnsiChar; provctx: Pointer; import: TOSSL_FUNC_skeymgmt_import_fn; keylen: TIdC_SIZET; params: POSSL_PARAM): Pointer; cdecl;
   TOSSL_FUNC_rand_newctx_fn = function(provctx: Pointer; parent: Pointer; parent_calls: POSSL_DISPATCH): Pointer; cdecl;
-  TOSSL_FUNC_rand_freectx_fn = function(vctx: Pointer): void; cdecl;
+  TOSSL_FUNC_rand_freectx_fn = procedure(vctx: Pointer); cdecl;
   TOSSL_FUNC_rand_instantiate_fn = function(vdrbg: Pointer; strength: TIdC_UINT; prediction_resistance: TIdC_INT; pstr: PIdAnsiChar; pstr_len: TIdC_SIZET; params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_rand_uninstantiate_fn = function(vdrbg: Pointer): TIdC_INT; cdecl;
   TOSSL_FUNC_rand_generate_fn = function(vctx: Pointer; _out: PIdAnsiChar; outlen: TIdC_SIZET; strength: TIdC_UINT; prediction_resistance: TIdC_INT; addin: PIdAnsiChar; addin_len: TIdC_SIZET): TIdC_INT; cdecl;
@@ -186,7 +186,7 @@ type
   TOSSL_FUNC_rand_nonce_fn = function(vctx: Pointer; _out: PIdAnsiChar; strength: TIdC_UINT; min_noncelen: TIdC_SIZET; max_noncelen: TIdC_SIZET): TIdC_SIZET; cdecl;
   TOSSL_FUNC_rand_enable_locking_fn = function(vctx: Pointer): TIdC_INT; cdecl;
   TOSSL_FUNC_rand_lock_fn = function(vctx: Pointer): TIdC_INT; cdecl;
-  TOSSL_FUNC_rand_unlock_fn = function(vctx: Pointer): void; cdecl;
+  TOSSL_FUNC_rand_unlock_fn = procedure(vctx: Pointer); cdecl;
   TOSSL_FUNC_rand_gettable_params_fn = function(provctx: Pointer): POSSL_PARAM; cdecl;
   TOSSL_FUNC_rand_gettable_ctx_params_fn = function(vctx: Pointer; provctx: Pointer): POSSL_PARAM; cdecl;
   TOSSL_FUNC_rand_settable_ctx_params_fn = function(vctx: Pointer; provctx: Pointer): POSSL_PARAM; cdecl;
@@ -195,10 +195,10 @@ type
   TOSSL_FUNC_rand_set_ctx_params_fn = function(vctx: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
   // OSSL_FUNC_rand_set_callbacks_fn_func_cb = function(arg1: Possl_param_st; arg2: Possl_param_st; arg3: Pointer): TIdC_INT; cdecl;
-  TOSSL_FUNC_rand_set_callbacks_fn = function(vctx: Pointer; get_entropy: TOSSL_FUNC_rand_set_callbacks_fn_func_cb; cleanup_entropy: TOSSL_FUNC_provider_get_capabilities_fn_func_cb; get_nonce: TOSSL_FUNC_rand_set_callbacks_fn_func_cb; cleanup_nonce: TOSSL_FUNC_provider_get_capabilities_fn_func_cb; arg: Pointer): void; cdecl;
+  TOSSL_FUNC_rand_set_callbacks_fn = procedure(vctx: Pointer; get_entropy: TOSSL_FUNC_rand_set_callbacks_fn_func_cb; cleanup_entropy: TOSSL_FUNC_provider_get_capabilities_fn_func_cb; get_nonce: TOSSL_FUNC_rand_set_callbacks_fn_func_cb; cleanup_nonce: TOSSL_FUNC_provider_get_capabilities_fn_func_cb; arg: Pointer); cdecl;
   TOSSL_FUNC_rand_verify_zeroization_fn = function(vctx: Pointer): TIdC_INT; cdecl;
   TOSSL_FUNC_rand_get_seed_fn = function(vctx: Pointer; buffer: PPIdAnsiChar; entropy: TIdC_INT; min_len: TIdC_SIZET; max_len: TIdC_SIZET; prediction_resistance: TIdC_INT; adin: PIdAnsiChar; adin_len: TIdC_SIZET): TIdC_SIZET; cdecl;
-  TOSSL_FUNC_rand_clear_seed_fn = function(vctx: Pointer; buffer: PIdAnsiChar; b_len: TIdC_SIZET): void; cdecl;
+  TOSSL_FUNC_rand_clear_seed_fn = procedure(vctx: Pointer; buffer: PIdAnsiChar; b_len: TIdC_SIZET); cdecl;
   TOSSL_FUNC_keymgmt_new_fn = function(provctx: Pointer): Pointer; cdecl;
   TOSSL_FUNC_keymgmt_gen_init_fn = function(provctx: Pointer; selection: TIdC_INT; params: POSSL_PARAM): Pointer; cdecl;
   TOSSL_FUNC_keymgmt_gen_set_template_fn = function(genctx: Pointer; templ: Pointer): TIdC_INT; cdecl;
@@ -207,9 +207,9 @@ type
   TOSSL_FUNC_keymgmt_gen_get_params_fn = function(genctx: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_keymgmt_gen_gettable_params_fn = function(genctx: Pointer; provctx: Pointer): POSSL_PARAM; cdecl;
   TOSSL_FUNC_keymgmt_gen_fn = function(genctx: Pointer; cb: TOSSL_FUNC_provider_get_capabilities_fn_func_cb; cbarg: Pointer): Pointer; cdecl;
-  TOSSL_FUNC_keymgmt_gen_cleanup_fn = function(genctx: Pointer): void; cdecl;
+  TOSSL_FUNC_keymgmt_gen_cleanup_fn = procedure(genctx: Pointer); cdecl;
   TOSSL_FUNC_keymgmt_load_fn = function(reference: Pointer; reference_sz: TIdC_SIZET): Pointer; cdecl;
-  TOSSL_FUNC_keymgmt_free_fn = function(keydata: Pointer): void; cdecl;
+  TOSSL_FUNC_keymgmt_free_fn = procedure(keydata: Pointer); cdecl;
   TOSSL_FUNC_keymgmt_get_params_fn = function(keydata: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_keymgmt_gettable_params_fn = function(provctx: Pointer): POSSL_PARAM; cdecl;
   TOSSL_FUNC_keymgmt_set_params_fn = function(keydata: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl;
@@ -229,7 +229,7 @@ type
   TOSSL_FUNC_keyexch_init_fn = function(ctx: Pointer; provkey: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_keyexch_derive_fn = function(ctx: Pointer; secret: PIdAnsiChar; secretlen: PIdC_SIZET; outlen: TIdC_SIZET): TIdC_INT; cdecl;
   TOSSL_FUNC_keyexch_set_peer_fn = function(ctx: Pointer; provkey: Pointer): TIdC_INT; cdecl;
-  TOSSL_FUNC_keyexch_freectx_fn = function(ctx: Pointer): void; cdecl;
+  TOSSL_FUNC_keyexch_freectx_fn = procedure(ctx: Pointer); cdecl;
   TOSSL_FUNC_keyexch_dupctx_fn = function(ctx: Pointer): Pointer; cdecl;
   TOSSL_FUNC_keyexch_set_ctx_params_fn = function(ctx: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_keyexch_settable_ctx_params_fn = function(ctx: Pointer; provctx: Pointer): POSSL_PARAM; cdecl;
@@ -257,7 +257,7 @@ type
   TOSSL_FUNC_signature_digest_verify_update_fn = function(ctx: Pointer; data: PIdAnsiChar; datalen: TIdC_SIZET): TIdC_INT; cdecl;
   TOSSL_FUNC_signature_digest_verify_final_fn = function(ctx: Pointer; sig: PIdAnsiChar; siglen: TIdC_SIZET): TIdC_INT; cdecl;
   TOSSL_FUNC_signature_digest_verify_fn = function(ctx: Pointer; sig: PIdAnsiChar; siglen: TIdC_SIZET; tbs: PIdAnsiChar; tbslen: TIdC_SIZET): TIdC_INT; cdecl;
-  TOSSL_FUNC_signature_freectx_fn = function(ctx: Pointer): void; cdecl;
+  TOSSL_FUNC_signature_freectx_fn = procedure(ctx: Pointer); cdecl;
   TOSSL_FUNC_signature_dupctx_fn = function(ctx: Pointer): Pointer; cdecl;
   TOSSL_FUNC_signature_get_ctx_params_fn = function(ctx: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_signature_gettable_ctx_params_fn = function(ctx: Pointer; provctx: Pointer): POSSL_PARAM; cdecl;
@@ -273,7 +273,7 @@ type
   TOSSL_FUNC_asym_cipher_encrypt_fn = function(ctx: Pointer; _out: PIdAnsiChar; outlen: PIdC_SIZET; outsize: TIdC_SIZET; _in: PIdAnsiChar; inlen: TIdC_SIZET): TIdC_INT; cdecl;
   TOSSL_FUNC_asym_cipher_decrypt_init_fn = function(ctx: Pointer; provkey: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_asym_cipher_decrypt_fn = function(ctx: Pointer; _out: PIdAnsiChar; outlen: PIdC_SIZET; outsize: TIdC_SIZET; _in: PIdAnsiChar; inlen: TIdC_SIZET): TIdC_INT; cdecl;
-  TOSSL_FUNC_asym_cipher_freectx_fn = function(ctx: Pointer): void; cdecl;
+  TOSSL_FUNC_asym_cipher_freectx_fn = procedure(ctx: Pointer); cdecl;
   TOSSL_FUNC_asym_cipher_dupctx_fn = function(ctx: Pointer): Pointer; cdecl;
   TOSSL_FUNC_asym_cipher_get_ctx_params_fn = function(ctx: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_asym_cipher_gettable_ctx_params_fn = function(ctx: Pointer; provctx: Pointer): POSSL_PARAM; cdecl;
@@ -286,14 +286,14 @@ type
   TOSSL_FUNC_kem_decapsulate_init_fn = function(ctx: Pointer; provkey: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_kem_auth_decapsulate_init_fn = function(ctx: Pointer; provkey: Pointer; authpubkey: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_kem_decapsulate_fn = function(ctx: Pointer; _out: PIdAnsiChar; outlen: PIdC_SIZET; _in: PIdAnsiChar; inlen: TIdC_SIZET): TIdC_INT; cdecl;
-  TOSSL_FUNC_kem_freectx_fn = function(ctx: Pointer): void; cdecl;
+  TOSSL_FUNC_kem_freectx_fn = procedure(ctx: Pointer); cdecl;
   TOSSL_FUNC_kem_dupctx_fn = function(ctx: Pointer): Pointer; cdecl;
   TOSSL_FUNC_kem_get_ctx_params_fn = function(ctx: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_kem_gettable_ctx_params_fn = function(ctx: Pointer; provctx: Pointer): POSSL_PARAM; cdecl;
   TOSSL_FUNC_kem_set_ctx_params_fn = function(ctx: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_kem_settable_ctx_params_fn = function(ctx: Pointer; provctx: Pointer): POSSL_PARAM; cdecl;
   TOSSL_FUNC_encoder_newctx_fn = function(provctx: Pointer): Pointer; cdecl;
-  TOSSL_FUNC_encoder_freectx_fn = function(ctx: Pointer): void; cdecl;
+  TOSSL_FUNC_encoder_freectx_fn = procedure(ctx: Pointer); cdecl;
   TOSSL_FUNC_encoder_get_params_fn = function(params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_encoder_gettable_params_fn = function(provctx: Pointer): POSSL_PARAM; cdecl;
   TOSSL_FUNC_encoder_set_ctx_params_fn = function(ctx: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl;
@@ -303,9 +303,9 @@ type
   // OSSL_FUNC_encoder_encode_fn_func_cb = function(arg1: PIdAnsiChar; arg2: TIdC_ULONG; arg3: PIdC_ULONG; arg4: Possl_param_st; arg5: Pointer): TIdC_INT; cdecl;
   TOSSL_FUNC_encoder_encode_fn = function(ctx: Pointer; _out: POSSL_CORE_BIO; obj_raw: Pointer; obj_abstract: POSSL_PARAM; selection: TIdC_INT; cb: TOSSL_FUNC_encoder_encode_fn_func_cb; cbarg: Pointer): TIdC_INT; cdecl;
   TOSSL_FUNC_encoder_import_object_fn = function(ctx: Pointer; selection: TIdC_INT; params: POSSL_PARAM): Pointer; cdecl;
-  TOSSL_FUNC_encoder_free_object_fn = function(obj: Pointer): void; cdecl;
+  TOSSL_FUNC_encoder_free_object_fn = procedure(obj: Pointer); cdecl;
   TOSSL_FUNC_decoder_newctx_fn = function(provctx: Pointer): Pointer; cdecl;
-  TOSSL_FUNC_decoder_freectx_fn = function(ctx: Pointer): void; cdecl;
+  TOSSL_FUNC_decoder_freectx_fn = procedure(ctx: Pointer); cdecl;
   TOSSL_FUNC_decoder_get_params_fn = function(params: POSSL_PARAM): TIdC_INT; cdecl;
   TOSSL_FUNC_decoder_gettable_params_fn = function(provctx: Pointer): POSSL_PARAM; cdecl;
   TOSSL_FUNC_decoder_set_ctx_params_fn = function(ctx: Pointer; params: POSSL_PARAM): TIdC_INT; cdecl;

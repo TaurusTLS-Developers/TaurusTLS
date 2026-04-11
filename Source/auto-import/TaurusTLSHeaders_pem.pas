@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -160,10 +160,10 @@ var
   PEM_def_callback: function(buf: PIdAnsiChar; num: TIdC_INT; rwflag: TIdC_INT; userdata: Pointer): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM PEM_def_callback}
 
-  PEM_proc_type: function(buf: PIdAnsiChar; _type: TIdC_INT): void; cdecl = nil;
+  PEM_proc_type: procedure(buf: PIdAnsiChar; _type: TIdC_INT); cdecl = nil;
   {$EXTERNALSYM PEM_proc_type}
 
-  PEM_dek_info: function(buf: PIdAnsiChar; _type: PIdAnsiChar; len: TIdC_INT; str: PIdAnsiChar): void; cdecl = nil;
+  PEM_dek_info: procedure(buf: PIdAnsiChar; _type: PIdAnsiChar; len: TIdC_INT; str: PIdAnsiChar); cdecl = nil;
   {$EXTERNALSYM PEM_dek_info}
 
   PEM_read_bio_X509: function(_out: PBIO; x: PPX509; cb: TPEM_do_header_callback_cb; u: Pointer): PX509; cdecl = nil;
@@ -557,8 +557,8 @@ function PEM_SignInit(ctx: PEVP_MD_CTX; _type: PEVP_MD): TIdC_INT; cdecl;
 function PEM_SignUpdate(ctx: PEVP_MD_CTX; d: PIdAnsiChar; cnt: TIdC_UINT): TIdC_INT; cdecl;
 function PEM_SignFinal(ctx: PEVP_MD_CTX; sigret: PIdAnsiChar; siglen: PIdC_UINT; pkey: PEVP_PKEY): TIdC_INT; cdecl;
 function PEM_def_callback(buf: PIdAnsiChar; num: TIdC_INT; rwflag: TIdC_INT; userdata: Pointer): TIdC_INT; cdecl;
-function PEM_proc_type(buf: PIdAnsiChar; _type: TIdC_INT): void; cdecl;
-function PEM_dek_info(buf: PIdAnsiChar; _type: PIdAnsiChar; len: TIdC_INT; str: PIdAnsiChar): void; cdecl;
+procedure PEM_proc_type(buf: PIdAnsiChar; _type: TIdC_INT); cdecl;
+procedure PEM_dek_info(buf: PIdAnsiChar; _type: PIdAnsiChar; len: TIdC_INT; str: PIdAnsiChar); cdecl;
 function PEM_read_bio_X509(_out: PBIO; x: PPX509; cb: TPEM_do_header_callback_cb; u: Pointer): PX509; cdecl;
 function PEM_read_X509(_out: PFILE; x: PPX509; cb: TPEM_do_header_callback_cb; u: Pointer): PX509; cdecl;
 function PEM_write_bio_X509(_out: PBIO; x: PX509): TIdC_INT; cdecl;
@@ -720,8 +720,8 @@ function PEM_SignInit(ctx: PEVP_MD_CTX; _type: PEVP_MD): TIdC_INT; cdecl externa
 function PEM_SignUpdate(ctx: PEVP_MD_CTX; d: PIdAnsiChar; cnt: TIdC_UINT): TIdC_INT; cdecl external CLibCrypto name 'PEM_SignUpdate';
 function PEM_SignFinal(ctx: PEVP_MD_CTX; sigret: PIdAnsiChar; siglen: PIdC_UINT; pkey: PEVP_PKEY): TIdC_INT; cdecl external CLibCrypto name 'PEM_SignFinal';
 function PEM_def_callback(buf: PIdAnsiChar; num: TIdC_INT; rwflag: TIdC_INT; userdata: Pointer): TIdC_INT; cdecl external CLibCrypto name 'PEM_def_callback';
-function PEM_proc_type(buf: PIdAnsiChar; _type: TIdC_INT): void; cdecl external CLibCrypto name 'PEM_proc_type';
-function PEM_dek_info(buf: PIdAnsiChar; _type: PIdAnsiChar; len: TIdC_INT; str: PIdAnsiChar): void; cdecl external CLibCrypto name 'PEM_dek_info';
+procedure PEM_proc_type(buf: PIdAnsiChar; _type: TIdC_INT); cdecl external CLibCrypto name 'PEM_proc_type';
+procedure PEM_dek_info(buf: PIdAnsiChar; _type: PIdAnsiChar; len: TIdC_INT; str: PIdAnsiChar); cdecl external CLibCrypto name 'PEM_dek_info';
 function PEM_read_bio_X509(_out: PBIO; x: PPX509; cb: TPEM_do_header_callback_cb; u: Pointer): PX509; cdecl external CLibCrypto name 'PEM_read_bio_X509';
 function PEM_read_X509(_out: PFILE; x: PPX509; cb: TPEM_do_header_callback_cb; u: Pointer): PX509; cdecl external CLibCrypto name 'PEM_read_X509';
 function PEM_write_bio_X509(_out: PBIO; x: PX509): TIdC_INT; cdecl external CLibCrypto name 'PEM_write_bio_X509';
@@ -1454,12 +1454,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PEM_def_callback_procname);
 end;
 
-function ERR_PEM_proc_type(buf: PIdAnsiChar; _type: TIdC_INT): void; cdecl
+procedure ERR_PEM_proc_type(buf: PIdAnsiChar; _type: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PEM_proc_type_procname);
 end;
 
-function ERR_PEM_dek_info(buf: PIdAnsiChar; _type: PIdAnsiChar; len: TIdC_INT; str: PIdAnsiChar): void; cdecl
+procedure ERR_PEM_dek_info(buf: PIdAnsiChar; _type: PIdAnsiChar; len: TIdC_INT; str: PIdAnsiChar); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PEM_dek_info_procname);
 end;

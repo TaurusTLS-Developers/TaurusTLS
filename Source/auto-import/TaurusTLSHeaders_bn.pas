@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -35,7 +35,7 @@ uses
 // =============================================================================
 type
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // BN_GENCB_set_old_callback_cb = function(arg1: TIdC_INT; arg2: TIdC_INT; arg3: Pointer): void; cdecl;
+  // BN_GENCB_set_old_callback_cb = procedure(arg1: TIdC_INT; arg2: TIdC_INT; arg3: Pointer); cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
   // BN_GENCB_set_callback_cb = function(arg1: TIdC_INT; arg2: TIdC_INT; arg3: PBN_GENCB): TIdC_INT; cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
@@ -74,13 +74,13 @@ const
 // =============================================================================
 var
 
-  BN_set_flags: function(b: PBIGNUM; n: TIdC_INT): void; cdecl = nil;
+  BN_set_flags: procedure(b: PBIGNUM; n: TIdC_INT); cdecl = nil;
   {$EXTERNALSYM BN_set_flags}
 
   BN_get_flags: function(b: PBIGNUM; n: TIdC_INT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BN_get_flags}
 
-  BN_with_flags: function(dest: PBIGNUM; b: PBIGNUM; flags: TIdC_INT): void; cdecl = nil;
+  BN_with_flags: procedure(dest: PBIGNUM; b: PBIGNUM; flags: TIdC_INT); cdecl = nil;
   {$EXTERNALSYM BN_with_flags}
 
   BN_GENCB_call: function(cb: PBN_GENCB; a: TIdC_INT; b: TIdC_INT): TIdC_INT; cdecl = nil;
@@ -89,13 +89,13 @@ var
   BN_GENCB_new: function: PBN_GENCB; cdecl = nil;
   {$EXTERNALSYM BN_GENCB_new}
 
-  BN_GENCB_free: function(cb: PBN_GENCB): void; cdecl = nil;
+  BN_GENCB_free: procedure(cb: PBN_GENCB); cdecl = nil;
   {$EXTERNALSYM BN_GENCB_free}
 
-  BN_GENCB_set_old: function(gencb: PBN_GENCB; callback: TBN_GENCB_set_old_callback_cb; cb_arg: Pointer): void; cdecl = nil;
+  BN_GENCB_set_old: procedure(gencb: PBN_GENCB; callback: TBN_GENCB_set_old_callback_cb; cb_arg: Pointer); cdecl = nil;
   {$EXTERNALSYM BN_GENCB_set_old}
 
-  BN_GENCB_set: function(gencb: PBN_GENCB; callback: TBN_GENCB_set_callback_cb; cb_arg: Pointer): void; cdecl = nil;
+  BN_GENCB_set: procedure(gencb: PBN_GENCB; callback: TBN_GENCB_set_callback_cb; cb_arg: Pointer); cdecl = nil;
   {$EXTERNALSYM BN_GENCB_set}
 
   BN_GENCB_get_arg: function(cb: PBN_GENCB): Pointer; cdecl = nil;
@@ -116,7 +116,7 @@ var
   BN_is_odd: function(a: PBIGNUM): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BN_is_odd}
 
-  BN_zero_ex: function(a: PBIGNUM): void; cdecl = nil;
+  BN_zero_ex: procedure(a: PBIGNUM); cdecl = nil;
   {$EXTERNALSYM BN_zero_ex}
 
   BN_value_one: function: PBIGNUM; cdecl = nil;
@@ -137,16 +137,16 @@ var
   BN_CTX_secure_new: function: PBN_CTX; cdecl = nil;
   {$EXTERNALSYM BN_CTX_secure_new}
 
-  BN_CTX_free: function(c: PBN_CTX): void; cdecl = nil;
+  BN_CTX_free: procedure(c: PBN_CTX); cdecl = nil;
   {$EXTERNALSYM BN_CTX_free}
 
-  BN_CTX_start: function(ctx: PBN_CTX): void; cdecl = nil;
+  BN_CTX_start: procedure(ctx: PBN_CTX); cdecl = nil;
   {$EXTERNALSYM BN_CTX_start}
 
   BN_CTX_get: function(ctx: PBN_CTX): PBIGNUM; cdecl = nil;
   {$EXTERNALSYM BN_CTX_get}
 
-  BN_CTX_end: function(ctx: PBN_CTX): void; cdecl = nil;
+  BN_CTX_end: procedure(ctx: PBN_CTX); cdecl = nil;
   {$EXTERNALSYM BN_CTX_end}
 
   BN_rand_ex: function(rnd: PBIGNUM; bits: TIdC_INT; top: TIdC_INT; bottom: TIdC_INT; strength: TIdC_UINT; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
@@ -194,13 +194,13 @@ var
   BN_secure_new: function: PBIGNUM; cdecl = nil;
   {$EXTERNALSYM BN_secure_new}
 
-  BN_clear_free: function(a: PBIGNUM): void; cdecl = nil;
+  BN_clear_free: procedure(a: PBIGNUM); cdecl = nil;
   {$EXTERNALSYM BN_clear_free}
 
   BN_copy: function(a: PBIGNUM; b: PBIGNUM): PBIGNUM; cdecl = nil;
   {$EXTERNALSYM BN_copy}
 
-  BN_swap: function(a: PBIGNUM; b: PBIGNUM): void; cdecl = nil;
+  BN_swap: procedure(a: PBIGNUM; b: PBIGNUM); cdecl = nil;
   {$EXTERNALSYM BN_swap}
 
   BN_bin2bn: function(s: PIdAnsiChar; len: TIdC_INT; ret: PBIGNUM): PBIGNUM; cdecl = nil;
@@ -266,7 +266,7 @@ var
   BN_sqr: function(r: PBIGNUM; a: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BN_sqr}
 
-  BN_set_negative: function(b: PBIGNUM; n: TIdC_INT): void; cdecl = nil;
+  BN_set_negative: procedure(b: PBIGNUM; n: TIdC_INT); cdecl = nil;
   {$EXTERNALSYM BN_set_negative}
 
   BN_is_negative: function(b: PBIGNUM): TIdC_INT; cdecl = nil;
@@ -332,7 +332,7 @@ var
   BN_cmp: function(a: PBIGNUM; b: PBIGNUM): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BN_cmp}
 
-  BN_free: function(a: PBIGNUM): void; cdecl = nil;
+  BN_free: procedure(a: PBIGNUM); cdecl = nil;
   {$EXTERNALSYM BN_free}
 
   BN_is_bit_set: function(a: PBIGNUM; n: TIdC_INT): TIdC_INT; cdecl = nil;
@@ -386,7 +386,7 @@ var
   BN_rshift1: function(r: PBIGNUM; a: PBIGNUM): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BN_rshift1}
 
-  BN_clear: function(a: PBIGNUM): void; cdecl = nil;
+  BN_clear: procedure(a: PBIGNUM); cdecl = nil;
   {$EXTERNALSYM BN_clear}
 
   BN_dup: function(a: PBIGNUM): PBIGNUM; cdecl = nil;
@@ -431,7 +431,7 @@ var
   BN_mod_sqrt: function(ret: PBIGNUM; a: PBIGNUM; n: PBIGNUM; ctx: PBN_CTX): PBIGNUM; cdecl = nil;
   {$EXTERNALSYM BN_mod_sqrt}
 
-  BN_consttime_swap: function(swap: TIdC_ULONG; a: PBIGNUM; b: PBIGNUM; nwords: TIdC_INT): void; cdecl = nil;
+  BN_consttime_swap: procedure(swap: TIdC_ULONG; a: PBIGNUM; b: PBIGNUM; nwords: TIdC_INT); cdecl = nil;
   {$EXTERNALSYM BN_consttime_swap}
 
   BN_is_prime_ex: function(p: PBIGNUM; nchecks: TIdC_INT; ctx: PBN_CTX; cb: PBN_GENCB): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -470,7 +470,7 @@ var
   BN_from_montgomery: function(r: PBIGNUM; a: PBIGNUM; mont: PBN_MONT_CTX; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BN_from_montgomery}
 
-  BN_MONT_CTX_free: function(mont: PBN_MONT_CTX): void; cdecl = nil;
+  BN_MONT_CTX_free: procedure(mont: PBN_MONT_CTX); cdecl = nil;
   {$EXTERNALSYM BN_MONT_CTX_free}
 
   BN_MONT_CTX_set: function(mont: PBN_MONT_CTX; _mod: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
@@ -485,7 +485,7 @@ var
   BN_BLINDING_new: function(A: PBIGNUM; Ai: PBIGNUM; _mod: PBIGNUM): PBN_BLINDING; cdecl = nil;
   {$EXTERNALSYM BN_BLINDING_new}
 
-  BN_BLINDING_free: function(b: PBN_BLINDING): void; cdecl = nil;
+  BN_BLINDING_free: procedure(b: PBN_BLINDING); cdecl = nil;
   {$EXTERNALSYM BN_BLINDING_free}
 
   BN_BLINDING_update: function(b: PBN_BLINDING; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
@@ -506,7 +506,7 @@ var
   BN_BLINDING_is_current_thread: function(b: PBN_BLINDING): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BN_BLINDING_is_current_thread}
 
-  BN_BLINDING_set_current_thread: function(b: PBN_BLINDING): void; cdecl = nil;
+  BN_BLINDING_set_current_thread: procedure(b: PBN_BLINDING); cdecl = nil;
   {$EXTERNALSYM BN_BLINDING_set_current_thread}
 
   BN_BLINDING_lock: function(b: PBN_BLINDING): TIdC_INT; cdecl = nil;
@@ -518,7 +518,7 @@ var
   BN_BLINDING_get_flags: function(arg1: PBN_BLINDING): TIdC_ULONG; cdecl = nil;
   {$EXTERNALSYM BN_BLINDING_get_flags}
 
-  BN_BLINDING_set_flags: function(arg1: PBN_BLINDING; arg2: TIdC_ULONG): void; cdecl = nil;
+  BN_BLINDING_set_flags: procedure(arg1: PBN_BLINDING; arg2: TIdC_ULONG); cdecl = nil;
   {$EXTERNALSYM BN_BLINDING_set_flags}
 
   BN_BLINDING_create_param: function(b: PBN_BLINDING; e: PBIGNUM; m: PBIGNUM; ctx: PBN_CTX; bn_mod_exp: TBN_BLINDING_create_param_bn_mod_exp_cb; m_ctx: PBN_MONT_CTX): PBN_BLINDING; cdecl = nil;
@@ -527,7 +527,7 @@ var
   BN_RECP_CTX_new: function: PBN_RECP_CTX; cdecl = nil;
   {$EXTERNALSYM BN_RECP_CTX_new}
 
-  BN_RECP_CTX_free: function(recp: PBN_RECP_CTX): void; cdecl = nil;
+  BN_RECP_CTX_free: procedure(recp: PBN_RECP_CTX); cdecl = nil;
   {$EXTERNALSYM BN_RECP_CTX_free}
 
   BN_RECP_CTX_set: function(recp: PBN_RECP_CTX; rdiv: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
@@ -670,31 +670,31 @@ var
 // STATIC BINDING ROUTINES
 // =============================================================================
 
-function BN_set_flags(b: PBIGNUM; n: TIdC_INT): void; cdecl;
+procedure BN_set_flags(b: PBIGNUM; n: TIdC_INT); cdecl;
 function BN_get_flags(b: PBIGNUM; n: TIdC_INT): TIdC_INT; cdecl;
-function BN_with_flags(dest: PBIGNUM; b: PBIGNUM; flags: TIdC_INT): void; cdecl;
+procedure BN_with_flags(dest: PBIGNUM; b: PBIGNUM; flags: TIdC_INT); cdecl;
 function BN_GENCB_call(cb: PBN_GENCB; a: TIdC_INT; b: TIdC_INT): TIdC_INT; cdecl;
 function BN_GENCB_new: PBN_GENCB; cdecl;
-function BN_GENCB_free(cb: PBN_GENCB): void; cdecl;
-function BN_GENCB_set_old(gencb: PBN_GENCB; callback: TBN_GENCB_set_old_callback_cb; cb_arg: Pointer): void; cdecl;
-function BN_GENCB_set(gencb: PBN_GENCB; callback: TBN_GENCB_set_callback_cb; cb_arg: Pointer): void; cdecl;
+procedure BN_GENCB_free(cb: PBN_GENCB); cdecl;
+procedure BN_GENCB_set_old(gencb: PBN_GENCB; callback: TBN_GENCB_set_old_callback_cb; cb_arg: Pointer); cdecl;
+procedure BN_GENCB_set(gencb: PBN_GENCB; callback: TBN_GENCB_set_callback_cb; cb_arg: Pointer); cdecl;
 function BN_GENCB_get_arg(cb: PBN_GENCB): Pointer; cdecl;
 function BN_abs_is_word(a: PBIGNUM; w: TIdC_ULONG): TIdC_INT; cdecl;
 function BN_is_zero(a: PBIGNUM): TIdC_INT; cdecl;
 function BN_is_one(a: PBIGNUM): TIdC_INT; cdecl;
 function BN_is_word(a: PBIGNUM; w: TIdC_ULONG): TIdC_INT; cdecl;
 function BN_is_odd(a: PBIGNUM): TIdC_INT; cdecl;
-function BN_zero_ex(a: PBIGNUM): void; cdecl;
+procedure BN_zero_ex(a: PBIGNUM); cdecl;
 function BN_value_one: PBIGNUM; cdecl;
 function BN_options: PIdAnsiChar; cdecl;
 function BN_CTX_new_ex(ctx: POSSL_LIB_CTX): PBN_CTX; cdecl;
 function BN_CTX_new: PBN_CTX; cdecl;
 function BN_CTX_secure_new_ex(ctx: POSSL_LIB_CTX): PBN_CTX; cdecl;
 function BN_CTX_secure_new: PBN_CTX; cdecl;
-function BN_CTX_free(c: PBN_CTX): void; cdecl;
-function BN_CTX_start(ctx: PBN_CTX): void; cdecl;
+procedure BN_CTX_free(c: PBN_CTX); cdecl;
+procedure BN_CTX_start(ctx: PBN_CTX); cdecl;
 function BN_CTX_get(ctx: PBN_CTX): PBIGNUM; cdecl;
-function BN_CTX_end(ctx: PBN_CTX): void; cdecl;
+procedure BN_CTX_end(ctx: PBN_CTX); cdecl;
 function BN_rand_ex(rnd: PBIGNUM; bits: TIdC_INT; top: TIdC_INT; bottom: TIdC_INT; strength: TIdC_UINT; ctx: PBN_CTX): TIdC_INT; cdecl;
 function BN_rand(rnd: PBIGNUM; bits: TIdC_INT; top: TIdC_INT; bottom: TIdC_INT): TIdC_INT; cdecl;
 function BN_priv_rand_ex(rnd: PBIGNUM; bits: TIdC_INT; top: TIdC_INT; bottom: TIdC_INT; strength: TIdC_UINT; ctx: PBN_CTX): TIdC_INT; cdecl;
@@ -710,9 +710,9 @@ function BN_num_bits_word(l: TIdC_ULONG): TIdC_INT; cdecl;
 function BN_security_bits(L: TIdC_INT; N: TIdC_INT): TIdC_INT; cdecl;
 function BN_new: PBIGNUM; cdecl;
 function BN_secure_new: PBIGNUM; cdecl;
-function BN_clear_free(a: PBIGNUM): void; cdecl;
+procedure BN_clear_free(a: PBIGNUM); cdecl;
 function BN_copy(a: PBIGNUM; b: PBIGNUM): PBIGNUM; cdecl;
-function BN_swap(a: PBIGNUM; b: PBIGNUM): void; cdecl;
+procedure BN_swap(a: PBIGNUM; b: PBIGNUM); cdecl;
 function BN_bin2bn(s: PIdAnsiChar; len: TIdC_INT; ret: PBIGNUM): PBIGNUM; cdecl;
 function BN_signed_bin2bn(s: PIdAnsiChar; len: TIdC_INT; ret: PBIGNUM): PBIGNUM; cdecl;
 function BN_bn2bin(a: PBIGNUM; _to: PIdAnsiChar): TIdC_INT; cdecl;
@@ -734,7 +734,7 @@ function BN_uadd(r: PBIGNUM; a: PBIGNUM; b: PBIGNUM): TIdC_INT; cdecl;
 function BN_add(r: PBIGNUM; a: PBIGNUM; b: PBIGNUM): TIdC_INT; cdecl;
 function BN_mul(r: PBIGNUM; a: PBIGNUM; b: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl;
 function BN_sqr(r: PBIGNUM; a: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl;
-function BN_set_negative(b: PBIGNUM; n: TIdC_INT): void; cdecl;
+procedure BN_set_negative(b: PBIGNUM; n: TIdC_INT); cdecl;
 function BN_is_negative(b: PBIGNUM): TIdC_INT; cdecl;
 function BN_div(dv: PBIGNUM; rem: PBIGNUM; m: PBIGNUM; d: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl;
 function BN_nnmod(r: PBIGNUM; m: PBIGNUM; d: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl;
@@ -756,7 +756,7 @@ function BN_sub_word(a: PBIGNUM; w: TIdC_ULONG): TIdC_INT; cdecl;
 function BN_set_word(a: PBIGNUM; w: TIdC_ULONG): TIdC_INT; cdecl;
 function BN_get_word(a: PBIGNUM): TIdC_ULONG; cdecl;
 function BN_cmp(a: PBIGNUM; b: PBIGNUM): TIdC_INT; cdecl;
-function BN_free(a: PBIGNUM): void; cdecl;
+procedure BN_free(a: PBIGNUM); cdecl;
 function BN_is_bit_set(a: PBIGNUM; n: TIdC_INT): TIdC_INT; cdecl;
 function BN_lshift(r: PBIGNUM; a: PBIGNUM; n: TIdC_INT): TIdC_INT; cdecl;
 function BN_lshift1(r: PBIGNUM; a: PBIGNUM): TIdC_INT; cdecl;
@@ -774,7 +774,7 @@ function BN_print(bio: PBIO; a: PBIGNUM): TIdC_INT; cdecl;
 function BN_reciprocal(r: PBIGNUM; m: PBIGNUM; len: TIdC_INT; ctx: PBN_CTX): TIdC_INT; cdecl;
 function BN_rshift(r: PBIGNUM; a: PBIGNUM; n: TIdC_INT): TIdC_INT; cdecl;
 function BN_rshift1(r: PBIGNUM; a: PBIGNUM): TIdC_INT; cdecl;
-function BN_clear(a: PBIGNUM): void; cdecl;
+procedure BN_clear(a: PBIGNUM); cdecl;
 function BN_dup(a: PBIGNUM): PBIGNUM; cdecl;
 function BN_ucmp(a: PBIGNUM; b: PBIGNUM): TIdC_INT; cdecl;
 function BN_set_bit(a: PBIGNUM; n: TIdC_INT): TIdC_INT; cdecl;
@@ -789,7 +789,7 @@ function BN_kronecker(a: PBIGNUM; b: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl;
 function BN_are_coprime(a: PBIGNUM; b: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl;
 function BN_mod_inverse(ret: PBIGNUM; a: PBIGNUM; n: PBIGNUM; ctx: PBN_CTX): PBIGNUM; cdecl;
 function BN_mod_sqrt(ret: PBIGNUM; a: PBIGNUM; n: PBIGNUM; ctx: PBN_CTX): PBIGNUM; cdecl;
-function BN_consttime_swap(swap: TIdC_ULONG; a: PBIGNUM; b: PBIGNUM; nwords: TIdC_INT): void; cdecl;
+procedure BN_consttime_swap(swap: TIdC_ULONG; a: PBIGNUM; b: PBIGNUM; nwords: TIdC_INT); cdecl;
 function BN_is_prime_ex(p: PBIGNUM; nchecks: TIdC_INT; ctx: PBN_CTX; cb: PBN_GENCB): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function BN_is_prime_fasttest_ex(p: PBIGNUM; nchecks: TIdC_INT; ctx: PBN_CTX; do_trial_division: TIdC_INT; cb: PBN_GENCB): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function BN_generate_prime_ex2(ret: PBIGNUM; bits: TIdC_INT; safe: TIdC_INT; add: PBIGNUM; rem: PBIGNUM; cb: PBN_GENCB; ctx: PBN_CTX): TIdC_INT; cdecl;
@@ -802,26 +802,26 @@ function BN_MONT_CTX_new: PBN_MONT_CTX; cdecl;
 function BN_mod_mul_montgomery(r: PBIGNUM; a: PBIGNUM; b: PBIGNUM; mont: PBN_MONT_CTX; ctx: PBN_CTX): TIdC_INT; cdecl;
 function BN_to_montgomery(r: PBIGNUM; a: PBIGNUM; mont: PBN_MONT_CTX; ctx: PBN_CTX): TIdC_INT; cdecl;
 function BN_from_montgomery(r: PBIGNUM; a: PBIGNUM; mont: PBN_MONT_CTX; ctx: PBN_CTX): TIdC_INT; cdecl;
-function BN_MONT_CTX_free(mont: PBN_MONT_CTX): void; cdecl;
+procedure BN_MONT_CTX_free(mont: PBN_MONT_CTX); cdecl;
 function BN_MONT_CTX_set(mont: PBN_MONT_CTX; _mod: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl;
 function BN_MONT_CTX_copy(_to: PBN_MONT_CTX; from: PBN_MONT_CTX): PBN_MONT_CTX; cdecl;
 function BN_MONT_CTX_set_locked(pmont: PPBN_MONT_CTX; lock: PCRYPTO_RWLOCK; _mod: PBIGNUM; ctx: PBN_CTX): PBN_MONT_CTX; cdecl;
 function BN_BLINDING_new(A: PBIGNUM; Ai: PBIGNUM; _mod: PBIGNUM): PBN_BLINDING; cdecl;
-function BN_BLINDING_free(b: PBN_BLINDING): void; cdecl;
+procedure BN_BLINDING_free(b: PBN_BLINDING); cdecl;
 function BN_BLINDING_update(b: PBN_BLINDING; ctx: PBN_CTX): TIdC_INT; cdecl;
 function BN_BLINDING_convert(n: PBIGNUM; b: PBN_BLINDING; ctx: PBN_CTX): TIdC_INT; cdecl;
 function BN_BLINDING_invert(n: PBIGNUM; b: PBN_BLINDING; ctx: PBN_CTX): TIdC_INT; cdecl;
 function BN_BLINDING_convert_ex(n: PBIGNUM; r: PBIGNUM; b: PBN_BLINDING; arg4: PBN_CTX): TIdC_INT; cdecl;
 function BN_BLINDING_invert_ex(n: PBIGNUM; r: PBIGNUM; b: PBN_BLINDING; arg4: PBN_CTX): TIdC_INT; cdecl;
 function BN_BLINDING_is_current_thread(b: PBN_BLINDING): TIdC_INT; cdecl;
-function BN_BLINDING_set_current_thread(b: PBN_BLINDING): void; cdecl;
+procedure BN_BLINDING_set_current_thread(b: PBN_BLINDING); cdecl;
 function BN_BLINDING_lock(b: PBN_BLINDING): TIdC_INT; cdecl;
 function BN_BLINDING_unlock(b: PBN_BLINDING): TIdC_INT; cdecl;
 function BN_BLINDING_get_flags(arg1: PBN_BLINDING): TIdC_ULONG; cdecl;
-function BN_BLINDING_set_flags(arg1: PBN_BLINDING; arg2: TIdC_ULONG): void; cdecl;
+procedure BN_BLINDING_set_flags(arg1: PBN_BLINDING; arg2: TIdC_ULONG); cdecl;
 function BN_BLINDING_create_param(b: PBN_BLINDING; e: PBIGNUM; m: PBIGNUM; ctx: PBN_CTX; bn_mod_exp: TBN_BLINDING_create_param_bn_mod_exp_cb; m_ctx: PBN_MONT_CTX): PBN_BLINDING; cdecl;
 function BN_RECP_CTX_new: PBN_RECP_CTX; cdecl;
-function BN_RECP_CTX_free(recp: PBN_RECP_CTX): void; cdecl;
+procedure BN_RECP_CTX_free(recp: PBN_RECP_CTX); cdecl;
 function BN_RECP_CTX_set(recp: PBN_RECP_CTX; rdiv: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl;
 function BN_mod_mul_reciprocal(r: PBIGNUM; x: PBIGNUM; y: PBIGNUM; recp: PBN_RECP_CTX; ctx: PBN_CTX): TIdC_INT; cdecl;
 function BN_mod_exp_recp(r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; m: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl;
@@ -925,31 +925,31 @@ uses
 // STATIC BINDING ROUTINES IMPORTS
 // =============================================================================
 
-function BN_set_flags(b: PBIGNUM; n: TIdC_INT): void; cdecl external CLibCrypto name 'BN_set_flags';
+procedure BN_set_flags(b: PBIGNUM; n: TIdC_INT); cdecl external CLibCrypto name 'BN_set_flags';
 function BN_get_flags(b: PBIGNUM; n: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'BN_get_flags';
-function BN_with_flags(dest: PBIGNUM; b: PBIGNUM; flags: TIdC_INT): void; cdecl external CLibCrypto name 'BN_with_flags';
+procedure BN_with_flags(dest: PBIGNUM; b: PBIGNUM; flags: TIdC_INT); cdecl external CLibCrypto name 'BN_with_flags';
 function BN_GENCB_call(cb: PBN_GENCB; a: TIdC_INT; b: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'BN_GENCB_call';
 function BN_GENCB_new: PBN_GENCB; cdecl external CLibCrypto name 'BN_GENCB_new';
-function BN_GENCB_free(cb: PBN_GENCB): void; cdecl external CLibCrypto name 'BN_GENCB_free';
-function BN_GENCB_set_old(gencb: PBN_GENCB; callback: TBN_GENCB_set_old_callback_cb; cb_arg: Pointer): void; cdecl external CLibCrypto name 'BN_GENCB_set_old';
-function BN_GENCB_set(gencb: PBN_GENCB; callback: TBN_GENCB_set_callback_cb; cb_arg: Pointer): void; cdecl external CLibCrypto name 'BN_GENCB_set';
+procedure BN_GENCB_free(cb: PBN_GENCB); cdecl external CLibCrypto name 'BN_GENCB_free';
+procedure BN_GENCB_set_old(gencb: PBN_GENCB; callback: TBN_GENCB_set_old_callback_cb; cb_arg: Pointer); cdecl external CLibCrypto name 'BN_GENCB_set_old';
+procedure BN_GENCB_set(gencb: PBN_GENCB; callback: TBN_GENCB_set_callback_cb; cb_arg: Pointer); cdecl external CLibCrypto name 'BN_GENCB_set';
 function BN_GENCB_get_arg(cb: PBN_GENCB): Pointer; cdecl external CLibCrypto name 'BN_GENCB_get_arg';
 function BN_abs_is_word(a: PBIGNUM; w: TIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'BN_abs_is_word';
 function BN_is_zero(a: PBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'BN_is_zero';
 function BN_is_one(a: PBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'BN_is_one';
 function BN_is_word(a: PBIGNUM; w: TIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'BN_is_word';
 function BN_is_odd(a: PBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'BN_is_odd';
-function BN_zero_ex(a: PBIGNUM): void; cdecl external CLibCrypto name 'BN_zero_ex';
+procedure BN_zero_ex(a: PBIGNUM); cdecl external CLibCrypto name 'BN_zero_ex';
 function BN_value_one: PBIGNUM; cdecl external CLibCrypto name 'BN_value_one';
 function BN_options: PIdAnsiChar; cdecl external CLibCrypto name 'BN_options';
 function BN_CTX_new_ex(ctx: POSSL_LIB_CTX): PBN_CTX; cdecl external CLibCrypto name 'BN_CTX_new_ex';
 function BN_CTX_new: PBN_CTX; cdecl external CLibCrypto name 'BN_CTX_new';
 function BN_CTX_secure_new_ex(ctx: POSSL_LIB_CTX): PBN_CTX; cdecl external CLibCrypto name 'BN_CTX_secure_new_ex';
 function BN_CTX_secure_new: PBN_CTX; cdecl external CLibCrypto name 'BN_CTX_secure_new';
-function BN_CTX_free(c: PBN_CTX): void; cdecl external CLibCrypto name 'BN_CTX_free';
-function BN_CTX_start(ctx: PBN_CTX): void; cdecl external CLibCrypto name 'BN_CTX_start';
+procedure BN_CTX_free(c: PBN_CTX); cdecl external CLibCrypto name 'BN_CTX_free';
+procedure BN_CTX_start(ctx: PBN_CTX); cdecl external CLibCrypto name 'BN_CTX_start';
 function BN_CTX_get(ctx: PBN_CTX): PBIGNUM; cdecl external CLibCrypto name 'BN_CTX_get';
-function BN_CTX_end(ctx: PBN_CTX): void; cdecl external CLibCrypto name 'BN_CTX_end';
+procedure BN_CTX_end(ctx: PBN_CTX); cdecl external CLibCrypto name 'BN_CTX_end';
 function BN_rand_ex(rnd: PBIGNUM; bits: TIdC_INT; top: TIdC_INT; bottom: TIdC_INT; strength: TIdC_UINT; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'BN_rand_ex';
 function BN_rand(rnd: PBIGNUM; bits: TIdC_INT; top: TIdC_INT; bottom: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'BN_rand';
 function BN_priv_rand_ex(rnd: PBIGNUM; bits: TIdC_INT; top: TIdC_INT; bottom: TIdC_INT; strength: TIdC_UINT; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'BN_priv_rand_ex';
@@ -965,9 +965,9 @@ function BN_num_bits_word(l: TIdC_ULONG): TIdC_INT; cdecl external CLibCrypto na
 function BN_security_bits(L: TIdC_INT; N: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'BN_security_bits';
 function BN_new: PBIGNUM; cdecl external CLibCrypto name 'BN_new';
 function BN_secure_new: PBIGNUM; cdecl external CLibCrypto name 'BN_secure_new';
-function BN_clear_free(a: PBIGNUM): void; cdecl external CLibCrypto name 'BN_clear_free';
+procedure BN_clear_free(a: PBIGNUM); cdecl external CLibCrypto name 'BN_clear_free';
 function BN_copy(a: PBIGNUM; b: PBIGNUM): PBIGNUM; cdecl external CLibCrypto name 'BN_copy';
-function BN_swap(a: PBIGNUM; b: PBIGNUM): void; cdecl external CLibCrypto name 'BN_swap';
+procedure BN_swap(a: PBIGNUM; b: PBIGNUM); cdecl external CLibCrypto name 'BN_swap';
 function BN_bin2bn(s: PIdAnsiChar; len: TIdC_INT; ret: PBIGNUM): PBIGNUM; cdecl external CLibCrypto name 'BN_bin2bn';
 function BN_signed_bin2bn(s: PIdAnsiChar; len: TIdC_INT; ret: PBIGNUM): PBIGNUM; cdecl external CLibCrypto name 'BN_signed_bin2bn';
 function BN_bn2bin(a: PBIGNUM; _to: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'BN_bn2bin';
@@ -989,7 +989,7 @@ function BN_uadd(r: PBIGNUM; a: PBIGNUM; b: PBIGNUM): TIdC_INT; cdecl external C
 function BN_add(r: PBIGNUM; a: PBIGNUM; b: PBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'BN_add';
 function BN_mul(r: PBIGNUM; a: PBIGNUM; b: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'BN_mul';
 function BN_sqr(r: PBIGNUM; a: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'BN_sqr';
-function BN_set_negative(b: PBIGNUM; n: TIdC_INT): void; cdecl external CLibCrypto name 'BN_set_negative';
+procedure BN_set_negative(b: PBIGNUM; n: TIdC_INT); cdecl external CLibCrypto name 'BN_set_negative';
 function BN_is_negative(b: PBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'BN_is_negative';
 function BN_div(dv: PBIGNUM; rem: PBIGNUM; m: PBIGNUM; d: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'BN_div';
 function BN_nnmod(r: PBIGNUM; m: PBIGNUM; d: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'BN_nnmod';
@@ -1011,7 +1011,7 @@ function BN_sub_word(a: PBIGNUM; w: TIdC_ULONG): TIdC_INT; cdecl external CLibCr
 function BN_set_word(a: PBIGNUM; w: TIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'BN_set_word';
 function BN_get_word(a: PBIGNUM): TIdC_ULONG; cdecl external CLibCrypto name 'BN_get_word';
 function BN_cmp(a: PBIGNUM; b: PBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'BN_cmp';
-function BN_free(a: PBIGNUM): void; cdecl external CLibCrypto name 'BN_free';
+procedure BN_free(a: PBIGNUM); cdecl external CLibCrypto name 'BN_free';
 function BN_is_bit_set(a: PBIGNUM; n: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'BN_is_bit_set';
 function BN_lshift(r: PBIGNUM; a: PBIGNUM; n: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'BN_lshift';
 function BN_lshift1(r: PBIGNUM; a: PBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'BN_lshift1';
@@ -1029,7 +1029,7 @@ function BN_print(bio: PBIO; a: PBIGNUM): TIdC_INT; cdecl external CLibCrypto na
 function BN_reciprocal(r: PBIGNUM; m: PBIGNUM; len: TIdC_INT; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'BN_reciprocal';
 function BN_rshift(r: PBIGNUM; a: PBIGNUM; n: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'BN_rshift';
 function BN_rshift1(r: PBIGNUM; a: PBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'BN_rshift1';
-function BN_clear(a: PBIGNUM): void; cdecl external CLibCrypto name 'BN_clear';
+procedure BN_clear(a: PBIGNUM); cdecl external CLibCrypto name 'BN_clear';
 function BN_dup(a: PBIGNUM): PBIGNUM; cdecl external CLibCrypto name 'BN_dup';
 function BN_ucmp(a: PBIGNUM; b: PBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'BN_ucmp';
 function BN_set_bit(a: PBIGNUM; n: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'BN_set_bit';
@@ -1044,7 +1044,7 @@ function BN_kronecker(a: PBIGNUM; b: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl ext
 function BN_are_coprime(a: PBIGNUM; b: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'BN_are_coprime';
 function BN_mod_inverse(ret: PBIGNUM; a: PBIGNUM; n: PBIGNUM; ctx: PBN_CTX): PBIGNUM; cdecl external CLibCrypto name 'BN_mod_inverse';
 function BN_mod_sqrt(ret: PBIGNUM; a: PBIGNUM; n: PBIGNUM; ctx: PBN_CTX): PBIGNUM; cdecl external CLibCrypto name 'BN_mod_sqrt';
-function BN_consttime_swap(swap: TIdC_ULONG; a: PBIGNUM; b: PBIGNUM; nwords: TIdC_INT): void; cdecl external CLibCrypto name 'BN_consttime_swap';
+procedure BN_consttime_swap(swap: TIdC_ULONG; a: PBIGNUM; b: PBIGNUM; nwords: TIdC_INT); cdecl external CLibCrypto name 'BN_consttime_swap';
 function BN_is_prime_ex(p: PBIGNUM; nchecks: TIdC_INT; ctx: PBN_CTX; cb: PBN_GENCB): TIdC_INT; cdecl external CLibCrypto name 'BN_is_prime_ex';
 function BN_is_prime_fasttest_ex(p: PBIGNUM; nchecks: TIdC_INT; ctx: PBN_CTX; do_trial_division: TIdC_INT; cb: PBN_GENCB): TIdC_INT; cdecl external CLibCrypto name 'BN_is_prime_fasttest_ex';
 function BN_generate_prime_ex2(ret: PBIGNUM; bits: TIdC_INT; safe: TIdC_INT; add: PBIGNUM; rem: PBIGNUM; cb: PBN_GENCB; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'BN_generate_prime_ex2';
@@ -1057,26 +1057,26 @@ function BN_MONT_CTX_new: PBN_MONT_CTX; cdecl external CLibCrypto name 'BN_MONT_
 function BN_mod_mul_montgomery(r: PBIGNUM; a: PBIGNUM; b: PBIGNUM; mont: PBN_MONT_CTX; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'BN_mod_mul_montgomery';
 function BN_to_montgomery(r: PBIGNUM; a: PBIGNUM; mont: PBN_MONT_CTX; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'BN_to_montgomery';
 function BN_from_montgomery(r: PBIGNUM; a: PBIGNUM; mont: PBN_MONT_CTX; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'BN_from_montgomery';
-function BN_MONT_CTX_free(mont: PBN_MONT_CTX): void; cdecl external CLibCrypto name 'BN_MONT_CTX_free';
+procedure BN_MONT_CTX_free(mont: PBN_MONT_CTX); cdecl external CLibCrypto name 'BN_MONT_CTX_free';
 function BN_MONT_CTX_set(mont: PBN_MONT_CTX; _mod: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'BN_MONT_CTX_set';
 function BN_MONT_CTX_copy(_to: PBN_MONT_CTX; from: PBN_MONT_CTX): PBN_MONT_CTX; cdecl external CLibCrypto name 'BN_MONT_CTX_copy';
 function BN_MONT_CTX_set_locked(pmont: PPBN_MONT_CTX; lock: PCRYPTO_RWLOCK; _mod: PBIGNUM; ctx: PBN_CTX): PBN_MONT_CTX; cdecl external CLibCrypto name 'BN_MONT_CTX_set_locked';
 function BN_BLINDING_new(A: PBIGNUM; Ai: PBIGNUM; _mod: PBIGNUM): PBN_BLINDING; cdecl external CLibCrypto name 'BN_BLINDING_new';
-function BN_BLINDING_free(b: PBN_BLINDING): void; cdecl external CLibCrypto name 'BN_BLINDING_free';
+procedure BN_BLINDING_free(b: PBN_BLINDING); cdecl external CLibCrypto name 'BN_BLINDING_free';
 function BN_BLINDING_update(b: PBN_BLINDING; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'BN_BLINDING_update';
 function BN_BLINDING_convert(n: PBIGNUM; b: PBN_BLINDING; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'BN_BLINDING_convert';
 function BN_BLINDING_invert(n: PBIGNUM; b: PBN_BLINDING; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'BN_BLINDING_invert';
 function BN_BLINDING_convert_ex(n: PBIGNUM; r: PBIGNUM; b: PBN_BLINDING; arg4: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'BN_BLINDING_convert_ex';
 function BN_BLINDING_invert_ex(n: PBIGNUM; r: PBIGNUM; b: PBN_BLINDING; arg4: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'BN_BLINDING_invert_ex';
 function BN_BLINDING_is_current_thread(b: PBN_BLINDING): TIdC_INT; cdecl external CLibCrypto name 'BN_BLINDING_is_current_thread';
-function BN_BLINDING_set_current_thread(b: PBN_BLINDING): void; cdecl external CLibCrypto name 'BN_BLINDING_set_current_thread';
+procedure BN_BLINDING_set_current_thread(b: PBN_BLINDING); cdecl external CLibCrypto name 'BN_BLINDING_set_current_thread';
 function BN_BLINDING_lock(b: PBN_BLINDING): TIdC_INT; cdecl external CLibCrypto name 'BN_BLINDING_lock';
 function BN_BLINDING_unlock(b: PBN_BLINDING): TIdC_INT; cdecl external CLibCrypto name 'BN_BLINDING_unlock';
 function BN_BLINDING_get_flags(arg1: PBN_BLINDING): TIdC_ULONG; cdecl external CLibCrypto name 'BN_BLINDING_get_flags';
-function BN_BLINDING_set_flags(arg1: PBN_BLINDING; arg2: TIdC_ULONG): void; cdecl external CLibCrypto name 'BN_BLINDING_set_flags';
+procedure BN_BLINDING_set_flags(arg1: PBN_BLINDING; arg2: TIdC_ULONG); cdecl external CLibCrypto name 'BN_BLINDING_set_flags';
 function BN_BLINDING_create_param(b: PBN_BLINDING; e: PBIGNUM; m: PBIGNUM; ctx: PBN_CTX; bn_mod_exp: TBN_BLINDING_create_param_bn_mod_exp_cb; m_ctx: PBN_MONT_CTX): PBN_BLINDING; cdecl external CLibCrypto name 'BN_BLINDING_create_param';
 function BN_RECP_CTX_new: PBN_RECP_CTX; cdecl external CLibCrypto name 'BN_RECP_CTX_new';
-function BN_RECP_CTX_free(recp: PBN_RECP_CTX): void; cdecl external CLibCrypto name 'BN_RECP_CTX_free';
+procedure BN_RECP_CTX_free(recp: PBN_RECP_CTX); cdecl external CLibCrypto name 'BN_RECP_CTX_free';
 function BN_RECP_CTX_set(recp: PBN_RECP_CTX; rdiv: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'BN_RECP_CTX_set';
 function BN_mod_mul_reciprocal(r: PBIGNUM; x: PBIGNUM; y: PBIGNUM; recp: PBN_RECP_CTX; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'BN_mod_mul_reciprocal';
 function BN_mod_exp_recp(r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; m: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl external CLibCrypto name 'BN_mod_exp_recp';
@@ -1848,7 +1848,7 @@ end;
 // ERRORS STUBS
 // =============================================================================
 
-function ERR_BN_set_flags(b: PBIGNUM; n: TIdC_INT): void; cdecl
+procedure ERR_BN_set_flags(b: PBIGNUM; n: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_set_flags_procname);
 end;
@@ -1858,7 +1858,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_get_flags_procname);
 end;
 
-function ERR_BN_with_flags(dest: PBIGNUM; b: PBIGNUM; flags: TIdC_INT): void; cdecl
+procedure ERR_BN_with_flags(dest: PBIGNUM; b: PBIGNUM; flags: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_with_flags_procname);
 end;
@@ -1873,17 +1873,17 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_GENCB_new_procname);
 end;
 
-function ERR_BN_GENCB_free(cb: PBN_GENCB): void; cdecl
+procedure ERR_BN_GENCB_free(cb: PBN_GENCB); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_GENCB_free_procname);
 end;
 
-function ERR_BN_GENCB_set_old(gencb: PBN_GENCB; callback: TBN_GENCB_set_old_callback_cb; cb_arg: Pointer): void; cdecl
+procedure ERR_BN_GENCB_set_old(gencb: PBN_GENCB; callback: TBN_GENCB_set_old_callback_cb; cb_arg: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_GENCB_set_old_procname);
 end;
 
-function ERR_BN_GENCB_set(gencb: PBN_GENCB; callback: TBN_GENCB_set_callback_cb; cb_arg: Pointer): void; cdecl
+procedure ERR_BN_GENCB_set(gencb: PBN_GENCB; callback: TBN_GENCB_set_callback_cb; cb_arg: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_GENCB_set_procname);
 end;
@@ -1918,7 +1918,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_is_odd_procname);
 end;
 
-function ERR_BN_zero_ex(a: PBIGNUM): void; cdecl
+procedure ERR_BN_zero_ex(a: PBIGNUM); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_zero_ex_procname);
 end;
@@ -1953,12 +1953,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_CTX_secure_new_procname);
 end;
 
-function ERR_BN_CTX_free(c: PBN_CTX): void; cdecl
+procedure ERR_BN_CTX_free(c: PBN_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_CTX_free_procname);
 end;
 
-function ERR_BN_CTX_start(ctx: PBN_CTX): void; cdecl
+procedure ERR_BN_CTX_start(ctx: PBN_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_CTX_start_procname);
 end;
@@ -1968,7 +1968,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_CTX_get_procname);
 end;
 
-function ERR_BN_CTX_end(ctx: PBN_CTX): void; cdecl
+procedure ERR_BN_CTX_end(ctx: PBN_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_CTX_end_procname);
 end;
@@ -2048,7 +2048,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_secure_new_procname);
 end;
 
-function ERR_BN_clear_free(a: PBIGNUM): void; cdecl
+procedure ERR_BN_clear_free(a: PBIGNUM); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_clear_free_procname);
 end;
@@ -2058,7 +2058,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_copy_procname);
 end;
 
-function ERR_BN_swap(a: PBIGNUM; b: PBIGNUM): void; cdecl
+procedure ERR_BN_swap(a: PBIGNUM; b: PBIGNUM); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_swap_procname);
 end;
@@ -2168,7 +2168,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_sqr_procname);
 end;
 
-function ERR_BN_set_negative(b: PBIGNUM; n: TIdC_INT): void; cdecl
+procedure ERR_BN_set_negative(b: PBIGNUM; n: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_set_negative_procname);
 end;
@@ -2278,7 +2278,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_cmp_procname);
 end;
 
-function ERR_BN_free(a: PBIGNUM): void; cdecl
+procedure ERR_BN_free(a: PBIGNUM); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_free_procname);
 end;
@@ -2368,7 +2368,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_rshift1_procname);
 end;
 
-function ERR_BN_clear(a: PBIGNUM): void; cdecl
+procedure ERR_BN_clear(a: PBIGNUM); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_clear_procname);
 end;
@@ -2443,7 +2443,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_mod_sqrt_procname);
 end;
 
-function ERR_BN_consttime_swap(swap: TIdC_ULONG; a: PBIGNUM; b: PBIGNUM; nwords: TIdC_INT): void; cdecl
+procedure ERR_BN_consttime_swap(swap: TIdC_ULONG; a: PBIGNUM; b: PBIGNUM; nwords: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_consttime_swap_procname);
 end;
@@ -2508,7 +2508,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_from_montgomery_procname);
 end;
 
-function ERR_BN_MONT_CTX_free(mont: PBN_MONT_CTX): void; cdecl
+procedure ERR_BN_MONT_CTX_free(mont: PBN_MONT_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_MONT_CTX_free_procname);
 end;
@@ -2533,7 +2533,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_BLINDING_new_procname);
 end;
 
-function ERR_BN_BLINDING_free(b: PBN_BLINDING): void; cdecl
+procedure ERR_BN_BLINDING_free(b: PBN_BLINDING); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_BLINDING_free_procname);
 end;
@@ -2568,7 +2568,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_BLINDING_is_current_thread_procname);
 end;
 
-function ERR_BN_BLINDING_set_current_thread(b: PBN_BLINDING): void; cdecl
+procedure ERR_BN_BLINDING_set_current_thread(b: PBN_BLINDING); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_BLINDING_set_current_thread_procname);
 end;
@@ -2588,7 +2588,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_BLINDING_get_flags_procname);
 end;
 
-function ERR_BN_BLINDING_set_flags(arg1: PBN_BLINDING; arg2: TIdC_ULONG): void; cdecl
+procedure ERR_BN_BLINDING_set_flags(arg1: PBN_BLINDING; arg2: TIdC_ULONG); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_BLINDING_set_flags_procname);
 end;
@@ -2603,7 +2603,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_RECP_CTX_new_procname);
 end;
 
-function ERR_BN_RECP_CTX_free(recp: PBN_RECP_CTX): void; cdecl
+procedure ERR_BN_RECP_CTX_free(recp: PBN_RECP_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BN_RECP_CTX_free_procname);
 end;

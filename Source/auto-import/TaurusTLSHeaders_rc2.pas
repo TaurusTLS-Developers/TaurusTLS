@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -56,25 +56,25 @@ const
 // =============================================================================
 var
 
-  RC2_set_key: function(key: PRC2_KEY; len: TIdC_INT; data: PIdAnsiChar; bits: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  RC2_set_key: procedure(key: PRC2_KEY; len: TIdC_INT; data: PIdAnsiChar; bits: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RC2_set_key}
 
-  RC2_ecb_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PRC2_KEY; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  RC2_ecb_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PRC2_KEY; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RC2_ecb_encrypt}
 
-  RC2_encrypt: function(data: PIdC_ULONG; key: PRC2_KEY): void; cdecl = nil; // Deprecated in 3_0_0
+  RC2_encrypt: procedure(data: PIdC_ULONG; key: PRC2_KEY); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RC2_encrypt}
 
-  RC2_decrypt: function(data: PIdC_ULONG; key: PRC2_KEY): void; cdecl = nil; // Deprecated in 3_0_0
+  RC2_decrypt: procedure(data: PIdC_ULONG; key: PRC2_KEY); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RC2_decrypt}
 
-  RC2_cbc_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PRC2_KEY; iv: PIdAnsiChar; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  RC2_cbc_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PRC2_KEY; iv: PIdAnsiChar; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RC2_cbc_encrypt}
 
-  RC2_cfb64_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PRC2_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  RC2_cfb64_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PRC2_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RC2_cfb64_encrypt}
 
-  RC2_ofb64_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PRC2_KEY; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  RC2_ofb64_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PRC2_KEY; ivec: PIdAnsiChar; num: PIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RC2_ofb64_encrypt}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -85,13 +85,13 @@ var
 // STATIC BINDING ROUTINES
 // =============================================================================
 
-function RC2_set_key(key: PRC2_KEY; len: TIdC_INT; data: PIdAnsiChar; bits: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function RC2_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PRC2_KEY; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function RC2_encrypt(data: PIdC_ULONG; key: PRC2_KEY): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function RC2_decrypt(data: PIdC_ULONG; key: PRC2_KEY): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function RC2_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PRC2_KEY; iv: PIdAnsiChar; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function RC2_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PRC2_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function RC2_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PRC2_KEY; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure RC2_set_key(key: PRC2_KEY; len: TIdC_INT; data: PIdAnsiChar; bits: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure RC2_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PRC2_KEY; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure RC2_encrypt(data: PIdC_ULONG; key: PRC2_KEY); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure RC2_decrypt(data: PIdC_ULONG; key: PRC2_KEY); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure RC2_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PRC2_KEY; iv: PIdAnsiChar; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure RC2_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PRC2_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure RC2_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PRC2_KEY; ivec: PIdAnsiChar; num: PIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 implementation
@@ -110,13 +110,13 @@ uses
 // STATIC BINDING ROUTINES IMPORTS
 // =============================================================================
 
-function RC2_set_key(key: PRC2_KEY; len: TIdC_INT; data: PIdAnsiChar; bits: TIdC_INT): void; cdecl external CLibCrypto name 'RC2_set_key';
-function RC2_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PRC2_KEY; enc: TIdC_INT): void; cdecl external CLibCrypto name 'RC2_ecb_encrypt';
-function RC2_encrypt(data: PIdC_ULONG; key: PRC2_KEY): void; cdecl external CLibCrypto name 'RC2_encrypt';
-function RC2_decrypt(data: PIdC_ULONG; key: PRC2_KEY): void; cdecl external CLibCrypto name 'RC2_decrypt';
-function RC2_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PRC2_KEY; iv: PIdAnsiChar; enc: TIdC_INT): void; cdecl external CLibCrypto name 'RC2_cbc_encrypt';
-function RC2_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PRC2_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl external CLibCrypto name 'RC2_cfb64_encrypt';
-function RC2_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PRC2_KEY; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl external CLibCrypto name 'RC2_ofb64_encrypt';
+procedure RC2_set_key(key: PRC2_KEY; len: TIdC_INT; data: PIdAnsiChar; bits: TIdC_INT); cdecl external CLibCrypto name 'RC2_set_key';
+procedure RC2_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PRC2_KEY; enc: TIdC_INT); cdecl external CLibCrypto name 'RC2_ecb_encrypt';
+procedure RC2_encrypt(data: PIdC_ULONG; key: PRC2_KEY); cdecl external CLibCrypto name 'RC2_encrypt';
+procedure RC2_decrypt(data: PIdC_ULONG; key: PRC2_KEY); cdecl external CLibCrypto name 'RC2_decrypt';
+procedure RC2_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PRC2_KEY; iv: PIdAnsiChar; enc: TIdC_INT); cdecl external CLibCrypto name 'RC2_cbc_encrypt';
+procedure RC2_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PRC2_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl external CLibCrypto name 'RC2_cfb64_encrypt';
+procedure RC2_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PRC2_KEY; ivec: PIdAnsiChar; num: PIdC_INT); cdecl external CLibCrypto name 'RC2_ofb64_encrypt';
 {$ENDIF}
 
 // =============================================================================
@@ -165,37 +165,37 @@ const
 // ERRORS STUBS
 // =============================================================================
 
-function ERR_RC2_set_key(key: PRC2_KEY; len: TIdC_INT; data: PIdAnsiChar; bits: TIdC_INT): void; cdecl
+procedure ERR_RC2_set_key(key: PRC2_KEY; len: TIdC_INT; data: PIdAnsiChar; bits: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RC2_set_key_procname);
 end;
 
-function ERR_RC2_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PRC2_KEY; enc: TIdC_INT): void; cdecl
+procedure ERR_RC2_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PRC2_KEY; enc: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RC2_ecb_encrypt_procname);
 end;
 
-function ERR_RC2_encrypt(data: PIdC_ULONG; key: PRC2_KEY): void; cdecl
+procedure ERR_RC2_encrypt(data: PIdC_ULONG; key: PRC2_KEY); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RC2_encrypt_procname);
 end;
 
-function ERR_RC2_decrypt(data: PIdC_ULONG; key: PRC2_KEY): void; cdecl
+procedure ERR_RC2_decrypt(data: PIdC_ULONG; key: PRC2_KEY); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RC2_decrypt_procname);
 end;
 
-function ERR_RC2_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PRC2_KEY; iv: PIdAnsiChar; enc: TIdC_INT): void; cdecl
+procedure ERR_RC2_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PRC2_KEY; iv: PIdAnsiChar; enc: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RC2_cbc_encrypt_procname);
 end;
 
-function ERR_RC2_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PRC2_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl
+procedure ERR_RC2_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PRC2_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RC2_cfb64_encrypt_procname);
 end;
 
-function ERR_RC2_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PRC2_KEY; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl
+procedure ERR_RC2_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PRC2_KEY; ivec: PIdAnsiChar; num: PIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RC2_ofb64_encrypt_procname);
 end;

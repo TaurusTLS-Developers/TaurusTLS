@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -98,7 +98,7 @@ var
   OSSL_trace_begin: function(category: TIdC_INT): PBIO; cdecl = nil;
   {$EXTERNALSYM OSSL_trace_begin}
 
-  OSSL_trace_end: function(category: TIdC_INT; channel: PBIO): void; cdecl = nil;
+  OSSL_trace_end: procedure(category: TIdC_INT; channel: PBIO); cdecl = nil;
   {$EXTERNALSYM OSSL_trace_end}
 
   OSSL_trace_string: function(_out: PBIO; text: TIdC_INT; full: TIdC_INT; data: PIdAnsiChar; size: TIdC_SIZET): TIdC_INT; cdecl = nil;
@@ -120,7 +120,7 @@ function OSSL_trace_set_suffix(category: TIdC_INT; suffix: PIdAnsiChar): TIdC_IN
 function OSSL_trace_set_callback(category: TIdC_INT; callback: TOSSL_trace_cb; data: Pointer): TIdC_INT; cdecl;
 function OSSL_trace_enabled(category: TIdC_INT): TIdC_INT; cdecl;
 function OSSL_trace_begin(category: TIdC_INT): PBIO; cdecl;
-function OSSL_trace_end(category: TIdC_INT; channel: PBIO): void; cdecl;
+procedure OSSL_trace_end(category: TIdC_INT; channel: PBIO); cdecl;
 function OSSL_trace_string(_out: PBIO; text: TIdC_INT; full: TIdC_INT; data: PIdAnsiChar; size: TIdC_SIZET): TIdC_INT; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
@@ -171,7 +171,7 @@ function OSSL_trace_set_suffix(category: TIdC_INT; suffix: PIdAnsiChar): TIdC_IN
 function OSSL_trace_set_callback(category: TIdC_INT; callback: TOSSL_trace_cb; data: Pointer): TIdC_INT; cdecl external CLibCrypto name 'OSSL_trace_set_callback';
 function OSSL_trace_enabled(category: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_trace_enabled';
 function OSSL_trace_begin(category: TIdC_INT): PBIO; cdecl external CLibCrypto name 'OSSL_trace_begin';
-function OSSL_trace_end(category: TIdC_INT; channel: PBIO): void; cdecl external CLibCrypto name 'OSSL_trace_end';
+procedure OSSL_trace_end(category: TIdC_INT; channel: PBIO); cdecl external CLibCrypto name 'OSSL_trace_end';
 function OSSL_trace_string(_out: PBIO; text: TIdC_INT; full: TIdC_INT; data: PIdAnsiChar; size: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_trace_string';
 {$ENDIF}
 
@@ -330,7 +330,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_trace_begin_procname);
 end;
 
-function ERR_OSSL_trace_end(category: TIdC_INT; channel: PBIO): void; cdecl
+procedure ERR_OSSL_trace_end(category: TIdC_INT; channel: PBIO); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_trace_end_procname);
 end;

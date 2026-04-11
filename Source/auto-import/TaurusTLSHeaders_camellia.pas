@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -63,31 +63,31 @@ var
   Camellia_set_key: function(userKey: PIdAnsiChar; bits: TIdC_INT; key: PCAMELLIA_KEY): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM Camellia_set_key}
 
-  Camellia_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY): void; cdecl = nil; // Deprecated in 3_0_0
+  Camellia_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM Camellia_encrypt}
 
-  Camellia_decrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY): void; cdecl = nil; // Deprecated in 3_0_0
+  Camellia_decrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM Camellia_decrypt}
 
-  Camellia_ecb_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  Camellia_ecb_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM Camellia_ecb_encrypt}
 
-  Camellia_cbc_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  Camellia_cbc_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM Camellia_cbc_encrypt}
 
-  Camellia_cfb128_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  Camellia_cfb128_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM Camellia_cfb128_encrypt}
 
-  Camellia_cfb1_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  Camellia_cfb1_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM Camellia_cfb1_encrypt}
 
-  Camellia_cfb8_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  Camellia_cfb8_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM Camellia_cfb8_encrypt}
 
-  Camellia_ofb128_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  Camellia_ofb128_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM Camellia_ofb128_encrypt}
 
-  Camellia_ctr128_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT): void; cdecl = nil; // Deprecated in 3_0_0
+  Camellia_ctr128_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM Camellia_ctr128_encrypt}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -99,15 +99,15 @@ var
 // =============================================================================
 
 function Camellia_set_key(userKey: PIdAnsiChar; bits: TIdC_INT; key: PCAMELLIA_KEY): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function Camellia_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function Camellia_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function Camellia_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function Camellia_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function Camellia_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function Camellia_cfb1_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function Camellia_cfb8_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function Camellia_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function Camellia_ctr128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure Camellia_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure Camellia_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure Camellia_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure Camellia_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure Camellia_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure Camellia_cfb1_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure Camellia_cfb8_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure Camellia_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure Camellia_ctr128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT); cdecl; deprecated 'In OpenSSL 3_0_0';
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 implementation
@@ -127,15 +127,15 @@ uses
 // =============================================================================
 
 function Camellia_set_key(userKey: PIdAnsiChar; bits: TIdC_INT; key: PCAMELLIA_KEY): TIdC_INT; cdecl external CLibCrypto name 'Camellia_set_key';
-function Camellia_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY): void; cdecl external CLibCrypto name 'Camellia_encrypt';
-function Camellia_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY): void; cdecl external CLibCrypto name 'Camellia_decrypt';
-function Camellia_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY; enc: TIdC_INT): void; cdecl external CLibCrypto name 'Camellia_ecb_encrypt';
-function Camellia_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl external CLibCrypto name 'Camellia_cbc_encrypt';
-function Camellia_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl external CLibCrypto name 'Camellia_cfb128_encrypt';
-function Camellia_cfb1_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl external CLibCrypto name 'Camellia_cfb1_encrypt';
-function Camellia_cfb8_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl external CLibCrypto name 'Camellia_cfb8_encrypt';
-function Camellia_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl external CLibCrypto name 'Camellia_ofb128_encrypt';
-function Camellia_ctr128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT): void; cdecl external CLibCrypto name 'Camellia_ctr128_encrypt';
+procedure Camellia_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY); cdecl external CLibCrypto name 'Camellia_encrypt';
+procedure Camellia_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY); cdecl external CLibCrypto name 'Camellia_decrypt';
+procedure Camellia_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY; enc: TIdC_INT); cdecl external CLibCrypto name 'Camellia_ecb_encrypt';
+procedure Camellia_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl external CLibCrypto name 'Camellia_cbc_encrypt';
+procedure Camellia_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl external CLibCrypto name 'Camellia_cfb128_encrypt';
+procedure Camellia_cfb1_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl external CLibCrypto name 'Camellia_cfb1_encrypt';
+procedure Camellia_cfb8_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl external CLibCrypto name 'Camellia_cfb8_encrypt';
+procedure Camellia_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT); cdecl external CLibCrypto name 'Camellia_ofb128_encrypt';
+procedure Camellia_ctr128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT); cdecl external CLibCrypto name 'Camellia_ctr128_encrypt';
 {$ENDIF}
 
 // =============================================================================
@@ -201,47 +201,47 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(Camellia_set_key_procname);
 end;
 
-function ERR_Camellia_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY): void; cdecl
+procedure ERR_Camellia_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(Camellia_encrypt_procname);
 end;
 
-function ERR_Camellia_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY): void; cdecl
+procedure ERR_Camellia_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(Camellia_decrypt_procname);
 end;
 
-function ERR_Camellia_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY; enc: TIdC_INT): void; cdecl
+procedure ERR_Camellia_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAMELLIA_KEY; enc: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(Camellia_ecb_encrypt_procname);
 end;
 
-function ERR_Camellia_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl
+procedure ERR_Camellia_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(Camellia_cbc_encrypt_procname);
 end;
 
-function ERR_Camellia_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl
+procedure ERR_Camellia_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(Camellia_cfb128_encrypt_procname);
 end;
 
-function ERR_Camellia_cfb1_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl
+procedure ERR_Camellia_cfb1_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(Camellia_cfb1_encrypt_procname);
 end;
 
-function ERR_Camellia_cfb8_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl
+procedure ERR_Camellia_cfb8_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(Camellia_cfb8_encrypt_procname);
 end;
 
-function ERR_Camellia_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl
+procedure ERR_Camellia_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; num: PIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(Camellia_ofb128_encrypt_procname);
 end;
 
-function ERR_Camellia_ctr128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT): void; cdecl
+procedure ERR_Camellia_ctr128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PCAMELLIA_KEY; ivec: PIdAnsiChar; ecount_buf: PIdAnsiChar; num: PIdC_UINT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(Camellia_ctr128_encrypt_procname);
 end;

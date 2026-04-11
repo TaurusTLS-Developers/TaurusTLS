@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -52,10 +52,10 @@ var
   RC4_options: function: PIdAnsiChar; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RC4_options}
 
-  RC4_set_key: function(key: PRC4_KEY; len: TIdC_INT; data: PIdAnsiChar): void; cdecl = nil; // Deprecated in 3_0_0
+  RC4_set_key: procedure(key: PRC4_KEY; len: TIdC_INT; data: PIdAnsiChar); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RC4_set_key}
 
-  RC4: function(key: PRC4_KEY; len: TIdC_SIZET; indata: PIdAnsiChar; outdata: PIdAnsiChar): void; cdecl = nil; // Deprecated in 3_0_0
+  RC4: procedure(key: PRC4_KEY; len: TIdC_SIZET; indata: PIdAnsiChar; outdata: PIdAnsiChar); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RC4}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -67,8 +67,8 @@ var
 // =============================================================================
 
 function RC4_options: PIdAnsiChar; cdecl; deprecated 'In OpenSSL 3_0_0';
-function RC4_set_key(key: PRC4_KEY; len: TIdC_INT; data: PIdAnsiChar): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function RC4(key: PRC4_KEY; len: TIdC_SIZET; indata: PIdAnsiChar; outdata: PIdAnsiChar): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure RC4_set_key(key: PRC4_KEY; len: TIdC_INT; data: PIdAnsiChar); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure RC4(key: PRC4_KEY; len: TIdC_SIZET; indata: PIdAnsiChar; outdata: PIdAnsiChar); cdecl; deprecated 'In OpenSSL 3_0_0';
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 implementation
@@ -88,8 +88,8 @@ uses
 // =============================================================================
 
 function RC4_options: PIdAnsiChar; cdecl external CLibCrypto name 'RC4_options';
-function RC4_set_key(key: PRC4_KEY; len: TIdC_INT; data: PIdAnsiChar): void; cdecl external CLibCrypto name 'RC4_set_key';
-function RC4(key: PRC4_KEY; len: TIdC_SIZET; indata: PIdAnsiChar; outdata: PIdAnsiChar): void; cdecl external CLibCrypto name 'RC4';
+procedure RC4_set_key(key: PRC4_KEY; len: TIdC_INT; data: PIdAnsiChar); cdecl external CLibCrypto name 'RC4_set_key';
+procedure RC4(key: PRC4_KEY; len: TIdC_SIZET; indata: PIdAnsiChar; outdata: PIdAnsiChar); cdecl external CLibCrypto name 'RC4';
 {$ENDIF}
 
 // =============================================================================
@@ -127,12 +127,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RC4_options_procname);
 end;
 
-function ERR_RC4_set_key(key: PRC4_KEY; len: TIdC_INT; data: PIdAnsiChar): void; cdecl
+procedure ERR_RC4_set_key(key: PRC4_KEY; len: TIdC_INT; data: PIdAnsiChar); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RC4_set_key_procname);
 end;
 
-function ERR_RC4(key: PRC4_KEY; len: TIdC_SIZET; indata: PIdAnsiChar; outdata: PIdAnsiChar): void; cdecl
+procedure ERR_RC4(key: PRC4_KEY; len: TIdC_SIZET; indata: PIdAnsiChar; outdata: PIdAnsiChar); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RC4_procname);
 end;

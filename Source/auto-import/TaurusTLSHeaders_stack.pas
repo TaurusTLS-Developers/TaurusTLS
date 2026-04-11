@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -43,8 +43,8 @@ type
 // =============================================================================
 type
   TOPENSSL_sk_compfunc = function(arg1: Pointer; arg2: Pointer): TIdC_INT; cdecl;
-  TOPENSSL_sk_freefunc = function(arg1: Pointer): void; cdecl;
-  TOPENSSL_sk_freefunc_thunk = function(arg1: TOPENSSL_sk_freefunc; arg2: Pointer): void; cdecl;
+  TOPENSSL_sk_freefunc = procedure(arg1: Pointer); cdecl;
+  TOPENSSL_sk_freefunc_thunk = procedure(arg1: TOPENSSL_sk_freefunc; arg2: Pointer); cdecl;
   TOPENSSL_sk_copyfunc = function(arg1: Pointer): Pointer; cdecl;
 
 // =============================================================================
@@ -84,10 +84,10 @@ var
   OPENSSL_sk_reserve: function(st: POPENSSL_STACK; n: TIdC_INT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OPENSSL_sk_reserve}
 
-  OPENSSL_sk_free: function(arg1: POPENSSL_STACK): void; cdecl = nil;
+  OPENSSL_sk_free: procedure(arg1: POPENSSL_STACK); cdecl = nil;
   {$EXTERNALSYM OPENSSL_sk_free}
 
-  OPENSSL_sk_pop_free: function(st: POPENSSL_STACK; func: TOPENSSL_sk_freefunc): void; cdecl = nil;
+  OPENSSL_sk_pop_free: procedure(st: POPENSSL_STACK; func: TOPENSSL_sk_freefunc); cdecl = nil;
   {$EXTERNALSYM OPENSSL_sk_pop_free}
 
   OPENSSL_sk_deep_copy: function(arg1: POPENSSL_STACK; c: TOPENSSL_sk_copyfunc; f: TOPENSSL_sk_freefunc): POPENSSL_STACK; cdecl = nil;
@@ -123,7 +123,7 @@ var
   OPENSSL_sk_pop: function(st: POPENSSL_STACK): Pointer; cdecl = nil;
   {$EXTERNALSYM OPENSSL_sk_pop}
 
-  OPENSSL_sk_zero: function(st: POPENSSL_STACK): void; cdecl = nil;
+  OPENSSL_sk_zero: procedure(st: POPENSSL_STACK); cdecl = nil;
   {$EXTERNALSYM OPENSSL_sk_zero}
 
   OPENSSL_sk_set_cmp_func: function(sk: POPENSSL_STACK; cmp: TOPENSSL_sk_compfunc): TOPENSSL_sk_compfunc; cdecl = nil;
@@ -132,7 +132,7 @@ var
   OPENSSL_sk_dup: function(st: POPENSSL_STACK): POPENSSL_STACK; cdecl = nil;
   {$EXTERNALSYM OPENSSL_sk_dup}
 
-  OPENSSL_sk_sort: function(st: POPENSSL_STACK): void; cdecl = nil;
+  OPENSSL_sk_sort: procedure(st: POPENSSL_STACK); cdecl = nil;
   {$EXTERNALSYM OPENSSL_sk_sort}
 
   OPENSSL_sk_is_sorted: function(st: POPENSSL_STACK): TIdC_INT; cdecl = nil;
@@ -154,8 +154,8 @@ function OPENSSL_sk_new_null: POPENSSL_STACK; cdecl;
 function OPENSSL_sk_new_reserve(c: TOPENSSL_sk_compfunc; n: TIdC_INT): POPENSSL_STACK; cdecl;
 function OPENSSL_sk_set_thunks(st: POPENSSL_STACK; f_thunk: TOPENSSL_sk_freefunc_thunk): POPENSSL_STACK; cdecl;
 function OPENSSL_sk_reserve(st: POPENSSL_STACK; n: TIdC_INT): TIdC_INT; cdecl;
-function OPENSSL_sk_free(arg1: POPENSSL_STACK): void; cdecl;
-function OPENSSL_sk_pop_free(st: POPENSSL_STACK; func: TOPENSSL_sk_freefunc): void; cdecl;
+procedure OPENSSL_sk_free(arg1: POPENSSL_STACK); cdecl;
+procedure OPENSSL_sk_pop_free(st: POPENSSL_STACK; func: TOPENSSL_sk_freefunc); cdecl;
 function OPENSSL_sk_deep_copy(arg1: POPENSSL_STACK; c: TOPENSSL_sk_copyfunc; f: TOPENSSL_sk_freefunc): POPENSSL_STACK; cdecl;
 function OPENSSL_sk_insert(sk: POPENSSL_STACK; data: Pointer; where: TIdC_INT): TIdC_INT; cdecl;
 function OPENSSL_sk_delete(st: POPENSSL_STACK; loc: TIdC_INT): Pointer; cdecl;
@@ -167,10 +167,10 @@ function OPENSSL_sk_push(st: POPENSSL_STACK; data: Pointer): TIdC_INT; cdecl;
 function OPENSSL_sk_unshift(st: POPENSSL_STACK; data: Pointer): TIdC_INT; cdecl;
 function OPENSSL_sk_shift(st: POPENSSL_STACK): Pointer; cdecl;
 function OPENSSL_sk_pop(st: POPENSSL_STACK): Pointer; cdecl;
-function OPENSSL_sk_zero(st: POPENSSL_STACK): void; cdecl;
+procedure OPENSSL_sk_zero(st: POPENSSL_STACK); cdecl;
 function OPENSSL_sk_set_cmp_func(sk: POPENSSL_STACK; cmp: TOPENSSL_sk_compfunc): TOPENSSL_sk_compfunc; cdecl;
 function OPENSSL_sk_dup(st: POPENSSL_STACK): POPENSSL_STACK; cdecl;
-function OPENSSL_sk_sort(st: POPENSSL_STACK): void; cdecl;
+procedure OPENSSL_sk_sort(st: POPENSSL_STACK); cdecl;
 function OPENSSL_sk_is_sorted(st: POPENSSL_STACK): TIdC_INT; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
@@ -194,10 +194,10 @@ function OPENSSL_sk_is_sorted(st: POPENSSL_STACK): TIdC_INT; cdecl;
   // function sk_new_null: POPENSSL_STACK; cdecl;
 
   { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
-  // function sk_free(arg1: POPENSSL_STACK): void; cdecl;
+  // procedure sk_free(arg1: POPENSSL_STACK); cdecl;
 
   { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
-  // function sk_pop_free(st: POPENSSL_STACK; func: TOPENSSL_sk_freefunc): void; cdecl;
+  // procedure sk_pop_free(st: POPENSSL_STACK; func: TOPENSSL_sk_freefunc); cdecl;
 
   { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
   // function sk_deep_copy(arg1: POPENSSL_STACK; c: TOPENSSL_sk_copyfunc; f: TOPENSSL_sk_freefunc): POPENSSL_STACK; cdecl;
@@ -230,7 +230,7 @@ function OPENSSL_sk_is_sorted(st: POPENSSL_STACK): TIdC_INT; cdecl;
   // function sk_pop(st: POPENSSL_STACK): Pointer; cdecl;
 
   { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
-  // function sk_zero(st: POPENSSL_STACK): void; cdecl;
+  // procedure sk_zero(st: POPENSSL_STACK); cdecl;
 
   { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
   // function sk_set_cmp_func(sk: POPENSSL_STACK; cmp: TOPENSSL_sk_compfunc): TOPENSSL_sk_compfunc; cdecl;
@@ -239,7 +239,7 @@ function OPENSSL_sk_is_sorted(st: POPENSSL_STACK): TIdC_INT; cdecl;
   // function sk_dup(st: POPENSSL_STACK): POPENSSL_STACK; cdecl;
 
   { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
-  // function sk_sort(st: POPENSSL_STACK): void; cdecl;
+  // procedure sk_sort(st: POPENSSL_STACK); cdecl;
 
   { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
   // function sk_is_sorted(st: POPENSSL_STACK): TIdC_INT; cdecl;
@@ -269,8 +269,8 @@ function OPENSSL_sk_new_null: POPENSSL_STACK; cdecl external CLibCrypto name 'OP
 function OPENSSL_sk_new_reserve(c: TOPENSSL_sk_compfunc; n: TIdC_INT): POPENSSL_STACK; cdecl external CLibCrypto name 'OPENSSL_sk_new_reserve';
 function OPENSSL_sk_set_thunks(st: POPENSSL_STACK; f_thunk: TOPENSSL_sk_freefunc_thunk): POPENSSL_STACK; cdecl external CLibCrypto name 'OPENSSL_sk_set_thunks';
 function OPENSSL_sk_reserve(st: POPENSSL_STACK; n: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OPENSSL_sk_reserve';
-function OPENSSL_sk_free(arg1: POPENSSL_STACK): void; cdecl external CLibCrypto name 'OPENSSL_sk_free';
-function OPENSSL_sk_pop_free(st: POPENSSL_STACK; func: TOPENSSL_sk_freefunc): void; cdecl external CLibCrypto name 'OPENSSL_sk_pop_free';
+procedure OPENSSL_sk_free(arg1: POPENSSL_STACK); cdecl external CLibCrypto name 'OPENSSL_sk_free';
+procedure OPENSSL_sk_pop_free(st: POPENSSL_STACK; func: TOPENSSL_sk_freefunc); cdecl external CLibCrypto name 'OPENSSL_sk_pop_free';
 function OPENSSL_sk_deep_copy(arg1: POPENSSL_STACK; c: TOPENSSL_sk_copyfunc; f: TOPENSSL_sk_freefunc): POPENSSL_STACK; cdecl external CLibCrypto name 'OPENSSL_sk_deep_copy';
 function OPENSSL_sk_insert(sk: POPENSSL_STACK; data: Pointer; where: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OPENSSL_sk_insert';
 function OPENSSL_sk_delete(st: POPENSSL_STACK; loc: TIdC_INT): Pointer; cdecl external CLibCrypto name 'OPENSSL_sk_delete';
@@ -282,10 +282,10 @@ function OPENSSL_sk_push(st: POPENSSL_STACK; data: Pointer): TIdC_INT; cdecl ext
 function OPENSSL_sk_unshift(st: POPENSSL_STACK; data: Pointer): TIdC_INT; cdecl external CLibCrypto name 'OPENSSL_sk_unshift';
 function OPENSSL_sk_shift(st: POPENSSL_STACK): Pointer; cdecl external CLibCrypto name 'OPENSSL_sk_shift';
 function OPENSSL_sk_pop(st: POPENSSL_STACK): Pointer; cdecl external CLibCrypto name 'OPENSSL_sk_pop';
-function OPENSSL_sk_zero(st: POPENSSL_STACK): void; cdecl external CLibCrypto name 'OPENSSL_sk_zero';
+procedure OPENSSL_sk_zero(st: POPENSSL_STACK); cdecl external CLibCrypto name 'OPENSSL_sk_zero';
 function OPENSSL_sk_set_cmp_func(sk: POPENSSL_STACK; cmp: TOPENSSL_sk_compfunc): TOPENSSL_sk_compfunc; cdecl external CLibCrypto name 'OPENSSL_sk_set_cmp_func';
 function OPENSSL_sk_dup(st: POPENSSL_STACK): POPENSSL_STACK; cdecl external CLibCrypto name 'OPENSSL_sk_dup';
-function OPENSSL_sk_sort(st: POPENSSL_STACK): void; cdecl external CLibCrypto name 'OPENSSL_sk_sort';
+procedure OPENSSL_sk_sort(st: POPENSSL_STACK); cdecl external CLibCrypto name 'OPENSSL_sk_sort';
 function OPENSSL_sk_is_sorted(st: POPENSSL_STACK): TIdC_INT; cdecl external CLibCrypto name 'OPENSSL_sk_is_sorted';
 {$ENDIF}
 
@@ -422,7 +422,7 @@ begin
   }
 end;
 
-function sk_free(arg1: POPENSSL_STACK): void; cdecl
+procedure sk_free(arg1: POPENSSL_STACK); cdecl
 begin
  { TODO 1 -copenssl inline routines : To replace placeholder body with the actual code. }
   // This is an inline routine or macro. Manual implementation required if needed.
@@ -431,7 +431,7 @@ begin
   }
 end;
 
-function sk_pop_free(st: POPENSSL_STACK; func: TOPENSSL_sk_freefunc): void; cdecl
+procedure sk_pop_free(st: POPENSSL_STACK; func: TOPENSSL_sk_freefunc); cdecl
 begin
  { TODO 1 -copenssl inline routines : To replace placeholder body with the actual code. }
   // This is an inline routine or macro. Manual implementation required if needed.
@@ -530,7 +530,7 @@ begin
   }
 end;
 
-function sk_zero(st: POPENSSL_STACK): void; cdecl
+procedure sk_zero(st: POPENSSL_STACK); cdecl
 begin
  { TODO 1 -copenssl inline routines : To replace placeholder body with the actual code. }
   // This is an inline routine or macro. Manual implementation required if needed.
@@ -557,7 +557,7 @@ begin
   }
 end;
 
-function sk_sort(st: POPENSSL_STACK): void; cdecl
+procedure sk_sort(st: POPENSSL_STACK); cdecl
 begin
  { TODO 1 -copenssl inline routines : To replace placeholder body with the actual code. }
   // This is an inline routine or macro. Manual implementation required if needed.
@@ -627,12 +627,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_sk_reserve_procname);
 end;
 
-function ERR_OPENSSL_sk_free(arg1: POPENSSL_STACK): void; cdecl
+procedure ERR_OPENSSL_sk_free(arg1: POPENSSL_STACK); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_sk_free_procname);
 end;
 
-function ERR_OPENSSL_sk_pop_free(st: POPENSSL_STACK; func: TOPENSSL_sk_freefunc): void; cdecl
+procedure ERR_OPENSSL_sk_pop_free(st: POPENSSL_STACK; func: TOPENSSL_sk_freefunc); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_sk_pop_free_procname);
 end;
@@ -692,7 +692,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_sk_pop_procname);
 end;
 
-function ERR_OPENSSL_sk_zero(st: POPENSSL_STACK): void; cdecl
+procedure ERR_OPENSSL_sk_zero(st: POPENSSL_STACK); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_sk_zero_procname);
 end;
@@ -707,7 +707,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_sk_dup_procname);
 end;
 
-function ERR_OPENSSL_sk_sort(st: POPENSSL_STACK): void; cdecl
+procedure ERR_OPENSSL_sk_sort(st: POPENSSL_STACK); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_sk_sort_procname);
 end;

@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -48,9 +48,9 @@ type
 type
   TASYNC_callback_fn = function(arg: Pointer): TIdC_INT; cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // ASYNC_WAIT_CTX_set_wait_fd_cleanup_cb = function(arg1: PASYNC_WAIT_CTX; arg2: Pointer; arg3: TIdC_INT; arg4: Pointer): void; cdecl;
+  // ASYNC_WAIT_CTX_set_wait_fd_cleanup_cb = procedure(arg1: PASYNC_WAIT_CTX; arg2: Pointer; arg3: TIdC_INT; arg4: Pointer); cdecl;
   TASYNC_stack_alloc_fn = function(num: PIdC_SIZET): Pointer; cdecl;
-  TASYNC_stack_free_fn = function(addr: Pointer): void; cdecl;
+  TASYNC_stack_free_fn = procedure(addr: Pointer); cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -77,13 +77,13 @@ var
   ASYNC_init_thread: function(max_size: TIdC_SIZET; init_size: TIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM ASYNC_init_thread}
 
-  ASYNC_cleanup_thread: function: void; cdecl = nil;
+  ASYNC_cleanup_thread: procedure; cdecl = nil;
   {$EXTERNALSYM ASYNC_cleanup_thread}
 
   ASYNC_WAIT_CTX_new: function: PASYNC_WAIT_CTX; cdecl = nil;
   {$EXTERNALSYM ASYNC_WAIT_CTX_new}
 
-  ASYNC_WAIT_CTX_free: function(ctx: PASYNC_WAIT_CTX): void; cdecl = nil;
+  ASYNC_WAIT_CTX_free: procedure(ctx: PASYNC_WAIT_CTX); cdecl = nil;
   {$EXTERNALSYM ASYNC_WAIT_CTX_free}
 
   ASYNC_WAIT_CTX_set_wait_fd: function(ctx: PASYNC_WAIT_CTX; key: Pointer; fd: TIdC_INT; custom_data: Pointer; cleanup: TASYNC_WAIT_CTX_set_wait_fd_cleanup_cb): TIdC_INT; cdecl = nil;
@@ -119,7 +119,7 @@ var
   ASYNC_set_mem_functions: function(alloc_fn: TASYNC_stack_alloc_fn; free_fn: TASYNC_stack_free_fn): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM ASYNC_set_mem_functions}
 
-  ASYNC_get_mem_functions: function(alloc_fn: PASYNC_stack_alloc_fn; free_fn: PASYNC_stack_free_fn): void; cdecl = nil;
+  ASYNC_get_mem_functions: procedure(alloc_fn: PASYNC_stack_alloc_fn; free_fn: PASYNC_stack_free_fn); cdecl = nil;
   {$EXTERNALSYM ASYNC_get_mem_functions}
 
   ASYNC_start_job: function(job: PPASYNC_JOB; ctx: PASYNC_WAIT_CTX; ret: PIdC_INT; func: TASYNC_callback_fn; args: Pointer; size: TIdC_SIZET): TIdC_INT; cdecl = nil;
@@ -134,10 +134,10 @@ var
   ASYNC_get_wait_ctx: function(job: PASYNC_JOB): PASYNC_WAIT_CTX; cdecl = nil;
   {$EXTERNALSYM ASYNC_get_wait_ctx}
 
-  ASYNC_block_pause: function: void; cdecl = nil;
+  ASYNC_block_pause: procedure; cdecl = nil;
   {$EXTERNALSYM ASYNC_block_pause}
 
-  ASYNC_unblock_pause: function: void; cdecl = nil;
+  ASYNC_unblock_pause: procedure; cdecl = nil;
   {$EXTERNALSYM ASYNC_unblock_pause}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -149,9 +149,9 @@ var
 // =============================================================================
 
 function ASYNC_init_thread(max_size: TIdC_SIZET; init_size: TIdC_SIZET): TIdC_INT; cdecl;
-function ASYNC_cleanup_thread: void; cdecl;
+procedure ASYNC_cleanup_thread; cdecl;
 function ASYNC_WAIT_CTX_new: PASYNC_WAIT_CTX; cdecl;
-function ASYNC_WAIT_CTX_free(ctx: PASYNC_WAIT_CTX): void; cdecl;
+procedure ASYNC_WAIT_CTX_free(ctx: PASYNC_WAIT_CTX); cdecl;
 function ASYNC_WAIT_CTX_set_wait_fd(ctx: PASYNC_WAIT_CTX; key: Pointer; fd: TIdC_INT; custom_data: Pointer; cleanup: TASYNC_WAIT_CTX_set_wait_fd_cleanup_cb): TIdC_INT; cdecl;
 function ASYNC_WAIT_CTX_get_fd(ctx: PASYNC_WAIT_CTX; key: Pointer; fd: PIdC_INT; custom_data: PPointer): TIdC_INT; cdecl;
 function ASYNC_WAIT_CTX_get_all_fds(ctx: PASYNC_WAIT_CTX; fd: PIdC_INT; numfds: PIdC_SIZET): TIdC_INT; cdecl;
@@ -163,13 +163,13 @@ function ASYNC_WAIT_CTX_get_changed_fds(ctx: PASYNC_WAIT_CTX; addfd: PIdC_INT; n
 function ASYNC_WAIT_CTX_clear_fd(ctx: PASYNC_WAIT_CTX; key: Pointer): TIdC_INT; cdecl;
 function ASYNC_is_capable: TIdC_INT; cdecl;
 function ASYNC_set_mem_functions(alloc_fn: TASYNC_stack_alloc_fn; free_fn: TASYNC_stack_free_fn): TIdC_INT; cdecl;
-function ASYNC_get_mem_functions(alloc_fn: PASYNC_stack_alloc_fn; free_fn: PASYNC_stack_free_fn): void; cdecl;
+procedure ASYNC_get_mem_functions(alloc_fn: PASYNC_stack_alloc_fn; free_fn: PASYNC_stack_free_fn); cdecl;
 function ASYNC_start_job(job: PPASYNC_JOB; ctx: PASYNC_WAIT_CTX; ret: PIdC_INT; func: TASYNC_callback_fn; args: Pointer; size: TIdC_SIZET): TIdC_INT; cdecl;
 function ASYNC_pause_job: TIdC_INT; cdecl;
 function ASYNC_get_current_job: PASYNC_JOB; cdecl;
 function ASYNC_get_wait_ctx(job: PASYNC_JOB): PASYNC_WAIT_CTX; cdecl;
-function ASYNC_block_pause: void; cdecl;
-function ASYNC_unblock_pause: void; cdecl;
+procedure ASYNC_block_pause; cdecl;
+procedure ASYNC_unblock_pause; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 implementation
@@ -189,9 +189,9 @@ uses
 // =============================================================================
 
 function ASYNC_init_thread(max_size: TIdC_SIZET; init_size: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'ASYNC_init_thread';
-function ASYNC_cleanup_thread: void; cdecl external CLibCrypto name 'ASYNC_cleanup_thread';
+procedure ASYNC_cleanup_thread; cdecl external CLibCrypto name 'ASYNC_cleanup_thread';
 function ASYNC_WAIT_CTX_new: PASYNC_WAIT_CTX; cdecl external CLibCrypto name 'ASYNC_WAIT_CTX_new';
-function ASYNC_WAIT_CTX_free(ctx: PASYNC_WAIT_CTX): void; cdecl external CLibCrypto name 'ASYNC_WAIT_CTX_free';
+procedure ASYNC_WAIT_CTX_free(ctx: PASYNC_WAIT_CTX); cdecl external CLibCrypto name 'ASYNC_WAIT_CTX_free';
 function ASYNC_WAIT_CTX_set_wait_fd(ctx: PASYNC_WAIT_CTX; key: Pointer; fd: TIdC_INT; custom_data: Pointer; cleanup: TASYNC_WAIT_CTX_set_wait_fd_cleanup_cb): TIdC_INT; cdecl external CLibCrypto name 'ASYNC_WAIT_CTX_set_wait_fd';
 function ASYNC_WAIT_CTX_get_fd(ctx: PASYNC_WAIT_CTX; key: Pointer; fd: PIdC_INT; custom_data: PPointer): TIdC_INT; cdecl external CLibCrypto name 'ASYNC_WAIT_CTX_get_fd';
 function ASYNC_WAIT_CTX_get_all_fds(ctx: PASYNC_WAIT_CTX; fd: PIdC_INT; numfds: PIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'ASYNC_WAIT_CTX_get_all_fds';
@@ -203,13 +203,13 @@ function ASYNC_WAIT_CTX_get_changed_fds(ctx: PASYNC_WAIT_CTX; addfd: PIdC_INT; n
 function ASYNC_WAIT_CTX_clear_fd(ctx: PASYNC_WAIT_CTX; key: Pointer): TIdC_INT; cdecl external CLibCrypto name 'ASYNC_WAIT_CTX_clear_fd';
 function ASYNC_is_capable: TIdC_INT; cdecl external CLibCrypto name 'ASYNC_is_capable';
 function ASYNC_set_mem_functions(alloc_fn: TASYNC_stack_alloc_fn; free_fn: TASYNC_stack_free_fn): TIdC_INT; cdecl external CLibCrypto name 'ASYNC_set_mem_functions';
-function ASYNC_get_mem_functions(alloc_fn: PASYNC_stack_alloc_fn; free_fn: PASYNC_stack_free_fn): void; cdecl external CLibCrypto name 'ASYNC_get_mem_functions';
+procedure ASYNC_get_mem_functions(alloc_fn: PASYNC_stack_alloc_fn; free_fn: PASYNC_stack_free_fn); cdecl external CLibCrypto name 'ASYNC_get_mem_functions';
 function ASYNC_start_job(job: PPASYNC_JOB; ctx: PASYNC_WAIT_CTX; ret: PIdC_INT; func: TASYNC_callback_fn; args: Pointer; size: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'ASYNC_start_job';
 function ASYNC_pause_job: TIdC_INT; cdecl external CLibCrypto name 'ASYNC_pause_job';
 function ASYNC_get_current_job: PASYNC_JOB; cdecl external CLibCrypto name 'ASYNC_get_current_job';
 function ASYNC_get_wait_ctx(job: PASYNC_JOB): PASYNC_WAIT_CTX; cdecl external CLibCrypto name 'ASYNC_get_wait_ctx';
-function ASYNC_block_pause: void; cdecl external CLibCrypto name 'ASYNC_block_pause';
-function ASYNC_unblock_pause: void; cdecl external CLibCrypto name 'ASYNC_unblock_pause';
+procedure ASYNC_block_pause; cdecl external CLibCrypto name 'ASYNC_block_pause';
+procedure ASYNC_unblock_pause; cdecl external CLibCrypto name 'ASYNC_unblock_pause';
 {$ENDIF}
 
 // =============================================================================
@@ -301,7 +301,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASYNC_init_thread_procname);
 end;
 
-function ERR_ASYNC_cleanup_thread: void; cdecl
+procedure ERR_ASYNC_cleanup_thread; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASYNC_cleanup_thread_procname);
 end;
@@ -311,7 +311,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASYNC_WAIT_CTX_new_procname);
 end;
 
-function ERR_ASYNC_WAIT_CTX_free(ctx: PASYNC_WAIT_CTX): void; cdecl
+procedure ERR_ASYNC_WAIT_CTX_free(ctx: PASYNC_WAIT_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASYNC_WAIT_CTX_free_procname);
 end;
@@ -371,7 +371,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASYNC_set_mem_functions_procname);
 end;
 
-function ERR_ASYNC_get_mem_functions(alloc_fn: PASYNC_stack_alloc_fn; free_fn: PASYNC_stack_free_fn): void; cdecl
+procedure ERR_ASYNC_get_mem_functions(alloc_fn: PASYNC_stack_alloc_fn; free_fn: PASYNC_stack_free_fn); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASYNC_get_mem_functions_procname);
 end;
@@ -396,12 +396,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASYNC_get_wait_ctx_procname);
 end;
 
-function ERR_ASYNC_block_pause: void; cdecl
+procedure ERR_ASYNC_block_pause; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASYNC_block_pause_procname);
 end;
 
-function ERR_ASYNC_unblock_pause: void; cdecl
+procedure ERR_ASYNC_unblock_pause; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASYNC_unblock_pause_procname);
 end;

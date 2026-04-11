@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -115,7 +115,7 @@ var
   OSSL_CRMF_ENCRYPTEDVALUE_new: function: POSSL_CRMF_ENCRYPTEDVALUE; cdecl = nil;
   {$EXTERNALSYM OSSL_CRMF_ENCRYPTEDVALUE_new}
 
-  OSSL_CRMF_ENCRYPTEDVALUE_free: function(a: POSSL_CRMF_ENCRYPTEDVALUE): void; cdecl = nil;
+  OSSL_CRMF_ENCRYPTEDVALUE_free: procedure(a: POSSL_CRMF_ENCRYPTEDVALUE); cdecl = nil;
   {$EXTERNALSYM OSSL_CRMF_ENCRYPTEDVALUE_free}
 
   d2i_OSSL_CRMF_ENCRYPTEDVALUE: function(a: PPOSSL_CRMF_ENCRYPTEDVALUE; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_ENCRYPTEDVALUE; cdecl = nil;
@@ -130,7 +130,7 @@ var
   OSSL_CRMF_ENCRYPTEDKEY_new: function: POSSL_CRMF_ENCRYPTEDKEY; cdecl = nil;
   {$EXTERNALSYM OSSL_CRMF_ENCRYPTEDKEY_new}
 
-  OSSL_CRMF_ENCRYPTEDKEY_free: function(a: POSSL_CRMF_ENCRYPTEDKEY): void; cdecl = nil;
+  OSSL_CRMF_ENCRYPTEDKEY_free: procedure(a: POSSL_CRMF_ENCRYPTEDKEY); cdecl = nil;
   {$EXTERNALSYM OSSL_CRMF_ENCRYPTEDKEY_free}
 
   d2i_OSSL_CRMF_ENCRYPTEDKEY: function(a: PPOSSL_CRMF_ENCRYPTEDKEY; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_ENCRYPTEDKEY; cdecl = nil;
@@ -145,7 +145,7 @@ var
   OSSL_CRMF_MSG_new: function: POSSL_CRMF_MSG; cdecl = nil;
   {$EXTERNALSYM OSSL_CRMF_MSG_new}
 
-  OSSL_CRMF_MSG_free: function(a: POSSL_CRMF_MSG): void; cdecl = nil;
+  OSSL_CRMF_MSG_free: procedure(a: POSSL_CRMF_MSG); cdecl = nil;
   {$EXTERNALSYM OSSL_CRMF_MSG_free}
 
   d2i_OSSL_CRMF_MSG: function(a: PPOSSL_CRMF_MSG; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_MSG; cdecl = nil;
@@ -160,7 +160,7 @@ var
   OSSL_CRMF_MSG_dup: function(a: POSSL_CRMF_MSG): POSSL_CRMF_MSG; cdecl = nil;
   {$EXTERNALSYM OSSL_CRMF_MSG_dup}
 
-  OSSL_CRMF_ATTRIBUTETYPEANDVALUE_free: function(v: POSSL_CRMF_ATTRIBUTETYPEANDVALUE): void; cdecl = nil;
+  OSSL_CRMF_ATTRIBUTETYPEANDVALUE_free: procedure(v: POSSL_CRMF_ATTRIBUTETYPEANDVALUE); cdecl = nil;
   {$EXTERNALSYM OSSL_CRMF_ATTRIBUTETYPEANDVALUE_free}
 
   OSSL_CRMF_ATTRIBUTETYPEANDVALUE_dup: function(a: POSSL_CRMF_ATTRIBUTETYPEANDVALUE): POSSL_CRMF_ATTRIBUTETYPEANDVALUE; cdecl = nil;
@@ -169,7 +169,7 @@ var
   OSSL_CRMF_PBMPARAMETER_new: function: POSSL_CRMF_PBMPARAMETER; cdecl = nil;
   {$EXTERNALSYM OSSL_CRMF_PBMPARAMETER_new}
 
-  OSSL_CRMF_PBMPARAMETER_free: function(a: POSSL_CRMF_PBMPARAMETER): void; cdecl = nil;
+  OSSL_CRMF_PBMPARAMETER_free: procedure(a: POSSL_CRMF_PBMPARAMETER); cdecl = nil;
   {$EXTERNALSYM OSSL_CRMF_PBMPARAMETER_free}
 
   d2i_OSSL_CRMF_PBMPARAMETER: function(a: PPOSSL_CRMF_PBMPARAMETER; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_PBMPARAMETER; cdecl = nil;
@@ -184,7 +184,7 @@ var
   OSSL_CRMF_CERTID_new: function: POSSL_CRMF_CERTID; cdecl = nil;
   {$EXTERNALSYM OSSL_CRMF_CERTID_new}
 
-  OSSL_CRMF_CERTID_free: function(a: POSSL_CRMF_CERTID): void; cdecl = nil;
+  OSSL_CRMF_CERTID_free: procedure(a: POSSL_CRMF_CERTID); cdecl = nil;
   {$EXTERNALSYM OSSL_CRMF_CERTID_free}
 
   d2i_OSSL_CRMF_CERTID: function(a: PPOSSL_CRMF_CERTID; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_CERTID; cdecl = nil;
@@ -202,7 +202,7 @@ var
   OSSL_CRMF_PKIPUBLICATIONINFO_new: function: POSSL_CRMF_PKIPUBLICATIONINFO; cdecl = nil;
   {$EXTERNALSYM OSSL_CRMF_PKIPUBLICATIONINFO_new}
 
-  OSSL_CRMF_PKIPUBLICATIONINFO_free: function(a: POSSL_CRMF_PKIPUBLICATIONINFO): void; cdecl = nil;
+  OSSL_CRMF_PKIPUBLICATIONINFO_free: procedure(a: POSSL_CRMF_PKIPUBLICATIONINFO); cdecl = nil;
   {$EXTERNALSYM OSSL_CRMF_PKIPUBLICATIONINFO_free}
 
   d2i_OSSL_CRMF_PKIPUBLICATIONINFO: function(a: PPOSSL_CRMF_PKIPUBLICATIONINFO; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_PKIPUBLICATIONINFO; cdecl = nil;
@@ -217,7 +217,7 @@ var
   OSSL_CRMF_SINGLEPUBINFO_new: function: POSSL_CRMF_SINGLEPUBINFO; cdecl = nil;
   {$EXTERNALSYM OSSL_CRMF_SINGLEPUBINFO_new}
 
-  OSSL_CRMF_SINGLEPUBINFO_free: function(a: POSSL_CRMF_SINGLEPUBINFO): void; cdecl = nil;
+  OSSL_CRMF_SINGLEPUBINFO_free: procedure(a: POSSL_CRMF_SINGLEPUBINFO); cdecl = nil;
   {$EXTERNALSYM OSSL_CRMF_SINGLEPUBINFO_free}
 
   d2i_OSSL_CRMF_SINGLEPUBINFO: function(a: PPOSSL_CRMF_SINGLEPUBINFO; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_SINGLEPUBINFO; cdecl = nil;
@@ -232,7 +232,7 @@ var
   OSSL_CRMF_CERTTEMPLATE_new: function: POSSL_CRMF_CERTTEMPLATE; cdecl = nil;
   {$EXTERNALSYM OSSL_CRMF_CERTTEMPLATE_new}
 
-  OSSL_CRMF_CERTTEMPLATE_free: function(a: POSSL_CRMF_CERTTEMPLATE): void; cdecl = nil;
+  OSSL_CRMF_CERTTEMPLATE_free: procedure(a: POSSL_CRMF_CERTTEMPLATE); cdecl = nil;
   {$EXTERNALSYM OSSL_CRMF_CERTTEMPLATE_free}
 
   d2i_OSSL_CRMF_CERTTEMPLATE: function(a: PPOSSL_CRMF_CERTTEMPLATE; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_CERTTEMPLATE; cdecl = nil;
@@ -250,7 +250,7 @@ var
   OSSL_CRMF_MSGS_new: function: POSSL_CRMF_MSGS; cdecl = nil;
   {$EXTERNALSYM OSSL_CRMF_MSGS_new}
 
-  OSSL_CRMF_MSGS_free: function(a: POSSL_CRMF_MSGS): void; cdecl = nil;
+  OSSL_CRMF_MSGS_free: procedure(a: POSSL_CRMF_MSGS); cdecl = nil;
   {$EXTERNALSYM OSSL_CRMF_MSGS_free}
 
   d2i_OSSL_CRMF_MSGS: function(a: PPOSSL_CRMF_MSGS; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_MSGS; cdecl = nil;
@@ -397,52 +397,52 @@ var
 // =============================================================================
 
 function OSSL_CRMF_ENCRYPTEDVALUE_new: POSSL_CRMF_ENCRYPTEDVALUE; cdecl;
-function OSSL_CRMF_ENCRYPTEDVALUE_free(a: POSSL_CRMF_ENCRYPTEDVALUE): void; cdecl;
+procedure OSSL_CRMF_ENCRYPTEDVALUE_free(a: POSSL_CRMF_ENCRYPTEDVALUE); cdecl;
 function d2i_OSSL_CRMF_ENCRYPTEDVALUE(a: PPOSSL_CRMF_ENCRYPTEDVALUE; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_ENCRYPTEDVALUE; cdecl;
 function i2d_OSSL_CRMF_ENCRYPTEDVALUE(a: POSSL_CRMF_ENCRYPTEDVALUE; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_CRMF_ENCRYPTEDVALUE_it: PASN1_ITEM; cdecl;
 function OSSL_CRMF_ENCRYPTEDKEY_new: POSSL_CRMF_ENCRYPTEDKEY; cdecl;
-function OSSL_CRMF_ENCRYPTEDKEY_free(a: POSSL_CRMF_ENCRYPTEDKEY): void; cdecl;
+procedure OSSL_CRMF_ENCRYPTEDKEY_free(a: POSSL_CRMF_ENCRYPTEDKEY); cdecl;
 function d2i_OSSL_CRMF_ENCRYPTEDKEY(a: PPOSSL_CRMF_ENCRYPTEDKEY; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_ENCRYPTEDKEY; cdecl;
 function i2d_OSSL_CRMF_ENCRYPTEDKEY(a: POSSL_CRMF_ENCRYPTEDKEY; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_CRMF_ENCRYPTEDKEY_it: PASN1_ITEM; cdecl;
 function OSSL_CRMF_MSG_new: POSSL_CRMF_MSG; cdecl;
-function OSSL_CRMF_MSG_free(a: POSSL_CRMF_MSG): void; cdecl;
+procedure OSSL_CRMF_MSG_free(a: POSSL_CRMF_MSG); cdecl;
 function d2i_OSSL_CRMF_MSG(a: PPOSSL_CRMF_MSG; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_MSG; cdecl;
 function i2d_OSSL_CRMF_MSG(a: POSSL_CRMF_MSG; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_CRMF_MSG_it: PASN1_ITEM; cdecl;
 function OSSL_CRMF_MSG_dup(a: POSSL_CRMF_MSG): POSSL_CRMF_MSG; cdecl;
-function OSSL_CRMF_ATTRIBUTETYPEANDVALUE_free(v: POSSL_CRMF_ATTRIBUTETYPEANDVALUE): void; cdecl;
+procedure OSSL_CRMF_ATTRIBUTETYPEANDVALUE_free(v: POSSL_CRMF_ATTRIBUTETYPEANDVALUE); cdecl;
 function OSSL_CRMF_ATTRIBUTETYPEANDVALUE_dup(a: POSSL_CRMF_ATTRIBUTETYPEANDVALUE): POSSL_CRMF_ATTRIBUTETYPEANDVALUE; cdecl;
 function OSSL_CRMF_PBMPARAMETER_new: POSSL_CRMF_PBMPARAMETER; cdecl;
-function OSSL_CRMF_PBMPARAMETER_free(a: POSSL_CRMF_PBMPARAMETER): void; cdecl;
+procedure OSSL_CRMF_PBMPARAMETER_free(a: POSSL_CRMF_PBMPARAMETER); cdecl;
 function d2i_OSSL_CRMF_PBMPARAMETER(a: PPOSSL_CRMF_PBMPARAMETER; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_PBMPARAMETER; cdecl;
 function i2d_OSSL_CRMF_PBMPARAMETER(a: POSSL_CRMF_PBMPARAMETER; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_CRMF_PBMPARAMETER_it: PASN1_ITEM; cdecl;
 function OSSL_CRMF_CERTID_new: POSSL_CRMF_CERTID; cdecl;
-function OSSL_CRMF_CERTID_free(a: POSSL_CRMF_CERTID): void; cdecl;
+procedure OSSL_CRMF_CERTID_free(a: POSSL_CRMF_CERTID); cdecl;
 function d2i_OSSL_CRMF_CERTID(a: PPOSSL_CRMF_CERTID; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_CERTID; cdecl;
 function i2d_OSSL_CRMF_CERTID(a: POSSL_CRMF_CERTID; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_CRMF_CERTID_it: PASN1_ITEM; cdecl;
 function OSSL_CRMF_CERTID_dup(a: POSSL_CRMF_CERTID): POSSL_CRMF_CERTID; cdecl;
 function OSSL_CRMF_PKIPUBLICATIONINFO_new: POSSL_CRMF_PKIPUBLICATIONINFO; cdecl;
-function OSSL_CRMF_PKIPUBLICATIONINFO_free(a: POSSL_CRMF_PKIPUBLICATIONINFO): void; cdecl;
+procedure OSSL_CRMF_PKIPUBLICATIONINFO_free(a: POSSL_CRMF_PKIPUBLICATIONINFO); cdecl;
 function d2i_OSSL_CRMF_PKIPUBLICATIONINFO(a: PPOSSL_CRMF_PKIPUBLICATIONINFO; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_PKIPUBLICATIONINFO; cdecl;
 function i2d_OSSL_CRMF_PKIPUBLICATIONINFO(a: POSSL_CRMF_PKIPUBLICATIONINFO; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_CRMF_PKIPUBLICATIONINFO_it: PASN1_ITEM; cdecl;
 function OSSL_CRMF_SINGLEPUBINFO_new: POSSL_CRMF_SINGLEPUBINFO; cdecl;
-function OSSL_CRMF_SINGLEPUBINFO_free(a: POSSL_CRMF_SINGLEPUBINFO): void; cdecl;
+procedure OSSL_CRMF_SINGLEPUBINFO_free(a: POSSL_CRMF_SINGLEPUBINFO); cdecl;
 function d2i_OSSL_CRMF_SINGLEPUBINFO(a: PPOSSL_CRMF_SINGLEPUBINFO; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_SINGLEPUBINFO; cdecl;
 function i2d_OSSL_CRMF_SINGLEPUBINFO(a: POSSL_CRMF_SINGLEPUBINFO; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_CRMF_SINGLEPUBINFO_it: PASN1_ITEM; cdecl;
 function OSSL_CRMF_CERTTEMPLATE_new: POSSL_CRMF_CERTTEMPLATE; cdecl;
-function OSSL_CRMF_CERTTEMPLATE_free(a: POSSL_CRMF_CERTTEMPLATE): void; cdecl;
+procedure OSSL_CRMF_CERTTEMPLATE_free(a: POSSL_CRMF_CERTTEMPLATE); cdecl;
 function d2i_OSSL_CRMF_CERTTEMPLATE(a: PPOSSL_CRMF_CERTTEMPLATE; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_CERTTEMPLATE; cdecl;
 function i2d_OSSL_CRMF_CERTTEMPLATE(a: POSSL_CRMF_CERTTEMPLATE; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_CRMF_CERTTEMPLATE_it: PASN1_ITEM; cdecl;
 function OSSL_CRMF_CERTTEMPLATE_dup(a: POSSL_CRMF_CERTTEMPLATE): POSSL_CRMF_CERTTEMPLATE; cdecl;
 function OSSL_CRMF_MSGS_new: POSSL_CRMF_MSGS; cdecl;
-function OSSL_CRMF_MSGS_free(a: POSSL_CRMF_MSGS): void; cdecl;
+procedure OSSL_CRMF_MSGS_free(a: POSSL_CRMF_MSGS); cdecl;
 function d2i_OSSL_CRMF_MSGS(a: PPOSSL_CRMF_MSGS; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_MSGS; cdecl;
 function i2d_OSSL_CRMF_MSGS(a: POSSL_CRMF_MSGS; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_CRMF_MSGS_it: PASN1_ITEM; cdecl;
@@ -611,52 +611,52 @@ uses
 // =============================================================================
 
 function OSSL_CRMF_ENCRYPTEDVALUE_new: POSSL_CRMF_ENCRYPTEDVALUE; cdecl external CLibCrypto name 'OSSL_CRMF_ENCRYPTEDVALUE_new';
-function OSSL_CRMF_ENCRYPTEDVALUE_free(a: POSSL_CRMF_ENCRYPTEDVALUE): void; cdecl external CLibCrypto name 'OSSL_CRMF_ENCRYPTEDVALUE_free';
+procedure OSSL_CRMF_ENCRYPTEDVALUE_free(a: POSSL_CRMF_ENCRYPTEDVALUE); cdecl external CLibCrypto name 'OSSL_CRMF_ENCRYPTEDVALUE_free';
 function d2i_OSSL_CRMF_ENCRYPTEDVALUE(a: PPOSSL_CRMF_ENCRYPTEDVALUE; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_ENCRYPTEDVALUE; cdecl external CLibCrypto name 'd2i_OSSL_CRMF_ENCRYPTEDVALUE';
 function i2d_OSSL_CRMF_ENCRYPTEDVALUE(a: POSSL_CRMF_ENCRYPTEDVALUE; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_CRMF_ENCRYPTEDVALUE';
 function OSSL_CRMF_ENCRYPTEDVALUE_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_CRMF_ENCRYPTEDVALUE_it';
 function OSSL_CRMF_ENCRYPTEDKEY_new: POSSL_CRMF_ENCRYPTEDKEY; cdecl external CLibCrypto name 'OSSL_CRMF_ENCRYPTEDKEY_new';
-function OSSL_CRMF_ENCRYPTEDKEY_free(a: POSSL_CRMF_ENCRYPTEDKEY): void; cdecl external CLibCrypto name 'OSSL_CRMF_ENCRYPTEDKEY_free';
+procedure OSSL_CRMF_ENCRYPTEDKEY_free(a: POSSL_CRMF_ENCRYPTEDKEY); cdecl external CLibCrypto name 'OSSL_CRMF_ENCRYPTEDKEY_free';
 function d2i_OSSL_CRMF_ENCRYPTEDKEY(a: PPOSSL_CRMF_ENCRYPTEDKEY; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_ENCRYPTEDKEY; cdecl external CLibCrypto name 'd2i_OSSL_CRMF_ENCRYPTEDKEY';
 function i2d_OSSL_CRMF_ENCRYPTEDKEY(a: POSSL_CRMF_ENCRYPTEDKEY; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_CRMF_ENCRYPTEDKEY';
 function OSSL_CRMF_ENCRYPTEDKEY_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_CRMF_ENCRYPTEDKEY_it';
 function OSSL_CRMF_MSG_new: POSSL_CRMF_MSG; cdecl external CLibCrypto name 'OSSL_CRMF_MSG_new';
-function OSSL_CRMF_MSG_free(a: POSSL_CRMF_MSG): void; cdecl external CLibCrypto name 'OSSL_CRMF_MSG_free';
+procedure OSSL_CRMF_MSG_free(a: POSSL_CRMF_MSG); cdecl external CLibCrypto name 'OSSL_CRMF_MSG_free';
 function d2i_OSSL_CRMF_MSG(a: PPOSSL_CRMF_MSG; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_MSG; cdecl external CLibCrypto name 'd2i_OSSL_CRMF_MSG';
 function i2d_OSSL_CRMF_MSG(a: POSSL_CRMF_MSG; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_CRMF_MSG';
 function OSSL_CRMF_MSG_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_CRMF_MSG_it';
 function OSSL_CRMF_MSG_dup(a: POSSL_CRMF_MSG): POSSL_CRMF_MSG; cdecl external CLibCrypto name 'OSSL_CRMF_MSG_dup';
-function OSSL_CRMF_ATTRIBUTETYPEANDVALUE_free(v: POSSL_CRMF_ATTRIBUTETYPEANDVALUE): void; cdecl external CLibCrypto name 'OSSL_CRMF_ATTRIBUTETYPEANDVALUE_free';
+procedure OSSL_CRMF_ATTRIBUTETYPEANDVALUE_free(v: POSSL_CRMF_ATTRIBUTETYPEANDVALUE); cdecl external CLibCrypto name 'OSSL_CRMF_ATTRIBUTETYPEANDVALUE_free';
 function OSSL_CRMF_ATTRIBUTETYPEANDVALUE_dup(a: POSSL_CRMF_ATTRIBUTETYPEANDVALUE): POSSL_CRMF_ATTRIBUTETYPEANDVALUE; cdecl external CLibCrypto name 'OSSL_CRMF_ATTRIBUTETYPEANDVALUE_dup';
 function OSSL_CRMF_PBMPARAMETER_new: POSSL_CRMF_PBMPARAMETER; cdecl external CLibCrypto name 'OSSL_CRMF_PBMPARAMETER_new';
-function OSSL_CRMF_PBMPARAMETER_free(a: POSSL_CRMF_PBMPARAMETER): void; cdecl external CLibCrypto name 'OSSL_CRMF_PBMPARAMETER_free';
+procedure OSSL_CRMF_PBMPARAMETER_free(a: POSSL_CRMF_PBMPARAMETER); cdecl external CLibCrypto name 'OSSL_CRMF_PBMPARAMETER_free';
 function d2i_OSSL_CRMF_PBMPARAMETER(a: PPOSSL_CRMF_PBMPARAMETER; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_PBMPARAMETER; cdecl external CLibCrypto name 'd2i_OSSL_CRMF_PBMPARAMETER';
 function i2d_OSSL_CRMF_PBMPARAMETER(a: POSSL_CRMF_PBMPARAMETER; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_CRMF_PBMPARAMETER';
 function OSSL_CRMF_PBMPARAMETER_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_CRMF_PBMPARAMETER_it';
 function OSSL_CRMF_CERTID_new: POSSL_CRMF_CERTID; cdecl external CLibCrypto name 'OSSL_CRMF_CERTID_new';
-function OSSL_CRMF_CERTID_free(a: POSSL_CRMF_CERTID): void; cdecl external CLibCrypto name 'OSSL_CRMF_CERTID_free';
+procedure OSSL_CRMF_CERTID_free(a: POSSL_CRMF_CERTID); cdecl external CLibCrypto name 'OSSL_CRMF_CERTID_free';
 function d2i_OSSL_CRMF_CERTID(a: PPOSSL_CRMF_CERTID; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_CERTID; cdecl external CLibCrypto name 'd2i_OSSL_CRMF_CERTID';
 function i2d_OSSL_CRMF_CERTID(a: POSSL_CRMF_CERTID; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_CRMF_CERTID';
 function OSSL_CRMF_CERTID_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_CRMF_CERTID_it';
 function OSSL_CRMF_CERTID_dup(a: POSSL_CRMF_CERTID): POSSL_CRMF_CERTID; cdecl external CLibCrypto name 'OSSL_CRMF_CERTID_dup';
 function OSSL_CRMF_PKIPUBLICATIONINFO_new: POSSL_CRMF_PKIPUBLICATIONINFO; cdecl external CLibCrypto name 'OSSL_CRMF_PKIPUBLICATIONINFO_new';
-function OSSL_CRMF_PKIPUBLICATIONINFO_free(a: POSSL_CRMF_PKIPUBLICATIONINFO): void; cdecl external CLibCrypto name 'OSSL_CRMF_PKIPUBLICATIONINFO_free';
+procedure OSSL_CRMF_PKIPUBLICATIONINFO_free(a: POSSL_CRMF_PKIPUBLICATIONINFO); cdecl external CLibCrypto name 'OSSL_CRMF_PKIPUBLICATIONINFO_free';
 function d2i_OSSL_CRMF_PKIPUBLICATIONINFO(a: PPOSSL_CRMF_PKIPUBLICATIONINFO; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_PKIPUBLICATIONINFO; cdecl external CLibCrypto name 'd2i_OSSL_CRMF_PKIPUBLICATIONINFO';
 function i2d_OSSL_CRMF_PKIPUBLICATIONINFO(a: POSSL_CRMF_PKIPUBLICATIONINFO; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_CRMF_PKIPUBLICATIONINFO';
 function OSSL_CRMF_PKIPUBLICATIONINFO_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_CRMF_PKIPUBLICATIONINFO_it';
 function OSSL_CRMF_SINGLEPUBINFO_new: POSSL_CRMF_SINGLEPUBINFO; cdecl external CLibCrypto name 'OSSL_CRMF_SINGLEPUBINFO_new';
-function OSSL_CRMF_SINGLEPUBINFO_free(a: POSSL_CRMF_SINGLEPUBINFO): void; cdecl external CLibCrypto name 'OSSL_CRMF_SINGLEPUBINFO_free';
+procedure OSSL_CRMF_SINGLEPUBINFO_free(a: POSSL_CRMF_SINGLEPUBINFO); cdecl external CLibCrypto name 'OSSL_CRMF_SINGLEPUBINFO_free';
 function d2i_OSSL_CRMF_SINGLEPUBINFO(a: PPOSSL_CRMF_SINGLEPUBINFO; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_SINGLEPUBINFO; cdecl external CLibCrypto name 'd2i_OSSL_CRMF_SINGLEPUBINFO';
 function i2d_OSSL_CRMF_SINGLEPUBINFO(a: POSSL_CRMF_SINGLEPUBINFO; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_CRMF_SINGLEPUBINFO';
 function OSSL_CRMF_SINGLEPUBINFO_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_CRMF_SINGLEPUBINFO_it';
 function OSSL_CRMF_CERTTEMPLATE_new: POSSL_CRMF_CERTTEMPLATE; cdecl external CLibCrypto name 'OSSL_CRMF_CERTTEMPLATE_new';
-function OSSL_CRMF_CERTTEMPLATE_free(a: POSSL_CRMF_CERTTEMPLATE): void; cdecl external CLibCrypto name 'OSSL_CRMF_CERTTEMPLATE_free';
+procedure OSSL_CRMF_CERTTEMPLATE_free(a: POSSL_CRMF_CERTTEMPLATE); cdecl external CLibCrypto name 'OSSL_CRMF_CERTTEMPLATE_free';
 function d2i_OSSL_CRMF_CERTTEMPLATE(a: PPOSSL_CRMF_CERTTEMPLATE; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_CERTTEMPLATE; cdecl external CLibCrypto name 'd2i_OSSL_CRMF_CERTTEMPLATE';
 function i2d_OSSL_CRMF_CERTTEMPLATE(a: POSSL_CRMF_CERTTEMPLATE; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_CRMF_CERTTEMPLATE';
 function OSSL_CRMF_CERTTEMPLATE_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_CRMF_CERTTEMPLATE_it';
 function OSSL_CRMF_CERTTEMPLATE_dup(a: POSSL_CRMF_CERTTEMPLATE): POSSL_CRMF_CERTTEMPLATE; cdecl external CLibCrypto name 'OSSL_CRMF_CERTTEMPLATE_dup';
 function OSSL_CRMF_MSGS_new: POSSL_CRMF_MSGS; cdecl external CLibCrypto name 'OSSL_CRMF_MSGS_new';
-function OSSL_CRMF_MSGS_free(a: POSSL_CRMF_MSGS): void; cdecl external CLibCrypto name 'OSSL_CRMF_MSGS_free';
+procedure OSSL_CRMF_MSGS_free(a: POSSL_CRMF_MSGS); cdecl external CLibCrypto name 'OSSL_CRMF_MSGS_free';
 function d2i_OSSL_CRMF_MSGS(a: PPOSSL_CRMF_MSGS; _in: PPIdAnsiChar; len: TIdC_LONG): POSSL_CRMF_MSGS; cdecl external CLibCrypto name 'd2i_OSSL_CRMF_MSGS';
 function i2d_OSSL_CRMF_MSGS(a: POSSL_CRMF_MSGS; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_OSSL_CRMF_MSGS';
 function OSSL_CRMF_MSGS_it: PASN1_ITEM; cdecl external CLibCrypto name 'OSSL_CRMF_MSGS_it';
@@ -1003,7 +1003,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CRMF_ENCRYPTEDVALUE_new_procname);
 end;
 
-function ERR_OSSL_CRMF_ENCRYPTEDVALUE_free(a: POSSL_CRMF_ENCRYPTEDVALUE): void; cdecl
+procedure ERR_OSSL_CRMF_ENCRYPTEDVALUE_free(a: POSSL_CRMF_ENCRYPTEDVALUE); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CRMF_ENCRYPTEDVALUE_free_procname);
 end;
@@ -1028,7 +1028,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CRMF_ENCRYPTEDKEY_new_procname);
 end;
 
-function ERR_OSSL_CRMF_ENCRYPTEDKEY_free(a: POSSL_CRMF_ENCRYPTEDKEY): void; cdecl
+procedure ERR_OSSL_CRMF_ENCRYPTEDKEY_free(a: POSSL_CRMF_ENCRYPTEDKEY); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CRMF_ENCRYPTEDKEY_free_procname);
 end;
@@ -1053,7 +1053,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CRMF_MSG_new_procname);
 end;
 
-function ERR_OSSL_CRMF_MSG_free(a: POSSL_CRMF_MSG): void; cdecl
+procedure ERR_OSSL_CRMF_MSG_free(a: POSSL_CRMF_MSG); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CRMF_MSG_free_procname);
 end;
@@ -1078,7 +1078,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CRMF_MSG_dup_procname);
 end;
 
-function ERR_OSSL_CRMF_ATTRIBUTETYPEANDVALUE_free(v: POSSL_CRMF_ATTRIBUTETYPEANDVALUE): void; cdecl
+procedure ERR_OSSL_CRMF_ATTRIBUTETYPEANDVALUE_free(v: POSSL_CRMF_ATTRIBUTETYPEANDVALUE); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CRMF_ATTRIBUTETYPEANDVALUE_free_procname);
 end;
@@ -1093,7 +1093,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CRMF_PBMPARAMETER_new_procname);
 end;
 
-function ERR_OSSL_CRMF_PBMPARAMETER_free(a: POSSL_CRMF_PBMPARAMETER): void; cdecl
+procedure ERR_OSSL_CRMF_PBMPARAMETER_free(a: POSSL_CRMF_PBMPARAMETER); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CRMF_PBMPARAMETER_free_procname);
 end;
@@ -1118,7 +1118,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CRMF_CERTID_new_procname);
 end;
 
-function ERR_OSSL_CRMF_CERTID_free(a: POSSL_CRMF_CERTID): void; cdecl
+procedure ERR_OSSL_CRMF_CERTID_free(a: POSSL_CRMF_CERTID); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CRMF_CERTID_free_procname);
 end;
@@ -1148,7 +1148,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CRMF_PKIPUBLICATIONINFO_new_procname);
 end;
 
-function ERR_OSSL_CRMF_PKIPUBLICATIONINFO_free(a: POSSL_CRMF_PKIPUBLICATIONINFO): void; cdecl
+procedure ERR_OSSL_CRMF_PKIPUBLICATIONINFO_free(a: POSSL_CRMF_PKIPUBLICATIONINFO); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CRMF_PKIPUBLICATIONINFO_free_procname);
 end;
@@ -1173,7 +1173,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CRMF_SINGLEPUBINFO_new_procname);
 end;
 
-function ERR_OSSL_CRMF_SINGLEPUBINFO_free(a: POSSL_CRMF_SINGLEPUBINFO): void; cdecl
+procedure ERR_OSSL_CRMF_SINGLEPUBINFO_free(a: POSSL_CRMF_SINGLEPUBINFO); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CRMF_SINGLEPUBINFO_free_procname);
 end;
@@ -1198,7 +1198,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CRMF_CERTTEMPLATE_new_procname);
 end;
 
-function ERR_OSSL_CRMF_CERTTEMPLATE_free(a: POSSL_CRMF_CERTTEMPLATE): void; cdecl
+procedure ERR_OSSL_CRMF_CERTTEMPLATE_free(a: POSSL_CRMF_CERTTEMPLATE); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CRMF_CERTTEMPLATE_free_procname);
 end;
@@ -1228,7 +1228,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CRMF_MSGS_new_procname);
 end;
 
-function ERR_OSSL_CRMF_MSGS_free(a: POSSL_CRMF_MSGS): void; cdecl
+procedure ERR_OSSL_CRMF_MSGS_free(a: POSSL_CRMF_MSGS); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_CRMF_MSGS_free_procname);
 end;

@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -76,7 +76,7 @@ var
   RIPEMD160: function(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RIPEMD160}
 
-  RIPEMD160_Transform: function(c: PRIPEMD160_CTX; b: PIdAnsiChar): void; cdecl = nil; // Deprecated in 3_0_0
+  RIPEMD160_Transform: procedure(c: PRIPEMD160_CTX; b: PIdAnsiChar); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM RIPEMD160_Transform}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -91,7 +91,7 @@ function RIPEMD160_Init(c: PRIPEMD160_CTX): TIdC_INT; cdecl; deprecated 'In Open
 function RIPEMD160_Update(c: PRIPEMD160_CTX; data: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RIPEMD160_Final(md: PIdAnsiChar; c: PRIPEMD160_CTX): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function RIPEMD160(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl; deprecated 'In OpenSSL 3_0_0';
-function RIPEMD160_Transform(c: PRIPEMD160_CTX; b: PIdAnsiChar): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure RIPEMD160_Transform(c: PRIPEMD160_CTX; b: PIdAnsiChar); cdecl; deprecated 'In OpenSSL 3_0_0';
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 implementation
@@ -114,7 +114,7 @@ function RIPEMD160_Init(c: PRIPEMD160_CTX): TIdC_INT; cdecl external CLibCrypto 
 function RIPEMD160_Update(c: PRIPEMD160_CTX; data: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'RIPEMD160_Update';
 function RIPEMD160_Final(md: PIdAnsiChar; c: PRIPEMD160_CTX): TIdC_INT; cdecl external CLibCrypto name 'RIPEMD160_Final';
 function RIPEMD160(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'RIPEMD160';
-function RIPEMD160_Transform(c: PRIPEMD160_CTX; b: PIdAnsiChar): void; cdecl external CLibCrypto name 'RIPEMD160_Transform';
+procedure RIPEMD160_Transform(c: PRIPEMD160_CTX; b: PIdAnsiChar); cdecl external CLibCrypto name 'RIPEMD160_Transform';
 {$ENDIF}
 
 // =============================================================================
@@ -175,7 +175,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RIPEMD160_procname);
 end;
 
-function ERR_RIPEMD160_Transform(c: PRIPEMD160_CTX; b: PIdAnsiChar): void; cdecl
+procedure ERR_RIPEMD160_Transform(c: PRIPEMD160_CTX; b: PIdAnsiChar); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RIPEMD160_Transform_procname);
 end;

@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -65,7 +65,7 @@ type
   TENGINE_GEN_FUNC_PTR = function: TIdC_INT; cdecl;
   TENGINE_GEN_INT_FUNC_PTR = function(arg1: PENGINE): TIdC_INT; cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // ENGINE_CTRL_FUNC_PTR_func_cb = function: void; cdecl;
+  // ENGINE_CTRL_FUNC_PTR_func_cb = procedure; cdecl;
   TENGINE_CTRL_FUNC_PTR = function(arg1: PENGINE; arg2: TIdC_INT; arg3: TIdC_LONG; arg4: Pointer; f: TENGINE_CTRL_FUNC_PTR_func_cb): TIdC_INT; cdecl;
   TENGINE_LOAD_KEY_PTR = function(arg1: PENGINE; arg2: PIdAnsiChar; ui_method: PUI_METHOD; callback_data: Pointer): Pevp_pkey_st; cdecl;
   TENGINE_SSL_CLIENT_CERT_PTR = function(arg1: PENGINE; ssl: PSSL; ca_dn: Pstack_st_X509_NAME; pcert: PPX509; pkey: PPEVP_PKEY; pother: PPstack_st_X509; ui_method: PUI_METHOD; callback_data: Pointer): TIdC_INT; cdecl;
@@ -75,7 +75,7 @@ type
   TENGINE_PKEY_ASN1_METHS_PTR = function(arg1: PENGINE; arg2: PPEVP_PKEY_ASN1_METHOD; arg3: PPIdC_INT; arg4: TIdC_INT): TIdC_INT; cdecl;
   Tdyn_MEM_malloc_fn = function(arg1: TIdC_SIZET; arg2: PIdAnsiChar; arg3: TIdC_INT): Pointer; cdecl;
   Tdyn_MEM_realloc_fn = function(arg1: Pointer; arg2: TIdC_SIZET; arg3: PIdAnsiChar; arg4: TIdC_INT): Pointer; cdecl;
-  Tdyn_MEM_free_fn = function(arg1: Pointer; arg2: PIdAnsiChar; arg3: TIdC_INT): void; cdecl;
+  Tdyn_MEM_free_fn = procedure(arg1: Pointer; arg2: PIdAnsiChar; arg3: TIdC_INT); cdecl;
   Tdynamic_v_check_fn = function(ossl_version: TIdC_ULONG): TIdC_ULONG; cdecl;
   Tdynamic_bind_engine = function(e: PENGINE; id: PIdAnsiChar; fns: Pdynamic_fns): TIdC_INT; cdecl;
 
@@ -152,94 +152,94 @@ var
   ENGINE_by_id: function(id: PIdAnsiChar): PENGINE; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_by_id}
 
-  ENGINE_load_builtin_engines: function: void; cdecl = nil; // Deprecated in 3_0_0
+  ENGINE_load_builtin_engines: procedure; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_load_builtin_engines}
 
   ENGINE_get_table_flags: function: TIdC_UINT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_get_table_flags}
 
-  ENGINE_set_table_flags: function(flags: TIdC_UINT): void; cdecl = nil; // Deprecated in 3_0_0
+  ENGINE_set_table_flags: procedure(flags: TIdC_UINT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_set_table_flags}
 
   ENGINE_register_RSA: function(e: PENGINE): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_register_RSA}
 
-  ENGINE_unregister_RSA: function(e: PENGINE): void; cdecl = nil; // Deprecated in 3_0_0
+  ENGINE_unregister_RSA: procedure(e: PENGINE); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_unregister_RSA}
 
-  ENGINE_register_all_RSA: function: void; cdecl = nil; // Deprecated in 3_0_0
+  ENGINE_register_all_RSA: procedure; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_register_all_RSA}
 
   ENGINE_register_DSA: function(e: PENGINE): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_register_DSA}
 
-  ENGINE_unregister_DSA: function(e: PENGINE): void; cdecl = nil; // Deprecated in 3_0_0
+  ENGINE_unregister_DSA: procedure(e: PENGINE); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_unregister_DSA}
 
-  ENGINE_register_all_DSA: function: void; cdecl = nil; // Deprecated in 3_0_0
+  ENGINE_register_all_DSA: procedure; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_register_all_DSA}
 
   ENGINE_register_EC: function(e: PENGINE): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_register_EC}
 
-  ENGINE_unregister_EC: function(e: PENGINE): void; cdecl = nil; // Deprecated in 3_0_0
+  ENGINE_unregister_EC: procedure(e: PENGINE); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_unregister_EC}
 
-  ENGINE_register_all_EC: function: void; cdecl = nil; // Deprecated in 3_0_0
+  ENGINE_register_all_EC: procedure; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_register_all_EC}
 
   ENGINE_register_DH: function(e: PENGINE): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_register_DH}
 
-  ENGINE_unregister_DH: function(e: PENGINE): void; cdecl = nil; // Deprecated in 3_0_0
+  ENGINE_unregister_DH: procedure(e: PENGINE); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_unregister_DH}
 
-  ENGINE_register_all_DH: function: void; cdecl = nil; // Deprecated in 3_0_0
+  ENGINE_register_all_DH: procedure; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_register_all_DH}
 
   ENGINE_register_RAND: function(e: PENGINE): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_register_RAND}
 
-  ENGINE_unregister_RAND: function(e: PENGINE): void; cdecl = nil; // Deprecated in 3_0_0
+  ENGINE_unregister_RAND: procedure(e: PENGINE); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_unregister_RAND}
 
-  ENGINE_register_all_RAND: function: void; cdecl = nil; // Deprecated in 3_0_0
+  ENGINE_register_all_RAND: procedure; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_register_all_RAND}
 
   ENGINE_register_ciphers: function(e: PENGINE): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_register_ciphers}
 
-  ENGINE_unregister_ciphers: function(e: PENGINE): void; cdecl = nil; // Deprecated in 3_0_0
+  ENGINE_unregister_ciphers: procedure(e: PENGINE); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_unregister_ciphers}
 
-  ENGINE_register_all_ciphers: function: void; cdecl = nil; // Deprecated in 3_0_0
+  ENGINE_register_all_ciphers: procedure; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_register_all_ciphers}
 
   ENGINE_register_digests: function(e: PENGINE): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_register_digests}
 
-  ENGINE_unregister_digests: function(e: PENGINE): void; cdecl = nil; // Deprecated in 3_0_0
+  ENGINE_unregister_digests: procedure(e: PENGINE); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_unregister_digests}
 
-  ENGINE_register_all_digests: function: void; cdecl = nil; // Deprecated in 3_0_0
+  ENGINE_register_all_digests: procedure; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_register_all_digests}
 
   ENGINE_register_pkey_meths: function(e: PENGINE): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_register_pkey_meths}
 
-  ENGINE_unregister_pkey_meths: function(e: PENGINE): void; cdecl = nil; // Deprecated in 3_0_0
+  ENGINE_unregister_pkey_meths: procedure(e: PENGINE); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_unregister_pkey_meths}
 
-  ENGINE_register_all_pkey_meths: function: void; cdecl = nil; // Deprecated in 3_0_0
+  ENGINE_register_all_pkey_meths: procedure; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_register_all_pkey_meths}
 
   ENGINE_register_pkey_asn1_meths: function(e: PENGINE): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_register_pkey_asn1_meths}
 
-  ENGINE_unregister_pkey_asn1_meths: function(e: PENGINE): void; cdecl = nil; // Deprecated in 3_0_0
+  ENGINE_unregister_pkey_asn1_meths: procedure(e: PENGINE); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_unregister_pkey_asn1_meths}
 
-  ENGINE_register_all_pkey_asn1_meths: function: void; cdecl = nil; // Deprecated in 3_0_0
+  ENGINE_register_all_pkey_asn1_meths: procedure; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_register_all_pkey_asn1_meths}
 
   ENGINE_register_complete: function(e: PENGINE): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -488,7 +488,7 @@ var
   ENGINE_set_default: function(e: PENGINE; flags: TIdC_UINT): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_set_default}
 
-  ENGINE_add_conf_module: function: void; cdecl = nil; // Deprecated in 3_0_0
+  ENGINE_add_conf_module: procedure; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ENGINE_add_conf_module}
 
   ENGINE_get_static_state: function: Pointer; cdecl = nil;
@@ -509,36 +509,36 @@ function ENGINE_get_prev(e: PENGINE): PENGINE; cdecl; deprecated 'In OpenSSL 3_0
 function ENGINE_add(e: PENGINE): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ENGINE_remove(e: PENGINE): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ENGINE_by_id(id: PIdAnsiChar): PENGINE; cdecl; deprecated 'In OpenSSL 3_0_0';
-function ENGINE_load_builtin_engines: void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure ENGINE_load_builtin_engines; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ENGINE_get_table_flags: TIdC_UINT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function ENGINE_set_table_flags(flags: TIdC_UINT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure ENGINE_set_table_flags(flags: TIdC_UINT); cdecl; deprecated 'In OpenSSL 3_0_0';
 function ENGINE_register_RSA(e: PENGINE): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function ENGINE_unregister_RSA(e: PENGINE): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function ENGINE_register_all_RSA: void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure ENGINE_unregister_RSA(e: PENGINE); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure ENGINE_register_all_RSA; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ENGINE_register_DSA(e: PENGINE): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function ENGINE_unregister_DSA(e: PENGINE): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function ENGINE_register_all_DSA: void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure ENGINE_unregister_DSA(e: PENGINE); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure ENGINE_register_all_DSA; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ENGINE_register_EC(e: PENGINE): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function ENGINE_unregister_EC(e: PENGINE): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function ENGINE_register_all_EC: void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure ENGINE_unregister_EC(e: PENGINE); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure ENGINE_register_all_EC; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ENGINE_register_DH(e: PENGINE): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function ENGINE_unregister_DH(e: PENGINE): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function ENGINE_register_all_DH: void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure ENGINE_unregister_DH(e: PENGINE); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure ENGINE_register_all_DH; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ENGINE_register_RAND(e: PENGINE): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function ENGINE_unregister_RAND(e: PENGINE): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function ENGINE_register_all_RAND: void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure ENGINE_unregister_RAND(e: PENGINE); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure ENGINE_register_all_RAND; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ENGINE_register_ciphers(e: PENGINE): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function ENGINE_unregister_ciphers(e: PENGINE): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function ENGINE_register_all_ciphers: void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure ENGINE_unregister_ciphers(e: PENGINE); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure ENGINE_register_all_ciphers; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ENGINE_register_digests(e: PENGINE): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function ENGINE_unregister_digests(e: PENGINE): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function ENGINE_register_all_digests: void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure ENGINE_unregister_digests(e: PENGINE); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure ENGINE_register_all_digests; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ENGINE_register_pkey_meths(e: PENGINE): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function ENGINE_unregister_pkey_meths(e: PENGINE): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function ENGINE_register_all_pkey_meths: void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure ENGINE_unregister_pkey_meths(e: PENGINE); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure ENGINE_register_all_pkey_meths; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ENGINE_register_pkey_asn1_meths(e: PENGINE): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function ENGINE_unregister_pkey_asn1_meths(e: PENGINE): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function ENGINE_register_all_pkey_asn1_meths: void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure ENGINE_unregister_pkey_asn1_meths(e: PENGINE); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure ENGINE_register_all_pkey_asn1_meths; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ENGINE_register_complete(e: PENGINE): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ENGINE_register_all_complete: TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ENGINE_ctrl(e: PENGINE; cmd: TIdC_INT; i: TIdC_LONG; p: Pointer; f: TENGINE_CTRL_FUNC_PTR_func_cb): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
@@ -621,7 +621,7 @@ function ENGINE_set_default_digests(e: PENGINE): TIdC_INT; cdecl; deprecated 'In
 function ENGINE_set_default_pkey_meths(e: PENGINE): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ENGINE_set_default_pkey_asn1_meths(e: PENGINE): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ENGINE_set_default(e: PENGINE; flags: TIdC_UINT): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function ENGINE_add_conf_module: void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure ENGINE_add_conf_module; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ENGINE_get_static_state: Pointer; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
@@ -656,36 +656,36 @@ function ENGINE_get_prev(e: PENGINE): PENGINE; cdecl external CLibCrypto name 'E
 function ENGINE_add(e: PENGINE): TIdC_INT; cdecl external CLibCrypto name 'ENGINE_add';
 function ENGINE_remove(e: PENGINE): TIdC_INT; cdecl external CLibCrypto name 'ENGINE_remove';
 function ENGINE_by_id(id: PIdAnsiChar): PENGINE; cdecl external CLibCrypto name 'ENGINE_by_id';
-function ENGINE_load_builtin_engines: void; cdecl external CLibCrypto name 'ENGINE_load_builtin_engines';
+procedure ENGINE_load_builtin_engines; cdecl external CLibCrypto name 'ENGINE_load_builtin_engines';
 function ENGINE_get_table_flags: TIdC_UINT; cdecl external CLibCrypto name 'ENGINE_get_table_flags';
-function ENGINE_set_table_flags(flags: TIdC_UINT): void; cdecl external CLibCrypto name 'ENGINE_set_table_flags';
+procedure ENGINE_set_table_flags(flags: TIdC_UINT); cdecl external CLibCrypto name 'ENGINE_set_table_flags';
 function ENGINE_register_RSA(e: PENGINE): TIdC_INT; cdecl external CLibCrypto name 'ENGINE_register_RSA';
-function ENGINE_unregister_RSA(e: PENGINE): void; cdecl external CLibCrypto name 'ENGINE_unregister_RSA';
-function ENGINE_register_all_RSA: void; cdecl external CLibCrypto name 'ENGINE_register_all_RSA';
+procedure ENGINE_unregister_RSA(e: PENGINE); cdecl external CLibCrypto name 'ENGINE_unregister_RSA';
+procedure ENGINE_register_all_RSA; cdecl external CLibCrypto name 'ENGINE_register_all_RSA';
 function ENGINE_register_DSA(e: PENGINE): TIdC_INT; cdecl external CLibCrypto name 'ENGINE_register_DSA';
-function ENGINE_unregister_DSA(e: PENGINE): void; cdecl external CLibCrypto name 'ENGINE_unregister_DSA';
-function ENGINE_register_all_DSA: void; cdecl external CLibCrypto name 'ENGINE_register_all_DSA';
+procedure ENGINE_unregister_DSA(e: PENGINE); cdecl external CLibCrypto name 'ENGINE_unregister_DSA';
+procedure ENGINE_register_all_DSA; cdecl external CLibCrypto name 'ENGINE_register_all_DSA';
 function ENGINE_register_EC(e: PENGINE): TIdC_INT; cdecl external CLibCrypto name 'ENGINE_register_EC';
-function ENGINE_unregister_EC(e: PENGINE): void; cdecl external CLibCrypto name 'ENGINE_unregister_EC';
-function ENGINE_register_all_EC: void; cdecl external CLibCrypto name 'ENGINE_register_all_EC';
+procedure ENGINE_unregister_EC(e: PENGINE); cdecl external CLibCrypto name 'ENGINE_unregister_EC';
+procedure ENGINE_register_all_EC; cdecl external CLibCrypto name 'ENGINE_register_all_EC';
 function ENGINE_register_DH(e: PENGINE): TIdC_INT; cdecl external CLibCrypto name 'ENGINE_register_DH';
-function ENGINE_unregister_DH(e: PENGINE): void; cdecl external CLibCrypto name 'ENGINE_unregister_DH';
-function ENGINE_register_all_DH: void; cdecl external CLibCrypto name 'ENGINE_register_all_DH';
+procedure ENGINE_unregister_DH(e: PENGINE); cdecl external CLibCrypto name 'ENGINE_unregister_DH';
+procedure ENGINE_register_all_DH; cdecl external CLibCrypto name 'ENGINE_register_all_DH';
 function ENGINE_register_RAND(e: PENGINE): TIdC_INT; cdecl external CLibCrypto name 'ENGINE_register_RAND';
-function ENGINE_unregister_RAND(e: PENGINE): void; cdecl external CLibCrypto name 'ENGINE_unregister_RAND';
-function ENGINE_register_all_RAND: void; cdecl external CLibCrypto name 'ENGINE_register_all_RAND';
+procedure ENGINE_unregister_RAND(e: PENGINE); cdecl external CLibCrypto name 'ENGINE_unregister_RAND';
+procedure ENGINE_register_all_RAND; cdecl external CLibCrypto name 'ENGINE_register_all_RAND';
 function ENGINE_register_ciphers(e: PENGINE): TIdC_INT; cdecl external CLibCrypto name 'ENGINE_register_ciphers';
-function ENGINE_unregister_ciphers(e: PENGINE): void; cdecl external CLibCrypto name 'ENGINE_unregister_ciphers';
-function ENGINE_register_all_ciphers: void; cdecl external CLibCrypto name 'ENGINE_register_all_ciphers';
+procedure ENGINE_unregister_ciphers(e: PENGINE); cdecl external CLibCrypto name 'ENGINE_unregister_ciphers';
+procedure ENGINE_register_all_ciphers; cdecl external CLibCrypto name 'ENGINE_register_all_ciphers';
 function ENGINE_register_digests(e: PENGINE): TIdC_INT; cdecl external CLibCrypto name 'ENGINE_register_digests';
-function ENGINE_unregister_digests(e: PENGINE): void; cdecl external CLibCrypto name 'ENGINE_unregister_digests';
-function ENGINE_register_all_digests: void; cdecl external CLibCrypto name 'ENGINE_register_all_digests';
+procedure ENGINE_unregister_digests(e: PENGINE); cdecl external CLibCrypto name 'ENGINE_unregister_digests';
+procedure ENGINE_register_all_digests; cdecl external CLibCrypto name 'ENGINE_register_all_digests';
 function ENGINE_register_pkey_meths(e: PENGINE): TIdC_INT; cdecl external CLibCrypto name 'ENGINE_register_pkey_meths';
-function ENGINE_unregister_pkey_meths(e: PENGINE): void; cdecl external CLibCrypto name 'ENGINE_unregister_pkey_meths';
-function ENGINE_register_all_pkey_meths: void; cdecl external CLibCrypto name 'ENGINE_register_all_pkey_meths';
+procedure ENGINE_unregister_pkey_meths(e: PENGINE); cdecl external CLibCrypto name 'ENGINE_unregister_pkey_meths';
+procedure ENGINE_register_all_pkey_meths; cdecl external CLibCrypto name 'ENGINE_register_all_pkey_meths';
 function ENGINE_register_pkey_asn1_meths(e: PENGINE): TIdC_INT; cdecl external CLibCrypto name 'ENGINE_register_pkey_asn1_meths';
-function ENGINE_unregister_pkey_asn1_meths(e: PENGINE): void; cdecl external CLibCrypto name 'ENGINE_unregister_pkey_asn1_meths';
-function ENGINE_register_all_pkey_asn1_meths: void; cdecl external CLibCrypto name 'ENGINE_register_all_pkey_asn1_meths';
+procedure ENGINE_unregister_pkey_asn1_meths(e: PENGINE); cdecl external CLibCrypto name 'ENGINE_unregister_pkey_asn1_meths';
+procedure ENGINE_register_all_pkey_asn1_meths; cdecl external CLibCrypto name 'ENGINE_register_all_pkey_asn1_meths';
 function ENGINE_register_complete(e: PENGINE): TIdC_INT; cdecl external CLibCrypto name 'ENGINE_register_complete';
 function ENGINE_register_all_complete: TIdC_INT; cdecl external CLibCrypto name 'ENGINE_register_all_complete';
 function ENGINE_ctrl(e: PENGINE; cmd: TIdC_INT; i: TIdC_LONG; p: Pointer; f: TENGINE_CTRL_FUNC_PTR_func_cb): TIdC_INT; cdecl external CLibCrypto name 'ENGINE_ctrl';
@@ -768,7 +768,7 @@ function ENGINE_set_default_digests(e: PENGINE): TIdC_INT; cdecl external CLibCr
 function ENGINE_set_default_pkey_meths(e: PENGINE): TIdC_INT; cdecl external CLibCrypto name 'ENGINE_set_default_pkey_meths';
 function ENGINE_set_default_pkey_asn1_meths(e: PENGINE): TIdC_INT; cdecl external CLibCrypto name 'ENGINE_set_default_pkey_asn1_meths';
 function ENGINE_set_default(e: PENGINE; flags: TIdC_UINT): TIdC_INT; cdecl external CLibCrypto name 'ENGINE_set_default';
-function ENGINE_add_conf_module: void; cdecl external CLibCrypto name 'ENGINE_add_conf_module';
+procedure ENGINE_add_conf_module; cdecl external CLibCrypto name 'ENGINE_add_conf_module';
 function ENGINE_get_static_state: Pointer; cdecl external CLibCrypto name 'ENGINE_get_static_state';
 {$ENDIF}
 
@@ -1323,7 +1323,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_by_id_procname);
 end;
 
-function ERR_ENGINE_load_builtin_engines: void; cdecl
+procedure ERR_ENGINE_load_builtin_engines; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_load_builtin_engines_procname);
 end;
@@ -1333,7 +1333,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_get_table_flags_procname);
 end;
 
-function ERR_ENGINE_set_table_flags(flags: TIdC_UINT): void; cdecl
+procedure ERR_ENGINE_set_table_flags(flags: TIdC_UINT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_set_table_flags_procname);
 end;
@@ -1343,12 +1343,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_register_RSA_procname);
 end;
 
-function ERR_ENGINE_unregister_RSA(e: PENGINE): void; cdecl
+procedure ERR_ENGINE_unregister_RSA(e: PENGINE); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_unregister_RSA_procname);
 end;
 
-function ERR_ENGINE_register_all_RSA: void; cdecl
+procedure ERR_ENGINE_register_all_RSA; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_register_all_RSA_procname);
 end;
@@ -1358,12 +1358,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_register_DSA_procname);
 end;
 
-function ERR_ENGINE_unregister_DSA(e: PENGINE): void; cdecl
+procedure ERR_ENGINE_unregister_DSA(e: PENGINE); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_unregister_DSA_procname);
 end;
 
-function ERR_ENGINE_register_all_DSA: void; cdecl
+procedure ERR_ENGINE_register_all_DSA; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_register_all_DSA_procname);
 end;
@@ -1373,12 +1373,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_register_EC_procname);
 end;
 
-function ERR_ENGINE_unregister_EC(e: PENGINE): void; cdecl
+procedure ERR_ENGINE_unregister_EC(e: PENGINE); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_unregister_EC_procname);
 end;
 
-function ERR_ENGINE_register_all_EC: void; cdecl
+procedure ERR_ENGINE_register_all_EC; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_register_all_EC_procname);
 end;
@@ -1388,12 +1388,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_register_DH_procname);
 end;
 
-function ERR_ENGINE_unregister_DH(e: PENGINE): void; cdecl
+procedure ERR_ENGINE_unregister_DH(e: PENGINE); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_unregister_DH_procname);
 end;
 
-function ERR_ENGINE_register_all_DH: void; cdecl
+procedure ERR_ENGINE_register_all_DH; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_register_all_DH_procname);
 end;
@@ -1403,12 +1403,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_register_RAND_procname);
 end;
 
-function ERR_ENGINE_unregister_RAND(e: PENGINE): void; cdecl
+procedure ERR_ENGINE_unregister_RAND(e: PENGINE); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_unregister_RAND_procname);
 end;
 
-function ERR_ENGINE_register_all_RAND: void; cdecl
+procedure ERR_ENGINE_register_all_RAND; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_register_all_RAND_procname);
 end;
@@ -1418,12 +1418,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_register_ciphers_procname);
 end;
 
-function ERR_ENGINE_unregister_ciphers(e: PENGINE): void; cdecl
+procedure ERR_ENGINE_unregister_ciphers(e: PENGINE); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_unregister_ciphers_procname);
 end;
 
-function ERR_ENGINE_register_all_ciphers: void; cdecl
+procedure ERR_ENGINE_register_all_ciphers; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_register_all_ciphers_procname);
 end;
@@ -1433,12 +1433,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_register_digests_procname);
 end;
 
-function ERR_ENGINE_unregister_digests(e: PENGINE): void; cdecl
+procedure ERR_ENGINE_unregister_digests(e: PENGINE); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_unregister_digests_procname);
 end;
 
-function ERR_ENGINE_register_all_digests: void; cdecl
+procedure ERR_ENGINE_register_all_digests; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_register_all_digests_procname);
 end;
@@ -1448,12 +1448,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_register_pkey_meths_procname);
 end;
 
-function ERR_ENGINE_unregister_pkey_meths(e: PENGINE): void; cdecl
+procedure ERR_ENGINE_unregister_pkey_meths(e: PENGINE); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_unregister_pkey_meths_procname);
 end;
 
-function ERR_ENGINE_register_all_pkey_meths: void; cdecl
+procedure ERR_ENGINE_register_all_pkey_meths; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_register_all_pkey_meths_procname);
 end;
@@ -1463,12 +1463,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_register_pkey_asn1_meths_procname);
 end;
 
-function ERR_ENGINE_unregister_pkey_asn1_meths(e: PENGINE): void; cdecl
+procedure ERR_ENGINE_unregister_pkey_asn1_meths(e: PENGINE); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_unregister_pkey_asn1_meths_procname);
 end;
 
-function ERR_ENGINE_register_all_pkey_asn1_meths: void; cdecl
+procedure ERR_ENGINE_register_all_pkey_asn1_meths; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_register_all_pkey_asn1_meths_procname);
 end;
@@ -1883,7 +1883,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_set_default_procname);
 end;
 
-function ERR_ENGINE_add_conf_module: void; cdecl
+procedure ERR_ENGINE_add_conf_module; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ENGINE_add_conf_module_procname);
 end;

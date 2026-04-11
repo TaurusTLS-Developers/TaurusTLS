@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -66,34 +66,34 @@ var
   AES_set_decrypt_key: function(userKey: PIdAnsiChar; bits: TIdC_INT; key: PAES_KEY): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM AES_set_decrypt_key}
 
-  AES_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY): void; cdecl = nil; // Deprecated in 3_0_0
+  AES_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM AES_encrypt}
 
-  AES_decrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY): void; cdecl = nil; // Deprecated in 3_0_0
+  AES_decrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM AES_decrypt}
 
-  AES_ecb_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  AES_ecb_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM AES_ecb_encrypt}
 
-  AES_cbc_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  AES_cbc_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM AES_cbc_encrypt}
 
-  AES_cfb128_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  AES_cfb128_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM AES_cfb128_encrypt}
 
-  AES_cfb1_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  AES_cfb1_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM AES_cfb1_encrypt}
 
-  AES_cfb8_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  AES_cfb8_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM AES_cfb8_encrypt}
 
-  AES_ofb128_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  AES_ofb128_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM AES_ofb128_encrypt}
 
-  AES_ige_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  AES_ige_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM AES_ige_encrypt}
 
-  AES_bi_ige_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; key2: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  AES_bi_ige_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; key2: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM AES_bi_ige_encrypt}
 
   AES_wrap_key: function(key: PAES_KEY; iv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_UINT): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -113,16 +113,16 @@ var
 function AES_options: PIdAnsiChar; cdecl; deprecated 'In OpenSSL 3_0_0';
 function AES_set_encrypt_key(userKey: PIdAnsiChar; bits: TIdC_INT; key: PAES_KEY): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function AES_set_decrypt_key(userKey: PIdAnsiChar; bits: TIdC_INT; key: PAES_KEY): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function AES_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function AES_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function AES_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function AES_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function AES_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function AES_cfb1_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function AES_cfb8_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function AES_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function AES_ige_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function AES_bi_ige_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; key2: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure AES_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure AES_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure AES_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure AES_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure AES_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure AES_cfb1_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure AES_cfb8_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure AES_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure AES_ige_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure AES_bi_ige_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; key2: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
 function AES_wrap_key(key: PAES_KEY; iv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_UINT): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function AES_unwrap_key(key: PAES_KEY; iv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_UINT): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -146,16 +146,16 @@ uses
 function AES_options: PIdAnsiChar; cdecl external CLibCrypto name 'AES_options';
 function AES_set_encrypt_key(userKey: PIdAnsiChar; bits: TIdC_INT; key: PAES_KEY): TIdC_INT; cdecl external CLibCrypto name 'AES_set_encrypt_key';
 function AES_set_decrypt_key(userKey: PIdAnsiChar; bits: TIdC_INT; key: PAES_KEY): TIdC_INT; cdecl external CLibCrypto name 'AES_set_decrypt_key';
-function AES_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY): void; cdecl external CLibCrypto name 'AES_encrypt';
-function AES_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY): void; cdecl external CLibCrypto name 'AES_decrypt';
-function AES_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY; enc: TIdC_INT): void; cdecl external CLibCrypto name 'AES_ecb_encrypt';
-function AES_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl external CLibCrypto name 'AES_cbc_encrypt';
-function AES_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl external CLibCrypto name 'AES_cfb128_encrypt';
-function AES_cfb1_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl external CLibCrypto name 'AES_cfb1_encrypt';
-function AES_cfb8_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl external CLibCrypto name 'AES_cfb8_encrypt';
-function AES_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl external CLibCrypto name 'AES_ofb128_encrypt';
-function AES_ige_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl external CLibCrypto name 'AES_ige_encrypt';
-function AES_bi_ige_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; key2: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl external CLibCrypto name 'AES_bi_ige_encrypt';
+procedure AES_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY); cdecl external CLibCrypto name 'AES_encrypt';
+procedure AES_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY); cdecl external CLibCrypto name 'AES_decrypt';
+procedure AES_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY; enc: TIdC_INT); cdecl external CLibCrypto name 'AES_ecb_encrypt';
+procedure AES_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl external CLibCrypto name 'AES_cbc_encrypt';
+procedure AES_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl external CLibCrypto name 'AES_cfb128_encrypt';
+procedure AES_cfb1_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl external CLibCrypto name 'AES_cfb1_encrypt';
+procedure AES_cfb8_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl external CLibCrypto name 'AES_cfb8_encrypt';
+procedure AES_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT); cdecl external CLibCrypto name 'AES_ofb128_encrypt';
+procedure AES_ige_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl external CLibCrypto name 'AES_ige_encrypt';
+procedure AES_bi_ige_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; key2: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl external CLibCrypto name 'AES_bi_ige_encrypt';
 function AES_wrap_key(key: PAES_KEY; iv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_UINT): TIdC_INT; cdecl external CLibCrypto name 'AES_wrap_key';
 function AES_unwrap_key(key: PAES_KEY; iv: PIdAnsiChar; _out: PIdAnsiChar; _in: PIdAnsiChar; inlen: TIdC_UINT): TIdC_INT; cdecl external CLibCrypto name 'AES_unwrap_key';
 {$ENDIF}
@@ -253,52 +253,52 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(AES_set_decrypt_key_procname);
 end;
 
-function ERR_AES_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY): void; cdecl
+procedure ERR_AES_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(AES_encrypt_procname);
 end;
 
-function ERR_AES_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY): void; cdecl
+procedure ERR_AES_decrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(AES_decrypt_procname);
 end;
 
-function ERR_AES_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY; enc: TIdC_INT): void; cdecl
+procedure ERR_AES_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PAES_KEY; enc: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(AES_ecb_encrypt_procname);
 end;
 
-function ERR_AES_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl
+procedure ERR_AES_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(AES_cbc_encrypt_procname);
 end;
 
-function ERR_AES_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl
+procedure ERR_AES_cfb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(AES_cfb128_encrypt_procname);
 end;
 
-function ERR_AES_cfb1_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl
+procedure ERR_AES_cfb1_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(AES_cfb1_encrypt_procname);
 end;
 
-function ERR_AES_cfb8_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl
+procedure ERR_AES_cfb8_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(AES_cfb8_encrypt_procname);
 end;
 
-function ERR_AES_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl
+procedure ERR_AES_ofb128_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; num: PIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(AES_ofb128_encrypt_procname);
 end;
 
-function ERR_AES_ige_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl
+procedure ERR_AES_ige_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(AES_ige_encrypt_procname);
 end;
 
-function ERR_AES_bi_ige_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; key2: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT): void; cdecl
+procedure ERR_AES_bi_ige_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_SIZET; key: PAES_KEY; key2: PAES_KEY; ivec: PIdAnsiChar; enc: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(AES_bi_ige_encrypt_procname);
 end;

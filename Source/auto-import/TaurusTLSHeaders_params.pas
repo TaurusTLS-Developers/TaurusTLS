@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -212,7 +212,7 @@ var
   OSSL_PARAM_modified: function(p: POSSL_PARAM): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_modified}
 
-  OSSL_PARAM_set_all_unmodified: function(p: POSSL_PARAM): void; cdecl = nil;
+  OSSL_PARAM_set_all_unmodified: procedure(p: POSSL_PARAM); cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_set_all_unmodified}
 
   OSSL_PARAM_dup: function(p: POSSL_PARAM): POSSL_PARAM; cdecl = nil;
@@ -221,7 +221,7 @@ var
   OSSL_PARAM_merge: function(p1: POSSL_PARAM; p2: POSSL_PARAM): POSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_merge}
 
-  OSSL_PARAM_free: function(p: POSSL_PARAM): void; cdecl = nil;
+  OSSL_PARAM_free: procedure(p: POSSL_PARAM); cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_free}
 
   OSSL_PARAM_set_octet_string_or_ptr: function(p: POSSL_PARAM; val: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl = nil;
@@ -291,10 +291,10 @@ function OSSL_PARAM_set_octet_ptr(p: POSSL_PARAM; val: Pointer; used_len: TIdC_S
 function OSSL_PARAM_get_utf8_string_ptr(p: POSSL_PARAM; val: PPIdAnsiChar): TIdC_INT; cdecl;
 function OSSL_PARAM_get_octet_string_ptr(p: POSSL_PARAM; val: PPointer; used_len: PIdC_SIZET): TIdC_INT; cdecl;
 function OSSL_PARAM_modified(p: POSSL_PARAM): TIdC_INT; cdecl;
-function OSSL_PARAM_set_all_unmodified(p: POSSL_PARAM): void; cdecl;
+procedure OSSL_PARAM_set_all_unmodified(p: POSSL_PARAM); cdecl;
 function OSSL_PARAM_dup(p: POSSL_PARAM): POSSL_PARAM; cdecl;
 function OSSL_PARAM_merge(p1: POSSL_PARAM; p2: POSSL_PARAM): POSSL_PARAM; cdecl;
-function OSSL_PARAM_free(p: POSSL_PARAM): void; cdecl;
+procedure OSSL_PARAM_free(p: POSSL_PARAM); cdecl;
 function OSSL_PARAM_set_octet_string_or_ptr(p: POSSL_PARAM; val: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
@@ -390,10 +390,10 @@ function OSSL_PARAM_set_octet_ptr(p: POSSL_PARAM; val: Pointer; used_len: TIdC_S
 function OSSL_PARAM_get_utf8_string_ptr(p: POSSL_PARAM; val: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_utf8_string_ptr';
 function OSSL_PARAM_get_octet_string_ptr(p: POSSL_PARAM; val: PPointer; used_len: PIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_get_octet_string_ptr';
 function OSSL_PARAM_modified(p: POSSL_PARAM): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_modified';
-function OSSL_PARAM_set_all_unmodified(p: POSSL_PARAM): void; cdecl external CLibCrypto name 'OSSL_PARAM_set_all_unmodified';
+procedure OSSL_PARAM_set_all_unmodified(p: POSSL_PARAM); cdecl external CLibCrypto name 'OSSL_PARAM_set_all_unmodified';
 function OSSL_PARAM_dup(p: POSSL_PARAM): POSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_dup';
 function OSSL_PARAM_merge(p1: POSSL_PARAM; p2: POSSL_PARAM): POSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_merge';
-function OSSL_PARAM_free(p: POSSL_PARAM): void; cdecl external CLibCrypto name 'OSSL_PARAM_free';
+procedure OSSL_PARAM_free(p: POSSL_PARAM); cdecl external CLibCrypto name 'OSSL_PARAM_free';
 function OSSL_PARAM_set_octet_string_or_ptr(p: POSSL_PARAM; val: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_set_octet_string_or_ptr';
 {$ENDIF}
 
@@ -932,7 +932,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_modified_procname);
 end;
 
-function ERR_OSSL_PARAM_set_all_unmodified(p: POSSL_PARAM): void; cdecl
+procedure ERR_OSSL_PARAM_set_all_unmodified(p: POSSL_PARAM); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_set_all_unmodified_procname);
 end;
@@ -947,7 +947,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_merge_procname);
 end;
 
-function ERR_OSSL_PARAM_free(p: POSSL_PARAM): void; cdecl
+procedure ERR_OSSL_PARAM_free(p: POSSL_PARAM); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_free_procname);
 end;

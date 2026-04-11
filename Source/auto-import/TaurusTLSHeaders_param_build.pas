@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -43,7 +43,7 @@ var
   OSSL_PARAM_BLD_to_param: function(bld: POSSL_PARAM_BLD): POSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_BLD_to_param}
 
-  OSSL_PARAM_BLD_free: function(bld: POSSL_PARAM_BLD): void; cdecl = nil;
+  OSSL_PARAM_BLD_free: procedure(bld: POSSL_PARAM_BLD); cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_BLD_free}
 
   OSSL_PARAM_BLD_push_int: function(bld: POSSL_PARAM_BLD; key: PIdAnsiChar; val: TIdC_INT): TIdC_INT; cdecl = nil;
@@ -107,7 +107,7 @@ var
 
 function OSSL_PARAM_BLD_new: POSSL_PARAM_BLD; cdecl;
 function OSSL_PARAM_BLD_to_param(bld: POSSL_PARAM_BLD): POSSL_PARAM; cdecl;
-function OSSL_PARAM_BLD_free(bld: POSSL_PARAM_BLD): void; cdecl;
+procedure OSSL_PARAM_BLD_free(bld: POSSL_PARAM_BLD); cdecl;
 function OSSL_PARAM_BLD_push_int(bld: POSSL_PARAM_BLD; key: PIdAnsiChar; val: TIdC_INT): TIdC_INT; cdecl;
 function OSSL_PARAM_BLD_push_uint(bld: POSSL_PARAM_BLD; key: PIdAnsiChar; val: TIdC_UINT): TIdC_INT; cdecl;
 function OSSL_PARAM_BLD_push_long(bld: POSSL_PARAM_BLD; key: PIdAnsiChar; val: TIdC_LONG): TIdC_INT; cdecl;
@@ -145,7 +145,7 @@ uses
 
 function OSSL_PARAM_BLD_new: POSSL_PARAM_BLD; cdecl external CLibCrypto name 'OSSL_PARAM_BLD_new';
 function OSSL_PARAM_BLD_to_param(bld: POSSL_PARAM_BLD): POSSL_PARAM; cdecl external CLibCrypto name 'OSSL_PARAM_BLD_to_param';
-function OSSL_PARAM_BLD_free(bld: POSSL_PARAM_BLD): void; cdecl external CLibCrypto name 'OSSL_PARAM_BLD_free';
+procedure OSSL_PARAM_BLD_free(bld: POSSL_PARAM_BLD); cdecl external CLibCrypto name 'OSSL_PARAM_BLD_free';
 function OSSL_PARAM_BLD_push_int(bld: POSSL_PARAM_BLD; key: PIdAnsiChar; val: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_BLD_push_int';
 function OSSL_PARAM_BLD_push_uint(bld: POSSL_PARAM_BLD; key: PIdAnsiChar; val: TIdC_UINT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_BLD_push_uint';
 function OSSL_PARAM_BLD_push_long(bld: POSSL_PARAM_BLD; key: PIdAnsiChar; val: TIdC_LONG): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PARAM_BLD_push_long';
@@ -253,7 +253,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_BLD_to_param_procname);
 end;
 
-function ERR_OSSL_PARAM_BLD_free(bld: POSSL_PARAM_BLD): void; cdecl
+procedure ERR_OSSL_PARAM_BLD_free(bld: POSSL_PARAM_BLD); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_BLD_free_procname);
 end;

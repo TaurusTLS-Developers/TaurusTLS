@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -141,7 +141,7 @@ type
   TASN1_ex_i2d = function(pval: PPASN1_VALUE; _out: PPIdAnsiChar; it: PASN1_ITEM; tag: TIdC_INT; aclass: TIdC_INT): TIdC_INT; cdecl;
   TASN1_ex_new_func = function(pval: PPASN1_VALUE; it: PASN1_ITEM): TIdC_INT; cdecl;
   TASN1_ex_new_ex_func = function(pval: PPASN1_VALUE; it: PASN1_ITEM; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): TIdC_INT; cdecl;
-  TASN1_ex_free_func = function(pval: PPASN1_VALUE; it: PASN1_ITEM): void; cdecl;
+  TASN1_ex_free_func = procedure(pval: PPASN1_VALUE; it: PASN1_ITEM); cdecl;
   TASN1_ex_print_func = function(_out: PBIO; pval: PPASN1_VALUE; indent: TIdC_INT; fname: PIdAnsiChar; pctx: PASN1_PCTX): TIdC_INT; cdecl;
   TASN1_primitive_i2c = function(pval: PPASN1_VALUE; cont: PIdAnsiChar; putype: PIdC_INT; it: PASN1_ITEM): TIdC_INT; cdecl;
   TASN1_primitive_c2i = function(pval: PPASN1_VALUE; cont: PIdAnsiChar; len: TIdC_INT; utype: TIdC_INT; free_cont: PIdAnsiChar; it: PASN1_ITEM): TIdC_INT; cdecl;
@@ -260,7 +260,7 @@ var
   ASN1_item_ex_new: function(pval: PPASN1_VALUE; it: PASN1_ITEM): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM ASN1_item_ex_new}
 
-  ASN1_item_ex_free: function(pval: PPASN1_VALUE; it: PASN1_ITEM): void; cdecl = nil;
+  ASN1_item_ex_free: procedure(pval: PPASN1_VALUE; it: PASN1_ITEM); cdecl = nil;
   {$EXTERNALSYM ASN1_item_ex_free}
 
   ASN1_item_ex_d2i: function(pval: PPASN1_VALUE; _in: PPIdAnsiChar; len: TIdC_LONG; it: PASN1_ITEM; tag: TIdC_INT; aclass: TIdC_INT; opt: TIdC_INT8; ctx: PASN1_TLC): TIdC_INT; cdecl = nil;
@@ -294,7 +294,7 @@ function ZUINT64_it: PASN1_ITEM; cdecl;
 function LONG_it: PASN1_ITEM; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ZLONG_it: PASN1_ITEM; cdecl; deprecated 'In OpenSSL 3_0_0';
 function ASN1_item_ex_new(pval: PPASN1_VALUE; it: PASN1_ITEM): TIdC_INT; cdecl;
-function ASN1_item_ex_free(pval: PPASN1_VALUE; it: PASN1_ITEM): void; cdecl;
+procedure ASN1_item_ex_free(pval: PPASN1_VALUE; it: PASN1_ITEM); cdecl;
 function ASN1_item_ex_d2i(pval: PPASN1_VALUE; _in: PPIdAnsiChar; len: TIdC_LONG; it: PASN1_ITEM; tag: TIdC_INT; aclass: TIdC_INT; opt: TIdC_INT8; ctx: PASN1_TLC): TIdC_INT; cdecl;
 function ASN1_item_ex_i2d(pval: PPASN1_VALUE; _out: PPIdAnsiChar; it: PASN1_ITEM; tag: TIdC_INT; aclass: TIdC_INT): TIdC_INT; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -370,7 +370,7 @@ function ZUINT64_it: PASN1_ITEM; cdecl external CLibCrypto name 'ZUINT64_it';
 function LONG_it: PASN1_ITEM; cdecl external CLibCrypto name 'LONG_it';
 function ZLONG_it: PASN1_ITEM; cdecl external CLibCrypto name 'ZLONG_it';
 function ASN1_item_ex_new(pval: PPASN1_VALUE; it: PASN1_ITEM): TIdC_INT; cdecl external CLibCrypto name 'ASN1_item_ex_new';
-function ASN1_item_ex_free(pval: PPASN1_VALUE; it: PASN1_ITEM): void; cdecl external CLibCrypto name 'ASN1_item_ex_free';
+procedure ASN1_item_ex_free(pval: PPASN1_VALUE; it: PASN1_ITEM); cdecl external CLibCrypto name 'ASN1_item_ex_free';
 function ASN1_item_ex_d2i(pval: PPASN1_VALUE; _in: PPIdAnsiChar; len: TIdC_LONG; it: PASN1_ITEM; tag: TIdC_INT; aclass: TIdC_INT; opt: TIdC_INT8; ctx: PASN1_TLC): TIdC_INT; cdecl external CLibCrypto name 'ASN1_item_ex_d2i';
 function ASN1_item_ex_i2d(pval: PPASN1_VALUE; _out: PPIdAnsiChar; it: PASN1_ITEM; tag: TIdC_INT; aclass: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'ASN1_item_ex_i2d';
 {$ENDIF}
@@ -540,7 +540,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_item_ex_new_procname);
 end;
 
-function ERR_ASN1_item_ex_free(pval: PPASN1_VALUE; it: PASN1_ITEM): void; cdecl
+procedure ERR_ASN1_item_ex_free(pval: PPASN1_VALUE; it: PASN1_ITEM); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_item_ex_free_procname);
 end;

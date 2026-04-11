@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -86,7 +86,7 @@ var
   TXT_DB_create_index: function(db: PXT_DB; field: TIdC_INT; qual: TXT_DB_create_index_qual_cb; hash: TXT_DB_create_index_hash_cb; cmp: TXT_DB_create_index_cmp_cb): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM TXT_DB_create_index}
 
-  TXT_DB_free: function(db: PXT_DB): void; cdecl = nil;
+  TXT_DB_free: procedure(db: PXT_DB); cdecl = nil;
   {$EXTERNALSYM TXT_DB_free}
 
   TXT_DB_get_by_index: function(db: PXT_DB; idx: TIdC_INT; value: POPENSSL_STRING): POPENSSL_STRING; cdecl = nil;
@@ -106,7 +106,7 @@ var
 function TXT_DB_read(_in: PBIO; num: TIdC_INT): PXT_DB; cdecl;
 function TXT_DB_write(_out: PBIO; db: PXT_DB): TIdC_LONG; cdecl;
 function TXT_DB_create_index(db: PXT_DB; field: TIdC_INT; qual: TXT_DB_create_index_qual_cb; hash: TXT_DB_create_index_hash_cb; cmp: TXT_DB_create_index_cmp_cb): TIdC_INT; cdecl;
-function TXT_DB_free(db: PXT_DB): void; cdecl;
+procedure TXT_DB_free(db: PXT_DB); cdecl;
 function TXT_DB_get_by_index(db: PXT_DB; idx: TIdC_INT; value: POPENSSL_STRING): POPENSSL_STRING; cdecl;
 function TXT_DB_insert(db: PXT_DB; value: POPENSSL_STRING): TIdC_INT; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -143,7 +143,7 @@ uses
 function TXT_DB_read(_in: PBIO; num: TIdC_INT): PXT_DB; cdecl external CLibCrypto name 'TXT_DB_read';
 function TXT_DB_write(_out: PBIO; db: PXT_DB): TIdC_LONG; cdecl external CLibCrypto name 'TXT_DB_write';
 function TXT_DB_create_index(db: PXT_DB; field: TIdC_INT; qual: TXT_DB_create_index_qual_cb; hash: TXT_DB_create_index_hash_cb; cmp: TXT_DB_create_index_cmp_cb): TIdC_INT; cdecl external CLibCrypto name 'TXT_DB_create_index';
-function TXT_DB_free(db: PXT_DB): void; cdecl external CLibCrypto name 'TXT_DB_free';
+procedure TXT_DB_free(db: PXT_DB); cdecl external CLibCrypto name 'TXT_DB_free';
 function TXT_DB_get_by_index(db: PXT_DB; idx: TIdC_INT; value: POPENSSL_STRING): POPENSSL_STRING; cdecl external CLibCrypto name 'TXT_DB_get_by_index';
 function TXT_DB_insert(db: PXT_DB; value: POPENSSL_STRING): TIdC_INT; cdecl external CLibCrypto name 'TXT_DB_insert';
 {$ENDIF}
@@ -199,7 +199,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TXT_DB_create_index_procname);
 end;
 
-function ERR_TXT_DB_free(db: PXT_DB): void; cdecl
+procedure ERR_TXT_DB_free(db: PXT_DB); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(TXT_DB_free_procname);
 end;

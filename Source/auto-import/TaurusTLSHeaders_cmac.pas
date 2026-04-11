@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -48,10 +48,10 @@ var
   CMAC_CTX_new: function: PCMAC_CTX; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM CMAC_CTX_new}
 
-  CMAC_CTX_cleanup: function(ctx: PCMAC_CTX): void; cdecl = nil; // Deprecated in 3_0_0
+  CMAC_CTX_cleanup: procedure(ctx: PCMAC_CTX); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM CMAC_CTX_cleanup}
 
-  CMAC_CTX_free: function(ctx: PCMAC_CTX): void; cdecl = nil; // Deprecated in 3_0_0
+  CMAC_CTX_free: procedure(ctx: PCMAC_CTX); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM CMAC_CTX_free}
 
   CMAC_CTX_get0_cipher_ctx: function(ctx: PCMAC_CTX): PEVP_CIPHER_CTX; cdecl = nil; // Deprecated in 3_0_0
@@ -81,8 +81,8 @@ var
 // =============================================================================
 
 function CMAC_CTX_new: PCMAC_CTX; cdecl; deprecated 'In OpenSSL 3_0_0';
-function CMAC_CTX_cleanup(ctx: PCMAC_CTX): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function CMAC_CTX_free(ctx: PCMAC_CTX): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure CMAC_CTX_cleanup(ctx: PCMAC_CTX); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure CMAC_CTX_free(ctx: PCMAC_CTX); cdecl; deprecated 'In OpenSSL 3_0_0';
 function CMAC_CTX_get0_cipher_ctx(ctx: PCMAC_CTX): PEVP_CIPHER_CTX; cdecl; deprecated 'In OpenSSL 3_0_0';
 function CMAC_CTX_copy(_out: PCMAC_CTX; _in: PCMAC_CTX): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function CMAC_Init(ctx: PCMAC_CTX; key: Pointer; keylen: TIdC_SIZET; cipher: PEVP_CIPHER; impl: PENGINE): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
@@ -108,8 +108,8 @@ uses
 // =============================================================================
 
 function CMAC_CTX_new: PCMAC_CTX; cdecl external CLibCrypto name 'CMAC_CTX_new';
-function CMAC_CTX_cleanup(ctx: PCMAC_CTX): void; cdecl external CLibCrypto name 'CMAC_CTX_cleanup';
-function CMAC_CTX_free(ctx: PCMAC_CTX): void; cdecl external CLibCrypto name 'CMAC_CTX_free';
+procedure CMAC_CTX_cleanup(ctx: PCMAC_CTX); cdecl external CLibCrypto name 'CMAC_CTX_cleanup';
+procedure CMAC_CTX_free(ctx: PCMAC_CTX); cdecl external CLibCrypto name 'CMAC_CTX_free';
 function CMAC_CTX_get0_cipher_ctx(ctx: PCMAC_CTX): PEVP_CIPHER_CTX; cdecl external CLibCrypto name 'CMAC_CTX_get0_cipher_ctx';
 function CMAC_CTX_copy(_out: PCMAC_CTX; _in: PCMAC_CTX): TIdC_INT; cdecl external CLibCrypto name 'CMAC_CTX_copy';
 function CMAC_Init(ctx: PCMAC_CTX; key: Pointer; keylen: TIdC_SIZET; cipher: PEVP_CIPHER; impl: PENGINE): TIdC_INT; cdecl external CLibCrypto name 'CMAC_Init';
@@ -177,12 +177,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMAC_CTX_new_procname);
 end;
 
-function ERR_CMAC_CTX_cleanup(ctx: PCMAC_CTX): void; cdecl
+procedure ERR_CMAC_CTX_cleanup(ctx: PCMAC_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMAC_CTX_cleanup_procname);
 end;
 
-function ERR_CMAC_CTX_free(ctx: PCMAC_CTX): void; cdecl
+procedure ERR_CMAC_CTX_free(ctx: PCMAC_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMAC_CTX_free_procname);
 end;

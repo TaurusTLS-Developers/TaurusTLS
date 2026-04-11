@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -52,9 +52,9 @@ type
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
   // OBJ_NAME_new_index_cmp_func_cb = function(arg1: PIdAnsiChar; arg2: PIdAnsiChar): TIdC_INT; cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // OBJ_NAME_new_index_free_func_cb = function(arg1: PIdAnsiChar; arg2: TIdC_INT; arg3: PIdAnsiChar): void; cdecl;
+  // OBJ_NAME_new_index_free_func_cb = procedure(arg1: PIdAnsiChar; arg2: TIdC_INT; arg3: PIdAnsiChar); cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // OBJ_NAME_do_all_fn_cb = function(arg1: POBJ_NAME; arg: Pointer): void; cdecl;
+  // OBJ_NAME_do_all_fn_cb = procedure(arg1: POBJ_NAME; arg: Pointer); cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
   // OBJ_bsearch__cmp_cb = function(arg1: Pointer; arg2: Pointer): TIdC_INT; cdecl;
 
@@ -97,13 +97,13 @@ var
   OBJ_NAME_remove: function(name: PIdAnsiChar; _type: TIdC_INT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OBJ_NAME_remove}
 
-  OBJ_NAME_cleanup: function(_type: TIdC_INT): void; cdecl = nil;
+  OBJ_NAME_cleanup: procedure(_type: TIdC_INT); cdecl = nil;
   {$EXTERNALSYM OBJ_NAME_cleanup}
 
-  OBJ_NAME_do_all: function(_type: TIdC_INT; fn: TOBJ_NAME_do_all_fn_cb; arg: Pointer): void; cdecl = nil;
+  OBJ_NAME_do_all: procedure(_type: TIdC_INT; fn: TOBJ_NAME_do_all_fn_cb; arg: Pointer); cdecl = nil;
   {$EXTERNALSYM OBJ_NAME_do_all}
 
-  OBJ_NAME_do_all_sorted: function(_type: TIdC_INT; fn: TOBJ_NAME_do_all_fn_cb; arg: Pointer): void; cdecl = nil;
+  OBJ_NAME_do_all_sorted: procedure(_type: TIdC_INT; fn: TOBJ_NAME_do_all_fn_cb; arg: Pointer); cdecl = nil;
   {$EXTERNALSYM OBJ_NAME_do_all_sorted}
 
   OBJ_dup: function(a: PASN1_OBJECT): PASN1_OBJECT; cdecl = nil;
@@ -172,7 +172,7 @@ var
   OBJ_add_sigid: function(signid: TIdC_INT; dig_id: TIdC_INT; pkey_id: TIdC_INT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OBJ_add_sigid}
 
-  OBJ_sigid_free: function: void; cdecl = nil;
+  OBJ_sigid_free: procedure; cdecl = nil;
   {$EXTERNALSYM OBJ_sigid_free}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -188,9 +188,9 @@ function OBJ_NAME_new_index(hash_func: TOBJ_NAME_new_index_hash_func_cb; cmp_fun
 function OBJ_NAME_get(name: PIdAnsiChar; _type: TIdC_INT): PIdAnsiChar; cdecl;
 function OBJ_NAME_add(name: PIdAnsiChar; _type: TIdC_INT; data: PIdAnsiChar): TIdC_INT; cdecl;
 function OBJ_NAME_remove(name: PIdAnsiChar; _type: TIdC_INT): TIdC_INT; cdecl;
-function OBJ_NAME_cleanup(_type: TIdC_INT): void; cdecl;
-function OBJ_NAME_do_all(_type: TIdC_INT; fn: TOBJ_NAME_do_all_fn_cb; arg: Pointer): void; cdecl;
-function OBJ_NAME_do_all_sorted(_type: TIdC_INT; fn: TOBJ_NAME_do_all_fn_cb; arg: Pointer): void; cdecl;
+procedure OBJ_NAME_cleanup(_type: TIdC_INT); cdecl;
+procedure OBJ_NAME_do_all(_type: TIdC_INT; fn: TOBJ_NAME_do_all_fn_cb; arg: Pointer); cdecl;
+procedure OBJ_NAME_do_all_sorted(_type: TIdC_INT; fn: TOBJ_NAME_do_all_fn_cb; arg: Pointer); cdecl;
 function OBJ_dup(a: PASN1_OBJECT): PASN1_OBJECT; cdecl;
 function OBJ_nid2obj(n: TIdC_INT): PASN1_OBJECT; cdecl;
 function OBJ_nid2ln(n: TIdC_INT): PIdAnsiChar; cdecl;
@@ -213,7 +213,7 @@ function OBJ_get0_data(obj: PASN1_OBJECT): PIdAnsiChar; cdecl;
 function OBJ_find_sigid_algs(signid: TIdC_INT; pdig_nid: PIdC_INT; ppkey_nid: PIdC_INT): TIdC_INT; cdecl;
 function OBJ_find_sigid_by_algs(psignid: PIdC_INT; dig_nid: TIdC_INT; pkey_nid: TIdC_INT): TIdC_INT; cdecl;
 function OBJ_add_sigid(signid: TIdC_INT; dig_id: TIdC_INT; pkey_id: TIdC_INT): TIdC_INT; cdecl;
-function OBJ_sigid_free: void; cdecl;
+procedure OBJ_sigid_free; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 // =============================================================================
@@ -245,9 +245,9 @@ function OBJ_NAME_new_index(hash_func: TOBJ_NAME_new_index_hash_func_cb; cmp_fun
 function OBJ_NAME_get(name: PIdAnsiChar; _type: TIdC_INT): PIdAnsiChar; cdecl external CLibCrypto name 'OBJ_NAME_get';
 function OBJ_NAME_add(name: PIdAnsiChar; _type: TIdC_INT; data: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OBJ_NAME_add';
 function OBJ_NAME_remove(name: PIdAnsiChar; _type: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OBJ_NAME_remove';
-function OBJ_NAME_cleanup(_type: TIdC_INT): void; cdecl external CLibCrypto name 'OBJ_NAME_cleanup';
-function OBJ_NAME_do_all(_type: TIdC_INT; fn: TOBJ_NAME_do_all_fn_cb; arg: Pointer): void; cdecl external CLibCrypto name 'OBJ_NAME_do_all';
-function OBJ_NAME_do_all_sorted(_type: TIdC_INT; fn: TOBJ_NAME_do_all_fn_cb; arg: Pointer): void; cdecl external CLibCrypto name 'OBJ_NAME_do_all_sorted';
+procedure OBJ_NAME_cleanup(_type: TIdC_INT); cdecl external CLibCrypto name 'OBJ_NAME_cleanup';
+procedure OBJ_NAME_do_all(_type: TIdC_INT; fn: TOBJ_NAME_do_all_fn_cb; arg: Pointer); cdecl external CLibCrypto name 'OBJ_NAME_do_all';
+procedure OBJ_NAME_do_all_sorted(_type: TIdC_INT; fn: TOBJ_NAME_do_all_fn_cb; arg: Pointer); cdecl external CLibCrypto name 'OBJ_NAME_do_all_sorted';
 function OBJ_dup(a: PASN1_OBJECT): PASN1_OBJECT; cdecl external CLibCrypto name 'OBJ_dup';
 function OBJ_nid2obj(n: TIdC_INT): PASN1_OBJECT; cdecl external CLibCrypto name 'OBJ_nid2obj';
 function OBJ_nid2ln(n: TIdC_INT): PIdAnsiChar; cdecl external CLibCrypto name 'OBJ_nid2ln';
@@ -270,7 +270,7 @@ function OBJ_get0_data(obj: PASN1_OBJECT): PIdAnsiChar; cdecl external CLibCrypt
 function OBJ_find_sigid_algs(signid: TIdC_INT; pdig_nid: PIdC_INT; ppkey_nid: PIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OBJ_find_sigid_algs';
 function OBJ_find_sigid_by_algs(psignid: PIdC_INT; dig_nid: TIdC_INT; pkey_nid: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OBJ_find_sigid_by_algs';
 function OBJ_add_sigid(signid: TIdC_INT; dig_id: TIdC_INT; pkey_id: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OBJ_add_sigid';
-function OBJ_sigid_free: void; cdecl external CLibCrypto name 'OBJ_sigid_free';
+procedure OBJ_sigid_free; cdecl external CLibCrypto name 'OBJ_sigid_free';
 {$ENDIF}
 
 // =============================================================================
@@ -424,17 +424,17 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OBJ_NAME_remove_procname);
 end;
 
-function ERR_OBJ_NAME_cleanup(_type: TIdC_INT): void; cdecl
+procedure ERR_OBJ_NAME_cleanup(_type: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OBJ_NAME_cleanup_procname);
 end;
 
-function ERR_OBJ_NAME_do_all(_type: TIdC_INT; fn: TOBJ_NAME_do_all_fn_cb; arg: Pointer): void; cdecl
+procedure ERR_OBJ_NAME_do_all(_type: TIdC_INT; fn: TOBJ_NAME_do_all_fn_cb; arg: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OBJ_NAME_do_all_procname);
 end;
 
-function ERR_OBJ_NAME_do_all_sorted(_type: TIdC_INT; fn: TOBJ_NAME_do_all_fn_cb; arg: Pointer): void; cdecl
+procedure ERR_OBJ_NAME_do_all_sorted(_type: TIdC_INT; fn: TOBJ_NAME_do_all_fn_cb; arg: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OBJ_NAME_do_all_sorted_procname);
 end;
@@ -549,7 +549,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OBJ_add_sigid_procname);
 end;
 
-function ERR_OBJ_sigid_free: void; cdecl
+procedure ERR_OBJ_sigid_free; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OBJ_sigid_free_procname);
 end;

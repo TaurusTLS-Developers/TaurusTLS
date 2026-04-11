@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -75,7 +75,7 @@ var
   MD4: function(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM MD4}
 
-  MD4_Transform: function(c: PMD4_CTX; b: PIdAnsiChar): void; cdecl = nil; // Deprecated in 3_0_0
+  MD4_Transform: procedure(c: PMD4_CTX; b: PIdAnsiChar); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM MD4_Transform}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -90,7 +90,7 @@ function MD4_Init(c: PMD4_CTX): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function MD4_Update(c: PMD4_CTX; data: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function MD4_Final(md: PIdAnsiChar; c: PMD4_CTX): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function MD4(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl; deprecated 'In OpenSSL 3_0_0';
-function MD4_Transform(c: PMD4_CTX; b: PIdAnsiChar): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure MD4_Transform(c: PMD4_CTX; b: PIdAnsiChar); cdecl; deprecated 'In OpenSSL 3_0_0';
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 implementation
@@ -113,7 +113,7 @@ function MD4_Init(c: PMD4_CTX): TIdC_INT; cdecl external CLibCrypto name 'MD4_In
 function MD4_Update(c: PMD4_CTX; data: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'MD4_Update';
 function MD4_Final(md: PIdAnsiChar; c: PMD4_CTX): TIdC_INT; cdecl external CLibCrypto name 'MD4_Final';
 function MD4(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'MD4';
-function MD4_Transform(c: PMD4_CTX; b: PIdAnsiChar): void; cdecl external CLibCrypto name 'MD4_Transform';
+procedure MD4_Transform(c: PMD4_CTX; b: PIdAnsiChar); cdecl external CLibCrypto name 'MD4_Transform';
 {$ENDIF}
 
 // =============================================================================
@@ -174,7 +174,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(MD4_procname);
 end;
 
-function ERR_MD4_Transform(c: PMD4_CTX; b: PIdAnsiChar): void; cdecl
+procedure ERR_MD4_Transform(c: PMD4_CTX; b: PIdAnsiChar); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(MD4_Transform_procname);
 end;

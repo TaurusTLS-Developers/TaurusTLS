@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -75,7 +75,7 @@ var
   MD5: function(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM MD5}
 
-  MD5_Transform: function(c: PMD5_CTX; b: PIdAnsiChar): void; cdecl = nil; // Deprecated in 3_0_0
+  MD5_Transform: procedure(c: PMD5_CTX; b: PIdAnsiChar); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM MD5_Transform}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -90,7 +90,7 @@ function MD5_Init(c: PMD5_CTX): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function MD5_Update(c: PMD5_CTX; data: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function MD5_Final(md: PIdAnsiChar; c: PMD5_CTX): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function MD5(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl; deprecated 'In OpenSSL 3_0_0';
-function MD5_Transform(c: PMD5_CTX; b: PIdAnsiChar): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure MD5_Transform(c: PMD5_CTX; b: PIdAnsiChar); cdecl; deprecated 'In OpenSSL 3_0_0';
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 implementation
@@ -113,7 +113,7 @@ function MD5_Init(c: PMD5_CTX): TIdC_INT; cdecl external CLibCrypto name 'MD5_In
 function MD5_Update(c: PMD5_CTX; data: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'MD5_Update';
 function MD5_Final(md: PIdAnsiChar; c: PMD5_CTX): TIdC_INT; cdecl external CLibCrypto name 'MD5_Final';
 function MD5(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'MD5';
-function MD5_Transform(c: PMD5_CTX; b: PIdAnsiChar): void; cdecl external CLibCrypto name 'MD5_Transform';
+procedure MD5_Transform(c: PMD5_CTX; b: PIdAnsiChar); cdecl external CLibCrypto name 'MD5_Transform';
 {$ENDIF}
 
 // =============================================================================
@@ -174,7 +174,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(MD5_procname);
 end;
 
-function ERR_MD5_Transform(c: PMD5_CTX; b: PIdAnsiChar): void; cdecl
+procedure ERR_MD5_Transform(c: PMD5_CTX; b: PIdAnsiChar); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(MD5_Transform_procname);
 end;

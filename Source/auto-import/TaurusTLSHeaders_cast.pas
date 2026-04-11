@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -58,25 +58,25 @@ const
 // =============================================================================
 var
 
-  CAST_set_key: function(key: PCAST_KEY; len: TIdC_INT; data: PIdAnsiChar): void; cdecl = nil; // Deprecated in 3_0_0
+  CAST_set_key: procedure(key: PCAST_KEY; len: TIdC_INT; data: PIdAnsiChar); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM CAST_set_key}
 
-  CAST_ecb_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAST_KEY; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  CAST_ecb_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAST_KEY; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM CAST_ecb_encrypt}
 
-  CAST_encrypt: function(data: PIdC_UINT; key: PCAST_KEY): void; cdecl = nil; // Deprecated in 3_0_0
+  CAST_encrypt: procedure(data: PIdC_UINT; key: PCAST_KEY); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM CAST_encrypt}
 
-  CAST_decrypt: function(data: PIdC_UINT; key: PCAST_KEY): void; cdecl = nil; // Deprecated in 3_0_0
+  CAST_decrypt: procedure(data: PIdC_UINT; key: PCAST_KEY); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM CAST_decrypt}
 
-  CAST_cbc_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PCAST_KEY; iv: PIdAnsiChar; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  CAST_cbc_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PCAST_KEY; iv: PIdAnsiChar; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM CAST_cbc_encrypt}
 
-  CAST_cfb64_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PCAST_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  CAST_cfb64_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PCAST_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM CAST_cfb64_encrypt}
 
-  CAST_ofb64_encrypt: function(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PCAST_KEY; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  CAST_ofb64_encrypt: procedure(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PCAST_KEY; ivec: PIdAnsiChar; num: PIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM CAST_ofb64_encrypt}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -87,13 +87,13 @@ var
 // STATIC BINDING ROUTINES
 // =============================================================================
 
-function CAST_set_key(key: PCAST_KEY; len: TIdC_INT; data: PIdAnsiChar): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function CAST_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAST_KEY; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function CAST_encrypt(data: PIdC_UINT; key: PCAST_KEY): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function CAST_decrypt(data: PIdC_UINT; key: PCAST_KEY): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function CAST_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PCAST_KEY; iv: PIdAnsiChar; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function CAST_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PCAST_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
-function CAST_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PCAST_KEY; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure CAST_set_key(key: PCAST_KEY; len: TIdC_INT; data: PIdAnsiChar); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure CAST_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAST_KEY; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure CAST_encrypt(data: PIdC_UINT; key: PCAST_KEY); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure CAST_decrypt(data: PIdC_UINT; key: PCAST_KEY); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure CAST_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PCAST_KEY; iv: PIdAnsiChar; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure CAST_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PCAST_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure CAST_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PCAST_KEY; ivec: PIdAnsiChar; num: PIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 implementation
@@ -112,13 +112,13 @@ uses
 // STATIC BINDING ROUTINES IMPORTS
 // =============================================================================
 
-function CAST_set_key(key: PCAST_KEY; len: TIdC_INT; data: PIdAnsiChar): void; cdecl external CLibCrypto name 'CAST_set_key';
-function CAST_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAST_KEY; enc: TIdC_INT): void; cdecl external CLibCrypto name 'CAST_ecb_encrypt';
-function CAST_encrypt(data: PIdC_UINT; key: PCAST_KEY): void; cdecl external CLibCrypto name 'CAST_encrypt';
-function CAST_decrypt(data: PIdC_UINT; key: PCAST_KEY): void; cdecl external CLibCrypto name 'CAST_decrypt';
-function CAST_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PCAST_KEY; iv: PIdAnsiChar; enc: TIdC_INT): void; cdecl external CLibCrypto name 'CAST_cbc_encrypt';
-function CAST_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PCAST_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl external CLibCrypto name 'CAST_cfb64_encrypt';
-function CAST_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PCAST_KEY; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl external CLibCrypto name 'CAST_ofb64_encrypt';
+procedure CAST_set_key(key: PCAST_KEY; len: TIdC_INT; data: PIdAnsiChar); cdecl external CLibCrypto name 'CAST_set_key';
+procedure CAST_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAST_KEY; enc: TIdC_INT); cdecl external CLibCrypto name 'CAST_ecb_encrypt';
+procedure CAST_encrypt(data: PIdC_UINT; key: PCAST_KEY); cdecl external CLibCrypto name 'CAST_encrypt';
+procedure CAST_decrypt(data: PIdC_UINT; key: PCAST_KEY); cdecl external CLibCrypto name 'CAST_decrypt';
+procedure CAST_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PCAST_KEY; iv: PIdAnsiChar; enc: TIdC_INT); cdecl external CLibCrypto name 'CAST_cbc_encrypt';
+procedure CAST_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PCAST_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl external CLibCrypto name 'CAST_cfb64_encrypt';
+procedure CAST_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PCAST_KEY; ivec: PIdAnsiChar; num: PIdC_INT); cdecl external CLibCrypto name 'CAST_ofb64_encrypt';
 {$ENDIF}
 
 // =============================================================================
@@ -167,37 +167,37 @@ const
 // ERRORS STUBS
 // =============================================================================
 
-function ERR_CAST_set_key(key: PCAST_KEY; len: TIdC_INT; data: PIdAnsiChar): void; cdecl
+procedure ERR_CAST_set_key(key: PCAST_KEY; len: TIdC_INT; data: PIdAnsiChar); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CAST_set_key_procname);
 end;
 
-function ERR_CAST_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAST_KEY; enc: TIdC_INT): void; cdecl
+procedure ERR_CAST_ecb_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; key: PCAST_KEY; enc: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CAST_ecb_encrypt_procname);
 end;
 
-function ERR_CAST_encrypt(data: PIdC_UINT; key: PCAST_KEY): void; cdecl
+procedure ERR_CAST_encrypt(data: PIdC_UINT; key: PCAST_KEY); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CAST_encrypt_procname);
 end;
 
-function ERR_CAST_decrypt(data: PIdC_UINT; key: PCAST_KEY): void; cdecl
+procedure ERR_CAST_decrypt(data: PIdC_UINT; key: PCAST_KEY); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CAST_decrypt_procname);
 end;
 
-function ERR_CAST_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PCAST_KEY; iv: PIdAnsiChar; enc: TIdC_INT): void; cdecl
+procedure ERR_CAST_cbc_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; ks: PCAST_KEY; iv: PIdAnsiChar; enc: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CAST_cbc_encrypt_procname);
 end;
 
-function ERR_CAST_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PCAST_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT): void; cdecl
+procedure ERR_CAST_cfb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PCAST_KEY; ivec: PIdAnsiChar; num: PIdC_INT; enc: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CAST_cfb64_encrypt_procname);
 end;
 
-function ERR_CAST_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PCAST_KEY; ivec: PIdAnsiChar; num: PIdC_INT): void; cdecl
+procedure ERR_CAST_ofb64_encrypt(_in: PIdAnsiChar; _out: PIdAnsiChar; length: TIdC_LONG; schedule: PCAST_KEY; ivec: PIdAnsiChar; num: PIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CAST_ofb64_encrypt_procname);
 end;

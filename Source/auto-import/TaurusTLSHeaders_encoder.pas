@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -43,15 +43,15 @@ type
 // =============================================================================
 type
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // OSSL_ENCODER_do_all_provided_fn_cb = function(encoder: POSSL_ENCODER; arg: Pointer): void; cdecl;
+  // OSSL_ENCODER_do_all_provided_fn_cb = procedure(encoder: POSSL_ENCODER; arg: Pointer); cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // OSSL_ENCODER_names_do_all_fn_cb = function(name: PIdAnsiChar; data: Pointer): void; cdecl;
+  // OSSL_ENCODER_names_do_all_fn_cb = procedure(name: PIdAnsiChar; data: Pointer); cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
   // OSSL_ENCODER_CTX_set_pem_password_cb_cb_cb = function(arg1: PIdAnsiChar; arg2: TIdC_INT; arg3: TIdC_INT; arg4: Pointer): TIdC_INT; cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
   // OSSL_ENCODER_CTX_set_passphrase_cb_cb_cb = function(arg1: PIdAnsiChar; arg2: TIdC_ULONG; arg3: PIdC_ULONG; arg4: Possl_param_st; arg5: Pointer): TIdC_INT; cdecl;
   TOSSL_ENCODER_CONSTRUCT = function(encoder_inst: POSSL_ENCODER_INSTANCE; construct_data: Pointer): Pointer; cdecl;
-  TOSSL_ENCODER_CLEANUP = function(construct_data: Pointer): void; cdecl;
+  TOSSL_ENCODER_CLEANUP = procedure(construct_data: Pointer); cdecl;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 
@@ -66,7 +66,7 @@ var
   OSSL_ENCODER_up_ref: function(encoder: POSSL_ENCODER): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_ENCODER_up_ref}
 
-  OSSL_ENCODER_free: function(encoder: POSSL_ENCODER): void; cdecl = nil;
+  OSSL_ENCODER_free: procedure(encoder: POSSL_ENCODER); cdecl = nil;
   {$EXTERNALSYM OSSL_ENCODER_free}
 
   OSSL_ENCODER_get0_provider: function(encoder: POSSL_ENCODER): POSSL_PROVIDER; cdecl = nil;
@@ -84,7 +84,7 @@ var
   OSSL_ENCODER_is_a: function(encoder: POSSL_ENCODER; name: PIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_ENCODER_is_a}
 
-  OSSL_ENCODER_do_all_provided: function(libctx: POSSL_LIB_CTX; fn: TOSSL_ENCODER_do_all_provided_fn_cb; arg: Pointer): void; cdecl = nil;
+  OSSL_ENCODER_do_all_provided: procedure(libctx: POSSL_LIB_CTX; fn: TOSSL_ENCODER_do_all_provided_fn_cb; arg: Pointer); cdecl = nil;
   {$EXTERNALSYM OSSL_ENCODER_do_all_provided}
 
   OSSL_ENCODER_names_do_all: function(encoder: POSSL_ENCODER; fn: TOSSL_ENCODER_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl = nil;
@@ -105,7 +105,7 @@ var
   OSSL_ENCODER_CTX_set_params: function(ctx: POSSL_ENCODER_CTX; params: POSSL_PARAM): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_ENCODER_CTX_set_params}
 
-  OSSL_ENCODER_CTX_free: function(ctx: POSSL_ENCODER_CTX): void; cdecl = nil;
+  OSSL_ENCODER_CTX_free: procedure(ctx: POSSL_ENCODER_CTX); cdecl = nil;
   {$EXTERNALSYM OSSL_ENCODER_CTX_free}
 
   OSSL_ENCODER_CTX_set_passphrase: function(ctx: POSSL_ENCODER_CTX; kstr: PIdAnsiChar; klen: TIdC_SIZET): TIdC_INT; cdecl = nil;
@@ -184,20 +184,20 @@ var
 
 function OSSL_ENCODER_fetch(libctx: POSSL_LIB_CTX; name: PIdAnsiChar; properties: PIdAnsiChar): POSSL_ENCODER; cdecl;
 function OSSL_ENCODER_up_ref(encoder: POSSL_ENCODER): TIdC_INT; cdecl;
-function OSSL_ENCODER_free(encoder: POSSL_ENCODER): void; cdecl;
+procedure OSSL_ENCODER_free(encoder: POSSL_ENCODER); cdecl;
 function OSSL_ENCODER_get0_provider(encoder: POSSL_ENCODER): POSSL_PROVIDER; cdecl;
 function OSSL_ENCODER_get0_properties(encoder: POSSL_ENCODER): PIdAnsiChar; cdecl;
 function OSSL_ENCODER_get0_name(kdf: POSSL_ENCODER): PIdAnsiChar; cdecl;
 function OSSL_ENCODER_get0_description(kdf: POSSL_ENCODER): PIdAnsiChar; cdecl;
 function OSSL_ENCODER_is_a(encoder: POSSL_ENCODER; name: PIdAnsiChar): TIdC_INT; cdecl;
-function OSSL_ENCODER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TOSSL_ENCODER_do_all_provided_fn_cb; arg: Pointer): void; cdecl;
+procedure OSSL_ENCODER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TOSSL_ENCODER_do_all_provided_fn_cb; arg: Pointer); cdecl;
 function OSSL_ENCODER_names_do_all(encoder: POSSL_ENCODER; fn: TOSSL_ENCODER_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl;
 function OSSL_ENCODER_gettable_params(encoder: POSSL_ENCODER): POSSL_PARAM; cdecl;
 function OSSL_ENCODER_get_params(encoder: POSSL_ENCODER; params: POSSL_PARAM): TIdC_INT; cdecl;
 function OSSL_ENCODER_settable_ctx_params(encoder: POSSL_ENCODER): POSSL_PARAM; cdecl;
 function OSSL_ENCODER_CTX_new: POSSL_ENCODER_CTX; cdecl;
 function OSSL_ENCODER_CTX_set_params(ctx: POSSL_ENCODER_CTX; params: POSSL_PARAM): TIdC_INT; cdecl;
-function OSSL_ENCODER_CTX_free(ctx: POSSL_ENCODER_CTX): void; cdecl;
+procedure OSSL_ENCODER_CTX_free(ctx: POSSL_ENCODER_CTX); cdecl;
 function OSSL_ENCODER_CTX_set_passphrase(ctx: POSSL_ENCODER_CTX; kstr: PIdAnsiChar; klen: TIdC_SIZET): TIdC_INT; cdecl;
 function OSSL_ENCODER_CTX_set_pem_password_cb(ctx: POSSL_ENCODER_CTX; cb: TOSSL_ENCODER_CTX_set_pem_password_cb_cb_cb; cbarg: Pointer): TIdC_INT; cdecl;
 function OSSL_ENCODER_CTX_set_passphrase_cb(ctx: POSSL_ENCODER_CTX; cb: TOSSL_ENCODER_CTX_set_passphrase_cb_cb_cb; cbarg: Pointer): TIdC_INT; cdecl;
@@ -240,20 +240,20 @@ uses
 
 function OSSL_ENCODER_fetch(libctx: POSSL_LIB_CTX; name: PIdAnsiChar; properties: PIdAnsiChar): POSSL_ENCODER; cdecl external CLibCrypto name 'OSSL_ENCODER_fetch';
 function OSSL_ENCODER_up_ref(encoder: POSSL_ENCODER): TIdC_INT; cdecl external CLibCrypto name 'OSSL_ENCODER_up_ref';
-function OSSL_ENCODER_free(encoder: POSSL_ENCODER): void; cdecl external CLibCrypto name 'OSSL_ENCODER_free';
+procedure OSSL_ENCODER_free(encoder: POSSL_ENCODER); cdecl external CLibCrypto name 'OSSL_ENCODER_free';
 function OSSL_ENCODER_get0_provider(encoder: POSSL_ENCODER): POSSL_PROVIDER; cdecl external CLibCrypto name 'OSSL_ENCODER_get0_provider';
 function OSSL_ENCODER_get0_properties(encoder: POSSL_ENCODER): PIdAnsiChar; cdecl external CLibCrypto name 'OSSL_ENCODER_get0_properties';
 function OSSL_ENCODER_get0_name(kdf: POSSL_ENCODER): PIdAnsiChar; cdecl external CLibCrypto name 'OSSL_ENCODER_get0_name';
 function OSSL_ENCODER_get0_description(kdf: POSSL_ENCODER): PIdAnsiChar; cdecl external CLibCrypto name 'OSSL_ENCODER_get0_description';
 function OSSL_ENCODER_is_a(encoder: POSSL_ENCODER; name: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_ENCODER_is_a';
-function OSSL_ENCODER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TOSSL_ENCODER_do_all_provided_fn_cb; arg: Pointer): void; cdecl external CLibCrypto name 'OSSL_ENCODER_do_all_provided';
+procedure OSSL_ENCODER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TOSSL_ENCODER_do_all_provided_fn_cb; arg: Pointer); cdecl external CLibCrypto name 'OSSL_ENCODER_do_all_provided';
 function OSSL_ENCODER_names_do_all(encoder: POSSL_ENCODER; fn: TOSSL_ENCODER_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl external CLibCrypto name 'OSSL_ENCODER_names_do_all';
 function OSSL_ENCODER_gettable_params(encoder: POSSL_ENCODER): POSSL_PARAM; cdecl external CLibCrypto name 'OSSL_ENCODER_gettable_params';
 function OSSL_ENCODER_get_params(encoder: POSSL_ENCODER; params: POSSL_PARAM): TIdC_INT; cdecl external CLibCrypto name 'OSSL_ENCODER_get_params';
 function OSSL_ENCODER_settable_ctx_params(encoder: POSSL_ENCODER): POSSL_PARAM; cdecl external CLibCrypto name 'OSSL_ENCODER_settable_ctx_params';
 function OSSL_ENCODER_CTX_new: POSSL_ENCODER_CTX; cdecl external CLibCrypto name 'OSSL_ENCODER_CTX_new';
 function OSSL_ENCODER_CTX_set_params(ctx: POSSL_ENCODER_CTX; params: POSSL_PARAM): TIdC_INT; cdecl external CLibCrypto name 'OSSL_ENCODER_CTX_set_params';
-function OSSL_ENCODER_CTX_free(ctx: POSSL_ENCODER_CTX): void; cdecl external CLibCrypto name 'OSSL_ENCODER_CTX_free';
+procedure OSSL_ENCODER_CTX_free(ctx: POSSL_ENCODER_CTX); cdecl external CLibCrypto name 'OSSL_ENCODER_CTX_free';
 function OSSL_ENCODER_CTX_set_passphrase(ctx: POSSL_ENCODER_CTX; kstr: PIdAnsiChar; klen: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_ENCODER_CTX_set_passphrase';
 function OSSL_ENCODER_CTX_set_pem_password_cb(ctx: POSSL_ENCODER_CTX; cb: TOSSL_ENCODER_CTX_set_pem_password_cb_cb_cb; cbarg: Pointer): TIdC_INT; cdecl external CLibCrypto name 'OSSL_ENCODER_CTX_set_pem_password_cb';
 function OSSL_ENCODER_CTX_set_passphrase_cb(ctx: POSSL_ENCODER_CTX; cb: TOSSL_ENCODER_CTX_set_passphrase_cb_cb_cb; cbarg: Pointer): TIdC_INT; cdecl external CLibCrypto name 'OSSL_ENCODER_CTX_set_passphrase_cb';
@@ -420,7 +420,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ENCODER_up_ref_procname);
 end;
 
-function ERR_OSSL_ENCODER_free(encoder: POSSL_ENCODER): void; cdecl
+procedure ERR_OSSL_ENCODER_free(encoder: POSSL_ENCODER); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ENCODER_free_procname);
 end;
@@ -450,7 +450,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ENCODER_is_a_procname);
 end;
 
-function ERR_OSSL_ENCODER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TOSSL_ENCODER_do_all_provided_fn_cb; arg: Pointer): void; cdecl
+procedure ERR_OSSL_ENCODER_do_all_provided(libctx: POSSL_LIB_CTX; fn: TOSSL_ENCODER_do_all_provided_fn_cb; arg: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ENCODER_do_all_provided_procname);
 end;
@@ -485,7 +485,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ENCODER_CTX_set_params_procname);
 end;
 
-function ERR_OSSL_ENCODER_CTX_free(ctx: POSSL_ENCODER_CTX): void; cdecl
+procedure ERR_OSSL_ENCODER_CTX_free(ctx: POSSL_ENCODER_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ENCODER_CTX_free_procname);
 end;

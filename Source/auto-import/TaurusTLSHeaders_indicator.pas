@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -43,10 +43,10 @@ type
 // =============================================================================
 var
 
-  OSSL_INDICATOR_set_callback: function(libctx: POSSL_LIB_CTX; cb: TOSSL_INDICATOR_CALLBACK): void; cdecl = nil;
+  OSSL_INDICATOR_set_callback: procedure(libctx: POSSL_LIB_CTX; cb: TOSSL_INDICATOR_CALLBACK); cdecl = nil;
   {$EXTERNALSYM OSSL_INDICATOR_set_callback}
 
-  OSSL_INDICATOR_get_callback: function(libctx: POSSL_LIB_CTX; cb: PPOSSL_INDICATOR_CALLBACK): void; cdecl = nil;
+  OSSL_INDICATOR_get_callback: procedure(libctx: POSSL_LIB_CTX; cb: PPOSSL_INDICATOR_CALLBACK); cdecl = nil;
   {$EXTERNALSYM OSSL_INDICATOR_get_callback}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -57,8 +57,8 @@ var
 // STATIC BINDING ROUTINES
 // =============================================================================
 
-function OSSL_INDICATOR_set_callback(libctx: POSSL_LIB_CTX; cb: TOSSL_INDICATOR_CALLBACK): void; cdecl;
-function OSSL_INDICATOR_get_callback(libctx: POSSL_LIB_CTX; cb: PPOSSL_INDICATOR_CALLBACK): void; cdecl;
+procedure OSSL_INDICATOR_set_callback(libctx: POSSL_LIB_CTX; cb: TOSSL_INDICATOR_CALLBACK); cdecl;
+procedure OSSL_INDICATOR_get_callback(libctx: POSSL_LIB_CTX; cb: PPOSSL_INDICATOR_CALLBACK); cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 implementation
@@ -77,8 +77,8 @@ uses
 // STATIC BINDING ROUTINES IMPORTS
 // =============================================================================
 
-function OSSL_INDICATOR_set_callback(libctx: POSSL_LIB_CTX; cb: TOSSL_INDICATOR_CALLBACK): void; cdecl external CLibCrypto name 'OSSL_INDICATOR_set_callback';
-function OSSL_INDICATOR_get_callback(libctx: POSSL_LIB_CTX; cb: PPOSSL_INDICATOR_CALLBACK): void; cdecl external CLibCrypto name 'OSSL_INDICATOR_get_callback';
+procedure OSSL_INDICATOR_set_callback(libctx: POSSL_LIB_CTX; cb: TOSSL_INDICATOR_CALLBACK); cdecl external CLibCrypto name 'OSSL_INDICATOR_set_callback';
+procedure OSSL_INDICATOR_get_callback(libctx: POSSL_LIB_CTX; cb: PPOSSL_INDICATOR_CALLBACK); cdecl external CLibCrypto name 'OSSL_INDICATOR_get_callback';
 {$ENDIF}
 
 // =============================================================================
@@ -105,12 +105,12 @@ const
 // ERRORS STUBS
 // =============================================================================
 
-function ERR_OSSL_INDICATOR_set_callback(libctx: POSSL_LIB_CTX; cb: TOSSL_INDICATOR_CALLBACK): void; cdecl
+procedure ERR_OSSL_INDICATOR_set_callback(libctx: POSSL_LIB_CTX; cb: TOSSL_INDICATOR_CALLBACK); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_INDICATOR_set_callback_procname);
 end;
 
-function ERR_OSSL_INDICATOR_get_callback(libctx: POSSL_LIB_CTX; cb: PPOSSL_INDICATOR_CALLBACK): void; cdecl
+procedure ERR_OSSL_INDICATOR_get_callback(libctx: POSSL_LIB_CTX; cb: PPOSSL_INDICATOR_CALLBACK); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_INDICATOR_get_callback_procname);
 end;

@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -104,7 +104,7 @@ var
   SHA1_Final: function(md: PIdAnsiChar; c: PSHA_CTX): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM SHA1_Final}
 
-  SHA1_Transform: function(c: PSHA_CTX; data: PIdAnsiChar): void; cdecl = nil; // Deprecated in 3_0_0
+  SHA1_Transform: procedure(c: PSHA_CTX; data: PIdAnsiChar); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM SHA1_Transform}
 
   SHA1: function(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl = nil;
@@ -128,7 +128,7 @@ var
   SHA256_Final: function(md: PIdAnsiChar; c: PSHA256_CTX): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM SHA256_Final}
 
-  SHA256_Transform: function(c: PSHA256_CTX; data: PIdAnsiChar): void; cdecl = nil; // Deprecated in 3_0_0
+  SHA256_Transform: procedure(c: PSHA256_CTX; data: PIdAnsiChar); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM SHA256_Transform}
 
   SHA224: function(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl = nil;
@@ -155,7 +155,7 @@ var
   SHA512_Final: function(md: PIdAnsiChar; c: PSHA512_CTX): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM SHA512_Final}
 
-  SHA512_Transform: function(c: PSHA512_CTX; data: PIdAnsiChar): void; cdecl = nil; // Deprecated in 3_0_0
+  SHA512_Transform: procedure(c: PSHA512_CTX; data: PIdAnsiChar); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM SHA512_Transform}
 
   SHA384: function(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl = nil;
@@ -175,7 +175,7 @@ var
 function SHA1_Init(c: PSHA_CTX): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function SHA1_Update(c: PSHA_CTX; data: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function SHA1_Final(md: PIdAnsiChar; c: PSHA_CTX): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function SHA1_Transform(c: PSHA_CTX; data: PIdAnsiChar): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure SHA1_Transform(c: PSHA_CTX; data: PIdAnsiChar); cdecl; deprecated 'In OpenSSL 3_0_0';
 function SHA1(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl;
 function SHA224_Init(c: PSHA256_CTX): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function SHA224_Update(c: PSHA256_CTX; data: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
@@ -183,7 +183,7 @@ function SHA224_Final(md: PIdAnsiChar; c: PSHA256_CTX): TIdC_INT; cdecl; depreca
 function SHA256_Init(c: PSHA256_CTX): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function SHA256_Update(c: PSHA256_CTX; data: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function SHA256_Final(md: PIdAnsiChar; c: PSHA256_CTX): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function SHA256_Transform(c: PSHA256_CTX; data: PIdAnsiChar): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure SHA256_Transform(c: PSHA256_CTX; data: PIdAnsiChar); cdecl; deprecated 'In OpenSSL 3_0_0';
 function SHA224(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl;
 function SHA256(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl;
 function SHA384_Init(c: PSHA512_CTX): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
@@ -192,7 +192,7 @@ function SHA384_Final(md: PIdAnsiChar; c: PSHA512_CTX): TIdC_INT; cdecl; depreca
 function SHA512_Init(c: PSHA512_CTX): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function SHA512_Update(c: PSHA512_CTX; data: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function SHA512_Final(md: PIdAnsiChar; c: PSHA512_CTX): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function SHA512_Transform(c: PSHA512_CTX; data: PIdAnsiChar): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure SHA512_Transform(c: PSHA512_CTX; data: PIdAnsiChar); cdecl; deprecated 'In OpenSSL 3_0_0';
 function SHA384(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl;
 function SHA512(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -216,7 +216,7 @@ uses
 function SHA1_Init(c: PSHA_CTX): TIdC_INT; cdecl external CLibCrypto name 'SHA1_Init';
 function SHA1_Update(c: PSHA_CTX; data: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'SHA1_Update';
 function SHA1_Final(md: PIdAnsiChar; c: PSHA_CTX): TIdC_INT; cdecl external CLibCrypto name 'SHA1_Final';
-function SHA1_Transform(c: PSHA_CTX; data: PIdAnsiChar): void; cdecl external CLibCrypto name 'SHA1_Transform';
+procedure SHA1_Transform(c: PSHA_CTX; data: PIdAnsiChar); cdecl external CLibCrypto name 'SHA1_Transform';
 function SHA1(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'SHA1';
 function SHA224_Init(c: PSHA256_CTX): TIdC_INT; cdecl external CLibCrypto name 'SHA224_Init';
 function SHA224_Update(c: PSHA256_CTX; data: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'SHA224_Update';
@@ -224,7 +224,7 @@ function SHA224_Final(md: PIdAnsiChar; c: PSHA256_CTX): TIdC_INT; cdecl external
 function SHA256_Init(c: PSHA256_CTX): TIdC_INT; cdecl external CLibCrypto name 'SHA256_Init';
 function SHA256_Update(c: PSHA256_CTX; data: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'SHA256_Update';
 function SHA256_Final(md: PIdAnsiChar; c: PSHA256_CTX): TIdC_INT; cdecl external CLibCrypto name 'SHA256_Final';
-function SHA256_Transform(c: PSHA256_CTX; data: PIdAnsiChar): void; cdecl external CLibCrypto name 'SHA256_Transform';
+procedure SHA256_Transform(c: PSHA256_CTX; data: PIdAnsiChar); cdecl external CLibCrypto name 'SHA256_Transform';
 function SHA224(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'SHA224';
 function SHA256(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'SHA256';
 function SHA384_Init(c: PSHA512_CTX): TIdC_INT; cdecl external CLibCrypto name 'SHA384_Init';
@@ -233,7 +233,7 @@ function SHA384_Final(md: PIdAnsiChar; c: PSHA512_CTX): TIdC_INT; cdecl external
 function SHA512_Init(c: PSHA512_CTX): TIdC_INT; cdecl external CLibCrypto name 'SHA512_Init';
 function SHA512_Update(c: PSHA512_CTX; data: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'SHA512_Update';
 function SHA512_Final(md: PIdAnsiChar; c: PSHA512_CTX): TIdC_INT; cdecl external CLibCrypto name 'SHA512_Final';
-function SHA512_Transform(c: PSHA512_CTX; data: PIdAnsiChar): void; cdecl external CLibCrypto name 'SHA512_Transform';
+procedure SHA512_Transform(c: PSHA512_CTX; data: PIdAnsiChar); cdecl external CLibCrypto name 'SHA512_Transform';
 function SHA384(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'SHA384';
 function SHA512(d: PIdAnsiChar; n: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'SHA512';
 {$ENDIF}
@@ -358,7 +358,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SHA1_Final_procname);
 end;
 
-function ERR_SHA1_Transform(c: PSHA_CTX; data: PIdAnsiChar): void; cdecl
+procedure ERR_SHA1_Transform(c: PSHA_CTX; data: PIdAnsiChar); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SHA1_Transform_procname);
 end;
@@ -398,7 +398,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SHA256_Final_procname);
 end;
 
-function ERR_SHA256_Transform(c: PSHA256_CTX; data: PIdAnsiChar): void; cdecl
+procedure ERR_SHA256_Transform(c: PSHA256_CTX; data: PIdAnsiChar); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SHA256_Transform_procname);
 end;
@@ -443,7 +443,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SHA512_Final_procname);
 end;
 
-function ERR_SHA512_Transform(c: PSHA512_CTX; data: PIdAnsiChar): void; cdecl
+procedure ERR_SHA512_Transform(c: PSHA512_CTX; data: PIdAnsiChar); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SHA512_Transform_procname);
 end;

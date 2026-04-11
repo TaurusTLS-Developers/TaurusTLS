@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -99,7 +99,7 @@ var
   OSSL_PROVIDER_query_operation: function(prov: POSSL_PROVIDER; operation_id: TIdC_INT; no_cache: PIdC_INT): POSSL_ALGORITHM; cdecl = nil;
   {$EXTERNALSYM OSSL_PROVIDER_query_operation}
 
-  OSSL_PROVIDER_unquery_operation: function(prov: POSSL_PROVIDER; operation_id: TIdC_INT; algs: POSSL_ALGORITHM): void; cdecl = nil;
+  OSSL_PROVIDER_unquery_operation: procedure(prov: POSSL_PROVIDER; operation_id: TIdC_INT; algs: POSSL_ALGORITHM); cdecl = nil;
   {$EXTERNALSYM OSSL_PROVIDER_unquery_operation}
 
   OSSL_PROVIDER_get0_provider_ctx: function(prov: POSSL_PROVIDER): Pointer; cdecl = nil;
@@ -139,7 +139,7 @@ function OSSL_PROVIDER_add_conf_parameter(prov: POSSL_PROVIDER; name: PIdAnsiCha
 function OSSL_PROVIDER_get_conf_parameters(prov: POSSL_PROVIDER; params: POSSL_PARAM): TIdC_INT; cdecl;
 function OSSL_PROVIDER_conf_get_bool(prov: POSSL_PROVIDER; name: PIdAnsiChar; defval: TIdC_INT): TIdC_INT; cdecl;
 function OSSL_PROVIDER_query_operation(prov: POSSL_PROVIDER; operation_id: TIdC_INT; no_cache: PIdC_INT): POSSL_ALGORITHM; cdecl;
-function OSSL_PROVIDER_unquery_operation(prov: POSSL_PROVIDER; operation_id: TIdC_INT; algs: POSSL_ALGORITHM): void; cdecl;
+procedure OSSL_PROVIDER_unquery_operation(prov: POSSL_PROVIDER; operation_id: TIdC_INT; algs: POSSL_ALGORITHM); cdecl;
 function OSSL_PROVIDER_get0_provider_ctx(prov: POSSL_PROVIDER): Pointer; cdecl;
 function OSSL_PROVIDER_get0_dispatch(prov: POSSL_PROVIDER): POSSL_DISPATCH; cdecl;
 function OSSL_PROVIDER_add_builtin(arg1: POSSL_LIB_CTX; name: PIdAnsiChar; init_fn: TOSSL_PROVIDER_add_builtin_init_fn_cb): TIdC_INT; cdecl;
@@ -179,7 +179,7 @@ function OSSL_PROVIDER_add_conf_parameter(prov: POSSL_PROVIDER; name: PIdAnsiCha
 function OSSL_PROVIDER_get_conf_parameters(prov: POSSL_PROVIDER; params: POSSL_PARAM): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PROVIDER_get_conf_parameters';
 function OSSL_PROVIDER_conf_get_bool(prov: POSSL_PROVIDER; name: PIdAnsiChar; defval: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PROVIDER_conf_get_bool';
 function OSSL_PROVIDER_query_operation(prov: POSSL_PROVIDER; operation_id: TIdC_INT; no_cache: PIdC_INT): POSSL_ALGORITHM; cdecl external CLibCrypto name 'OSSL_PROVIDER_query_operation';
-function OSSL_PROVIDER_unquery_operation(prov: POSSL_PROVIDER; operation_id: TIdC_INT; algs: POSSL_ALGORITHM): void; cdecl external CLibCrypto name 'OSSL_PROVIDER_unquery_operation';
+procedure OSSL_PROVIDER_unquery_operation(prov: POSSL_PROVIDER; operation_id: TIdC_INT; algs: POSSL_ALGORITHM); cdecl external CLibCrypto name 'OSSL_PROVIDER_unquery_operation';
 function OSSL_PROVIDER_get0_provider_ctx(prov: POSSL_PROVIDER): Pointer; cdecl external CLibCrypto name 'OSSL_PROVIDER_get0_provider_ctx';
 function OSSL_PROVIDER_get0_dispatch(prov: POSSL_PROVIDER): POSSL_DISPATCH; cdecl external CLibCrypto name 'OSSL_PROVIDER_get0_dispatch';
 function OSSL_PROVIDER_add_builtin(arg1: POSSL_LIB_CTX; name: PIdAnsiChar; init_fn: TOSSL_PROVIDER_add_builtin_init_fn_cb): TIdC_INT; cdecl external CLibCrypto name 'OSSL_PROVIDER_add_builtin';
@@ -355,7 +355,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PROVIDER_query_operation_procname);
 end;
 
-function ERR_OSSL_PROVIDER_unquery_operation(prov: POSSL_PROVIDER; operation_id: TIdC_INT; algs: POSSL_ALGORITHM): void; cdecl
+procedure ERR_OSSL_PROVIDER_unquery_operation(prov: POSSL_PROVIDER; operation_id: TIdC_INT; algs: POSSL_ALGORITHM); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PROVIDER_unquery_operation_procname);
 end;

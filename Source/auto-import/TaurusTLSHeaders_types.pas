@@ -23,9 +23,7 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
-  TaurusTLSHeaders_types,
-  TaurusTLSHeaders_core;
-
+  TaurusTLSHeaders_ossl_types;
 
 
 
@@ -36,10 +34,6 @@ type
   Possl_provider_st = ^Tossl_provider_st;
   Tossl_provider_st =   record end;
   {$EXTERNALSYM Possl_provider_st}
-
-  Pasn1_string_st = ^Tasn1_string_st;
-  Tasn1_string_st =   record end;
-  {$EXTERNALSYM Pasn1_string_st}
 
   Pasn1_type_st = ^Tasn1_type_st;
   Tasn1_type_st =   record end;
@@ -65,33 +59,13 @@ type
   Tasn1_sctx_st =   record end;
   {$EXTERNALSYM Pasn1_sctx_st}
 
-  Pbio_st = ^Tbio_st;
-  Tbio_st =   record end;
-  {$EXTERNALSYM Pbio_st}
-
-  Pbignum_st = ^Tbignum_st;
-  Tbignum_st =   record end;
-  {$EXTERNALSYM Pbignum_st}
-
-  Pbignum_ctx = ^Tbignum_ctx;
-  Tbignum_ctx =   record end;
-  {$EXTERNALSYM Pbignum_ctx}
-
   Pbn_blinding_st = ^Tbn_blinding_st;
   Tbn_blinding_st =   record end;
   {$EXTERNALSYM Pbn_blinding_st}
 
-  Pbn_mont_ctx_st = ^Tbn_mont_ctx_st;
-  Tbn_mont_ctx_st =   record end;
-  {$EXTERNALSYM Pbn_mont_ctx_st}
-
   Pbn_recp_ctx_st = ^Tbn_recp_ctx_st;
   Tbn_recp_ctx_st =   record end;
   {$EXTERNALSYM Pbn_recp_ctx_st}
-
-  Pbn_gencb_st = ^Tbn_gencb_st;
-  Tbn_gencb_st =   record end;
-  {$EXTERNALSYM Pbn_gencb_st}
 
   Pbuf_mem_st = ^Tbuf_mem_st;
   Tbuf_mem_st =   record end;
@@ -132,10 +106,6 @@ type
   Pevp_mac_ctx_st = ^Tevp_mac_ctx_st;
   Tevp_mac_ctx_st =   record end;
   {$EXTERNALSYM Pevp_mac_ctx_st}
-
-  Pevp_pkey_st = ^Tevp_pkey_st;
-  Tevp_pkey_st =   record end;
-  {$EXTERNALSYM Pevp_pkey_st}
 
   Pevp_skey_st = ^Tevp_skey_st;
   Tevp_skey_st =   record end;
@@ -201,25 +171,13 @@ type
   Thmac_ctx_st =   record end;
   {$EXTERNALSYM Phmac_ctx_st}
 
-  Pdh_st = ^Tdh_st;
-  Tdh_st =   record end;
-  {$EXTERNALSYM Pdh_st}
-
   Pdh_method = ^Tdh_method;
   Tdh_method =   record end;
   {$EXTERNALSYM Pdh_method}
 
-  Pdsa_st = ^Tdsa_st;
-  Tdsa_st =   record end;
-  {$EXTERNALSYM Pdsa_st}
-
   Pdsa_method = ^Tdsa_method;
   Tdsa_method =   record end;
   {$EXTERNALSYM Pdsa_method}
-
-  Prsa_st = ^Trsa_st;
-  Trsa_st =   record end;
-  {$EXTERNALSYM Prsa_st}
 
   Prsa_meth_st = ^Trsa_meth_st;
   Trsa_meth_st =   record end;
@@ -232,10 +190,6 @@ type
   Prsa_oaep_params_st = ^Trsa_oaep_params_st;
   Trsa_oaep_params_st =   record end;
   {$EXTERNALSYM Prsa_oaep_params_st}
-
-  Pec_key_st = ^Tec_key_st;
-  Tec_key_st =   record end;
-  {$EXTERNALSYM Pec_key_st}
 
   Pec_key_method_st = ^Tec_key_method_st;
   Tec_key_method_st =   record end;
@@ -337,14 +291,6 @@ type
   Tengine_st =   record end;
   {$EXTERNALSYM Pengine_st}
 
-  Pssl_st = ^Tssl_st;
-  Tssl_st =   record end;
-  {$EXTERNALSYM Pssl_st}
-
-  Pssl_ctx_st = ^Tssl_ctx_st;
-  Tssl_ctx_st =   record end;
-  {$EXTERNALSYM Pssl_ctx_st}
-
   Pcomp_ctx_st = ^Tcomp_ctx_st;
   Tcomp_ctx_st =   record end;
   {$EXTERNALSYM Pcomp_ctx_st}
@@ -421,10 +367,6 @@ type
   Tct_policy_eval_ctx_st =   record end;
   {$EXTERNALSYM Pct_policy_eval_ctx_st}
 
-  Possl_store_info_st = ^Tossl_store_info_st;
-  Tossl_store_info_st =   record end;
-  {$EXTERNALSYM Possl_store_info_st}
-
   Possl_store_search_st = ^Tossl_store_search_st;
   Tossl_store_search_st =   record end;
   {$EXTERNALSYM Possl_store_search_st}
@@ -433,10 +375,6 @@ type
   Tossl_lib_ctx_st =   record end;
   {$EXTERNALSYM Possl_lib_ctx_st}
 
-  Possl_dispatch_st = ^Tossl_dispatch_st;
-  Tossl_dispatch_st =   record end;
-  {$EXTERNALSYM Possl_dispatch_st}
-
   Possl_item_st = ^Tossl_item_st;
   Tossl_item_st =   record end;
   {$EXTERNALSYM Possl_item_st}
@@ -444,10 +382,6 @@ type
   Possl_algorithm_st = ^Tossl_algorithm_st;
   Tossl_algorithm_st =   record end;
   {$EXTERNALSYM Possl_algorithm_st}
-
-  Possl_param_st = ^Tossl_param_st;
-  Tossl_param_st =   record end;
-  {$EXTERNALSYM Possl_param_st}
 
   Possl_param_bld_st = ^Tossl_param_bld_st;
   Tossl_param_bld_st =   record end;

@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -62,7 +62,7 @@ var
   BUF_MEM_new_ex: function(flags: TIdC_ULONG): PBUF_MEM; cdecl = nil;
   {$EXTERNALSYM BUF_MEM_new_ex}
 
-  BUF_MEM_free: function(a: PBUF_MEM): void; cdecl = nil;
+  BUF_MEM_free: procedure(a: PBUF_MEM); cdecl = nil;
   {$EXTERNALSYM BUF_MEM_free}
 
   BUF_MEM_grow: function(str: PBUF_MEM; len: TIdC_SIZET): TIdC_SIZET; cdecl = nil;
@@ -71,7 +71,7 @@ var
   BUF_MEM_grow_clean: function(str: PBUF_MEM; len: TIdC_SIZET): TIdC_SIZET; cdecl = nil;
   {$EXTERNALSYM BUF_MEM_grow_clean}
 
-  BUF_reverse: function(_out: PIdAnsiChar; _in: PIdAnsiChar; siz: TIdC_SIZET): void; cdecl = nil;
+  BUF_reverse: procedure(_out: PIdAnsiChar; _in: PIdAnsiChar; siz: TIdC_SIZET); cdecl = nil;
   {$EXTERNALSYM BUF_reverse}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -84,10 +84,10 @@ var
 
 function BUF_MEM_new: PBUF_MEM; cdecl;
 function BUF_MEM_new_ex(flags: TIdC_ULONG): PBUF_MEM; cdecl;
-function BUF_MEM_free(a: PBUF_MEM): void; cdecl;
+procedure BUF_MEM_free(a: PBUF_MEM); cdecl;
 function BUF_MEM_grow(str: PBUF_MEM; len: TIdC_SIZET): TIdC_SIZET; cdecl;
 function BUF_MEM_grow_clean(str: PBUF_MEM; len: TIdC_SIZET): TIdC_SIZET; cdecl;
-function BUF_reverse(_out: PIdAnsiChar; _in: PIdAnsiChar; siz: TIdC_SIZET): void; cdecl;
+procedure BUF_reverse(_out: PIdAnsiChar; _in: PIdAnsiChar; siz: TIdC_SIZET); cdecl;
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 implementation
@@ -108,10 +108,10 @@ uses
 
 function BUF_MEM_new: PBUF_MEM; cdecl external CLibCrypto name 'BUF_MEM_new';
 function BUF_MEM_new_ex(flags: TIdC_ULONG): PBUF_MEM; cdecl external CLibCrypto name 'BUF_MEM_new_ex';
-function BUF_MEM_free(a: PBUF_MEM): void; cdecl external CLibCrypto name 'BUF_MEM_free';
+procedure BUF_MEM_free(a: PBUF_MEM); cdecl external CLibCrypto name 'BUF_MEM_free';
 function BUF_MEM_grow(str: PBUF_MEM; len: TIdC_SIZET): TIdC_SIZET; cdecl external CLibCrypto name 'BUF_MEM_grow';
 function BUF_MEM_grow_clean(str: PBUF_MEM; len: TIdC_SIZET): TIdC_SIZET; cdecl external CLibCrypto name 'BUF_MEM_grow_clean';
-function BUF_reverse(_out: PIdAnsiChar; _in: PIdAnsiChar; siz: TIdC_SIZET): void; cdecl external CLibCrypto name 'BUF_reverse';
+procedure BUF_reverse(_out: PIdAnsiChar; _in: PIdAnsiChar; siz: TIdC_SIZET); cdecl external CLibCrypto name 'BUF_reverse';
 {$ENDIF}
 
 // =============================================================================
@@ -160,7 +160,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BUF_MEM_new_ex_procname);
 end;
 
-function ERR_BUF_MEM_free(a: PBUF_MEM): void; cdecl
+procedure ERR_BUF_MEM_free(a: PBUF_MEM); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BUF_MEM_free_procname);
 end;
@@ -175,7 +175,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BUF_MEM_grow_clean_procname);
 end;
 
-function ERR_BUF_reverse(_out: PIdAnsiChar; _in: PIdAnsiChar; siz: TIdC_SIZET): void; cdecl
+procedure ERR_BUF_reverse(_out: PIdAnsiChar; _in: PIdAnsiChar; siz: TIdC_SIZET); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BUF_reverse_procname);
 end;

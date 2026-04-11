@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -98,7 +98,7 @@ var
   OSSL_HPKE_CTX_new: function(mode: TIdC_INT; suite: TOSSL_HPKE_SUITE; role: TIdC_INT; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): POSSL_HPKE_CTX; cdecl = nil;
   {$EXTERNALSYM OSSL_HPKE_CTX_new}
 
-  OSSL_HPKE_CTX_free: function(ctx: POSSL_HPKE_CTX): void; cdecl = nil;
+  OSSL_HPKE_CTX_free: procedure(ctx: POSSL_HPKE_CTX); cdecl = nil;
   {$EXTERNALSYM OSSL_HPKE_CTX_free}
 
   OSSL_HPKE_encap: function(ctx: POSSL_HPKE_CTX; enc: PIdAnsiChar; enclen: PIdC_SIZET; pub: PIdAnsiChar; publen: TIdC_SIZET; info: PIdAnsiChar; infolen: TIdC_SIZET): TIdC_INT; cdecl = nil;
@@ -164,7 +164,7 @@ var
 // =============================================================================
 
 function OSSL_HPKE_CTX_new(mode: TIdC_INT; suite: TOSSL_HPKE_SUITE; role: TIdC_INT; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): POSSL_HPKE_CTX; cdecl;
-function OSSL_HPKE_CTX_free(ctx: POSSL_HPKE_CTX): void; cdecl;
+procedure OSSL_HPKE_CTX_free(ctx: POSSL_HPKE_CTX); cdecl;
 function OSSL_HPKE_encap(ctx: POSSL_HPKE_CTX; enc: PIdAnsiChar; enclen: PIdC_SIZET; pub: PIdAnsiChar; publen: TIdC_SIZET; info: PIdAnsiChar; infolen: TIdC_SIZET): TIdC_INT; cdecl;
 function OSSL_HPKE_seal(ctx: POSSL_HPKE_CTX; ct: PIdAnsiChar; ctlen: PIdC_SIZET; aad: PIdAnsiChar; aadlen: TIdC_SIZET; pt: PIdAnsiChar; ptlen: TIdC_SIZET): TIdC_INT; cdecl;
 function OSSL_HPKE_keygen(suite: TOSSL_HPKE_SUITE; pub: PIdAnsiChar; publen: PIdC_SIZET; priv: PPEVP_PKEY; ikm: PIdAnsiChar; ikmlen: TIdC_SIZET; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): TIdC_INT; cdecl;
@@ -202,7 +202,7 @@ uses
 // =============================================================================
 
 function OSSL_HPKE_CTX_new(mode: TIdC_INT; suite: TOSSL_HPKE_SUITE; role: TIdC_INT; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): POSSL_HPKE_CTX; cdecl external CLibCrypto name 'OSSL_HPKE_CTX_new';
-function OSSL_HPKE_CTX_free(ctx: POSSL_HPKE_CTX): void; cdecl external CLibCrypto name 'OSSL_HPKE_CTX_free';
+procedure OSSL_HPKE_CTX_free(ctx: POSSL_HPKE_CTX); cdecl external CLibCrypto name 'OSSL_HPKE_CTX_free';
 function OSSL_HPKE_encap(ctx: POSSL_HPKE_CTX; enc: PIdAnsiChar; enclen: PIdC_SIZET; pub: PIdAnsiChar; publen: TIdC_SIZET; info: PIdAnsiChar; infolen: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HPKE_encap';
 function OSSL_HPKE_seal(ctx: POSSL_HPKE_CTX; ct: PIdAnsiChar; ctlen: PIdC_SIZET; aad: PIdAnsiChar; aadlen: TIdC_SIZET; pt: PIdAnsiChar; ptlen: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HPKE_seal';
 function OSSL_HPKE_keygen(suite: TOSSL_HPKE_SUITE; pub: PIdAnsiChar; publen: PIdC_SIZET; priv: PPEVP_PKEY; ikm: PIdAnsiChar; ikmlen: TIdC_SIZET; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'OSSL_HPKE_keygen';
@@ -306,7 +306,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_HPKE_CTX_new_procname);
 end;
 
-function ERR_OSSL_HPKE_CTX_free(ctx: POSSL_HPKE_CTX): void; cdecl
+procedure ERR_OSSL_HPKE_CTX_free(ctx: POSSL_HPKE_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_HPKE_CTX_free_procname);
 end;

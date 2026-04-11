@@ -23,9 +23,10 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
-  TaurusTLSHeaders_core;
-
+  TaurusTLSHeaders_core,
+  ossl_types;
 
 
 
@@ -45,9 +46,6 @@ type
   // DEFINE_LHASH_OF_INTERNAL(OPENSSL_STRING)
 
   { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
-  // DEFINE_LHASH_OF_INTERNAL(OPENSSL_STRING)
-
-  { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
   // DEFINE_LHASH_OF_INTERNAL(OPENSSL_CSTRING)
 
   { TODO 1 -cID Needs manual mapping (Union or complex type) : Review it and update. }
@@ -62,16 +60,16 @@ type
   TOPENSSL_LH_COMPFUNCTHUNK = function(arg1: Pointer; arg2: Pointer; cfn: TOPENSSL_LH_COMPFUNC): TIdC_INT; cdecl;
   TOPENSSL_LH_HASHFUNC = function(arg1: Pointer): TIdC_ULONG; cdecl;
   TOPENSSL_LH_HASHFUNCTHUNK = function(arg1: Pointer; hfn: TOPENSSL_LH_HASHFUNC): TIdC_ULONG; cdecl;
-  TOPENSSL_LH_DOALL_FUNC = function(arg1: Pointer): void; cdecl;
-  TOPENSSL_LH_DOALL_FUNC_THUNK = function(arg1: Pointer; doall: TOPENSSL_LH_DOALL_FUNC): void; cdecl;
-  TOPENSSL_LH_DOALL_FUNCARG = function(arg1: Pointer; arg2: Pointer): void; cdecl;
-  TOPENSSL_LH_DOALL_FUNCARG_THUNK = function(arg1: Pointer; arg2: Pointer; doall: TOPENSSL_LH_DOALL_FUNCARG): void; cdecl;
+  TOPENSSL_LH_DOALL_FUNC = procedure(arg1: Pointer); cdecl;
+  TOPENSSL_LH_DOALL_FUNC_THUNK = procedure(arg1: Pointer; doall: TOPENSSL_LH_DOALL_FUNC); cdecl;
+  TOPENSSL_LH_DOALL_FUNCARG = procedure(arg1: Pointer; arg2: Pointer); cdecl;
+  TOPENSSL_LH_DOALL_FUNCARG_THUNK = procedure(arg1: Pointer; arg2: Pointer; doall: TOPENSSL_LH_DOALL_FUNCARG); cdecl;
   Tlh_OPENSSL_STRING_compfunc = function(a: POPENSSL_STRING; b: POPENSSL_STRING): TIdC_INT; cdecl;
   Tlh_OPENSSL_STRING_hashfunc = function(a: POPENSSL_STRING): TIdC_ULONG; cdecl;
-  Tlh_OPENSSL_STRING_doallfunc = function(a: POPENSSL_STRING): void; cdecl;
+  Tlh_OPENSSL_STRING_doallfunc = procedure(a: POPENSSL_STRING); cdecl;
   Tlh_OPENSSL_CSTRING_compfunc = function(a: POPENSSL_CSTRING; b: POPENSSL_CSTRING): TIdC_INT; cdecl;
   Tlh_OPENSSL_CSTRING_hashfunc = function(a: POPENSSL_CSTRING): TIdC_ULONG; cdecl;
-  Tlh_OPENSSL_CSTRING_doallfunc = function(a: POPENSSL_CSTRING): void; cdecl;
+  Tlh_OPENSSL_CSTRING_doallfunc = procedure(a: POPENSSL_CSTRING); cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -97,10 +95,10 @@ var
   OPENSSL_LH_set_thunks: function(lh: POPENSSL_LHASH; hw: TOPENSSL_LH_HASHFUNCTHUNK; cw: TOPENSSL_LH_COMPFUNCTHUNK; daw: TOPENSSL_LH_DOALL_FUNC_THUNK; daaw: TOPENSSL_LH_DOALL_FUNCARG_THUNK): POPENSSL_LHASH; cdecl = nil;
   {$EXTERNALSYM OPENSSL_LH_set_thunks}
 
-  OPENSSL_LH_free: function(lh: POPENSSL_LHASH): void; cdecl = nil;
+  OPENSSL_LH_free: procedure(lh: POPENSSL_LHASH); cdecl = nil;
   {$EXTERNALSYM OPENSSL_LH_free}
 
-  OPENSSL_LH_flush: function(lh: POPENSSL_LHASH): void; cdecl = nil;
+  OPENSSL_LH_flush: procedure(lh: POPENSSL_LHASH); cdecl = nil;
   {$EXTERNALSYM OPENSSL_LH_flush}
 
   OPENSSL_LH_insert: function(lh: POPENSSL_LHASH; data: Pointer): Pointer; cdecl = nil;
@@ -112,13 +110,13 @@ var
   OPENSSL_LH_retrieve: function(lh: POPENSSL_LHASH; data: Pointer): Pointer; cdecl = nil;
   {$EXTERNALSYM OPENSSL_LH_retrieve}
 
-  OPENSSL_LH_doall: function(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNC): void; cdecl = nil;
+  OPENSSL_LH_doall: procedure(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNC); cdecl = nil;
   {$EXTERNALSYM OPENSSL_LH_doall}
 
-  OPENSSL_LH_doall_arg: function(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNCARG; arg: Pointer): void; cdecl = nil;
+  OPENSSL_LH_doall_arg: procedure(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNCARG; arg: Pointer); cdecl = nil;
   {$EXTERNALSYM OPENSSL_LH_doall_arg}
 
-  OPENSSL_LH_doall_arg_thunk: function(lh: POPENSSL_LHASH; daaw: TOPENSSL_LH_DOALL_FUNCARG_THUNK; fn: TOPENSSL_LH_DOALL_FUNCARG; arg: Pointer): void; cdecl = nil;
+  OPENSSL_LH_doall_arg_thunk: procedure(lh: POPENSSL_LHASH; daaw: TOPENSSL_LH_DOALL_FUNCARG_THUNK; fn: TOPENSSL_LH_DOALL_FUNCARG; arg: Pointer); cdecl = nil;
   {$EXTERNALSYM OPENSSL_LH_doall_arg_thunk}
 
   OPENSSL_LH_strhash: function(c: PIdAnsiChar): TIdC_ULONG; cdecl = nil;
@@ -130,25 +128,25 @@ var
   OPENSSL_LH_get_down_load: function(lh: POPENSSL_LHASH): TIdC_ULONG; cdecl = nil;
   {$EXTERNALSYM OPENSSL_LH_get_down_load}
 
-  OPENSSL_LH_set_down_load: function(lh: POPENSSL_LHASH; down_load: TIdC_ULONG): void; cdecl = nil;
+  OPENSSL_LH_set_down_load: procedure(lh: POPENSSL_LHASH; down_load: TIdC_ULONG); cdecl = nil;
   {$EXTERNALSYM OPENSSL_LH_set_down_load}
 
-  OPENSSL_LH_stats: function(lh: POPENSSL_LHASH; fp: PFILE): void; cdecl = nil; // Deprecated in 3_1_0
+  OPENSSL_LH_stats: procedure(lh: POPENSSL_LHASH; fp: PFILE); cdecl = nil; // Deprecated in 3_1_0
   {$EXTERNALSYM OPENSSL_LH_stats}
 
-  OPENSSL_LH_node_stats: function(lh: POPENSSL_LHASH; fp: PFILE): void; cdecl = nil; // Deprecated in 3_1_0
+  OPENSSL_LH_node_stats: procedure(lh: POPENSSL_LHASH; fp: PFILE); cdecl = nil; // Deprecated in 3_1_0
   {$EXTERNALSYM OPENSSL_LH_node_stats}
 
-  OPENSSL_LH_node_usage_stats: function(lh: POPENSSL_LHASH; fp: PFILE): void; cdecl = nil; // Deprecated in 3_1_0
+  OPENSSL_LH_node_usage_stats: procedure(lh: POPENSSL_LHASH; fp: PFILE); cdecl = nil; // Deprecated in 3_1_0
   {$EXTERNALSYM OPENSSL_LH_node_usage_stats}
 
-  OPENSSL_LH_stats_bio: function(lh: POPENSSL_LHASH; _out: PBIO): void; cdecl = nil; // Deprecated in 3_1_0
+  OPENSSL_LH_stats_bio: procedure(lh: POPENSSL_LHASH; _out: PBIO); cdecl = nil; // Deprecated in 3_1_0
   {$EXTERNALSYM OPENSSL_LH_stats_bio}
 
-  OPENSSL_LH_node_stats_bio: function(lh: POPENSSL_LHASH; _out: PBIO): void; cdecl = nil; // Deprecated in 3_1_0
+  OPENSSL_LH_node_stats_bio: procedure(lh: POPENSSL_LHASH; _out: PBIO); cdecl = nil; // Deprecated in 3_1_0
   {$EXTERNALSYM OPENSSL_LH_node_stats_bio}
 
-  OPENSSL_LH_node_usage_stats_bio: function(lh: POPENSSL_LHASH; _out: PBIO): void; cdecl = nil; // Deprecated in 3_1_0
+  OPENSSL_LH_node_usage_stats_bio: procedure(lh: POPENSSL_LHASH; _out: PBIO); cdecl = nil; // Deprecated in 3_1_0
   {$EXTERNALSYM OPENSSL_LH_node_usage_stats_bio}
 
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -162,24 +160,24 @@ var
 function OPENSSL_LH_error(lh: POPENSSL_LHASH): TIdC_INT; cdecl;
 function OPENSSL_LH_new(h: TOPENSSL_LH_HASHFUNC; c: TOPENSSL_LH_COMPFUNC): POPENSSL_LHASH; cdecl;
 function OPENSSL_LH_set_thunks(lh: POPENSSL_LHASH; hw: TOPENSSL_LH_HASHFUNCTHUNK; cw: TOPENSSL_LH_COMPFUNCTHUNK; daw: TOPENSSL_LH_DOALL_FUNC_THUNK; daaw: TOPENSSL_LH_DOALL_FUNCARG_THUNK): POPENSSL_LHASH; cdecl;
-function OPENSSL_LH_free(lh: POPENSSL_LHASH): void; cdecl;
-function OPENSSL_LH_flush(lh: POPENSSL_LHASH): void; cdecl;
+procedure OPENSSL_LH_free(lh: POPENSSL_LHASH); cdecl;
+procedure OPENSSL_LH_flush(lh: POPENSSL_LHASH); cdecl;
 function OPENSSL_LH_insert(lh: POPENSSL_LHASH; data: Pointer): Pointer; cdecl;
 function OPENSSL_LH_delete(lh: POPENSSL_LHASH; data: Pointer): Pointer; cdecl;
 function OPENSSL_LH_retrieve(lh: POPENSSL_LHASH; data: Pointer): Pointer; cdecl;
-function OPENSSL_LH_doall(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNC): void; cdecl;
-function OPENSSL_LH_doall_arg(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNCARG; arg: Pointer): void; cdecl;
-function OPENSSL_LH_doall_arg_thunk(lh: POPENSSL_LHASH; daaw: TOPENSSL_LH_DOALL_FUNCARG_THUNK; fn: TOPENSSL_LH_DOALL_FUNCARG; arg: Pointer): void; cdecl;
+procedure OPENSSL_LH_doall(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNC); cdecl;
+procedure OPENSSL_LH_doall_arg(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNCARG; arg: Pointer); cdecl;
+procedure OPENSSL_LH_doall_arg_thunk(lh: POPENSSL_LHASH; daaw: TOPENSSL_LH_DOALL_FUNCARG_THUNK; fn: TOPENSSL_LH_DOALL_FUNCARG; arg: Pointer); cdecl;
 function OPENSSL_LH_strhash(c: PIdAnsiChar): TIdC_ULONG; cdecl;
 function OPENSSL_LH_num_items(lh: POPENSSL_LHASH): TIdC_ULONG; cdecl;
 function OPENSSL_LH_get_down_load(lh: POPENSSL_LHASH): TIdC_ULONG; cdecl;
-function OPENSSL_LH_set_down_load(lh: POPENSSL_LHASH; down_load: TIdC_ULONG): void; cdecl;
-function OPENSSL_LH_stats(lh: POPENSSL_LHASH; fp: PFILE): void; cdecl; deprecated 'In OpenSSL 3_1_0';
-function OPENSSL_LH_node_stats(lh: POPENSSL_LHASH; fp: PFILE): void; cdecl; deprecated 'In OpenSSL 3_1_0';
-function OPENSSL_LH_node_usage_stats(lh: POPENSSL_LHASH; fp: PFILE): void; cdecl; deprecated 'In OpenSSL 3_1_0';
-function OPENSSL_LH_stats_bio(lh: POPENSSL_LHASH; _out: PBIO): void; cdecl; deprecated 'In OpenSSL 3_1_0';
-function OPENSSL_LH_node_stats_bio(lh: POPENSSL_LHASH; _out: PBIO): void; cdecl; deprecated 'In OpenSSL 3_1_0';
-function OPENSSL_LH_node_usage_stats_bio(lh: POPENSSL_LHASH; _out: PBIO): void; cdecl; deprecated 'In OpenSSL 3_1_0';
+procedure OPENSSL_LH_set_down_load(lh: POPENSSL_LHASH; down_load: TIdC_ULONG); cdecl;
+procedure OPENSSL_LH_stats(lh: POPENSSL_LHASH; fp: PFILE); cdecl; deprecated 'In OpenSSL 3_1_0';
+procedure OPENSSL_LH_node_stats(lh: POPENSSL_LHASH; fp: PFILE); cdecl; deprecated 'In OpenSSL 3_1_0';
+procedure OPENSSL_LH_node_usage_stats(lh: POPENSSL_LHASH; fp: PFILE); cdecl; deprecated 'In OpenSSL 3_1_0';
+procedure OPENSSL_LH_stats_bio(lh: POPENSSL_LHASH; _out: PBIO); cdecl; deprecated 'In OpenSSL 3_1_0';
+procedure OPENSSL_LH_node_stats_bio(lh: POPENSSL_LHASH; _out: PBIO); cdecl; deprecated 'In OpenSSL 3_1_0';
+procedure OPENSSL_LH_node_usage_stats_bio(lh: POPENSSL_LHASH; _out: PBIO); cdecl; deprecated 'In OpenSSL 3_1_0';
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
 
 // =============================================================================
@@ -193,7 +191,7 @@ function OPENSSL_LH_node_usage_stats_bio(lh: POPENSSL_LHASH; _out: PBIO): void; 
   // function lh_new(h: TOPENSSL_LH_HASHFUNC; c: TOPENSSL_LH_COMPFUNC): POPENSSL_LHASH; cdecl;
 
   { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
-  // function lh_free(lh: POPENSSL_LHASH): void; cdecl;
+  // procedure lh_free(lh: POPENSSL_LHASH); cdecl;
 
   { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
   // function lh_insert(lh: POPENSSL_LHASH; data: Pointer): Pointer; cdecl;
@@ -205,10 +203,10 @@ function OPENSSL_LH_node_usage_stats_bio(lh: POPENSSL_LHASH; _out: PBIO): void; 
   // function lh_retrieve(lh: POPENSSL_LHASH; data: Pointer): Pointer; cdecl;
 
   { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
-  // function lh_doall(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNC): void; cdecl;
+  // procedure lh_doall(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNC); cdecl;
 
   { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
-  // function lh_doall_arg(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNCARG; arg: Pointer): void; cdecl;
+  // procedure lh_doall_arg(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNCARG; arg: Pointer); cdecl;
 
   { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
   // function lh_strhash(c: PIdAnsiChar): TIdC_ULONG; cdecl;
@@ -217,22 +215,22 @@ function OPENSSL_LH_node_usage_stats_bio(lh: POPENSSL_LHASH; _out: PBIO): void; 
   // function lh_num_items(lh: POPENSSL_LHASH): TIdC_ULONG; cdecl;
 
   { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
-  // function lh_stats(lh: POPENSSL_LHASH; fp: PFILE): void; cdecl;
+  // procedure lh_stats(lh: POPENSSL_LHASH; fp: PFILE); cdecl;
 
   { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
-  // function lh_node_stats(lh: POPENSSL_LHASH; fp: PFILE): void; cdecl;
+  // procedure lh_node_stats(lh: POPENSSL_LHASH; fp: PFILE); cdecl;
 
   { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
-  // function lh_node_usage_stats(lh: POPENSSL_LHASH; fp: PFILE): void; cdecl;
+  // procedure lh_node_usage_stats(lh: POPENSSL_LHASH; fp: PFILE); cdecl;
 
   { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
-  // function lh_stats_bio(lh: POPENSSL_LHASH; _out: PBIO): void; cdecl;
+  // procedure lh_stats_bio(lh: POPENSSL_LHASH; _out: PBIO); cdecl;
 
   { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
-  // function lh_node_stats_bio(lh: POPENSSL_LHASH; _out: PBIO): void; cdecl;
+  // procedure lh_node_stats_bio(lh: POPENSSL_LHASH; _out: PBIO); cdecl;
 
   { TODO 1 -cID Macro/Inline Routine : Manual implementation required. }
-  // function lh_node_usage_stats_bio(lh: POPENSSL_LHASH; _out: PBIO): void; cdecl;
+  // procedure lh_node_usage_stats_bio(lh: POPENSSL_LHASH; _out: PBIO); cdecl;
 
 
 implementation
@@ -254,24 +252,24 @@ uses
 function OPENSSL_LH_error(lh: POPENSSL_LHASH): TIdC_INT; cdecl external CLibCrypto name 'OPENSSL_LH_error';
 function OPENSSL_LH_new(h: TOPENSSL_LH_HASHFUNC; c: TOPENSSL_LH_COMPFUNC): POPENSSL_LHASH; cdecl external CLibCrypto name 'OPENSSL_LH_new';
 function OPENSSL_LH_set_thunks(lh: POPENSSL_LHASH; hw: TOPENSSL_LH_HASHFUNCTHUNK; cw: TOPENSSL_LH_COMPFUNCTHUNK; daw: TOPENSSL_LH_DOALL_FUNC_THUNK; daaw: TOPENSSL_LH_DOALL_FUNCARG_THUNK): POPENSSL_LHASH; cdecl external CLibCrypto name 'OPENSSL_LH_set_thunks';
-function OPENSSL_LH_free(lh: POPENSSL_LHASH): void; cdecl external CLibCrypto name 'OPENSSL_LH_free';
-function OPENSSL_LH_flush(lh: POPENSSL_LHASH): void; cdecl external CLibCrypto name 'OPENSSL_LH_flush';
+procedure OPENSSL_LH_free(lh: POPENSSL_LHASH); cdecl external CLibCrypto name 'OPENSSL_LH_free';
+procedure OPENSSL_LH_flush(lh: POPENSSL_LHASH); cdecl external CLibCrypto name 'OPENSSL_LH_flush';
 function OPENSSL_LH_insert(lh: POPENSSL_LHASH; data: Pointer): Pointer; cdecl external CLibCrypto name 'OPENSSL_LH_insert';
 function OPENSSL_LH_delete(lh: POPENSSL_LHASH; data: Pointer): Pointer; cdecl external CLibCrypto name 'OPENSSL_LH_delete';
 function OPENSSL_LH_retrieve(lh: POPENSSL_LHASH; data: Pointer): Pointer; cdecl external CLibCrypto name 'OPENSSL_LH_retrieve';
-function OPENSSL_LH_doall(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNC): void; cdecl external CLibCrypto name 'OPENSSL_LH_doall';
-function OPENSSL_LH_doall_arg(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNCARG; arg: Pointer): void; cdecl external CLibCrypto name 'OPENSSL_LH_doall_arg';
-function OPENSSL_LH_doall_arg_thunk(lh: POPENSSL_LHASH; daaw: TOPENSSL_LH_DOALL_FUNCARG_THUNK; fn: TOPENSSL_LH_DOALL_FUNCARG; arg: Pointer): void; cdecl external CLibCrypto name 'OPENSSL_LH_doall_arg_thunk';
+procedure OPENSSL_LH_doall(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNC); cdecl external CLibCrypto name 'OPENSSL_LH_doall';
+procedure OPENSSL_LH_doall_arg(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNCARG; arg: Pointer); cdecl external CLibCrypto name 'OPENSSL_LH_doall_arg';
+procedure OPENSSL_LH_doall_arg_thunk(lh: POPENSSL_LHASH; daaw: TOPENSSL_LH_DOALL_FUNCARG_THUNK; fn: TOPENSSL_LH_DOALL_FUNCARG; arg: Pointer); cdecl external CLibCrypto name 'OPENSSL_LH_doall_arg_thunk';
 function OPENSSL_LH_strhash(c: PIdAnsiChar): TIdC_ULONG; cdecl external CLibCrypto name 'OPENSSL_LH_strhash';
 function OPENSSL_LH_num_items(lh: POPENSSL_LHASH): TIdC_ULONG; cdecl external CLibCrypto name 'OPENSSL_LH_num_items';
 function OPENSSL_LH_get_down_load(lh: POPENSSL_LHASH): TIdC_ULONG; cdecl external CLibCrypto name 'OPENSSL_LH_get_down_load';
-function OPENSSL_LH_set_down_load(lh: POPENSSL_LHASH; down_load: TIdC_ULONG): void; cdecl external CLibCrypto name 'OPENSSL_LH_set_down_load';
-function OPENSSL_LH_stats(lh: POPENSSL_LHASH; fp: PFILE): void; cdecl external CLibCrypto name 'OPENSSL_LH_stats';
-function OPENSSL_LH_node_stats(lh: POPENSSL_LHASH; fp: PFILE): void; cdecl external CLibCrypto name 'OPENSSL_LH_node_stats';
-function OPENSSL_LH_node_usage_stats(lh: POPENSSL_LHASH; fp: PFILE): void; cdecl external CLibCrypto name 'OPENSSL_LH_node_usage_stats';
-function OPENSSL_LH_stats_bio(lh: POPENSSL_LHASH; _out: PBIO): void; cdecl external CLibCrypto name 'OPENSSL_LH_stats_bio';
-function OPENSSL_LH_node_stats_bio(lh: POPENSSL_LHASH; _out: PBIO): void; cdecl external CLibCrypto name 'OPENSSL_LH_node_stats_bio';
-function OPENSSL_LH_node_usage_stats_bio(lh: POPENSSL_LHASH; _out: PBIO): void; cdecl external CLibCrypto name 'OPENSSL_LH_node_usage_stats_bio';
+procedure OPENSSL_LH_set_down_load(lh: POPENSSL_LHASH; down_load: TIdC_ULONG); cdecl external CLibCrypto name 'OPENSSL_LH_set_down_load';
+procedure OPENSSL_LH_stats(lh: POPENSSL_LHASH; fp: PFILE); cdecl external CLibCrypto name 'OPENSSL_LH_stats';
+procedure OPENSSL_LH_node_stats(lh: POPENSSL_LHASH; fp: PFILE); cdecl external CLibCrypto name 'OPENSSL_LH_node_stats';
+procedure OPENSSL_LH_node_usage_stats(lh: POPENSSL_LHASH; fp: PFILE); cdecl external CLibCrypto name 'OPENSSL_LH_node_usage_stats';
+procedure OPENSSL_LH_stats_bio(lh: POPENSSL_LHASH; _out: PBIO); cdecl external CLibCrypto name 'OPENSSL_LH_stats_bio';
+procedure OPENSSL_LH_node_stats_bio(lh: POPENSSL_LHASH; _out: PBIO); cdecl external CLibCrypto name 'OPENSSL_LH_node_stats_bio';
+procedure OPENSSL_LH_node_usage_stats_bio(lh: POPENSSL_LHASH; _out: PBIO); cdecl external CLibCrypto name 'OPENSSL_LH_node_usage_stats_bio';
 {$ENDIF}
 
 // =============================================================================
@@ -371,7 +369,7 @@ begin
   }
 end;
 
-function lh_free(lh: POPENSSL_LHASH): void; cdecl
+procedure lh_free(lh: POPENSSL_LHASH); cdecl
 begin
  { TODO 1 -copenssl inline routines : To replace placeholder body with the actual code. }
   // This is an inline routine or macro. Manual implementation required if needed.
@@ -407,7 +405,7 @@ begin
   }
 end;
 
-function lh_doall(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNC): void; cdecl
+procedure lh_doall(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNC); cdecl
 begin
  { TODO 1 -copenssl inline routines : To replace placeholder body with the actual code. }
   // This is an inline routine or macro. Manual implementation required if needed.
@@ -416,7 +414,7 @@ begin
   }
 end;
 
-function lh_doall_arg(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNCARG; arg: Pointer): void; cdecl
+procedure lh_doall_arg(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNCARG; arg: Pointer); cdecl
 begin
  { TODO 1 -copenssl inline routines : To replace placeholder body with the actual code. }
   // This is an inline routine or macro. Manual implementation required if needed.
@@ -443,7 +441,7 @@ begin
   }
 end;
 
-function lh_stats(lh: POPENSSL_LHASH; fp: PFILE): void; cdecl
+procedure lh_stats(lh: POPENSSL_LHASH; fp: PFILE); cdecl
 begin
  { TODO 1 -copenssl inline routines : To replace placeholder body with the actual code. }
   // This is an inline routine or macro. Manual implementation required if needed.
@@ -452,7 +450,7 @@ begin
   }
 end;
 
-function lh_node_stats(lh: POPENSSL_LHASH; fp: PFILE): void; cdecl
+procedure lh_node_stats(lh: POPENSSL_LHASH; fp: PFILE); cdecl
 begin
  { TODO 1 -copenssl inline routines : To replace placeholder body with the actual code. }
   // This is an inline routine or macro. Manual implementation required if needed.
@@ -461,7 +459,7 @@ begin
   }
 end;
 
-function lh_node_usage_stats(lh: POPENSSL_LHASH; fp: PFILE): void; cdecl
+procedure lh_node_usage_stats(lh: POPENSSL_LHASH; fp: PFILE); cdecl
 begin
  { TODO 1 -copenssl inline routines : To replace placeholder body with the actual code. }
   // This is an inline routine or macro. Manual implementation required if needed.
@@ -470,7 +468,7 @@ begin
   }
 end;
 
-function lh_stats_bio(lh: POPENSSL_LHASH; _out: PBIO): void; cdecl
+procedure lh_stats_bio(lh: POPENSSL_LHASH; _out: PBIO); cdecl
 begin
  { TODO 1 -copenssl inline routines : To replace placeholder body with the actual code. }
   // This is an inline routine or macro. Manual implementation required if needed.
@@ -479,7 +477,7 @@ begin
   }
 end;
 
-function lh_node_stats_bio(lh: POPENSSL_LHASH; _out: PBIO): void; cdecl
+procedure lh_node_stats_bio(lh: POPENSSL_LHASH; _out: PBIO); cdecl
 begin
  { TODO 1 -copenssl inline routines : To replace placeholder body with the actual code. }
   // This is an inline routine or macro. Manual implementation required if needed.
@@ -488,7 +486,7 @@ begin
   }
 end;
 
-function lh_node_usage_stats_bio(lh: POPENSSL_LHASH; _out: PBIO): void; cdecl
+procedure lh_node_usage_stats_bio(lh: POPENSSL_LHASH; _out: PBIO); cdecl
 begin
  { TODO 1 -copenssl inline routines : To replace placeholder body with the actual code. }
   // This is an inline routine or macro. Manual implementation required if needed.
@@ -524,12 +522,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_LH_set_thunks_procname);
 end;
 
-function ERR_OPENSSL_LH_free(lh: POPENSSL_LHASH): void; cdecl
+procedure ERR_OPENSSL_LH_free(lh: POPENSSL_LHASH); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_LH_free_procname);
 end;
 
-function ERR_OPENSSL_LH_flush(lh: POPENSSL_LHASH): void; cdecl
+procedure ERR_OPENSSL_LH_flush(lh: POPENSSL_LHASH); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_LH_flush_procname);
 end;
@@ -549,17 +547,17 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_LH_retrieve_procname);
 end;
 
-function ERR_OPENSSL_LH_doall(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNC): void; cdecl
+procedure ERR_OPENSSL_LH_doall(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNC); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_LH_doall_procname);
 end;
 
-function ERR_OPENSSL_LH_doall_arg(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNCARG; arg: Pointer): void; cdecl
+procedure ERR_OPENSSL_LH_doall_arg(lh: POPENSSL_LHASH; func: TOPENSSL_LH_DOALL_FUNCARG; arg: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_LH_doall_arg_procname);
 end;
 
-function ERR_OPENSSL_LH_doall_arg_thunk(lh: POPENSSL_LHASH; daaw: TOPENSSL_LH_DOALL_FUNCARG_THUNK; fn: TOPENSSL_LH_DOALL_FUNCARG; arg: Pointer): void; cdecl
+procedure ERR_OPENSSL_LH_doall_arg_thunk(lh: POPENSSL_LHASH; daaw: TOPENSSL_LH_DOALL_FUNCARG_THUNK; fn: TOPENSSL_LH_DOALL_FUNCARG; arg: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_LH_doall_arg_thunk_procname);
 end;
@@ -579,37 +577,37 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_LH_get_down_load_procname);
 end;
 
-function ERR_OPENSSL_LH_set_down_load(lh: POPENSSL_LHASH; down_load: TIdC_ULONG): void; cdecl
+procedure ERR_OPENSSL_LH_set_down_load(lh: POPENSSL_LHASH; down_load: TIdC_ULONG); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_LH_set_down_load_procname);
 end;
 
-function ERR_OPENSSL_LH_stats(lh: POPENSSL_LHASH; fp: PFILE): void; cdecl
+procedure ERR_OPENSSL_LH_stats(lh: POPENSSL_LHASH; fp: PFILE); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_LH_stats_procname);
 end;
 
-function ERR_OPENSSL_LH_node_stats(lh: POPENSSL_LHASH; fp: PFILE): void; cdecl
+procedure ERR_OPENSSL_LH_node_stats(lh: POPENSSL_LHASH; fp: PFILE); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_LH_node_stats_procname);
 end;
 
-function ERR_OPENSSL_LH_node_usage_stats(lh: POPENSSL_LHASH; fp: PFILE): void; cdecl
+procedure ERR_OPENSSL_LH_node_usage_stats(lh: POPENSSL_LHASH; fp: PFILE); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_LH_node_usage_stats_procname);
 end;
 
-function ERR_OPENSSL_LH_stats_bio(lh: POPENSSL_LHASH; _out: PBIO): void; cdecl
+procedure ERR_OPENSSL_LH_stats_bio(lh: POPENSSL_LHASH; _out: PBIO); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_LH_stats_bio_procname);
 end;
 
-function ERR_OPENSSL_LH_node_stats_bio(lh: POPENSSL_LHASH; _out: PBIO): void; cdecl
+procedure ERR_OPENSSL_LH_node_stats_bio(lh: POPENSSL_LHASH; _out: PBIO); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_LH_node_stats_bio_procname);
 end;
 
-function ERR_OPENSSL_LH_node_usage_stats_bio(lh: POPENSSL_LHASH; _out: PBIO): void; cdecl
+procedure ERR_OPENSSL_LH_node_usage_stats_bio(lh: POPENSSL_LHASH; _out: PBIO); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_LH_node_usage_stats_bio_procname);
 end;

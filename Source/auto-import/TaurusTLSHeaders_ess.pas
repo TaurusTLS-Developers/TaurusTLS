@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -64,7 +64,7 @@ var
   ESS_ISSUER_SERIAL_new: function: PESS_ISSUER_SERIAL; cdecl = nil;
   {$EXTERNALSYM ESS_ISSUER_SERIAL_new}
 
-  ESS_ISSUER_SERIAL_free: function(a: PESS_ISSUER_SERIAL): void; cdecl = nil;
+  ESS_ISSUER_SERIAL_free: procedure(a: PESS_ISSUER_SERIAL); cdecl = nil;
   {$EXTERNALSYM ESS_ISSUER_SERIAL_free}
 
   d2i_ESS_ISSUER_SERIAL: function(a: PPESS_ISSUER_SERIAL; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_ISSUER_SERIAL; cdecl = nil;
@@ -79,7 +79,7 @@ var
   ESS_CERT_ID_new: function: PESS_CERT_ID; cdecl = nil;
   {$EXTERNALSYM ESS_CERT_ID_new}
 
-  ESS_CERT_ID_free: function(a: PESS_CERT_ID): void; cdecl = nil;
+  ESS_CERT_ID_free: procedure(a: PESS_CERT_ID); cdecl = nil;
   {$EXTERNALSYM ESS_CERT_ID_free}
 
   d2i_ESS_CERT_ID: function(a: PPESS_CERT_ID; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_CERT_ID; cdecl = nil;
@@ -94,7 +94,7 @@ var
   ESS_SIGNING_CERT_new: function: PESS_SIGNING_CERT; cdecl = nil;
   {$EXTERNALSYM ESS_SIGNING_CERT_new}
 
-  ESS_SIGNING_CERT_free: function(a: PESS_SIGNING_CERT): void; cdecl = nil;
+  ESS_SIGNING_CERT_free: procedure(a: PESS_SIGNING_CERT); cdecl = nil;
   {$EXTERNALSYM ESS_SIGNING_CERT_free}
 
   d2i_ESS_SIGNING_CERT: function(a: PPESS_SIGNING_CERT; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_SIGNING_CERT; cdecl = nil;
@@ -112,7 +112,7 @@ var
   ESS_CERT_ID_V2_new: function: PESS_CERT_ID_V2; cdecl = nil;
   {$EXTERNALSYM ESS_CERT_ID_V2_new}
 
-  ESS_CERT_ID_V2_free: function(a: PESS_CERT_ID_V2): void; cdecl = nil;
+  ESS_CERT_ID_V2_free: procedure(a: PESS_CERT_ID_V2); cdecl = nil;
   {$EXTERNALSYM ESS_CERT_ID_V2_free}
 
   d2i_ESS_CERT_ID_V2: function(a: PPESS_CERT_ID_V2; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_CERT_ID_V2; cdecl = nil;
@@ -127,7 +127,7 @@ var
   ESS_SIGNING_CERT_V2_new: function: PESS_SIGNING_CERT_V2; cdecl = nil;
   {$EXTERNALSYM ESS_SIGNING_CERT_V2_new}
 
-  ESS_SIGNING_CERT_V2_free: function(a: PESS_SIGNING_CERT_V2): void; cdecl = nil;
+  ESS_SIGNING_CERT_V2_free: procedure(a: PESS_SIGNING_CERT_V2); cdecl = nil;
   {$EXTERNALSYM ESS_SIGNING_CERT_V2_free}
 
   d2i_ESS_SIGNING_CERT_V2: function(a: PPESS_SIGNING_CERT_V2; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_SIGNING_CERT_V2; cdecl = nil;
@@ -160,28 +160,28 @@ var
 // =============================================================================
 
 function ESS_ISSUER_SERIAL_new: PESS_ISSUER_SERIAL; cdecl;
-function ESS_ISSUER_SERIAL_free(a: PESS_ISSUER_SERIAL): void; cdecl;
+procedure ESS_ISSUER_SERIAL_free(a: PESS_ISSUER_SERIAL); cdecl;
 function d2i_ESS_ISSUER_SERIAL(a: PPESS_ISSUER_SERIAL; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_ISSUER_SERIAL; cdecl;
 function i2d_ESS_ISSUER_SERIAL(a: PESS_ISSUER_SERIAL; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ESS_ISSUER_SERIAL_dup(a: PESS_ISSUER_SERIAL): PESS_ISSUER_SERIAL; cdecl;
 function ESS_CERT_ID_new: PESS_CERT_ID; cdecl;
-function ESS_CERT_ID_free(a: PESS_CERT_ID): void; cdecl;
+procedure ESS_CERT_ID_free(a: PESS_CERT_ID); cdecl;
 function d2i_ESS_CERT_ID(a: PPESS_CERT_ID; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_CERT_ID; cdecl;
 function i2d_ESS_CERT_ID(a: PESS_CERT_ID; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ESS_CERT_ID_dup(a: PESS_CERT_ID): PESS_CERT_ID; cdecl;
 function ESS_SIGNING_CERT_new: PESS_SIGNING_CERT; cdecl;
-function ESS_SIGNING_CERT_free(a: PESS_SIGNING_CERT): void; cdecl;
+procedure ESS_SIGNING_CERT_free(a: PESS_SIGNING_CERT); cdecl;
 function d2i_ESS_SIGNING_CERT(a: PPESS_SIGNING_CERT; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_SIGNING_CERT; cdecl;
 function i2d_ESS_SIGNING_CERT(a: PESS_SIGNING_CERT; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ESS_SIGNING_CERT_it: PASN1_ITEM; cdecl;
 function ESS_SIGNING_CERT_dup(a: PESS_SIGNING_CERT): PESS_SIGNING_CERT; cdecl;
 function ESS_CERT_ID_V2_new: PESS_CERT_ID_V2; cdecl;
-function ESS_CERT_ID_V2_free(a: PESS_CERT_ID_V2): void; cdecl;
+procedure ESS_CERT_ID_V2_free(a: PESS_CERT_ID_V2); cdecl;
 function d2i_ESS_CERT_ID_V2(a: PPESS_CERT_ID_V2; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_CERT_ID_V2; cdecl;
 function i2d_ESS_CERT_ID_V2(a: PESS_CERT_ID_V2; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ESS_CERT_ID_V2_dup(a: PESS_CERT_ID_V2): PESS_CERT_ID_V2; cdecl;
 function ESS_SIGNING_CERT_V2_new: PESS_SIGNING_CERT_V2; cdecl;
-function ESS_SIGNING_CERT_V2_free(a: PESS_SIGNING_CERT_V2): void; cdecl;
+procedure ESS_SIGNING_CERT_V2_free(a: PESS_SIGNING_CERT_V2); cdecl;
 function d2i_ESS_SIGNING_CERT_V2(a: PPESS_SIGNING_CERT_V2; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_SIGNING_CERT_V2; cdecl;
 function i2d_ESS_SIGNING_CERT_V2(a: PESS_SIGNING_CERT_V2; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ESS_SIGNING_CERT_V2_it: PASN1_ITEM; cdecl;
@@ -279,28 +279,28 @@ uses
 // =============================================================================
 
 function ESS_ISSUER_SERIAL_new: PESS_ISSUER_SERIAL; cdecl external CLibCrypto name 'ESS_ISSUER_SERIAL_new';
-function ESS_ISSUER_SERIAL_free(a: PESS_ISSUER_SERIAL): void; cdecl external CLibCrypto name 'ESS_ISSUER_SERIAL_free';
+procedure ESS_ISSUER_SERIAL_free(a: PESS_ISSUER_SERIAL); cdecl external CLibCrypto name 'ESS_ISSUER_SERIAL_free';
 function d2i_ESS_ISSUER_SERIAL(a: PPESS_ISSUER_SERIAL; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_ISSUER_SERIAL; cdecl external CLibCrypto name 'd2i_ESS_ISSUER_SERIAL';
 function i2d_ESS_ISSUER_SERIAL(a: PESS_ISSUER_SERIAL; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ESS_ISSUER_SERIAL';
 function ESS_ISSUER_SERIAL_dup(a: PESS_ISSUER_SERIAL): PESS_ISSUER_SERIAL; cdecl external CLibCrypto name 'ESS_ISSUER_SERIAL_dup';
 function ESS_CERT_ID_new: PESS_CERT_ID; cdecl external CLibCrypto name 'ESS_CERT_ID_new';
-function ESS_CERT_ID_free(a: PESS_CERT_ID): void; cdecl external CLibCrypto name 'ESS_CERT_ID_free';
+procedure ESS_CERT_ID_free(a: PESS_CERT_ID); cdecl external CLibCrypto name 'ESS_CERT_ID_free';
 function d2i_ESS_CERT_ID(a: PPESS_CERT_ID; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_CERT_ID; cdecl external CLibCrypto name 'd2i_ESS_CERT_ID';
 function i2d_ESS_CERT_ID(a: PESS_CERT_ID; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ESS_CERT_ID';
 function ESS_CERT_ID_dup(a: PESS_CERT_ID): PESS_CERT_ID; cdecl external CLibCrypto name 'ESS_CERT_ID_dup';
 function ESS_SIGNING_CERT_new: PESS_SIGNING_CERT; cdecl external CLibCrypto name 'ESS_SIGNING_CERT_new';
-function ESS_SIGNING_CERT_free(a: PESS_SIGNING_CERT): void; cdecl external CLibCrypto name 'ESS_SIGNING_CERT_free';
+procedure ESS_SIGNING_CERT_free(a: PESS_SIGNING_CERT); cdecl external CLibCrypto name 'ESS_SIGNING_CERT_free';
 function d2i_ESS_SIGNING_CERT(a: PPESS_SIGNING_CERT; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_SIGNING_CERT; cdecl external CLibCrypto name 'd2i_ESS_SIGNING_CERT';
 function i2d_ESS_SIGNING_CERT(a: PESS_SIGNING_CERT; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ESS_SIGNING_CERT';
 function ESS_SIGNING_CERT_it: PASN1_ITEM; cdecl external CLibCrypto name 'ESS_SIGNING_CERT_it';
 function ESS_SIGNING_CERT_dup(a: PESS_SIGNING_CERT): PESS_SIGNING_CERT; cdecl external CLibCrypto name 'ESS_SIGNING_CERT_dup';
 function ESS_CERT_ID_V2_new: PESS_CERT_ID_V2; cdecl external CLibCrypto name 'ESS_CERT_ID_V2_new';
-function ESS_CERT_ID_V2_free(a: PESS_CERT_ID_V2): void; cdecl external CLibCrypto name 'ESS_CERT_ID_V2_free';
+procedure ESS_CERT_ID_V2_free(a: PESS_CERT_ID_V2); cdecl external CLibCrypto name 'ESS_CERT_ID_V2_free';
 function d2i_ESS_CERT_ID_V2(a: PPESS_CERT_ID_V2; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_CERT_ID_V2; cdecl external CLibCrypto name 'd2i_ESS_CERT_ID_V2';
 function i2d_ESS_CERT_ID_V2(a: PESS_CERT_ID_V2; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ESS_CERT_ID_V2';
 function ESS_CERT_ID_V2_dup(a: PESS_CERT_ID_V2): PESS_CERT_ID_V2; cdecl external CLibCrypto name 'ESS_CERT_ID_V2_dup';
 function ESS_SIGNING_CERT_V2_new: PESS_SIGNING_CERT_V2; cdecl external CLibCrypto name 'ESS_SIGNING_CERT_V2_new';
-function ESS_SIGNING_CERT_V2_free(a: PESS_SIGNING_CERT_V2): void; cdecl external CLibCrypto name 'ESS_SIGNING_CERT_V2_free';
+procedure ESS_SIGNING_CERT_V2_free(a: PESS_SIGNING_CERT_V2); cdecl external CLibCrypto name 'ESS_SIGNING_CERT_V2_free';
 function d2i_ESS_SIGNING_CERT_V2(a: PPESS_SIGNING_CERT_V2; _in: PPIdAnsiChar; len: TIdC_LONG): PESS_SIGNING_CERT_V2; cdecl external CLibCrypto name 'd2i_ESS_SIGNING_CERT_V2';
 function i2d_ESS_SIGNING_CERT_V2(a: PESS_SIGNING_CERT_V2; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ESS_SIGNING_CERT_V2';
 function ESS_SIGNING_CERT_V2_it: PASN1_ITEM; cdecl external CLibCrypto name 'ESS_SIGNING_CERT_V2_it';
@@ -423,7 +423,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ESS_ISSUER_SERIAL_new_procname);
 end;
 
-function ERR_ESS_ISSUER_SERIAL_free(a: PESS_ISSUER_SERIAL): void; cdecl
+procedure ERR_ESS_ISSUER_SERIAL_free(a: PESS_ISSUER_SERIAL); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ESS_ISSUER_SERIAL_free_procname);
 end;
@@ -448,7 +448,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ESS_CERT_ID_new_procname);
 end;
 
-function ERR_ESS_CERT_ID_free(a: PESS_CERT_ID): void; cdecl
+procedure ERR_ESS_CERT_ID_free(a: PESS_CERT_ID); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ESS_CERT_ID_free_procname);
 end;
@@ -473,7 +473,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ESS_SIGNING_CERT_new_procname);
 end;
 
-function ERR_ESS_SIGNING_CERT_free(a: PESS_SIGNING_CERT): void; cdecl
+procedure ERR_ESS_SIGNING_CERT_free(a: PESS_SIGNING_CERT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ESS_SIGNING_CERT_free_procname);
 end;
@@ -503,7 +503,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ESS_CERT_ID_V2_new_procname);
 end;
 
-function ERR_ESS_CERT_ID_V2_free(a: PESS_CERT_ID_V2): void; cdecl
+procedure ERR_ESS_CERT_ID_V2_free(a: PESS_CERT_ID_V2); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ESS_CERT_ID_V2_free_procname);
 end;
@@ -528,7 +528,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ESS_SIGNING_CERT_V2_new_procname);
 end;
 
-function ERR_ESS_SIGNING_CERT_V2_free(a: PESS_SIGNING_CERT_V2): void; cdecl
+procedure ERR_ESS_SIGNING_CERT_V2_free(a: PESS_SIGNING_CERT_V2); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ESS_SIGNING_CERT_V2_free_procname);
 end;

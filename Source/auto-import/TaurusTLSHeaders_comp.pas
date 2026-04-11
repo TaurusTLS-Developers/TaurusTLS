@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -60,7 +60,7 @@ var
   COMP_get_name: function(meth: PCOMP_METHOD): PIdAnsiChar; cdecl = nil;
   {$EXTERNALSYM COMP_get_name}
 
-  COMP_CTX_free: function(ctx: PCOMP_CTX): void; cdecl = nil;
+  COMP_CTX_free: procedure(ctx: PCOMP_CTX); cdecl = nil;
   {$EXTERNALSYM COMP_CTX_free}
 
   COMP_compress_block: function(ctx: PCOMP_CTX; _out: PIdAnsiChar; olen: TIdC_INT; _in: PIdAnsiChar; ilen: TIdC_INT): TIdC_INT; cdecl = nil;
@@ -100,7 +100,7 @@ function COMP_CTX_get_method(ctx: PCOMP_CTX): PCOMP_METHOD; cdecl;
 function COMP_CTX_get_type(comp: PCOMP_CTX): TIdC_INT; cdecl;
 function COMP_get_type(meth: PCOMP_METHOD): TIdC_INT; cdecl;
 function COMP_get_name(meth: PCOMP_METHOD): PIdAnsiChar; cdecl;
-function COMP_CTX_free(ctx: PCOMP_CTX): void; cdecl;
+procedure COMP_CTX_free(ctx: PCOMP_CTX); cdecl;
 function COMP_compress_block(ctx: PCOMP_CTX; _out: PIdAnsiChar; olen: TIdC_INT; _in: PIdAnsiChar; ilen: TIdC_INT): TIdC_INT; cdecl;
 function COMP_expand_block(ctx: PCOMP_CTX; _out: PIdAnsiChar; olen: TIdC_INT; _in: PIdAnsiChar; ilen: TIdC_INT): TIdC_INT; cdecl;
 function COMP_zlib: PCOMP_METHOD; cdecl;
@@ -170,7 +170,7 @@ function COMP_CTX_get_method(ctx: PCOMP_CTX): PCOMP_METHOD; cdecl external CLibC
 function COMP_CTX_get_type(comp: PCOMP_CTX): TIdC_INT; cdecl external CLibCrypto name 'COMP_CTX_get_type';
 function COMP_get_type(meth: PCOMP_METHOD): TIdC_INT; cdecl external CLibCrypto name 'COMP_get_type';
 function COMP_get_name(meth: PCOMP_METHOD): PIdAnsiChar; cdecl external CLibCrypto name 'COMP_get_name';
-function COMP_CTX_free(ctx: PCOMP_CTX): void; cdecl external CLibCrypto name 'COMP_CTX_free';
+procedure COMP_CTX_free(ctx: PCOMP_CTX); cdecl external CLibCrypto name 'COMP_CTX_free';
 function COMP_compress_block(ctx: PCOMP_CTX; _out: PIdAnsiChar; olen: TIdC_INT; _in: PIdAnsiChar; ilen: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'COMP_compress_block';
 function COMP_expand_block(ctx: PCOMP_CTX; _out: PIdAnsiChar; olen: TIdC_INT; _in: PIdAnsiChar; ilen: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'COMP_expand_block';
 function COMP_zlib: PCOMP_METHOD; cdecl external CLibCrypto name 'COMP_zlib';
@@ -266,7 +266,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(COMP_get_name_procname);
 end;
 
-function ERR_COMP_CTX_free(ctx: PCOMP_CTX): void; cdecl
+procedure ERR_COMP_CTX_free(ctx: PCOMP_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(COMP_CTX_free_procname);
 end;

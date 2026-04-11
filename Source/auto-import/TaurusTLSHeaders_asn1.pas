@@ -23,9 +23,10 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
-  TaurusTLSHeaders_core;
-
+  TaurusTLSHeaders_core,
+  ossl_types;
 
 
 
@@ -33,15 +34,6 @@ uses
 // TYPE DECLARATIONS
 // =============================================================================
 type
-  Pasn1_string_st = ^Tasn1_string_st;
-  Tasn1_string_st =   record
-    length: TIdC_INT;
-    _type: TIdC_INT;
-    data: PIdAnsiChar;
-    flags: TIdC_LONG;
-  end;
-  {$EXTERNALSYM Pasn1_string_st}
-
   PASN1_ENCODING_st = ^TASN1_ENCODING_st;
   TASN1_ENCODING_st =   record
     enc: PIdAnsiChar;
@@ -279,7 +271,7 @@ var
   ASN1_TYPE_new: function: PASN1_TYPE; cdecl = nil;
   {$EXTERNALSYM ASN1_TYPE_new}
 
-  ASN1_TYPE_free: function(a: PASN1_TYPE): void; cdecl = nil;
+  ASN1_TYPE_free: procedure(a: PASN1_TYPE); cdecl = nil;
   {$EXTERNALSYM ASN1_TYPE_free}
 
   d2i_ASN1_TYPE: function(a: PPASN1_TYPE; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_TYPE; cdecl = nil;
@@ -294,7 +286,7 @@ var
   ASN1_TYPE_get: function(a: PASN1_TYPE): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM ASN1_TYPE_get}
 
-  ASN1_TYPE_set: function(a: PASN1_TYPE; _type: TIdC_INT; value: Pointer): void; cdecl = nil;
+  ASN1_TYPE_set: procedure(a: PASN1_TYPE; _type: TIdC_INT; value: Pointer); cdecl = nil;
   {$EXTERNALSYM ASN1_TYPE_set}
 
   ASN1_TYPE_set1: function(a: PASN1_TYPE; _type: TIdC_INT; value: Pointer): TIdC_INT; cdecl = nil;
@@ -312,7 +304,7 @@ var
   ASN1_OBJECT_new: function: PASN1_OBJECT; cdecl = nil;
   {$EXTERNALSYM ASN1_OBJECT_new}
 
-  ASN1_OBJECT_free: function(a: PASN1_OBJECT): void; cdecl = nil;
+  ASN1_OBJECT_free: procedure(a: PASN1_OBJECT); cdecl = nil;
   {$EXTERNALSYM ASN1_OBJECT_free}
 
   d2i_ASN1_OBJECT: function(a: PPASN1_OBJECT; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_OBJECT; cdecl = nil;
@@ -327,10 +319,10 @@ var
   ASN1_STRING_new: function: PASN1_STRING; cdecl = nil;
   {$EXTERNALSYM ASN1_STRING_new}
 
-  ASN1_STRING_free: function(a: PASN1_STRING): void; cdecl = nil;
+  ASN1_STRING_free: procedure(a: PASN1_STRING); cdecl = nil;
   {$EXTERNALSYM ASN1_STRING_free}
 
-  ASN1_STRING_clear_free: function(a: PASN1_STRING): void; cdecl = nil;
+  ASN1_STRING_clear_free: procedure(a: PASN1_STRING); cdecl = nil;
   {$EXTERNALSYM ASN1_STRING_clear_free}
 
   ASN1_STRING_copy: function(dst: PASN1_STRING; str: PASN1_STRING): TIdC_INT; cdecl = nil;
@@ -348,13 +340,13 @@ var
   ASN1_STRING_set: function(str: PASN1_STRING; data: Pointer; len: TIdC_INT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM ASN1_STRING_set}
 
-  ASN1_STRING_set0: function(str: PASN1_STRING; data: Pointer; len: TIdC_INT): void; cdecl = nil;
+  ASN1_STRING_set0: procedure(str: PASN1_STRING; data: Pointer; len: TIdC_INT); cdecl = nil;
   {$EXTERNALSYM ASN1_STRING_set0}
 
   ASN1_STRING_length: function(x: PASN1_STRING): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM ASN1_STRING_length}
 
-  ASN1_STRING_length_set: function(x: PASN1_STRING; n: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  ASN1_STRING_length_set: procedure(x: PASN1_STRING; n: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM ASN1_STRING_length_set}
 
   ASN1_STRING_type: function(x: PASN1_STRING): TIdC_INT; cdecl = nil;
@@ -366,7 +358,7 @@ var
   ASN1_BIT_STRING_new: function: PASN1_BIT_STRING; cdecl = nil;
   {$EXTERNALSYM ASN1_BIT_STRING_new}
 
-  ASN1_BIT_STRING_free: function(a: PASN1_BIT_STRING): void; cdecl = nil;
+  ASN1_BIT_STRING_free: procedure(a: PASN1_BIT_STRING); cdecl = nil;
   {$EXTERNALSYM ASN1_BIT_STRING_free}
 
   d2i_ASN1_BIT_STRING: function(a: PPASN1_BIT_STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_BIT_STRING; cdecl = nil;
@@ -402,7 +394,7 @@ var
   ASN1_INTEGER_new: function: PASN1_INTEGER; cdecl = nil;
   {$EXTERNALSYM ASN1_INTEGER_new}
 
-  ASN1_INTEGER_free: function(a: PASN1_INTEGER): void; cdecl = nil;
+  ASN1_INTEGER_free: procedure(a: PASN1_INTEGER); cdecl = nil;
   {$EXTERNALSYM ASN1_INTEGER_free}
 
   d2i_ASN1_INTEGER: function(a: PPASN1_INTEGER; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_INTEGER; cdecl = nil;
@@ -426,7 +418,7 @@ var
   ASN1_ENUMERATED_new: function: PASN1_ENUMERATED; cdecl = nil;
   {$EXTERNALSYM ASN1_ENUMERATED_new}
 
-  ASN1_ENUMERATED_free: function(a: PASN1_ENUMERATED): void; cdecl = nil;
+  ASN1_ENUMERATED_free: procedure(a: PASN1_ENUMERATED); cdecl = nil;
   {$EXTERNALSYM ASN1_ENUMERATED_free}
 
   d2i_ASN1_ENUMERATED: function(a: PPASN1_ENUMERATED; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_ENUMERATED; cdecl = nil;
@@ -471,7 +463,7 @@ var
   ASN1_OCTET_STRING_new: function: PASN1_OCTET_STRING; cdecl = nil;
   {$EXTERNALSYM ASN1_OCTET_STRING_new}
 
-  ASN1_OCTET_STRING_free: function(a: PASN1_OCTET_STRING): void; cdecl = nil;
+  ASN1_OCTET_STRING_free: procedure(a: PASN1_OCTET_STRING); cdecl = nil;
   {$EXTERNALSYM ASN1_OCTET_STRING_free}
 
   d2i_ASN1_OCTET_STRING: function(a: PPASN1_OCTET_STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_OCTET_STRING; cdecl = nil;
@@ -495,7 +487,7 @@ var
   ASN1_VISIBLESTRING_new: function: PASN1_VISIBLESTRING; cdecl = nil;
   {$EXTERNALSYM ASN1_VISIBLESTRING_new}
 
-  ASN1_VISIBLESTRING_free: function(a: PASN1_VISIBLESTRING): void; cdecl = nil;
+  ASN1_VISIBLESTRING_free: procedure(a: PASN1_VISIBLESTRING); cdecl = nil;
   {$EXTERNALSYM ASN1_VISIBLESTRING_free}
 
   d2i_ASN1_VISIBLESTRING: function(a: PPASN1_VISIBLESTRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_VISIBLESTRING; cdecl = nil;
@@ -510,7 +502,7 @@ var
   ASN1_UNIVERSALSTRING_new: function: PASN1_UNIVERSALSTRING; cdecl = nil;
   {$EXTERNALSYM ASN1_UNIVERSALSTRING_new}
 
-  ASN1_UNIVERSALSTRING_free: function(a: PASN1_UNIVERSALSTRING): void; cdecl = nil;
+  ASN1_UNIVERSALSTRING_free: procedure(a: PASN1_UNIVERSALSTRING); cdecl = nil;
   {$EXTERNALSYM ASN1_UNIVERSALSTRING_free}
 
   d2i_ASN1_UNIVERSALSTRING: function(a: PPASN1_UNIVERSALSTRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_UNIVERSALSTRING; cdecl = nil;
@@ -525,7 +517,7 @@ var
   ASN1_UTF8STRING_new: function: PASN1_UTF8STRING; cdecl = nil;
   {$EXTERNALSYM ASN1_UTF8STRING_new}
 
-  ASN1_UTF8STRING_free: function(a: PASN1_UTF8STRING): void; cdecl = nil;
+  ASN1_UTF8STRING_free: procedure(a: PASN1_UTF8STRING); cdecl = nil;
   {$EXTERNALSYM ASN1_UTF8STRING_free}
 
   d2i_ASN1_UTF8STRING: function(a: PPASN1_UTF8STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_UTF8STRING; cdecl = nil;
@@ -540,7 +532,7 @@ var
   ASN1_NULL_new: function: PASN1_NULL; cdecl = nil;
   {$EXTERNALSYM ASN1_NULL_new}
 
-  ASN1_NULL_free: function(a: PASN1_NULL): void; cdecl = nil;
+  ASN1_NULL_free: procedure(a: PASN1_NULL); cdecl = nil;
   {$EXTERNALSYM ASN1_NULL_free}
 
   d2i_ASN1_NULL: function(a: PPASN1_NULL; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_NULL; cdecl = nil;
@@ -555,7 +547,7 @@ var
   ASN1_BMPSTRING_new: function: PASN1_BMPSTRING; cdecl = nil;
   {$EXTERNALSYM ASN1_BMPSTRING_new}
 
-  ASN1_BMPSTRING_free: function(a: PASN1_BMPSTRING): void; cdecl = nil;
+  ASN1_BMPSTRING_free: procedure(a: PASN1_BMPSTRING); cdecl = nil;
   {$EXTERNALSYM ASN1_BMPSTRING_free}
 
   d2i_ASN1_BMPSTRING: function(a: PPASN1_BMPSTRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_BMPSTRING; cdecl = nil;
@@ -576,7 +568,7 @@ var
   ASN1_PRINTABLE_new: function: PASN1_STRING; cdecl = nil;
   {$EXTERNALSYM ASN1_PRINTABLE_new}
 
-  ASN1_PRINTABLE_free: function(a: PASN1_STRING): void; cdecl = nil;
+  ASN1_PRINTABLE_free: procedure(a: PASN1_STRING); cdecl = nil;
   {$EXTERNALSYM ASN1_PRINTABLE_free}
 
   d2i_ASN1_PRINTABLE: function(a: PPASN1_STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_STRING; cdecl = nil;
@@ -591,7 +583,7 @@ var
   DIRECTORYSTRING_new: function: PASN1_STRING; cdecl = nil;
   {$EXTERNALSYM DIRECTORYSTRING_new}
 
-  DIRECTORYSTRING_free: function(a: PASN1_STRING): void; cdecl = nil;
+  DIRECTORYSTRING_free: procedure(a: PASN1_STRING); cdecl = nil;
   {$EXTERNALSYM DIRECTORYSTRING_free}
 
   d2i_DIRECTORYSTRING: function(a: PPASN1_STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_STRING; cdecl = nil;
@@ -606,7 +598,7 @@ var
   DISPLAYTEXT_new: function: PASN1_STRING; cdecl = nil;
   {$EXTERNALSYM DISPLAYTEXT_new}
 
-  DISPLAYTEXT_free: function(a: PASN1_STRING): void; cdecl = nil;
+  DISPLAYTEXT_free: procedure(a: PASN1_STRING); cdecl = nil;
   {$EXTERNALSYM DISPLAYTEXT_free}
 
   d2i_DISPLAYTEXT: function(a: PPASN1_STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_STRING; cdecl = nil;
@@ -621,7 +613,7 @@ var
   ASN1_PRINTABLESTRING_new: function: PASN1_PRINTABLESTRING; cdecl = nil;
   {$EXTERNALSYM ASN1_PRINTABLESTRING_new}
 
-  ASN1_PRINTABLESTRING_free: function(a: PASN1_PRINTABLESTRING): void; cdecl = nil;
+  ASN1_PRINTABLESTRING_free: procedure(a: PASN1_PRINTABLESTRING); cdecl = nil;
   {$EXTERNALSYM ASN1_PRINTABLESTRING_free}
 
   d2i_ASN1_PRINTABLESTRING: function(a: PPASN1_PRINTABLESTRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_PRINTABLESTRING; cdecl = nil;
@@ -636,7 +628,7 @@ var
   ASN1_T61STRING_new: function: PASN1_T61STRING; cdecl = nil;
   {$EXTERNALSYM ASN1_T61STRING_new}
 
-  ASN1_T61STRING_free: function(a: PASN1_T61STRING): void; cdecl = nil;
+  ASN1_T61STRING_free: procedure(a: PASN1_T61STRING); cdecl = nil;
   {$EXTERNALSYM ASN1_T61STRING_free}
 
   d2i_ASN1_T61STRING: function(a: PPASN1_T61STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_T61STRING; cdecl = nil;
@@ -651,7 +643,7 @@ var
   ASN1_IA5STRING_new: function: PASN1_IA5STRING; cdecl = nil;
   {$EXTERNALSYM ASN1_IA5STRING_new}
 
-  ASN1_IA5STRING_free: function(a: PASN1_IA5STRING): void; cdecl = nil;
+  ASN1_IA5STRING_free: procedure(a: PASN1_IA5STRING); cdecl = nil;
   {$EXTERNALSYM ASN1_IA5STRING_free}
 
   d2i_ASN1_IA5STRING: function(a: PPASN1_IA5STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_IA5STRING; cdecl = nil;
@@ -666,7 +658,7 @@ var
   ASN1_GENERALSTRING_new: function: PASN1_GENERALSTRING; cdecl = nil;
   {$EXTERNALSYM ASN1_GENERALSTRING_new}
 
-  ASN1_GENERALSTRING_free: function(a: PASN1_GENERALSTRING): void; cdecl = nil;
+  ASN1_GENERALSTRING_free: procedure(a: PASN1_GENERALSTRING); cdecl = nil;
   {$EXTERNALSYM ASN1_GENERALSTRING_free}
 
   d2i_ASN1_GENERALSTRING: function(a: PPASN1_GENERALSTRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_GENERALSTRING; cdecl = nil;
@@ -681,7 +673,7 @@ var
   ASN1_UTCTIME_new: function: PASN1_UTCTIME; cdecl = nil;
   {$EXTERNALSYM ASN1_UTCTIME_new}
 
-  ASN1_UTCTIME_free: function(a: PASN1_UTCTIME): void; cdecl = nil;
+  ASN1_UTCTIME_free: procedure(a: PASN1_UTCTIME); cdecl = nil;
   {$EXTERNALSYM ASN1_UTCTIME_free}
 
   d2i_ASN1_UTCTIME: function(a: PPASN1_UTCTIME; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_UTCTIME; cdecl = nil;
@@ -696,7 +688,7 @@ var
   ASN1_GENERALIZEDTIME_new: function: PASN1_GENERALIZEDTIME; cdecl = nil;
   {$EXTERNALSYM ASN1_GENERALIZEDTIME_new}
 
-  ASN1_GENERALIZEDTIME_free: function(a: PASN1_GENERALIZEDTIME): void; cdecl = nil;
+  ASN1_GENERALIZEDTIME_free: procedure(a: PASN1_GENERALIZEDTIME); cdecl = nil;
   {$EXTERNALSYM ASN1_GENERALIZEDTIME_free}
 
   d2i_ASN1_GENERALIZEDTIME: function(a: PPASN1_GENERALIZEDTIME; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_GENERALIZEDTIME; cdecl = nil;
@@ -711,7 +703,7 @@ var
   ASN1_TIME_new: function: PASN1_TIME; cdecl = nil;
   {$EXTERNALSYM ASN1_TIME_new}
 
-  ASN1_TIME_free: function(a: PASN1_TIME): void; cdecl = nil;
+  ASN1_TIME_free: procedure(a: PASN1_TIME); cdecl = nil;
   {$EXTERNALSYM ASN1_TIME_free}
 
   d2i_ASN1_TIME: function(a: PPASN1_TIME; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_TIME; cdecl = nil;
@@ -852,7 +844,7 @@ var
   ASN1_const_check_infinite_end: function(p: PPIdAnsiChar; len: TIdC_LONG): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM ASN1_const_check_infinite_end}
 
-  ASN1_put_object: function(pp: PPIdAnsiChar; constructed: TIdC_INT; length: TIdC_INT; tag: TIdC_INT; xclass: TIdC_INT): void; cdecl = nil;
+  ASN1_put_object: procedure(pp: PPIdAnsiChar; constructed: TIdC_INT; length: TIdC_INT; tag: TIdC_INT; xclass: TIdC_INT); cdecl = nil;
   {$EXTERNALSYM ASN1_put_object}
 
   ASN1_put_eoc: function(pp: PPIdAnsiChar): TIdC_INT; cdecl = nil;
@@ -969,7 +961,7 @@ var
   ASN1_item_pack: function(obj: Pointer; it: PASN1_ITEM; oct: PPASN1_OCTET_STRING): PASN1_STRING; cdecl = nil;
   {$EXTERNALSYM ASN1_item_pack}
 
-  ASN1_STRING_set_default_mask: function(mask: TIdC_ULONG): void; cdecl = nil;
+  ASN1_STRING_set_default_mask: procedure(mask: TIdC_ULONG); cdecl = nil;
   {$EXTERNALSYM ASN1_STRING_set_default_mask}
 
   ASN1_STRING_set_default_mask_asc: function(p: PIdAnsiChar): TIdC_INT; cdecl = nil;
@@ -993,7 +985,7 @@ var
   ASN1_STRING_TABLE_add: function(arg1: TIdC_INT; arg2: TIdC_LONG; arg3: TIdC_LONG; arg4: TIdC_ULONG; arg5: TIdC_ULONG): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM ASN1_STRING_TABLE_add}
 
-  ASN1_STRING_TABLE_cleanup: function: void; cdecl = nil;
+  ASN1_STRING_TABLE_cleanup: procedure; cdecl = nil;
   {$EXTERNALSYM ASN1_STRING_TABLE_cleanup}
 
   ASN1_item_new: function(it: PASN1_ITEM): PASN1_VALUE; cdecl = nil;
@@ -1002,7 +994,7 @@ var
   ASN1_item_new_ex: function(it: PASN1_ITEM; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PASN1_VALUE; cdecl = nil;
   {$EXTERNALSYM ASN1_item_new_ex}
 
-  ASN1_item_free: function(val: PASN1_VALUE; it: PASN1_ITEM): void; cdecl = nil;
+  ASN1_item_free: procedure(val: PASN1_VALUE; it: PASN1_ITEM); cdecl = nil;
   {$EXTERNALSYM ASN1_item_free}
 
   ASN1_item_d2i_ex: function(val: PPASN1_VALUE; _in: PPIdAnsiChar; len: TIdC_LONG; it: PASN1_ITEM; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PASN1_VALUE; cdecl = nil;
@@ -1017,10 +1009,10 @@ var
   ASN1_item_ndef_i2d: function(val: PASN1_VALUE; _out: PPIdAnsiChar; it: PASN1_ITEM): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM ASN1_item_ndef_i2d}
 
-  ASN1_add_oid_module: function: void; cdecl = nil;
+  ASN1_add_oid_module: procedure; cdecl = nil;
   {$EXTERNALSYM ASN1_add_oid_module}
 
-  ASN1_add_stable_module: function: void; cdecl = nil;
+  ASN1_add_stable_module: procedure; cdecl = nil;
   {$EXTERNALSYM ASN1_add_stable_module}
 
   ASN1_generate_nconf: function(str: PIdAnsiChar; nconf: PCONF): PASN1_TYPE; cdecl = nil;
@@ -1038,43 +1030,43 @@ var
   ASN1_PCTX_new: function: PASN1_PCTX; cdecl = nil;
   {$EXTERNALSYM ASN1_PCTX_new}
 
-  ASN1_PCTX_free: function(p: PASN1_PCTX): void; cdecl = nil;
+  ASN1_PCTX_free: procedure(p: PASN1_PCTX); cdecl = nil;
   {$EXTERNALSYM ASN1_PCTX_free}
 
   ASN1_PCTX_get_flags: function(p: PASN1_PCTX): TIdC_ULONG; cdecl = nil;
   {$EXTERNALSYM ASN1_PCTX_get_flags}
 
-  ASN1_PCTX_set_flags: function(p: PASN1_PCTX; flags: TIdC_ULONG): void; cdecl = nil;
+  ASN1_PCTX_set_flags: procedure(p: PASN1_PCTX; flags: TIdC_ULONG); cdecl = nil;
   {$EXTERNALSYM ASN1_PCTX_set_flags}
 
   ASN1_PCTX_get_nm_flags: function(p: PASN1_PCTX): TIdC_ULONG; cdecl = nil;
   {$EXTERNALSYM ASN1_PCTX_get_nm_flags}
 
-  ASN1_PCTX_set_nm_flags: function(p: PASN1_PCTX; flags: TIdC_ULONG): void; cdecl = nil;
+  ASN1_PCTX_set_nm_flags: procedure(p: PASN1_PCTX; flags: TIdC_ULONG); cdecl = nil;
   {$EXTERNALSYM ASN1_PCTX_set_nm_flags}
 
   ASN1_PCTX_get_cert_flags: function(p: PASN1_PCTX): TIdC_ULONG; cdecl = nil;
   {$EXTERNALSYM ASN1_PCTX_get_cert_flags}
 
-  ASN1_PCTX_set_cert_flags: function(p: PASN1_PCTX; flags: TIdC_ULONG): void; cdecl = nil;
+  ASN1_PCTX_set_cert_flags: procedure(p: PASN1_PCTX; flags: TIdC_ULONG); cdecl = nil;
   {$EXTERNALSYM ASN1_PCTX_set_cert_flags}
 
   ASN1_PCTX_get_oid_flags: function(p: PASN1_PCTX): TIdC_ULONG; cdecl = nil;
   {$EXTERNALSYM ASN1_PCTX_get_oid_flags}
 
-  ASN1_PCTX_set_oid_flags: function(p: PASN1_PCTX; flags: TIdC_ULONG): void; cdecl = nil;
+  ASN1_PCTX_set_oid_flags: procedure(p: PASN1_PCTX; flags: TIdC_ULONG); cdecl = nil;
   {$EXTERNALSYM ASN1_PCTX_set_oid_flags}
 
   ASN1_PCTX_get_str_flags: function(p: PASN1_PCTX): TIdC_ULONG; cdecl = nil;
   {$EXTERNALSYM ASN1_PCTX_get_str_flags}
 
-  ASN1_PCTX_set_str_flags: function(p: PASN1_PCTX; flags: TIdC_ULONG): void; cdecl = nil;
+  ASN1_PCTX_set_str_flags: procedure(p: PASN1_PCTX; flags: TIdC_ULONG); cdecl = nil;
   {$EXTERNALSYM ASN1_PCTX_set_str_flags}
 
   ASN1_SCTX_new: function(scan_cb: TASN1_SCTX_new_scan_cb_cb): PASN1_SCTX; cdecl = nil;
   {$EXTERNALSYM ASN1_SCTX_new}
 
-  ASN1_SCTX_free: function(p: PASN1_SCTX): void; cdecl = nil;
+  ASN1_SCTX_free: procedure(p: PASN1_SCTX); cdecl = nil;
   {$EXTERNALSYM ASN1_SCTX_free}
 
   ASN1_SCTX_get_item: function(p: PASN1_SCTX): PASN1_ITEM; cdecl = nil;
@@ -1086,7 +1078,7 @@ var
   ASN1_SCTX_get_flags: function(p: PASN1_SCTX): TIdC_ULONG; cdecl = nil;
   {$EXTERNALSYM ASN1_SCTX_get_flags}
 
-  ASN1_SCTX_set_app_data: function(p: PASN1_SCTX; data: Pointer): void; cdecl = nil;
+  ASN1_SCTX_set_app_data: procedure(p: PASN1_SCTX; data: Pointer); cdecl = nil;
   {$EXTERNALSYM ASN1_SCTX_set_app_data}
 
   ASN1_SCTX_get_app_data: function(p: PASN1_SCTX): Pointer; cdecl = nil;
@@ -1143,36 +1135,36 @@ function d2i_ASN1_SET_ANY(a: PPASN1_SEQUENCE_ANY; _in: PPIdAnsiChar; len: TIdC_L
 function i2d_ASN1_SET_ANY(a: PASN1_SEQUENCE_ANY; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASN1_SET_ANY_it: PASN1_ITEM; cdecl;
 function ASN1_TYPE_new: PASN1_TYPE; cdecl;
-function ASN1_TYPE_free(a: PASN1_TYPE): void; cdecl;
+procedure ASN1_TYPE_free(a: PASN1_TYPE); cdecl;
 function d2i_ASN1_TYPE(a: PPASN1_TYPE; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_TYPE; cdecl;
 function i2d_ASN1_TYPE(a: PASN1_TYPE; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASN1_ANY_it: PASN1_ITEM; cdecl;
 function ASN1_TYPE_get(a: PASN1_TYPE): TIdC_INT; cdecl;
-function ASN1_TYPE_set(a: PASN1_TYPE; _type: TIdC_INT; value: Pointer): void; cdecl;
+procedure ASN1_TYPE_set(a: PASN1_TYPE; _type: TIdC_INT; value: Pointer); cdecl;
 function ASN1_TYPE_set1(a: PASN1_TYPE; _type: TIdC_INT; value: Pointer): TIdC_INT; cdecl;
 function ASN1_TYPE_cmp(a: PASN1_TYPE; b: PASN1_TYPE): TIdC_INT; cdecl;
 function ASN1_TYPE_pack_sequence(it: PASN1_ITEM; s: Pointer; t: PPASN1_TYPE): PASN1_TYPE; cdecl;
 function ASN1_TYPE_unpack_sequence(it: PASN1_ITEM; t: PASN1_TYPE): Pointer; cdecl;
 function ASN1_OBJECT_new: PASN1_OBJECT; cdecl;
-function ASN1_OBJECT_free(a: PASN1_OBJECT): void; cdecl;
+procedure ASN1_OBJECT_free(a: PASN1_OBJECT); cdecl;
 function d2i_ASN1_OBJECT(a: PPASN1_OBJECT; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_OBJECT; cdecl;
 function i2d_ASN1_OBJECT(a: PASN1_OBJECT; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASN1_OBJECT_it: PASN1_ITEM; cdecl;
 function ASN1_STRING_new: PASN1_STRING; cdecl;
-function ASN1_STRING_free(a: PASN1_STRING): void; cdecl;
-function ASN1_STRING_clear_free(a: PASN1_STRING): void; cdecl;
+procedure ASN1_STRING_free(a: PASN1_STRING); cdecl;
+procedure ASN1_STRING_clear_free(a: PASN1_STRING); cdecl;
 function ASN1_STRING_copy(dst: PASN1_STRING; str: PASN1_STRING): TIdC_INT; cdecl;
 function ASN1_STRING_dup(a: PASN1_STRING): PASN1_STRING; cdecl;
 function ASN1_STRING_type_new(_type: TIdC_INT): PASN1_STRING; cdecl;
 function ASN1_STRING_cmp(a: PASN1_STRING; b: PASN1_STRING): TIdC_INT; cdecl;
 function ASN1_STRING_set(str: PASN1_STRING; data: Pointer; len: TIdC_INT): TIdC_INT; cdecl;
-function ASN1_STRING_set0(str: PASN1_STRING; data: Pointer; len: TIdC_INT): void; cdecl;
+procedure ASN1_STRING_set0(str: PASN1_STRING; data: Pointer; len: TIdC_INT); cdecl;
 function ASN1_STRING_length(x: PASN1_STRING): TIdC_INT; cdecl;
-function ASN1_STRING_length_set(x: PASN1_STRING; n: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure ASN1_STRING_length_set(x: PASN1_STRING; n: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
 function ASN1_STRING_type(x: PASN1_STRING): TIdC_INT; cdecl;
 function ASN1_STRING_get0_data(x: PASN1_STRING): PIdAnsiChar; cdecl;
 function ASN1_BIT_STRING_new: PASN1_BIT_STRING; cdecl;
-function ASN1_BIT_STRING_free(a: PASN1_BIT_STRING): void; cdecl;
+procedure ASN1_BIT_STRING_free(a: PASN1_BIT_STRING); cdecl;
 function d2i_ASN1_BIT_STRING(a: PPASN1_BIT_STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_BIT_STRING; cdecl;
 function i2d_ASN1_BIT_STRING(a: PASN1_BIT_STRING; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASN1_BIT_STRING_it: PASN1_ITEM; cdecl;
@@ -1184,7 +1176,7 @@ function ASN1_BIT_STRING_name_print(_out: PBIO; bs: PASN1_BIT_STRING; tbl: PBIT_
 function ASN1_BIT_STRING_num_asc(name: PIdAnsiChar; tbl: PBIT_STRING_BITNAME): TIdC_INT; cdecl;
 function ASN1_BIT_STRING_set_asc(bs: PASN1_BIT_STRING; name: PIdAnsiChar; value: TIdC_INT; tbl: PBIT_STRING_BITNAME): TIdC_INT; cdecl;
 function ASN1_INTEGER_new: PASN1_INTEGER; cdecl;
-function ASN1_INTEGER_free(a: PASN1_INTEGER): void; cdecl;
+procedure ASN1_INTEGER_free(a: PASN1_INTEGER); cdecl;
 function d2i_ASN1_INTEGER(a: PPASN1_INTEGER; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_INTEGER; cdecl;
 function i2d_ASN1_INTEGER(a: PASN1_INTEGER; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASN1_INTEGER_it: PASN1_ITEM; cdecl;
@@ -1192,7 +1184,7 @@ function d2i_ASN1_UINTEGER(a: PPASN1_INTEGER; pp: PPIdAnsiChar; length: TIdC_LON
 function ASN1_INTEGER_dup(a: PASN1_INTEGER): PASN1_INTEGER; cdecl;
 function ASN1_INTEGER_cmp(x: PASN1_INTEGER; y: PASN1_INTEGER): TIdC_INT; cdecl;
 function ASN1_ENUMERATED_new: PASN1_ENUMERATED; cdecl;
-function ASN1_ENUMERATED_free(a: PASN1_ENUMERATED): void; cdecl;
+procedure ASN1_ENUMERATED_free(a: PASN1_ENUMERATED); cdecl;
 function d2i_ASN1_ENUMERATED(a: PPASN1_ENUMERATED; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_ENUMERATED; cdecl;
 function i2d_ASN1_ENUMERATED(a: PASN1_ENUMERATED; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASN1_ENUMERATED_it: PASN1_ITEM; cdecl;
@@ -1207,7 +1199,7 @@ function ASN1_GENERALIZEDTIME_adj(s: PASN1_GENERALIZEDTIME; t: TIdC_TIMET; offse
 function ASN1_GENERALIZEDTIME_set_string(s: PASN1_GENERALIZEDTIME; str: PIdAnsiChar): TIdC_INT; cdecl;
 function ASN1_TIME_diff(pday: PIdC_INT; psec: PIdC_INT; from: PASN1_TIME; _to: PASN1_TIME): TIdC_INT; cdecl;
 function ASN1_OCTET_STRING_new: PASN1_OCTET_STRING; cdecl;
-function ASN1_OCTET_STRING_free(a: PASN1_OCTET_STRING): void; cdecl;
+procedure ASN1_OCTET_STRING_free(a: PASN1_OCTET_STRING); cdecl;
 function d2i_ASN1_OCTET_STRING(a: PPASN1_OCTET_STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_OCTET_STRING; cdecl;
 function i2d_ASN1_OCTET_STRING(a: PASN1_OCTET_STRING; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASN1_OCTET_STRING_it: PASN1_ITEM; cdecl;
@@ -1215,79 +1207,79 @@ function ASN1_OCTET_STRING_dup(a: PASN1_OCTET_STRING): PASN1_OCTET_STRING; cdecl
 function ASN1_OCTET_STRING_cmp(a: PASN1_OCTET_STRING; b: PASN1_OCTET_STRING): TIdC_INT; cdecl;
 function ASN1_OCTET_STRING_set(str: PASN1_OCTET_STRING; data: PIdAnsiChar; len: TIdC_INT): TIdC_INT; cdecl;
 function ASN1_VISIBLESTRING_new: PASN1_VISIBLESTRING; cdecl;
-function ASN1_VISIBLESTRING_free(a: PASN1_VISIBLESTRING): void; cdecl;
+procedure ASN1_VISIBLESTRING_free(a: PASN1_VISIBLESTRING); cdecl;
 function d2i_ASN1_VISIBLESTRING(a: PPASN1_VISIBLESTRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_VISIBLESTRING; cdecl;
 function i2d_ASN1_VISIBLESTRING(a: PASN1_VISIBLESTRING; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASN1_VISIBLESTRING_it: PASN1_ITEM; cdecl;
 function ASN1_UNIVERSALSTRING_new: PASN1_UNIVERSALSTRING; cdecl;
-function ASN1_UNIVERSALSTRING_free(a: PASN1_UNIVERSALSTRING): void; cdecl;
+procedure ASN1_UNIVERSALSTRING_free(a: PASN1_UNIVERSALSTRING); cdecl;
 function d2i_ASN1_UNIVERSALSTRING(a: PPASN1_UNIVERSALSTRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_UNIVERSALSTRING; cdecl;
 function i2d_ASN1_UNIVERSALSTRING(a: PASN1_UNIVERSALSTRING; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASN1_UNIVERSALSTRING_it: PASN1_ITEM; cdecl;
 function ASN1_UTF8STRING_new: PASN1_UTF8STRING; cdecl;
-function ASN1_UTF8STRING_free(a: PASN1_UTF8STRING): void; cdecl;
+procedure ASN1_UTF8STRING_free(a: PASN1_UTF8STRING); cdecl;
 function d2i_ASN1_UTF8STRING(a: PPASN1_UTF8STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_UTF8STRING; cdecl;
 function i2d_ASN1_UTF8STRING(a: PASN1_UTF8STRING; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASN1_UTF8STRING_it: PASN1_ITEM; cdecl;
 function ASN1_NULL_new: PASN1_NULL; cdecl;
-function ASN1_NULL_free(a: PASN1_NULL): void; cdecl;
+procedure ASN1_NULL_free(a: PASN1_NULL); cdecl;
 function d2i_ASN1_NULL(a: PPASN1_NULL; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_NULL; cdecl;
 function i2d_ASN1_NULL(a: PASN1_NULL; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASN1_NULL_it: PASN1_ITEM; cdecl;
 function ASN1_BMPSTRING_new: PASN1_BMPSTRING; cdecl;
-function ASN1_BMPSTRING_free(a: PASN1_BMPSTRING): void; cdecl;
+procedure ASN1_BMPSTRING_free(a: PASN1_BMPSTRING); cdecl;
 function d2i_ASN1_BMPSTRING(a: PPASN1_BMPSTRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_BMPSTRING; cdecl;
 function i2d_ASN1_BMPSTRING(a: PASN1_BMPSTRING; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASN1_BMPSTRING_it: PASN1_ITEM; cdecl;
 function UTF8_getc(str: PIdAnsiChar; len: TIdC_INT; val: PIdC_ULONG): TIdC_INT; cdecl;
 function UTF8_putc(str: PIdAnsiChar; len: TIdC_INT; value: TIdC_ULONG): TIdC_INT; cdecl;
 function ASN1_PRINTABLE_new: PASN1_STRING; cdecl;
-function ASN1_PRINTABLE_free(a: PASN1_STRING): void; cdecl;
+procedure ASN1_PRINTABLE_free(a: PASN1_STRING); cdecl;
 function d2i_ASN1_PRINTABLE(a: PPASN1_STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_STRING; cdecl;
 function i2d_ASN1_PRINTABLE(a: PASN1_STRING; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASN1_PRINTABLE_it: PASN1_ITEM; cdecl;
 function DIRECTORYSTRING_new: PASN1_STRING; cdecl;
-function DIRECTORYSTRING_free(a: PASN1_STRING): void; cdecl;
+procedure DIRECTORYSTRING_free(a: PASN1_STRING); cdecl;
 function d2i_DIRECTORYSTRING(a: PPASN1_STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_STRING; cdecl;
 function i2d_DIRECTORYSTRING(a: PASN1_STRING; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function DIRECTORYSTRING_it: PASN1_ITEM; cdecl;
 function DISPLAYTEXT_new: PASN1_STRING; cdecl;
-function DISPLAYTEXT_free(a: PASN1_STRING): void; cdecl;
+procedure DISPLAYTEXT_free(a: PASN1_STRING); cdecl;
 function d2i_DISPLAYTEXT(a: PPASN1_STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_STRING; cdecl;
 function i2d_DISPLAYTEXT(a: PASN1_STRING; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function DISPLAYTEXT_it: PASN1_ITEM; cdecl;
 function ASN1_PRINTABLESTRING_new: PASN1_PRINTABLESTRING; cdecl;
-function ASN1_PRINTABLESTRING_free(a: PASN1_PRINTABLESTRING): void; cdecl;
+procedure ASN1_PRINTABLESTRING_free(a: PASN1_PRINTABLESTRING); cdecl;
 function d2i_ASN1_PRINTABLESTRING(a: PPASN1_PRINTABLESTRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_PRINTABLESTRING; cdecl;
 function i2d_ASN1_PRINTABLESTRING(a: PASN1_PRINTABLESTRING; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASN1_PRINTABLESTRING_it: PASN1_ITEM; cdecl;
 function ASN1_T61STRING_new: PASN1_T61STRING; cdecl;
-function ASN1_T61STRING_free(a: PASN1_T61STRING): void; cdecl;
+procedure ASN1_T61STRING_free(a: PASN1_T61STRING); cdecl;
 function d2i_ASN1_T61STRING(a: PPASN1_T61STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_T61STRING; cdecl;
 function i2d_ASN1_T61STRING(a: PASN1_T61STRING; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASN1_T61STRING_it: PASN1_ITEM; cdecl;
 function ASN1_IA5STRING_new: PASN1_IA5STRING; cdecl;
-function ASN1_IA5STRING_free(a: PASN1_IA5STRING): void; cdecl;
+procedure ASN1_IA5STRING_free(a: PASN1_IA5STRING); cdecl;
 function d2i_ASN1_IA5STRING(a: PPASN1_IA5STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_IA5STRING; cdecl;
 function i2d_ASN1_IA5STRING(a: PASN1_IA5STRING; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASN1_IA5STRING_it: PASN1_ITEM; cdecl;
 function ASN1_GENERALSTRING_new: PASN1_GENERALSTRING; cdecl;
-function ASN1_GENERALSTRING_free(a: PASN1_GENERALSTRING): void; cdecl;
+procedure ASN1_GENERALSTRING_free(a: PASN1_GENERALSTRING); cdecl;
 function d2i_ASN1_GENERALSTRING(a: PPASN1_GENERALSTRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_GENERALSTRING; cdecl;
 function i2d_ASN1_GENERALSTRING(a: PASN1_GENERALSTRING; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASN1_GENERALSTRING_it: PASN1_ITEM; cdecl;
 function ASN1_UTCTIME_new: PASN1_UTCTIME; cdecl;
-function ASN1_UTCTIME_free(a: PASN1_UTCTIME): void; cdecl;
+procedure ASN1_UTCTIME_free(a: PASN1_UTCTIME); cdecl;
 function d2i_ASN1_UTCTIME(a: PPASN1_UTCTIME; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_UTCTIME; cdecl;
 function i2d_ASN1_UTCTIME(a: PASN1_UTCTIME; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASN1_UTCTIME_it: PASN1_ITEM; cdecl;
 function ASN1_GENERALIZEDTIME_new: PASN1_GENERALIZEDTIME; cdecl;
-function ASN1_GENERALIZEDTIME_free(a: PASN1_GENERALIZEDTIME): void; cdecl;
+procedure ASN1_GENERALIZEDTIME_free(a: PASN1_GENERALIZEDTIME); cdecl;
 function d2i_ASN1_GENERALIZEDTIME(a: PPASN1_GENERALIZEDTIME; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_GENERALIZEDTIME; cdecl;
 function i2d_ASN1_GENERALIZEDTIME(a: PASN1_GENERALIZEDTIME; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASN1_GENERALIZEDTIME_it: PASN1_ITEM; cdecl;
 function ASN1_TIME_new: PASN1_TIME; cdecl;
-function ASN1_TIME_free(a: PASN1_TIME): void; cdecl;
+procedure ASN1_TIME_free(a: PASN1_TIME); cdecl;
 function d2i_ASN1_TIME(a: PPASN1_TIME; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_TIME; cdecl;
 function i2d_ASN1_TIME(a: PASN1_TIME; _out: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASN1_TIME_it: PASN1_ITEM; cdecl;
@@ -1334,7 +1326,7 @@ function ASN1_tag2bit(tag: TIdC_INT): TIdC_ULONG; cdecl;
 function ASN1_get_object(pp: PPIdAnsiChar; plength: PIdC_LONG; ptag: PIdC_INT; pclass: PIdC_INT; omax: TIdC_LONG): TIdC_INT; cdecl;
 function ASN1_check_infinite_end(p: PPIdAnsiChar; len: TIdC_LONG): TIdC_INT; cdecl;
 function ASN1_const_check_infinite_end(p: PPIdAnsiChar; len: TIdC_LONG): TIdC_INT; cdecl;
-function ASN1_put_object(pp: PPIdAnsiChar; constructed: TIdC_INT; length: TIdC_INT; tag: TIdC_INT; xclass: TIdC_INT): void; cdecl;
+procedure ASN1_put_object(pp: PPIdAnsiChar; constructed: TIdC_INT; length: TIdC_INT; tag: TIdC_INT; xclass: TIdC_INT); cdecl;
 function ASN1_put_eoc(pp: PPIdAnsiChar): TIdC_INT; cdecl;
 function ASN1_object_size(constructed: TIdC_INT; length: TIdC_INT; tag: TIdC_INT): TIdC_INT; cdecl;
 function ASN1_dup(i2d: Ti2d_of_void; d2i: Td2i_of_void; x: Pointer): Pointer; cdecl;
@@ -1373,7 +1365,7 @@ function ASN1_TYPE_get_int_octetstring(a: PASN1_TYPE; num: PIdC_LONG; data: PIdA
 function ASN1_item_unpack(oct: PASN1_STRING; it: PASN1_ITEM): Pointer; cdecl;
 function ASN1_item_unpack_ex(oct: PASN1_STRING; it: PASN1_ITEM; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): Pointer; cdecl;
 function ASN1_item_pack(obj: Pointer; it: PASN1_ITEM; oct: PPASN1_OCTET_STRING): PASN1_STRING; cdecl;
-function ASN1_STRING_set_default_mask(mask: TIdC_ULONG): void; cdecl;
+procedure ASN1_STRING_set_default_mask(mask: TIdC_ULONG); cdecl;
 function ASN1_STRING_set_default_mask_asc(p: PIdAnsiChar): TIdC_INT; cdecl;
 function ASN1_STRING_get_default_mask: TIdC_ULONG; cdecl;
 function ASN1_mbstring_copy(_out: PPASN1_STRING; _in: PIdAnsiChar; len: TIdC_INT; inform: TIdC_INT; mask: TIdC_ULONG): TIdC_INT; cdecl;
@@ -1381,38 +1373,38 @@ function ASN1_mbstring_ncopy(_out: PPASN1_STRING; _in: PIdAnsiChar; len: TIdC_IN
 function ASN1_STRING_set_by_NID(_out: PPASN1_STRING; _in: PIdAnsiChar; inlen: TIdC_INT; inform: TIdC_INT; nid: TIdC_INT): PASN1_STRING; cdecl;
 function ASN1_STRING_TABLE_get(nid: TIdC_INT): PASN1_STRING_TABLE; cdecl;
 function ASN1_STRING_TABLE_add(arg1: TIdC_INT; arg2: TIdC_LONG; arg3: TIdC_LONG; arg4: TIdC_ULONG; arg5: TIdC_ULONG): TIdC_INT; cdecl;
-function ASN1_STRING_TABLE_cleanup: void; cdecl;
+procedure ASN1_STRING_TABLE_cleanup; cdecl;
 function ASN1_item_new(it: PASN1_ITEM): PASN1_VALUE; cdecl;
 function ASN1_item_new_ex(it: PASN1_ITEM; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PASN1_VALUE; cdecl;
-function ASN1_item_free(val: PASN1_VALUE; it: PASN1_ITEM): void; cdecl;
+procedure ASN1_item_free(val: PASN1_VALUE; it: PASN1_ITEM); cdecl;
 function ASN1_item_d2i_ex(val: PPASN1_VALUE; _in: PPIdAnsiChar; len: TIdC_LONG; it: PASN1_ITEM; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PASN1_VALUE; cdecl;
 function ASN1_item_d2i(val: PPASN1_VALUE; _in: PPIdAnsiChar; len: TIdC_LONG; it: PASN1_ITEM): PASN1_VALUE; cdecl;
 function ASN1_item_i2d(val: PASN1_VALUE; _out: PPIdAnsiChar; it: PASN1_ITEM): TIdC_INT; cdecl;
 function ASN1_item_ndef_i2d(val: PASN1_VALUE; _out: PPIdAnsiChar; it: PASN1_ITEM): TIdC_INT; cdecl;
-function ASN1_add_oid_module: void; cdecl;
-function ASN1_add_stable_module: void; cdecl;
+procedure ASN1_add_oid_module; cdecl;
+procedure ASN1_add_stable_module; cdecl;
 function ASN1_generate_nconf(str: PIdAnsiChar; nconf: PCONF): PASN1_TYPE; cdecl;
 function ASN1_generate_v3(str: PIdAnsiChar; cnf: PX509V3_CTX): PASN1_TYPE; cdecl;
 function ASN1_str2mask(str: PIdAnsiChar; pmask: PIdC_ULONG): TIdC_INT; cdecl;
 function ASN1_item_print(_out: PBIO; ifld: PASN1_VALUE; indent: TIdC_INT; it: PASN1_ITEM; pctx: PASN1_PCTX): TIdC_INT; cdecl;
 function ASN1_PCTX_new: PASN1_PCTX; cdecl;
-function ASN1_PCTX_free(p: PASN1_PCTX): void; cdecl;
+procedure ASN1_PCTX_free(p: PASN1_PCTX); cdecl;
 function ASN1_PCTX_get_flags(p: PASN1_PCTX): TIdC_ULONG; cdecl;
-function ASN1_PCTX_set_flags(p: PASN1_PCTX; flags: TIdC_ULONG): void; cdecl;
+procedure ASN1_PCTX_set_flags(p: PASN1_PCTX; flags: TIdC_ULONG); cdecl;
 function ASN1_PCTX_get_nm_flags(p: PASN1_PCTX): TIdC_ULONG; cdecl;
-function ASN1_PCTX_set_nm_flags(p: PASN1_PCTX; flags: TIdC_ULONG): void; cdecl;
+procedure ASN1_PCTX_set_nm_flags(p: PASN1_PCTX; flags: TIdC_ULONG); cdecl;
 function ASN1_PCTX_get_cert_flags(p: PASN1_PCTX): TIdC_ULONG; cdecl;
-function ASN1_PCTX_set_cert_flags(p: PASN1_PCTX; flags: TIdC_ULONG): void; cdecl;
+procedure ASN1_PCTX_set_cert_flags(p: PASN1_PCTX; flags: TIdC_ULONG); cdecl;
 function ASN1_PCTX_get_oid_flags(p: PASN1_PCTX): TIdC_ULONG; cdecl;
-function ASN1_PCTX_set_oid_flags(p: PASN1_PCTX; flags: TIdC_ULONG): void; cdecl;
+procedure ASN1_PCTX_set_oid_flags(p: PASN1_PCTX; flags: TIdC_ULONG); cdecl;
 function ASN1_PCTX_get_str_flags(p: PASN1_PCTX): TIdC_ULONG; cdecl;
-function ASN1_PCTX_set_str_flags(p: PASN1_PCTX; flags: TIdC_ULONG): void; cdecl;
+procedure ASN1_PCTX_set_str_flags(p: PASN1_PCTX; flags: TIdC_ULONG); cdecl;
 function ASN1_SCTX_new(scan_cb: TASN1_SCTX_new_scan_cb_cb): PASN1_SCTX; cdecl;
-function ASN1_SCTX_free(p: PASN1_SCTX): void; cdecl;
+procedure ASN1_SCTX_free(p: PASN1_SCTX); cdecl;
 function ASN1_SCTX_get_item(p: PASN1_SCTX): PASN1_ITEM; cdecl;
 function ASN1_SCTX_get_template(p: PASN1_SCTX): PASN1_TEMPLATE; cdecl;
 function ASN1_SCTX_get_flags(p: PASN1_SCTX): TIdC_ULONG; cdecl;
-function ASN1_SCTX_set_app_data(p: PASN1_SCTX; data: Pointer): void; cdecl;
+procedure ASN1_SCTX_set_app_data(p: PASN1_SCTX; data: Pointer); cdecl;
 function ASN1_SCTX_get_app_data(p: PASN1_SCTX): Pointer; cdecl;
 function BIO_f_asn1: PBIO_METHOD; cdecl;
 function BIO_new_NDEF(_out: PBIO; val: PASN1_VALUE; it: PASN1_ITEM): PBIO; cdecl;
@@ -1687,36 +1679,36 @@ function d2i_ASN1_SET_ANY(a: PPASN1_SEQUENCE_ANY; _in: PPIdAnsiChar; len: TIdC_L
 function i2d_ASN1_SET_ANY(a: PASN1_SEQUENCE_ANY; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASN1_SET_ANY';
 function ASN1_SET_ANY_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASN1_SET_ANY_it';
 function ASN1_TYPE_new: PASN1_TYPE; cdecl external CLibCrypto name 'ASN1_TYPE_new';
-function ASN1_TYPE_free(a: PASN1_TYPE): void; cdecl external CLibCrypto name 'ASN1_TYPE_free';
+procedure ASN1_TYPE_free(a: PASN1_TYPE); cdecl external CLibCrypto name 'ASN1_TYPE_free';
 function d2i_ASN1_TYPE(a: PPASN1_TYPE; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_TYPE; cdecl external CLibCrypto name 'd2i_ASN1_TYPE';
 function i2d_ASN1_TYPE(a: PASN1_TYPE; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASN1_TYPE';
 function ASN1_ANY_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASN1_ANY_it';
 function ASN1_TYPE_get(a: PASN1_TYPE): TIdC_INT; cdecl external CLibCrypto name 'ASN1_TYPE_get';
-function ASN1_TYPE_set(a: PASN1_TYPE; _type: TIdC_INT; value: Pointer): void; cdecl external CLibCrypto name 'ASN1_TYPE_set';
+procedure ASN1_TYPE_set(a: PASN1_TYPE; _type: TIdC_INT; value: Pointer); cdecl external CLibCrypto name 'ASN1_TYPE_set';
 function ASN1_TYPE_set1(a: PASN1_TYPE; _type: TIdC_INT; value: Pointer): TIdC_INT; cdecl external CLibCrypto name 'ASN1_TYPE_set1';
 function ASN1_TYPE_cmp(a: PASN1_TYPE; b: PASN1_TYPE): TIdC_INT; cdecl external CLibCrypto name 'ASN1_TYPE_cmp';
 function ASN1_TYPE_pack_sequence(it: PASN1_ITEM; s: Pointer; t: PPASN1_TYPE): PASN1_TYPE; cdecl external CLibCrypto name 'ASN1_TYPE_pack_sequence';
 function ASN1_TYPE_unpack_sequence(it: PASN1_ITEM; t: PASN1_TYPE): Pointer; cdecl external CLibCrypto name 'ASN1_TYPE_unpack_sequence';
 function ASN1_OBJECT_new: PASN1_OBJECT; cdecl external CLibCrypto name 'ASN1_OBJECT_new';
-function ASN1_OBJECT_free(a: PASN1_OBJECT): void; cdecl external CLibCrypto name 'ASN1_OBJECT_free';
+procedure ASN1_OBJECT_free(a: PASN1_OBJECT); cdecl external CLibCrypto name 'ASN1_OBJECT_free';
 function d2i_ASN1_OBJECT(a: PPASN1_OBJECT; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_OBJECT; cdecl external CLibCrypto name 'd2i_ASN1_OBJECT';
 function i2d_ASN1_OBJECT(a: PASN1_OBJECT; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASN1_OBJECT';
 function ASN1_OBJECT_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASN1_OBJECT_it';
 function ASN1_STRING_new: PASN1_STRING; cdecl external CLibCrypto name 'ASN1_STRING_new';
-function ASN1_STRING_free(a: PASN1_STRING): void; cdecl external CLibCrypto name 'ASN1_STRING_free';
-function ASN1_STRING_clear_free(a: PASN1_STRING): void; cdecl external CLibCrypto name 'ASN1_STRING_clear_free';
+procedure ASN1_STRING_free(a: PASN1_STRING); cdecl external CLibCrypto name 'ASN1_STRING_free';
+procedure ASN1_STRING_clear_free(a: PASN1_STRING); cdecl external CLibCrypto name 'ASN1_STRING_clear_free';
 function ASN1_STRING_copy(dst: PASN1_STRING; str: PASN1_STRING): TIdC_INT; cdecl external CLibCrypto name 'ASN1_STRING_copy';
 function ASN1_STRING_dup(a: PASN1_STRING): PASN1_STRING; cdecl external CLibCrypto name 'ASN1_STRING_dup';
 function ASN1_STRING_type_new(_type: TIdC_INT): PASN1_STRING; cdecl external CLibCrypto name 'ASN1_STRING_type_new';
 function ASN1_STRING_cmp(a: PASN1_STRING; b: PASN1_STRING): TIdC_INT; cdecl external CLibCrypto name 'ASN1_STRING_cmp';
 function ASN1_STRING_set(str: PASN1_STRING; data: Pointer; len: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'ASN1_STRING_set';
-function ASN1_STRING_set0(str: PASN1_STRING; data: Pointer; len: TIdC_INT): void; cdecl external CLibCrypto name 'ASN1_STRING_set0';
+procedure ASN1_STRING_set0(str: PASN1_STRING; data: Pointer; len: TIdC_INT); cdecl external CLibCrypto name 'ASN1_STRING_set0';
 function ASN1_STRING_length(x: PASN1_STRING): TIdC_INT; cdecl external CLibCrypto name 'ASN1_STRING_length';
-function ASN1_STRING_length_set(x: PASN1_STRING; n: TIdC_INT): void; cdecl external CLibCrypto name 'ASN1_STRING_length_set';
+procedure ASN1_STRING_length_set(x: PASN1_STRING; n: TIdC_INT); cdecl external CLibCrypto name 'ASN1_STRING_length_set';
 function ASN1_STRING_type(x: PASN1_STRING): TIdC_INT; cdecl external CLibCrypto name 'ASN1_STRING_type';
 function ASN1_STRING_get0_data(x: PASN1_STRING): PIdAnsiChar; cdecl external CLibCrypto name 'ASN1_STRING_get0_data';
 function ASN1_BIT_STRING_new: PASN1_BIT_STRING; cdecl external CLibCrypto name 'ASN1_BIT_STRING_new';
-function ASN1_BIT_STRING_free(a: PASN1_BIT_STRING): void; cdecl external CLibCrypto name 'ASN1_BIT_STRING_free';
+procedure ASN1_BIT_STRING_free(a: PASN1_BIT_STRING); cdecl external CLibCrypto name 'ASN1_BIT_STRING_free';
 function d2i_ASN1_BIT_STRING(a: PPASN1_BIT_STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_BIT_STRING; cdecl external CLibCrypto name 'd2i_ASN1_BIT_STRING';
 function i2d_ASN1_BIT_STRING(a: PASN1_BIT_STRING; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASN1_BIT_STRING';
 function ASN1_BIT_STRING_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASN1_BIT_STRING_it';
@@ -1728,7 +1720,7 @@ function ASN1_BIT_STRING_name_print(_out: PBIO; bs: PASN1_BIT_STRING; tbl: PBIT_
 function ASN1_BIT_STRING_num_asc(name: PIdAnsiChar; tbl: PBIT_STRING_BITNAME): TIdC_INT; cdecl external CLibCrypto name 'ASN1_BIT_STRING_num_asc';
 function ASN1_BIT_STRING_set_asc(bs: PASN1_BIT_STRING; name: PIdAnsiChar; value: TIdC_INT; tbl: PBIT_STRING_BITNAME): TIdC_INT; cdecl external CLibCrypto name 'ASN1_BIT_STRING_set_asc';
 function ASN1_INTEGER_new: PASN1_INTEGER; cdecl external CLibCrypto name 'ASN1_INTEGER_new';
-function ASN1_INTEGER_free(a: PASN1_INTEGER): void; cdecl external CLibCrypto name 'ASN1_INTEGER_free';
+procedure ASN1_INTEGER_free(a: PASN1_INTEGER); cdecl external CLibCrypto name 'ASN1_INTEGER_free';
 function d2i_ASN1_INTEGER(a: PPASN1_INTEGER; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_INTEGER; cdecl external CLibCrypto name 'd2i_ASN1_INTEGER';
 function i2d_ASN1_INTEGER(a: PASN1_INTEGER; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASN1_INTEGER';
 function ASN1_INTEGER_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASN1_INTEGER_it';
@@ -1736,7 +1728,7 @@ function d2i_ASN1_UINTEGER(a: PPASN1_INTEGER; pp: PPIdAnsiChar; length: TIdC_LON
 function ASN1_INTEGER_dup(a: PASN1_INTEGER): PASN1_INTEGER; cdecl external CLibCrypto name 'ASN1_INTEGER_dup';
 function ASN1_INTEGER_cmp(x: PASN1_INTEGER; y: PASN1_INTEGER): TIdC_INT; cdecl external CLibCrypto name 'ASN1_INTEGER_cmp';
 function ASN1_ENUMERATED_new: PASN1_ENUMERATED; cdecl external CLibCrypto name 'ASN1_ENUMERATED_new';
-function ASN1_ENUMERATED_free(a: PASN1_ENUMERATED): void; cdecl external CLibCrypto name 'ASN1_ENUMERATED_free';
+procedure ASN1_ENUMERATED_free(a: PASN1_ENUMERATED); cdecl external CLibCrypto name 'ASN1_ENUMERATED_free';
 function d2i_ASN1_ENUMERATED(a: PPASN1_ENUMERATED; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_ENUMERATED; cdecl external CLibCrypto name 'd2i_ASN1_ENUMERATED';
 function i2d_ASN1_ENUMERATED(a: PASN1_ENUMERATED; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASN1_ENUMERATED';
 function ASN1_ENUMERATED_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASN1_ENUMERATED_it';
@@ -1751,7 +1743,7 @@ function ASN1_GENERALIZEDTIME_adj(s: PASN1_GENERALIZEDTIME; t: TIdC_TIMET; offse
 function ASN1_GENERALIZEDTIME_set_string(s: PASN1_GENERALIZEDTIME; str: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'ASN1_GENERALIZEDTIME_set_string';
 function ASN1_TIME_diff(pday: PIdC_INT; psec: PIdC_INT; from: PASN1_TIME; _to: PASN1_TIME): TIdC_INT; cdecl external CLibCrypto name 'ASN1_TIME_diff';
 function ASN1_OCTET_STRING_new: PASN1_OCTET_STRING; cdecl external CLibCrypto name 'ASN1_OCTET_STRING_new';
-function ASN1_OCTET_STRING_free(a: PASN1_OCTET_STRING): void; cdecl external CLibCrypto name 'ASN1_OCTET_STRING_free';
+procedure ASN1_OCTET_STRING_free(a: PASN1_OCTET_STRING); cdecl external CLibCrypto name 'ASN1_OCTET_STRING_free';
 function d2i_ASN1_OCTET_STRING(a: PPASN1_OCTET_STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_OCTET_STRING; cdecl external CLibCrypto name 'd2i_ASN1_OCTET_STRING';
 function i2d_ASN1_OCTET_STRING(a: PASN1_OCTET_STRING; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASN1_OCTET_STRING';
 function ASN1_OCTET_STRING_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASN1_OCTET_STRING_it';
@@ -1759,79 +1751,79 @@ function ASN1_OCTET_STRING_dup(a: PASN1_OCTET_STRING): PASN1_OCTET_STRING; cdecl
 function ASN1_OCTET_STRING_cmp(a: PASN1_OCTET_STRING; b: PASN1_OCTET_STRING): TIdC_INT; cdecl external CLibCrypto name 'ASN1_OCTET_STRING_cmp';
 function ASN1_OCTET_STRING_set(str: PASN1_OCTET_STRING; data: PIdAnsiChar; len: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'ASN1_OCTET_STRING_set';
 function ASN1_VISIBLESTRING_new: PASN1_VISIBLESTRING; cdecl external CLibCrypto name 'ASN1_VISIBLESTRING_new';
-function ASN1_VISIBLESTRING_free(a: PASN1_VISIBLESTRING): void; cdecl external CLibCrypto name 'ASN1_VISIBLESTRING_free';
+procedure ASN1_VISIBLESTRING_free(a: PASN1_VISIBLESTRING); cdecl external CLibCrypto name 'ASN1_VISIBLESTRING_free';
 function d2i_ASN1_VISIBLESTRING(a: PPASN1_VISIBLESTRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_VISIBLESTRING; cdecl external CLibCrypto name 'd2i_ASN1_VISIBLESTRING';
 function i2d_ASN1_VISIBLESTRING(a: PASN1_VISIBLESTRING; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASN1_VISIBLESTRING';
 function ASN1_VISIBLESTRING_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASN1_VISIBLESTRING_it';
 function ASN1_UNIVERSALSTRING_new: PASN1_UNIVERSALSTRING; cdecl external CLibCrypto name 'ASN1_UNIVERSALSTRING_new';
-function ASN1_UNIVERSALSTRING_free(a: PASN1_UNIVERSALSTRING): void; cdecl external CLibCrypto name 'ASN1_UNIVERSALSTRING_free';
+procedure ASN1_UNIVERSALSTRING_free(a: PASN1_UNIVERSALSTRING); cdecl external CLibCrypto name 'ASN1_UNIVERSALSTRING_free';
 function d2i_ASN1_UNIVERSALSTRING(a: PPASN1_UNIVERSALSTRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_UNIVERSALSTRING; cdecl external CLibCrypto name 'd2i_ASN1_UNIVERSALSTRING';
 function i2d_ASN1_UNIVERSALSTRING(a: PASN1_UNIVERSALSTRING; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASN1_UNIVERSALSTRING';
 function ASN1_UNIVERSALSTRING_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASN1_UNIVERSALSTRING_it';
 function ASN1_UTF8STRING_new: PASN1_UTF8STRING; cdecl external CLibCrypto name 'ASN1_UTF8STRING_new';
-function ASN1_UTF8STRING_free(a: PASN1_UTF8STRING): void; cdecl external CLibCrypto name 'ASN1_UTF8STRING_free';
+procedure ASN1_UTF8STRING_free(a: PASN1_UTF8STRING); cdecl external CLibCrypto name 'ASN1_UTF8STRING_free';
 function d2i_ASN1_UTF8STRING(a: PPASN1_UTF8STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_UTF8STRING; cdecl external CLibCrypto name 'd2i_ASN1_UTF8STRING';
 function i2d_ASN1_UTF8STRING(a: PASN1_UTF8STRING; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASN1_UTF8STRING';
 function ASN1_UTF8STRING_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASN1_UTF8STRING_it';
 function ASN1_NULL_new: PASN1_NULL; cdecl external CLibCrypto name 'ASN1_NULL_new';
-function ASN1_NULL_free(a: PASN1_NULL): void; cdecl external CLibCrypto name 'ASN1_NULL_free';
+procedure ASN1_NULL_free(a: PASN1_NULL); cdecl external CLibCrypto name 'ASN1_NULL_free';
 function d2i_ASN1_NULL(a: PPASN1_NULL; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_NULL; cdecl external CLibCrypto name 'd2i_ASN1_NULL';
 function i2d_ASN1_NULL(a: PASN1_NULL; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASN1_NULL';
 function ASN1_NULL_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASN1_NULL_it';
 function ASN1_BMPSTRING_new: PASN1_BMPSTRING; cdecl external CLibCrypto name 'ASN1_BMPSTRING_new';
-function ASN1_BMPSTRING_free(a: PASN1_BMPSTRING): void; cdecl external CLibCrypto name 'ASN1_BMPSTRING_free';
+procedure ASN1_BMPSTRING_free(a: PASN1_BMPSTRING); cdecl external CLibCrypto name 'ASN1_BMPSTRING_free';
 function d2i_ASN1_BMPSTRING(a: PPASN1_BMPSTRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_BMPSTRING; cdecl external CLibCrypto name 'd2i_ASN1_BMPSTRING';
 function i2d_ASN1_BMPSTRING(a: PASN1_BMPSTRING; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASN1_BMPSTRING';
 function ASN1_BMPSTRING_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASN1_BMPSTRING_it';
 function UTF8_getc(str: PIdAnsiChar; len: TIdC_INT; val: PIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'UTF8_getc';
 function UTF8_putc(str: PIdAnsiChar; len: TIdC_INT; value: TIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'UTF8_putc';
 function ASN1_PRINTABLE_new: PASN1_STRING; cdecl external CLibCrypto name 'ASN1_PRINTABLE_new';
-function ASN1_PRINTABLE_free(a: PASN1_STRING): void; cdecl external CLibCrypto name 'ASN1_PRINTABLE_free';
+procedure ASN1_PRINTABLE_free(a: PASN1_STRING); cdecl external CLibCrypto name 'ASN1_PRINTABLE_free';
 function d2i_ASN1_PRINTABLE(a: PPASN1_STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_STRING; cdecl external CLibCrypto name 'd2i_ASN1_PRINTABLE';
 function i2d_ASN1_PRINTABLE(a: PASN1_STRING; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASN1_PRINTABLE';
 function ASN1_PRINTABLE_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASN1_PRINTABLE_it';
 function DIRECTORYSTRING_new: PASN1_STRING; cdecl external CLibCrypto name 'DIRECTORYSTRING_new';
-function DIRECTORYSTRING_free(a: PASN1_STRING): void; cdecl external CLibCrypto name 'DIRECTORYSTRING_free';
+procedure DIRECTORYSTRING_free(a: PASN1_STRING); cdecl external CLibCrypto name 'DIRECTORYSTRING_free';
 function d2i_DIRECTORYSTRING(a: PPASN1_STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_STRING; cdecl external CLibCrypto name 'd2i_DIRECTORYSTRING';
 function i2d_DIRECTORYSTRING(a: PASN1_STRING; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_DIRECTORYSTRING';
 function DIRECTORYSTRING_it: PASN1_ITEM; cdecl external CLibCrypto name 'DIRECTORYSTRING_it';
 function DISPLAYTEXT_new: PASN1_STRING; cdecl external CLibCrypto name 'DISPLAYTEXT_new';
-function DISPLAYTEXT_free(a: PASN1_STRING): void; cdecl external CLibCrypto name 'DISPLAYTEXT_free';
+procedure DISPLAYTEXT_free(a: PASN1_STRING); cdecl external CLibCrypto name 'DISPLAYTEXT_free';
 function d2i_DISPLAYTEXT(a: PPASN1_STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_STRING; cdecl external CLibCrypto name 'd2i_DISPLAYTEXT';
 function i2d_DISPLAYTEXT(a: PASN1_STRING; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_DISPLAYTEXT';
 function DISPLAYTEXT_it: PASN1_ITEM; cdecl external CLibCrypto name 'DISPLAYTEXT_it';
 function ASN1_PRINTABLESTRING_new: PASN1_PRINTABLESTRING; cdecl external CLibCrypto name 'ASN1_PRINTABLESTRING_new';
-function ASN1_PRINTABLESTRING_free(a: PASN1_PRINTABLESTRING): void; cdecl external CLibCrypto name 'ASN1_PRINTABLESTRING_free';
+procedure ASN1_PRINTABLESTRING_free(a: PASN1_PRINTABLESTRING); cdecl external CLibCrypto name 'ASN1_PRINTABLESTRING_free';
 function d2i_ASN1_PRINTABLESTRING(a: PPASN1_PRINTABLESTRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_PRINTABLESTRING; cdecl external CLibCrypto name 'd2i_ASN1_PRINTABLESTRING';
 function i2d_ASN1_PRINTABLESTRING(a: PASN1_PRINTABLESTRING; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASN1_PRINTABLESTRING';
 function ASN1_PRINTABLESTRING_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASN1_PRINTABLESTRING_it';
 function ASN1_T61STRING_new: PASN1_T61STRING; cdecl external CLibCrypto name 'ASN1_T61STRING_new';
-function ASN1_T61STRING_free(a: PASN1_T61STRING): void; cdecl external CLibCrypto name 'ASN1_T61STRING_free';
+procedure ASN1_T61STRING_free(a: PASN1_T61STRING); cdecl external CLibCrypto name 'ASN1_T61STRING_free';
 function d2i_ASN1_T61STRING(a: PPASN1_T61STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_T61STRING; cdecl external CLibCrypto name 'd2i_ASN1_T61STRING';
 function i2d_ASN1_T61STRING(a: PASN1_T61STRING; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASN1_T61STRING';
 function ASN1_T61STRING_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASN1_T61STRING_it';
 function ASN1_IA5STRING_new: PASN1_IA5STRING; cdecl external CLibCrypto name 'ASN1_IA5STRING_new';
-function ASN1_IA5STRING_free(a: PASN1_IA5STRING): void; cdecl external CLibCrypto name 'ASN1_IA5STRING_free';
+procedure ASN1_IA5STRING_free(a: PASN1_IA5STRING); cdecl external CLibCrypto name 'ASN1_IA5STRING_free';
 function d2i_ASN1_IA5STRING(a: PPASN1_IA5STRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_IA5STRING; cdecl external CLibCrypto name 'd2i_ASN1_IA5STRING';
 function i2d_ASN1_IA5STRING(a: PASN1_IA5STRING; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASN1_IA5STRING';
 function ASN1_IA5STRING_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASN1_IA5STRING_it';
 function ASN1_GENERALSTRING_new: PASN1_GENERALSTRING; cdecl external CLibCrypto name 'ASN1_GENERALSTRING_new';
-function ASN1_GENERALSTRING_free(a: PASN1_GENERALSTRING): void; cdecl external CLibCrypto name 'ASN1_GENERALSTRING_free';
+procedure ASN1_GENERALSTRING_free(a: PASN1_GENERALSTRING); cdecl external CLibCrypto name 'ASN1_GENERALSTRING_free';
 function d2i_ASN1_GENERALSTRING(a: PPASN1_GENERALSTRING; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_GENERALSTRING; cdecl external CLibCrypto name 'd2i_ASN1_GENERALSTRING';
 function i2d_ASN1_GENERALSTRING(a: PASN1_GENERALSTRING; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASN1_GENERALSTRING';
 function ASN1_GENERALSTRING_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASN1_GENERALSTRING_it';
 function ASN1_UTCTIME_new: PASN1_UTCTIME; cdecl external CLibCrypto name 'ASN1_UTCTIME_new';
-function ASN1_UTCTIME_free(a: PASN1_UTCTIME): void; cdecl external CLibCrypto name 'ASN1_UTCTIME_free';
+procedure ASN1_UTCTIME_free(a: PASN1_UTCTIME); cdecl external CLibCrypto name 'ASN1_UTCTIME_free';
 function d2i_ASN1_UTCTIME(a: PPASN1_UTCTIME; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_UTCTIME; cdecl external CLibCrypto name 'd2i_ASN1_UTCTIME';
 function i2d_ASN1_UTCTIME(a: PASN1_UTCTIME; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASN1_UTCTIME';
 function ASN1_UTCTIME_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASN1_UTCTIME_it';
 function ASN1_GENERALIZEDTIME_new: PASN1_GENERALIZEDTIME; cdecl external CLibCrypto name 'ASN1_GENERALIZEDTIME_new';
-function ASN1_GENERALIZEDTIME_free(a: PASN1_GENERALIZEDTIME): void; cdecl external CLibCrypto name 'ASN1_GENERALIZEDTIME_free';
+procedure ASN1_GENERALIZEDTIME_free(a: PASN1_GENERALIZEDTIME); cdecl external CLibCrypto name 'ASN1_GENERALIZEDTIME_free';
 function d2i_ASN1_GENERALIZEDTIME(a: PPASN1_GENERALIZEDTIME; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_GENERALIZEDTIME; cdecl external CLibCrypto name 'd2i_ASN1_GENERALIZEDTIME';
 function i2d_ASN1_GENERALIZEDTIME(a: PASN1_GENERALIZEDTIME; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASN1_GENERALIZEDTIME';
 function ASN1_GENERALIZEDTIME_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASN1_GENERALIZEDTIME_it';
 function ASN1_TIME_new: PASN1_TIME; cdecl external CLibCrypto name 'ASN1_TIME_new';
-function ASN1_TIME_free(a: PASN1_TIME): void; cdecl external CLibCrypto name 'ASN1_TIME_free';
+procedure ASN1_TIME_free(a: PASN1_TIME); cdecl external CLibCrypto name 'ASN1_TIME_free';
 function d2i_ASN1_TIME(a: PPASN1_TIME; _in: PPIdAnsiChar; len: TIdC_LONG): PASN1_TIME; cdecl external CLibCrypto name 'd2i_ASN1_TIME';
 function i2d_ASN1_TIME(a: PASN1_TIME; _out: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'i2d_ASN1_TIME';
 function ASN1_TIME_it: PASN1_ITEM; cdecl external CLibCrypto name 'ASN1_TIME_it';
@@ -1878,7 +1870,7 @@ function ASN1_tag2bit(tag: TIdC_INT): TIdC_ULONG; cdecl external CLibCrypto name
 function ASN1_get_object(pp: PPIdAnsiChar; plength: PIdC_LONG; ptag: PIdC_INT; pclass: PIdC_INT; omax: TIdC_LONG): TIdC_INT; cdecl external CLibCrypto name 'ASN1_get_object';
 function ASN1_check_infinite_end(p: PPIdAnsiChar; len: TIdC_LONG): TIdC_INT; cdecl external CLibCrypto name 'ASN1_check_infinite_end';
 function ASN1_const_check_infinite_end(p: PPIdAnsiChar; len: TIdC_LONG): TIdC_INT; cdecl external CLibCrypto name 'ASN1_const_check_infinite_end';
-function ASN1_put_object(pp: PPIdAnsiChar; constructed: TIdC_INT; length: TIdC_INT; tag: TIdC_INT; xclass: TIdC_INT): void; cdecl external CLibCrypto name 'ASN1_put_object';
+procedure ASN1_put_object(pp: PPIdAnsiChar; constructed: TIdC_INT; length: TIdC_INT; tag: TIdC_INT; xclass: TIdC_INT); cdecl external CLibCrypto name 'ASN1_put_object';
 function ASN1_put_eoc(pp: PPIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'ASN1_put_eoc';
 function ASN1_object_size(constructed: TIdC_INT; length: TIdC_INT; tag: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'ASN1_object_size';
 function ASN1_dup(i2d: Ti2d_of_void; d2i: Td2i_of_void; x: Pointer): Pointer; cdecl external CLibCrypto name 'ASN1_dup';
@@ -1917,7 +1909,7 @@ function ASN1_TYPE_get_int_octetstring(a: PASN1_TYPE; num: PIdC_LONG; data: PIdA
 function ASN1_item_unpack(oct: PASN1_STRING; it: PASN1_ITEM): Pointer; cdecl external CLibCrypto name 'ASN1_item_unpack';
 function ASN1_item_unpack_ex(oct: PASN1_STRING; it: PASN1_ITEM; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): Pointer; cdecl external CLibCrypto name 'ASN1_item_unpack_ex';
 function ASN1_item_pack(obj: Pointer; it: PASN1_ITEM; oct: PPASN1_OCTET_STRING): PASN1_STRING; cdecl external CLibCrypto name 'ASN1_item_pack';
-function ASN1_STRING_set_default_mask(mask: TIdC_ULONG): void; cdecl external CLibCrypto name 'ASN1_STRING_set_default_mask';
+procedure ASN1_STRING_set_default_mask(mask: TIdC_ULONG); cdecl external CLibCrypto name 'ASN1_STRING_set_default_mask';
 function ASN1_STRING_set_default_mask_asc(p: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'ASN1_STRING_set_default_mask_asc';
 function ASN1_STRING_get_default_mask: TIdC_ULONG; cdecl external CLibCrypto name 'ASN1_STRING_get_default_mask';
 function ASN1_mbstring_copy(_out: PPASN1_STRING; _in: PIdAnsiChar; len: TIdC_INT; inform: TIdC_INT; mask: TIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'ASN1_mbstring_copy';
@@ -1925,38 +1917,38 @@ function ASN1_mbstring_ncopy(_out: PPASN1_STRING; _in: PIdAnsiChar; len: TIdC_IN
 function ASN1_STRING_set_by_NID(_out: PPASN1_STRING; _in: PIdAnsiChar; inlen: TIdC_INT; inform: TIdC_INT; nid: TIdC_INT): PASN1_STRING; cdecl external CLibCrypto name 'ASN1_STRING_set_by_NID';
 function ASN1_STRING_TABLE_get(nid: TIdC_INT): PASN1_STRING_TABLE; cdecl external CLibCrypto name 'ASN1_STRING_TABLE_get';
 function ASN1_STRING_TABLE_add(arg1: TIdC_INT; arg2: TIdC_LONG; arg3: TIdC_LONG; arg4: TIdC_ULONG; arg5: TIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'ASN1_STRING_TABLE_add';
-function ASN1_STRING_TABLE_cleanup: void; cdecl external CLibCrypto name 'ASN1_STRING_TABLE_cleanup';
+procedure ASN1_STRING_TABLE_cleanup; cdecl external CLibCrypto name 'ASN1_STRING_TABLE_cleanup';
 function ASN1_item_new(it: PASN1_ITEM): PASN1_VALUE; cdecl external CLibCrypto name 'ASN1_item_new';
 function ASN1_item_new_ex(it: PASN1_ITEM; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PASN1_VALUE; cdecl external CLibCrypto name 'ASN1_item_new_ex';
-function ASN1_item_free(val: PASN1_VALUE; it: PASN1_ITEM): void; cdecl external CLibCrypto name 'ASN1_item_free';
+procedure ASN1_item_free(val: PASN1_VALUE; it: PASN1_ITEM); cdecl external CLibCrypto name 'ASN1_item_free';
 function ASN1_item_d2i_ex(val: PPASN1_VALUE; _in: PPIdAnsiChar; len: TIdC_LONG; it: PASN1_ITEM; libctx: POSSL_LIB_CTX; propq: PIdAnsiChar): PASN1_VALUE; cdecl external CLibCrypto name 'ASN1_item_d2i_ex';
 function ASN1_item_d2i(val: PPASN1_VALUE; _in: PPIdAnsiChar; len: TIdC_LONG; it: PASN1_ITEM): PASN1_VALUE; cdecl external CLibCrypto name 'ASN1_item_d2i';
 function ASN1_item_i2d(val: PASN1_VALUE; _out: PPIdAnsiChar; it: PASN1_ITEM): TIdC_INT; cdecl external CLibCrypto name 'ASN1_item_i2d';
 function ASN1_item_ndef_i2d(val: PASN1_VALUE; _out: PPIdAnsiChar; it: PASN1_ITEM): TIdC_INT; cdecl external CLibCrypto name 'ASN1_item_ndef_i2d';
-function ASN1_add_oid_module: void; cdecl external CLibCrypto name 'ASN1_add_oid_module';
-function ASN1_add_stable_module: void; cdecl external CLibCrypto name 'ASN1_add_stable_module';
+procedure ASN1_add_oid_module; cdecl external CLibCrypto name 'ASN1_add_oid_module';
+procedure ASN1_add_stable_module; cdecl external CLibCrypto name 'ASN1_add_stable_module';
 function ASN1_generate_nconf(str: PIdAnsiChar; nconf: PCONF): PASN1_TYPE; cdecl external CLibCrypto name 'ASN1_generate_nconf';
 function ASN1_generate_v3(str: PIdAnsiChar; cnf: PX509V3_CTX): PASN1_TYPE; cdecl external CLibCrypto name 'ASN1_generate_v3';
 function ASN1_str2mask(str: PIdAnsiChar; pmask: PIdC_ULONG): TIdC_INT; cdecl external CLibCrypto name 'ASN1_str2mask';
 function ASN1_item_print(_out: PBIO; ifld: PASN1_VALUE; indent: TIdC_INT; it: PASN1_ITEM; pctx: PASN1_PCTX): TIdC_INT; cdecl external CLibCrypto name 'ASN1_item_print';
 function ASN1_PCTX_new: PASN1_PCTX; cdecl external CLibCrypto name 'ASN1_PCTX_new';
-function ASN1_PCTX_free(p: PASN1_PCTX): void; cdecl external CLibCrypto name 'ASN1_PCTX_free';
+procedure ASN1_PCTX_free(p: PASN1_PCTX); cdecl external CLibCrypto name 'ASN1_PCTX_free';
 function ASN1_PCTX_get_flags(p: PASN1_PCTX): TIdC_ULONG; cdecl external CLibCrypto name 'ASN1_PCTX_get_flags';
-function ASN1_PCTX_set_flags(p: PASN1_PCTX; flags: TIdC_ULONG): void; cdecl external CLibCrypto name 'ASN1_PCTX_set_flags';
+procedure ASN1_PCTX_set_flags(p: PASN1_PCTX; flags: TIdC_ULONG); cdecl external CLibCrypto name 'ASN1_PCTX_set_flags';
 function ASN1_PCTX_get_nm_flags(p: PASN1_PCTX): TIdC_ULONG; cdecl external CLibCrypto name 'ASN1_PCTX_get_nm_flags';
-function ASN1_PCTX_set_nm_flags(p: PASN1_PCTX; flags: TIdC_ULONG): void; cdecl external CLibCrypto name 'ASN1_PCTX_set_nm_flags';
+procedure ASN1_PCTX_set_nm_flags(p: PASN1_PCTX; flags: TIdC_ULONG); cdecl external CLibCrypto name 'ASN1_PCTX_set_nm_flags';
 function ASN1_PCTX_get_cert_flags(p: PASN1_PCTX): TIdC_ULONG; cdecl external CLibCrypto name 'ASN1_PCTX_get_cert_flags';
-function ASN1_PCTX_set_cert_flags(p: PASN1_PCTX; flags: TIdC_ULONG): void; cdecl external CLibCrypto name 'ASN1_PCTX_set_cert_flags';
+procedure ASN1_PCTX_set_cert_flags(p: PASN1_PCTX; flags: TIdC_ULONG); cdecl external CLibCrypto name 'ASN1_PCTX_set_cert_flags';
 function ASN1_PCTX_get_oid_flags(p: PASN1_PCTX): TIdC_ULONG; cdecl external CLibCrypto name 'ASN1_PCTX_get_oid_flags';
-function ASN1_PCTX_set_oid_flags(p: PASN1_PCTX; flags: TIdC_ULONG): void; cdecl external CLibCrypto name 'ASN1_PCTX_set_oid_flags';
+procedure ASN1_PCTX_set_oid_flags(p: PASN1_PCTX; flags: TIdC_ULONG); cdecl external CLibCrypto name 'ASN1_PCTX_set_oid_flags';
 function ASN1_PCTX_get_str_flags(p: PASN1_PCTX): TIdC_ULONG; cdecl external CLibCrypto name 'ASN1_PCTX_get_str_flags';
-function ASN1_PCTX_set_str_flags(p: PASN1_PCTX; flags: TIdC_ULONG): void; cdecl external CLibCrypto name 'ASN1_PCTX_set_str_flags';
+procedure ASN1_PCTX_set_str_flags(p: PASN1_PCTX; flags: TIdC_ULONG); cdecl external CLibCrypto name 'ASN1_PCTX_set_str_flags';
 function ASN1_SCTX_new(scan_cb: TASN1_SCTX_new_scan_cb_cb): PASN1_SCTX; cdecl external CLibCrypto name 'ASN1_SCTX_new';
-function ASN1_SCTX_free(p: PASN1_SCTX): void; cdecl external CLibCrypto name 'ASN1_SCTX_free';
+procedure ASN1_SCTX_free(p: PASN1_SCTX); cdecl external CLibCrypto name 'ASN1_SCTX_free';
 function ASN1_SCTX_get_item(p: PASN1_SCTX): PASN1_ITEM; cdecl external CLibCrypto name 'ASN1_SCTX_get_item';
 function ASN1_SCTX_get_template(p: PASN1_SCTX): PASN1_TEMPLATE; cdecl external CLibCrypto name 'ASN1_SCTX_get_template';
 function ASN1_SCTX_get_flags(p: PASN1_SCTX): TIdC_ULONG; cdecl external CLibCrypto name 'ASN1_SCTX_get_flags';
-function ASN1_SCTX_set_app_data(p: PASN1_SCTX; data: Pointer): void; cdecl external CLibCrypto name 'ASN1_SCTX_set_app_data';
+procedure ASN1_SCTX_set_app_data(p: PASN1_SCTX; data: Pointer); cdecl external CLibCrypto name 'ASN1_SCTX_set_app_data';
 function ASN1_SCTX_get_app_data(p: PASN1_SCTX): Pointer; cdecl external CLibCrypto name 'ASN1_SCTX_get_app_data';
 function BIO_f_asn1: PBIO_METHOD; cdecl external CLibCrypto name 'BIO_f_asn1';
 function BIO_new_NDEF(_out: PBIO; val: PASN1_VALUE; it: PASN1_ITEM): PBIO; cdecl external CLibCrypto name 'BIO_new_NDEF';
@@ -2896,7 +2888,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_TYPE_new_procname);
 end;
 
-function ERR_ASN1_TYPE_free(a: PASN1_TYPE): void; cdecl
+procedure ERR_ASN1_TYPE_free(a: PASN1_TYPE); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_TYPE_free_procname);
 end;
@@ -2921,7 +2913,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_TYPE_get_procname);
 end;
 
-function ERR_ASN1_TYPE_set(a: PASN1_TYPE; _type: TIdC_INT; value: Pointer): void; cdecl
+procedure ERR_ASN1_TYPE_set(a: PASN1_TYPE; _type: TIdC_INT; value: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_TYPE_set_procname);
 end;
@@ -2951,7 +2943,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_OBJECT_new_procname);
 end;
 
-function ERR_ASN1_OBJECT_free(a: PASN1_OBJECT): void; cdecl
+procedure ERR_ASN1_OBJECT_free(a: PASN1_OBJECT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_OBJECT_free_procname);
 end;
@@ -2976,12 +2968,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_STRING_new_procname);
 end;
 
-function ERR_ASN1_STRING_free(a: PASN1_STRING): void; cdecl
+procedure ERR_ASN1_STRING_free(a: PASN1_STRING); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_STRING_free_procname);
 end;
 
-function ERR_ASN1_STRING_clear_free(a: PASN1_STRING): void; cdecl
+procedure ERR_ASN1_STRING_clear_free(a: PASN1_STRING); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_STRING_clear_free_procname);
 end;
@@ -3011,7 +3003,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_STRING_set_procname);
 end;
 
-function ERR_ASN1_STRING_set0(str: PASN1_STRING; data: Pointer; len: TIdC_INT): void; cdecl
+procedure ERR_ASN1_STRING_set0(str: PASN1_STRING; data: Pointer; len: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_STRING_set0_procname);
 end;
@@ -3021,7 +3013,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_STRING_length_procname);
 end;
 
-function ERR_ASN1_STRING_length_set(x: PASN1_STRING; n: TIdC_INT): void; cdecl
+procedure ERR_ASN1_STRING_length_set(x: PASN1_STRING; n: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_STRING_length_set_procname);
 end;
@@ -3041,7 +3033,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_BIT_STRING_new_procname);
 end;
 
-function ERR_ASN1_BIT_STRING_free(a: PASN1_BIT_STRING): void; cdecl
+procedure ERR_ASN1_BIT_STRING_free(a: PASN1_BIT_STRING); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_BIT_STRING_free_procname);
 end;
@@ -3101,7 +3093,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_INTEGER_new_procname);
 end;
 
-function ERR_ASN1_INTEGER_free(a: PASN1_INTEGER): void; cdecl
+procedure ERR_ASN1_INTEGER_free(a: PASN1_INTEGER); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_INTEGER_free_procname);
 end;
@@ -3141,7 +3133,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_ENUMERATED_new_procname);
 end;
 
-function ERR_ASN1_ENUMERATED_free(a: PASN1_ENUMERATED): void; cdecl
+procedure ERR_ASN1_ENUMERATED_free(a: PASN1_ENUMERATED); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_ENUMERATED_free_procname);
 end;
@@ -3216,7 +3208,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_OCTET_STRING_new_procname);
 end;
 
-function ERR_ASN1_OCTET_STRING_free(a: PASN1_OCTET_STRING): void; cdecl
+procedure ERR_ASN1_OCTET_STRING_free(a: PASN1_OCTET_STRING); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_OCTET_STRING_free_procname);
 end;
@@ -3256,7 +3248,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_VISIBLESTRING_new_procname);
 end;
 
-function ERR_ASN1_VISIBLESTRING_free(a: PASN1_VISIBLESTRING): void; cdecl
+procedure ERR_ASN1_VISIBLESTRING_free(a: PASN1_VISIBLESTRING); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_VISIBLESTRING_free_procname);
 end;
@@ -3281,7 +3273,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_UNIVERSALSTRING_new_procname);
 end;
 
-function ERR_ASN1_UNIVERSALSTRING_free(a: PASN1_UNIVERSALSTRING): void; cdecl
+procedure ERR_ASN1_UNIVERSALSTRING_free(a: PASN1_UNIVERSALSTRING); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_UNIVERSALSTRING_free_procname);
 end;
@@ -3306,7 +3298,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_UTF8STRING_new_procname);
 end;
 
-function ERR_ASN1_UTF8STRING_free(a: PASN1_UTF8STRING): void; cdecl
+procedure ERR_ASN1_UTF8STRING_free(a: PASN1_UTF8STRING); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_UTF8STRING_free_procname);
 end;
@@ -3331,7 +3323,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_NULL_new_procname);
 end;
 
-function ERR_ASN1_NULL_free(a: PASN1_NULL): void; cdecl
+procedure ERR_ASN1_NULL_free(a: PASN1_NULL); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_NULL_free_procname);
 end;
@@ -3356,7 +3348,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_BMPSTRING_new_procname);
 end;
 
-function ERR_ASN1_BMPSTRING_free(a: PASN1_BMPSTRING): void; cdecl
+procedure ERR_ASN1_BMPSTRING_free(a: PASN1_BMPSTRING); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_BMPSTRING_free_procname);
 end;
@@ -3391,7 +3383,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_PRINTABLE_new_procname);
 end;
 
-function ERR_ASN1_PRINTABLE_free(a: PASN1_STRING): void; cdecl
+procedure ERR_ASN1_PRINTABLE_free(a: PASN1_STRING); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_PRINTABLE_free_procname);
 end;
@@ -3416,7 +3408,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DIRECTORYSTRING_new_procname);
 end;
 
-function ERR_DIRECTORYSTRING_free(a: PASN1_STRING): void; cdecl
+procedure ERR_DIRECTORYSTRING_free(a: PASN1_STRING); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DIRECTORYSTRING_free_procname);
 end;
@@ -3441,7 +3433,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DISPLAYTEXT_new_procname);
 end;
 
-function ERR_DISPLAYTEXT_free(a: PASN1_STRING): void; cdecl
+procedure ERR_DISPLAYTEXT_free(a: PASN1_STRING); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DISPLAYTEXT_free_procname);
 end;
@@ -3466,7 +3458,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_PRINTABLESTRING_new_procname);
 end;
 
-function ERR_ASN1_PRINTABLESTRING_free(a: PASN1_PRINTABLESTRING): void; cdecl
+procedure ERR_ASN1_PRINTABLESTRING_free(a: PASN1_PRINTABLESTRING); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_PRINTABLESTRING_free_procname);
 end;
@@ -3491,7 +3483,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_T61STRING_new_procname);
 end;
 
-function ERR_ASN1_T61STRING_free(a: PASN1_T61STRING): void; cdecl
+procedure ERR_ASN1_T61STRING_free(a: PASN1_T61STRING); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_T61STRING_free_procname);
 end;
@@ -3516,7 +3508,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_IA5STRING_new_procname);
 end;
 
-function ERR_ASN1_IA5STRING_free(a: PASN1_IA5STRING): void; cdecl
+procedure ERR_ASN1_IA5STRING_free(a: PASN1_IA5STRING); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_IA5STRING_free_procname);
 end;
@@ -3541,7 +3533,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_GENERALSTRING_new_procname);
 end;
 
-function ERR_ASN1_GENERALSTRING_free(a: PASN1_GENERALSTRING): void; cdecl
+procedure ERR_ASN1_GENERALSTRING_free(a: PASN1_GENERALSTRING); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_GENERALSTRING_free_procname);
 end;
@@ -3566,7 +3558,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_UTCTIME_new_procname);
 end;
 
-function ERR_ASN1_UTCTIME_free(a: PASN1_UTCTIME): void; cdecl
+procedure ERR_ASN1_UTCTIME_free(a: PASN1_UTCTIME); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_UTCTIME_free_procname);
 end;
@@ -3591,7 +3583,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_GENERALIZEDTIME_new_procname);
 end;
 
-function ERR_ASN1_GENERALIZEDTIME_free(a: PASN1_GENERALIZEDTIME): void; cdecl
+procedure ERR_ASN1_GENERALIZEDTIME_free(a: PASN1_GENERALIZEDTIME); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_GENERALIZEDTIME_free_procname);
 end;
@@ -3616,7 +3608,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_TIME_new_procname);
 end;
 
-function ERR_ASN1_TIME_free(a: PASN1_TIME): void; cdecl
+procedure ERR_ASN1_TIME_free(a: PASN1_TIME); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_TIME_free_procname);
 end;
@@ -3851,7 +3843,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_const_check_infinite_end_procname);
 end;
 
-function ERR_ASN1_put_object(pp: PPIdAnsiChar; constructed: TIdC_INT; length: TIdC_INT; tag: TIdC_INT; xclass: TIdC_INT): void; cdecl
+procedure ERR_ASN1_put_object(pp: PPIdAnsiChar; constructed: TIdC_INT; length: TIdC_INT; tag: TIdC_INT; xclass: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_put_object_procname);
 end;
@@ -4046,7 +4038,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_item_pack_procname);
 end;
 
-function ERR_ASN1_STRING_set_default_mask(mask: TIdC_ULONG): void; cdecl
+procedure ERR_ASN1_STRING_set_default_mask(mask: TIdC_ULONG); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_STRING_set_default_mask_procname);
 end;
@@ -4086,7 +4078,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_STRING_TABLE_add_procname);
 end;
 
-function ERR_ASN1_STRING_TABLE_cleanup: void; cdecl
+procedure ERR_ASN1_STRING_TABLE_cleanup; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_STRING_TABLE_cleanup_procname);
 end;
@@ -4101,7 +4093,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_item_new_ex_procname);
 end;
 
-function ERR_ASN1_item_free(val: PASN1_VALUE; it: PASN1_ITEM): void; cdecl
+procedure ERR_ASN1_item_free(val: PASN1_VALUE; it: PASN1_ITEM); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_item_free_procname);
 end;
@@ -4126,12 +4118,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_item_ndef_i2d_procname);
 end;
 
-function ERR_ASN1_add_oid_module: void; cdecl
+procedure ERR_ASN1_add_oid_module; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_add_oid_module_procname);
 end;
 
-function ERR_ASN1_add_stable_module: void; cdecl
+procedure ERR_ASN1_add_stable_module; cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_add_stable_module_procname);
 end;
@@ -4161,7 +4153,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_PCTX_new_procname);
 end;
 
-function ERR_ASN1_PCTX_free(p: PASN1_PCTX): void; cdecl
+procedure ERR_ASN1_PCTX_free(p: PASN1_PCTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_PCTX_free_procname);
 end;
@@ -4171,7 +4163,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_PCTX_get_flags_procname);
 end;
 
-function ERR_ASN1_PCTX_set_flags(p: PASN1_PCTX; flags: TIdC_ULONG): void; cdecl
+procedure ERR_ASN1_PCTX_set_flags(p: PASN1_PCTX; flags: TIdC_ULONG); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_PCTX_set_flags_procname);
 end;
@@ -4181,7 +4173,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_PCTX_get_nm_flags_procname);
 end;
 
-function ERR_ASN1_PCTX_set_nm_flags(p: PASN1_PCTX; flags: TIdC_ULONG): void; cdecl
+procedure ERR_ASN1_PCTX_set_nm_flags(p: PASN1_PCTX; flags: TIdC_ULONG); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_PCTX_set_nm_flags_procname);
 end;
@@ -4191,7 +4183,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_PCTX_get_cert_flags_procname);
 end;
 
-function ERR_ASN1_PCTX_set_cert_flags(p: PASN1_PCTX; flags: TIdC_ULONG): void; cdecl
+procedure ERR_ASN1_PCTX_set_cert_flags(p: PASN1_PCTX; flags: TIdC_ULONG); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_PCTX_set_cert_flags_procname);
 end;
@@ -4201,7 +4193,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_PCTX_get_oid_flags_procname);
 end;
 
-function ERR_ASN1_PCTX_set_oid_flags(p: PASN1_PCTX; flags: TIdC_ULONG): void; cdecl
+procedure ERR_ASN1_PCTX_set_oid_flags(p: PASN1_PCTX; flags: TIdC_ULONG); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_PCTX_set_oid_flags_procname);
 end;
@@ -4211,7 +4203,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_PCTX_get_str_flags_procname);
 end;
 
-function ERR_ASN1_PCTX_set_str_flags(p: PASN1_PCTX; flags: TIdC_ULONG): void; cdecl
+procedure ERR_ASN1_PCTX_set_str_flags(p: PASN1_PCTX; flags: TIdC_ULONG); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_PCTX_set_str_flags_procname);
 end;
@@ -4221,7 +4213,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_SCTX_new_procname);
 end;
 
-function ERR_ASN1_SCTX_free(p: PASN1_SCTX): void; cdecl
+procedure ERR_ASN1_SCTX_free(p: PASN1_SCTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_SCTX_free_procname);
 end;
@@ -4241,7 +4233,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_SCTX_get_flags_procname);
 end;
 
-function ERR_ASN1_SCTX_set_app_data(p: PASN1_SCTX; data: Pointer): void; cdecl
+procedure ERR_ASN1_SCTX_set_app_data(p: PASN1_SCTX; data: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_SCTX_set_app_data_procname);
 end;

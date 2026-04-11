@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -67,7 +67,7 @@ var
   WHIRLPOOL_Update: function(c: PWHIRLPOOL_CTX; inp: Pointer; bytes: TIdC_SIZET): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM WHIRLPOOL_Update}
 
-  WHIRLPOOL_BitUpdate: function(c: PWHIRLPOOL_CTX; inp: Pointer; bits: TIdC_SIZET): void; cdecl = nil; // Deprecated in 3_0_0
+  WHIRLPOOL_BitUpdate: procedure(c: PWHIRLPOOL_CTX; inp: Pointer; bits: TIdC_SIZET); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM WHIRLPOOL_BitUpdate}
 
   WHIRLPOOL_Final: function(md: PIdAnsiChar; c: PWHIRLPOOL_CTX): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -86,7 +86,7 @@ var
 
 function WHIRLPOOL_Init(c: PWHIRLPOOL_CTX): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function WHIRLPOOL_Update(c: PWHIRLPOOL_CTX; inp: Pointer; bytes: TIdC_SIZET): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function WHIRLPOOL_BitUpdate(c: PWHIRLPOOL_CTX; inp: Pointer; bits: TIdC_SIZET): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure WHIRLPOOL_BitUpdate(c: PWHIRLPOOL_CTX; inp: Pointer; bits: TIdC_SIZET); cdecl; deprecated 'In OpenSSL 3_0_0';
 function WHIRLPOOL_Final(md: PIdAnsiChar; c: PWHIRLPOOL_CTX): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function WHIRLPOOL(inp: Pointer; bytes: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl; deprecated 'In OpenSSL 3_0_0';
 {$ENDIF OPENSSL_STATIC_LINK_MODEL}
@@ -109,7 +109,7 @@ uses
 
 function WHIRLPOOL_Init(c: PWHIRLPOOL_CTX): TIdC_INT; cdecl external CLibCrypto name 'WHIRLPOOL_Init';
 function WHIRLPOOL_Update(c: PWHIRLPOOL_CTX; inp: Pointer; bytes: TIdC_SIZET): TIdC_INT; cdecl external CLibCrypto name 'WHIRLPOOL_Update';
-function WHIRLPOOL_BitUpdate(c: PWHIRLPOOL_CTX; inp: Pointer; bits: TIdC_SIZET): void; cdecl external CLibCrypto name 'WHIRLPOOL_BitUpdate';
+procedure WHIRLPOOL_BitUpdate(c: PWHIRLPOOL_CTX; inp: Pointer; bits: TIdC_SIZET); cdecl external CLibCrypto name 'WHIRLPOOL_BitUpdate';
 function WHIRLPOOL_Final(md: PIdAnsiChar; c: PWHIRLPOOL_CTX): TIdC_INT; cdecl external CLibCrypto name 'WHIRLPOOL_Final';
 function WHIRLPOOL(inp: Pointer; bytes: TIdC_SIZET; md: PIdAnsiChar): PIdAnsiChar; cdecl external CLibCrypto name 'WHIRLPOOL';
 {$ENDIF}
@@ -162,7 +162,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(WHIRLPOOL_Update_procname);
 end;
 
-function ERR_WHIRLPOOL_BitUpdate(c: PWHIRLPOOL_CTX; inp: Pointer; bits: TIdC_SIZET): void; cdecl
+procedure ERR_WHIRLPOOL_BitUpdate(c: PWHIRLPOOL_CTX; inp: Pointer; bits: TIdC_SIZET); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(WHIRLPOOL_BitUpdate_procname);
 end;

@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -112,13 +112,13 @@ var
   RAND_set_seed_source_type: function(ctx: POSSL_LIB_CTX; seed: PIdAnsiChar; propq: PIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM RAND_set_seed_source_type}
 
-  RAND_seed: function(buf: Pointer; num: TIdC_INT): void; cdecl = nil;
+  RAND_seed: procedure(buf: Pointer; num: TIdC_INT); cdecl = nil;
   {$EXTERNALSYM RAND_seed}
 
-  RAND_keep_random_devices_open: function(keep: TIdC_INT): void; cdecl = nil;
+  RAND_keep_random_devices_open: procedure(keep: TIdC_INT); cdecl = nil;
   {$EXTERNALSYM RAND_keep_random_devices_open}
 
-  RAND_add: function(buf: Pointer; num: TIdC_INT; randomness: TIdC_DOUBLE): void; cdecl = nil;
+  RAND_add: procedure(buf: Pointer; num: TIdC_INT; randomness: TIdC_DOUBLE); cdecl = nil;
   {$EXTERNALSYM RAND_add}
 
   RAND_load_file: function(_file: PIdAnsiChar; max_bytes: TIdC_LONG): TIdC_INT; cdecl = nil;
@@ -162,9 +162,9 @@ function RAND_set0_public(ctx: POSSL_LIB_CTX; rand: PEVP_RAND_CTX): TIdC_INT; cd
 function RAND_set0_private(ctx: POSSL_LIB_CTX; rand: PEVP_RAND_CTX): TIdC_INT; cdecl;
 function RAND_set_DRBG_type(ctx: POSSL_LIB_CTX; drbg: PIdAnsiChar; propq: PIdAnsiChar; cipher: PIdAnsiChar; digest: PIdAnsiChar): TIdC_INT; cdecl;
 function RAND_set_seed_source_type(ctx: POSSL_LIB_CTX; seed: PIdAnsiChar; propq: PIdAnsiChar): TIdC_INT; cdecl;
-function RAND_seed(buf: Pointer; num: TIdC_INT): void; cdecl;
-function RAND_keep_random_devices_open(keep: TIdC_INT): void; cdecl;
-function RAND_add(buf: Pointer; num: TIdC_INT; randomness: TIdC_DOUBLE): void; cdecl;
+procedure RAND_seed(buf: Pointer; num: TIdC_INT); cdecl;
+procedure RAND_keep_random_devices_open(keep: TIdC_INT); cdecl;
+procedure RAND_add(buf: Pointer; num: TIdC_INT; randomness: TIdC_DOUBLE); cdecl;
 function RAND_load_file(_file: PIdAnsiChar; max_bytes: TIdC_LONG): TIdC_INT; cdecl;
 function RAND_write_file(_file: PIdAnsiChar): TIdC_INT; cdecl;
 function RAND_file_name(_file: PIdAnsiChar; num: TIdC_SIZET): PIdAnsiChar; cdecl;
@@ -212,9 +212,9 @@ function RAND_set0_public(ctx: POSSL_LIB_CTX; rand: PEVP_RAND_CTX): TIdC_INT; cd
 function RAND_set0_private(ctx: POSSL_LIB_CTX; rand: PEVP_RAND_CTX): TIdC_INT; cdecl external CLibCrypto name 'RAND_set0_private';
 function RAND_set_DRBG_type(ctx: POSSL_LIB_CTX; drbg: PIdAnsiChar; propq: PIdAnsiChar; cipher: PIdAnsiChar; digest: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'RAND_set_DRBG_type';
 function RAND_set_seed_source_type(ctx: POSSL_LIB_CTX; seed: PIdAnsiChar; propq: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'RAND_set_seed_source_type';
-function RAND_seed(buf: Pointer; num: TIdC_INT): void; cdecl external CLibCrypto name 'RAND_seed';
-function RAND_keep_random_devices_open(keep: TIdC_INT): void; cdecl external CLibCrypto name 'RAND_keep_random_devices_open';
-function RAND_add(buf: Pointer; num: TIdC_INT; randomness: TIdC_DOUBLE): void; cdecl external CLibCrypto name 'RAND_add';
+procedure RAND_seed(buf: Pointer; num: TIdC_INT); cdecl external CLibCrypto name 'RAND_seed';
+procedure RAND_keep_random_devices_open(keep: TIdC_INT); cdecl external CLibCrypto name 'RAND_keep_random_devices_open';
+procedure RAND_add(buf: Pointer; num: TIdC_INT; randomness: TIdC_DOUBLE); cdecl external CLibCrypto name 'RAND_add';
 function RAND_load_file(_file: PIdAnsiChar; max_bytes: TIdC_LONG): TIdC_INT; cdecl external CLibCrypto name 'RAND_load_file';
 function RAND_write_file(_file: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'RAND_write_file';
 function RAND_file_name(_file: PIdAnsiChar; num: TIdC_SIZET): PIdAnsiChar; cdecl external CLibCrypto name 'RAND_file_name';
@@ -407,17 +407,17 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RAND_set_seed_source_type_procname);
 end;
 
-function ERR_RAND_seed(buf: Pointer; num: TIdC_INT): void; cdecl
+procedure ERR_RAND_seed(buf: Pointer; num: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RAND_seed_procname);
 end;
 
-function ERR_RAND_keep_random_devices_open(keep: TIdC_INT): void; cdecl
+procedure ERR_RAND_keep_random_devices_open(keep: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RAND_keep_random_devices_open_procname);
 end;
 
-function ERR_RAND_add(buf: Pointer; num: TIdC_INT; randomness: TIdC_DOUBLE): void; cdecl
+procedure ERR_RAND_add(buf: Pointer; num: TIdC_INT; randomness: TIdC_DOUBLE); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(RAND_add_procname);
 end;

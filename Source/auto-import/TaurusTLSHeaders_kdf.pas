@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -35,9 +35,9 @@ uses
 // =============================================================================
 type
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // EVP_KDF_do_all_provided_fn_cb = function(kdf: PEVP_KDF; arg: Pointer): void; cdecl;
+  // EVP_KDF_do_all_provided_fn_cb = procedure(kdf: PEVP_KDF; arg: Pointer); cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // EVP_KDF_names_do_all_fn_cb = function(name: PIdAnsiChar; data: Pointer): void; cdecl;
+  // EVP_KDF_names_do_all_fn_cb = procedure(name: PIdAnsiChar; data: Pointer); cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -80,7 +80,7 @@ var
   EVP_KDF_up_ref: function(kdf: PEVP_KDF): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_KDF_up_ref}
 
-  EVP_KDF_free: function(kdf: PEVP_KDF): void; cdecl = nil;
+  EVP_KDF_free: procedure(kdf: PEVP_KDF); cdecl = nil;
   {$EXTERNALSYM EVP_KDF_free}
 
   EVP_KDF_fetch: function(libctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_KDF; cdecl = nil;
@@ -89,7 +89,7 @@ var
   EVP_KDF_CTX_new: function(kdf: PEVP_KDF): PEVP_KDF_CTX; cdecl = nil;
   {$EXTERNALSYM EVP_KDF_CTX_new}
 
-  EVP_KDF_CTX_free: function(ctx: PEVP_KDF_CTX): void; cdecl = nil;
+  EVP_KDF_CTX_free: procedure(ctx: PEVP_KDF_CTX); cdecl = nil;
   {$EXTERNALSYM EVP_KDF_CTX_free}
 
   EVP_KDF_CTX_dup: function(src: PEVP_KDF_CTX): PEVP_KDF_CTX; cdecl = nil;
@@ -110,7 +110,7 @@ var
   EVP_KDF_CTX_kdf: function(ctx: PEVP_KDF_CTX): PEVP_KDF; cdecl = nil;
   {$EXTERNALSYM EVP_KDF_CTX_kdf}
 
-  EVP_KDF_CTX_reset: function(ctx: PEVP_KDF_CTX): void; cdecl = nil;
+  EVP_KDF_CTX_reset: procedure(ctx: PEVP_KDF_CTX); cdecl = nil;
   {$EXTERNALSYM EVP_KDF_CTX_reset}
 
   EVP_KDF_CTX_get_kdf_size: function(ctx: PEVP_KDF_CTX): TIdC_SIZET; cdecl = nil;
@@ -149,7 +149,7 @@ var
   EVP_KDF_CTX_settable_params: function(ctx: PEVP_KDF_CTX): POSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM EVP_KDF_CTX_settable_params}
 
-  EVP_KDF_do_all_provided: function(libctx: POSSL_LIB_CTX; fn: TEVP_KDF_do_all_provided_fn_cb; arg: Pointer): void; cdecl = nil;
+  EVP_KDF_do_all_provided: procedure(libctx: POSSL_LIB_CTX; fn: TEVP_KDF_do_all_provided_fn_cb; arg: Pointer); cdecl = nil;
   {$EXTERNALSYM EVP_KDF_do_all_provided}
 
   EVP_KDF_names_do_all: function(kdf: PEVP_KDF; fn: TEVP_KDF_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl = nil;
@@ -206,17 +206,17 @@ var
 // =============================================================================
 
 function EVP_KDF_up_ref(kdf: PEVP_KDF): TIdC_INT; cdecl;
-function EVP_KDF_free(kdf: PEVP_KDF): void; cdecl;
+procedure EVP_KDF_free(kdf: PEVP_KDF); cdecl;
 function EVP_KDF_fetch(libctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_KDF; cdecl;
 function EVP_KDF_CTX_new(kdf: PEVP_KDF): PEVP_KDF_CTX; cdecl;
-function EVP_KDF_CTX_free(ctx: PEVP_KDF_CTX): void; cdecl;
+procedure EVP_KDF_CTX_free(ctx: PEVP_KDF_CTX); cdecl;
 function EVP_KDF_CTX_dup(src: PEVP_KDF_CTX): PEVP_KDF_CTX; cdecl;
 function EVP_KDF_get0_description(kdf: PEVP_KDF): PIdAnsiChar; cdecl;
 function EVP_KDF_is_a(kdf: PEVP_KDF; name: PIdAnsiChar): TIdC_INT; cdecl;
 function EVP_KDF_get0_name(kdf: PEVP_KDF): PIdAnsiChar; cdecl;
 function EVP_KDF_get0_provider(kdf: PEVP_KDF): POSSL_PROVIDER; cdecl;
 function EVP_KDF_CTX_kdf(ctx: PEVP_KDF_CTX): PEVP_KDF; cdecl;
-function EVP_KDF_CTX_reset(ctx: PEVP_KDF_CTX): void; cdecl;
+procedure EVP_KDF_CTX_reset(ctx: PEVP_KDF_CTX); cdecl;
 function EVP_KDF_CTX_get_kdf_size(ctx: PEVP_KDF_CTX): TIdC_SIZET; cdecl;
 function EVP_KDF_derive(ctx: PEVP_KDF_CTX; key: PIdAnsiChar; keylen: TIdC_SIZET; params: POSSL_PARAM): TIdC_INT; cdecl;
 function EVP_KDF_CTX_set_SKEY(ctx: PEVP_KDF_CTX; key: PEVP_SKEY; paramname: PIdAnsiChar): TIdC_INT; cdecl;
@@ -229,7 +229,7 @@ function EVP_KDF_gettable_ctx_params(kdf: PEVP_KDF): POSSL_PARAM; cdecl;
 function EVP_KDF_settable_ctx_params(kdf: PEVP_KDF): POSSL_PARAM; cdecl;
 function EVP_KDF_CTX_gettable_params(ctx: PEVP_KDF_CTX): POSSL_PARAM; cdecl;
 function EVP_KDF_CTX_settable_params(ctx: PEVP_KDF_CTX): POSSL_PARAM; cdecl;
-function EVP_KDF_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KDF_do_all_provided_fn_cb; arg: Pointer): void; cdecl;
+procedure EVP_KDF_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KDF_do_all_provided_fn_cb; arg: Pointer); cdecl;
 function EVP_KDF_names_do_all(kdf: PEVP_KDF; fn: TEVP_KDF_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl;
 function EVP_PKEY_CTX_set_tls1_prf_md(ctx: PEVP_PKEY_CTX; md: PEVP_MD): TIdC_INT; cdecl;
 function EVP_PKEY_CTX_set1_tls1_prf_secret(pctx: PEVP_PKEY_CTX; sec: PIdAnsiChar; seclen: TIdC_INT): TIdC_INT; cdecl;
@@ -272,17 +272,17 @@ uses
 // =============================================================================
 
 function EVP_KDF_up_ref(kdf: PEVP_KDF): TIdC_INT; cdecl external CLibCrypto name 'EVP_KDF_up_ref';
-function EVP_KDF_free(kdf: PEVP_KDF): void; cdecl external CLibCrypto name 'EVP_KDF_free';
+procedure EVP_KDF_free(kdf: PEVP_KDF); cdecl external CLibCrypto name 'EVP_KDF_free';
 function EVP_KDF_fetch(libctx: POSSL_LIB_CTX; algorithm: PIdAnsiChar; properties: PIdAnsiChar): PEVP_KDF; cdecl external CLibCrypto name 'EVP_KDF_fetch';
 function EVP_KDF_CTX_new(kdf: PEVP_KDF): PEVP_KDF_CTX; cdecl external CLibCrypto name 'EVP_KDF_CTX_new';
-function EVP_KDF_CTX_free(ctx: PEVP_KDF_CTX): void; cdecl external CLibCrypto name 'EVP_KDF_CTX_free';
+procedure EVP_KDF_CTX_free(ctx: PEVP_KDF_CTX); cdecl external CLibCrypto name 'EVP_KDF_CTX_free';
 function EVP_KDF_CTX_dup(src: PEVP_KDF_CTX): PEVP_KDF_CTX; cdecl external CLibCrypto name 'EVP_KDF_CTX_dup';
 function EVP_KDF_get0_description(kdf: PEVP_KDF): PIdAnsiChar; cdecl external CLibCrypto name 'EVP_KDF_get0_description';
 function EVP_KDF_is_a(kdf: PEVP_KDF; name: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'EVP_KDF_is_a';
 function EVP_KDF_get0_name(kdf: PEVP_KDF): PIdAnsiChar; cdecl external CLibCrypto name 'EVP_KDF_get0_name';
 function EVP_KDF_get0_provider(kdf: PEVP_KDF): POSSL_PROVIDER; cdecl external CLibCrypto name 'EVP_KDF_get0_provider';
 function EVP_KDF_CTX_kdf(ctx: PEVP_KDF_CTX): PEVP_KDF; cdecl external CLibCrypto name 'EVP_KDF_CTX_kdf';
-function EVP_KDF_CTX_reset(ctx: PEVP_KDF_CTX): void; cdecl external CLibCrypto name 'EVP_KDF_CTX_reset';
+procedure EVP_KDF_CTX_reset(ctx: PEVP_KDF_CTX); cdecl external CLibCrypto name 'EVP_KDF_CTX_reset';
 function EVP_KDF_CTX_get_kdf_size(ctx: PEVP_KDF_CTX): TIdC_SIZET; cdecl external CLibCrypto name 'EVP_KDF_CTX_get_kdf_size';
 function EVP_KDF_derive(ctx: PEVP_KDF_CTX; key: PIdAnsiChar; keylen: TIdC_SIZET; params: POSSL_PARAM): TIdC_INT; cdecl external CLibCrypto name 'EVP_KDF_derive';
 function EVP_KDF_CTX_set_SKEY(ctx: PEVP_KDF_CTX; key: PEVP_SKEY; paramname: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'EVP_KDF_CTX_set_SKEY';
@@ -295,7 +295,7 @@ function EVP_KDF_gettable_ctx_params(kdf: PEVP_KDF): POSSL_PARAM; cdecl external
 function EVP_KDF_settable_ctx_params(kdf: PEVP_KDF): POSSL_PARAM; cdecl external CLibCrypto name 'EVP_KDF_settable_ctx_params';
 function EVP_KDF_CTX_gettable_params(ctx: PEVP_KDF_CTX): POSSL_PARAM; cdecl external CLibCrypto name 'EVP_KDF_CTX_gettable_params';
 function EVP_KDF_CTX_settable_params(ctx: PEVP_KDF_CTX): POSSL_PARAM; cdecl external CLibCrypto name 'EVP_KDF_CTX_settable_params';
-function EVP_KDF_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KDF_do_all_provided_fn_cb; arg: Pointer): void; cdecl external CLibCrypto name 'EVP_KDF_do_all_provided';
+procedure EVP_KDF_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KDF_do_all_provided_fn_cb; arg: Pointer); cdecl external CLibCrypto name 'EVP_KDF_do_all_provided';
 function EVP_KDF_names_do_all(kdf: PEVP_KDF; fn: TEVP_KDF_names_do_all_fn_cb; data: Pointer): TIdC_INT; cdecl external CLibCrypto name 'EVP_KDF_names_do_all';
 function EVP_PKEY_CTX_set_tls1_prf_md(ctx: PEVP_PKEY_CTX; md: PEVP_MD): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_CTX_set_tls1_prf_md';
 function EVP_PKEY_CTX_set1_tls1_prf_secret(pctx: PEVP_PKEY_CTX; sec: PIdAnsiChar; seclen: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'EVP_PKEY_CTX_set1_tls1_prf_secret';
@@ -469,7 +469,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_KDF_up_ref_procname);
 end;
 
-function ERR_EVP_KDF_free(kdf: PEVP_KDF): void; cdecl
+procedure ERR_EVP_KDF_free(kdf: PEVP_KDF); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_KDF_free_procname);
 end;
@@ -484,7 +484,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_KDF_CTX_new_procname);
 end;
 
-function ERR_EVP_KDF_CTX_free(ctx: PEVP_KDF_CTX): void; cdecl
+procedure ERR_EVP_KDF_CTX_free(ctx: PEVP_KDF_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_KDF_CTX_free_procname);
 end;
@@ -519,7 +519,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_KDF_CTX_kdf_procname);
 end;
 
-function ERR_EVP_KDF_CTX_reset(ctx: PEVP_KDF_CTX): void; cdecl
+procedure ERR_EVP_KDF_CTX_reset(ctx: PEVP_KDF_CTX); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_KDF_CTX_reset_procname);
 end;
@@ -584,7 +584,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_KDF_CTX_settable_params_procname);
 end;
 
-function ERR_EVP_KDF_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KDF_do_all_provided_fn_cb; arg: Pointer): void; cdecl
+procedure ERR_EVP_KDF_do_all_provided(libctx: POSSL_LIB_CTX; fn: TEVP_KDF_do_all_provided_fn_cb; arg: Pointer); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_KDF_do_all_provided_procname);
 end;

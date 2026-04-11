@@ -23,9 +23,9 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_ossl_types,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_core;
-
 
 
 
@@ -43,7 +43,7 @@ type
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
   // DH_meth_get_generate_params_func_cb = function(arg1: Pdh_st; arg2: TIdC_INT; arg3: TIdC_INT; arg4: Pbn_gencb_st): TIdC_INT; cdecl;
   { TODO 1 -cID Anonymous Callback : Promoted from pointer. Review name and placement. }
-  // DH_generate_parameters_callback_cb = function(arg1: TIdC_INT; arg2: TIdC_INT; arg3: Pointer): void; cdecl;
+  // DH_generate_parameters_callback_cb = procedure(arg1: TIdC_INT; arg2: TIdC_INT; arg3: Pointer); cdecl;
 
 // =============================================================================
 // CONSTANTS DECLARATIONS
@@ -174,7 +174,7 @@ var
   DH_OpenSSL: function: PDH_METHOD; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DH_OpenSSL}
 
-  DH_set_default_method: function(meth: PDH_METHOD): void; cdecl = nil; // Deprecated in 3_0_0
+  DH_set_default_method: procedure(meth: PDH_METHOD); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DH_set_default_method}
 
   DH_get_default_method: function: PDH_METHOD; cdecl = nil; // Deprecated in 3_0_0
@@ -189,7 +189,7 @@ var
   DH_new: function: PDH; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DH_new}
 
-  DH_free: function(dh: PDH): void; cdecl = nil; // Deprecated in 3_0_0
+  DH_free: procedure(dh: PDH); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DH_free}
 
   DH_up_ref: function(dh: PDH): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -276,13 +276,13 @@ var
   DH_KDF_X9_42: function(_out: PIdAnsiChar; outlen: TIdC_SIZET; Z: PIdAnsiChar; Zlen: TIdC_SIZET; key_oid: PASN1_OBJECT; ukm: PIdAnsiChar; ukmlen: TIdC_SIZET; md: PEVP_MD): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DH_KDF_X9_42}
 
-  DH_get0_pqg: function(dh: PDH; p: PPBIGNUM; q: PPBIGNUM; g: PPBIGNUM): void; cdecl = nil; // Deprecated in 3_0_0
+  DH_get0_pqg: procedure(dh: PDH; p: PPBIGNUM; q: PPBIGNUM; g: PPBIGNUM); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DH_get0_pqg}
 
   DH_set0_pqg: function(dh: PDH; p: PBIGNUM; q: PBIGNUM; g: PBIGNUM): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DH_set0_pqg}
 
-  DH_get0_key: function(dh: PDH; pub_key: PPBIGNUM; priv_key: PPBIGNUM): void; cdecl = nil; // Deprecated in 3_0_0
+  DH_get0_key: procedure(dh: PDH; pub_key: PPBIGNUM; priv_key: PPBIGNUM); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DH_get0_key}
 
   DH_set0_key: function(dh: PDH; pub_key: PBIGNUM; priv_key: PBIGNUM): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
@@ -303,13 +303,13 @@ var
   DH_get0_pub_key: function(dh: PDH): PBIGNUM; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DH_get0_pub_key}
 
-  DH_clear_flags: function(dh: PDH; flags: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  DH_clear_flags: procedure(dh: PDH; flags: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DH_clear_flags}
 
   DH_test_flags: function(dh: PDH; flags: TIdC_INT): TIdC_INT; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DH_test_flags}
 
-  DH_set_flags: function(dh: PDH; flags: TIdC_INT): void; cdecl = nil; // Deprecated in 3_0_0
+  DH_set_flags: procedure(dh: PDH; flags: TIdC_INT); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DH_set_flags}
 
   DH_get0_engine: function(d: PDH): PENGINE; cdecl = nil; // Deprecated in 3_0_0
@@ -324,7 +324,7 @@ var
   DH_meth_new: function(name: PIdAnsiChar; flags: TIdC_INT): PDH_METHOD; cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DH_meth_new}
 
-  DH_meth_free: function(dhm: PDH_METHOD): void; cdecl = nil; // Deprecated in 3_0_0
+  DH_meth_free: procedure(dhm: PDH_METHOD); cdecl = nil; // Deprecated in 3_0_0
   {$EXTERNALSYM DH_meth_free}
 
   DH_meth_dup: function(dhm: PDH_METHOD): PDH_METHOD; cdecl = nil; // Deprecated in 3_0_0
@@ -415,12 +415,12 @@ function EVP_PKEY_CTX_get0_dh_kdf_ukm(ctx: PEVP_PKEY_CTX; ukm: PPIdAnsiChar): TI
 function DHparams_it: PASN1_ITEM; cdecl;
 function DHparams_dup(a: PDH): PDH; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_OpenSSL: PDH_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
-function DH_set_default_method(meth: PDH_METHOD): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure DH_set_default_method(meth: PDH_METHOD); cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_get_default_method: PDH_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_set_method(dh: PDH; meth: PDH_METHOD): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_new_method(engine: PENGINE): PDH; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_new: PDH; cdecl; deprecated 'In OpenSSL 3_0_0';
-function DH_free(dh: PDH): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure DH_free(dh: PDH); cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_up_ref(dh: PDH): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_bits(dh: PDH): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_size(dh: PDH): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
@@ -449,23 +449,23 @@ function DH_get_2048_256: PDH; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_new_by_nid(nid: TIdC_INT): PDH; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_get_nid(dh: PDH): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_KDF_X9_42(_out: PIdAnsiChar; outlen: TIdC_SIZET; Z: PIdAnsiChar; Zlen: TIdC_SIZET; key_oid: PASN1_OBJECT; ukm: PIdAnsiChar; ukmlen: TIdC_SIZET; md: PEVP_MD): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function DH_get0_pqg(dh: PDH; p: PPBIGNUM; q: PPBIGNUM; g: PPBIGNUM): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure DH_get0_pqg(dh: PDH; p: PPBIGNUM; q: PPBIGNUM; g: PPBIGNUM); cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_set0_pqg(dh: PDH; p: PBIGNUM; q: PBIGNUM; g: PBIGNUM): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function DH_get0_key(dh: PDH; pub_key: PPBIGNUM; priv_key: PPBIGNUM): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure DH_get0_key(dh: PDH; pub_key: PPBIGNUM; priv_key: PPBIGNUM); cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_set0_key(dh: PDH; pub_key: PBIGNUM; priv_key: PBIGNUM): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_get0_p(dh: PDH): PBIGNUM; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_get0_q(dh: PDH): PBIGNUM; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_get0_g(dh: PDH): PBIGNUM; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_get0_priv_key(dh: PDH): PBIGNUM; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_get0_pub_key(dh: PDH): PBIGNUM; cdecl; deprecated 'In OpenSSL 3_0_0';
-function DH_clear_flags(dh: PDH; flags: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure DH_clear_flags(dh: PDH; flags: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_test_flags(dh: PDH; flags: TIdC_INT): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
-function DH_set_flags(dh: PDH; flags: TIdC_INT): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure DH_set_flags(dh: PDH; flags: TIdC_INT); cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_get0_engine(d: PDH): PENGINE; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_get_length(dh: PDH): TIdC_LONG; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_set_length(dh: PDH; length: TIdC_LONG): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_meth_new(name: PIdAnsiChar; flags: TIdC_INT): PDH_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
-function DH_meth_free(dhm: PDH_METHOD): void; cdecl; deprecated 'In OpenSSL 3_0_0';
+procedure DH_meth_free(dhm: PDH_METHOD); cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_meth_dup(dhm: PDH_METHOD): PDH_METHOD; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_meth_get0_name(dhm: PDH_METHOD): PIdAnsiChar; cdecl; deprecated 'In OpenSSL 3_0_0';
 function DH_meth_set1_name(dhm: PDH_METHOD; name: PIdAnsiChar): TIdC_INT; cdecl; deprecated 'In OpenSSL 3_0_0';
@@ -526,12 +526,12 @@ function EVP_PKEY_CTX_get0_dh_kdf_ukm(ctx: PEVP_PKEY_CTX; ukm: PPIdAnsiChar): TI
 function DHparams_it: PASN1_ITEM; cdecl external CLibCrypto name 'DHparams_it';
 function DHparams_dup(a: PDH): PDH; cdecl external CLibCrypto name 'DHparams_dup';
 function DH_OpenSSL: PDH_METHOD; cdecl external CLibCrypto name 'DH_OpenSSL';
-function DH_set_default_method(meth: PDH_METHOD): void; cdecl external CLibCrypto name 'DH_set_default_method';
+procedure DH_set_default_method(meth: PDH_METHOD); cdecl external CLibCrypto name 'DH_set_default_method';
 function DH_get_default_method: PDH_METHOD; cdecl external CLibCrypto name 'DH_get_default_method';
 function DH_set_method(dh: PDH; meth: PDH_METHOD): TIdC_INT; cdecl external CLibCrypto name 'DH_set_method';
 function DH_new_method(engine: PENGINE): PDH; cdecl external CLibCrypto name 'DH_new_method';
 function DH_new: PDH; cdecl external CLibCrypto name 'DH_new';
-function DH_free(dh: PDH): void; cdecl external CLibCrypto name 'DH_free';
+procedure DH_free(dh: PDH); cdecl external CLibCrypto name 'DH_free';
 function DH_up_ref(dh: PDH): TIdC_INT; cdecl external CLibCrypto name 'DH_up_ref';
 function DH_bits(dh: PDH): TIdC_INT; cdecl external CLibCrypto name 'DH_bits';
 function DH_size(dh: PDH): TIdC_INT; cdecl external CLibCrypto name 'DH_size';
@@ -560,23 +560,23 @@ function DH_get_2048_256: PDH; cdecl external CLibCrypto name 'DH_get_2048_256';
 function DH_new_by_nid(nid: TIdC_INT): PDH; cdecl external CLibCrypto name 'DH_new_by_nid';
 function DH_get_nid(dh: PDH): TIdC_INT; cdecl external CLibCrypto name 'DH_get_nid';
 function DH_KDF_X9_42(_out: PIdAnsiChar; outlen: TIdC_SIZET; Z: PIdAnsiChar; Zlen: TIdC_SIZET; key_oid: PASN1_OBJECT; ukm: PIdAnsiChar; ukmlen: TIdC_SIZET; md: PEVP_MD): TIdC_INT; cdecl external CLibCrypto name 'DH_KDF_X9_42';
-function DH_get0_pqg(dh: PDH; p: PPBIGNUM; q: PPBIGNUM; g: PPBIGNUM): void; cdecl external CLibCrypto name 'DH_get0_pqg';
+procedure DH_get0_pqg(dh: PDH; p: PPBIGNUM; q: PPBIGNUM; g: PPBIGNUM); cdecl external CLibCrypto name 'DH_get0_pqg';
 function DH_set0_pqg(dh: PDH; p: PBIGNUM; q: PBIGNUM; g: PBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'DH_set0_pqg';
-function DH_get0_key(dh: PDH; pub_key: PPBIGNUM; priv_key: PPBIGNUM): void; cdecl external CLibCrypto name 'DH_get0_key';
+procedure DH_get0_key(dh: PDH; pub_key: PPBIGNUM; priv_key: PPBIGNUM); cdecl external CLibCrypto name 'DH_get0_key';
 function DH_set0_key(dh: PDH; pub_key: PBIGNUM; priv_key: PBIGNUM): TIdC_INT; cdecl external CLibCrypto name 'DH_set0_key';
 function DH_get0_p(dh: PDH): PBIGNUM; cdecl external CLibCrypto name 'DH_get0_p';
 function DH_get0_q(dh: PDH): PBIGNUM; cdecl external CLibCrypto name 'DH_get0_q';
 function DH_get0_g(dh: PDH): PBIGNUM; cdecl external CLibCrypto name 'DH_get0_g';
 function DH_get0_priv_key(dh: PDH): PBIGNUM; cdecl external CLibCrypto name 'DH_get0_priv_key';
 function DH_get0_pub_key(dh: PDH): PBIGNUM; cdecl external CLibCrypto name 'DH_get0_pub_key';
-function DH_clear_flags(dh: PDH; flags: TIdC_INT): void; cdecl external CLibCrypto name 'DH_clear_flags';
+procedure DH_clear_flags(dh: PDH; flags: TIdC_INT); cdecl external CLibCrypto name 'DH_clear_flags';
 function DH_test_flags(dh: PDH; flags: TIdC_INT): TIdC_INT; cdecl external CLibCrypto name 'DH_test_flags';
-function DH_set_flags(dh: PDH; flags: TIdC_INT): void; cdecl external CLibCrypto name 'DH_set_flags';
+procedure DH_set_flags(dh: PDH; flags: TIdC_INT); cdecl external CLibCrypto name 'DH_set_flags';
 function DH_get0_engine(d: PDH): PENGINE; cdecl external CLibCrypto name 'DH_get0_engine';
 function DH_get_length(dh: PDH): TIdC_LONG; cdecl external CLibCrypto name 'DH_get_length';
 function DH_set_length(dh: PDH; length: TIdC_LONG): TIdC_INT; cdecl external CLibCrypto name 'DH_set_length';
 function DH_meth_new(name: PIdAnsiChar; flags: TIdC_INT): PDH_METHOD; cdecl external CLibCrypto name 'DH_meth_new';
-function DH_meth_free(dhm: PDH_METHOD): void; cdecl external CLibCrypto name 'DH_meth_free';
+procedure DH_meth_free(dhm: PDH_METHOD); cdecl external CLibCrypto name 'DH_meth_free';
 function DH_meth_dup(dhm: PDH_METHOD): PDH_METHOD; cdecl external CLibCrypto name 'DH_meth_dup';
 function DH_meth_get0_name(dhm: PDH_METHOD): PIdAnsiChar; cdecl external CLibCrypto name 'DH_meth_get0_name';
 function DH_meth_set1_name(dhm: PDH_METHOD; name: PIdAnsiChar): TIdC_INT; cdecl external CLibCrypto name 'DH_meth_set1_name';
@@ -1082,7 +1082,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DH_OpenSSL_procname);
 end;
 
-function ERR_DH_set_default_method(meth: PDH_METHOD): void; cdecl
+procedure ERR_DH_set_default_method(meth: PDH_METHOD); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DH_set_default_method_procname);
 end;
@@ -1107,7 +1107,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DH_new_procname);
 end;
 
-function ERR_DH_free(dh: PDH): void; cdecl
+procedure ERR_DH_free(dh: PDH); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DH_free_procname);
 end;
@@ -1252,7 +1252,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DH_KDF_X9_42_procname);
 end;
 
-function ERR_DH_get0_pqg(dh: PDH; p: PPBIGNUM; q: PPBIGNUM; g: PPBIGNUM): void; cdecl
+procedure ERR_DH_get0_pqg(dh: PDH; p: PPBIGNUM; q: PPBIGNUM; g: PPBIGNUM); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DH_get0_pqg_procname);
 end;
@@ -1262,7 +1262,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DH_set0_pqg_procname);
 end;
 
-function ERR_DH_get0_key(dh: PDH; pub_key: PPBIGNUM; priv_key: PPBIGNUM): void; cdecl
+procedure ERR_DH_get0_key(dh: PDH; pub_key: PPBIGNUM; priv_key: PPBIGNUM); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DH_get0_key_procname);
 end;
@@ -1297,7 +1297,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DH_get0_pub_key_procname);
 end;
 
-function ERR_DH_clear_flags(dh: PDH; flags: TIdC_INT): void; cdecl
+procedure ERR_DH_clear_flags(dh: PDH; flags: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DH_clear_flags_procname);
 end;
@@ -1307,7 +1307,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DH_test_flags_procname);
 end;
 
-function ERR_DH_set_flags(dh: PDH; flags: TIdC_INT): void; cdecl
+procedure ERR_DH_set_flags(dh: PDH; flags: TIdC_INT); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DH_set_flags_procname);
 end;
@@ -1332,7 +1332,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DH_meth_new_procname);
 end;
 
-function ERR_DH_meth_free(dhm: PDH_METHOD): void; cdecl
+procedure ERR_DH_meth_free(dhm: PDH_METHOD); cdecl
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(DH_meth_free_procname);
 end;
