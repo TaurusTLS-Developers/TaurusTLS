@@ -1170,15 +1170,7 @@
   // Support for 64-bit ARM iOS Simulator was added in Delphi 11.2
   // TODO: how to detect iOS Simulator in FPC? Does it support 64-bit ARM?
   {$IFDEF CPUARM}
-    {$IFNDEF IOSSIMULATOR}
-      // RLebeau: For iOS devices, OpenSSL cannot be used as an external library,
-      // it must be statically linked into the app.  For the iOS simulator, this
-      // is not true.  Users who want to use OpenSSL in iOS device apps will need
-      // to add the static OpenSSL library to the project and then include the
-      // IdSSLOpenSSLHeaders_static unit in their uses clause. It hooks up the
-      // statically linked functions for the IdSSLOpenSSLHeaders unit to use...
       {$DEFINE STATICLOAD_OPENSSL}
-    {$ENDIF}
   {$ENDIF}
 {$ENDIF}
 
