@@ -1,3 +1,4 @@
+/// <exclude />
 {$I TaurusTLSCompilerDefines.inc}
 {$I TaurusTLSLinkDefines.inc}
 {$IFNDEF USE_OPENSSL}
