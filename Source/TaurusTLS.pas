@@ -2,7 +2,7 @@
 { *  TaurusTLS                                                                 * }
 { *           https://github.com/JPeterMugaas/TaurusTLS                        * }
 { *                                                                            * }
-{ *  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              * }
+{ *  Copyright (c) 2026 TaurusTLS Developers, All Rights Reserved              * }
 { *                                                                            * }
 { * Portions of this software are Copyright (c) 1993 – 2018,                   * }
 { * Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  * }
@@ -2550,6 +2550,8 @@ uses
 {$ENDIF}
   IdURI,
   SyncObjs,
+  TaurusTLS_ECH,
+  TaurusTLS_Files,
   TaurusTLSHeaders_asn1,
   TaurusTLSHeaders_bn,
   TaurusTLSHeaders_x509_vfy,
@@ -2565,7 +2567,6 @@ uses
   TaurusTLSHeaders_objects,
   TaurusTLSHeaders_obj_mac,
   TaurusTLSHeaders_x509,
-  TaurusTLS_Files,
   TaurusTLSLoader;
 
 type
