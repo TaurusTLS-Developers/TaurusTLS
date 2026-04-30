@@ -2371,11 +2371,15 @@ type
   /// Raised if the OpenSSL library failed to load.
   /// </summary>
   ETaurusTLSCouldNotLoadSSLLibrary = class(ETaurusTLSError);
+
+  /// <summary>
+  ///   Base class for exceptions releated to Encrypted Client Hello (ECH).
+  /// </summary>
+  ETaurusTLSECHError = class(ETaurusTLSError);
   /// <summary>
   ///  Raised if ECH can not be supported by the current configuration.
   /// </summary>
-  ETaurusTLSECHUnsupported = class(ETaurusTLSError);
-
+  ETaurusTLSECHUnsupported = class(ETaurusTLSECHError);
   /// <summary>
   ///   Raised if Encrypted Client Hello (ECH) is attempted with OpenSSL 3.x or
   ///   earlier.
