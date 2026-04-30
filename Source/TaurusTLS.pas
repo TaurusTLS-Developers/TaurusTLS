@@ -1471,7 +1471,9 @@ type
     property VerifyHostname: Boolean read GetVerifyHostname
       write SetVerifyHostName;
   end;
+  TTaurusTLSECHSocket  = class(TTaurusTLSSocket)
 
+  end;
   /// <summary>
   /// TTaurusTLSIOHandlerSocket and TTaurusTLSServerIOHandler common
   /// interface. This is here because both classes do not share a common
