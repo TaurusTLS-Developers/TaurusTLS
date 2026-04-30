@@ -1330,11 +1330,11 @@ type
    ///   error state indicated
    /// </summary>
    sslUnrecoverableError);
-  { TTaurusTLSSocket }
+  { TTaurusTLSBaseSocket }
   /// <summary>
   /// Properties and methods for dealing with a TLS Socket.
   /// </summary>
-  TTaurusTLSSocket = class(TObject)
+  TTaurusTLSBaseSocket = class(TObject)
 {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict {$ENDIF}protected
     fSession: PSSL_SESSION;
 {$IFDEF USE_OBJECT_ARC}[Weak]
@@ -1352,6 +1352,7 @@ type
     function GetCipher: TTaurusTLSCipher;
     function GetVerifyHostname: Boolean;
     procedure SetVerifyHostName(const Value: Boolean);
+    procedure SetupConnection; virtual; abstract;
   public
     /// <summary>
     /// Creates a new instance of TTaurusTLSSocket.
@@ -1471,9 +1472,14 @@ type
     property VerifyHostname: Boolean read GetVerifyHostname
       write SetVerifyHostName;
   end;
-  TTaurusTLSECHSocket  = class(TTaurusTLSSocket)
+  TTaurusTLSSocket = class(TTaurusTLSBaseSocket)
+  protected
+   procedure SetupConnection; override;
+  end;
+  TTaurusTLSECHSocket  = class(TTaurusTLSBaseSocket)
   protected
     FECHConfig : String;
+    procedure SetupConnection; override;
   public
     constructor Create(AParent: TObject; AECHCOnfig : String);
     property ECHConfig : String read FECHConfig write FECHConfig;
@@ -2310,7 +2316,7 @@ type
   /// </summary>
   TTaurusTLSCipher = class(TObject)
 {$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} private
-    fSSLSocket: TTaurusTLSSocket;
+    fSSLSocket: TTaurusTLSBaseSocket;
     fSSLCipher: PSSL_CIPHER;
     function GetCipher: PSSL_CIPHER;
     function GetDescription: String;
@@ -2327,9 +2333,9 @@ type
     /// Creates a new instance of TTaurusTLSCipher.
     /// </summary>
     /// <param name="AOwner">
-    /// The TTaurusTLSSocket that owns the new instance.
+    /// The TTaurusTLSBaseSocket that owns the new instance.
     /// </param>
-    constructor Create(AOwner: TTaurusTLSSocket);
+    constructor Create(AOwner: TTaurusTLSBaseSocket);
     /// <summary>
     /// Frees resources and destroys the current instance.
     /// </summary>
@@ -4988,15 +4994,15 @@ begin
   Result.VerifyHostname := VerifyHostname;
 end;
 
-{ TTaurusTLSSocket }
+{ TTaurusTLSBaseSocket }
 
-constructor TTaurusTLSSocket.Create(AParent: TObject);
+constructor TTaurusTLSBaseSocket.Create(AParent: TObject);
 begin
   inherited Create;
   FParent := AParent;
 end;
 
-destructor TTaurusTLSSocket.Destroy;
+destructor TTaurusTLSBaseSocket.Destroy;
 begin
   if fSession <> nil then
     SSL_SESSION_free(fSession);
@@ -5020,7 +5026,7 @@ begin
   inherited Destroy;
 end;
 
-function TTaurusTLSSocket.GetSSLError(retCode: Integer): Integer;
+function TTaurusTLSBaseSocket.GetSSLError(retCode: Integer): Integer;
 begin
   // COMMENT!!!
   // I found out that SSL layer should not interpret errors, cause they will pop up
@@ -5029,7 +5035,7 @@ begin
   Result := SSL_get_error(fSSL, retCode);
 end;
 
-procedure TTaurusTLSSocket.Accept(const pHandle: TIdStackSocketHandle);
+procedure TTaurusTLSBaseSocket.Accept(const pHandle: TIdStackSocketHandle);
 
 // Accept and Connect have a lot of duplicated code
 var
@@ -5080,7 +5086,7 @@ begin
   fSession := SSL_get1_session(fSSL);
 end;
 
-procedure TTaurusTLSSocket.Connect(const pHandle: TIdStackSocketHandle);
+procedure TTaurusTLSBaseSocket.Connect(const pHandle: TIdStackSocketHandle);
 var
   LRetCode: Integer;
   LParentIO: TTaurusTLSIOHandlerSocket;
@@ -5088,7 +5094,6 @@ var
   LVerifyResult: TIdC_LONG;
   Lpeercert: PX509;
   LCertificate: TTaurusTLSX509;   //PALOFF "Created and freed objects"
-  LHostname: TBytes;
 
 begin
   Assert(fSSL = nil);
@@ -5129,55 +5134,7 @@ begin
       ETaurusTLSSSLCopySessionId.RaiseWithMessage(RSOSSLCopySessionIdError);
     end;
   end;
-  {$IFNDEF WINDOWS}
-  LHostname := BytesOf(fHostName + #0);
-  {$ELSE}
-  {In Windows 8.1 or later, getaddrinfo will by default, resolve IDN hostnames
-  directly into IP Addresses.  We need to resolve Unicode IDN hostnames into
-  punnycode hostnames.
-  }
-  if Assigned(IdnToAscii) then
-  begin
-    LHostname := BytesOf(IDNToPunnyCode(
-      {$IFDEF STRING_IS_UNICODE}
-      fHostName
-      {$ELSE}
-      TIdUnicodeString(fHostName) // explicit convert to Unicode
-      {$ENDIF}) + #0);
-  end
-  else
-  begin
-    LHostname := BytesOf(fHostName + #0);
-  end;
-  {$ENDIF}
-  // RFC 3546 states:
-  // Literal IPv4 and IPv6 addresses are not permitted in "HostName".
-  if (fHostName <> '') and (not IsValidIP(fHostName)) then
-  begin
-    { Delphi appears to need the extra AnsiString coerction. Otherwise, only the
-      first character to the hostname is passed }
-    LRetCode := SSL_set_tlsext_host_name(fSSL, @LHostname[0]); //PALOFF
-    if LRetCode <= 0 then
-    begin
-      ETaurusTLSSettingTLSHostNameError.RaiseException(fSSL, LRetCode,
-        RSSSLSettingTLSHostNameError_2);
-    end;
-  end;
-
-  if fVerifyHostname then
-  begin
-    if fHostName <> '' then
-    begin
-      SSL_set_hostflags(fSSL, 0);
-      LRetCode := SSL_set1_host(fSSL, @LHostname[0]); //PALOFF
-      if LRetCode <= 0 then
-      begin
-        ETaurusTLSSettingTLSHostNameError.RaiseException(fSSL, LRetCode,
-          RSSSLSettingTLSHostNameError_2);
-      end;
-    end;
-  end;
-
+  SetupConnection;
 
   LRetCode := SSL_connect(fSSL);
   if LRetCode <= 0 then
@@ -5224,7 +5181,7 @@ begin
   end;
 end;
 
-function TTaurusTLSSocket.Readable: TTaurusTLSReadStatus;
+function TTaurusTLSBaseSocket.Readable: TTaurusTLSReadStatus;
 //From Tony WHyman - IndySecOpenSSL
 var buf : byte;   //PALOFF - Variables that are set, but never referenced
     Lr: integer;
@@ -5256,7 +5213,7 @@ begin
   end;
 end;
 
-function TTaurusTLSSocket.Recv(var VBuffer: TIdBytes): TIdC_SIZET;
+function TTaurusTLSBaseSocket.Recv(var VBuffer: TIdBytes): TIdC_SIZET;
 var
   Lret, LErr: Integer;
   LRead: TIdC_SIZET;  //PALOFF - Local identifiers that are set more than once without referencing in-between
@@ -5290,7 +5247,7 @@ begin
   until False; //PALOFF - Condition evaluates to constant value
 end;
 
-function TTaurusTLSSocket.Send(const ABuffer: TIdBytes;
+function TTaurusTLSBaseSocket.Send(const ABuffer: TIdBytes;
   const AOffset, ALength: TIdC_SIZET): TIdC_SIZET;
 var
   Lret, LErr: Integer;
@@ -5333,12 +5290,12 @@ begin
   until False; //PALOFF - Condition evaluates to constant value
 end;
 
-procedure TTaurusTLSSocket.SetVerifyHostName(const Value: Boolean);
+procedure TTaurusTLSBaseSocket.SetVerifyHostName(const Value: Boolean);
 begin
   fVerifyHostname := Value;
 end;
 
-function TTaurusTLSSocket.GetSSLProtocolVersion: TTaurusTLSSSLVersion;
+function TTaurusTLSBaseSocket.GetSSLProtocolVersion: TTaurusTLSSSLVersion;
 begin
   if fSession = nil then
     raise ETaurusTLSSessionCanNotBeNil.Create(RSOSSSessionCanNotBeNul)
@@ -5359,7 +5316,7 @@ begin
     end;
 end;
 
-function TTaurusTLSSocket.GetSSLProtocolVersionStr: string;
+function TTaurusTLSBaseSocket.GetSSLProtocolVersionStr: string;
 begin
   case SSLProtocolVersion of
     SSLv23:
@@ -5379,12 +5336,12 @@ begin
   end;
 end;
 
-function TTaurusTLSSocket.GetVerifyHostname: Boolean;
+function TTaurusTLSBaseSocket.GetVerifyHostname: Boolean;
 begin
   Result := fVerifyHostname;
 end;
 
-function TTaurusTLSSocket.GetPeerCert: TTaurusTLSX509;
+function TTaurusTLSBaseSocket.GetPeerCert: TTaurusTLSX509;
 var
   LX509: PX509;
 begin
@@ -5399,7 +5356,7 @@ begin
   Result := fPeerCert;
 end;
 
-function TTaurusTLSSocket.GetCipher: TTaurusTLSCipher;
+function TTaurusTLSBaseSocket.GetCipher: TTaurusTLSCipher;
 begin
   if (fSSLCipher = nil) and (fSSL <> nil) then
   begin
@@ -5408,7 +5365,7 @@ begin
   Result := fSSLCipher;
 end;
 
-function TTaurusTLSSocket.GetSessionIDAsString: String;
+function TTaurusTLSBaseSocket.GetSessionIDAsString: String;
 var
   LData: TTaurusTLSByteArray;
   i: Integer;
@@ -5447,7 +5404,7 @@ end;
 /// ////////////////////////////////////////////////////////////
 // TTaurusTLSCipher
 /// ////////////////////////////////////////////////////////////
-constructor TTaurusTLSCipher.Create(AOwner: TTaurusTLSSocket);
+constructor TTaurusTLSCipher.Create(AOwner: TTaurusTLSBaseSocket);
 begin
   inherited Create;
   fSSLSocket := AOwner;
@@ -5607,6 +5564,105 @@ constructor TTaurusTLSECHSocket.Create(AParent: TObject; AECHCOnfig: String);
 begin
   inherited Create(AParent);
   FECHCOnfig := AECHConfig;
+end;
+
+procedure TTaurusTLSECHSocket.SetupConnection;
+var LHostname: TBytes;
+  LRetCode : TIdC_INT;
+
+begin
+  {$IFNDEF WINDOWS}
+  LHostname := BytesOf(fHostName + #0);
+  {$ELSE}
+  {In Windows 8.1 or later, getaddrinfo will by default, resolve IDN hostnames
+  directly into IP Addresses.  We need to resolve Unicode IDN hostnames into
+  punnycode hostnames.
+  }
+  if Assigned(IdnToAscii) then
+  begin
+    LHostname := BytesOf(IDNToPunnyCode(
+      {$IFDEF STRING_IS_UNICODE}
+      fHostName
+      {$ELSE}
+      TIdUnicodeString(fHostName) // explicit convert to Unicode
+      {$ENDIF}) + #0);
+  end
+  else
+  begin
+    LHostname := BytesOf(fHostName + #0);
+  end;
+  {$ENDIF}
+    {Alexander - your code goes here}
+
+  if fVerifyHostname then
+  begin
+    if fHostName <> '' then
+    begin
+      SSL_set_hostflags(fSSL, 0);
+      LRetCode := SSL_set1_host(fSSL, @LHostname[0]); //PALOFF
+      if LRetCode <= 0 then
+      begin
+        ETaurusTLSSettingTLSHostNameError.RaiseException(fSSL, LRetCode,
+          RSSSLSettingTLSHostNameError_2);
+      end;
+    end;
+  end;
+
+end;
+
+{ TTaurusTLSSocket }
+
+procedure TTaurusTLSSocket.SetupConnection;
+var LHostname: TBytes;
+  LRetCode : TIdC_INT;
+begin
+  {$IFNDEF WINDOWS}
+  LHostname := BytesOf(fHostName + #0);
+  {$ELSE}
+  {In Windows 8.1 or later, getaddrinfo will by default, resolve IDN hostnames
+  directly into IP Addresses.  We need to resolve Unicode IDN hostnames into
+  punnycode hostnames.
+  }
+  if Assigned(IdnToAscii) then
+  begin
+    LHostname := BytesOf(IDNToPunnyCode(
+      {$IFDEF STRING_IS_UNICODE}
+      fHostName
+      {$ELSE}
+      TIdUnicodeString(fHostName) // explicit convert to Unicode
+      {$ENDIF}) + #0);
+  end
+  else
+  begin
+    LHostname := BytesOf(fHostName + #0);
+  end;
+  {$ENDIF}
+  // RFC 3546 states:
+  // Literal IPv4 and IPv6 addresses are not permitted in "HostName".
+  if (fHostName <> '') and (not IsValidIP(fHostName)) then
+  begin
+    { Delphi appears to need the extra AnsiString coerction. Otherwise, only the
+      first character to the hostname is passed }
+    LRetCode := SSL_set_tlsext_host_name(fSSL, @LHostname[0]); //PALOFF
+    if LRetCode <= 0 then
+    begin
+      ETaurusTLSSettingTLSHostNameError.RaiseException(fSSL, LRetCode,
+        RSSSLSettingTLSHostNameError_2);
+    end;
+  end;
+  if fVerifyHostname then
+  begin
+    if fHostName <> '' then
+    begin
+      SSL_set_hostflags(fSSL, 0);
+      LRetCode := SSL_set1_host(fSSL, @LHostname[0]); //PALOFF
+      if LRetCode <= 0 then
+      begin
+        ETaurusTLSSettingTLSHostNameError.RaiseException(fSSL, LRetCode,
+          RSSSLSettingTLSHostNameError_2);
+      end;
+    end;
+  end;
 end;
 
 initialization
