@@ -2372,6 +2372,28 @@ type
   /// </summary>
   ETaurusTLSCouldNotLoadSSLLibrary = class(ETaurusTLSError);
   /// <summary>
+  ///  Raised if ECH can not be supported by the current configuration.
+  /// </summary>
+  ETaurusTLSECHUnsupported = class(ETaurusTLSError);
+
+  /// <summary>
+  ///   Raised if Encrypted Client Hello (ECH) is attempted with OpenSSL 3.x or
+  ///   earlier.
+  /// </summary>
+  /// <remarks>
+  ///   Encrypted Client Hello (ECH) is only availble with OpenSSL 4.0.0 or
+  ///   greater. You should install OpenSSL 4.x on a user's machine.
+  /// </remarks>
+  ETaurusTLSECHVer4Required = class(ETaurusTLSECHUnsupported);
+  /// <summary>
+  ///   Raised if Encrypted Client Hello (ECH) is attempted with TLS 1.2 or
+  ///   earlier.
+  /// </summary>
+  /// <remarks>
+  ///   Encrypted Client Hello requires a minimum TLS version of TLS 1.3.
+  /// </remarks>
+  ETaurusTLSECHRequiresTLS1_3 = class(ETaurusTLSECHUnsupported);
+  /// <summary>
   /// Raised if the Mode property is sslmUnassigned when the GetSSLMethod is
   /// called.
   /// </summary>
