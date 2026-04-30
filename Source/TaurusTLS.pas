@@ -1472,7 +1472,11 @@ type
       write SetVerifyHostName;
   end;
   TTaurusTLSECHSocket  = class(TTaurusTLSSocket)
-
+  protected
+    FECHConfig : String;
+  public
+    constructor Create(AParent: TObject; AECHCOnfig : String);
+    property ECHConfig : String read FECHConfig write FECHConfig;
   end;
   /// <summary>
   /// TTaurusTLSIOHandlerSocket and TTaurusTLSServerIOHandler common
@@ -5596,6 +5600,14 @@ begin
 end;
 
 {$I TaurusTLSSymbolDeprecatedOff.inc}
+
+{ TTaurusTLSECHSocket }
+
+constructor TTaurusTLSECHSocket.Create(AParent: TObject; AECHCOnfig: String);
+begin
+  inherited Create(AParent);
+  FECHCOnfig := AECHConfig;
+end;
 
 initialization
 
