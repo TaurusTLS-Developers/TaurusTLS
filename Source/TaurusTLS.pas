@@ -1639,7 +1639,8 @@ type
     fOnBeforeConnect: TOnIOHandlerNotify;
     FOnSSLNegotiated: TOnIOHandlerNotify;
     fOnVerifyCallback: TOnVerifyCallbackEvent;
-    FECHConfigs : String;
+    FECHConfig : String;
+    FDefaultSNI : String;
     ECHStatus : TTaurusTLSECHStatus;
     //This needs to be private, not strict private
     //so we can set it in the clone method for FTP data
@@ -1750,7 +1751,7 @@ type
     // <summary>
     // Accepts the Base64-encoded ECHConfigList. If this is populated, TaurusTLS will attempt to negotiate ECH.
     // </summary>
-    property ECHConfigs : String read FECHConfigs write FECHConfigs;
+    property ECHConfig : String read FECHConfig write FECHConfig;
     /// <summary>
     /// Properties and methods for dealing with the TLS Connection.
     /// </summary>
@@ -1796,6 +1797,11 @@ type
     property OnDebugMessage: TOnDebugMessageEvent read FOnDebugMessage
       write FOnDebugMessage;
   published
+    /// <summary>
+    ///   Default Server Name Indicator (SNI) that is sent if the Host property
+    ///   is set to an IP address.
+    /// </summary>
+    property DefaultSNI : String read FDefaultSNI write FDefaultSNI;
     /// <summary>
     /// Client certificate to send to the TLS Server.
     /// </summary>
