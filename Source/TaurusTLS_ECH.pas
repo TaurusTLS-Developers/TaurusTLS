@@ -44,7 +44,7 @@ It should meet a criteria:
 
 consists of one or more segments divided with . (dot)
 each segment should starts with an ASCII letter or _ symbol
-each segment should consists of ASCII letters, Numbers, or _ symbol (except the first character, see above)
+each segment should consists of ASCII letters, Numbers, - symbol, or _ symbol (except the first character, see above)
 each segment should not exceed 63 symbol length
 whole length should not exceed 254 symbols (or 63 symbols for a single segment hostname)
 }
@@ -53,7 +53,7 @@ whole length should not exceed 254 symbols (or 63 symbols for a single segment h
 function IsValidFQN(const AStr : String) : Boolean; inline;
 const
   FQN_SEG_STARTS_WITH = 'abcdefghijklmnopqrstuvwxyz_';
-  FQN_SEG_CONSISTSOF = 'abcdefghijklmnopqrstuvwxyz0123456789_';
+  FQN_SEG_CONSISTSOF = 'abcdefghijklmnopqrstuvwxyz0123456789-_';
   FQN_MAX_SEG_LEN = 63;
   FQN_MAX_WHOLE_LEN = 254;
 var LStr : String;
@@ -82,23 +82,23 @@ begin
     {$ENDIF}
     repeat
       Result := True;
-    {$IFNDEF WINDOWS}
-    LCurSeg := Fetch(LStr,'.');
-    {$ELSE}
-    if Assigned(IdnToAscii) then
-    begin
-      LCurSeg := IDNToPunnyCode(
-        {$IFDEF STRING_IS_UNICODE}
-        Fetch(LStr,'.')
-        {$ELSE}
-        TIdUnicodeString(Fetch(LStr,'.') // explicit convert to Unicode
-        {$ENDIF});
-    end
-    else
-    begin
+      {$IFNDEF WINDOWS}
       LCurSeg := Fetch(LStr,'.');
-    end;
-    {$ENDIF}
+      {$ELSE}
+       if Assigned(IdnToAscii) then
+       begin
+         LCurSeg := IDNToPunnyCode(
+           {$IFDEF STRING_IS_UNICODE}
+           Fetch(LStr,'.')
+           {$ELSE}
+           TIdUnicodeString(Fetch(LStr,'.') // explicit convert to Unicode
+           {$ENDIF});
+       end
+       else
+       begin
+         LCurSeg := Fetch(LStr,'.');
+       end;
+      {$ENDIF}
 
       if LCurSeg <> '' then
       begin
