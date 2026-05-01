@@ -63,23 +63,7 @@ begin
   Result := False;
   if (AStr <> '') and (Length(AStr) <= FQN_MAX_WHOLE_LEN) then
   begin
-    {$IFNDEF WINDOWS}
     LStr := AStr;
-    {$ELSE}
-    if Assigned(IdnToAscii) then
-    begin
-      LStr := IDNToPunnyCode(
-        {$IFDEF STRING_IS_UNICODE}
-        AStr
-        {$ELSE}
-        TIdUnicodeString(AStr) // explicit convert to Unicode
-        {$ENDIF});
-    end
-    else
-    begin
-      LStr := AStr;
-    end;
-    {$ENDIF}
     repeat
       Result := True;
       {$IFNDEF WINDOWS}
