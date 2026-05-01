@@ -34,6 +34,8 @@ type
     ///   The error message to display.
     /// </param>
     class procedure RaiseWithMessage(const AMsg : String);
+    class procedure RaiseWithMessageFmt(const AMsg : String;
+      AArgs: array of const);
   end;
 
   /// <summary>
@@ -470,6 +472,12 @@ class procedure ETaurusTLSError.RaiseWithMessage(const AMsg: String);
 {$IFDEF USE_NORETURN}noreturn;{$ENDIF}
 begin
   raise Create(AMsg);
+end;
+
+class procedure ETaurusTLSError.RaiseWithMessageFmt(const AMsg: String;
+  AArgs: array of const);
+begin
+  raise CreateFmt(AMsg, AArgs);
 end;
 
 end.
