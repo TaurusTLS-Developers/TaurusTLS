@@ -91,7 +91,7 @@ var
   OSSL_ECHSTORE_set1_key_and_read_pem : function(es : POSSL_ECHSTORE; priv : PEVP_PKEY;
     _in : PBIO; for_retry : TIdC_INT) : TIdC_INT ; cdecl = nil;
   OSSL_ECHSTORE_read_pem : function(es : POSSL_ECHSTORE; _in : PBIO; for_retry : TIdC_INT) : TIdC_INT ; cdecl = nil;
-  OSSL_ECHSTORE_num_entries : function(const es : POSSL_ECHSTORE; numentries : TIdC_INT) : TIdC_INT ; cdecl = nil;
+  OSSL_ECHSTORE_num_entries : function(const es : POSSL_ECHSTORE; numentries : PIdC_INT) : TIdC_INT ; cdecl = nil;
   OSSL_ECHSTORE_num_keys : function(es : POSSL_ECHSTORE; numkeys : PIdC_INT) : TIdC_INT ; cdecl = nil;
   OSSL_ECHSTORE_flush_keys : function(es : POSSL_ECHSTORE; age : TIdC_TIMET) : TIdC_INT ; cdecl = nil;
 
@@ -146,7 +146,7 @@ var
   function OSSL_ECHSTORE_set1_key_and_read_pem(es : POSSL_ECHSTORE; priv : PEVP_PKEY;
     _in : PBIO; for_retry : TIdC_INT) : TIdC_INT cdecl; external CLibSSL;
   function OSSL_ECHSTORE_read_pem(es : POSSL_ECHSTORE; _in : PBIO; for_retry : TIdC_INT) : TIdC_INT  cdecl; external CLibSSL;
-  function OSSL_ECHSTORE_num_entries(const es : POSSL_ECHSTORE; numentries : TIdC_INT) : TIdC_INT  cdecl; external CLibSSL;
+  function OSSL_ECHSTORE_num_entries(const es : POSSL_ECHSTORE; numentries : PIdC_INT) : TIdC_INT  cdecl; external CLibSSL;
   function OSSL_ECHSTORE_num_keys(es : POSSL_ECHSTORE; numkeys : PIdC_INT) : TIdC_INT cdecl; external CLibSSL;
   function OSSL_ECHSTORE_flush_keys(es : POSSL_ECHSTORE; age : TIdC_TIMET) : TIdC_INT  cdecl; external CLibSSL;
 
@@ -307,7 +307,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ECHSTORE_read_pem_procname);
 end;
 
-function ERR_OSSL_ECHSTORE_num_entries(const es : POSSL_ECHSTORE; numentries : TIdC_INT) : TIdC_INT  cdecl;
+function ERR_OSSL_ECHSTORE_num_entries(const es : POSSL_ECHSTORE; numentries : PIdC_INT) : TIdC_INT  cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ECHSTORE_num_entries_procname);
 end;
