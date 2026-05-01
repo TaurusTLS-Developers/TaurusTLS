@@ -1640,7 +1640,7 @@ type
     fClientCert: TTaurusTLSX509File;  //PALOFF "Created and freed objects"
     fSSLContext: TTaurusTLSContext;  //PALOFF "Created and freed objects"
     fSSLOptions: TTaurusTLSOptions;  //PALOFF "Created and freed objects"
-    fSSLSocket: TTaurusTLSSocket;  //PALOFF "Created and freed objects"
+    fSSLSocket: TTaurusTLSBaseSocket;  //PALOFF "Created and freed objects"
     // fPeerCert: TTaurusTLSX509;
     FOnDebugMessage: TOnDebugMessageEvent;
     FOnStatusInfo: TOnStatusEvent;
@@ -1767,7 +1767,7 @@ type
     /// <summary>
     /// Properties and methods for dealing with the TLS Connection.
     /// </summary>
-    property SSLSocket: TTaurusTLSSocket read fSSLSocket write fSSLSocket;
+    property SSLSocket: TTaurusTLSBaseSocket read fSSLSocket write fSSLSocket;
     /// <summary>
     /// Occurs before TLS negotiation begins.
     /// </summary>
