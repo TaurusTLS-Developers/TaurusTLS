@@ -31,10 +31,101 @@ type
 
   end;
 
+function IsValidFQN(const AStr : String) : Boolean; inline;
 function IsECHSupported : Boolean;
 
 implementation
-uses TaurusTLSHeaders_crypto;
+uses IdIDN, TaurusTLSHeaders_crypto;
+
+
+{
+Ok, I'm rephrasing my question. I need to check if the string is a HostName or FQDN, but not an IP address.
+It should meet a criteria:
+
+consists of one or more segments divided with . (dot)
+each segment should starts with an ASCII letter or _ symbol
+each segment should consists of ASCII letters, Numbers, or _ symbol (except the first character, see above)
+each segment should not exceed 63 symbol length
+whole length should not exceed 254 symbols (or 63 symbols for a single segment hostname)
+}
+
+
+function IsValidFQN(const AStr : String) : Boolean; inline;
+const
+  FQN_SEG_STARTS_WITH = 'abcdefghijklmnopqrstuvwxyz_';
+  FQN_SEG_CONSISTSOF = 'abcdefghijklmnopqrstuvwxyz0123456789_';
+  FQN_MAX_SEG_LEN = 63;
+  FQN_MAX_WHOLE_LEN = 254;
+var LStr : String;
+  LCurSeg : String;
+  LLenCurSeg, i : Integer;
+begin
+  Result := False;
+  if (AStr <> '') and (Length(AStr) <= FQN_MAX_WHOLE_LEN) then
+  begin
+    {$IFNDEF WINDOWS}
+    LStr := AStr;
+    {$ELSE}
+    if Assigned(IdnToAscii) then
+    begin
+      LStr := IDNToPunnyCode(
+        {$IFDEF STRING_IS_UNICODE}
+        AStr
+        {$ELSE}
+        TIdUnicodeString(AStr) // explicit convert to Unicode
+        {$ENDIF});
+    end
+    else
+    begin
+      LStr := AStr;
+    end;
+    {$ENDIF}
+    repeat
+      Result := True;
+    {$IFNDEF WINDOWS}
+    LCurSeg := Fetch(LStr,'.');
+    {$ELSE}
+    if Assigned(IdnToAscii) then
+    begin
+      LCurSeg := IDNToPunnyCode(
+        {$IFDEF STRING_IS_UNICODE}
+        Fetch(LStr,'.')
+        {$ELSE}
+        TIdUnicodeString(Fetch(LStr,'.') // explicit convert to Unicode
+        {$ENDIF});
+    end
+    else
+    begin
+      LCurSeg := Fetch(LStr,'.');
+    end;
+    {$ENDIF}
+
+      if LCurSeg <> '' then
+      begin
+        LLenCurSeg := Length(LCurSeg);
+        if (LLenCurSeg <= FQN_MAX_SEG_LEN) and (Pos(LCurSeg[1],FQN_SEG_STARTS_WITH) = 0) then
+        begin
+          Result := False;
+        end
+        else
+        begin
+          if LLenCurSeg > 1 then
+          begin
+            for i := 2 to LLenCurSeg do
+            begin
+              if Pos(LCurSeg[i],FQN_SEG_CONSISTSOF) = 0  then
+              begin
+                Result := False;
+                break;
+              end;
+
+            end;
+          end;
+        end;
+      end;
+    until (not Result) or (LStr = '');
+  end;
+end;
 
 function IsECHSupported : Boolean;
 begin
