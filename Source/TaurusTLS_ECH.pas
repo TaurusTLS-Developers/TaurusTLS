@@ -31,8 +31,27 @@ type
 
   end;
 
+/// <summary>
+///   This functionr returns true if AStr is a valid Fully-Qualified Domain Name
+///   and not an IP address. On Windows, Internationalized Domain Name (IDN) is
+///   supported.
+/// </summary>
+/// <param name="AStr">
+///   A hostname to validate
+/// </param>
 function IsValidFQN(const AStr : String) : Boolean; inline;
-function IsECHSupported : Boolean;
+
+/// <summary>
+///   This indicates if Encrypted Client Hello (ECH) functions are available.
+/// </summary>
+/// <returns>
+///   true if Encrypted Client Hello (ECH) functions are available.
+/// </returns>
+/// <remarks>
+///   Encrypted Client Hello (ECH) functions are available only for OpenSSL
+///   version 4.0.0 or greater.
+/// </remarks>
+function IsECHSupported : Boolean; inline;
 
 implementation
 uses IdIDN, TaurusTLSHeaders_crypto;
@@ -111,7 +130,7 @@ begin
   end;
 end;
 
-function IsECHSupported : Boolean;
+function IsECHSupported : Boolean; inline;
 begin
   {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   Result := False;
