@@ -39,7 +39,7 @@ type
 /// <param name="AStr">
 ///   A hostname to validate
 /// </param>
-function IsValidFQN(const AStr : String) : Boolean; inline;
+function IsValidFQN(const AStr : String) : Boolean;  {$IFDEF USE_INLINE}inline; {$ENDIF}
 
 /// <summary>
 ///   This indicates if Encrypted Client Hello (ECH) functions are available.
@@ -51,7 +51,7 @@ function IsValidFQN(const AStr : String) : Boolean; inline;
 ///   Encrypted Client Hello (ECH) functions are available only for OpenSSL
 ///   version 4.0.0 or greater.
 /// </remarks>
-function IsECHSupported : Boolean; inline;
+function IsECHSupported : Boolean;  {$IFDEF USE_INLINE}inline; {$ENDIF}
 
 implementation
 uses IdIDN, TaurusTLSHeaders_crypto;
@@ -69,7 +69,7 @@ whole length should not exceed 254 symbols (or 63 symbols for a single segment h
 }
 
 
-function IsValidFQN(const AStr : String) : Boolean; inline;
+function IsValidFQN(const AStr : String) : Boolean;  {$IFDEF USE_INLINE}inline; {$ENDIF}
 const
   FQN_SEG_STARTS_WITH = 'abcdefghijklmnopqrstuvwxyz_';
   FQN_SEG_CONSISTSOF = 'abcdefghijklmnopqrstuvwxyz0123456789-_';
@@ -130,7 +130,7 @@ begin
   end;
 end;
 
-function IsECHSupported : Boolean; inline;
+function IsECHSupported : Boolean;  {$IFDEF USE_INLINE}inline; {$ENDIF}
 begin
   {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   Result := False;
