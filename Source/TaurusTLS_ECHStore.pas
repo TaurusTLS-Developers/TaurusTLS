@@ -151,6 +151,14 @@ type
     /// </remarks>
     procedure SelectConfig(AIdx: TIdC_INT);
       {$IFDEF USE_INLINE} inline; {$ENDIF}
+    /// <summary>Attaches the ECH store to an OpenSSL SSL context object.</summary>
+    /// <param name="ASSLCtx">The SSL context pointer to attach the store to.</param>
+    /// <remarks>The SSL context takes a reference to the store.</remarks>
+    procedure Attach(ASSLCtx: PSSL_CTX); overload; {$IFDEF USE_INLINE} inline; {$ENDIF}
+    /// <summary>Attaches the ECH store to an OpenSSL SSL object.</summary>
+    /// <param name="ASSL">The SSL object pointer to attach the store to.</param>
+    /// <remarks>The SSL object takes a reference to the store.</remarks>
+    procedure Attach(ASSL: PSSL); overload; {$IFDEF USE_INLINE} inline; {$ENDIF}
 
     /// <summary>Retrieves the public name of the configuration at the specified index.</summary>
     property PublicName[AIdx: TIdC_INT]: string read GetPublicName;
@@ -262,19 +270,21 @@ uses
 resourcestring
   RSMsg_ECHStore_null_value_err = 'ECHStore can not be initialized with the NULL value.';
   RSMsg_ECHStore_new_config_err = 'ECHConfig initialization error.';
-  RSMsg_ECHStore_pem_write_err = 'Unable to export ECHConfig to the PEM format.';
-  RSMsg_ECHStore_pem_read_err = 'Unable to import ECHConfig from the PEM format.';
-  RSMsg_ECHStore_keypem_read_err = 'Unable to import ECHConfig from the PEM format '+
+  RSMsg_ECHStore_pem_write_err = 'Failed to export ECHConfig to the PEM format.';
+  RSMsg_ECHStore_pem_read_err = 'Failed to import ECHConfig from the PEM format.';
+  RSMsg_ECHStore_keypem_read_err = 'Failed to import ECHConfig from the PEM format '+
     'or set a Private Key.';
-  RSMsg_ECHStore_read_echconfiglist_err = 'Unable to set ECHConfigList.';
+  RSMsg_ECHStore_read_echconfiglist_err = 'Failed to set ECHConfigList.';
   RSMsg_ECHStore_too_long_echconfiglist_err = 'ECHConfigList exceeds the size limit.';
   RSMsg_ECHStore_num_err = 'Error getting number of ECHConfigList entries.';
   RSMsg_ECHStore_numkey_err = 'Error in counting the number of ECHConfigList private keys.';
   RSMsg_ECHStore_downselect_err = 'Error selecting ECHConfig number %d.';
   RSMsg_ECHStore_flushkeys_err = 'Error flushing ECH private keys.';
   RSMsg_ECHStore_getinfo_err = 'Error getting ECHStore info.';
-  RSMsg_ECHStore_pemfmt_err = 'Unable to load ECHConfig. PEM format error.';
-  RSMsg_ECHStore_stream_err = 'Stream is a NULL value. Unable to read from or write to it.';
+  RSMsg_ECHStore_pemfmt_err = 'Failed to load ECHConfig. PEM format error.';
+  RSMsg_ECHStore_stream_err = 'Stream is a NULL value. Failed to read from or write to it.';
+  RSMsg_ECHStore_attachssl_err = 'Failed to attach ECH Store to SSL object.';
+  RSMsg_ECHStore_attachsslctx_err = 'Failed to attach ECH Store to SSL context.';
 
 { ETaurusTLSECHStoreError }
 
@@ -497,6 +507,22 @@ begin
      OSSL_ECHSTORE_new_config(Store, GetECHVersion, 0,
       PIdAnsiChar(LPublicName), ASuite),
     RSMsg_ECHStore_new_config_err);
+end;
+
+procedure TTaurusTLS_CustomECHStore.Attach(ASSLCtx: PSSL_CTX);
+begin
+  ETaurusTLSECHStoreError.CheckAndRaise(
+    SSL_CTX_set1_echstore(ASSLCtx, FStore),
+    RSMsg_ECHStore_attachsslctx_err
+  );
+end;
+
+procedure TTaurusTLS_CustomECHStore.Attach(ASSL: PSSL);
+begin
+  ETaurusTLSECHStoreError.CheckAndRaise(
+    SSL_set1_echstore(ASSL, FStore),
+    RSMsg_ECHStore_attachssl_err
+  );
 end;
 
 { TServerECHStore }
