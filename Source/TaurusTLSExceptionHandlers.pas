@@ -476,6 +476,7 @@ end;
 
 class procedure ETaurusTLSError.RaiseWithMessageFmt(const AMsg: String;
   AArgs: array of const);
+{$IFDEF USE_NORETURN}noreturn;{$ENDIF}
 begin
   raise CreateFmt(AMsg, AArgs);
 end;
