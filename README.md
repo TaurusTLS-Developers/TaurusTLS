@@ -30,7 +30,7 @@ To make it easier and consistent for JEDI users, we also offer an MPL license v1
 
 ## Differences between TaurusTLS 1.x and TaurusTLS 2.x
 
-- TaurusTLS 2 requires OpenSSL 4.x so that it can use Encrypted Client Hello (ECH) as defined by [RFC 9849](https://datatracker.ietf.org/doc/html/rfc9849).
+- TaurusTLS 2 requires OpenSSL 4.x so that it can use _Encrypted Client Hello_ (ECH) as defined by [RFC 9849](https://datatracker.ietf.org/doc/html/rfc9849).
 
 ## RAD Studio Installation
 
@@ -105,7 +105,7 @@ The design-time package should depend upon the run-time package and include the 
 
 ## Deploying Your Applications
 
-TaurusTLS relies on OpenSSL 3.x or 4.x. Depending on the target platform, OpenSSL is either linked dynamically (requiring DLLs) or statically (compiled into your executable).
+TaurusTLS relies on OpenSSL 3.x or 4.x.  OpenSSL 4.x is required if you wish to use _Encrypted Client Hello_ (ECH) instead of _Server Name Indicator_ (SNI).   Depending on the target platform, OpenSSL is either linked dynamically (requiring DLLs) or statically (compiled into your executable).
 
 You can download the correct binaries for all platforms here:
 **[OpenSSL-Distribution Releases](https://github.com/TaurusTLS-Developers/OpenSSL-Distribution/releases)**
