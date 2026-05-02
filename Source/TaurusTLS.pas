@@ -1332,7 +1332,9 @@ type
    sslUnrecoverableError);
   { TTaurusTLSBaseSocket }
   /// <summary>
-  /// Properties and methods for dealing with a TLS Socket.
+  ///   Properties and methods for dealing with a TLS Socket that are common to
+  ///   <see cref="TaurusTLS|TTaurusTLSSocket" /> and <see
+  ///   cref="TaurusTLS|TTaurusTLSECHSocket" />.
   /// </summary>
   TTaurusTLSBaseSocket = class(TObject)
 {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict {$ENDIF}protected
@@ -1472,16 +1474,36 @@ type
     property VerifyHostname: Boolean read GetVerifyHostname
       write SetVerifyHostName;
   end;
+  /// <summary>
+  ///   Properties and methods for dealing with a TLS Socket including <i>Server
+  ///   Name Indicator</i> (SNI).
+  /// </summary>
   TTaurusTLSSocket = class(TTaurusTLSBaseSocket)
   protected
    procedure SetupConnection; override;
   end;
+  /// <summary>
+  ///   Properties and methods for dealing with a TLS Socket including <i>Encrypted
+  ///   Client Hello</i> (ECH).
+  /// </summary>
   TTaurusTLSECHSocket  = class(TTaurusTLSBaseSocket)
   protected
     FECHConfig : String;
     procedure SetupConnection; override;
   public
+    /// <summary>
+    ///   Creates a new instance of TTaurusTLSECHSocket.
+    /// </summary>
+    /// <param name="AParent">
+    ///   The TObject that will own the new instance.
+    /// </param>
+    /// <param name="AECHCOnfig">
+    ///   Base64 encoded string represents the binary configuration.
+    /// </param>
     constructor Create(AParent: TObject; AECHCOnfig : String);
+    /// <summary>
+    ///   Base64 encoded string represents the binary configuration.
+    /// </summary>
     property ECHConfig : String read FECHConfig write FECHConfig;
   end;
   /// <summary>
