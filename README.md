@@ -1,4 +1,4 @@
-# TaurusTLS
+# TaurusTLS 2.0
 
 Copyright (c) 2026 TaurusTLS Developers
 All Rights Reserved
@@ -27,6 +27,10 @@ TaurusTLS is dual licensed. You can review which license better suits your needs
 The TaurusTLS Modified BSD license is a very no nonsense license that allows you to do almost anything you want with TaurusTLS provided you provide proper attribution.  Details are available in the Modified_BSD_LICENSE.md file included in the with this source-code.
 
 To make it easier and consistent for JEDI users, we also offer an MPL license v1.1.  Details are available in the LICENSE_MPL_1_1.txt file included with this source-code.
+
+## Differences between TaurusTLS 1.x and TaurusTLS 2.x
+
+- TaurusTLS 2 requires OpenSSL 4.x so that it can use Encrypted Client Hello (ECH) as defined by [RFC 9849](https://datatracker.ietf.org/doc/html/rfc9849).
 
 ## RAD Studio Installation
 
@@ -74,6 +78,7 @@ I suggest that you have 2 separate packages; a runtime only package and a design
 The run-time package should depend upon your Indy package files and include the following:
 
 - Source\TaurusTLS.pas
+- Source\TaurusTLS_ECH.pas
 - Source\TaurusTLS_Files.pas
 - Source\TaurusTLS_NTLM.pas
 - Source\TaurusTLS_ResourceStrings.pas
@@ -136,9 +141,9 @@ There's a reference book called the *OpenSSL Cookbook* at <https://www.feistyduc
 
 ### Static Linking (Android, iOS, macOS)
 
-On Mobile and macOS platforms, TaurusTLS uses **Static Linking**. The OpenSSL code is compiled directly into your application binary.
+On Mobile and macOS platforms, TaurusTLS uses **Static Linking** the **OpenSSL 4.x** binaries. The OpenSSL code is compiled directly into your application binary.
 
-*   **Download:** Look for the standard packages (e.g., `openssl-3.6.1-Android-arm64.zip`, `openssl-3.6.1-iOS-arm64.zip`, `openssl-3.6.1-macOS-arm64.zip`).
+*   **Download:** Look for the standard packages (e.g., `openssl-4.0.0-iOS-arm64.zip`, `openssl-4.0.0-iOS-sim-arm64.zip`, `openssl-4.0.0-macOS-universal.zip`).
 *   **Development:** You need the static library files (`.a`) contained in the `lib\static` folder of these archives to compile your project.
 *   **Redistribution:** You do **not** need to ship any separate OpenSSL files (`.dylib`, `.so`, or `.a`). You only need to distribute:
     1.  Your Application package
