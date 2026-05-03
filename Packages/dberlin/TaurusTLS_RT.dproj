@@ -238,6 +238,7 @@
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_x509_vfy.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLSLoader.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLS_ECH.pas"/>
+		<DCCReference Include="..\..\Source\TaurusTLS_ECHStore.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLS_Files.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLS_NTLM.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLS_ResourceStrings.pas"/>

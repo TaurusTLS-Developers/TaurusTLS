@@ -428,6 +428,10 @@
 				<UnitName Value="TaurusTLS_ECH"/>
 			</Item>
 			<Item>
+				<Filename Value="..\..\Source\TaurusTLS_ECHStore.pas"/>
+				<UnitName Value="TaurusTLS_ECHStore"/>
+			</Item>
+			<Item>
 				<Filename Value="..\..\Source\TaurusTLS_Files.pas"/>
 				<UnitName Value="TaurusTLS_Files"/>
 			</Item>
