@@ -230,6 +230,25 @@ resourcestring
   RSMsg_DES_set_key_wrong_key_parity = 'DES_set_key: Wrong Key Parity';
   RSMsg_DES_weak_key = 'DES_set_key: Weak key';
 
+  // ECHStore meassages
+  RSMsg_ECHStore_null_value_err = 'ECHStore can not be initialized with the NULL value.';
+  RSMsg_ECHStore_new_config_err = 'ECHConfig initialization error.';
+  RSMsg_ECHStore_pem_write_err = 'Failed to export ECHConfig to the PEM format.';
+  RSMsg_ECHStore_pem_read_err = 'Failed to import ECHConfig from the PEM format.';
+  RSMsg_ECHStore_keypem_read_err = 'Failed to import ECHConfig from the PEM format '+
+    'or set a Private Key.';
+  RSMsg_ECHStore_read_echconfiglist_err = 'Failed to set ECHConfigList.';
+  RSMsg_ECHStore_too_long_echconfiglist_err = 'ECHConfigList exceeds the size limit.';
+  RSMsg_ECHStore_num_err = 'Error getting number of ECHConfigList entries.';
+  RSMsg_ECHStore_numkey_err = 'Error in counting the number of ECHConfigList private keys.';
+  RSMsg_ECHStore_downselect_err = 'Error selecting ECHConfig number %d.';
+  RSMsg_ECHStore_flushkeys_err = 'Error flushing ECH private keys.';
+  RSMsg_ECHStore_getinfo_err = 'Error getting ECHStore info.';
+  RSMsg_ECHStore_pemfmt_err = 'Failed to load ECHConfig. PEM format error.';
+  RSMsg_ECHStore_stream_err = 'Stream is a NULL value. Failed to read from or write to it.';
+  RSMsg_ECHStore_attachssl_err = 'Failed to attach ECH Store to SSL object.';
+  RSMsg_ECHStore_attachsslctx_err = 'Failed to attach ECH Store to SSL context.';
+
 
 implementation
 
