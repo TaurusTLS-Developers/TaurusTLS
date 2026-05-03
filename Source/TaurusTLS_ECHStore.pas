@@ -256,6 +256,119 @@ type
       AArgs: array of const);
   end;
 
+  /// <summary>
+  ///   Exception that is raied if <see
+  ///   cref="TaurusTLS_ECHStore|TTaurusTLS_CustomECHStore.Create" /> is passed
+  ///   a nil value. This can happen if the <i>SSL_get1_echstore</i> or <i>
+  ///   SSL_CTX_get1_echstore</i> API functions fail. <br />
+  /// </summary>
+  /// <seealso
+  /// href="https://docs.openssl.org/master/man3/SSL_set1_echstore/#synopsis">
+  ///   SSL_get1_echstore
+  /// </seealso>
+  /// <seealso
+  /// href="https://docs.openssl.org/master/man3/SSL_set1_echstore/#synopsis">
+  ///   SSL_CTX_get1_echstore
+  /// </seealso>
+  ETaurusTLSECHStore_can_not_be_nil = class(ETaurusTLSECHStoreError);
+  /// <summary>
+  ///   Exception that's raised if the OSSL_ECHSTORE_num_entries API function fails.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/master/man3/SSL_set1_echstore/">
+  ///   OSSL_ECHSTORE_num_entries
+  /// </seealso>
+  ETaurusTLSECHStore_num_entries_failed = class(ETaurusTLSECHStoreError);
+  /// <summary>
+  ///   Exception that's raised if the OSSL_ECHSTORE_num_keys API function fails.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/master/man3/SSL_set1_echstore/">
+  ///   OSSL_ECHSTORE_num_keys
+  /// </seealso>
+  ETaurusTLSECHStore_num_keys = class(ETaurusTLSECHStoreError);
+  /// <summary>
+  ///   Exception that's raised if the OSSL_ECHSTORE_num_keys API function fails.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/master/man3/SSL_set1_echstore/">
+  ///   OSSL_ECHSTORE_read_echconfiglist
+  /// </seealso>
+  ETaurusTLSECHStore_read_echconfiglist = class(ETaurusTLSECHStoreError);
+  /// <summary>
+  ///   Exception that's raised if the OSSL_ECHSTORE_read_pem API function fails.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/master/man3/SSL_set1_echstore/">
+  ///   OSSL_ECHSTORE_read_pem
+  /// </seealso>
+  ETaurusTLSECHStore_read_pem = class(ETaurusTLSECHStoreError);
+  /// <summary>
+  ///   Exception that's raised if the OSSL_ECHSTORE_downselect API function fails.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/master/man3/SSL_set1_echstore/">
+  ///   OSSL_ECHSTORE_downselect
+  /// </seealso>
+  ETaurusTLSECHStore_downselect = class(ETaurusTLSECHStoreError);
+  /// <summary>
+  ///   Exception raised if the AECHConfigList parameter is longer than <i>
+  ///   cECHConfigListMaxLen</i>.
+  /// </summary>
+  ETaurusTLSECHStore_too_long_echconfiglist_err = class(ETaurusTLSECHStoreError);
+  /// <summary>
+  ///   Exception raised if the AECHConfigList parameter can not be read.
+  /// </summary>
+  ETaurusTLSECHStore_read_echconfiglist_err = class(ETaurusTLSECHStoreError);
+  /// <summary>
+  ///   Exception that's raised if the OSSL_ECHSTORE_set1_key_and_read_pem API function fails.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/master/man3/SSL_set1_echstore/">
+  ///   OSSL_ECHSTORE_set1_key_and_read_pem
+  /// </seealso>
+  ETaurusTLSECHStore_set1_key_and_read_pem = class(ETaurusTLSECHStoreError);
+  /// <summary>
+  ///   Exception that's raised if the OSSL_ECHSTORE_write_pem API function fails.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/master/man3/SSL_set1_echstore/">
+  ///   OSSL_ECHSTORE_write_pem
+  /// </seealso>
+  ETaurusTLSECHStore_write_pem = class(ETaurusTLSECHStoreError);
+  /// <summary>
+  ///   Exception that's raised if the OSSL_ECHSTORE_flush_keys API function fails.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/master/man3/SSL_set1_echstore/">
+  ///    OSSL_ECHSTORE_flush_keys
+  /// </seealso>
+  ETaurusTLSECHStore_flush_keys = class(ETaurusTLSECHStoreError);
+  /// <summary>
+  ///   Exception that's raised if the OSSL_ECHSTORE_get1_info API function fails.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/master/man3/SSL_set1_echstore/">
+  ///    OSSL_ECHSTORE_get1_info
+  /// </seealso>
+  ETaurusTLSECHStore_get1_info = class(ETaurusTLSECHStoreError);
+  /// <summary>
+  ///   Exception that's raised if the  OSSL_ECHSTORE_new_config API function fails.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/master/man3/SSL_set1_echstore/">
+  ///     OSSL_ECHSTORE_new_config
+  /// </seealso>
+  ETaurusTLSECHStore_new_config = class(ETaurusTLSECHStoreError);
+  /// <summary>
+  ///   Exception that's raised if the SSL_CTX_set1_echstore API function fails.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/master/man3/SSL_set1_echstore/">
+  ///     SSL_CTX_set1_echstore
+  /// </seealso>
+  ETaurusTLSECHStore_SSL_CTX_set1_echstore = class(ETaurusTLSECHStoreError);
+  /// <summary>
+  ///   Exception that's raised if the SSL_set1_echstore API function fails.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/master/man3/SSL_set1_echstore/">
+  ///     SSL_set1_echstore
+  /// </seealso>
+  ETaurusTLSECHStore_SSL_set1_echstore = class(ETaurusTLSECHStoreError);
+  /// <summary>
+  ///   Exception raised if is ECHConfigStr is too short or too long.
+  /// </summary>
+  ETaurusTLSECHStore_pemfmt_err = class(ETaurusTLSECHStoreError);
+
 implementation
 
 uses
@@ -288,7 +401,7 @@ end;
 constructor TTaurusTLS_CustomECHStore.Create(AStore: POSSL_ECHSTORE);
 begin
   if not Assigned(AStore) then
-    ETaurusTLSECHStoreError.RaiseWithMessage(RSMsg_ECHStore_null_value_err);
+    ETaurusTLSECHStore_can_not_be_nil.RaiseWithMessage(RSMsg_ECHStore_null_value_err);
   FStore:=AStore;
 end;
 
@@ -355,14 +468,14 @@ end;
 
 function TTaurusTLS_CustomECHStore.GetCount: TIdC_INT;
 begin
-  ETaurusTLSECHStoreError.CheckAndRaise(
+  ETaurusTLSECHStore_num_entries_failed.CheckAndRaise(
     OSSL_ECHSTORE_num_entries(FStore, @Result),
     RSMsg_ECHStore_num_err);
 end;
 
 function TTaurusTLS_CustomECHStore.GetKeyCount: TIdC_INT;
 begin
-  ETaurusTLSECHStoreError.CheckAndRaise(
+  ETaurusTLSECHStore_num_keys.CheckAndRaise(
     OSSL_ECHSTORE_num_keys(FStore, @Result),
     RSMsg_ECHStore_numkey_err);
 end;
@@ -383,7 +496,7 @@ end;
 
 procedure TTaurusTLS_CustomECHStore.DoSetConfigList(ABio: PBio);
 begin
-  ETaurusTLSECHStoreError.CheckAndRaise(
+  ETaurusTLSECHStore_read_echconfiglist.CheckAndRaise(
     OSSL_ECHSTORE_read_echconfiglist(FStore, ABio),
     RSMsg_ECHStore_read_echconfiglist_err
   );
@@ -392,7 +505,7 @@ end;
 procedure TTaurusTLS_CustomECHStore.DoReadBioPem(ABio: PBio;
   AIdxForRetry: TIdC_INT);
 begin
-  ETaurusTLSECHStoreError.CheckAndRaise(
+  ETaurusTLSECHStore_read_pem.CheckAndRaise(
     OSSL_ECHSTORE_read_pem(FStore, ABio, AIdxForRetry),
     RSMsg_ECHStore_pem_read_err
   );
@@ -400,7 +513,7 @@ end;
 
 procedure TTaurusTLS_CustomECHStore.SelectConfig(AIdx: TIdC_INT);
 begin
-  ETaurusTLSECHStoreError.CheckAndRaiseFmt(
+  ETaurusTLSECHStore_downselect.CheckAndRaiseFmt(
     OSSL_ECHSTORE_downselect(FStore, AIdx),
     RSMsg_ECHStore_downselect_err, [AIdx]
   );
@@ -415,14 +528,14 @@ var
 begin
   lInLen:=Length(AECHConfigList);
   if (lInLen > cECHConfigListMaxLen) then
-    ETaurusTLSECHStoreError.RaiseWithMessage(RSMsg_ECHStore_too_long_echconfiglist_err);
+    ETaurusTLSECHStore_too_long_echconfiglist_err.RaiseWithMessage(RSMsg_ECHStore_too_long_echconfiglist_err);
 
   LECHConfigList:=RawByteString(AECHConfigList);
   lBio:=nil;
   try
     lBio:=BIO_new_mem_buf(LECHConfigList[1], lInLen);
     if not Assigned(lBio) then
-       ETaurusTLSECHStoreError.RaiseWithMessage(RSMsg_ECHStore_read_echconfiglist_err);
+       ETaurusTLSECHStore_read_echconfiglist_err.RaiseWithMessage(RSMsg_ECHStore_read_echconfiglist_err);
 
     DoSetConfigList(lBio);
   finally
@@ -433,21 +546,21 @@ end;
 procedure TTaurusTLS_CustomECHStore.DoSetKeyAndReadBioPem(ABio: PBio;
   APrivKey: PEVP_PKEY; AIdxForRetry: TIdC_INT);
 begin
-  ETaurusTLSECHStoreError.CheckAndRaise(
+  ETaurusTLSECHStore_set1_key_and_read_pem.CheckAndRaise(
     OSSL_ECHSTORE_set1_key_and_read_pem(FStore, APrivKey, ABio, AIdxForRetry),
     RSMsg_ECHStore_keypem_read_err);
 end;
 
 procedure TTaurusTLS_CustomECHStore.DoWriteBioPem(ABio: PBio; AIdx: TIdC_INT);
 begin
-  ETaurusTLSECHStoreError.CheckAndRaise(
+  ETaurusTLSECHStore_write_pem.CheckAndRaise(
     OSSL_ECHSTORE_write_pem(FStore, AIdx, ABio),
     RSMsg_ECHStore_pem_write_err);
 end;
 
 procedure TTaurusTLS_CustomECHStore.DoFlushKeys(AAge: TIdC_TIMET);
 begin
-  ETaurusTLSECHStoreError.CheckAndRaise(
+  ETaurusTLSECHStore_flush_keys.CheckAndRaise(
     OSSL_ECHSTORE_flush_keys(FStore, AAge),
     RSMsg_ECHStore_flushkeys_err);
 end;
@@ -456,7 +569,7 @@ procedure TTaurusTLS_CustomECHStore.DoGetInfo(AIdx: TIdC_INT; AAge: PIdC_TIMET;
   APublicName, AECHConfig: PPIdAnsiChar; AHasPrivateKey,
   AIdxForRetry: PIdC_INT);
 begin
-  ETaurusTLSECHStoreError.CheckAndRaise(
+  ETaurusTLSECHStore_get1_info.CheckAndRaise(
     OSSL_ECHSTORE_get1_info(FStore, AIdx, AAge, APublicName, AECHConfig,
       AHasPrivateKey, AIdxForRetry),
     RSMsg_ECHStore_getinfo_err);
@@ -482,7 +595,7 @@ begin
   else
     LPublicName := BytesOf(APublicName+#0);
   {$ENDIF}
-  ETaurusTLSECHStoreError.CheckAndRaise(
+  ETaurusTLSECHStore_new_config.CheckAndRaise(
      OSSL_ECHSTORE_new_config(Store, GetECHVersion, 0,
       PIdAnsiChar(LPublicName), ASuite),
     RSMsg_ECHStore_new_config_err);
@@ -490,7 +603,7 @@ end;
 
 procedure TTaurusTLS_CustomECHStore.Attach(ASSLCtx: PSSL_CTX);
 begin
-  ETaurusTLSECHStoreError.CheckAndRaise(
+  ETaurusTLSECHStore_SSL_CTX_set1_echstore.CheckAndRaise(
     SSL_CTX_set1_echstore(ASSLCtx, FStore),
     RSMsg_ECHStore_attachsslctx_err
   );
@@ -498,7 +611,7 @@ end;
 
 procedure TTaurusTLS_CustomECHStore.Attach(ASSL: PSSL);
 begin
-  ETaurusTLSECHStoreError.CheckAndRaise(
+  ETaurusTLSECHStore_SSL_set1_echstore.CheckAndRaise(
     SSL_set1_echstore(ASSL, FStore),
     RSMsg_ECHStore_attachssl_err
   );
@@ -546,7 +659,7 @@ begin
   Result:=nil;
   LLen:=Length(APemStr);
   if (LLen < cECHConfigMinLen) or (LLen > cECHConfigMaxLen) then
-    ETaurusTLSECHStoreError.RaiseWithMessage(RSMsg_ECHStore_pemfmt_err);
+    ETaurusTLSECHStore_pemfmt_err.RaiseWithMessage(RSMsg_ECHStore_pemfmt_err);
 
   Result:=BIO_new_mem_buf(APemStr[1], LLen);
 end;
@@ -561,7 +674,7 @@ begin
 
   LLen:=AStream.Size - AStream.Position;
   if (LLen < cECHConfigMinLen) or (LLen > cECHConfigMaxLen) then
-    ETaurusTLSECHStoreError.RaiseWithMessage(RSMsg_ECHStore_pemfmt_err);
+    ETaurusTLSECHStore_pemfmt_err.RaiseWithMessage(RSMsg_ECHStore_pemfmt_err);
 
   SetLength(Result, LLen);
   AStream.Read(Result[1], LLen);
