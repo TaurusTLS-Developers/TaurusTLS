@@ -839,45 +839,12 @@ type
   /// </param>
   TTaurusContextLoaderEvent = procedure (ASender: TObject; AContext: TTaurusTLSContext;
     var ASkipDefaultLoader: Boolean) of object;
-  /// <summary>
-  ///   This class provides published properties for Encrypted Client Hello (ECH).
-  ///   (ECH).
-  /// </summary>
-  /// <remarks>
-  ///   Encrypted Client Hello (ECH) is only available with OpenSSL 4.0.0 or greater.
-  /// </remarks>
-  TTaurusTLSECHOptions = class(TPersistent)
-{$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} protected
-    FParent : TObject;
-    FOuterHostname : String;
-    FRetryCount : Integer;
-    procedure AssignTo(Destination: TPersistent); override;
-  public
-    constructor Create(AOwner : TObject);
-    /// <summary>
-    /// The object that owns this TTaurusTLSOptions.
-    /// </summary>
-    /// <remarks>
-    /// Should only be set by TaurusTLS itself.
-    /// </remarks>
-    property Parent: TObject read FParent write FParent;
-  published
-    ///<summary>
-    ///  Specifies the outer SNI used in the unencrypted ClientHello. The existing HostName property (on TTaurusTLSSocket) will be utilized for the true, encrypted inner SNI.
-    ///  </summary>
-    property OuterHostname : String read FOuterHostname write FOuterHostname;
-    ///<summary>
-    ///A configuration option to determine how many times to retry ech_required errors.
-    ///</summary>
-    property RetryCount : Integer read FRetryCount write FRetryCount default DEF_ECH_RETRY_COUNT;
-  end;
   { TTaurusTLSOptions }
   /// <summary>
   /// Class that provides properties that effect TLS.
   /// </summary>
   TTaurusTLSOptions = class(TPersistent)
 {$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} protected
-    FECHOptions : TTaurusTLSECHOptions;
     FParent: TObject;
     fUseSystemRootCACertificateStore: Boolean;
 
@@ -893,14 +860,12 @@ type
     procedure AssignTo(Destination: TPersistent); override;
     procedure SetMinTLSVersion(const AValue: TTaurusTLSSSLVersion);
     procedure SetSecurityLevel(const AValue: TTaurusTLSSecurityLevel);
-    procedure SetECHOptions(const Value: TTaurusTLSECHOptions);
   public
 
     /// <summary>
     /// Creates a new instance of TTaurusTLSOptions.
     /// </summary>
     constructor Create(AOwner: TObject);
-    destructor Destroy; override;
     //
     /// <summary>
     /// The object that owns this TTaurusTLSOptions.
@@ -1050,7 +1015,6 @@ type
     /// SSL_CTX_set_cipher_list
     /// </seealso>
     property CipherList: String read fCipherList write fCipherList;
-    property ECHOptions : TTaurusTLSECHOptions read FECHOptions write SetECHOptions;
   end;
 
   /// <summary>
@@ -3592,32 +3556,6 @@ begin
   inherited SetItem(Index, Value);
 end;
 
-{ TTaurusTLSECHOptions }
-
-procedure TTaurusTLSECHOptions.AssignTo(Destination: TPersistent);
-var
-  LDest: TTaurusTLSECHOptions;
-begin
-  if Destination is TTaurusTLSECHOptions then
-  begin
-    LDest := TTaurusTLSECHOptions(Destination);
-    LDest.RetryCount := RetryCount;
-    LDest.FOuterHostname := OuterHostname;
-  end
-  else
-  begin
-    inherited AssignTo(Destination);
-  end;
-end;
-
-constructor TTaurusTLSECHOptions.Create(AOwner : TObject);
-begin
-  inherited Create;
-  FOuterHostname := '';
-  FRetryCount := DEF_ECH_RETRY_COUNT;
-  FParent := AOwner;
-end;
-
 /// ///////////////////////////////////////////////////
 // TTaurusTLSOptions
 /// ////////////////////////////////////////////////////
@@ -3625,24 +3563,12 @@ end;
 constructor TTaurusTLSOptions.Create(AOwner : TObject);
 begin
   inherited Create;
-  FECHOptions := TTaurusTLSECHOptions.Create(AOwner);
   fMinTLSVersion := DEF_MIN_TLSVERSION;
   fUseSystemRootCACertificateStore := True;
   FSecurityLevel := DEF_SECURITY_LEVEL;
   fVerifyDepth := DEFAULT_VERIFY_DEPTH;
   fVerifyHostname := DEF_VERIFY_HOSTNAME;
   FParent := AOwner;
-end;
-
-destructor TTaurusTLSOptions.Destroy;
-begin
-  FreeAndNil(FECHOptions);
-  inherited;
-end;
-
-procedure TTaurusTLSOptions.SetECHOptions(const Value: TTaurusTLSECHOptions);
-begin
-  FECHOptions.Assign(Value);
 end;
 
 procedure TTaurusTLSOptions.SetMinTLSVersion(const AValue
@@ -3673,7 +3599,6 @@ begin
     LDest.fUseSystemRootCACertificateStore := fUseSystemRootCACertificateStore;
     LDest.VerifyDirs := VerifyDirs;
     LDest.CipherList := CipherList;
-    LDest.ECHOptions.AssignTo( ECHOptions);
   end
   else
   begin
