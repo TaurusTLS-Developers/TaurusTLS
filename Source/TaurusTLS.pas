@@ -456,19 +456,23 @@ type
   /// <summary>
   ///   the Encrypted Client Hello (ECH) Handshake outcome
   /// </summary>
-  TTaurusTLSECHStatus = (
-    /// <summary>
-    ///   Encrypted Client Hello (ECH) succeeded.
-    /// </summary>
-    ech_success,
-    /// <summary>
-    ///   Encrypted Client Hello (ECH) failed.
-    /// </summary>
-    ech_failed,
+  TTaurusTLSClientECHStatus = (
     /// <summary>
     ///   Encrypted Client Hello (ECH) not attempted.
     /// </summary>
-    ech_not_attempted);
+    ech_cli_not_attempted,
+    /// <summary>
+    ///   Encrypted Client Hello (ECH) succeeded.
+    /// </summary>
+    ech_cli_success,
+    /// <summary>
+    ///   Encrypted Client Hello (ECH) failed.
+    /// </summary>
+    ech_cli_failed,
+    /// <summary>
+    ///   Encrypted Client Hello (ECH) with the GREASE.
+    /// </summary>
+    ech_cli_grease);
 
 const
   /// <summary>
@@ -1673,9 +1677,7 @@ type
     fOnBeforeConnect: TOnIOHandlerNotify;
     FOnSSLNegotiated: TOnIOHandlerNotify;
     fOnVerifyCallback: TOnVerifyCallbackEvent;
-    FECHConfig : String;
     FDefaultSNI : String;
-    ECHStatus : TTaurusTLSECHStatus;
     // function GetPeerCert: TTaurusTLSX509;
     // procedure CreateSSLContext(axMode: TTaurusTLSSSLMode);
     //
@@ -1779,10 +1781,6 @@ type
     /// You should not call this method directly.
     /// </remarks>
     function Readable(AMSec: Integer = IdTimeoutDefault): Boolean; override;
-    // <summary>
-    // Accepts the Base64-encoded ECHConfigList. If this is populated, TaurusTLS will attempt to negotiate ECH.
-    // </summary>
-    property ECHConfig : String read FECHConfig write FECHConfig;
     /// <summary>
     /// Properties and methods for dealing with the TLS Connection.
     /// </summary>
@@ -1997,6 +1995,26 @@ type
     /// </param>
     property OnContextLoaderCustom: TTaurusContextLoaderEvent read  fOnContextLoaderCustom
       write fOnContextLoaderCustom;
+  end;
+
+  TTaurusTLSClientIOHandlerSocket = class(TTaurusTLSIOHandlerSocket)
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} private
+    FECHEnabled: Boolean;
+    FECHConfigList : String;
+    FECHStatus : TTaurusTLSClientECHStatus;
+    FECHOuterHostname: String;
+  public
+    // <summary>
+    // Accepts the Base64-encoded ECHConfigList. If this is populated, TaurusTLS will attempt to negotiate ECH.
+    // </summary>
+    property ECHConfigList : String read FECHConfigList write FECHConfigList;
+    // <summary>
+    // Accepts the Base64-encoded ECHConfigList. If this is populated, TaurusTLS will attempt to negotiate ECH.
+    // </summary>
+    property ECHStatus : TTaurusTLSClientECHStatus read FECHStatus;
+  published
+    property ECHEnabled: Boolean read FECHEnabled write FECHEnabled default False;
+    property ECHOuterHostname: String read FECHOuterHostname write FECHOuterHostname;
   end;
 
   /// <summary>
