@@ -1488,30 +1488,6 @@ type
    procedure SetupConnection; override;
   end;
   /// <summary>
-  ///   Properties and methods for dealing with a TLS Socket including <i>Encrypted
-  ///   Client Hello</i> (ECH).
-  /// </summary>
-  TTaurusTLSECHSocket  = class(TTaurusTLSBaseSocket)
-  protected
-    FECHConfig : String;
-    procedure SetupConnection; override;
-  public
-    /// <summary>
-    ///   Creates a new instance of TTaurusTLSECHSocket.
-    /// </summary>
-    /// <param name="AParent">
-    ///   The TObject that will own the new instance.
-    /// </param>
-    /// <param name="AECHCOnfig">
-    ///   Base64 encoded string represents the binary configuration.
-    /// </param>
-    constructor Create(AParent: TObject; AECHCOnfig : String);
-    /// <summary>
-    ///   Base64 encoded string represents the binary configuration.
-    /// </summary>
-    property ECHConfig : String read FECHConfig write FECHConfig;
-  end;
-  /// <summary>
   /// TTaurusTLSIOHandlerSocket and TTaurusTLSServerIOHandler common
   /// interface. This is here because both classes do not share a common
   /// anscestor. This bridges the gap.
@@ -5594,58 +5570,6 @@ begin
 end;
 
 {$I TaurusTLSSymbolDeprecatedOff.inc}
-
-{ TTaurusTLSECHSocket }
-
-constructor TTaurusTLSECHSocket.Create(AParent: TObject; AECHCOnfig: String);
-begin
-  inherited Create(AParent);
-  FECHCOnfig := AECHConfig;
-end;
-
-procedure TTaurusTLSECHSocket.SetupConnection;
-var LHostname: TBytes;
-  LRetCode : TIdC_INT;
-
-begin
-  {$IFNDEF WINDOWS}
-  LHostname := BytesOf(fHostName + #0);
-  {$ELSE}
-  {In Windows 8.1 or later, getaddrinfo will by default, resolve IDN hostnames
-  directly into IP Addresses.  We need to resolve Unicode IDN hostnames into
-  punnycode hostnames.
-  }
-  if Assigned(IdnToAscii) then
-  begin
-    LHostname := BytesOf(IDNToPunnyCode(
-      {$IFDEF STRING_IS_UNICODE}
-      fHostName
-      {$ELSE}
-      TIdUnicodeString(fHostName) // explicit convert to Unicode
-      {$ENDIF}) + #0);
-  end
-  else
-  begin
-    LHostname := BytesOf(fHostName + #0);
-  end;
-  {$ENDIF}
-    {Alexander - your code goes here}
-
-  if fVerifyHostname then
-  begin
-    if fHostName <> '' then
-    begin
-      SSL_set_hostflags(fSSL, 0);
-      LRetCode := SSL_set1_host(fSSL, @LHostname[0]); //PALOFF
-      if LRetCode <= 0 then
-      begin
-        ETaurusTLSSettingTLSHostNameError.RaiseException(fSSL, LRetCode,
-          RSSSLSettingTLSHostNameError_2);
-      end;
-    end;
-  end;
-
-end;
 
 { TTaurusTLSSocket }
 
