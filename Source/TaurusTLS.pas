@@ -250,6 +250,7 @@ uses
   SysUtils,
   TaurusTLSExceptionHandlers,
   TaurusTLSHeaders_types,
+  TaurusTLS_ECHStore,
   TaurusTLSHeaders_ssl,
   TaurusTLSHeaders_ssl3,
   TaurusTLSHeaders_tls1,
