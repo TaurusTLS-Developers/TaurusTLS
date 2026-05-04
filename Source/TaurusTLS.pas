@@ -1648,7 +1648,6 @@ type
   /// </summary>
   TTaurusTLSIOHandlerSocket = class(TIdSSLIOHandlerSocketBase,
     ITaurusTLSCallbackHelper)
-  private
 {$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} protected
     //20260116 xjikka:
     //  OnContextLoaderCustom allows custom TLS context initialization/loading
@@ -1676,10 +1675,6 @@ type
     FECHConfig : String;
     FDefaultSNI : String;
     ECHStatus : TTaurusTLSECHStatus;
-    //This needs to be private, not strict private
-    //so we can set it in the clone method for FTP data
-    //channel SNI.
-    {$IFNDEF USE_STRICT_PRIVATE_PROTECTED} fHostname : String;{$ENDIF}
     // function GetPeerCert: TTaurusTLSX509;
     // procedure CreateSSLContext(axMode: TTaurusTLSSSLMode);
     //
@@ -1713,7 +1708,8 @@ type
     //This needs to be private, not strict private
     //so we can set it in the clone method for FTP data
     //channel SNI.
-{$IFDEF USE_STRICT_PRIVATE_PROTECTED} private fHostname : String;{$ENDIF} //PALOFF
+  private
+    fHostname : String;
   public
 
     /// <summary>
