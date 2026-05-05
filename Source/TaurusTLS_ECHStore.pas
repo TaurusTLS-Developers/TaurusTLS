@@ -138,7 +138,7 @@ type
     /// <param name="AECHConfigList">
     ///   The ECHConfigList data in the Base64 string.
     /// </param>
-    procedure SetConfigList(AECHConfigList: string); overload;
+    procedure SetConfigList(const AECHConfigList: string); overload;
       {$IFDEF USE_INLINE} inline; {$ENDIF}
     /// <summary>
     ///   Selects a specific ECH configuration from the store for use.
@@ -519,7 +519,7 @@ begin
   );
 end;
 
-procedure TTaurusTLS_CustomECHStore.SetConfigList(AECHConfigList: string);
+procedure TTaurusTLS_CustomECHStore.SetConfigList(const AECHConfigList: string);
 var
   LBio: PBio;
   lInLen: TIdC_INT;

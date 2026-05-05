@@ -1500,7 +1500,7 @@ type
     /// <param name="AECHCOnfig">
     ///   Base64 encoded string represents the binary configuration.
     /// </param>
-    constructor Create(AParent: TObject; AECHCOnfig : String);
+    constructor Create(AParent: TObject; const AECHCOnfig : String);
     /// <summary>
     ///   Base64 encoded string represents the binary configuration.
     /// </summary>
@@ -1674,7 +1674,7 @@ type
     fOnVerifyCallback: TOnVerifyCallbackEvent;
     FECHConfig : String;
     FDefaultSNI : String;
-    ECHStatus : TTaurusTLSECHStatus;
+    FECHStatus : TTaurusTLSECHStatus;
     // function GetPeerCert: TTaurusTLSX509;
     // procedure CreateSSLContext(axMode: TTaurusTLSSSLMode);
     //
@@ -5578,7 +5578,7 @@ end;
 
 { TTaurusTLSECHSocket }
 
-constructor TTaurusTLSECHSocket.Create(AParent: TObject; AECHCOnfig: String);
+constructor TTaurusTLSECHSocket.Create(AParent: TObject; const AECHCOnfig: String);
 begin
   inherited Create(AParent);
   FECHCOnfig := AECHConfig;
