@@ -997,7 +997,7 @@ type
     /// <summary>
     /// The maximum depth for the certificate chain verification allowed.
     /// </summary>
-    property VerifyDepth: Integer read fVerifyDepth write fVerifyDepth;
+    property VerifyDepth: Integer read fVerifyDepth write fVerifyDepth default DEFAULT_VERIFY_DEPTH;
     // property VerifyFile: String read fVerifyFile write fVerifyFile;
     /// <summary>
     /// Directories where to load root certificates from separated by colons.
