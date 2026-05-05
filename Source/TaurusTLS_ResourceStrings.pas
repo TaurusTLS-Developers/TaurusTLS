@@ -249,6 +249,9 @@ resourcestring
   RSMsg_ECHStore_attachssl_err = 'Failed to attach ECH Store to SSL object.';
   RSMsg_ECHStore_attachsslctx_err = 'Failed to attach ECH Store to SSL context.';
 
+  // ETaurusTLSECHRetryRequired
+  RSMsg_ECHRetryRequired_default_msg = 'ECH Handshake rejected. Retry with new configuration.';
+
 
 implementation
 
