@@ -13,6 +13,7 @@ unit TaurusTLS_ECH;
 
 interface
 uses
+  SysUtils,
   IdCTypes,
   IdDNSResolver,
   IdGlobal,
@@ -22,6 +23,46 @@ uses
   TaurusTLSHeaders_hpke,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_ssl;
+
+type
+  /// <summary>Base class for all ECH-related runtime errors.</summary>
+  ETaurusTLSECHError = class(ETaurusTLSError)
+  private
+    FECHCode: TIdC_INT;
+  public
+    constructor Create(AECHCode: TIdC_INT; AMsg: String);
+    constructor CreateFmt(AECHCode: TIdC_INT; AMsg: String; AArgs: array of const);
+    property ECHCode: TIdC_INT read FECHCode;
+  end;
+
+  /// <summary>
+  /// Raised when the server rejects the ECH key but provides a new configuration.
+  /// (Maps to SSL_ECH_STATUS_GREASE_ECH with a retry config)
+  /// </summary>
+  ETaurusTLSECHRetryRequired = class(ETaurusTLSECHError)
+  private
+    FECHConfigList: String;
+  public
+    constructor Create(const AMsg, AECHConfig: String);
+    property ECHConfigList: String read FECHConfigList;
+  end;
+
+  /// <summary>
+  /// Raised when the server rejects the ECH key but provides NO retry configuration.
+  /// (Maps to SSL_ECH_STATUS_GREASE_ECH without a retry config)
+  /// </summary>
+  ETaurusTLSECHRejectedError = class(ETaurusTLSECHError)
+    constructor Create(AMsg: String);
+  end;
+
+  /// <summary>
+  /// Raised when ECH was requested, but the connection completed without ECH.
+  /// This indicates a potential downgrade attack or a server that doesn't support ECH.
+  /// (Maps to SSL_ECH_STATUS_NOT_CONFIGURED)
+  /// </summary>
+  ETaurusTLSECHDowngradeError = class(ETaurusTLSECHError)
+    constructor Create(AMsg: String);
+  end;
 
 type
   TTaurusTLSDNSResolver  = class(TIdDNSResolver)
@@ -144,6 +185,42 @@ begin
   {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   end;
   {$ENDIF}
+end;
+
+{ ETaurusTLSECHError }
+
+constructor ETaurusTLSECHError.Create(AECHCode: TIdC_INT; AMsg: String);
+begin
+  inherited Create(AMsg);
+  FECHCode := AECHCode;
+end;
+
+constructor ETaurusTLSECHError.CreateFmt(AECHCode: TIdC_INT; AMsg: String;
+  AArgs: array of const);
+begin
+  Create(AECHCode, Format(AMsg, AArgs));
+end;
+
+{ ETaurusTLSECHRetryRequired }
+
+constructor ETaurusTLSECHRetryRequired.Create(const AMsg, AECHConfig: String);
+begin
+  inherited Create(SSL_ECH_STATUS_GREASE_ECH, AMsg);
+  FECHConfigList := AECHConfig;
+end;
+
+{ ETaurusTLSECHRejectedError }
+
+constructor ETaurusTLSECHRejectedError.Create(AMsg: String);
+begin
+  inherited Create(SSL_ECH_STATUS_GREASE_ECH, AMsg);
+end;
+
+{ ETaurusTLSECHDowngradeError }
+
+constructor ETaurusTLSECHDowngradeError.Create(AMsg: String);
+begin
+  inherited Create(SSL_ECH_STATUS_NOT_CONFIGURED, AMsg);
 end;
 
 end.
