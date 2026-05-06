@@ -656,7 +656,6 @@ var
   LLen: TIdC_INT;
 
 begin
-  Result:=nil;
   LLen:=Length(APemStr);
   if (LLen < cECHConfigMinLen) or (LLen > cECHConfigMaxLen) then
     ETaurusTLSECHStore_pemfmt_err.RaiseWithMessage(RSMsg_ECHStore_pemfmt_err);
