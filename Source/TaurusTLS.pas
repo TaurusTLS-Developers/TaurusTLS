@@ -2610,7 +2610,6 @@ uses
   TaurusTLS_ResourceStrings,
   IdStack,
   IdThreadSafe,
-  IdCoderMIME,
   IdCustomTransparentProxy,
 {$IFDEF WINDOWS}
   IdIDN,
@@ -5004,18 +5003,12 @@ begin
   fSession := SSL_get1_session(fSSL);
 end;
 
-type
-  TOSSLReadStream = class(TCustomMemoryStream)
-  public
-    constructor Create(AData: Pointer; ASize: TIdC_SIZET);
-  end;
+{ TTaurusTLSClientIOHandlerSocket }
 
-{ TOSSLReadStream }
-
-constructor TOSSLReadStream.Create(AData: Pointer; ASize: TIdC_SIZET);
+procedure TTaurusTLSClientIOHandlerSocket.SetECHStatus(
+  Value: TTaurusTLSClientECHStatus);
 begin
-  inherited Create;
-  SetPointer(AData, ASize);
+  FECHStatus:=Value;
 end;
 
 procedure TTaurusTLSBaseSocket.Connect(const pHandle: TIdStackSocketHandle);
@@ -5032,31 +5025,6 @@ var
   LECHConfigBuf: Pointer; // FIXED: Was PPointer
   LECHConfigLen: TIdC_SIZET;
   LIntendedGrease: Boolean;
-
-  function EncodeConfigList(AConfigList: Pointer; ASize: TIdC_SIZET): string;
-  var
-    lIn: TOSSLReadStream;
-    lOut: TStringStream;
-    lEncoder: TIdEncoderMIME;
-  begin
-    lEncoder := TIdEncoderMIME.Create(nil);
-    try
-      lIn := TOSSLReadStream.Create(AConfigList, ASize);
-      try
-        lOut := TStringStream.Create('');
-        try
-          lEncoder.Encode(lIn, lOut);
-          Result := lOut.DataString;
-        finally
-          lOut.Free;
-        end;
-      finally
-        lIn.Free;
-      end;
-    finally
-      lEncoder.Free;
-    end;
-  end;
 
 begin
   Assert(fSSL = nil);
@@ -5600,20 +5568,20 @@ var
 begin
   // 1. Identify the IOHandler and extract properties
   if Parent is TTaurusTLSClientIOHandlerSocket then
-  with TTaurusTLSClientIOHandlerSocket(Parent) do
-  begin
-    LECHEnabled := ECHEnabled;
-    LDefaultSNI := DefaultSNI;
-    LECHConfigList := ECHConfigList;
-    LECHOuterHostname := ECHOuterHostname;
-  end
-  else
-  begin
-    LECHEnabled := False;
-    LDefaultSNI := '';
-    LECHConfigList := '';
-    LECHOuterHostname := '';
-  end;
+    with TTaurusTLSClientIOHandlerSocket(Parent) do
+    begin
+      LECHEnabled := ECHEnabled;
+      LDefaultSNI := DefaultSNI;
+      LECHConfigList := ECHConfigList;
+      LECHOuterHostname := ECHOuterHostname;
+    end
+    else
+    begin
+      LECHEnabled := False;
+      LDefaultSNI := '';
+      LECHConfigList := '';
+      LECHOuterHostname := '';
+    end;
 
   // 2. Determine the Logical Identity
   // If we are connecting via IP, the Identity is the DefaultSNI.
@@ -5698,14 +5666,6 @@ begin
         ETaurusTLSSettingTLSHostNameError.RaiseException(fSSL, LRetCode, RSSSLSettingTLSHostNameError_2);
     end;
   end;
-end;
-
-{ TTaurusTLSClientIOHandlerSocket }
-
-procedure TTaurusTLSClientIOHandlerSocket.SetECHStatus(
-  Value: TTaurusTLSClientECHStatus);
-begin
-  FECHStatus:=Value;
 end;
 
 initialization

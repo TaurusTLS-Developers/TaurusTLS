@@ -13,6 +13,7 @@ unit TaurusTLS_ECH;
 
 interface
 uses
+  Classes,
   SysUtils,
   IdCTypes,
   IdDNSResolver,
@@ -30,8 +31,8 @@ type
   private
     FECHCode: TIdC_INT;
   public
-    constructor Create(AECHCode: TIdC_INT; AMsg: String);
-    constructor CreateFmt(AECHCode: TIdC_INT; AMsg: String; AArgs: array of const);
+    constructor Create(AECHCode: TIdC_INT; const AMsg: String);
+    constructor CreateFmt(AECHCode: TIdC_INT; const AMsg: String; const AArgs: array of const);
     property ECHCode: TIdC_INT read FECHCode;
   end;
 
@@ -52,7 +53,7 @@ type
   /// (Maps to SSL_ECH_STATUS_GREASE_ECH without a retry config)
   /// </summary>
   ETaurusTLSECHRejectedError = class(ETaurusTLSECHError)
-    constructor Create(AMsg: String);
+    constructor Create(const AMsg: String);
   end;
 
   /// <summary>
@@ -61,7 +62,13 @@ type
   /// (Maps to SSL_ECH_STATUS_NOT_CONFIGURED)
   /// </summary>
   ETaurusTLSECHDowngradeError = class(ETaurusTLSECHError)
-    constructor Create(AMsg: String);
+    constructor Create(const AMsg: String);
+  end;
+
+type
+  TOSSLReadStream = class(TCustomMemoryStream)
+  public
+    constructor Create(AData: Pointer; ASize: TIdC_SIZET);
   end;
 
 type
@@ -94,8 +101,10 @@ function IsValidFQN(const AStr : String) : Boolean;  {$IFDEF USE_INLINE}inline; 
 /// </remarks>
 function IsECHSupported : Boolean;  {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+function EncodeConfigList(AConfigList: Pointer; ASize: TIdC_SIZET): string;
+
 implementation
-uses IdIDN, TaurusTLSHeaders_crypto;
+uses IdCoderMIME, IdIDN, TaurusTLSHeaders_crypto;
 
 
 {
@@ -116,13 +125,19 @@ const
   FQN_SEG_CONSISTSOF = 'abcdefghijklmnopqrstuvwxyz0123456789-_';
   FQN_MAX_SEG_LEN = 63;
   FQN_MAX_WHOLE_LEN = 254;
-var LStr : String;
+var
+{$IFNDEF USE_INLINE_VAR}
+  LStr : String;
+{$ENDIF}
   LCurSeg : String;
   LLenCurSeg, i : Integer;
 begin
   Result := False;
   if (AStr <> '') and (Length(AStr) <= FQN_MAX_WHOLE_LEN) then
   begin
+  {$IFDEF USE_INLINE_VAR}
+    var LStr : String;
+  {$ENDIF}
     LStr := AStr;
     repeat
       Result := True;
@@ -187,16 +202,50 @@ begin
   {$ENDIF}
 end;
 
+  function EncodeConfigList(AConfigList: Pointer; ASize: TIdC_SIZET): string;  {$IFDEF USE_INLINE}inline; {$ENDIF}
+  var
+    lIn: TOSSLReadStream;
+    lOut: TStringStream;
+    lEncoder: TIdEncoderMIME;
+  begin
+    lEncoder := TIdEncoderMIME.Create(nil);
+    try
+      lIn := TOSSLReadStream.Create(AConfigList, ASize);
+      try
+        lOut := TStringStream.Create('');
+        try
+          lEncoder.Encode(lIn, lOut);
+          Result := lOut.DataString;
+        finally
+          lOut.Free;
+        end;
+      finally
+        lIn.Free;
+      end;
+    finally
+      lEncoder.Free;
+    end;
+  end;
+
+
+{ TOSSLReadStream }
+
+constructor TOSSLReadStream.Create(AData: Pointer; ASize: TIdC_SIZET);
+begin
+  inherited Create;
+  SetPointer(AData, ASize);
+end;
+
 { ETaurusTLSECHError }
 
-constructor ETaurusTLSECHError.Create(AECHCode: TIdC_INT; AMsg: String);
+constructor ETaurusTLSECHError.Create(AECHCode: TIdC_INT; const AMsg: String);
 begin
   inherited Create(AMsg);
   FECHCode := AECHCode;
 end;
 
-constructor ETaurusTLSECHError.CreateFmt(AECHCode: TIdC_INT; AMsg: String;
-  AArgs: array of const);
+constructor ETaurusTLSECHError.CreateFmt(AECHCode: TIdC_INT; const AMsg: String;
+  const AArgs: array of const);
 begin
   Create(AECHCode, Format(AMsg, AArgs));
 end;
@@ -211,14 +260,14 @@ end;
 
 { ETaurusTLSECHRejectedError }
 
-constructor ETaurusTLSECHRejectedError.Create(AMsg: String);
+constructor ETaurusTLSECHRejectedError.Create(const AMsg: String);
 begin
   inherited Create(SSL_ECH_STATUS_GREASE_ECH, AMsg);
 end;
 
 { ETaurusTLSECHDowngradeError }
 
-constructor ETaurusTLSECHDowngradeError.Create(AMsg: String);
+constructor ETaurusTLSECHDowngradeError.Create(const AMsg: String);
 begin
   inherited Create(SSL_ECH_STATUS_NOT_CONFIGURED, AMsg);
 end;

@@ -53,18 +53,16 @@ type
       {$IFDEF USE_INLINE} inline; {$ENDIF}
     function GetHasPrivateKey(AIdx: TIdC_INT): boolean;
       {$IFDEF USE_INLINE} inline; {$ENDIF}
-    function GetIdxForRetry(AIdx: TIdC_INT): TIdC_INT;
+    function GetIdxForRetry(AIdx: TIdC_INT): TIdC_INT; //PALOFF - Function result not set
       {$IFDEF USE_INLINE} inline; {$ENDIF}
     function GetPublicName(AIdx: TIdC_INT): string;
-    function GetAge(AIdx: TIdC_INT): TIdC_TIMET;
+    function GetAge(AIdx: TIdC_INT): TIdC_TIMET; //PALOFF - Function result not set
       {$IFDEF USE_INLINE} inline; {$ENDIF}
 
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
-    /// <summary>Initializes a new instance from an existing OpenSSL ECH store pointer.</summary>
-    /// <param name="AStore">Pointer to the OSSL_ECHSTORE object. Must not be nil.</param>
-    constructor Create(AStore: POSSL_ECHSTORE); overload;
+
     /// <summary>Returns the ECH version supported by this store.</summary>
-    function GetECHVersion: TIdC_UINT16; virtual;
+    function GetECHVersion: TIdC_UINT16;
 
     /// <summary>Generates a new ECH configuration and adds it to the store.</summary>
     /// <param name="APublicName">The public name for the ECH configuration.</param>
@@ -113,6 +111,9 @@ type
     /// <summary>The retry index for the configuration at the specified index.</summary>
     property IdxForRetry[AIdx: TIdC_INT]: TIdC_INT read GetIdxForRetry;
   public
+    /// <summary>Initializes a new instance from an existing OpenSSL ECH store pointer.</summary>
+    /// <param name="AStore">Pointer to the OSSL_ECHSTORE object. Must not be nil.</param>
+    constructor Create(AStore: POSSL_ECHSTORE); overload;
     /// <summary>Creates a new empty ECH store.</summary>
     constructor Create; overload;
     /// <summary>
@@ -187,7 +188,7 @@ type
     function PemToBio(const APemStr: RawByteString): PBIO; {$IFDEF USE_INLINE} inline; {$ENDIF}
     function ReadPemToStr(const AStream: TStream): RawByteString;
     procedure ReadPem(const APemStr: RawByteString; AIdxForRetry: TIdC_INT); overload;
-    procedure SetKeyAndReadPem(APrivKey: PEVP_PKEY; APemStr: RawByteString;
+    procedure SetKeyAndReadPem(APrivKey: PEVP_PKEY; const APemStr: RawByteString;
       AIdxForRetry: TIdC_INT); overload;
 
   public
@@ -253,7 +254,7 @@ type
     /// <param name="AMessage">The formatted error message.</param>
     /// <param name="AArgs">Arguments for the formatted message.</param>
     class procedure CheckAndRaiseFmt(ACode: TIdC_INT; const AMessage: string;
-      AArgs: array of const);
+      const AArgs: array of const);
   end;
 
   /// <summary>
@@ -389,7 +390,7 @@ begin
 end;
 
 class procedure ETaurusTLSECHStoreError.CheckAndRaiseFmt(ACode: TIdC_INT;
-  const AMessage: string; AArgs: array of const);
+  const AMessage: string; const AArgs: array of const);
 {$IFDEF USE_NORETURN}noreturn;{$ENDIF}
 begin
   if ACode <> 1 then
@@ -425,6 +426,16 @@ begin
   OSSL_ECHSTORE_free(FStore);
   FStore:=nil;
   inherited;
+end;
+
+procedure TTaurusTLS_CustomECHStore.DoGetInfo(AIdx: TIdC_INT; AAge: PIdC_TIMET;
+  APublicName, AECHConfig: PPIdAnsiChar; AHasPrivateKey,
+  AIdxForRetry: PIdC_INT);
+begin
+  ETaurusTLSECHStore_get1_info.CheckAndRaise(
+    OSSL_ECHSTORE_get1_info(FStore, AIdx, AAge, APublicName, AECHConfig,
+      AHasPrivateKey, AIdxForRetry),
+    RSMsg_ECHStore_getinfo_err);
 end;
 
 function TTaurusTLS_CustomECHStore.GetECHConfig(AIdx: TIdC_INT): string;
@@ -565,16 +576,6 @@ begin
     RSMsg_ECHStore_flushkeys_err);
 end;
 
-procedure TTaurusTLS_CustomECHStore.DoGetInfo(AIdx: TIdC_INT; AAge: PIdC_TIMET;
-  APublicName, AECHConfig: PPIdAnsiChar; AHasPrivateKey,
-  AIdxForRetry: PIdC_INT);
-begin
-  ETaurusTLSECHStore_get1_info.CheckAndRaise(
-    OSSL_ECHSTORE_get1_info(FStore, AIdx, AAge, APublicName, AECHConfig,
-      AHasPrivateKey, AIdxForRetry),
-    RSMsg_ECHStore_getinfo_err);
-end;
-
 procedure TTaurusTLS_CustomECHStore.DoNewConfig(const APublicName: string;
   const ASuite: OSSL_HPKE_SUITE);
 var
@@ -627,7 +628,7 @@ end;
 function TServerECHStore.GetAsPem(AIdx: TIdC_INT): string;
 var
   LBio: PBio;
-  LPemPtr: PIdAnsiChar;
+  LPemPtr: PIdAnsiChar;  //PALOFF - Variables that are referenced, but never set
   LPemLen: TIdC_INT;
 
 begin
@@ -704,7 +705,7 @@ begin
 end;
 
 procedure TServerECHStore.SetKeyAndReadPem(APrivKey: PEVP_PKEY;
-  APemStr: RawByteString; AIdxForRetry: TIdC_INT);
+  const APemStr: RawByteString; AIdxForRetry: TIdC_INT);
 var
   LBio: PBIO;
 
@@ -732,7 +733,7 @@ end;
 procedure TServerECHStore.WritePem(const AStream: TStream; AIdx: TIdC_INT);
 var
   LBio: PBio;
-  LPemPtr: PIdAnsiChar;
+  LPemPtr: PIdAnsiChar; //PALOFF - Variables that are referenced, but never set
   LPemLen: TIdC_INT;
 
 begin
