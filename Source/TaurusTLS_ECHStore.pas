@@ -41,10 +41,9 @@ type
     /// <summary>Maximum allowed length for a single ECHConfig.</summary>
     cECHConfigMaxLen = OSSL_ECH_MAX_ECHCONFIG_LEN;
 
-  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
     FStore: POSSL_ECHSTORE;
 
-  private
     function GetCount: TIdC_Int;
       {$IFDEF USE_INLINE} inline; {$ENDIF}
     function GetKeyCount: TIdC_INT;
@@ -183,7 +182,7 @@ type
   ///   ECH store specialized for server-side operations, including key management.
   /// </summary>
   TServerECHStore = class(TTaurusTLS_CustomECHStore)
-  private
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
     function GetAsPem(AIdx: TIdC_INT): string;
     function PemToBio(const APemStr: RawByteString): PBIO; {$IFDEF USE_INLINE} inline; {$ENDIF}
     function ReadPemToStr(const AStream: TStream): RawByteString;
@@ -538,7 +537,7 @@ var
 
 begin
   lInLen:=Length(AECHConfigList);
-  if (lInLen > cECHConfigListMaxLen) then
+  if lInLen > cECHConfigListMaxLen then
     ETaurusTLSECHStore_too_long_echconfiglist_err.RaiseWithMessage(RSMsg_ECHStore_too_long_echconfiglist_err);
 
   LECHConfigList:=RawByteString(AECHConfigList);

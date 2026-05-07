@@ -28,7 +28,7 @@ uses
 type
   /// <summary>Base class for all ECH-related runtime errors.</summary>
   ETaurusTLSECHError = class(ETaurusTLSError)
-  private
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict {$ENDIF}protected
     FECHCode: TIdC_INT;
   public
     constructor Create(AECHCode: TIdC_INT; const AMsg: String);
@@ -41,7 +41,7 @@ type
   /// (Maps to SSL_ECH_STATUS_GREASE_ECH with a retry config)
   /// </summary>
   ETaurusTLSECHRetryRequired = class(ETaurusTLSECHError)
-  private
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict {$ENDIF}protected
     FECHConfigList: String;
   public
     constructor Create(const AMsg, AECHConfig: String);

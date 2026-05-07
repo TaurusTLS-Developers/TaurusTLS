@@ -5024,7 +5024,6 @@ var
   LInner, LOuter: PIdAnsiChar;
   LECHConfigBuf: Pointer; // FIXED: Was PPointer
   LECHConfigLen: TIdC_SIZET;
-  LIntendedGrease: Boolean;
 
 begin
   Assert(fSSL = nil);
@@ -5568,7 +5567,7 @@ var
 begin
   // 1. Identify the IOHandler and extract properties
   if Parent is TTaurusTLSClientIOHandlerSocket then
-    with TTaurusTLSClientIOHandlerSocket(Parent) do
+    with TTaurusTLSClientIOHandlerSocket(Parent) do  //PALOFF - With statements
     begin
       LECHEnabled := ECHEnabled;
       LDefaultSNI := DefaultSNI;
