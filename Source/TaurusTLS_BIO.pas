@@ -287,6 +287,8 @@ type
   end;
 
 implementation
+uses
+  TaurusTLS_ResourceStrings;
 
 { TTaurusTLSCustomRawMemBio }
 
@@ -297,7 +299,7 @@ var
 
 begin
   if (not Assigned(AMemPtr)) or (ASize = 0) then
-    ETaurusTLSBioCreateError.RaiseWithMessage('Unable to create BIO object with empty memory pointer.');
+    ETaurusTLSBioCreateError.RaiseWithMessage(RSMsg_Bio_EmptyMemPtr_err);
 
   LFlags:=[cbReadable];
   if AIsClonable then
@@ -324,19 +326,19 @@ end;
 procedure TTaurusTLSCustomBIOHelper.CheckCanClone;
 begin
   if not (cbClonable in Flags) then
-    ETaurusTLSBioCloneError.RaiseWithMessage('This BIO object is not configured for cloning.');
+    ETaurusTLSBioCloneError.RaiseWithMessage(RSMsg_Bio_CloneCheck_err);
 end;
 
 procedure TTaurusTLSCustomBIOHelper.CheckCanRead;
 begin
   if not (cbReadable in Flags) then
-    raise ETaurusTLSBioReadError.Create('This BIO object is not configured for reading.');
+    raise ETaurusTLSBioReadError.Create(RSMsg_Bio_ReadCheck_err);
 end;
 
 procedure TTaurusTLSCustomBIOHelper.CheckCanWrite;
 begin
   if not (cbWritable in Flags) then
-    raise ETaurusTLSBioReadError.Create('This BIO object is not configured for writting.');
+    raise ETaurusTLSBioReadError.Create(RSMsg_Bio_WriteCheck_err);
 end;
 
 function TTaurusTLSCustomBIOHelper.LoadFromStream(const AStream: TStream;
@@ -349,7 +351,8 @@ var
 begin
   Result := 0;
   lRemaining := IndyMin(ASize, TIdC_SIZET(AStream.Size - AStream.Position));
-  if lRemaining = 0 then Exit;
+  if lRemaining = 0 then
+    Exit;
 
   CheckCanWrite;
   SetLength(lBuf, cChunkSize);
@@ -362,7 +365,7 @@ begin
       Break;
 
     if Write(lBuf[0], lActuallyRead) <> lActuallyRead then
-      ETaurusTLSBioLoadStreamError.RaiseWithMessage('Error writing to BIO from stream.');
+      ETaurusTLSBioLoadStreamError.RaiseWithMessage(RSMsg_Bio_StreamRead_err);
 
     Dec(lRemaining, lActuallyRead);
     Inc(Result, lActuallyRead);
@@ -421,13 +424,13 @@ end;
 
 constructor TTaurusTLSCustomBIO.Create;
 begin
-  ETaurusTLSBioCreateError.RaiseWithMessage('Unable to create BIO wrapper with this constructor.');
+  ETaurusTLSBioCreateError.RaiseWithMessage(RSMsg_Bio_WrongConstructor_err);
 end;
 
 constructor TTaurusTLSCustomBIO.Create(ABIO: PBIO; AFlags: TTaurusTLSFlags);
 begin
   if not Assigned(ABIO) then
-    ETaurusTLSBioCreateError.RaiseWithMessage('Unable to create BIO wrapper with the NULL BIO.');
+    ETaurusTLSBioCreateError.RaiseWithMessage(RSMsg_Bio_NullBio_err);
   FBIO:=ABIO;
   FFlags:=AFlags;
 end;
@@ -454,7 +457,7 @@ begin
     Exit;
   CheckCanRead;
   if BIO_read_ex(FBIO, AData, ASize, Result) <> 1 then
-    ETaurusTLSBioReadError.RaiseWithMessage('Error reading from the BIO object.')
+    ETaurusTLSBioReadError.RaiseWithMessage(RSMsg_Bio_Read_err);
 end;
 
 function TTaurusTLSCustomBIO.Write(const AData; ASize: TIdC_SIZET): TIdC_SIZET;
@@ -463,7 +466,7 @@ begin
     Exit;
   CheckCanWrite;
   if BIO_write_ex(FBIO, AData, ASize, Result) <> 1 then
-    ETaurusTLSBioWriteError.RaiseWithMessage('Error writting to the BIO object.')
+    ETaurusTLSBioWriteError.RaiseWithMessage(RSMsg_Bio_Write_err);
 end;
 
 procedure TTaurusTLSCustomBIO.SetAsBytes(const AValue: TIdBytes);
@@ -511,7 +514,7 @@ end;
 function TTaurusTLSCustomBIO.BIOAddRef: PBIO;
 begin
   if not TryBIOAddRef then
-    ETaurusTLSBioCloneError.RaiseWithMessage('BIO object cloning faulure.');
+    ETaurusTLSBioCloneError.RaiseWithMessage(RSMsg_Bio_AddRef_err);
   Result:=FBIO;
 end;
 
