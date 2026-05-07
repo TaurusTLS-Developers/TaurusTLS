@@ -26,25 +26,25 @@ uses
 
 type
   /// <summary>Base exception class for all OpenSSL BIO wrapper errors.</summary>
-  EBioError = class(ETaurusTLSError);
+  ETaurusTLSBioError = class(ETaurusTLSError);
   /// <summary>Raised when an OpenSSL BIO handle cannot be created or initialized.</summary>
-  EBioCreateError = class(EBioError);
+  ETaurusTLSBioCreateError = class(ETaurusTLSBioError);
   /// <summary>Raised when a BIO cloning operation (reference count increment) fails.</summary>
-  EBioCloneError = class(EBioError);
+  ETaurusTLSBioCloneError = class(ETaurusTLSBioError);
   /// <summary>Raised when an error occurs during a BIO_read operation.</summary>
-  EBioReadError = class(EBioError);
+  ETaurusTLSBioReadError = class(ETaurusTLSBioError);
   /// <summary>Raised when an error occurs during a BIO_write operation.</summary>
-  EBioWriteError = class(EBioError);
+  ETaurusTLSBioWriteError = class(ETaurusTLSBioError);
   /// <summary>Raised when data cannot be successfully loaded from a TStream into a BIO.</summary>
-  EBioLoadStreamError = class(EBioError);
+  ETaurusTLSBioLoadStreamError = class(ETaurusTLSBioError);
   /// <summary>Raised when data cannot be successfully written from a BIO into a TStream.</summary>
-  EBioWriteStreamError = class(EBioError);
+  ETaurusTLSBioWriteStreamError = class(ETaurusTLSBioError);
 
   /// <summary>
   ///   Abstract base class for OpenSSL BIO (Basic I/O) wrappers. Manages the
   ///   lifecycle and reference counting of the underlying PBIO handle.
   /// </summary>
-  TCustomBIO = class abstract
+  TTaurusTLSCustomBIO = class abstract
   public type
     /// <summary>Capabilities flags for the BIO wrapper.</summary>
     TFlag = (
@@ -77,14 +77,14 @@ type
     ///   Internal method to instantiate a specific descendant during a Clone
     ///   operation.
     /// </summary>
-    function DoClone: TCustomBIO; virtual; abstract;
+    function DoClone: TTaurusTLSCustomBIO; virtual; abstract;
     /// <summary>
     ///   Attempts to increment the OpenSSL internal reference count of the BIO.
     /// </summary>
     function TryBIOAddRef: boolean; {$IFDEF USE_INLINE}inline;{$ENDIF}
     /// <summary>
     ///   Increments the reference count and returns the BIO handle. Raises
-    ///   EBioCloneError on failure.
+    ///   ETaurusTLSBioCloneError on failure.
     /// </summary>
     function BIOAddRef: PBIO; {$IFDEF USE_INLINE}inline;{$ENDIF}
     /// <summary>
@@ -119,7 +119,7 @@ type
     constructor Create(ABIO: PBIO; AFlags: TFlags); overload;
   public
     /// <summary>
-    ///   Default constructor. Raises EBioCreateError as a specific BIO type
+    ///   Default constructor. Raises ETaurusTLSBioCreateError as a specific BIO type
     ///   must be chosen.
     /// </summary>
     constructor Create; overload;
@@ -131,7 +131,7 @@ type
     ///   Creates a new Delphi wrapper instance pointing to the same OpenSSL BIO
     ///   handle (incrementing ref count).
     /// </summary>
-    function Clone: TCustomBIO; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    function Clone: TTaurusTLSCustomBIO; {$IFDEF USE_INLINE}inline;{$ENDIF}
     /// <summary>
     ///   Reads ASize bytes from the BIO into AData. Returns the number of bytes
     ///   actually read.
@@ -175,21 +175,21 @@ type
   ///   Helper class providing stream-based I/O and capability validation for
   ///   BIO wrappers.
   /// </summary>
-  TCustomBIOHelper = class helper for TCustomBIO
+  TTaurusTLSCustomBIOHelper = class helper for TTaurusTLSCustomBIO
   public const
     /// <summary>Buffer size used for chunked stream operations.</summary>
-    cChunkSize = 4096;
+    cChunkSize = 8192;
   public
     /// <summary>
-    ///   Validates that the BIO is readable; raises EBioReadError if not.
+    ///   Validates that the BIO is readable; raises ETaurusTLSBioReadError if not.
     /// </summary>
     procedure CheckCanRead; {$IFDEF USE_INLINE}inline;{$ENDIF}
     /// <summary>
-    ///   Validates that the BIO is writable; raises EBioWriteError if not.
+    ///   Validates that the BIO is writable; raises ETaurusTLSBioWriteError if not.
     /// </summary>
     procedure CheckCanWrite; {$IFDEF USE_INLINE}inline;{$ENDIF}
     /// <summary>
-    ///   Validates that the BIO is clonable; raises EBioCloneError if not.
+    ///   Validates that the BIO is clonable; raises ETaurusTLSBioCloneError if not.
     /// </summary>
     procedure CheckCanClone; {$IFDEF USE_INLINE}inline;{$ENDIF}
     /// <summary>
@@ -205,9 +205,9 @@ type
   /// <summary>
   ///   Wrapper for an OpenSSL internal memory BIO (BIO_s_mem).
   /// </summary>
-  TOsslMemBio = class(TCustomBIO)
+  TTaurusTLSMemBio = class(TTaurusTLSCustomBIO)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
-    function DoClone: TCustomBIO; override;
+    function DoClone: TTaurusTLSCustomBIO; override;
   public
     /// <summary>Creates a new, empty OpenSSL managed memory BIO.</summary>
     constructor Create; overload;
@@ -217,7 +217,7 @@ type
   ///   Abstract base for BIOs that wrap existing Pascal-managed memory buffers
   ///   without copying.
   /// </summary>
-  TCustomRawMemBio = class abstract(TCustomBIO)
+  TTaurusTLSCustomRawMemBio = class abstract(TTaurusTLSCustomBIO)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FMemPtr: Pointer;
     FMemSize: TIdC_SIZET;
@@ -240,11 +240,11 @@ type
   end;
 
   /// <summary>A read-only BIO wrapper for a TIdBytes array.</summary>
-  TBytesBio = class(TCustomRawMemBio)
+  TTaurusTLSBytesBio = class(TTaurusTLSCustomRawMemBio)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FData: TIdBytes;
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
-    function DoClone: TCustomBIO; override;
+    function DoClone: TTaurusTLSCustomBIO; override;
     function GetAsBytes: TIdBytes; override;
   public
     /// <summary>
@@ -254,11 +254,11 @@ type
   end;
 
   /// <summary>A read-only BIO wrapper for a RawByteString.</summary>
-  TRawByteStringBIO = class(TCustomRawMemBio)
+  TTaurusTLSRawByteStringBIO = class(TTaurusTLSCustomRawMemBio)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FData: RawByteString;
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
-    function DoClone: TCustomBIO; override;
+    function DoClone: TTaurusTLSCustomBIO; override;
     function GetAsString: RawByteString; override;
   public
     /// <summary>
@@ -274,11 +274,11 @@ type
   ///   This Generic type is intended to use with Pascal simple types and
   ///   records. Managed types like strings or dynamic arrays are not supported.
   /// </remarks>
-  TRecordBIO<T: record> = class(TCustomRawMemBio)
+  TTaurusTLSRecordBIO<T: record> = class(TTaurusTLSCustomRawMemBio)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FData: T;
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
-    function DoClone: TCustomBIO; override;
+    function DoClone: TTaurusTLSCustomBIO; override;
   public
     /// <summary>
     ///   Creates a BIO that reads directly from an internal copy of the
@@ -292,43 +292,43 @@ implementation
 uses
   TaurusTLS_ResourceStrings;
 
-{ TCustomBIO }
+{ TTaurusTLSCustomBIO }
 
-constructor TCustomBIO.Create;
+constructor TTaurusTLSCustomBIO.Create;
 begin
-  EBioCreateError.RaiseWithMessage(RSMsg_Bio_WrongConstructor_err);
+  ETaurusTLSBioCreateError.RaiseWithMessage(RSMsg_Bio_WrongConstructor_err);
 end;
 
-constructor TCustomBIO.Create(ABIO: PBIO; AFlags: TFlags);
+constructor TTaurusTLSCustomBIO.Create(ABIO: PBIO; AFlags: TFlags);
 begin
   if not Assigned(ABIO) then
-    EBioCreateError.RaiseWithMessage(RSMsg_Bio_NullBio_err);
+    ETaurusTLSBioCreateError.RaiseWithMessage(RSMsg_Bio_NullBio_err);
   FBIO:=ABIO;
   FFlags:=AFlags;
 end;
 
-destructor TCustomBIO.Destroy;
+destructor TTaurusTLSCustomBIO.Destroy;
 begin
   BIO_free(FBIO);
   inherited;
 end;
 
-function TCustomBIO.TryBIOAddRef: boolean;
+function TTaurusTLSCustomBIO.TryBIOAddRef: boolean;
 begin
   Result:=BIO_up_ref(FBIO) = 1;
 end;
 
-function TCustomBIO.GetIsMemoryBIO: Boolean;
+function TTaurusTLSCustomBIO.GetIsMemoryBIO: Boolean;
 begin
   Result:=BIO_method_type(FBIO) = BIO_TYPE_MEM;
 end;
 
-function TCustomBIO.GetPending: TIdC_SIZET;
+function TTaurusTLSCustomBIO.GetPending: TIdC_SIZET;
 begin
   Result:=BIO_ctrl_pending(FBIO);
 end;
 
-function TCustomBIO.Read(var AData; ASize: TIdC_SIZET): TIdC_SIZET;
+function TTaurusTLSCustomBIO.Read(var AData; ASize: TIdC_SIZET): TIdC_SIZET;
 var
   lResult: TIdC_INT;
 
@@ -338,10 +338,10 @@ begin
   CheckCanRead;
   lResult:=BIO_read_ex(FBIO, AData, ASize, Result);
   if lResult <> 1 then
-    EBioReadError.RaiseWithMessage(RSMsg_Bio_Read_err)
+    ETaurusTLSBioReadError.RaiseWithMessage(RSMsg_Bio_Read_err)
 end;
 
-function TCustomBIO.Write(const AData; ASize: TIdC_SIZET): TIdC_SIZET;
+function TTaurusTLSCustomBIO.Write(const AData; ASize: TIdC_SIZET): TIdC_SIZET;
 var
   lResult: TIdC_INT;
 
@@ -351,10 +351,10 @@ begin
   CheckCanWrite;
   lResult:=BIO_write_ex(FBIO, AData, ASize, Result);
   if lResult <> 1 then
-    EBioWriteError.RaiseWithMessage(RSMsg_Bio_Write_err)
+    ETaurusTLSBioWriteError.RaiseWithMessage(RSMsg_Bio_Write_err)
 end;
 
-procedure TCustomBIO.SetAsBytes(Value: TIdBytes);
+procedure TTaurusTLSCustomBIO.SetAsBytes(Value: TIdBytes);
 var
   lSize: TIdC_SIZET;
 
@@ -364,7 +364,7 @@ begin
     Write(Value[0], lSize);
 end;
 
-function TCustomBIO.GetAsBytes: TIdBytes;
+function TTaurusTLSCustomBIO.GetAsBytes: TIdBytes;
 var
   lSize: TIdC_SIZET;
   lActuallyRead: TIdC_SIZET;
@@ -381,7 +381,7 @@ begin
     SetLength(Result, lActuallyRead);
 end;
 
-procedure TCustomBIO.SetAsString(Value: RawByteString);
+procedure TTaurusTLSCustomBIO.SetAsString(Value: RawByteString);
 var
   lSize: TIdC_SIZET;
 
@@ -391,7 +391,7 @@ begin
     Write(Value[1], lSize);
 end;
 
-function TCustomBIO.GetAsString: RawByteString;
+function TTaurusTLSCustomBIO.GetAsString: RawByteString;
 var
   lSize: TIdC_SIZET;
   lActuallyRead: TIdC_SIZET;
@@ -408,40 +408,40 @@ begin
     SetLength(Result, lActuallyRead);
 end;
 
-function TCustomBIO.BIOAddRef: PBIO;
+function TTaurusTLSCustomBIO.BIOAddRef: PBIO;
 begin
   if not TryBIOAddRef then
-    EBioCloneError.RaiseWithMessage(RSMsg_Bio_AddRef_err);
+    ETaurusTLSBioCloneError.RaiseWithMessage(RSMsg_Bio_AddRef_err);
   Result:=FBIO;
 end;
 
-function TCustomBIO.Clone: TCustomBIO;
+function TTaurusTLSCustomBIO.Clone: TTaurusTLSCustomBIO;
 begin
   CheckCanClone;
   Result:=DoClone;
 end;
 
-{ TCustomBIOHelper }
+{ TTaurusTLSCustomBIOHelper }
 
-procedure TCustomBIOHelper.CheckCanClone;
+procedure TTaurusTLSCustomBIOHelper.CheckCanClone;
 begin
   if not (cbClonable in Flags) then
-    EBioCloneError.RaiseWithMessage(RSMsg_Bio_CloneCheck_err);
+    ETaurusTLSBioCloneError.RaiseWithMessage(RSMsg_Bio_CloneCheck_err);
 end;
 
-procedure TCustomBIOHelper.CheckCanRead;
+procedure TTaurusTLSCustomBIOHelper.CheckCanRead;
 begin
   if not (cbReadable in Flags) then
-    raise EBioReadError.Create(RSMsg_Bio_ReadCheck_err);
+    raise ETaurusTLSBioReadError.Create(RSMsg_Bio_ReadCheck_err);
 end;
 
-procedure TCustomBIOHelper.CheckCanWrite;
+procedure TTaurusTLSCustomBIOHelper.CheckCanWrite;
 begin
   if not (cbWritable in Flags) then
-    raise EBioReadError.Create(RSMsg_Bio_WriteCheck_err);
+    raise ETaurusTLSBioReadError.Create(RSMsg_Bio_WriteCheck_err);
 end;
 
-function TCustomBIOHelper.LoadFromStream(const AStream: TStream;
+function TTaurusTLSCustomBIOHelper.LoadFromStream(const AStream: TStream;
   ASize: TIdC_SIZET): TIdC_SIZET;
 var
   lRemaining: TIdC_INT;
@@ -463,14 +463,14 @@ begin
     if lActuallyRead <= 0 then Break;
 
     if TIdC_INT(Write(lBuf[0], lActuallyRead)) <> lActuallyRead then
-      EBioLoadStreamError.RaiseWithMessage(RSMsg_Bio_StreamRead_err);
+      ETaurusTLSBioLoadStreamError.RaiseWithMessage(RSMsg_Bio_StreamRead_err);
 
     Dec(lRemaining, lActuallyRead);
     Inc(Result, lActuallyRead);
   end;
 end;
 
-function TCustomBIOHelper.WriteToStream(const AStream: TStream;
+function TTaurusTLSCustomBIOHelper.WriteToStream(const AStream: TStream;
   ASize: TIdC_SIZET): TIdC_SIZET;
 var
   lReadSize: TIdC_SIZET;
@@ -509,28 +509,28 @@ begin
   end;
 end;
 
-{ TOsslMemBio }
+{ TTaurusTLSMemBio }
 
-constructor TOsslMemBio.Create;
+constructor TTaurusTLSMemBio.Create;
 begin
   inherited Create(BIO_new(BIO_s_mem()), cFlagsAll);
 end;
 
-function TOsslMemBio.DoClone: TCustomBIO;
+function TTaurusTLSMemBio.DoClone: TTaurusTLSCustomBIO;
 begin
-  Result := TOsslMemBio(ClassType).Create(BIOAddRef, Flags);
+  Result := TTaurusTLSMemBio(ClassType).Create(BIOAddRef, Flags);
 end;
 
-{ TCustomRawMemBio }
+{ TTaurusTLSCustomRawMemBio }
 
-constructor TCustomRawMemBio.Create(AMemPtr: Pointer; ASize: TIdC_SIZET;
+constructor TTaurusTLSCustomRawMemBio.Create(AMemPtr: Pointer; ASize: TIdC_SIZET;
   AIsClonable: boolean = False);
 var
   LFlags: TFlags;
 
 begin
   if (not Assigned(AMemPtr)) or (ASize = 0) then
-    EBioCreateError.RaiseWithMessage(RSMsg_Bio_EmptyMemPtr_err);
+    ETaurusTLSBioCreateError.RaiseWithMessage(RSMsg_Bio_EmptyMemPtr_err);
 
   LFlags:=[cbReadable];
   if AIsClonable then
@@ -541,64 +541,64 @@ begin
   FMemSize := ASize;
 end;
 
-destructor TCustomRawMemBio.Destroy;
+destructor TTaurusTLSCustomRawMemBio.Destroy;
 begin
   DoFreeMem;
   inherited;
 end;
 
-procedure TCustomRawMemBio.DoFreeMem;
+procedure TTaurusTLSCustomRawMemBio.DoFreeMem;
 begin
   // Do Nothing by default;
 end;
 
-{ TBytesBio }
+{ TTaurusTLSBytesBio }
 
-function TBytesBio.GetAsBytes: TIdBytes;
+function TTaurusTLSBytesBio.GetAsBytes: TIdBytes;
 begin
   Result:=FData;
 end;
 
-constructor TBytesBio.Create(const AData: TIdBytes);
+constructor TTaurusTLSBytesBio.Create(const AData: TIdBytes);
 begin
   inherited Create(Pointer(AData), Length(AData), True);
   FData:=AData;
 end;
 
-function TBytesBio.DoClone: TCustomBIO;
+function TTaurusTLSBytesBio.DoClone: TTaurusTLSCustomBIO;
 begin
-  Result:=TBytesBio.Create(FData);
+  Result:=TTaurusTLSBytesBio.Create(FData);
 end;
 
-{ TRawByteStringBIO }
+{ TTaurusTLSRawByteStringBIO }
 
-constructor TRawByteStringBIO.Create(const AData: RawByteString);
+constructor TTaurusTLSRawByteStringBIO.Create(const AData: RawByteString);
 begin
   inherited Create(Pointer(AData), Length(AData), True);
   FData:=AData;
 end;
 
-function TRawByteStringBIO.DoClone: TCustomBIO;
+function TTaurusTLSRawByteStringBIO.DoClone: TTaurusTLSCustomBIO;
 begin
-  Result:=TRawByteStringBIO.Create(FData);
+  Result:=TTaurusTLSRawByteStringBIO.Create(FData);
 end;
 
-function TRawByteStringBIO.GetAsString: RawByteString;
+function TTaurusTLSRawByteStringBIO.GetAsString: RawByteString;
 begin
   Result:=FData;
 end;
 
-{ TRecordBIO<T> }
+{ TTaurusTLSRecordBIO<T> }
 
-constructor TRecordBIO<T>.Create(const AData: T);
+constructor TTaurusTLSRecordBIO<T>.Create(const AData: T);
 begin
   FData:=AData;
   inherited Create(@FData, SizeOf(AData), True);
 end;
 
-function TRecordBIO<T>.DoClone: TCustomBIO;
+function TTaurusTLSRecordBIO<T>.DoClone: TTaurusTLSCustomBIO;
 begin
-  Result:=TRecordBIO<T>.Create(FData);
+  Result:=TTaurusTLSRecordBIO<T>.Create(FData);
 end;
 
 end.
