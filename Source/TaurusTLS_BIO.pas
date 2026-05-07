@@ -47,7 +47,7 @@ type
   TTaurusTLSCustomBIO = class abstract
   public type
     /// <summary>Capabilities flags for the BIO wrapper.</summary>
-    TTaurusTLSFlag = (
+    TFlag = (
       /// <summary>
       ///   <c>cbReadable</c> indicates that the application can read data from
       ///   this <c>BIO object.</c>
@@ -65,12 +65,12 @@ type
       cbClonable
     );
     /// <summary>Set of capabilities flags.</summary>
-    TTaurusTLSFlags = set of TTaurusTLSFlag;
+    TFlags = set of TFlag;
   public const
     /// <summary>Default flags for a BIO that supports all operations.</summary>
     cFlagsAll = [cbReadable, cbWritable, cbClonable];
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
-    FFlags: TTaurusTLSFlags;
+    FFlags: TFlags;
     FBIO: PBIO;
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
     /// <summary>
@@ -98,7 +98,7 @@ type
     /// <summary>
     ///   Virtual setter to write a TIdBytes array into the BIO.
     /// </summary>
-    procedure SetAsBytes(const AValue: TIdBytes);
+    procedure SetAsBytes(const AValue: TIdBytes); virtual;
     /// <summary>
     ///   Virtual getter to retrieve the BIO content as a RawByteString.
     /// </summary>
@@ -106,7 +106,7 @@ type
     /// <summary>
     ///   Virtual setter to write a RawByteString into the BIO.
     /// </summary>
-    procedure SetAsString(const AValue: RawByteString);
+    procedure SetAsString(const AValue: RawByteString); virtual;
     /// <summary>
     ///   Returns True if the underlying OpenSSL BIO is a memory-type BIO.
     /// </summary>
@@ -149,7 +149,7 @@ type
     /// <summary>
     ///   The capability flags assigned to this BIO instance.
     /// </summary>
-    property Flags: TTaurusTLSFLags read FFlags;
+    property Flags: TFlags read FFlags;
     /// <summary>
     ///   Indicates if the underlying BIO is a memory BIO (BIO_s_mem or
     ///   BIO_s_secmem).
@@ -353,14 +353,14 @@ begin
     ETaurusTLSBioWriteError.RaiseWithMessage(RSMsg_Bio_Write_err)
 end;
 
-procedure TTaurusTLSCustomBIO.SetAsBytes(Value: TIdBytes);
+procedure TTaurusTLSCustomBIO.SetAsBytes(const AValue: TIdBytes);
 var
   lSize: TIdC_SIZET;
 
 begin
-  lSize:=Length(Value);
+  lSize:=Length(AValue);
   if lSize > 0 then
-    Write(Value[0], lSize);
+    Write(AValue[0], lSize);
 end;
 
 function TTaurusTLSCustomBIO.GetAsBytes: TIdBytes;
@@ -380,14 +380,14 @@ begin
     SetLength(Result, lActuallyRead);
 end;
 
-procedure TTaurusTLSCustomBIO.SetAsString(Value: RawByteString);
+procedure TTaurusTLSCustomBIO.SetAsString(const AValue: RawByteString);
 var
   lSize: TIdC_SIZET;
 
 begin
-  lSize:=Length(Value);
+  lSize:=Length(AValue);
   if lSize > 0 then
-    Write(Value[1], lSize);
+    Write(AValue[1], lSize);
 end;
 
 function TTaurusTLSCustomBIO.GetAsString: RawByteString;
@@ -525,7 +525,7 @@ end;
 constructor TTaurusTLSCustomRawMemBio.Create(AMemPtr: Pointer; ASize: TIdC_SIZET;
   AIsClonable: boolean = False);
 var
-  LFlags: TTaurusTLSFlags;
+  LFlags: TFlags;
 
 begin
   if (not Assigned(AMemPtr)) or (ASize = 0) then
