@@ -367,12 +367,18 @@ end;
 function TCustomBIO.GetAsBytes: TIdBytes;
 var
   lSize: TIdC_SIZET;
+  lActuallyRead: TIdC_SIZET;
 
 begin
+  lActuallyRead:=0;
   lSize:=Pending;
   SetLength(Result, lSize);
   if lSize > 0 then
-    Read(Result[0], lSize);
+    lActuallyRead:=Read(Result[0], lSize);
+
+  // Shrink if read size is less than expected.
+  if lActuallyRead < lSize then
+    SetLength(Result, lActuallyRead);
 end;
 
 procedure TCustomBIO.SetAsString(Value: RawByteString);
@@ -388,12 +394,18 @@ end;
 function TCustomBIO.GetAsString: RawByteString;
 var
   lSize: TIdC_SIZET;
+  lActuallyRead: TIdC_SIZET;
 
 begin
+  lActuallyRead:=0;
   lSize:=Pending;
   SetLength(Result, lSize);
   if lSize > 0 then
-    Read(Result[1], lSize);
+    lActuallyRead:=Read(Result[1], lSize);
+
+  // Shrink if read size is less than expected.
+  if lActuallyRead < lSize then
+    SetLength(Result, lActuallyRead);
 end;
 
 function TCustomBIO.BIOAddRef: PBIO;
@@ -432,9 +444,9 @@ end;
 function TCustomBIOHelper.LoadFromStream(const AStream: TStream;
   ASize: TIdC_SIZET): TIdC_SIZET;
 var
-  lRemaining: TIdC_SIZET;
-  lChunkToRead: TIdC_SIZET;
-  lActuallyRead: TIdC_SIZET;
+  lRemaining: TIdC_INT;
+  lChunkToRead: TIdC_INT;
+  lActuallyRead: TIdC_INT;
   lBuf: TIdBytes;
 begin
   Result := 0;
@@ -447,10 +459,10 @@ begin
   while lRemaining > 0 do
   begin
     lChunkToRead := IndyMin(lRemaining, cChunkSize);
-    lActuallyRead := AStream.Read(lBuf[0], Integer(lChunkToRead));
+    lActuallyRead := AStream.Read(lBuf[0], lChunkToRead);
     if lActuallyRead <= 0 then Break;
 
-    if Write(lBuf[0], lActuallyRead) <> lActuallyRead then
+    if TIdC_INT(Write(lBuf[0], lActuallyRead)) <> lActuallyRead then
       EBioLoadStreamError.RaiseWithMessage(RSMsg_Bio_StreamRead_err);
 
     Dec(lRemaining, lActuallyRead);
@@ -466,6 +478,7 @@ var
   lBuf: TIdBytes;
   lBufPtr: Pointer;
   lToRead: TIdC_SIZET;
+
 begin
   Result := 0;
   if ASize = 0 then Exit;
