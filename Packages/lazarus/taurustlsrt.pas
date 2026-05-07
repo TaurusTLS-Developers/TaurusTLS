@@ -106,6 +106,7 @@ uses
   TaurusTLSHeaders_x509v3,
   TaurusTLSHeaders_x509_vfy,
   TaurusTLSLoader,
+  TaurusTLS_BIO,
   TaurusTLS_ECH,
   TaurusTLS_ECHStore,
   TaurusTLS_Files,
