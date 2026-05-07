@@ -257,6 +257,17 @@ resourcestring
   RSMsg_ECHNotConfigured_err = 'The server may not support ECH, '+
     'the client does not send the extention, or a middlebox stripped the extension.';
 
+  // TaurusTLS_BIO wrappers' messages
+  RSMsg_Bio_WrongConstructor_err = 'Unable to create BIO wrapper with this constructor.';
+  RSMsg_Bio_NullBio_err = 'Unable to create BIO wrapper with the NULL BIO.';
+  RSMsg_Bio_EmptyMemPtr_err = 'Unable to create BIO object with empty memory pointer.';
+  RSMsg_Bio_Read_err = 'Error reading from the BIO object.';
+  RSMsg_Bio_Write_err = 'Error writting to the BIO object.';
+  RSMsg_Bio_AddRef_err = 'BIO object cloning faulure.';
+  RSMsg_Bio_CloneCheck_err = 'This BIO object is not configured for cloning.';
+  RSMsg_Bio_ReadCheck_err = 'This BIO object is not configured for reading.';
+  RSMsg_Bio_WriteCheck_err = 'This BIO object is not configured for writting.';
+  RSMsg_Bio_StreamRead_err = 'Error reading BIO from stream.';
 
 
 implementation

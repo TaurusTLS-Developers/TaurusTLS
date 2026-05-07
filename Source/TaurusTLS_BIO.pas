@@ -289,17 +289,20 @@ type
 
 implementation
 
+uses
+  TaurusTLS_ResourceStrings;
+
 { TCustomBIO }
 
 constructor TCustomBIO.Create;
 begin
-  EBioCreateError.RaiseWithMessage('Unable to create BIO wrapper with this constructor.');
+  EBioCreateError.RaiseWithMessage(RSMsg_Bio_WrongConstructor_err);
 end;
 
 constructor TCustomBIO.Create(ABIO: PBIO; AFlags: TFlags);
 begin
   if not Assigned(ABIO) then
-    EBioCreateError.RaiseWithMessage('Unable to create BIO wrapper with the NULL BIO.');
+    EBioCreateError.RaiseWithMessage(RSMsg_Bio_NullBio_err);
   FBIO:=ABIO;
   FFlags:=AFlags;
 end;
@@ -335,7 +338,7 @@ begin
   CheckCanRead;
   lResult:=BIO_read_ex(FBIO, AData, ASize, Result);
   if lResult <> 1 then
-    EBioReadError.RaiseWithMessage('Error reading from the BIO object.')
+    EBioReadError.RaiseWithMessage(RSMsg_Bio_Read_err)
 end;
 
 function TCustomBIO.Write(const AData; ASize: TIdC_SIZET): TIdC_SIZET;
@@ -348,7 +351,7 @@ begin
   CheckCanWrite;
   lResult:=BIO_write_ex(FBIO, AData, ASize, Result);
   if lResult <> 1 then
-    EBioWriteError.RaiseWithMessage('Error writting to the BIO object.')
+    EBioWriteError.RaiseWithMessage(RSMsg_Bio_Write_err)
 end;
 
 procedure TCustomBIO.SetAsBytes(Value: TIdBytes);
@@ -396,7 +399,7 @@ end;
 function TCustomBIO.BIOAddRef: PBIO;
 begin
   if not TryBIOAddRef then
-    EBioCloneError.RaiseWithMessage('BIO object cloning faulure.');
+    EBioCloneError.RaiseWithMessage(RSMsg_Bio_AddRef_err);
   Result:=FBIO;
 end;
 
@@ -411,19 +414,19 @@ end;
 procedure TCustomBIOHelper.CheckCanClone;
 begin
   if not (cbClonable in Flags) then
-    EBioCloneError.RaiseWithMessage('This BIO object is not configured for cloning.');
+    EBioCloneError.RaiseWithMessage(RSMsg_Bio_CloneCheck_err);
 end;
 
 procedure TCustomBIOHelper.CheckCanRead;
 begin
   if not (cbReadable in Flags) then
-    raise EBioReadError.Create('This BIO object is not configured for reading.');
+    raise EBioReadError.Create(RSMsg_Bio_ReadCheck_err);
 end;
 
 procedure TCustomBIOHelper.CheckCanWrite;
 begin
   if not (cbWritable in Flags) then
-    raise EBioReadError.Create('This BIO object is not configured for writting.');
+    raise EBioReadError.Create(RSMsg_Bio_WriteCheck_err);
 end;
 
 function TCustomBIOHelper.LoadFromStream(const AStream: TStream;
@@ -448,7 +451,7 @@ begin
     if lActuallyRead <= 0 then Break;
 
     if Write(lBuf[0], lActuallyRead) <> lActuallyRead then
-      EBioLoadStreamError.RaiseWithMessage('Error writing to BIO from stream.');
+      EBioLoadStreamError.RaiseWithMessage(RSMsg_Bio_StreamRead_err);
 
     Dec(lRemaining, lActuallyRead);
     Inc(Result, lActuallyRead);
@@ -514,7 +517,7 @@ var
 
 begin
   if (not Assigned(AMemPtr)) or (ASize = 0) then
-    EBioCreateError.RaiseWithMessage('Unable to create BIO object with empty memory pointer.');
+    EBioCreateError.RaiseWithMessage(RSMsg_Bio_EmptyMemPtr_err);
 
   LFlags:=[cbReadable];
   if AIsClonable then
