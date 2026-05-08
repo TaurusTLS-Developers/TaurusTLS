@@ -150,8 +150,8 @@ begin
            {$IFDEF STRING_IS_UNICODE}
            Fetch(LStr,'.')
            {$ELSE}
-           TIdUnicodeString(Fetch(LStr,'.') // explicit convert to Unicode
-           {$ENDIF}));
+           TIdUnicodeString(Fetch(LStr,'.')) // explicit convert to Unicode
+           {$ENDIF});
        end
        else
        begin
