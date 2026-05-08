@@ -449,7 +449,11 @@ var
   lBuf: TIdBytes;
 begin
   Result := 0;
+  {$IFNDEF FPC}
   lRemaining := IndyMin(ASize, TIdC_SIZET(AStream.Size - AStream.Position));
+  {$ELSE}
+   lRemaining := IndyMin(Int64(ASize), TIdC_SIZET(AStream.Size - AStream.Position));
+  {$ENDIF}
   if lRemaining = 0 then Exit;
 
   CheckCanWrite;
@@ -487,8 +491,13 @@ begin
   begin
     // Optimization: Use BIO_get_mem_data to avoid copying if possible
     lBufSize := BIO_get_mem_data(BIO, lBufPtr);
-    if lBufSize <= 0 then Exit;
+    if lBufSize <= 0 then
+      Exit;
+    {$IFNDEF FPC}
     lToRead := IndyMin(ASize, TIdC_SIZET(lBufSize));
+    {$ELSE}
+    lToRead := IndyMin(Int64(ASize), TIdC_SIZET(lBufSize));
+    {$ENDIF}
     Result := AStream.Write(lBufPtr^, Integer(lToRead));
   end
   else

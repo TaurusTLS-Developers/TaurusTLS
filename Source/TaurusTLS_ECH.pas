@@ -151,7 +151,7 @@ begin
            Fetch(LStr,'.')
            {$ELSE}
            TIdUnicodeString(Fetch(LStr,'.') // explicit convert to Unicode
-           {$ENDIF});
+           {$ENDIF}));
        end
        else
        begin

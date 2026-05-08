@@ -125,11 +125,13 @@ end;
 procedure Register;
 begin
   RegisterComponents(RSTaurusTLS, [
+    TTaurusTLSClientIOHandlerSocket,
     TTaurusTLSServerIOHandler,
     TTaurusTLSIOHandlerSocket
   ]);
 
   {$IFDEF HAS_TSelectionEditor}
+  RegisterSelectionEditor(TTaurusTLSClientIOHandlerSocket, TTaurusTLSSelectionEditor);
   RegisterSelectionEditor(TTaurusTLSServerIOHandler, TTaurusTLSSelectionEditor);
   RegisterSelectionEditor(TTaurusTLSIOHandlerSocket, TTaurusTLSSelectionEditor);
   {$ENDIF}
