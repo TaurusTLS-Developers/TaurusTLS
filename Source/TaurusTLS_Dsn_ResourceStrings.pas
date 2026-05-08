@@ -15,7 +15,7 @@ resourcestring
   RSTaurusTLS = 'TaurusTLS';
   RSAAboutMenuItemName = '&About TaurusTLS %s...';
   RSTaurusTLSDescription =
-    'TaurusTLS provides OpenSSL 1.1 and 3.x support for Indy - Internet Direct.';
+    'TaurusTLS provides OpenSSL 3.x and 4.x support for Indy - Internet Direct.';
   RSTAurusAboutBoxLicences = 'TaurusTLS Modified BSD License' + #13#10 +
     'TaurusTLS MPL License';
   RSLicense = 'TaurusTLS is dual licensed. You can review which license ' +
