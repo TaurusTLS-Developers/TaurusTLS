@@ -29,12 +29,14 @@ type
   ETaurusTLSBioError = class(ETaurusTLSError);
   /// <summary>Raised when an OpenSSL BIO handle cannot be created or initialized.</summary>
   ETaurusTLSBioCreateError = class(ETaurusTLSBioError);
-  /// <summary>Raised when a BIO cloning operation (reference count increment) fails.</summary>
-  ETaurusTLSBioCloneError = class(ETaurusTLSBioError);
   /// <summary>Raised when an error occurs during a BIO_read operation.</summary>
   ETaurusTLSBioReadError = class(ETaurusTLSBioError);
   /// <summary>Raised when an error occurs during a BIO_write operation.</summary>
   ETaurusTLSBioWriteError = class(ETaurusTLSBioError);
+  /// <summary>Raised when a BIO does not support Reset operation.</summary>
+  ETaurusTLSBioResetError = class(ETaurusTLSBioError);
+  /// <summary>Raised when a BIO does not support Seek operation.</summary>
+  ETaurusTLSBioSeekError = class(ETaurusTLSBioError);
   /// <summary>Raised when data cannot be successfully loaded from a TStream into a BIO.</summary>
   ETaurusTLSBioLoadStreamError = class(ETaurusTLSBioError);
   /// <summary>Raised when data cannot be successfully written from a BIO into a TStream.</summary>
@@ -49,44 +51,36 @@ type
     /// <summary>Capabilities flags for the BIO wrapper.</summary>
     TFlag = (
       /// <summary>
-      ///   <c>cbReadable</c> indicates that the application can read data from
+      ///   <c>bfReadable</c> indicates that the application can read data from
       ///   this <c>BIO object.</c>
       /// </summary>
-      cbReadable,
+      bfReadable,
       /// <summary>
-      ///   cbWritable indicates that the application can read data from this
+      ///   bfWritable indicates that the application can read data from this
       ///   <c>BIO object</c>.
       /// </summary>
-      cbWritable,
+      bfWritable,
       /// <summary>
-      ///   <c>cbClonable</c> indicates that the application can clone this
-      ///   <c>BIO object</c>.
+      ///   <c>bfResetable</c> indicates that the application can reset read
+      ///   position after reading.
       /// </summary>
-      cbClonable
+      bfResetable,
+      /// <summary>
+      ///   <c>bfConsumable</c> indicates that the data portion read from the
+      ///   BIO becomes unavailable.
+      /// </summary>
+      bfConsumable
     );
     /// <summary>Set of capabilities flags.</summary>
     TFlags = set of TFlag;
-  public const
-    /// <summary>Default flags for a BIO that supports all operations.</summary>
-    cFlagsAll = [cbReadable, cbWritable, cbClonable];
-  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
+
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF}
+  private
     FFlags: TFlags;
     FBIO: PBIO;
-  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
-    /// <summary>
-    ///   Internal method to instantiate a specific descendant during a Clone
-    ///   operation.
-    /// </summary>
-    function DoClone: TTaurusTLSCustomBIO; virtual; abstract;
-    /// <summary>
-    ///   Attempts to increment the OpenSSL internal reference count of the BIO.
-    /// </summary>
-    function TryBIOAddRef: boolean; {$IFDEF USE_INLINE}inline;{$ENDIF}
-    /// <summary>
-    ///   Increments the reference count and returns the BIO handle. Raises
-    ///   ETaurusTLSBioCloneError on failure.
-    /// </summary>
-    function BIOAddRef: PBIO; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    function GetEof: boolean;
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF}
+  protected
     /// <summary>
     ///   Returns the number of bytes available for reading in the BIO.
     /// </summary>
@@ -128,10 +122,24 @@ type
     /// </summary>
     destructor Destroy; override;
     /// <summary>
-    ///   Creates a new Delphi wrapper instance pointing to the same OpenSSL BIO
-    ///   handle (incrementing ref count).
+    ///   Tries to reset the BIO object to the initial state.
     /// </summary>
-    function Clone: TTaurusTLSCustomBIO; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    /// <exception cref="ETaurusTLSBioResetError">
+    ///   If BIO object does not support Resed operation or interanl OpenSSL
+    ///   falure happens.
+    /// </exception>
+    /// <remarks>
+    ///   This methods works with any memory BIO object. Non-memroy BIO objects
+    ///   can generate exceptions.
+    /// </remarks>
+    procedure Reset;
+    /// <summary>
+    ///   Tries to reset the BIO object to the initial state.
+    /// </summary>
+    /// <returns>
+    ///   <c>True</c> on success and <c>False</c> on failure
+    /// </returns>
+    function TryReset: boolean;
     /// <summary>
     ///   Reads ASize bytes from the BIO into AData. Returns the number of bytes
     ///   actually read.
@@ -150,6 +158,11 @@ type
     ///   The capability flags assigned to this BIO instance.
     /// </summary>
     property Flags: TFLags read FFlags;
+    /// <summary>
+    ///   Returns True if the Reading operation is reached end of the BIO object
+    ///   data.
+    /// </summary>
+    property Eof: boolean read GetEof;
     /// <summary>
     ///   Indicates if the underlying BIO is a memory BIO (BIO_s_mem or
     ///   BIO_s_secmem).
@@ -181,17 +194,54 @@ type
     cChunkSize = 8192;
   public
     /// <summary>
-    ///   Validates that the BIO is readable; raises ETaurusTLSBioReadError if not.
+    ///   Validates that the BIO can be reset to initial state
     /// </summary>
+    /// <exception cref="ETaurusTLSBioResetError">
+    ///   When the BIO object does not support the <c>Reset</c> operation.
+    /// </exception>
+    procedure CheckCanReset; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    /// <summary>
+    ///   Validates that the BIO can read from the BIO object.
+    /// </summary>
+    /// <exception cref="ETaurusTLSBioReadError">
+    ///   When the BIO object does not support Read operation.
+    /// </exception>
     procedure CheckCanRead; {$IFDEF USE_INLINE}inline;{$ENDIF}
     /// <summary>
-    ///   Validates that the BIO is writable; raises ETaurusTLSBioWriteError if not.
+    ///   Validates that the BIO can write to the BIO object.
     /// </summary>
+    /// <exception cref="ETaurusTLSBioReadError">
+    ///   When the BIO object does not support Write operation.
+    /// </exception>
     procedure CheckCanWrite; {$IFDEF USE_INLINE}inline;{$ENDIF}
     /// <summary>
-    ///   Validates that the BIO is clonable; raises ETaurusTLSBioCloneError if not.
+    ///   Validates that the property <see
+    ///   cref="TaurusTLS_BIO|TTaurusTLSCustomBIO.Flags">Flags</see> contains
+    ///   all values included in the parameter <c>AFlags</c>
     /// </summary>
-    procedure CheckCanClone; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    /// <param name="AFlags">
+    ///   Set of flags to validate
+    /// </param>
+    /// <returns>
+    ///   True if all Flags in the <c>AFlags</c> parameter included in the <see
+    ///   cref="TaurusTLS_BIO|TTaurusTLSCustomBIO.Flags">Flags</see> property.
+    /// </returns>
+    function HasAllFlags(const AFlags: TTaurusTLSCustomBIO.TFlags): boolean;
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+    /// <summary>
+    ///   Validates that the property <see
+    ///   cref="TaurusTLS_BIO|TTaurusTLSCustomBIO.Flags">Flags</see> contains
+    ///   one or more values included in the parameter <c>AFlags</c>
+    /// </summary>
+    /// <param name="AFlags">
+    ///   Set of flags to validate
+    /// </param>
+    /// <returns>
+    ///   True if any Flags in the <c>AFlags</c> parameter included in the <see
+    ///   cref="TaurusTLS_BIO|TTaurusTLSCustomBIO.Flags">Flags</see> property.
+    /// </returns>
+    function HasAnyFlags(const AFlags: TTaurusTLSCustomBIO.TFlags): boolean;
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
     /// <summary>
     ///   Reads data from the provided TStream and writes it into the BIO.
     /// </summary>
@@ -206,8 +256,6 @@ type
   ///   Wrapper for an OpenSSL internal memory BIO (BIO_s_mem).
   /// </summary>
   TTaurusTLSMemBio = class(TTaurusTLSCustomBIO)
-  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
-    function DoClone: TTaurusTLSCustomBIO; override;
   public
     /// <summary>Creates a new, empty OpenSSL managed memory BIO.</summary>
     constructor Create; overload;
@@ -231,7 +279,7 @@ type
     ///   Initializes a non-copying BIO (BIO_new_mem_buf) pointing to the
     ///   specified memory address.
     /// </summary>
-    constructor Create(AMemPtr: Pointer; ASize: TIdC_SIZET; AIsClonable: boolean = False); overload;
+    constructor Create(AMemPtr: Pointer; ASize: TIdC_SIZET); overload;
   public
     /// <summary>
     ///   Ensures cleanup of the Delphi wrapper and calls DoFreeMem.
@@ -244,7 +292,6 @@ type
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FData: TIdBytes;
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
-    function DoClone: TTaurusTLSCustomBIO; override;
     function GetAsBytes: TIdBytes; override;
   public
     /// <summary>
@@ -258,7 +305,6 @@ type
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FData: RawByteString;
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
-    function DoClone: TTaurusTLSCustomBIO; override;
     function GetAsString: RawByteString; override;
   public
     /// <summary>
@@ -277,8 +323,6 @@ type
   TTaurusTLSRecordBIO<T: record> = class(TTaurusTLSCustomRawMemBio)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FData: T;
-  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
-    function DoClone: TTaurusTLSCustomBIO; override;
   public
     /// <summary>
     ///   Creates a BIO that reads directly from an internal copy of the
@@ -291,6 +335,18 @@ implementation
 
 uses
   TaurusTLS_ResourceStrings;
+
+{ OpenSSL macro wrappers }
+
+function BIO_reset(b: PBIO): TIdC_INT; {$IFDEF USE_INLINE}inline;{$ENDIF}
+begin
+  Result:=BIO_ctrl(b, BIO_CTRL_RESET, 0, Nil);
+end;
+
+function BIO_eof(b: PBIO): TIdC_INT; {$IFDEF USE_INLINE}inline;{$ENDIF}
+begin
+  Result:=BIO_ctrl(b, BIO_CTRL_EOF, 0, Nil);
+end;
 
 { TTaurusTLSCustomBIO }
 
@@ -311,11 +367,6 @@ destructor TTaurusTLSCustomBIO.Destroy;
 begin
   BIO_free(FBIO);
   inherited;
-end;
-
-function TTaurusTLSCustomBIO.TryBIOAddRef: boolean;
-begin
-  Result:=BIO_up_ref(FBIO) = 1;
 end;
 
 function TTaurusTLSCustomBIO.GetIsMemoryBIO: Boolean;
@@ -391,6 +442,19 @@ begin
     Write(Value[1], lSize);
 end;
 
+procedure TTaurusTLSCustomBIO.Reset;
+begin
+  CheckCanReset;
+  if BIO_reset(FBIO) <> 1 then
+    ETaurusTLSBioResetError.RaiseWithMessage(RSMsg_Bio_Reset_err)
+end;
+
+function TTaurusTLSCustomBIO.TryReset: boolean;
+begin
+  Result:=(bfResetable in FFlags) and
+    (BIO_reset(FBIO) <= 1);
+end;
+
 function TTaurusTLSCustomBIO.GetAsString: RawByteString;
 var
   lSize: TIdC_SIZET;
@@ -408,37 +472,41 @@ begin
     SetLength(Result, lActuallyRead);
 end;
 
-function TTaurusTLSCustomBIO.BIOAddRef: PBIO;
+function TTaurusTLSCustomBIO.GetEof: boolean;
 begin
-  if not TryBIOAddRef then
-    ETaurusTLSBioCloneError.RaiseWithMessage(RSMsg_Bio_AddRef_err);
-  Result:=FBIO;
-end;
-
-function TTaurusTLSCustomBIO.Clone: TTaurusTLSCustomBIO;
-begin
-  CheckCanClone;
-  Result:=DoClone;
+  Result:=BIO_eof(FBIO) = 1;
 end;
 
 { TTaurusTLSCustomBIOHelper }
 
-procedure TTaurusTLSCustomBIOHelper.CheckCanClone;
-begin
-  if not (cbClonable in Flags) then
-    ETaurusTLSBioCloneError.RaiseWithMessage(RSMsg_Bio_CloneCheck_err);
-end;
-
 procedure TTaurusTLSCustomBIOHelper.CheckCanRead;
 begin
-  if not (cbReadable in Flags) then
-    raise ETaurusTLSBioReadError.Create(RSMsg_Bio_ReadCheck_err);
+  if not (bfReadable in Flags) then
+    ETaurusTLSBioReadError.RaiseWithMessage(RSMsg_Bio_ReadCheck_err);
+end;
+
+procedure TTaurusTLSCustomBIOHelper.CheckCanReset;
+begin
+  if not (bfResetable in Flags) then
+    ETaurusTLSBioResetError.RaiseWithMessage(RSMsg_Bio_ResetCheck_err);
 end;
 
 procedure TTaurusTLSCustomBIOHelper.CheckCanWrite;
 begin
-  if not (cbWritable in Flags) then
-    raise ETaurusTLSBioReadError.Create(RSMsg_Bio_WriteCheck_err);
+  if not (bfWritable in Flags) then
+    ETaurusTLSBioReadError.RaiseWithMessage(RSMsg_Bio_WriteCheck_err);
+end;
+
+function TTaurusTLSCustomBIOHelper.HasAllFlags(
+  const AFlags: TTaurusTLSCustomBIO.TFlags): boolean;
+begin
+  Result:=(Flags * AFlags) = AFlags;
+end;
+
+function TTaurusTLSCustomBIOHelper.HasAnyFlags(
+  const AFlags: TTaurusTLSCustomBIO.TFlags): boolean;
+begin
+  Result:=(Flags * AFlags) <> [];
 end;
 
 function TTaurusTLSCustomBIOHelper.LoadFromStream(const AStream: TStream;
@@ -513,18 +581,13 @@ end;
 
 constructor TTaurusTLSMemBio.Create;
 begin
-  inherited Create(BIO_new(BIO_s_mem()), cFlagsAll);
-end;
-
-function TTaurusTLSMemBio.DoClone: TTaurusTLSCustomBIO;
-begin
-  Result := TTaurusTLSMemBio(ClassType).Create(BIOAddRef, Flags);
+  inherited Create(BIO_new(BIO_s_mem()),
+    [bfReadable, bfWritable, bfResetable, bfConsumable]);
 end;
 
 { TTaurusTLSCustomRawMemBio }
 
-constructor TTaurusTLSCustomRawMemBio.Create(AMemPtr: Pointer; ASize: TIdC_SIZET;
-  AIsClonable: boolean = False);
+constructor TTaurusTLSCustomRawMemBio.Create(AMemPtr: Pointer; ASize: TIdC_SIZET);
 var
   LFlags: TFlags;
 
@@ -532,9 +595,7 @@ begin
   if (not Assigned(AMemPtr)) or (ASize = 0) then
     ETaurusTLSBioCreateError.RaiseWithMessage(RSMsg_Bio_EmptyMemPtr_err);
 
-  LFlags:=[cbReadable];
-  if AIsClonable then
-    Include(LFlags, cbClonable);
+  LFlags:=[bfReadable, bfResetable];
 
   inherited Create(BIO_new_mem_buf(AMemPtr^, ASize), lFlags);
   FMemPtr := AMemPtr;
@@ -561,26 +622,16 @@ end;
 
 constructor TTaurusTLSBytesBio.Create(const AData: TIdBytes);
 begin
-  inherited Create(Pointer(AData), Length(AData), True);
+  inherited Create(Pointer(AData), Length(AData));
   FData:=AData;
-end;
-
-function TTaurusTLSBytesBio.DoClone: TTaurusTLSCustomBIO;
-begin
-  Result:=TTaurusTLSBytesBio.Create(FData);
 end;
 
 { TTaurusTLSRawByteStringBIO }
 
 constructor TTaurusTLSRawByteStringBIO.Create(const AData: RawByteString);
 begin
-  inherited Create(Pointer(AData), Length(AData), True);
+  inherited Create(Pointer(AData), Length(AData));
   FData:=AData;
-end;
-
-function TTaurusTLSRawByteStringBIO.DoClone: TTaurusTLSCustomBIO;
-begin
-  Result:=TTaurusTLSRawByteStringBIO.Create(FData);
 end;
 
 function TTaurusTLSRawByteStringBIO.GetAsString: RawByteString;
@@ -593,12 +644,7 @@ end;
 constructor TTaurusTLSRecordBIO<T>.Create(const AData: T);
 begin
   FData:=AData;
-  inherited Create(@FData, SizeOf(AData), True);
-end;
-
-function TTaurusTLSRecordBIO<T>.DoClone: TTaurusTLSCustomBIO;
-begin
-  Result:=TTaurusTLSRecordBIO<T>.Create(FData);
+  inherited Create(@FData, SizeOf(AData));
 end;
 
 end.

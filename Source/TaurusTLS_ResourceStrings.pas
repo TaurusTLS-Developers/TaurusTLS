@@ -263,11 +263,11 @@ resourcestring
   RSMsg_Bio_EmptyMemPtr_err = 'Unable to create BIO object with empty memory pointer.';
   RSMsg_Bio_Read_err = 'Error reading from the BIO object.';
   RSMsg_Bio_Write_err = 'Error writting to the BIO object.';
-  RSMsg_Bio_AddRef_err = 'BIO object cloning faulure.';
-  RSMsg_Bio_CloneCheck_err = 'This BIO object is not configured for cloning.';
   RSMsg_Bio_ReadCheck_err = 'This BIO object is not configured for reading.';
   RSMsg_Bio_WriteCheck_err = 'This BIO object is not configured for writting.';
   RSMsg_Bio_StreamRead_err = 'Error reading BIO from stream.';
+  RSMsg_Bio_ResetCheck_err = 'This BIO object does not support Reset operation.';
+  RSMsg_Bio_Reset_err = 'Faled to reset the BIO object.';
 
 
 implementation
