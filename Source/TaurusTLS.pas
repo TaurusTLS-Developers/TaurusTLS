@@ -1303,8 +1303,7 @@ type
   { TTaurusTLSBaseSocket }
   /// <summary>
   ///   Properties and methods for dealing with a TLS Socket that are common to
-  ///   <see cref="TaurusTLS|TTaurusTLSSocket" /> and <see
-  ///   cref="TaurusTLS|TTaurusTLSECHSocket" />.
+  ///   <see cref="TaurusTLS|TTaurusTLSSocket" />.
   /// </summary>
   TTaurusTLSBaseSocket = class(TObject)
 {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict {$ENDIF}protected
@@ -2469,6 +2468,15 @@ type
   /// describes the failure.
   /// </summary>
   ETaurusTLSCertValidationError = class(ETaurusTLSError);
+
+  /// <summary>
+  ///   Raised if <c>X509_VERIFY_PARAM_set1_ip_asc</c> failed.
+  /// </summary>
+  /// <seealso
+  /// href="https://docs.openssl.org/master/man3/X509_VERIFY_PARAM_set_flags/#description">
+  ///   X509_VERIFY_PARAM_set1_ip_asc
+  /// </seealso>
+  ETaurusTLSSettingSANIPError =  class(ETaurusTLSError);
   /// <summary>
   /// Raised if <c>SSL_set_tlsext_host_name</c> failed.
   /// </summary>
@@ -5628,7 +5636,10 @@ begin
       begin
         // Case B: Real ECH using public_name from ConfigList
         // SSL_set_tlsext_host_name sets the "Inner" name when a store is attached
-        SSL_set_tlsext_host_name(fSSL, PIdAnsiChar(LIdentityAnsi));
+        LRetCode := SSL_set_tlsext_host_name(fSSL, PIdAnsiChar(LIdentityAnsi));
+        if LRetCode <= 0 then
+          ETaurusTLSSettingTLSHostNameError.RaiseException(fSSL, LRetCode, RSSSLSettingTLSHostNameError_2);
+
       end;
     end
     else
@@ -5653,7 +5664,10 @@ begin
       if Assigned(LParams) then
       begin
         // This ensures the cert is checked for an IP SAN (Subject Alternative Name)
-        X509_VERIFY_PARAM_set1_ip_asc(LParams, PIdAnsiChar(LIdentityAnsi));
+        if X509_VERIFY_PARAM_set1_ip_asc(LParams, PIdAnsiChar(LIdentityAnsi)) <= 0 then
+        begin
+          ETaurusTLSSettingSANIPError.RaiseWithMessage(RSSLX509_VERIFY_PARAM_set1_ip_asc);
+        end;
       end;
     end
     else
