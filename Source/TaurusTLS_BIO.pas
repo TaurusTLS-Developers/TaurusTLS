@@ -10,6 +10,9 @@
 
 {$I TaurusTLSCompilerDefines.inc}
 
+/// <summary>
+///   OpenSSL BIO Object wrapper classes.
+/// </summary>
 unit TaurusTLS_BIO;
 
 interface

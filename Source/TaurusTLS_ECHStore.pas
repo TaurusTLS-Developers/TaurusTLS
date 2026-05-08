@@ -9,6 +9,9 @@
 { ****************************************************************************** }
 {$I TaurusTLSCompilerDefines.inc}
 
+/// <summary>
+///   Classes for ECH (Encrypted Client Hello) management classes.
+/// </summary>
 unit TaurusTLS_ECHStore;
 
 interface

@@ -9,6 +9,9 @@
 { ****************************************************************************** }
 {$I TaurusTLSCompilerDefines.inc}
 
+/// <summary>
+///   Miscelanious ECH (Encrypted Client Hello) functions and classes.
+/// </summary>
 unit TaurusTLS_ECH;
 
 interface
