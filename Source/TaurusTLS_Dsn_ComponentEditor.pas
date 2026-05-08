@@ -65,6 +65,7 @@ end;
 
 procedure Register;
 begin
+  RegisterComponentEditor(TTaurusTLSClientIOHandlerSocket, TTaurusTLSComponentEditor);
   RegisterComponentEditor(TTaurusTLSIOHandlerSocket, TTaurusTLSComponentEditor);
   RegisterComponentEditor(TTaurusTLSServerIOHandler, TTaurusTLSComponentEditor);
 end;
