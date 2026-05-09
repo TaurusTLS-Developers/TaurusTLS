@@ -428,7 +428,7 @@ var
   lReadSize: TIdC_SIZET;
   lBufSize: TIdC_LONGLONG;
   {$IFNDEF USE_INLINE_VAR} lBuf: TIdBytes;  {$ENDIF}
-  lBufPtr: Pointer;
+  lBufPtr: Pointer; //PALOFF - Variables that are referenced, but never set
   lToRead: TIdC_SIZET;
 
 begin
@@ -498,6 +498,7 @@ var
   lResult: TIdC_INT;
 
 begin
+  Result := 0;
   if ASize = 0 then
     Exit;
   CheckCanRead;
@@ -511,6 +512,7 @@ var
   lResult: TIdC_INT;
 
 begin
+  Result := 0;
   if ASize = 0 then
     Exit;
   CheckCanWrite;
