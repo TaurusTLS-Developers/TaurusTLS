@@ -494,30 +494,23 @@ begin
 end;
 
 function TTaurusTLSCustomBIO.Read(var AData; ASize: TIdC_SIZET): TIdC_SIZET;
-var
-  lResult: TIdC_INT;
 
 begin
   Result := 0;
   if ASize = 0 then
     Exit;
   CheckCanRead;
-  lResult:=BIO_read_ex(FBIO, AData, ASize, Result);
-  if lResult <> 1 then
+  if BIO_read_ex(FBIO, AData, ASize, Result) <> 1 then
     ETaurusTLSBioReadError.RaiseWithMessage(RSMsg_Bio_Read_err)
 end;
 
 function TTaurusTLSCustomBIO.Write(const AData; ASize: TIdC_SIZET): TIdC_SIZET;
-var
-  lResult: TIdC_INT;
-
 begin
   Result := 0;
   if ASize = 0 then
     Exit;
   CheckCanWrite;
-  lResult:=BIO_write_ex(FBIO, AData, ASize, Result);
-  if lResult <> 1 then
+  if BIO_write_ex(FBIO, AData, ASize, Result) <> 1 then
     ETaurusTLSBioWriteError.RaiseWithMessage(RSMsg_Bio_Write_err)
 end;
 
@@ -604,16 +597,11 @@ end;
 { TTaurusTLSCustomRawMemBio }
 
 constructor TTaurusTLSCustomRawMemBio.Create(AMemPtr: Pointer; ASize: TIdC_SIZET);
-var
-  LFlags: TFlags;
-
 begin
   if (not Assigned(AMemPtr)) or (ASize = 0) then
     ETaurusTLSBioCreateError.RaiseWithMessage(RSMsg_Bio_EmptyMemPtr_err);
 
-  LFlags:=[bfReadable, bfResetable];
-
-  inherited Create(BIO_new_mem_buf(AMemPtr^, ASize), lFlags);
+  inherited Create(BIO_new_mem_buf(AMemPtr^, ASize), [bfReadable, bfResetable]);
   FMemPtr := AMemPtr;
   FMemSize := ASize;
 end;
