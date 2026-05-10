@@ -143,6 +143,10 @@ type
     ///   <c>True</c> on success and <c>False</c> on failure
     /// </returns>
     function TryReset: boolean;
+    /// <summary>
+    ///   Reads ASize bytes from the BIO into AData. Returns True if Read
+    ///   operation successed, False otherwise.
+    /// </summary>
     function TryRead(var AData; ASize: TIdC_SIZET;
       out AHasRead: TIdC_SIZET): boolean; {$IFDEF USE_INLINE}inline;{$ENDIF}
     /// <summary>
@@ -151,11 +155,15 @@ type
     /// </summary>
     function Read(var AData; ASize: TIdC_SIZET): TIdC_SIZET;
     /// <summary>
-    ///   Writes ASize bytes from AData into the BIO. Returns the number of
-    ///   bytes actually written.
+    ///   Writes ASize bytes from the BIO into AData. Returns True if Write
+    ///   operation successed, False otherwise. <br />
     /// </summary>
     function TryWrite(const AData; ASize: TIdC_SIZET;
       out AHasWritten: TIdC_SIZET): boolean; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    /// <summary>
+    ///   Writes ASize bytes from AData into the BIO. Returns the number of
+    ///   bytes actually written.
+    /// </summary>
     function Write(const AData; ASize: TIdC_SIZET): TIdC_SIZET;
     /// <summary>
     ///   The raw OpenSSL PBIO handle.
@@ -362,6 +370,11 @@ destructor TTaurusTLSCustomBIO.Destroy;
 begin
   BIO_free(FBIO);
   inherited;
+end;
+
+function TTaurusTLSCustomBIO.GetIsMemoryBIO: Boolean;
+begin
+  Result:=BIO_method_type(FBIO) = BIO_TYPE_MEM;
 end;
 
 function TTaurusTLSCustomBIO.GetPending: TIdC_SIZET;
