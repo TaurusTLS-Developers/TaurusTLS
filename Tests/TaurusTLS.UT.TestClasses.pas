@@ -55,19 +55,13 @@ type
     ///  and set internal library refrerence counter to <c>1</c>,
     ///  or increments internal library refrerence counter otherwise.
     ///  </summary>
-    ///  <remark>
-    ///  This method can be overritten by inherited class
-    ///  </remark>
-    procedure SetupFixture; virtual;
+    procedure SetupFixture;
     [TearDownFixture]
     ///  <summary>
     ///  The <c>TearDownFixture</c> method decrements internal library refrerence counter
     ///  and unloads the OpenSSL library when it reaches Zero.
     ///  </summary>
-    ///  <remark>
-    ///  This method can be overritten by inherited class
-    ///  </remark>
-    procedure TearDownFixture; virtual;
+    procedure TearDownFixture;
 
     ///  <summary>
     ///  The <c>CheckLoaded</c> method checks if the OpenSSL library
