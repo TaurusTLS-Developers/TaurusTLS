@@ -143,6 +143,8 @@ type
     ///   <c>True</c> on success and <c>False</c> on failure
     /// </returns>
     function TryReset: boolean;
+    function TryRead(var AData; ASize: TIdC_SIZET;
+      out AHasRead: TIdC_SIZET): boolean; {$IFDEF USE_INLINE}inline;{$ENDIF}
     /// <summary>
     ///   Reads ASize bytes from the BIO into AData. Returns the number of bytes
     ///   actually read.
@@ -152,6 +154,8 @@ type
     ///   Writes ASize bytes from AData into the BIO. Returns the number of
     ///   bytes actually written.
     /// </summary>
+    function TryWrite(const AData; ASize: TIdC_SIZET;
+      out AHasWritten: TIdC_SIZET): boolean; {$IFDEF USE_INLINE}inline;{$ENDIF}
     function Write(const AData; ASize: TIdC_SIZET): TIdC_SIZET;
     /// <summary>
     ///   The raw OpenSSL PBIO handle.
@@ -339,18 +343,6 @@ implementation
 uses
   TaurusTLS_ResourceStrings;
 
-{ OpenSSL macro wrappers }
-
-function BIO_reset(b: PBIO): TIdC_INT; {$IFDEF USE_INLINE}inline;{$ENDIF}
-begin
-  Result:=BIO_ctrl(b, BIO_CTRL_RESET, 0, Nil);
-end;
-
-function BIO_eof(b: PBIO): TIdC_INT; {$IFDEF USE_INLINE}inline;{$ENDIF}
-begin
-  Result:=BIO_ctrl(b, BIO_CTRL_EOF, 0, Nil);
-end;
-
 { TTaurusTLSCustomBIO }
 
 constructor TTaurusTLSCustomBIO.Create;
@@ -382,29 +374,44 @@ begin
   Result:=BIO_ctrl_pending(FBIO);
 end;
 
-function TTaurusTLSCustomBIO.Read(var AData; ASize: TIdC_SIZET): TIdC_SIZET;
-var
-  lResult: TIdC_INT;
+function TTaurusTLSCustomBIO.TryRead(var AData; ASize: TIdC_SIZET;
+  out AHasRead: TIdC_SIZET): boolean;
+begin
+  AHasRead:=0;
+  if (ASize = 0) then
+    Exit(True);
 
+  if not (bfReadable in FFlags) then
+    Exit(False);
+
+  Result:=BIO_read_ex(FBIO, AData, ASize, AHasRead) = 1;
+end;
+
+function TTaurusTLSCustomBIO.Read(var AData; ASize: TIdC_SIZET): TIdC_SIZET;
 begin
   if ASize = 0 then
     Exit;
   CheckCanRead;
-  lResult:=BIO_read_ex(FBIO, AData, ASize, Result);
-  if lResult <> 1 then
+  if not TryRead(AData, ASize, Result) then
     ETaurusTLSBioReadError.RaiseWithMessage(RSMsg_Bio_Read_err)
 end;
 
-function TTaurusTLSCustomBIO.Write(const AData; ASize: TIdC_SIZET): TIdC_SIZET;
-var
-  lResult: TIdC_INT;
+function TTaurusTLSCustomBIO.TryWrite(const AData; ASize: TIdC_SIZET;
+  out AHasWritten: TIdC_SIZET): boolean;
+begin
+  Result:=False;
+  AHasWritten:=0;
+  if (ASize = 0) or (not (bfWritable in FFlags)) then
+    Exit;
+  Result:=BIO_write_ex(FBIO, AData, ASize, AHasWritten) = 1;
+end;
 
+function TTaurusTLSCustomBIO.Write(const AData; ASize: TIdC_SIZET): TIdC_SIZET;
 begin
   if ASize = 0 then
     Exit;
   CheckCanWrite;
-  lResult:=BIO_write_ex(FBIO, AData, ASize, Result);
-  if lResult <> 1 then
+  if not TryWrite(AData, ASize, Result) then
     ETaurusTLSBioWriteError.RaiseWithMessage(RSMsg_Bio_Write_err)
 end;
 
@@ -497,7 +504,7 @@ end;
 procedure TTaurusTLSCustomBIOHelper.CheckCanWrite;
 begin
   if not (bfWritable in Flags) then
-    ETaurusTLSBioReadError.RaiseWithMessage(RSMsg_Bio_WriteCheck_err);
+    ETaurusTLSBioWriteError.RaiseWithMessage(RSMsg_Bio_WriteCheck_err);
 end;
 
 function TTaurusTLSCustomBIOHelper.HasAllFlags(
@@ -641,8 +648,14 @@ end;
 { TTaurusTLSRawByteStringBIO }
 
 constructor TTaurusTLSRawByteStringBIO.Create(const AData: RawByteString);
+var
+  lLen: TIdC_SizeT;
+
 begin
-  inherited Create(Pointer(AData), Length(AData));
+  lLen:=Length(AData);
+  if lLen > 0 then
+    Inc(lLen); // include terminating #0 character
+  inherited Create(Pointer(AData), lLen); // include null-terminated char
   FData:=AData;
 end;
 
