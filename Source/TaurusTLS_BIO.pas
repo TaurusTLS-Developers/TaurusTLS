@@ -393,6 +393,10 @@ begin
     Exit(False);
 
   Result:=BIO_read_ex(FBIO, AData, ASize, AHasRead) = 1;
+  // OpenSSL return -1 if Data Read size is less the requested and Eof happens.
+  // We are not going to thread this as error.
+  if (not Result) and Eof then
+    Result:=True;
 end;
 
 function TTaurusTLSCustomBIO.Read(var AData; ASize: TIdC_SIZET): TIdC_SIZET;
