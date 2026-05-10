@@ -1374,8 +1374,14 @@ function BIO_set_mem_eof_return(b: PBIO; v: TIdC_INT): TIdC_INT; {removed 1.0.0}
 {$ENDIF}
 
 function BIO_dgram_get_local_addr_enable(b : PBIO; out penable : TIdC_INT) : TIdC_INT;
+  {$IFDEF USE_INLINE}inline; {$ENDIF}
 function BIO_dgram_set_local_addr_enable(b : PBIO; enable : TIdC_INT) : TIdC_INT;
+  {$IFDEF USE_INLINE}inline; {$ENDIF}
 function BIO_dgram_get_local_addr_cap(b : PBIO) : TIdC_INT;
+  {$IFDEF USE_INLINE}inline; {$ENDIF}
+function BIO_reset(b: PBIO): TIdC_INT; {$IFDEF USE_INLINE}inline;{$ENDIF}
+function BIO_eof(b: PBIO): TIdC_INT; {$IFDEF USE_INLINE}inline;{$ENDIF}
+
 
 implementation
 
@@ -1386,23 +1392,34 @@ implementation
     ,TaurusTLSLoader
   {$ENDIF};
 
+{ OpenSSL macro wrappers }
+
 function BIO_dgram_get_local_addr_enable(b : PBIO; out penable : TIdC_INT) : TIdC_INT;
-{$IFDEF USE_INLINE}inline; {$ENDIF}
 begin
   Result := BIO_ctrl(b, BIO_CTRL_DGRAM_GET_LOCAL_ADDR_ENABLE, 0, @penable);
 end;
 
 function BIO_dgram_set_local_addr_enable(b : PBIO; enable : TIdC_INT) : TIdC_INT;
-{$IFDEF USE_INLINE}inline; {$ENDIF}
 begin
   Result := BIO_ctrl(b, BIO_CTRL_DGRAM_SET_LOCAL_ADDR_ENABLE, TIdC_ULONG(enable), nil);  //PALOFF - Mismatch parameter value
 end;
 
 function BIO_dgram_get_local_addr_cap(b : PBIO) : TIdC_INT;
-{$IFDEF USE_INLINE}inline; {$ENDIF}
 begin
   Result := BIO_ctrl(b, BIO_CTRL_DGRAM_GET_LOCAL_ADDR_CAP, 0, nil);
 end;
+
+function BIO_reset(b: PBIO): TIdC_INT;
+begin
+  Result:=BIO_ctrl(b, BIO_CTRL_RESET, 0, Nil);
+end;
+
+function BIO_eof(b: PBIO): TIdC_INT;
+begin
+  Result:=BIO_ctrl(b, BIO_CTRL_EOF, 0, Nil);
+end;
+
+
 
 const
   BIO_get_new_index_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
