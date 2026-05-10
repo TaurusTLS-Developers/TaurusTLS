@@ -251,6 +251,8 @@ type
     /// </seealso>
     function Random(var ABytes: TBytes; ASize: TIdC_SIZET): TIdC_INT;
       overload; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    function Random(var ABytes: TIdBytes; ASize: TIdC_SIZET): TIdC_INT;
+      overload; {$IFDEF USE_INLINE}inline;{$ENDIF}
     ///  <summary>
     ///  The <c>Random</c> is a method returns random floating number value
     ///  </summary>
@@ -587,6 +589,20 @@ end;
 {$ENDIF}
 
 function TTaurusTLS_OSSLRandom.Random(var ABytes: TBytes;
+  ASize: TIdC_SIZET): TIdC_INT;
+begin
+  if ASize = 0 then
+    Exit(1);
+  try
+    SetLength(ABytes, ASize);
+  except
+    //Push error function and error code to the OpenSSL errors stack.
+    SSLErr(RAND_F_DRBG_BYTES, ERR_R_MALLOC_FAILURE);
+  end;
+  Result:=GetRandom(ABytes[0], ASize);
+end;
+
+function TTaurusTLS_OSSLRandom.Random(var ABytes: TIdBytes;
   ASize: TIdC_SIZET): TIdC_INT;
 begin
   if ASize = 0 then
