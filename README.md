@@ -30,7 +30,7 @@ To make it easier and consistent for JEDI users, we also offer an MPL license v1
 
 ## Differences between TaurusTLS 1.x and TaurusTLS 2.x
 
-- TaurusTLS 2 requires OpenSSL 4.x so that it can use _Encrypted Client Hello_ (ECH) as defined by [RFC 9849](https://datatracker.ietf.org/doc/html/rfc9849).
+- TaurusTLS 2 requires OpenSSL 4.x if you are static linking or if you wish to use _Encrypted Client Hello_ (ECH) as defined by [RFC 9849](https://datatracker.ietf.org/doc/html/rfc9849).
 
 ## RAD Studio Installation
 
@@ -78,7 +78,9 @@ I suggest that you have 2 separate packages; a runtime only package and a design
 The run-time package should depend upon your Indy package files and include the following:
 
 - Source\TaurusTLS.pas
+- Source\TaurusTLS_BIO.pas
 - Source\TaurusTLS_ECH.pas
+- Source\TaurusTLS_ECHStore.pas
 - Source\TaurusTLS_Files.pas
 - Source\TaurusTLS_NTLM.pas
 - Source\TaurusTLS_ResourceStrings.pas
