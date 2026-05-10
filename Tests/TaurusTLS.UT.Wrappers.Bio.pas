@@ -3,7 +3,7 @@ unit TaurusTLS.UT.Wrappers.Bio;
 interface
 
 uses
-  System.SysUtils, DUnitX.TestFramework, TaurusTLS.UT.TestClasses,
+  System.SysUtils, System.Classes, DUnitX.TestFramework, TaurusTLS.UT.TestClasses,
   IdGlobal, IdCTypes, TaurusTLSHeaders_types, TaurusTLSHeaders_bio, TaurusTLS_BIO;
 
 type
@@ -78,6 +78,71 @@ type
     procedure Test_BioReadResetRead(AData: AnsiString);
     [TestCase('"Short String"', 'Short String')]
     procedure Test_BioWrite(AData: AnsiString);
+  end;
+
+  [TestFixture]
+  [Category('WRAP.Bio, WRAP.RawByteStringBIO')]
+  TRawByteStringBioFixture = class(TCustomBioFixture)
+  public const
+    cFlags = [bfReadable, bfResetable];
+
+  protected
+    function NewBioWrapper: TTaurusTLSCustomBIO; override;
+  public
+    [Test]
+    procedure Test_BioCreate;
+    [TestCase('"Short String"', 'Short String')]
+    procedure Test_BioRead(AData: AnsiString);
+    [TestCase('"Short String"', 'Short String')]
+    procedure Test_BioReadResetRead(AData: AnsiString);
+    [TestCase('"Short String"', 'Short String')]
+    procedure Test_BioWrite(AData: AnsiString);
+  end;
+
+  [TestFixture]
+  [Category('WRAP.Bio, WRAP.RecordBIO')]
+  TRecordBioFixture = class(TCustomBioFixture)
+  public type
+    TSampleRecord = record
+      ID: Integer;
+      Value: Double;
+      Enabled: Boolean;
+    end;
+  protected
+    function NewBioWrapper: TTaurusTLSCustomBIO; override;
+  public
+    [Test]
+    procedure Test_BioCreate;
+    [Test]
+    procedure Test_ReadRecord;
+  end;
+
+  [TestFixture]
+  [Category('WRAP.Bio, WRAP.Helper')]
+  TBioHelperFixture = class(TCustomBioFixture)
+  protected
+    function NewBioWrapper: TTaurusTLSCustomBIO; override;
+  public
+    [Test]
+    procedure Test_LoadFromStream;
+    [Test]
+    procedure Test_WriteToStream;
+    [Test]
+    procedure Test_FlagChecks;
+  end;
+
+  [TestFixture]
+  [Category('WRAP.Bio, WRAP.Errors')]
+  TBioErrorFixture = class(TCustomBioFixture)
+  protected
+    function NewBioWrapper: TTaurusTLSCustomBIO; override;
+  public
+    [Test]
+    procedure Test_InvalidConstructor;
+    [Test]
+    procedure Test_NullHandle;
+    [Test]
+    procedure Test_CheckMethods;
   end;
 
 implementation
@@ -341,8 +406,259 @@ begin
   end;
 end;
 
+{ TRawByteStringBioFixture }
+
+function TRawByteStringBioFixture.NewBioWrapper: TTaurusTLSCustomBIO;
+begin
+  Result:=TTaurusTLSRawByteStringBIO.Create(cWriteData);
+end;
+
+procedure TRawByteStringBioFixture.Test_BioCreate;
+begin
+  var lBioWrap:=NewBioWrapper;
+  try
+    CheckBioCreated(lBioWrap);
+    CheckFlags(lBioWrap, cFlags);
+  finally
+    lBioWrap.Free;
+  end;
+end;
+
+procedure TRawByteStringBioFixture.Test_BioRead(AData: AnsiString);
+begin
+  var lBioWrap:=TTaurusTLSRawByteStringBIO.Create(RawByteString(AData));
+  try
+    CheckBioGetString(lBioWrap, AData);
+  finally
+    lBioWrap.Free;
+  end;
+end;
+
+procedure TRawByteStringBioFixture.Test_BioReadResetRead(AData: AnsiString);
+begin
+  var lBioWrap:=TTaurusTLSRawByteStringBIO.Create(RawByteString(AData));
+  try
+    CheckBioGetString(lBioWrap, AData);
+    lBioWrap.Reset;
+    CheckBioGetString(lBioWrap, AData);
+  finally
+    lBioWrap.Free;
+  end;
+end;
+
+procedure TRawByteStringBioFixture.Test_BioWrite(AData: AnsiString);
+begin
+  var lBioWrap:=NewBioWrapper;
+  try
+    Assert.WillRaise(
+      procedure begin lBioWrap.Write(AData[1], Length(AData)) end,
+      ETaurusTLSBioWriteError,
+      'This BIO object should not support "Write" operation.'
+    );
+  finally
+    lBioWrap.Free;
+  end;
+end;
+
+{ TRecordBioFixture }
+
+function TRecordBioFixture.NewBioWrapper: TTaurusTLSCustomBIO;
+var
+  lRec: TSampleRecord;
+begin
+  FillChar(lRec, SizeOf(lRec), 0);
+  Result:=TTaurusTLSRecordBIO<TSampleRecord>.Create(lRec);
+end;
+
+procedure TRecordBioFixture.Test_BioCreate;
+begin
+  var lBioWrap:=NewBioWrapper;
+  try
+    CheckBioCreated(lBioWrap);
+    Assert.AreEqual<TIdC_SIZET>(SizeOf(TSampleRecord), lBioWrap.Pending,
+      'Instance reports incorrect "Pending" size for record BIO.');
+  finally
+    lBioWrap.Free;
+  end;
+end;
+
+procedure TRecordBioFixture.Test_ReadRecord;
+var
+  lRecIn, lRecOut: TSampleRecord;
+begin
+  lRecIn.ID := 12345;
+  lRecIn.Value := 3.14159;
+  lRecIn.Enabled := True;
+
+  var lBioWrap:=TTaurusTLSRecordBIO<TSampleRecord>.Create(lRecIn);
+  try
+    Assert.AreEqual<TIdC_SIZET>(SizeOf(TSampleRecord), lBioWrap.Pending,
+      'Instance reports incorrect "Pending" size.');
+    var lReadCount := lBioWrap.Read(lRecOut, SizeOf(TSampleRecord));
+    Assert.AreEqual<TIdC_SIZET>(SizeOf(TSampleRecord), lReadCount,
+      'Incorrect number of bytes has been read.');
+    Assert.AreEqual(lRecIn.ID, lRecOut.ID,
+      'Record "ID" field value is incorrect.');
+    Assert.AreEqual(lRecIn.Value, lRecOut.Value,
+      'Record "Value" field value is incorrect.');
+    Assert.AreEqual(lRecIn.Enabled, lRecOut.Enabled,
+      'Record "Enabled" field value is incorrect.');
+  finally
+    lBioWrap.Free;
+  end;
+end;
+
+{ TBioHelperFixture }
+
+function TBioHelperFixture.NewBioWrapper: TTaurusTLSCustomBIO;
+begin
+  Result := TTaurusTLSMemBio.Create;
+end;
+
+procedure TBioHelperFixture.Test_LoadFromStream;
+begin
+  var lMemBio := TTaurusTLSMemBio.Create;
+  var lStream := TMemoryStream.Create;
+  try
+    var lData := TCustomBioFixture.RandomBytes(10000); // larger than cChunkSize (8192)
+    if Length(lData) > 0 then
+      lStream.Write(lData[0], Length(lData));
+    lStream.Position := 0;
+
+    var lLoaded := lMemBio.LoadFromStream(lStream, TIdC_SIZET(Length(lData)));
+    Assert.AreEqual(TIdC_SIZET(Length(lData)), lLoaded,
+      'Incorrect number of bytes has been loaded from the stream.');
+    Assert.AreEqual(TIdC_SIZET(Length(lData)), lMemBio.Pending,
+      'Instance reports incorrect "Pending" size after stream load.');
+
+    var lReadData := lMemBio.AsBytes;
+    Assert.AreEqual(Length(lData), Length(lReadData),
+      'Incorrect data length returned.');
+    if Length(lData) > 0 then
+      Assert.AreEqualMemory(@lData[0], @lReadData[0], Length(lData),
+        'Incorrect data has been read.');
+  finally
+    lStream.Free;
+    lMemBio.Free;
+  end;
+end;
+
+procedure TBioHelperFixture.Test_WriteToStream;
+begin
+  var lMemBio := TTaurusTLSMemBio.Create;
+  var lStream := TMemoryStream.Create;
+  try
+    var lData := TCustomBioFixture.RandomBytes(5000);
+    lMemBio.AsBytes := lData;
+
+    var lWritten := lMemBio.WriteToStream(lStream, TIdC_SIZET(Length(lData)));
+    Assert.AreEqual(TIdC_SIZET(Length(lData)), lWritten,
+      'Incorrect number of bytes has been written to the stream.');
+    Assert.AreEqual(Int64(Length(lData)), lStream.Size,
+      'Stream total size is incorrect.');
+
+    lStream.Position := 0;
+    var lReadData: TIdBytes;
+    SetLength(lReadData, Length(lData));
+    if Length(lData) > 0 then
+    begin
+      lStream.Read(lReadData[0], Length(lData));
+      Assert.AreEqualMemory(@lData[0], @lReadData[0], Length(lData),
+        'Incorrect data has been read.');
+    end;
+  finally
+    lStream.Free;
+    lMemBio.Free;
+  end;
+end;
+
+procedure TBioHelperFixture.Test_FlagChecks;
+begin
+  var lBio := TTaurusTLSMemBio.Create; // bfReadable, bfWritable, bfResetable, bfConsumable
+  try
+    Assert.IsTrue(
+      lBio.HasAllFlags([TTaurusTLSCustomBIO.TFlag.bfReadable, TTaurusTLSCustomBIO.TFlag.bfWritable]));
+    Assert.IsTrue(
+      lBio.HasAnyFlags([TTaurusTLSCustomBIO.TFlag.bfReadable, TTaurusTLSCustomBIO.TFlag.bfConsumable]));
+
+    Assert.WillNotRaise(
+      procedure begin lBio.CheckCanRead end,
+      nil,
+      'Method "CheckCanRead" should not raise an error.'
+    );
+    Assert.WillNotRaise(
+      procedure begin lBio.CheckCanWrite end,
+      nil,
+      'Method "CheckCanWrite" should not raise an error.'
+    );
+    Assert.WillNotRaise(
+      procedure begin lBio.CheckCanReset end,
+      nil,
+      'Method "CheckCanReset" should not raise an error.'
+    );
+  finally
+    lBio.Free;
+  end;
+end;
+
+{ TBioErrorFixture }
+
+function TBioErrorFixture.NewBioWrapper: TTaurusTLSCustomBIO;
+begin
+  Result := TTaurusTLSMemBio.Create;
+end;
+
+procedure TBioErrorFixture.Test_InvalidConstructor;
+begin
+  Assert.WillRaise(
+    procedure begin TTaurusTLSCustomBIO.Create end,
+    ETaurusTLSBioCreateError,
+    'Call to abstract default constructor should raise an exception.'
+  );
+end;
+
+procedure TBioErrorFixture.Test_NullHandle;
+begin
+  Assert.WillRaise(
+    procedure begin TTaurusTLSCustomBIO.Create(nil, []) end,
+    ETaurusTLSBioCreateError,
+    'Initialization with "nil" BIO handle should raise an exception.'
+  );
+end;
+
+procedure TBioErrorFixture.Test_CheckMethods;
+begin
+  var lData: TIdBytes;
+  SetLength(lData, 3);
+  lData[0] := 1; lData[1] := 2; lData[2] := 3;
+  var lBytesBio := TTaurusTLSBytesBio.Create(lData); // bfReadable, bfResetable
+  try
+    Assert.WillNotRaise(
+      procedure begin lBytesBio.CheckCanRead end,
+      nil,
+      'Read-only BIO instance should support reading.'
+    );
+    Assert.WillRaise(
+      procedure begin lBytesBio.CheckCanWrite end,
+      ETaurusTLSBioWriteError,
+      'Read-only BIO instance should not support writing.'
+    );
+    Assert.WillNotRaise(
+      procedure begin lBytesBio.CheckCanReset end,
+      nil,
+      'Bytes BIO instance should support resetting.'
+    );
+  finally
+    lBytesBio.Free;
+  end;
+end;
+
 initialization
   TDUnitX.RegisterTestFixture(TMemBioFixture);
   TDUnitX.RegisterTestFixture(TBytesBioFixture);
+  TDUnitX.RegisterTestFixture(TRawByteStringBioFixture);
+  TDUnitX.RegisterTestFixture(TRecordBioFixture);
+  TDUnitX.RegisterTestFixture(TBioHelperFixture);
+  TDUnitX.RegisterTestFixture(TBioErrorFixture);
 
 end.
