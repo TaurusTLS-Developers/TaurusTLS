@@ -1381,7 +1381,7 @@ function BIO_dgram_get_local_addr_cap(b : PBIO) : TIdC_INT;
   {$IFDEF USE_INLINE}inline; {$ENDIF}
 function BIO_reset(b: PBIO): TIdC_INT; {$IFDEF USE_INLINE}inline;{$ENDIF}
 function BIO_eof(b: PBIO): TIdC_INT; {$IFDEF USE_INLINE}inline;{$ENDIF}
-function BIO_get_close((b: PBIO): TIdC_INT; {$IFDEF USE_INLINE}inline;{$ENDIF}
+function BIO_get_close(b: PBIO): TIdC_INT; {$IFDEF USE_INLINE}inline;{$ENDIF}
 function BIO_set_close(b: PBIO; c: TIdC_INT): TIdC_INT; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
 implementation
@@ -1420,14 +1420,14 @@ begin
   Result:=BIO_ctrl(b, BIO_CTRL_EOF, 0, Nil);
 end;
 
-function BIO_get_close((b: PBIO): TIdC_INT; {$IFDEF USE_INLINE}inline;{$ENDIF}
+function BIO_get_close(b: PBIO): TIdC_INT; {$IFDEF USE_INLINE}inline;{$ENDIF}
 begin
-  Result:=BIO_ctrl(b, BIO_CTRL_SET_CLOSE, 0, nill);
+  Result:=BIO_ctrl(b, BIO_CTRL_SET_CLOSE, 0, nil);
 end;
 
 function BIO_set_close(b: PBIO; c: TIdC_INT): TIdC_INT; {$IFDEF USE_INLINE}inline;{$ENDIF}
 begin
-  Result:=BIO_ctrl(b, BIO_CTRL_SET_CLOSE, c, nill);
+  Result:=BIO_ctrl(b, BIO_CTRL_SET_CLOSE, c, nil);
 end;
 
 const
