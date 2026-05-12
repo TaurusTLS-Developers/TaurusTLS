@@ -353,131 +353,6 @@ uses
 
 { TTaurusTLSCustomBIO }
 
-{This is deliberately placed here so it can inlined.}
-
-function TTaurusTLSCustomBIO.GetIsMemoryBIO: Boolean;
-begin
-  Result:=BIO_method_type(FBIO) = BIO_TYPE_MEM;
-end;
-
-{ TTaurusTLSCustomBIOHelper }
-
-{This is deliberately placed here to facilitate inlining with the Check* methods.}
-procedure TTaurusTLSCustomBIOHelper.CheckCanRead;
-begin
-  if not (bfReadable in Flags) then
-    ETaurusTLSBioReadError.RaiseWithMessage(RSMsg_Bio_ReadCheck_err);
-end;
-
-procedure TTaurusTLSCustomBIOHelper.CheckCanReset;
-begin
-  if not (bfResetable in Flags) then
-    ETaurusTLSBioResetError.RaiseWithMessage(RSMsg_Bio_ResetCheck_err);
-end;
-
-procedure TTaurusTLSCustomBIOHelper.CheckCanWrite;
-begin
-  if not (bfWritable in Flags) then
-    ETaurusTLSBioWriteError.RaiseWithMessage(RSMsg_Bio_WriteCheck_err);
-end;
-
-function TTaurusTLSCustomBIOHelper.HasAllFlags(
-  const AFlags: TTaurusTLSCustomBIO.TFlags): boolean;
-begin
-  Result:=(Flags * AFlags) = AFlags;
-end;
-
-function TTaurusTLSCustomBIOHelper.HasAnyFlags(
-  const AFlags: TTaurusTLSCustomBIO.TFlags): boolean;
-begin
-  Result:=(Flags * AFlags) <> [];
-end;
-
-function TTaurusTLSCustomBIOHelper.LoadFromStream(const AStream: TStream;
-  ASize: TIdC_SIZET): TIdC_SIZET;
-var
-  lRemaining: TIdC_INT;
-  lChunkToRead: TIdC_INT;
-  lActuallyRead: TIdC_INT;
-  lBuf: TIdBytes;
-begin
-  Result := 0;
-  {$IFNDEF FPC}
-  lRemaining := IndyMin(ASize, TIdC_SIZET(AStream.Size - AStream.Position));
-  {$ELSE}
-   lRemaining := IndyMin(Int64(ASize), TIdC_SIZET(AStream.Size - AStream.Position));
-  {$ENDIF}
-  if lRemaining = 0 then Exit;
-
-  CheckCanWrite;
-  SetLength(lBuf, cChunkSize);
-
-  while lRemaining > 0 do
-  begin
-    lChunkToRead := IndyMin(lRemaining, cChunkSize);
-    lActuallyRead := AStream.Read(lBuf[0], lChunkToRead);
-    if lActuallyRead <= 0 then Break;
-
-    if TIdC_INT(Write(lBuf[0], lActuallyRead)) <> lActuallyRead then
-      ETaurusTLSBioLoadStreamError.RaiseWithMessage(RSMsg_Bio_StreamRead_err);
-
-    Dec(lRemaining, lActuallyRead);
-    Inc(Result, lActuallyRead);
-  end;
-end;
-
-function TTaurusTLSCustomBIOHelper.WriteToStream(const AStream: TStream;
-  ASize: TIdC_SIZET): TIdC_SIZET;
-var
-  lReadSize: TIdC_SIZET;
-  lBufSize: TIdC_LONGLONG;
-  {$IFNDEF USE_INLINE_VAR}
-  lBuf: TIdBytes;
-  {$ENDIF}
-  lBufPtr: Pointer;
-  lToRead: TIdC_SIZET;
-
-begin
-  Result := 0;
-  if ASize = 0 then Exit;
-  CheckCanRead;
-
-  if IsMemoryBIO then
-  begin
-    // Optimization: Use BIO_get_mem_data to avoid copying if possible
-    lBufSize := BIO_get_mem_data(BIO, lBufPtr);
-    if lBufSize <= 0 then
-      Exit;
-    {$IFNDEF FPC}
-    lToRead := IndyMin(ASize, TIdC_SIZET(lBufSize));
-    {$ELSE}
-    lToRead := IndyMin(Int64(ASize), TIdC_SIZET(lBufSize));
-    {$ENDIF}
-    Result := AStream.Write(lBufPtr^, Integer(lToRead));
-  end
-  else
-  begin
-    {$IFDEF USE_INLINE_VAR}
-    var
-      LBuf : TIdBytes;
-    {$ENDIF}
-    SetLength(lBuf, cChunkSize);
-    lToRead := ASize;
-    while lToRead > 0 do
-    begin
-      // Reads from the BIO
-      lReadSize := Read(lBuf[0], IndyMin(lToRead, cChunkSize));
-      if lReadSize = 0 then Break;
-
-      AStream.WriteBuffer(lBuf[0], Integer(lReadSize));
-      Inc(Result, lReadSize);
-      Dec(lToRead, lReadSize);
-    end;
-  end;
-end;
-
-{ TTaurusTLSCustomBIO }
-
 constructor TTaurusTLSCustomBIO.Create;
 begin
   ETaurusTLSBioCreateError.RaiseWithMessage(RSMsg_Bio_WrongConstructor_err);
@@ -495,6 +370,11 @@ destructor TTaurusTLSCustomBIO.Destroy;
 begin
   BIO_free(FBIO);
   inherited;
+end;
+
+function TTaurusTLSCustomBIO.GetIsMemoryBIO: Boolean;
+begin
+  Result:=BIO_method_type(FBIO) = BIO_TYPE_MEM;
 end;
 
 function TTaurusTLSCustomBIO.GetPending: TIdC_SIZET;
@@ -621,6 +501,114 @@ begin
   Result:=BIO_eof(FBIO) = 1;
 end;
 
+{ TTaurusTLSCustomBIOHelper }
+
+procedure TTaurusTLSCustomBIOHelper.CheckCanRead;
+begin
+  if not (bfReadable in Flags) then
+    ETaurusTLSBioReadError.RaiseWithMessage(RSMsg_Bio_ReadCheck_err);
+end;
+
+procedure TTaurusTLSCustomBIOHelper.CheckCanReset;
+begin
+  if not (bfResetable in Flags) then
+    ETaurusTLSBioResetError.RaiseWithMessage(RSMsg_Bio_ResetCheck_err);
+end;
+
+procedure TTaurusTLSCustomBIOHelper.CheckCanWrite;
+begin
+  if not (bfWritable in Flags) then
+    ETaurusTLSBioWriteError.RaiseWithMessage(RSMsg_Bio_WriteCheck_err);
+end;
+
+function TTaurusTLSCustomBIOHelper.HasAllFlags(
+  const AFlags: TTaurusTLSCustomBIO.TFlags): boolean;
+begin
+  Result:=(Flags * AFlags) = AFlags;
+end;
+
+function TTaurusTLSCustomBIOHelper.HasAnyFlags(
+  const AFlags: TTaurusTLSCustomBIO.TFlags): boolean;
+begin
+  Result:=(Flags * AFlags) <> [];
+end;
+
+function TTaurusTLSCustomBIOHelper.LoadFromStream(const AStream: TStream;
+  ASize: TIdC_SIZET): TIdC_SIZET;
+var
+  lRemaining: TIdC_INT;
+  lChunkToRead: TIdC_INT;
+  lActuallyRead: TIdC_INT;
+  lBuf: TIdBytes;
+begin
+  Result := 0;
+  {$IFNDEF FPC}
+  lRemaining := IndyMin(ASize, TIdC_SIZET(AStream.Size - AStream.Position));
+  {$ELSE}
+   lRemaining := IndyMin(Int64(ASize), TIdC_SIZET(AStream.Size - AStream.Position));
+  {$ENDIF}
+  if lRemaining = 0 then Exit;
+
+  CheckCanWrite;
+  SetLength(lBuf, cChunkSize);
+
+  while lRemaining > 0 do
+  begin
+    lChunkToRead := IndyMin(lRemaining, cChunkSize);
+    lActuallyRead := AStream.Read(lBuf[0], lChunkToRead);
+    if lActuallyRead <= 0 then Break;
+
+    if TIdC_INT(Write(lBuf[0], lActuallyRead)) <> lActuallyRead then
+      ETaurusTLSBioLoadStreamError.RaiseWithMessage(RSMsg_Bio_StreamRead_err);
+
+    Dec(lRemaining, lActuallyRead);
+    Inc(Result, lActuallyRead);
+  end;
+end;
+
+function TTaurusTLSCustomBIOHelper.WriteToStream(const AStream: TStream;
+  ASize: TIdC_SIZET): TIdC_SIZET;
+var
+  lReadSize: TIdC_SIZET;
+  lBufSize: TIdC_LONGLONG;
+  lBuf: TIdBytes;
+  lBufPtr: Pointer;
+  lToRead: TIdC_SIZET;
+
+begin
+  Result := 0;
+  if ASize = 0 then Exit;
+  CheckCanRead;
+
+  if IsMemoryBIO then
+  begin
+    // Optimization: Use BIO_get_mem_data to avoid copying if possible
+    lBufSize := BIO_get_mem_data(BIO, lBufPtr);
+    if lBufSize <= 0 then
+      Exit;
+    {$IFNDEF FPC}
+    lToRead := IndyMin(ASize, TIdC_SIZET(lBufSize));
+    {$ELSE}
+    lToRead := IndyMin(Int64(ASize), TIdC_SIZET(lBufSize));
+    {$ENDIF}
+    Result := AStream.Write(lBufPtr^, Integer(lToRead));
+  end
+  else
+  begin
+    SetLength(lBuf, cChunkSize);
+    lToRead := ASize;
+    while lToRead > 0 do
+    begin
+      // Reads from the BIO
+      lReadSize := Read(lBuf[0], IndyMin(lToRead, cChunkSize));
+      if lReadSize = 0 then Break;
+
+      AStream.WriteBuffer(lBuf[0], Integer(lReadSize));
+      Inc(Result, lReadSize);
+      Dec(lToRead, lReadSize);
+    end;
+  end;
+end;
 
 { TTaurusTLSMemBio }
 
@@ -650,8 +638,8 @@ end;
 
 procedure TTaurusTLSCustomRawMemBio.DoFreeMem;
 begin
-  // Do Nothing by default;
-end; // PALOFF - Empty begin/end-blocks
+  // Do Nothing by default;     PALOFF - Empty begin/end-blocks
+end;
 
 { TTaurusTLSBytesBio }
 
