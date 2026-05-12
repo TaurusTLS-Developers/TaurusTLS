@@ -5620,7 +5620,7 @@ begin
       // --- MODE: REAL ECH ---
       LECHStore := TClientECHStore.Create;
       try
-        LECHStore.SetConfigList(LECHConfigList);
+        LECHStore.SetConfigList(RawByteString(LECHConfigList));
         LECHStore.Attach(fSSL);
       finally
         LECHStore.Free;
