@@ -27,15 +27,15 @@ type
     class procedure CheckBioRead(ABioWrap: TTaurusTLSCustomBIO;
       const AData: TIdBytes); overload; static;
     class procedure CheckBioRead(ABioWrap: TTaurusTLSCustomBIO;
-      const AData: AnsiString); overload; static;
+      const AData: AnsiString; AIncludeNull: boolean); overload; static;
     class procedure CheckBioWrite(ABioWrap: TTaurusTLSCustomBIO;
       const AData: TIdBytes); overload; static;
     class procedure CheckBioWrite(ABioWrap: TTaurusTLSCustomBIO;
       const AData: AnsiString); overload; static;
-    class procedure CheckSetString(ABioWrap: TTaurusTLSCustomBIO;
-      const AData: AnsiString); static;
     class procedure CheckBioGetString(ABioWrap: TTaurusTLSCustomBIO;
       const AData: AnsiString); static;
+    class procedure CheckBioMemData(ABioWrap: TTaurusTLSCustomBIO;
+      AData: Pointer; ADataLen: TIdC_SIZET);
   end;
 
 
@@ -66,8 +66,8 @@ type
   public const
     cDefaultRandomBytesSize = 4069;
     cFlags = [bfReadable, bfResetable];
-
   protected
+    FData: TIdBytes;
     function NewBioWrapper: TTaurusTLSCustomBIO; override;
   public
     [Test]
@@ -87,12 +87,15 @@ type
     cFlags = [bfReadable, bfResetable];
 
   protected
+    FData: RawByteString;
     function NewBioWrapper: TTaurusTLSCustomBIO; override;
   public
     [Test]
     procedure Test_BioCreate;
     [TestCase('"Short String"', 'Short String')]
-    procedure Test_BioRead(AData: AnsiString);
+    procedure Test_AsString(AData: AnsiString);
+    [TestCase('"Short String"', 'Short String')]
+    procedure Test_BioReadRead(AData: AnsiString);
     [TestCase('"Short String"', 'Short String')]
     procedure Test_BioReadResetRead(AData: AnsiString);
     [TestCase('"Short String"', 'Short String')]
@@ -108,6 +111,9 @@ type
       Value: Double;
       Enabled: Boolean;
     end;
+  protected const
+    FData: TSampleRecord = (ID: 123; Value: 123E-12; Enabled: False);
+
   protected
     function NewBioWrapper: TTaurusTLSCustomBIO; override;
   public
@@ -152,6 +158,18 @@ uses
 
 { TCustomBioFixture }
 
+class function TCustomBioFixture.RandomBytes(ASize: TIdC_SIZET): TIdBytes;
+begin
+  var lRandom: TTaurusTLS_Random:=nil;
+  try
+    lRandom:=TTaurusTLS_Random.NewRandom(
+      TTaurusTLS_OSSLPublicRandomBytes.Create(nil));
+    Result:=TIdBytes(lRandom.Random(ASize));
+  finally
+    lRandom.Free;
+  end;
+end;
+
 class procedure TCustomBioFixture.CheckBioCreated(ABioWrap: TTaurusTLSCustomBIO);
 begin
   Assert.IsNotNull(ABioWrap, '"TTaurusTLSMemBio.Create" returns "nil".');
@@ -171,9 +189,13 @@ begin
 end;
 
 class procedure TCustomBioFixture.CheckBioRead(ABioWrap: TTaurusTLSCustomBIO;
-  const AData: AnsiString);
+  const AData: AnsiString; AIncludeNull: boolean);
 begin
-  CheckBioRead(ABioWrap, TIdBytes(BytesOf(AData)));
+  var lBytes:=TIdBytes(BytesOf(AData));
+  if AIncludeNull then
+    SetLength(lBytes, Length(lBytes)+1);
+
+  CheckBioRead(ABioWrap, lBytes);
 end;
 
 class procedure TCustomBioFixture.CheckBioRead(ABioWrap: TTaurusTLSCustomBIO;
@@ -233,18 +255,6 @@ begin
     'Instance reports Incorect Pending size after write.');
 end;
 
-class function TCustomBioFixture.RandomBytes(ASize: TIdC_SIZET): TIdBytes;
-begin
-  var lRandom: TTaurusTLS_Random:=nil;
-  try
-    lRandom:=TTaurusTLS_Random.NewRandom(
-      TTaurusTLS_OSSLPublicRandomBytes.Create(nil));
-    Result:=TIdBytes(lRandom.Random(ASize));
-  finally
-    lRandom.Free;
-  end;
-end;
-
 class procedure TCustomBioFixture.CheckBioGetString(ABioWrap: TTaurusTLSCustomBIO;
   const AData: AnsiString);
 begin
@@ -259,28 +269,18 @@ begin
   // Pending may or may not include trailing #0 character
   Assert.IsTrue((lLen = lPending) or (lLen+1 = lPending),
     'Instance reports Incorect Pending size after write.');
-  var lData:=ABioWrap.AsString;
+  var lData:=ABioWrap.ReadAsString;
   Assert.AreEqual<AnsiString>(AData, lData, 'AsString returns incorrect value.');
 end;
 
-class procedure TCustomBioFixture.CheckSetString(ABioWrap: TTaurusTLSCustomBIO;
-  const AData: AnsiString);
+class procedure TCustomBioFixture.CheckBioMemData(ABioWrap: TTaurusTLSCustomBIO;
+  AData: Pointer; ADataLen: TIdC_SIZET);
 begin
-  var lLen: TIdC_SIZET:=Length(AData);
-  if lLen > 0 then
-    Inc(lLen); // include null-termination
-
-  Assert.WillNotRaise(
-    procedure begin ABioWrap.AsString:=AData; end,
-    nil,
-    'Unable assign the string value'
-  );
-  if lLen = 0 then
-    Assert.IsTrue(ABioWrap.Eof, 'Property "Eof" should be "True".')
-  else
-    Assert.IsFalse(ABioWrap.Eof, 'Property "Eof" should be "False".');
-  Assert.AreEqual<TIdC_SIZET>(lLen, ABioWrap.Pending,
-    'Instance reports Incorect Pending size after write.');
+  var lDataPtr: pointer;
+  Assert.AreEqual<TIdC_SIZET>(ADataLen, BIO_get_mem_data(ABioWrap.Bio, lDataPtr),
+    'Instance return incorrect Data Size.');
+  Assert.AreEqual(Pointer(AData), lDataPtr,
+    'Instance returns incorrect pointer to the Data.');
 end;
 
 { TMemBioFixture }
@@ -316,7 +316,7 @@ begin
   var lBioWrap:=NewBioWrapper;
   try
     CheckBioWrite(lBioWrap, cWriteData);
-    CheckBioRead(lBioWrap, cWriteData);
+    CheckBioRead(lBioWrap, cWriteData, False);
   finally
     lBioWrap.Free;
   end;
@@ -327,7 +327,7 @@ begin
   var lBioWrap:=NewBioWrapper;
   try
     CheckBioWrite(lBioWrap, cWriteData);
-    CheckBioRead(lBioWrap, cWriteData);
+    CheckBioRead(lBioWrap, cWriteData, False);
     Assert.WillNotRaise(
       procedure begin lBioWrap.Reset; end,
       ETaurusTLSBioResetError,
@@ -353,7 +353,8 @@ end;
 
 function TBytesBioFixture.NewBioWrapper: TTaurusTLSCustomBIO;
 begin
-  Result:=TTaurusTLSBytesBio.Create(RandomBytes(cDefaultRandomBytesSize));
+  FData:=RandomBytes(cDefaultRandomBytesSize);
+  Result:=TTaurusTLSBytesBio.Create(FData);
 end;
 
 procedure TBytesBioFixture.Test_BioCreate;
@@ -362,6 +363,7 @@ begin
   try
     CheckBioCreated(lBioWrap);
     CheckFlags(lBioWrap, cFlags);
+    CheckBioMemData(lBioWrap, @FData[0], Length(FData));
   finally
     lBioWrap.Free;
   end;
@@ -372,7 +374,7 @@ begin
   var lData:=TIdBytes(BytesOf(AData));
   var lBioWrap:=TTaurusTLSBytesBio.Create(lData);
   try
-    CheckBioRead(lBioWrap, AData);
+    CheckBioRead(lBioWrap, AData, False);
   finally
     lBioWrap.Free;
   end;
@@ -383,9 +385,9 @@ begin
   var lData:=TIdBytes(BytesOf(AData));
   var lBioWrap:=TTaurusTLSBytesBio.Create(lData);
   try
-    CheckBioRead(lBioWrap, AData);
+    CheckBioRead(lBioWrap, AData, False);
     lBioWrap.Reset;
-    CheckBioRead(lBioWrap, AData);
+    CheckBioRead(lBioWrap, AData, False);
   finally
     lBioWrap.Free;
   end;
@@ -410,7 +412,8 @@ end;
 
 function TRawByteStringBioFixture.NewBioWrapper: TTaurusTLSCustomBIO;
 begin
-  Result:=TTaurusTLSRawByteStringBIO.Create(cWriteData);
+  FData:=cWriteData;
+  Result:=TTaurusTLSRawByteStringBIO.Create(FData, False);
 end;
 
 procedure TRawByteStringBioFixture.Test_BioCreate;
@@ -419,16 +422,29 @@ begin
   try
     CheckBioCreated(lBioWrap);
     CheckFlags(lBioWrap, cFlags);
+    CheckBioMemData(lBioWrap, PAnsiChar(FData), Length(FData));
   finally
     lBioWrap.Free;
   end;
 end;
 
-procedure TRawByteStringBioFixture.Test_BioRead(AData: AnsiString);
+procedure TRawByteStringBioFixture.Test_AsString(AData: AnsiString);
 begin
-  var lBioWrap:=TTaurusTLSRawByteStringBIO.Create(RawByteString(AData));
+  var lBioWrap:=TTaurusTLSRawByteStringBIO.Create(AData);
   try
     CheckBioGetString(lBioWrap, AData);
+  finally
+    lBioWrap.Free;
+  end;
+end;
+
+procedure TRawByteStringBioFixture.Test_BioReadRead(AData: AnsiString);
+begin
+  var lBioWrap:=TTaurusTLSRawByteStringBIO.Create(AData);
+  try
+    CheckBioRead(lBioWrap, AData, True);
+    lBioWrap.Reset;
+    CheckBioRead(lBioWrap, AData, True);
   finally
     lBioWrap.Free;
   end;
@@ -436,11 +452,11 @@ end;
 
 procedure TRawByteStringBioFixture.Test_BioReadResetRead(AData: AnsiString);
 begin
-  var lBioWrap:=TTaurusTLSRawByteStringBIO.Create(RawByteString(AData));
+  var lBioWrap:=TTaurusTLSRawByteStringBIO.Create(AData);
   try
-    CheckBioGetString(lBioWrap, AData);
+    CheckBioRead(lBioWrap, AData, True);
     lBioWrap.Reset;
-    CheckBioGetString(lBioWrap, AData);
+    CheckBioRead(lBioWrap, AData, True);
   finally
     lBioWrap.Free;
   end;
@@ -463,11 +479,8 @@ end;
 { TRecordBioFixture }
 
 function TRecordBioFixture.NewBioWrapper: TTaurusTLSCustomBIO;
-var
-  lRec: TSampleRecord;
 begin
-  FillChar(lRec, SizeOf(lRec), 0);
-  Result:=TTaurusTLSRecordBIO<TSampleRecord>.Create(lRec);
+  Result:=TTaurusTLSRecordBIO<TSampleRecord>.Create(FData);
 end;
 
 procedure TRecordBioFixture.Test_BioCreate;
@@ -531,7 +544,7 @@ begin
     Assert.AreEqual(TIdC_SIZET(Length(lData)), lMemBio.Pending,
       'Instance reports incorrect "Pending" size after stream load.');
 
-    var lReadData := lMemBio.AsBytes;
+    var lReadData := lMemBio.ReadAsBytes;
     Assert.AreEqual(Length(lData), Length(lReadData),
       'Incorrect data length returned.');
     if Length(lData) > 0 then
@@ -545,12 +558,10 @@ end;
 
 procedure TBioHelperFixture.Test_WriteToStream;
 begin
-  var lMemBio := TTaurusTLSMemBio.Create;
+  var lData := TCustomBioFixture.RandomBytes(5000);
+  var lMemBio := TTaurusTLSBytesBio.Create(lData);
   var lStream := TMemoryStream.Create;
   try
-    var lData := TCustomBioFixture.RandomBytes(5000);
-    lMemBio.AsBytes := lData;
-
     var lWritten := lMemBio.WriteToStream(lStream, TIdC_SIZET(Length(lData)));
     Assert.AreEqual(TIdC_SIZET(Length(lData)), lWritten,
       'Incorrect number of bytes has been written to the stream.');
@@ -628,9 +639,7 @@ end;
 
 procedure TBioErrorFixture.Test_CheckMethods;
 begin
-  var lData: TIdBytes;
-  SetLength(lData, 3);
-  lData[0] := 1; lData[1] := 2; lData[2] := 3;
+  var lData: TIdBytes:=[1,2,3];
   var lBytesBio := TTaurusTLSBytesBio.Create(lData); // bfReadable, bfResetable
   try
     Assert.WillNotRaise(

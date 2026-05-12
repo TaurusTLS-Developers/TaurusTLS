@@ -1,11 +1,11 @@
-{ ****************************************************************************** }
+ï»¿{ ****************************************************************************** }
 { *  TaurusTLS                                                                 * }
 { *           https://github.com/JPeterMugaas/TaurusTLS                        * }
 { *                                                                            * }
 { *  Copyright (c) 2026 TaurusTLS Developers, All Rights Reserved              * }
 { *                                                                            * }
-{ * Portions of this software are Copyright (c) 1993 – 2018,                   * }
-{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  * }
+{ * Portions of this software are Copyright (c) 1993 â€“ 2018,                   * }
+{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  * }
 { ****************************************************************************** }
 
 {$I TaurusTLSCompilerDefines.inc}
@@ -72,8 +72,11 @@ type
       ///   <c>bfConsumable</c> indicates that the data portion read from the
       ///   BIO becomes unavailable.
       /// </summary>
-      bfConsumable
+      bfConsumable,
+
+      bfNullTerminator
     );
+
     /// <summary>Set of capabilities flags.</summary>
     TFlags = set of TFlag;
 
@@ -88,22 +91,6 @@ type
     ///   Returns the number of bytes available for reading in the BIO.
     /// </summary>
     function GetPending: TIdC_SIZET;
-    /// <summary>
-    ///   Virtual getter to retrieve the BIO content as a TIdBytes array.
-    /// </summary>
-    function GetAsBytes: TIdBytes; virtual;
-    /// <summary>
-    ///   Virtual setter to write a TIdBytes array into the BIO.
-    /// </summary>
-    procedure SetAsBytes(const AValue: TIdBytes);
-    /// <summary>
-    ///   Virtual getter to retrieve the BIO content as a RawByteString.
-    /// </summary>
-    function GetAsString: RawByteString; virtual;
-    /// <summary>
-    ///   Virtual setter to write a RawByteString into the BIO.
-    /// </summary>
-    procedure SetAsString(const AValue: RawByteString);
     /// <summary>
     ///   Returns True if the underlying OpenSSL BIO is a memory-type BIO.
     /// </summary>
@@ -191,12 +178,12 @@ type
     ///   Provides access to the BIO content as a RawByteString. Reading
     ///   consumes data from memory BIOs.
     /// </summary>
-    property AsString: RawByteString read GetAsString write SetAsString;
+    function ReadAsString: RawByteString;
     /// <summary>
     ///   Provides access to the BIO content as a array of bytes. Reading
     ///   consumes data from memory BIOs.
     /// </summary>
-    property AsBytes: TIdBytes read GetAsBytes write SetAsBytes;
+    function ReadAsBytes: TIdBytes;
   end;
 
   /// <summary>
@@ -264,7 +251,8 @@ type
     /// <summary>
     ///   Reads data from the BIO and writes it into the provided TStream.
     /// </summary>
-    function WriteToStream(const AStream: TStream; ASize: TIdC_SIZET): TIdC_SIZET;
+    function WriteToStream(const AStream: TStream; ASize: TIdC_SIZET;
+      AChunkSize: TIdC_SIZET = cChunkSize): TIdC_SIZET;
   end;
 
   /// <summary>
@@ -295,7 +283,8 @@ type
     ///   Initializes a non-copying BIO (BIO_new_mem_buf) pointing to the
     ///   specified memory address.
     /// </summary>
-    constructor Create(AMemPtr: Pointer; ASize: TIdC_SIZET); overload;
+    constructor Create(const AData: Pointer; ASize: TIdC_SIZET;
+      AFlags: TTaurusTLSCustomBIO.TFlags = [bfReadable, bfResetable]); overload;
   public
     /// <summary>
     ///   Ensures cleanup of the Delphi wrapper and calls DoFreeMem.
@@ -308,7 +297,7 @@ type
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FData: TIdBytes;
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
-    function GetAsBytes: TIdBytes; override;
+    property Data: TIdBytes read FData;
   public
     /// <summary>
     ///   Creates a BIO that reads directly from the provided TIdBytes.
@@ -321,12 +310,19 @@ type
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FData: RawByteString;
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
-    function GetAsString: RawByteString; override;
+    property Data: RawByteString read FData;
   public
     /// <summary>
     ///   Creates a BIO that reads directly from the provided RawByteString.
     /// </summary>
-    constructor Create(const AData: RawByteString);
+    /// <param name="AData">
+    ///   The string to wrap.
+    /// </param>
+    /// <param name="AIncludeNull">
+    ///   If True (default), includes the string's null terminator in the BIO
+    ///   buffer.
+    /// </param>
+    constructor Create(const AData: RawByteString; AIncludeNull: boolean = True);
   end;
 
   /// <summary>
@@ -346,6 +342,8 @@ type
     /// </summary>
     constructor Create(const AData: T);
   end;
+
+
 
 implementation
 uses
@@ -429,17 +427,7 @@ begin
     ETaurusTLSBioWriteError.RaiseWithMessage(RSMsg_Bio_Write_err)
 end;
 
-procedure TTaurusTLSCustomBIO.SetAsBytes(const AValue: TIdBytes);
-var
-  lSize: TIdC_SIZET;
-
-begin
-  lSize:=Length(AValue);
-  if lSize > 0 then
-    Write(AValue[0], lSize);
-end;
-
-function TTaurusTLSCustomBIO.GetAsBytes: TIdBytes;
+function TTaurusTLSCustomBIO.ReadAsBytes: TIdBytes;
 var
   lSize: TIdC_SIZET;
   lActuallyRead: TIdC_SIZET;
@@ -456,16 +444,6 @@ begin
     SetLength(Result, lActuallyRead);
 end;
 
-procedure TTaurusTLSCustomBIO.SetAsString(const AValue: RawByteString);
-var
-  lSize: TIdC_SIZET;
-
-begin
-  lSize:=Length(AValue);
-  if lSize > 0 then
-    Write(AValue[1], lSize);
-end;
-
 procedure TTaurusTLSCustomBIO.Reset;
 begin
   CheckCanReset;
@@ -479,7 +457,7 @@ begin
     (BIO_reset(FBIO) <= 1);
 end;
 
-function TTaurusTLSCustomBIO.GetAsString: RawByteString;
+function TTaurusTLSCustomBIO.ReadAsString: RawByteString;
 var
   lSize: TIdC_SIZET;
   lActuallyRead: TIdC_SIZET;
@@ -489,8 +467,11 @@ begin
   lSize:=Pending;
   SetLength(Result, lSize);
   if lSize > 0 then
+  begin
     lActuallyRead:=Read(Result[1], lSize);
-
+    if bfNullTerminator in FFlags then
+      Dec(lActuallyRead);
+  end;
   // Shrink if read size is less than expected.
   if lActuallyRead < lSize then
     SetLength(Result, lActuallyRead);
@@ -567,12 +548,10 @@ begin
 end;
 
 function TTaurusTLSCustomBIOHelper.WriteToStream(const AStream: TStream;
-  ASize: TIdC_SIZET): TIdC_SIZET;
+  ASize, AChunkSize: TIdC_SIZET): TIdC_SIZET;
 var
   lReadSize: TIdC_SIZET;
-  lBufSize: TIdC_LONGLONG;
   lBuf: TIdBytes;
-  lBufPtr: Pointer;
   lToRead: TIdC_SIZET;
 
 begin
@@ -580,33 +559,20 @@ begin
   if ASize = 0 then Exit;
   CheckCanRead;
 
-  if IsMemoryBIO then
-  begin
-    // Optimization: Use BIO_get_mem_data to avoid copying if possible
-    lBufSize := BIO_get_mem_data(BIO, lBufPtr);
-    if lBufSize <= 0 then
-      Exit;
-    {$IFNDEF FPC}
-    lToRead := IndyMin(ASize, TIdC_SIZET(lBufSize));
-    {$ELSE}
-    lToRead := IndyMin(Int64(ASize), TIdC_SIZET(lBufSize));
-    {$ENDIF}
-    Result := AStream.Write(lBufPtr^, Integer(lToRead));
-  end
-  else
-  begin
-    SetLength(lBuf, cChunkSize);
-    lToRead := ASize;
-    while lToRead > 0 do
-    begin
-      // Reads from the BIO
-      lReadSize := Read(lBuf[0], IndyMin(lToRead, cChunkSize));
-      if lReadSize = 0 then Break;
+  lToRead := IndyMin(ASize, Pending);
+  if lToRead = 0 then Exit;
 
-      AStream.WriteBuffer(lBuf[0], Integer(lReadSize));
-      Inc(Result, lReadSize);
-      Dec(lToRead, lReadSize);
-    end;
+  SetLength(lBuf, AChunkSize);
+
+  while lToRead > 0 do
+  begin
+    // Reads from the BIO
+    lReadSize := Read(lBuf[0], IndyMin(lToRead, AChunkSize));
+    if lReadSize = 0 then Break;
+
+    AStream.WriteBuffer(lBuf[0], Integer(lReadSize));
+    Inc(Result, lReadSize);
+    Dec(lToRead, lReadSize);
   end;
 end;
 
@@ -620,13 +586,14 @@ end;
 
 { TTaurusTLSCustomRawMemBio }
 
-constructor TTaurusTLSCustomRawMemBio.Create(AMemPtr: Pointer; ASize: TIdC_SIZET);
+constructor TTaurusTLSCustomRawMemBio.Create(const AData: Pointer;
+  ASize: TIdC_SIZET; AFlags: TTaurusTLSCustomBIO.TFlags);
 begin
-  if (not Assigned(AMemPtr)) or (ASize = 0) then
+  if not Assigned(AData) and (ASize = 0) then
     ETaurusTLSBioCreateError.RaiseWithMessage(RSMsg_Bio_EmptyMemPtr_err);
 
-  inherited Create(BIO_new_mem_buf(AMemPtr^, ASize), [bfReadable, bfResetable]);
-  FMemPtr := AMemPtr;
+  inherited Create(BIO_new_mem_buf(AData^, ASize), AFlags);
+  FMemPtr := AData;
   FMemSize := ASize;
 end;
 
@@ -643,34 +610,37 @@ end;
 
 { TTaurusTLSBytesBio }
 
-function TTaurusTLSBytesBio.GetAsBytes: TIdBytes;
-begin
-  Result:=FData;
-end;
-
 constructor TTaurusTLSBytesBio.Create(const AData: TIdBytes);
 begin
-  inherited Create(Pointer(AData), Length(AData));
+  inherited Create(PByte(AData), Length(AData)*SizeOf(Byte));
   FData:=AData;
 end;
 
 { TTaurusTLSRawByteStringBIO }
 
-constructor TTaurusTLSRawByteStringBIO.Create(const AData: RawByteString);
+constructor TTaurusTLSRawByteStringBIO.Create(const AData: RawByteString;
+  AIncludeNull: boolean = True);
 var
   lLen: TIdC_SizeT;
+  lFlags: TFlags;
 
 begin
+  lFlags:=[bfReadable, bfResetable];
   lLen:=Length(AData);
-  if lLen > 0 then
-    Inc(lLen); // include terminating #0 character
-  inherited Create(Pointer(AData), lLen); // include null-terminated char
-  FData:=AData;
-end;
-
-function TTaurusTLSRawByteStringBIO.GetAsString: RawByteString;
-begin
-  Result:=FData;
+  if AIncludeNull then // include terminating #0 character
+  begin
+    if lLen > 0 then
+    begin
+      FData:=AData;
+      Inc(lLen);
+    end
+    else
+      FData:=#0;
+    Include(lFlags, bfNullTerminator);
+  end
+  else
+    FData:=AData;
+  inherited Create(PAnsiChar(FData), lLen*SizeOf(AnsiChar), lFlags); // include null-terminator if requested
 end;
 
 { TTaurusTLSRecordBIO<T> }

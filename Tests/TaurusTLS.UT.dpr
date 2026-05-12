@@ -4,8 +4,8 @@
 { *                                                                            * }
 { *  Copyright (c) 2024 - 2025 TaurusTLS Developers, All Rights Reserved       * }
 { *                                                                            * }
-{ * Portions of this software are Copyright (c) 1993 – 2018,                   * }
-{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  * }
+{ * Portions of this software are Copyright (c) 1993 ï¿½ 2018,                   * }
+{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew ï¿½ http://www.IndyProject.org/  * }
 { ****************************************************************************** }
 program TaurusTLS.UT;
 
@@ -42,7 +42,8 @@ uses
   TaurusTLS.UT.SSLContainers in 'TaurusTLS.UT.SSLContainers.pas',
   TaurusTLS.UT.Encryptors in 'TaurusTLS.UT.Encryptors.pas',
   TaurusTLS.UT.SSLContainersHelpers in 'TaurusTLS.UT.SSLContainersHelpers.pas',
-  TaurusTLS.UT.Wrappers.Bio in 'TaurusTLS.UT.Wrappers.Bio.pas';
+  TaurusTLS.UT.Wrappers.Bio in 'TaurusTLS.UT.Wrappers.Bio.pas',
+  TaurusTLS.UT.Wrappers.ECHStore in 'TaurusTLS.UT.Wrappers.ECHStore.pas';
 
 { keep comment here to protect the following conditional from being removed by the IDE when adding a unit }
 {$IFNDEF TESTINSIGHT}
