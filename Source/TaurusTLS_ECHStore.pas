@@ -23,6 +23,8 @@ uses
   IdGlobal,
   TaurusTLSHeaders_types,
   TaurusTLSExceptionHandlers,
+  TaurusTLS_BIO,
+  TaurusTLSHeaders_bio,
   TaurusTLSHeaders_crypto,
   TaurusTLSHeaders_ech,
   TaurusTLSHeaders_hpke;
@@ -71,9 +73,9 @@ type
     /// <param name="ASuite">The HPKE suite to use.</param>
     procedure DoNewConfig(const APublicName: string; const ASuite: OSSL_HPKE_SUITE);
       {$IFDEF USE_INLINE} inline; {$ENDIF}
-    /// <summary>Reads an ECHConfigList from a BIO and adds it to the store.</summary>
-    /// <param name="ABio">The BIO containing the binary ECHConfigList.</param>
-    procedure DoSetConfigList(ABio: PBio); overload;
+    /// <summary>Reads an ECHConfigList from a BIO wrapper and adds it to the store.</summary>
+    /// <param name="ABio">The BIO wrapper containing the binary ECHConfigList.</param>
+    procedure DoSetConfigList(ABio: TTaurusTLSCustomBIO); overload;
       {$IFDEF USE_INLINE} inline; {$ENDIF}
     /// <summary>Sets a private key and reads an ECH configuration from a PEM BIO.</summary>
     /// <param name="ABio">The BIO containing the PEM-encoded configuration.</param>
@@ -141,7 +143,27 @@ type
     /// <param name="AECHConfigList">
     ///   The ECHConfigList data in the Base64 string.
     /// </param>
-    procedure SetConfigList(const AECHConfigList: string); overload;
+    procedure SetConfigList(const AECHConfigList: RawByteString); overload;
+      {$IFDEF USE_INLINE} inline; {$ENDIF}
+    /// <summary>
+    ///   Sets the ECHConfigList from a stream.
+    /// </summary>
+    /// <param name="AStream">
+    ///   The stream containing the ECHConfigList data (Base64).
+    /// </param>
+    procedure SetConfigList(const AStream: TStream); overload;
+      {$IFDEF USE_INLINE} inline; {$ENDIF}
+    /// <summary>
+    ///   Sets the ECHConfigList from a BIO wrapper.
+    /// </summary>
+    /// <param name="ABio">
+    ///   The BIO wrapper containing the ECHConfigList data.
+    /// </param>
+    /// <remarks>
+    ///   The caller maintains ownership of the BIO wrapper and must ensure it
+    ///   remains valid for the duration of this call.
+    /// </remarks>
+    procedure SetConfigList(const ABio: TTaurusTLSCustomBIO); overload;
       {$IFDEF USE_INLINE} inline; {$ENDIF}
     /// <summary>
     ///   Selects a specific ECH configuration from the store for use.
@@ -378,7 +400,6 @@ uses
 {$IFDEF WINDOWS}
   IdIDN,
 {$ENDIF}
-  TaurusTLSHeaders_bio,
   TaurusTLS_ResourceStrings;
 
 { ETaurusTLSECHStoreError }
@@ -507,10 +528,10 @@ begin
   end;
 end;
 
-procedure TTaurusTLS_CustomECHStore.DoSetConfigList(ABio: PBio);
+procedure TTaurusTLS_CustomECHStore.DoSetConfigList(ABio: TTaurusTLSCustomBIO);
 begin
   ETaurusTLSECHStore_read_echconfiglist.CheckAndRaise(
-    OSSL_ECHSTORE_read_echconfiglist(FStore, ABio),
+    OSSL_ECHSTORE_read_echconfiglist(FStore, ABio.BIO),
     RSMsg_ECHStore_read_echconfiglist_err
   );
 end;
@@ -532,27 +553,46 @@ begin
   );
 end;
 
-procedure TTaurusTLS_CustomECHStore.SetConfigList(const AECHConfigList: string);
-var
-  LBio: PBio;
-  lInLen: TIdC_INT;
-  LECHConfigList: RawByteString;
-
+procedure TTaurusTLS_CustomECHStore.SetConfigList(const ABio: TTaurusTLSCustomBIO);
 begin
-  lInLen:=Length(AECHConfigList);
-  if lInLen > cECHConfigListMaxLen then
+  if not Assigned(ABio) then
+    ETaurusTLSECHStore_read_echconfiglist_err.RaiseWithMessage(RSMsg_ECHStore_read_echconfiglist_err);
+  DoSetConfigList(ABio);
+end;
+
+procedure TTaurusTLS_CustomECHStore.SetConfigList(const AStream: TStream);
+var
+  LBio: TTaurusTLSMemBio;
+  lLen: Int64;
+begin
+  if not Assigned(AStream) then
+    ETaurusTLSECHStoreError.RaiseWithMessage(RSMsg_ECHStore_stream_err);
+
+  lLen := AStream.Size - AStream.Position;
+  if lLen > cECHConfigListMaxLen then
     ETaurusTLSECHStore_too_long_echconfiglist_err.RaiseWithMessage(RSMsg_ECHStore_too_long_echconfiglist_err);
 
-  LECHConfigList:=RawByteString(AECHConfigList);
-  lBio:=nil;
+  LBio := TTaurusTLSMemBio.Create;
   try
-    lBio:=BIO_new_mem_buf(LECHConfigList[1], lInLen);
-    if not Assigned(lBio) then
-       ETaurusTLSECHStore_read_echconfiglist_err.RaiseWithMessage(RSMsg_ECHStore_read_echconfiglist_err);
-
-    DoSetConfigList(lBio);
+    LBio.LoadFromStream(AStream, TIdC_SIZET(lLen));
+    DoSetConfigList(LBio);
   finally
-    BIO_free(lBio);
+    LBio.Free;
+  end;
+end;
+
+procedure TTaurusTLS_CustomECHStore.SetConfigList(const AECHConfigList: RawByteString);
+var
+  LBio: TTaurusTLSRawByteStringBIO;
+begin
+  if Length(AECHConfigList) > cECHConfigListMaxLen then
+    ETaurusTLSECHStore_too_long_echconfiglist_err.RaiseWithMessage(RSMsg_ECHStore_too_long_echconfiglist_err);
+
+  LBio:=TTaurusTLSRawByteStringBIO.Create(RawByteString(AECHConfigList), False);
+  try
+    DoSetConfigList(LBio);
+  finally
+    LBio.Free;
   end;
 end;
 
