@@ -1,4 +1,4 @@
-﻿{ ****************************************************************************** }
+{ ****************************************************************************** }
 { *  TaurusTLS                                                                 * }
 { *           https://github.com/JPeterMugaas/TaurusTLS                        * }
 { *                                                                            * }
@@ -1302,10 +1302,10 @@ type
    sslUnrecoverableError);
   { TTaurusTLSBaseSocket }
   /// <summary>
-  ///   Properties and methods for dealing with a TLS Socket that are common to
-  ///   <see cref="TaurusTLS|TTaurusTLSSocket" />.
+  ///   Abstract base class for TLS Sockets. Provides shared functionality for
+  ///   Client and Server implementations.
   /// </summary>
-  TTaurusTLSBaseSocket = class(TObject)
+  TTaurusTLSBaseSocket = class abstract(TObject)
 {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict {$ENDIF}protected
     fSession: PSSL_SESSION;
 {$IFDEF USE_OBJECT_ARC}[Weak]
@@ -1323,10 +1323,17 @@ type
     function GetCipher: TTaurusTLSCipher;
     function GetVerifyHostname: Boolean;
     procedure SetVerifyHostName(const Value: Boolean);
+    /// <summary>
+    ///   Handles common OpenSSL SSL object initialization.
+    /// </summary>
+    procedure InitSSL(const pHandle: TIdStackSocketHandle); virtual;
+    /// <summary>
+    ///   Configures the connection before the handshake.
+    /// </summary>
     procedure SetupConnection; virtual; abstract;
   public
     /// <summary>
-    /// Creates a new instance of TTaurusTLSSocket.
+    /// Creates a new instance of TTaurusTLSBaseSocket descendant.
     /// </summary>
     /// <param name="AParent">
     /// The TObject that will own the new instance.
@@ -1346,20 +1353,6 @@ type
     /// The error code
     /// </returns>
     function GetSSLError(retCode: Integer): Integer;
-    /// <summary>
-    /// Accept a TLS connection.
-    /// </summary>
-    /// <param name="pHandle">
-    /// The connection to negotiate TLS with.
-    /// </param>
-    procedure Accept(const pHandle: TIdStackSocketHandle);
-    /// <summary>
-    /// Make a TLS connection.
-    /// </summary>
-    /// <param name="pHandle">
-    /// The connection to negotiate TLS with.
-    /// </param>
-    procedure Connect(const pHandle: TIdStackSocketHandle);
     /// <summary>
     /// Encrypt bytes and send them to the peer.
     /// </summary>
@@ -1443,14 +1436,48 @@ type
     property VerifyHostname: Boolean read GetVerifyHostname
       write SetVerifyHostName;
   end;
+
+  /// <summary>
+  ///   Client-side TLS Socket implementation. Handles ECH and SNI negotiation.
+  /// </summary>
+  TTaurusTLSClientSocket = class(TTaurusTLSBaseSocket)
+  protected
+    procedure SetupConnection; override;
+  public
+    /// <summary>
+    /// Make a TLS connection.
+    /// </summary>
+    /// <param name="pHandle">
+    /// The connection to negotiate TLS with.
+    /// </param>
+    procedure Connect(const pHandle: TIdStackSocketHandle);
+  end;
+
+  /// <summary>
+  ///   Server-side TLS Socket implementation.
+  /// </summary>
+  TTaurusTLSServerSocket = class(TTaurusTLSBaseSocket)
+  protected
+    procedure SetupConnection; override;
+  public
+    /// <summary>
+    /// Accept a TLS connection.
+    /// </summary>
+    /// <param name="pHandle">
+    /// The connection to negotiate TLS with.
+    /// </param>
+    procedure Accept(const pHandle: TIdStackSocketHandle);
+  end;
+
   /// <summary>
   ///   Properties and methods for dealing with a TLS Socket including <i>Server
   ///   Name Indicator</i> (SNI).
   /// </summary>
-  TTaurusTLSSocket = class(TTaurusTLSBaseSocket)
-  protected
-   procedure SetupConnection; override;
+  TTaurusTLSSocket = class(TTaurusTLSClientSocket)
   end;
+  {$IFDEF USE_DEPRECATED}
+  deprecated 'Use TTaurusTLSClientSocket or TTaurusTLSServerSocket instead';
+  {$ENDIF}
   /// <summary>
   /// TTaurusTLSIOHandlerSocket and TTaurusTLSServerIOHandler common
   /// interface. This is here because both classes do not share a common
@@ -2765,7 +2792,7 @@ function g_VerifyCallback(const preverify_ok: TIdC_INT;
 var
   LErr: Integer;  //PALOFF
   LSsl: PSSL;
-  LSock: TTaurusTLSSocket;
+  LSock: TTaurusTLSBaseSocket;
   LContinue: Boolean;   //PALOFF
   LX509_Cert: PX509;
   LCertificate: TTaurusTLSX509;  //PALOFF
@@ -2784,8 +2811,7 @@ begin
       SSL_get_ex_data_X509_STORE_CTX_idx());
     if LSsl <> nil then
     begin
-      // Surpress PAL Warning about bad pointer typecast
-      LSock := TTaurusTLSSocket(SSL_get_app_data(LSsl));   //PALOFF
+      LSock := TTaurusTLSBaseSocket(SSL_get_app_data(LSsl));   //PALOFF
       if LSock <> nil then
       begin
         LockVerifyCB.Enter;
@@ -2961,7 +2987,7 @@ begin
   try
     LockInfoCB.Enter;
     try
-      if Supports(TTaurusTLSSocket(SSL_get_app_data(SSLSocket)).Parent,  //PALOFF
+      if Supports(TTaurusTLSBaseSocket(SSL_get_app_data(SSLSocket)).Parent,  //PALOFF
         ITaurusTLSCallbackHelper, LHelper) then
       begin
         LHelper.StatusInfo(SSLSocket, where, ret);
@@ -3001,7 +3027,7 @@ begin
   try
     LockVerifyCB.Enter;
     try
-      if Supports(TTaurusTLSSocket(arg).Parent, ITaurusTLSCallbackHelper,
+      if Supports(TTaurusTLSContext(arg).Parent, ITaurusTLSCallbackHelper,
         IInterface(LHelper)) then
       begin
 {$IFDEF USE_INLINE_VAR}
@@ -3742,7 +3768,7 @@ begin
         begin
           LIO.SSLOptions.Assign(fSSLOptions);
           LIO.IsPeer := True;
-          LIO.SSLSocket := TTaurusTLSSocket.Create(Self);
+          LIO.SSLSocket := TTaurusTLSServerSocket.Create(Self);
           LIO.SSLSocket.VerifyHostname := SSLOptions.VerifyHostname;
           LIO.SSLContext := fSSLContext;
           // TODO: to enable server-side SNI, we need to:
@@ -4199,9 +4225,30 @@ var
   LTransparentProxy, LNextTransparentProxy: TIdCustomTransparentProxy;
 begin
   Assert(Binding <> nil);
+
+  LMode := fSSLContext.Mode;
+  if not(LMode in [sslmClient, sslmServer]) then
+  begin
+    // Mode must be sslmBoth (or else TTaurusTLSContext.GetSSLMethod() would have
+    // raised an exception), so just fall back to previous behavior for now,
+    // until we can figure out a better way to handle this scenario...
+    if IsPeer then
+    begin
+      LMode := sslmServer;
+    end
+    else
+    begin
+      LMode := sslmClient;
+    end;
+  end;
+
   if not Assigned(fSSLSocket) then
   begin
-    fSSLSocket := TTaurusTLSSocket.Create(Self);
+    if LMode = sslmServer then
+      fSSLSocket := TTaurusTLSServerSocket.Create(Self)
+    else
+      fSSLSocket := TTaurusTLSClientSocket.Create(Self);
+
     fSSLSocket.VerifyHostname := SSLOptions.VerifyHostname;
   end;
   Assert(fSSLSocket.SSLContext = nil);
@@ -4222,32 +4269,6 @@ begin
   end;
   // end bug fix
 {$ENDIF}
-  // RLebeau 7/2/2015: do not rely on IsPeer to decide whether to call Connect()
-  // or Accept(). SSLContext.Mode controls whether a client or server method is
-  // used to handle the connection, so that same value should be used here as well.
-  // A user encountered a scenario where he needed to connect a TIdTCPClient to a
-  // TCP server on a hardware device, but run the client's SSLIOHandler as an SSL
-  // server because the device was initiating the SSL handshake as an SSL client.
-  // IsPeer was not designed to handle that scenario.  Setting IsPeer to True
-  // allowed Accept() to be called here, but at the cost of causing memory leaks
-  // in TTaurusTLSIOHandlerSocket.Destroy() and TTaurusTLSIOHandlerSocket.Close()
-  // in client components!  IsPeer is intended to be set to True only in server
-  // components...
-  LMode := fSSLContext.Mode;
-  if not(LMode in [sslmClient, sslmServer]) then
-  begin
-    // Mode must be sslmBoth (or else TTaurusTLSContext.GetSSLMethod() would have
-    // raised an exception), so just fall back to previous behavior for now,
-    // until we can figure out a better way to handle this scenario...
-    if IsPeer then
-    begin
-      LMode := sslmServer;
-    end
-    else
-    begin
-      LMode := sslmClient;
-    end;
-  end;
   if LMode = sslmClient then
   begin
     if fHostname = '' then
@@ -4289,12 +4310,12 @@ begin
       end;
     end;
     fSSLSocket.HostName := fHostName;
-    fSSLSocket.Connect(Binding.Handle);
+    (fSSLSocket as TTaurusTLSClientSocket).Connect(Binding.Handle);
   end
   else
   begin
     fSSLSocket.HostName := '';
-    fSSLSocket.Accept(Binding.Handle);
+    (fSSLSocket as TTaurusTLSServerSocket).Accept(Binding.Handle);
   end;
   if Assigned(FOnSSLNegotiated) then
   begin
@@ -4316,7 +4337,7 @@ begin
     LIO.OnDebugMessage := FOnDebugMessage;
     LIO.OnGetPassword := fOnGetPassword;
     LIO.OnSSLNegotiated := OnSSLNegotiated;
-    LIO.fSSLSocket := TTaurusTLSSocket.Create(Self);
+
     // For FTP Data channels, we do NOT want to Verify that the hostname
     // matches what's in the certificate because an IP address is passed
     // instead of a DNS hostname.  Such a check is likely to fail.
@@ -4960,90 +4981,12 @@ begin
   Result := SSL_get_error(fSSL, retCode);
 end;
 
-procedure TTaurusTLSBaseSocket.Accept(const pHandle: TIdStackSocketHandle);
-
-// Accept and Connect have a lot of duplicated code
+procedure TTaurusTLSBaseSocket.InitSSL(const pHandle: TIdStackSocketHandle);
 var
   LRetCode: Integer;
-  // LParentIO: TTaurusTLSIOHandlerSocket;
-  // LHelper: ITaurusTLSCallbackHelper;
 begin
   Assert(fSSL = nil);
   Assert(fSSLContext <> nil);
-  fSSL := SSL_new(fSSLContext.Context);
-  if fSSL = nil then
-  begin
-    raise ETaurusTLSCreatingSessionError.Create(RSSSLCreatingSessionError);
-  end;
-  LRetCode := SSL_set_app_data(fSSL, Self);
-  if LRetCode <= 0 then
-  begin
-    ETaurusTLSDataBindingError.RaiseException(fSSL, LRetCode,
-      RSSSLDataBindingError);
-  end;
-  // ignore warning about 64-bit value being passed to a 32bit parameter.
-  // See: https://docs.openssl.org/3.0/man3/SSL_set_fd/#return-values
-  LRetCode := SSL_set_fd(fSSL, pHandle);
-  if LRetCode <= 0 then
-  begin
-    ETaurusTLSFDSetError.RaiseException(fSSL, LRetCode, RSSSLFDSetError);
-  end;
-  // RLebeau: if this socket's IOHandler was cloned, no need to reuse the
-  // original IOHandler's active session ID, since this is a server socket
-  // that generates its own sessions...
-  //
-  // RLebeau: is this actually true?  Should we be reusing the original
-  // IOHandler's active session ID regardless of whether this is a client
-  // or server socket? What about FTP in non-passive mode, for example?
-  {
-    if (LParentIO <> nil) and (LParentIO.fSSLSocket <> nil) and
-    (LParentIO.fSSLSocket <> Self) then
-    begin
-    SSL_copy_session_id(fSSL, LParentIO.fSSLSocket.fSSL);
-    end;
-  }
-  LRetCode := SSL_accept(fSSL);
-  if LRetCode <= 0 then
-  begin
-    ETaurusTLSAcceptError.RaiseException(fSSL, LRetCode, RSSSLAcceptError);
-  end;
-
-  fSession := SSL_get1_session(fSSL);
-end;
-
-{ TTaurusTLSClientIOHandlerSocket }
-
-procedure TTaurusTLSClientIOHandlerSocket.SetECHStatus(
-  Value: TTaurusTLSClientECHStatus);
-begin
-  FECHStatus:=Value;
-end;
-
-procedure TTaurusTLSBaseSocket.Connect(const pHandle: TIdStackSocketHandle);
-var
-  LRetCode: Integer;
-  LParentIO: TTaurusTLSIOHandlerSocket;
-  LHelper: ITaurusTLSCallbackHelper;
-  LVerifyResult: TIdC_LONG;
-  Lpeercert: PX509;
-  LCertificate: TTaurusTLSX509;
-  LClientIO: TTaurusTLSClientIOHandlerSocket;
-  LStatus: TIdC_INT;
-  LInner, LOuter: PIdAnsiChar;
-  LECHConfigBuf: Pointer; // FIXED: Was PPointer
-  LECHConfigLen: TIdC_SIZET;
-
-begin
-  Assert(fSSL = nil);
-  Assert(fSSLContext <> nil);
-  if Supports(FParent, ITaurusTLSCallbackHelper, IInterface(LHelper)) then
-  begin
-    LParentIO := LHelper.GetIOHandlerSelf;
-  end
-  else
-  begin
-    LParentIO := nil;
-  end;
   fSSL := SSL_new(fSSLContext.Context);
   if fSSL = nil then
   begin
@@ -5062,6 +5005,68 @@ begin
   begin
     ETaurusTLSFDSetError.RaiseException(fSSL, LRetCode, RSSSLFDSetError);
   end;
+end;
+
+{ TTaurusTLSServerSocket }
+
+procedure TTaurusTLSServerSocket.SetupConnection;
+begin
+  // Phase 2: Server-side ECH/SNI configuration will go here
+end;
+
+procedure TTaurusTLSServerSocket.Accept(const pHandle: TIdStackSocketHandle);
+var
+  LRetCode: Integer;
+begin
+  InitSSL(pHandle);
+
+  SetupConnection;
+
+  LRetCode := SSL_accept(fSSL);
+  if LRetCode <= 0 then
+  begin
+    ETaurusTLSAcceptError.RaiseException(fSSL, LRetCode, RSSSLAcceptError);
+  end;
+
+  fSession := SSL_get1_session(fSSL);
+end;
+
+{ TTaurusTLSClientIOHandlerSocket }
+
+procedure TTaurusTLSClientIOHandlerSocket.SetECHStatus(
+  Value: TTaurusTLSClientECHStatus);
+begin
+  FECHStatus:=Value;
+end;
+
+{ TTaurusTLSClientSocket }
+
+procedure TTaurusTLSClientSocket.Connect(const pHandle: TIdStackSocketHandle);
+var
+  LRetCode: Integer;
+  LParentIO: TTaurusTLSIOHandlerSocket;
+  LHelper: ITaurusTLSCallbackHelper;
+  LVerifyResult: TIdC_LONG;
+  Lpeercert: PX509;
+  LCertificate: TTaurusTLSX509;
+  LClientIO: TTaurusTLSClientIOHandlerSocket;
+  LStatus: TIdC_INT;
+  LInner, LOuter: PIdAnsiChar;
+  LECHConfigBuf: Pointer;
+  LECHConfigLen: TIdC_SIZET;
+
+begin
+  if Supports(FParent, ITaurusTLSCallbackHelper, IInterface(LHelper)) then
+  begin
+    LParentIO := LHelper.GetIOHandlerSelf;
+  end
+  else
+  begin
+    LParentIO := nil;
+  end;
+
+  InitSSL(pHandle);
+
   // RLebeau: if this socket's IOHandler was cloned, reuse the
   // original IOHandler's active session ID...
   if (LParentIO <> nil) and (LParentIO.SSLSocket <> nil) and
@@ -5177,6 +5182,128 @@ begin
     end;
   finally
     X509_free(Lpeercert);
+  end;
+end;
+
+procedure TTaurusTLSClientSocket.SetupConnection;
+var
+  LRetCode: TIdC_INT;
+  LDefaultSNI: String;
+  LECHOuterHostname: String;
+  LECHConfigList: String;
+  LECHEnabled: Boolean;
+  LIdentity: String;
+  LIdentityAnsi: RawByteString;
+  LIsIdentityIP: Boolean;
+  LParams: PX509_VERIFY_PARAM;
+  LECHStore: TClientECHStore;
+
+begin
+  // 1. Identify the IOHandler and extract properties
+  if Parent is TTaurusTLSClientIOHandlerSocket then
+    with TTaurusTLSClientIOHandlerSocket(Parent) do  //PALOFF - With statements
+    begin
+      LECHEnabled := ECHEnabled;
+      LDefaultSNI := DefaultSNI;
+      LECHConfigList := ECHConfigList;
+      LECHOuterHostname := ECHOuterHostname;
+    end
+    else
+    begin
+      LECHEnabled := False;
+      LDefaultSNI := '';
+      LECHConfigList := '';
+      LECHOuterHostname := '';
+    end;
+
+  // 2. Determine the Logical Identity
+  // If we are connecting via IP, the Identity is the DefaultSNI.
+  // If we are connecting via Name, the Identity is the fHostName.
+  if IsValidIP(fHostName) then
+    LIdentity := LDefaultSNI
+  else
+    LIdentity := fHostName;
+
+  LIsIdentityIP := IsValidIP(LIdentity);
+
+  // 3. Prepare Punycode/Ansi version of the Identity
+  if LIdentity <> '' then
+  begin
+    {$IFDEF WINDOWS}
+    if Assigned(IdnToAscii) and (not LIsIdentityIP) then
+      LIdentityAnsi := RawByteString(IDNToPunnyCode(LIdentity))
+    else
+    {$ENDIF}
+      LIdentityAnsi := RawByteString(LIdentity);
+  end;
+
+  // 4. ECH and SNI Configuration
+  // Note: We only send SNI/ECH if the identity is a DNS name (not an IP)
+  if (LIdentityAnsi <> '') and (not LIsIdentityIP) then
+  begin
+    if LECHEnabled and (LECHConfigList <> '') then
+    begin
+      // --- MODE: REAL ECH ---
+      LECHStore := TClientECHStore.Create;
+      try
+        LECHStore.SetConfigList(RawByteString(LECHConfigList));
+        LECHStore.Attach(fSSL);
+      finally
+        LECHStore.Free;
+      end;
+
+      if LECHOuterHostname <> '' then
+      begin
+        // Case A: Real ECH with explicit Outer SNI override
+        SSL_ech_set1_server_names(fSSL, PIdAnsiChar(LIdentityAnsi),
+          PIdAnsiChar(AnsiString(LECHOuterHostname)), 0);
+      end
+      else
+      begin
+        // Case B: Real ECH using public_name from ConfigList
+        // SSL_set_tlsext_host_name sets the "Inner" name when a store is attached
+        LRetCode := SSL_set_tlsext_host_name(fSSL, PIdAnsiChar(LIdentityAnsi));
+        if LRetCode <= 0 then
+          ETaurusTLSSettingTLSHostNameError.RaiseException(fSSL, LRetCode, RSSSLSettingTLSHostNameError_2);
+
+      end;
+    end
+    else
+    begin
+      // --- MODE: STANDARD SNI (or GREASE) ---
+      if LECHEnabled then
+        SSL_set_options(fSSL, SSL_OP_ECH_GREASE);
+
+      LRetCode := SSL_set_tlsext_host_name(fSSL, PIdAnsiChar(LIdentityAnsi));
+      if LRetCode <= 0 then
+        ETaurusTLSSettingTLSHostNameError.RaiseException(fSSL, LRetCode, RSSSLSettingTLSHostNameError_2);
+    end;
+  end;
+
+  // 5. ALWAYS Verify the Certificate against the Logical Identity
+  if fVerifyHostname and (LIdentityAnsi <> '') then
+  begin
+    if LIsIdentityIP then
+    begin
+      // If the identity is an IP address, use OpenSSL's IP-specific validation
+      LParams := SSL_get0_param(fSSL);
+      if Assigned(LParams) then
+      begin
+        // This ensures the cert is checked for an IP SAN (Subject Alternative Name)
+        if X509_VERIFY_PARAM_set1_ip_asc(LParams, PIdAnsiChar(LIdentityAnsi)) <= 0 then
+        begin
+          ETaurusTLSSettingSANIPError.RaiseWithMessage(RSSLX509_VERIFY_PARAM_set1_ip_asc);
+        end;
+      end;
+    end
+    else
+    begin
+      // Standard DNS Name validation
+      SSL_set_hostflags(fSSL, 0);
+      LRetCode := SSL_set1_host(fSSL, PIdAnsiChar(LIdentityAnsi));
+      if LRetCode <= 0 then
+        ETaurusTLSSettingTLSHostNameError.RaiseException(fSSL, LRetCode, RSSSLSettingTLSHostNameError_2);
+    end;
   end;
 end;
 
@@ -5556,130 +5683,6 @@ begin
 end;
 
 {$I TaurusTLSSymbolDeprecatedOff.inc}
-
-{ TTaurusTLSSocket }
-
-procedure TTaurusTLSSocket.SetupConnection;
-var
-  LRetCode: TIdC_INT;
-  LDefaultSNI: String;
-  LECHOuterHostname: String;
-  LECHConfigList: String;
-  LECHEnabled: Boolean;
-  LIdentity: String;
-  LIdentityAnsi: RawByteString;
-  LIsIdentityIP: Boolean;
-  LParams: PX509_VERIFY_PARAM;
-  LECHStore: TClientECHStore;
-
-begin
-  // 1. Identify the IOHandler and extract properties
-  if Parent is TTaurusTLSClientIOHandlerSocket then
-    with TTaurusTLSClientIOHandlerSocket(Parent) do  //PALOFF - With statements
-    begin
-      LECHEnabled := ECHEnabled;
-      LDefaultSNI := DefaultSNI;
-      LECHConfigList := ECHConfigList;
-      LECHOuterHostname := ECHOuterHostname;
-    end
-    else
-    begin
-      LECHEnabled := False;
-      LDefaultSNI := '';
-      LECHConfigList := '';
-      LECHOuterHostname := '';
-    end;
-
-  // 2. Determine the Logical Identity
-  // If we are connecting via IP, the Identity is the DefaultSNI.
-  // If we are connecting via Name, the Identity is the fHostName.
-  if IsValidIP(fHostName) then
-    LIdentity := LDefaultSNI
-  else
-    LIdentity := fHostName;
-
-  LIsIdentityIP := IsValidIP(LIdentity);
-
-  // 3. Prepare Punycode/Ansi version of the Identity
-  if LIdentity <> '' then
-  begin
-    {$IFDEF WINDOWS}
-    if Assigned(IdnToAscii) and (not LIsIdentityIP) then
-      LIdentityAnsi := RawByteString(IDNToPunnyCode(LIdentity))
-    else
-    {$ENDIF}
-      LIdentityAnsi := RawByteString(LIdentity);
-  end;
-
-  // 4. ECH and SNI Configuration
-  // Note: We only send SNI/ECH if the identity is a DNS name (not an IP)
-  if (LIdentityAnsi <> '') and (not LIsIdentityIP) then
-  begin
-    if LECHEnabled and (LECHConfigList <> '') then
-    begin
-      // --- MODE: REAL ECH ---
-      LECHStore := TClientECHStore.Create;
-      try
-        LECHStore.SetConfigList(RawByteString(LECHConfigList));
-        LECHStore.Attach(fSSL);
-      finally
-        LECHStore.Free;
-      end;
-
-      if LECHOuterHostname <> '' then
-      begin
-        // Case A: Real ECH with explicit Outer SNI override
-        SSL_ech_set1_server_names(fSSL, PIdAnsiChar(LIdentityAnsi),
-          PIdAnsiChar(AnsiString(LECHOuterHostname)), 0);
-      end
-      else
-      begin
-        // Case B: Real ECH using public_name from ConfigList
-        // SSL_set_tlsext_host_name sets the "Inner" name when a store is attached
-        LRetCode := SSL_set_tlsext_host_name(fSSL, PIdAnsiChar(LIdentityAnsi));
-        if LRetCode <= 0 then
-          ETaurusTLSSettingTLSHostNameError.RaiseException(fSSL, LRetCode, RSSSLSettingTLSHostNameError_2);
-
-      end;
-    end
-    else
-    begin
-      // --- MODE: STANDARD SNI (or GREASE) ---
-      if LECHEnabled then
-        SSL_set_options(fSSL, SSL_OP_ECH_GREASE);
-
-      LRetCode := SSL_set_tlsext_host_name(fSSL, PIdAnsiChar(LIdentityAnsi));
-      if LRetCode <= 0 then
-        ETaurusTLSSettingTLSHostNameError.RaiseException(fSSL, LRetCode, RSSSLSettingTLSHostNameError_2);
-    end;
-  end;
-
-  // 5. ALWAYS Verify the Certificate against the Logical Identity
-  if fVerifyHostname and (LIdentityAnsi <> '') then
-  begin
-    if LIsIdentityIP then
-    begin
-      // If the identity is an IP address, use OpenSSL's IP-specific validation
-      LParams := SSL_get0_param(fSSL);
-      if Assigned(LParams) then
-      begin
-        // This ensures the cert is checked for an IP SAN (Subject Alternative Name)
-        if X509_VERIFY_PARAM_set1_ip_asc(LParams, PIdAnsiChar(LIdentityAnsi)) <= 0 then
-        begin
-          ETaurusTLSSettingSANIPError.RaiseWithMessage(RSSLX509_VERIFY_PARAM_set1_ip_asc);
-        end;
-      end;
-    end
-    else
-    begin
-      // Standard DNS Name validation
-      SSL_set_hostflags(fSSL, 0);
-      LRetCode := SSL_set1_host(fSSL, PIdAnsiChar(LIdentityAnsi));
-      if LRetCode <= 0 then
-        ETaurusTLSSettingTLSHostNameError.RaiseException(fSSL, LRetCode, RSSSLSettingTLSHostNameError_2);
-    end;
-  end;
-end;
 
 initialization
 
