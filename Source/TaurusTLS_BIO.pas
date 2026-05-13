@@ -628,12 +628,10 @@ begin
   if AIncludeNull then // include terminating #0 character
   begin
     if lLen > 0 then
-    begin
-      FData:=AData;
-      Inc(lLen);
-    end
+      FData:=AData
     else
       FData:=#0;
+    Inc(lLen);
     Include(lFlags, bfNullTerminator);
   end
   else
