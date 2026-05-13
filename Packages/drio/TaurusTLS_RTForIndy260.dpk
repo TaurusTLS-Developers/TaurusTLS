@@ -36,6 +36,7 @@ requires
 
 contains
   TaurusTLS in '..\..\Source\TaurusTLS.pas',
+  TaurusTLS2 in '..\..\Source\TaurusTLS2.pas',
   TaurusTLSConsts in '..\..\Source\TaurusTLSConsts.pas',
   TaurusTLSExceptionHandlers in '..\..\Source\TaurusTLSExceptionHandlers.pas',
   TaurusTLSFIPS in '..\..\Source\TaurusTLSFIPS.pas',

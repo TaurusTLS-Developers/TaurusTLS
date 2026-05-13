@@ -9,6 +9,7 @@ interface
 
 uses
   TaurusTLS,
+  TaurusTLS2,
   TaurusTLSConsts,
   TaurusTLSExceptionHandlers,
   TaurusTLSFIPS,
