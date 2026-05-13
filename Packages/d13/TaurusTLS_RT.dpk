@@ -142,6 +142,7 @@ contains
   TaurusTLS_NTLM in '..\..\Source\TaurusTLS_NTLM.pas',
   TaurusTLS_ResourceStrings in '..\..\Source\TaurusTLS_ResourceStrings.pas',
   TaurusTLS_Utils in '..\..\Source\TaurusTLS_Utils.pas',
-  TaurusTLS_X509 in '..\..\Source\TaurusTLS_X509.pas';
+  TaurusTLS_X509 in '..\..\Source\TaurusTLS_X509.pas',
+  TaurusTLS2 in '..\..\Source\TaurusTLS2.pas';
 
 end.
