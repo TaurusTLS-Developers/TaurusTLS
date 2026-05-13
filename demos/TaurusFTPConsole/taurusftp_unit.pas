@@ -47,7 +47,7 @@ type
   protected
     FFTP: TIdFTP;
     FComp: TIdCompressorZLib;
-    FIO: TTaurusTLSIOHandlerSocket;
+    FIO: TTaurusTLSClientIOHandlerSocket;
     FLog: TIdLogEvent;
     function LoadValidConfig : Boolean;
     // log events
@@ -1623,9 +1623,10 @@ begin
   FFTP := TIdFTP.Create(nil);
   FComp := TIdCompressorZLib.Create(nil);
   FFTP.Compressor := FComp;
-  FIO := TTaurusTLSIOHandlerSocket.Create(nil);
+  FIO := TTaurusTLSClientIOHandlerSocket.Create(nil);
   FIO.OnSSLNegotiated := OnSSLNegotiated;
   FIO.OnVerifyError := DoOnVerifyError;
+  FIO.ECHEnabled := False;
   FFTP.IOHandler := FIO;
   FFTP.Passive := True;
   FLog := TIdLogEvent.Create(nil);
