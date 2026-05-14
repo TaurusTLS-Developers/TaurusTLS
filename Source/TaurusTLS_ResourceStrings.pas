@@ -1,12 +1,12 @@
-/// <exclude />
+ï»¿/// <exclude />
 { ****************************************************************************** }
 { *  TaurusTLS                                                                 * }
 { *           https://github.com/JPeterMugaas/TaurusTLS                        * }
 { *                                                                            * }
 { *  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              * }
 { *                                                                            * }
-{ * Portions of this software are Copyright (c) 1993 – 2018,                   * }
-{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  * }
+{ * Portions of this software are Copyright (c) 1993 ï¿½ 2018,                   * }
+{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew ï¿½ http://www.IndyProject.org/  * }
 { ****************************************************************************** }
 {$I TaurusTLSCompilerDefines.inc}
 unit TaurusTLS_ResourceStrings;
@@ -64,6 +64,10 @@ resourcestring
   RSOSSLHMACUpdateError = 'HMAC_Update error';
   RSOSSLHMACFinalError = 'HMAC_Final error';
   RSOSSLX509DigestFailed = 'X509_digest failed';
+  
+  RSOSSCouldNotCreateSSLObject = 'Could not create SSL object';
+  RSSSLDataBindingError = 'SSL_set_fd failed';
+
   // long desciptions for cert errors.
   RSMSG_X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT = 'the issuer certificate could ' +
     'not be found: this occurs if the issuer certificate of an untrusted ' +
@@ -269,6 +273,10 @@ resourcestring
   RSMsg_Bio_StreamRead_err = 'Error reading BIO from stream.';
   RSMsg_Bio_ResetCheck_err = 'This BIO object does not support Reset operation.';
   RSMsg_Bio_Reset_err = 'Faled to reset the BIO object.';
+
+  //TaurusTLS2 messages
+  RMSG_SecurityBits_Convert_err = 'Invalid integer value set for Security Level.'+
+    'Received value: %d; Allowed values from 0 to 5.';
 
 
 implementation

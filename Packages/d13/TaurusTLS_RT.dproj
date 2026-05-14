@@ -257,6 +257,7 @@
         <DCCReference Include="..\..\Source\TaurusTLS_Utils.pas"/>
         <DCCReference Include="..\..\Source\TaurusTLS_X509.pas"/>
         <DCCReference Include="..\..\Source\TaurusTLS2.pas"/>
+        <DCCReference Include="..\..\Source\TaurusTLS_Sockets.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

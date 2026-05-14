@@ -1,4 +1,4 @@
-{ ****************************************************************************** }
+﻿{ ****************************************************************************** }
 { *  TaurusTLS                                                                 * }
 { *           https://github.com/JPeterMugaas/TaurusTLS                        * }
 { *                                                                            * }
@@ -43,7 +43,8 @@ uses
   TaurusTLS.UT.Encryptors in 'TaurusTLS.UT.Encryptors.pas',
   TaurusTLS.UT.SSLContainersHelpers in 'TaurusTLS.UT.SSLContainersHelpers.pas',
   TaurusTLS.UT.Wrappers.Bio in 'TaurusTLS.UT.Wrappers.Bio.pas',
-  TaurusTLS.UT.Wrappers.ECHStore in 'TaurusTLS.UT.Wrappers.ECHStore.pas';
+  TaurusTLS.UT.Wrappers.ECHStore in 'TaurusTLS.UT.Wrappers.ECHStore.pas',
+  TaurusTLS.UT.Sockets in 'TaurusTLS.UT.Sockets.pas';
 
 { keep comment here to protect the following conditional from being removed by the IDE when adding a unit }
 {$IFNDEF TESTINSIGHT}

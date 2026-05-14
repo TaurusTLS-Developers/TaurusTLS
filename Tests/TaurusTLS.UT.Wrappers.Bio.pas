@@ -40,7 +40,7 @@ type
 
 
   [TestFixture]
-  [Category('WRAP.Bio, WRAP.MemBio')]
+  [Category('WRAP.Bio,WRAP.MemBio')]
   TMemBioFixture = class(TCustomBioFixture)
   public const
     cFlags = [bfReadable, bfWritable, bfResetable, bfConsumable];
@@ -61,7 +61,7 @@ type
   end;
 
   [TestFixture]
-  [Category('WRAP.Bio, WRAP.BytesBio')]
+  [Category('WRAP.Bio,WRAP.BytesBio')]
   TBytesBioFixture = class(TCustomBioFixture)
   public const
     cDefaultRandomBytesSize = 4069;
@@ -81,7 +81,7 @@ type
   end;
 
   [TestFixture]
-  [Category('WRAP.Bio, WRAP.RawByteStringBIO')]
+  [Category('WRAP.Bio,WRAP.RawByteStringBIO')]
   TRawByteStringBioFixture = class(TCustomBioFixture)
   public const
     cFlags = [bfReadable, bfResetable];
@@ -103,7 +103,7 @@ type
   end;
 
   [TestFixture]
-  [Category('WRAP.Bio, WRAP.RecordBIO')]
+  [Category('WRAP.Bio,WRAP.RecordBIO')]
   TRecordBioFixture = class(TCustomBioFixture)
   public type
     TSampleRecord = record
@@ -124,7 +124,7 @@ type
   end;
 
   [TestFixture]
-  [Category('WRAP.Bio, WRAP.Helper')]
+  [Category('WRAP.Bio,WRAP.Helper')]
   TBioHelperFixture = class(TCustomBioFixture)
   protected
     function NewBioWrapper: TTaurusTLSCustomBIO; override;
@@ -138,7 +138,7 @@ type
   end;
 
   [TestFixture]
-  [Category('WRAP.Bio, WRAP.Errors')]
+  [Category('WRAP.Bio,WRAP.Errors')]
   TBioErrorFixture = class(TCustomBioFixture)
   protected
     function NewBioWrapper: TTaurusTLSCustomBIO; override;
