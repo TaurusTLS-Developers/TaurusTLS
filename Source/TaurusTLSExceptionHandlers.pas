@@ -16,7 +16,7 @@ unit TaurusTLSExceptionHandlers;
 interface
 
 uses
-  Classes, SysUtils, IdException, IdCTypes, TaurusTLSHeaders_types,
+  Classes, SysUtils, IdException, IdCTypes, IdStack, TaurusTLSHeaders_types,
   TaurusTLS_Utils;
 
 type
@@ -318,7 +318,7 @@ type
 
 implementation
 
-uses IdGlobal, IdStack, IdResourceStringsProtocols,
+uses IdGlobal, IdResourceStringsProtocols,
    TaurusTLSHeaders_err, TaurusTLSHeaders_ssl,
    TaurusTLS_ResourceStrings;
 
