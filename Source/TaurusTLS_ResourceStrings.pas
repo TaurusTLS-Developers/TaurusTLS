@@ -274,10 +274,13 @@ resourcestring
   RSMsg_Bio_ResetCheck_err = 'This BIO object does not support Reset operation.';
   RSMsg_Bio_Reset_err = 'Faled to reset the BIO object.';
 
-  //TaurusTLS2 messages
+  // TaurusTLS2 messages
   RMSG_SecurityBits_Convert_err = 'Invalid integer value set for Security Level.'+
     'Received value: %d; Allowed values from 0 to 5.';
 
+  // TaurusTLS_Sockets messages
+  RMSG_ClientSocketEmptySNIConfig_err = 'Can not setup TLS Connection. '+
+    'The Client SNI Config is nil.';
 
 implementation
 
