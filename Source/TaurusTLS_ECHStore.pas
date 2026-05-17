@@ -37,7 +37,7 @@ type
   ///   This class wraps the OpenSSL 4.0 OSSL_ECHSTORE API, providing functionality 
   ///   to manage ECH configurations and keys.
   /// </remarks>
-  TTaurusTLS_CustomECHStore = class abstract
+  TTaurusTLSECHStore = class
   public const
     /// <summary>Maximum allowed length for an ECHConfigList.</summary>
     cECHConfigListMaxLen = (1 shl 16) - 1;
@@ -108,12 +108,6 @@ type
       APublicName, AECHConfig: PPIdAnsiChar;
       AHasPrivateKey, AIdxForRetry: PIdC_INT); {$IFDEF USE_INLINE} inline; {$ENDIF}
 
-    /// <summary>The number of private keys in the store.</summary>
-    property KeyCount: TIdC_INT read GetKeyCount;
-    /// <summary>Indicates if a private key is present for the configuration at the specified index.</summary>
-    property HasPrivateKey[AIdx: TIdC_INT]: boolean read GetHasPrivateKey;
-    /// <summary>The retry index for the configuration at the specified index.</summary>
-    property IdxForRetry[AIdx: TIdC_INT]: TIdC_INT read GetIdxForRetry;
   public
     /// <summary>Initializes a new instance from an existing OpenSSL ECH store pointer.</summary>
     /// <param name="AStore">Pointer to the OSSL_ECHSTORE object. Must not be nil.</param>
@@ -193,20 +187,20 @@ type
     property Age[AIdx: TIdC_INT]: TIdC_TIMET read GetAge;
     /// <summary>The total number of configurations in the store.</summary>
     property Count: TIdC_INT read GetCount;
+    /// <summary>The number of private keys in the store.</summary>
+    property KeyCount: TIdC_INT read GetKeyCount;
+    /// <summary>Indicates if a private key is present for the configuration at the specified index.</summary>
+    property HasPrivateKey[AIdx: TIdC_INT]: boolean read GetHasPrivateKey;
+    /// <summary>The retry index for the configuration at the specified index.</summary>
+    property IdxForRetry[AIdx: TIdC_INT]: TIdC_INT read GetIdxForRetry;
     /// <summary>The underlying OpenSSL ECH store pointer.</summary>
     property Store: POSSL_ECHSTORE read FStore;
   end;
 
   /// <summary>
-  ///   ECH store specialized for client-side operations.
-  /// </summary>
-  TClientECHStore = class(TTaurusTLS_CustomECHStore)
-  end;
-
-  /// <summary>
   ///   ECH store specialized for server-side operations, including key management.
   /// </summary>
-  TServerECHStore = class(TTaurusTLS_CustomECHStore)
+  TServerECHStoreHelper = class helper for TTaurusTLSECHStore
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
     function GetAsPem(AIdx: TIdC_INT): string;
     function PemToBio(const APemStr: RawByteString): PBIO; {$IFDEF USE_INLINE} inline; {$ENDIF}
@@ -254,13 +248,6 @@ type
     /// <param name="AStream">The destination stream.</param>
     /// <param name="AIdx">The index of the configuration to write.</param>
     procedure WritePem(const AStream: TStream; AIdx: TIdC_INT);
-
-    /// <summary>The number of private keys in the store.</summary>
-    property KeyCount;
-    /// <summary>Indicates if a private key is present for the configuration at the specified index.</summary>
-    property HasPrivateKey;
-    /// <summary>The retry index for the configuration at the specified index.</summary>
-    property IdxForRetry;
     /// <summary>Returns the PEM representation of the configuration at the specified index.</summary>
     property AsPem[AIdx: TIdC_INT]: string read GetAsPem;
   end;
@@ -268,7 +255,7 @@ type
   /// <summary>
   ///   Exception class for ECH store related errors.
   /// </summary>
-  ETaurusTLSECHStoreError = class(ETaurusTLSError)
+  ETaurusTLSECHStoreError = class(ETaurusTLSAPISSLError)
     /// <summary>Checks an OpenSSL return code and raises an exception on failure.</summary>
     /// <param name="ACode">The return code to check (1 indicates success).</param>
     /// <param name="AMessage">The error message to use if checking fails.</param>
@@ -283,7 +270,7 @@ type
 
   /// <summary>
   ///   Exception that is raied if <see
-  ///   cref="TaurusTLS_ECHStore|TTaurusTLS_CustomECHStore.Create" /> is passed
+  ///   cref="TaurusTLS_ECHStore|TTaurusTLSECHStore.Create" /> is passed
   ///   a nil value. This can happen if the <i>SSL_get1_echstore</i> or <i>
   ///   SSL_CTX_get1_echstore</i> API functions fail. <br />
   /// </summary>
@@ -420,38 +407,38 @@ begin
     RaiseWithMessageFmt(AMessage, AArgs);
 end;
 
-{ TTaurusTLS_CustomECHStore }
+{ TTaurusTLSECHStore }
 
-constructor TTaurusTLS_CustomECHStore.Create(AStore: POSSL_ECHSTORE);
+constructor TTaurusTLSECHStore.Create(AStore: POSSL_ECHSTORE);
 begin
   if not Assigned(AStore) then
     ETaurusTLSECHStore_can_not_be_nil.RaiseWithMessage(RSMsg_ECHStore_null_value_err);
   FStore:=AStore;
 end;
 
-constructor TTaurusTLS_CustomECHStore.Create;
+constructor TTaurusTLSECHStore.Create;
 begin
   Create(OSSL_ECHSTORE_new(nil, nil));
 end;
 
-constructor TTaurusTLS_CustomECHStore.Create(ASSL: PSSL);
+constructor TTaurusTLSECHStore.Create(ASSL: PSSL);
 begin
   Create(SSL_get1_echstore(ASSL));
 end;
 
-constructor TTaurusTLS_CustomECHStore.Create(ASSLCtx: PSSL_CTX);
+constructor TTaurusTLSECHStore.Create(ASSLCtx: PSSL_CTX);
 begin
   Create(SSL_CTX_get1_echstore(ASSLCtx));
 end;
 
-destructor TTaurusTLS_CustomECHStore.Destroy;
+destructor TTaurusTLSECHStore.Destroy;
 begin
   OSSL_ECHSTORE_free(FStore);
   FStore:=nil;
   inherited;
 end;
 
-procedure TTaurusTLS_CustomECHStore.DoGetInfo(AIdx: TIdC_INT; AAge: PIdC_TIMET;
+procedure TTaurusTLSECHStore.DoGetInfo(AIdx: TIdC_INT; AAge: PIdC_TIMET;
   APublicName, AECHConfig: PPIdAnsiChar; AHasPrivateKey,
   AIdxForRetry: PIdC_INT);
 begin
@@ -461,7 +448,7 @@ begin
     RSMsg_ECHStore_getinfo_err);
 end;
 
-function TTaurusTLS_CustomECHStore.GetECHConfig(AIdx: TIdC_INT): string;
+function TTaurusTLSECHStore.GetECHConfig(AIdx: TIdC_INT): string;
 var
   LECHConfig: PIdAnsiChar;
 
@@ -475,12 +462,12 @@ begin
   end;
 end;
 
-function TTaurusTLS_CustomECHStore.GetECHVersion: TIdC_UINT16;
+function TTaurusTLSECHStore.GetECHVersion: TIdC_UINT16;
 begin
   Result:=OSSL_ECH_CURRENT_VERSION;
 end;
 
-function TTaurusTLS_CustomECHStore.GetHasPrivateKey(AIdx: TIdC_INT): boolean;
+function TTaurusTLSECHStore.GetHasPrivateKey(AIdx: TIdC_INT): boolean;
 var
   lHasPrivateKey: LongBool; // 32-bit integer; 0 = False; (not 0) = True;
 
@@ -490,31 +477,31 @@ begin
   Result:=lHasPrivateKey;
 end;
 
-function TTaurusTLS_CustomECHStore.GetIdxForRetry(AIdx: TIdC_INT): TIdC_INT;
+function TTaurusTLSECHStore.GetIdxForRetry(AIdx: TIdC_INT): TIdC_INT;
 begin
   DoGetInfo(AIdx, nil, nil, nil, nil, @Result);
 end;
 
-function TTaurusTLS_CustomECHStore.GetAge(AIdx: TIdC_INT): TIdC_TIMET;
+function TTaurusTLSECHStore.GetAge(AIdx: TIdC_INT): TIdC_TIMET;
 begin
   DoGetInfo(AIdx, @Result, nil, nil, nil, nil);
 end;
 
-function TTaurusTLS_CustomECHStore.GetCount: TIdC_INT;
+function TTaurusTLSECHStore.GetCount: TIdC_INT;
 begin
   ETaurusTLSECHStore_num_entries_failed.CheckAndRaise(
     OSSL_ECHSTORE_num_entries(FStore, @Result),
     RSMsg_ECHStore_num_err);
 end;
 
-function TTaurusTLS_CustomECHStore.GetKeyCount: TIdC_INT;
+function TTaurusTLSECHStore.GetKeyCount: TIdC_INT;
 begin
   ETaurusTLSECHStore_num_keys.CheckAndRaise(
     OSSL_ECHSTORE_num_keys(FStore, @Result),
     RSMsg_ECHStore_numkey_err);
 end;
 
-function TTaurusTLS_CustomECHStore.GetPublicName(AIdx: TIdC_INT): string;
+function TTaurusTLSECHStore.GetPublicName(AIdx: TIdC_INT): string;
 var
   LPublicName: PIdAnsiChar;
 
@@ -528,7 +515,7 @@ begin
   end;
 end;
 
-procedure TTaurusTLS_CustomECHStore.DoSetConfigList(ABio: TTaurusTLSCustomBIO);
+procedure TTaurusTLSECHStore.DoSetConfigList(ABio: TTaurusTLSCustomBIO);
 begin
   ETaurusTLSECHStore_read_echconfiglist.CheckAndRaise(
     OSSL_ECHSTORE_read_echconfiglist(FStore, ABio.BIO),
@@ -536,7 +523,7 @@ begin
   );
 end;
 
-procedure TTaurusTLS_CustomECHStore.DoReadBioPem(ABio: PBio;
+procedure TTaurusTLSECHStore.DoReadBioPem(ABio: PBio;
   AIdxForRetry: TIdC_INT);
 begin
   ETaurusTLSECHStore_read_pem.CheckAndRaise(
@@ -545,7 +532,7 @@ begin
   );
 end;
 
-procedure TTaurusTLS_CustomECHStore.SelectConfig(AIdx: TIdC_INT);
+procedure TTaurusTLSECHStore.SelectConfig(AIdx: TIdC_INT);
 begin
   ETaurusTLSECHStore_downselect.CheckAndRaiseFmt(
     OSSL_ECHSTORE_downselect(FStore, AIdx),
@@ -553,14 +540,14 @@ begin
   );
 end;
 
-procedure TTaurusTLS_CustomECHStore.SetConfigList(const ABio: TTaurusTLSCustomBIO);
+procedure TTaurusTLSECHStore.SetConfigList(const ABio: TTaurusTLSCustomBIO);
 begin
   if not Assigned(ABio) then
     ETaurusTLSECHStore_read_echconfiglist_err.RaiseWithMessage(RSMsg_ECHStore_read_echconfiglist_err);
   DoSetConfigList(ABio);
 end;
 
-procedure TTaurusTLS_CustomECHStore.SetConfigList(const AStream: TStream);
+procedure TTaurusTLSECHStore.SetConfigList(const AStream: TStream);
 var
   LBio: TTaurusTLSMemBio;
   lLen: Int64;
@@ -581,7 +568,7 @@ begin
   end;
 end;
 
-procedure TTaurusTLS_CustomECHStore.SetConfigList(const AECHConfigList: RawByteString);
+procedure TTaurusTLSECHStore.SetConfigList(const AECHConfigList: RawByteString);
 var
   LBio: TTaurusTLSRawByteStringBIO;
 begin
@@ -596,7 +583,7 @@ begin
   end;
 end;
 
-procedure TTaurusTLS_CustomECHStore.DoSetKeyAndReadBioPem(ABio: PBio;
+procedure TTaurusTLSECHStore.DoSetKeyAndReadBioPem(ABio: PBio;
   APrivKey: PEVP_PKEY; AIdxForRetry: TIdC_INT);
 begin
   ETaurusTLSECHStore_set1_key_and_read_pem.CheckAndRaise(
@@ -604,21 +591,21 @@ begin
     RSMsg_ECHStore_keypem_read_err);
 end;
 
-procedure TTaurusTLS_CustomECHStore.DoWriteBioPem(ABio: PBio; AIdx: TIdC_INT);
+procedure TTaurusTLSECHStore.DoWriteBioPem(ABio: PBio; AIdx: TIdC_INT);
 begin
   ETaurusTLSECHStore_write_pem.CheckAndRaise(
     OSSL_ECHSTORE_write_pem(FStore, AIdx, ABio),
     RSMsg_ECHStore_pem_write_err);
 end;
 
-procedure TTaurusTLS_CustomECHStore.DoFlushKeys(AAge: TIdC_TIMET);
+procedure TTaurusTLSECHStore.DoFlushKeys(AAge: TIdC_TIMET);
 begin
   ETaurusTLSECHStore_flush_keys.CheckAndRaise(
     OSSL_ECHSTORE_flush_keys(FStore, AAge),
     RSMsg_ECHStore_flushkeys_err);
 end;
 
-procedure TTaurusTLS_CustomECHStore.DoNewConfig(const APublicName: string;
+procedure TTaurusTLSECHStore.DoNewConfig(const APublicName: string;
   const ASuite: OSSL_HPKE_SUITE);
 var
   LPublicName: TBytes;
@@ -644,7 +631,7 @@ begin
     RSMsg_ECHStore_new_config_err);
 end;
 
-procedure TTaurusTLS_CustomECHStore.Attach(ASSLCtx: PSSL_CTX);
+procedure TTaurusTLSECHStore.Attach(ASSLCtx: PSSL_CTX);
 begin
   ETaurusTLSECHStore_SSL_CTX_set1_echstore.CheckAndRaise(
     SSL_CTX_set1_echstore(ASSLCtx, FStore),
@@ -652,7 +639,7 @@ begin
   );
 end;
 
-procedure TTaurusTLS_CustomECHStore.Attach(ASSL: PSSL);
+procedure TTaurusTLSECHStore.Attach(ASSL: PSSL);
 begin
   ETaurusTLSECHStore_SSL_set1_echstore.CheckAndRaise(
     SSL_set1_echstore(ASSL, FStore),
@@ -660,14 +647,14 @@ begin
   );
 end;
 
-{ TServerECHStore }
+{ TServerECHStoreHelper }
 
-procedure TServerECHStore.FlushKeys(AAge: TIdC_TIMET);
+procedure TServerECHStoreHelper.FlushKeys(AAge: TIdC_TIMET);
 begin
   DoFlushKeys(AAge);
 end;
 
-function TServerECHStore.GetAsPem(AIdx: TIdC_INT): string;
+function TServerECHStoreHelper.GetAsPem(AIdx: TIdC_INT): string;
 var
   LBio: PBio;
   LPemPtr: PIdAnsiChar;  //PALOFF - Variables that are referenced, but never set
@@ -688,13 +675,13 @@ begin
   end;
 end;
 
-procedure TServerECHStore.NewConfig(const APublicName: string;
+procedure TServerECHStoreHelper.NewConfig(const APublicName: string;
   const ASuite: OSSL_HPKE_SUITE);
 begin
   DoNewConfig(APublicName, ASuite);
 end;
 
-function TServerECHStore.PemToBio(const APemStr: RawByteString): PBIO;
+function TServerECHStoreHelper.PemToBio(const APemStr: RawByteString): PBIO;
 var
   LLen: TIdC_INT;
 
@@ -706,7 +693,7 @@ begin
   Result:=BIO_new_mem_buf(APemStr[1], LLen);
 end;
 
-function TServerECHStore.ReadPemToStr(const AStream: TStream): RawByteString;
+function TServerECHStoreHelper.ReadPemToStr(const AStream: TStream): RawByteString;
 var
   LLen: Int64;
 
@@ -722,12 +709,12 @@ begin
   AStream.Read(Result[1], LLen);
 end;
 
-procedure TServerECHStore.ReadPem(const AStream: TStream; AIdxForRetry: TIdC_INT);
+procedure TServerECHStoreHelper.ReadPem(const AStream: TStream; AIdxForRetry: TIdC_INT);
 begin
   ReadPem(ReadPemToStr(AStream), AIdxForRetry);
 end;
 
-procedure TServerECHStore.ReadPem(const APemStr: RawByteString;
+procedure TServerECHStoreHelper.ReadPem(const APemStr: RawByteString;
   AIdxForRetry: TIdC_INT);
 var
   LBio: PBio;
@@ -741,12 +728,12 @@ begin
   end;
 end;
 
-procedure TServerECHStore.ReadPem(const APemStr: string; AIdxForRetry: TIdC_INT);
+procedure TServerECHStoreHelper.ReadPem(const APemStr: string; AIdxForRetry: TIdC_INT);
 begin
   ReadPem(RawByteString(APemStr), AIdxForRetry);
 end;
 
-procedure TServerECHStore.SetKeyAndReadPem(APrivKey: PEVP_PKEY;
+procedure TServerECHStoreHelper.SetKeyAndReadPem(APrivKey: PEVP_PKEY;
   const APemStr: RawByteString; AIdxForRetry: TIdC_INT);
 var
   LBio: PBIO;
@@ -760,19 +747,19 @@ begin
   end;
 end;
 
-procedure TServerECHStore.SetKeyAndReadPem(APrivKey: PEVP_PKEY;
+procedure TServerECHStoreHelper.SetKeyAndReadPem(APrivKey: PEVP_PKEY;
   const APemStr: string; AIdxForRetry: TIdC_INT);
 begin
   SetKeyAndReadPem(APrivKey, RawByteString(APemStr), AIdxForRetry);
 end;
 
-procedure TServerECHStore.SetKeyAndReadPem(APrivKey: PEVP_PKEY;
+procedure TServerECHStoreHelper.SetKeyAndReadPem(APrivKey: PEVP_PKEY;
   const AStream: TStream; AIdxForRetry: TIdC_INT);
 begin
   SetKeyAndReadPem(APrivKey, ReadPemToStr(AStream), AIdxForRetry);
 end;
 
-procedure TServerECHStore.WritePem(const AStream: TStream; AIdx: TIdC_INT);
+procedure TServerECHStoreHelper.WritePem(const AStream: TStream; AIdx: TIdC_INT);
 var
   LBio: PBio;
   LPemPtr: PIdAnsiChar; //PALOFF - Variables that are referenced, but never set
