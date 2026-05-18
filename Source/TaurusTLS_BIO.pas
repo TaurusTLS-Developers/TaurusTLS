@@ -54,13 +54,19 @@ type
     /// <summary>Capabilities flags for the BIO wrapper.</summary>
     TFlag = (
       /// <summary>
+      ///   <c>bfAppManaged</c> indicates that the data allocated by the
+      ///   application memory manager and <b>MUST NOT</b> be managed by OpenSSL
+      ///   memory management routines.
+      /// </summary>
+      bfAppManaged,
+      /// <summary>
       ///   <c>bfReadable</c> indicates that the application can read data from
       ///   this <c>BIO object.</c>
       /// </summary>
       bfReadable,
       /// <summary>
-      ///   bfWritable indicates that the application can read data from this
-      ///   <c>BIO object</c>.
+      ///   <c>bfWritable</c> indicates that the application can read data from
+      ///   this <c>BIO object</c>.
       /// </summary>
       bfWritable,
       /// <summary>
@@ -73,7 +79,10 @@ type
       ///   BIO becomes unavailable.
       /// </summary>
       bfConsumable,
-
+      /// <summary>
+      ///   <c>bfNullTerminator</c> indicates that the BIO Data includes <c>null
+      ///   </c> termination character,
+      /// </summary>
       bfNullTerminator
     );
 
@@ -85,16 +94,9 @@ type
     FFlags: TFlags;
     FBIO: PBIO;
     function GetEof: boolean;
-  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF}
-  protected
-    /// <summary>
-    ///   Returns the number of bytes available for reading in the BIO.
-    /// </summary>
-    function GetPending: TIdC_SIZET;
-    /// <summary>
-    ///   Returns True if the underlying OpenSSL BIO is a memory-type BIO.
-    /// </summary>
+    function GetIsAppManagedBIO: boolean; {$IFDEF USE_INLINE}inline;{$ENDIF}
     function GetIsMemoryBIO: Boolean;{$IFDEF USE_INLINE}inline;{$ENDIF}
+    function GetPending: TIdC_SIZET;
   public
     /// <summary>
     ///   Initializes the wrapper with an existing BIO handle and specific
@@ -170,6 +172,8 @@ type
     ///   BIO_s_secmem).
     /// </summary>
     property IsMemoryBIO: Boolean read GetIsMemoryBIO;
+
+    property IsAppManagedBIO: boolean read GetIsAppManagedBIO;
     /// <summary>
     ///   The number of bytes currently pending/available in the BIO.
     /// </summary>
@@ -462,6 +466,11 @@ begin
   inherited;
 end;
 
+function TTaurusTLSCustomBIO.GetIsAppManagedBIO: boolean;
+begin
+  Result:=bfAppManaged in Flags;
+end;
+
 function TTaurusTLSCustomBIO.GetIsMemoryBIO: Boolean;
 begin
   Result:=BIO_method_type(FBIO) = BIO_TYPE_MEM;
@@ -590,6 +599,7 @@ begin
   if not Assigned(AData) and (ASize = 0) then
     ETaurusTLSBioCreateError.RaiseWithMessage(RSMsg_Bio_EmptyMemPtr_err);
 
+  Include(AFlags, bfAppManaged);
   inherited Create(BIO_new_mem_buf(AData^, ASize), AFlags);
   FMemPtr := AData;
   FMemSize := ASize;
