@@ -420,7 +420,7 @@ type
     class property Registered: boolean read FRegistered;
   end;
 
-  /// <summary> The TTaurusTLS_CustomOsslUi class implements the OpenSSL
+  /// <summary> The TTaurusTLSCustomOsslUi class implements the OpenSSL
   /// <c>UI_METHOD</c> callbacks.
   /// The application can use this class's descendants in OpenSSL routines like
   /// <c>OSSL_STORE_open" </c>, <c>OSSL_STORE_open_ex" </c>, <c>OSSL_STORE_attach" </c>, etc.
@@ -428,7 +428,7 @@ type
   ///
   /// </para>
   /// </summary>
-  TTaurusTLS_CustomOsslUi = class abstract
+  TTaurusTLSCustomOsslUi = class abstract
   private const
     cUiMethodName: AnsiString = 'TaurusTLS UI Method';
 
@@ -451,7 +451,7 @@ type
       {$IFDEF USE_INLINE}inline;{$ENDIF}
     class function NewUiString(uis: PUI_STRING; ui: PUI): TTaurusTLS_UiString;
       static; {$IFDEF USE_INLINE}inline;{$ENDIF}
-    class function GetUi(ui: PUI): TTaurusTLS_CustomOsslUi;
+    class function GetUi(ui: PUI): TTaurusTLSCustomOsslUi;
   protected
 
     function DoPrepare: TTaurusTLS_UiResult; virtual;
@@ -469,7 +469,7 @@ type
     class property UiMethod: PUI_METHOD read GetUiMethod;
   end;
 
-  TTaurusTLS_SimplePasswordUI = class(TTaurusTLS_CustomOsslUi)
+  TTaurusTLS_SimplePasswordUI = class(TTaurusTLSCustomOsslUi)
   strict private
     FPass: RawByteString;
   protected
@@ -802,17 +802,17 @@ begin
   FLock.Leave;
 end;
 
-{ TTaurusTLS_CustomOsslUi }
+{ TTaurusTLSCustomOsslUi }
 
-class destructor TTaurusTLS_CustomOsslUi.Destroy;
+class destructor TTaurusTLSCustomOsslUi.Destroy;
 begin
   if Assigned(FUiMeth) then
     UI_destroy_method(FUiMeth);
 end;
 
-class function TTaurusTLS_CustomOsslUi.Opener(ui: PUI): TIdC_INT;
+class function TTaurusTLSCustomOsslUi.Opener(ui: PUI): TIdC_INT;
 var
-  lUi: TTaurusTLS_CustomOsslUi;
+  lUi: TTaurusTLSCustomOsslUi;
 
 begin
   Result:=0;
@@ -831,10 +831,10 @@ begin
   end;
 end;
 
-class function TTaurusTLS_CustomOsslUi.Writer(ui: PUI;
+class function TTaurusTLSCustomOsslUi.Writer(ui: PUI;
   uis: PUI_STRING): TIdC_INT;
 var
-  lUi: TTaurusTLS_CustomOsslUi;
+  lUi: TTaurusTLSCustomOsslUi;
   lStr: TTaurusTLS_UiString;
 
 begin
@@ -860,9 +860,9 @@ begin
   end;
 end;
 
-class function TTaurusTLS_CustomOsslUi.Flusher(ui: PUI): TIdC_INT;
+class function TTaurusTLSCustomOsslUi.Flusher(ui: PUI): TIdC_INT;
 var
-  lUi: TTaurusTLS_CustomOsslUi;
+  lUi: TTaurusTLSCustomOsslUi;
 
 begin
   Result:=0;
@@ -880,10 +880,10 @@ begin
   end;
 end;
 
-class function TTaurusTLS_CustomOsslUi.Reader(ui: PUI;
+class function TTaurusTLSCustomOsslUi.Reader(ui: PUI;
   uis: PUI_STRING): TIdC_INT;
 var
-  lUi: TTaurusTLS_CustomOsslUi;
+  lUi: TTaurusTLSCustomOsslUi;
   lStr: TTaurusTLS_UiString;
 
 begin
@@ -907,9 +907,9 @@ begin
   end;
 end;
 
-class function TTaurusTLS_CustomOsslUi.Closer(ui: PUI): TIdC_INT;
+class function TTaurusTLSCustomOsslUi.Closer(ui: PUI): TIdC_INT;
 var
-  lUi: TTaurusTLS_CustomOsslUi;
+  lUi: TTaurusTLSCustomOsslUi;
 
 begin
   Result:=0;
@@ -933,7 +933,7 @@ begin
   end;
 end;
 
-class function TTaurusTLS_CustomOsslUi.RegisterMethods: PUI_METHOD;
+class function TTaurusTLSCustomOsslUi.RegisterMethods: PUI_METHOD;
 begin
   Result:=UI_create_method(PAnsiChar(cUiMethodName));
   if Assigned(Result) then
@@ -949,20 +949,20 @@ begin
   end;
 end;
 
-procedure TTaurusTLS_CustomOsslUi.SetUi(ui: PUI);
+procedure TTaurusTLSCustomOsslUi.SetUi(ui: PUI);
 begin
   if FUi <> ui then
     FUi:=ui;
 end;
 
-class function TTaurusTLS_CustomOsslUi.GetUi(
-  ui: PUI): TTaurusTLS_CustomOsslUi;
+class function TTaurusTLSCustomOsslUi.GetUi(
+  ui: PUI): TTaurusTLSCustomOsslUi;
 begin
   Result:=UI_get0_user_data(ui);
   Result.SetUi(ui);
 end;
 
-class function TTaurusTLS_CustomOsslUi.GetUiMethod: PUI_METHOD;
+class function TTaurusTLSCustomOsslUi.GetUiMethod: PUI_METHOD;
 begin
   if not Assigned(FUiMeth) then
   begin
@@ -980,29 +980,29 @@ begin
   Result:=FUiMeth;
 end;
 
-class function TTaurusTLS_CustomOsslUi.NewUiString(
+class function TTaurusTLSCustomOsslUi.NewUiString(
   uis: PUI_STRING; ui: PUI): TTaurusTLS_UiString;
 begin
   Result:=TTaurusTLS_UiString.Create(uis, ui);
 end;
 
-function TTaurusTLS_CustomOsslUi.DoPrepare: TTaurusTLS_UiResult;
+function TTaurusTLSCustomOsslUi.DoPrepare: TTaurusTLS_UiResult;
 begin
   Result:=uirSuccess;
 end;
 
-function TTaurusTLS_CustomOsslUi.DoSetString(
+function TTaurusTLSCustomOsslUi.DoSetString(
   AString: TTaurusTLS_UiString): TTaurusTLS_UiResult;
 begin
   Result:=uirSuccess;
 end;
 
-function TTaurusTLS_CustomOsslUi.DoDisplay: TTaurusTLS_UiResult;
+function TTaurusTLSCustomOsslUi.DoDisplay: TTaurusTLS_UiResult;
 begin
   Result:=uirSuccess;
 end;
 
-function TTaurusTLS_CustomOsslUi.DoCheckString(
+function TTaurusTLSCustomOsslUi.DoCheckString(
   AString: TTaurusTLS_UiString): TTaurusTLS_UiResult;
 begin
   if AString.&Type = UIT_PROMPT then
@@ -1010,7 +1010,7 @@ begin
   Result:=uirSuccess;
 end;
 
-function TTaurusTLS_CustomOsslUi.DoRelease: TTaurusTLS_UiResult;
+function TTaurusTLSCustomOsslUi.DoRelease: TTaurusTLS_UiResult;
 begin
   Result:=uirSuccess;
 end;
