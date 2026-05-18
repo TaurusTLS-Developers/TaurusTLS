@@ -35,6 +35,8 @@ uses
   TaurusTLSHeaders_ui;
 
 type
+  ETaurusTLSRegisterMethod = class(ETaurusTLSAPICryptoError);
+
   ///  <summary>
   ///  Defines result returned to the OpenSSL UI_METHOD callbacks.
   ///  </summary>
@@ -481,10 +483,15 @@ type
 
 implementation
 
-procedure CheckOSSLError(Result: TIdC_INT; SuccessCode: TIdC_INT = 1); overload;
+uses
+  TaurusTLS_ResourceStrings;
+
+procedure CheckOSSLMethError(Result: TIdC_INT; SuccessCode: TIdC_INT;
+  const AMethName: string); overload;
 begin
   if Result <> SuccessCode then
-    ETaurusTLSAPICryptoError.RaiseException;
+    ETaurusTLSAPICryptoError.RaiseWithMessageFmt(
+      RMSG_RegisterUIMeth_err, [AMethName]);
 end;
 
 { TTaurusTLS_UiString }
@@ -543,7 +550,7 @@ end;
 
 function TTaurusTLS_UiString.SetPassword(APass: RawByteString): boolean;
 begin
-  SetPassword(PIdAnsiChar(APass));
+  Result:=SetPassword(PIdAnsiChar(APass));
 end;
 
 function TTaurusTLS_UiString.SetPassword(APass: TBytes): boolean;
@@ -772,11 +779,11 @@ begin
   try
     FPrevUiMethod:=UI_get_default_method;
 
-    CheckOSSLError(UI_method_set_opener(Result, Opener), 0);
-    CheckOSSLError(UI_method_set_writer(Result, Writer), 0);
-    CheckOSSLError(UI_method_set_flusher(Result, Flusher), 0);
-    CheckOSSLError(UI_method_set_reader(Result, Reader), 0);
-    CheckOSSLError(UI_method_set_closer(Result, Closer), 0);
+    CheckOSSLMethError(UI_method_set_opener(Result, Opener), 0, 'Opener'); // Do not localize
+    CheckOSSLMethError(UI_method_set_writer(Result, Writer), 0, 'Writer'); // Do not localize
+    CheckOSSLMethError(UI_method_set_flusher(Result, Flusher), 0, 'Flusher'); // Do not localize
+    CheckOSSLMethError(UI_method_set_reader(Result, Reader), 0, 'Reader'); // Do not localize
+    CheckOSSLMethError(UI_method_set_closer(Result, Closer), 0, 'Closer'); // Do not localize
     UI_set_default_method(Result);
     FUiMethod:=Result;
   except
@@ -938,11 +945,11 @@ begin
   Result:=UI_create_method(PAnsiChar(cUiMethodName));
   if Assigned(Result) then
   try
-    CheckOSSLError(UI_method_set_opener(Result, Opener), 0);
-    CheckOSSLError(UI_method_set_writer(Result, Writer), 0);
-    CheckOSSLError(UI_method_set_flusher(Result, Flusher), 0);
-    CheckOSSLError(UI_method_set_reader(Result, Reader), 0);
-    CheckOSSLError(UI_method_set_closer(Result, Closer), 0);
+    CheckOSSLMethError(UI_method_set_opener(Result, Opener), 0, 'Opener'); // Do not localize
+    CheckOSSLMethError(UI_method_set_writer(Result, Writer), 0, 'Writer'); // Do not localize
+    CheckOSSLMethError(UI_method_set_flusher(Result, Flusher), 0, 'Flusher'); // Do not localize
+    CheckOSSLMethError(UI_method_set_reader(Result, Reader), 0, 'Reader'); // Do not localize
+    CheckOSSLMethError(UI_method_set_closer(Result, Closer), 0, 'Closer'); // Do not localize
   except
     UI_destroy_method(Result);
     Raise;
