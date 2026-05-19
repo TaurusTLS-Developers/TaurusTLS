@@ -28,6 +28,7 @@ uses
   TaurusTLSHeaders_tls1,
   TaurusTLSHeaders_x509,
   TaurusTLSHeaders_x509_vfy,
+  TaurusTLS_types,
   TaurusTLS_Utils,
   TaurusTLS_X509,
   TaurusTLS_ECH,
@@ -44,7 +45,6 @@ type
   ETaurusTLSClientSocketSSLSetupError = class(ETaurusTLSError);
   ETaurusTLSSessionCanNotBeNil = class(ETaurusTLSError);
   ETaurusTLSInvalidSessionValue = class(ETaurusTLSError);
-  ETaurusTLSSecurityBits = class(ETaurusTLSError);
   ETaurusTLSECHConfigOutOfRange = class(ETaurusTLSError);
 
   TTaurusTLSReadStatus = (sslDataAvailable, sslNoData, sslEOF, sslUnrecoverableError);
@@ -54,16 +54,6 @@ type
 
   TTaurusECHStatus = (eshNone, echCliSuccess, echClFfailed, echCliRetryConfig,
     echCliNotConfigured);
-
-
-  TTaurusTLSSecurityBits = (sbZero, sb80, sb112, sb128, sb192, sb256);
-  TTaurusTLSSecurityBitsHelper = record helper for TTaurusTLSSecurityBits
-  private
-    function GetAsInteger: TIdC_INT; {$IFDEF USE_INLINE} inline;{$ENDIF}
-    procedure SetAsInteger(AValue: TIdC_INT); {$IFDEF USE_INLINE} inline;{$ENDIF}
-  public
-    property AsInteger: TIdC_INT read GetAsInteger write SetAsInteger;
-  end;
 
   TTaurusTLSOpts = class(TPersistent)
   public const
@@ -134,8 +124,6 @@ type
   private
     FSNIKind: TTaurusTLSSNIKind;
     FECHKind: TTaurusTLSECHKind;
-    FForceSNI: string;
-    FConfigList: string;
     procedure SetECHKind(Value: TTaurusTLSECHKind);
     procedure SetSNIKind(Value: TTaurusTLSSNIKind);
     procedure SetConfigList(const Value: string);
@@ -148,8 +136,20 @@ type
       write SetSNIKind default cDefSNIKind;
     property ECHKind: TTaurusTLSECHKind read FECHKind
       write SetECHKind default cDefECHKind;
-    property ForceSNI: string read FForceSNI write FForceSNI;
-    property ConfigList: string read FConfigList write SetConfigList;
+  end;
+
+  TTaurusTLSClientCallbacks = class(TPersistent)
+  private
+
+  end;
+
+  TaurusTLSClientSocketConfig = class
+  private
+
+  end;
+
+  TTaurusTLSSSLCtx = class
+
   end;
 
 (*  *Commented iout for the future refactoring* *)
@@ -241,20 +241,6 @@ implementation
 uses
   IdIDN; // For IDNToPunnyCode
 
-{ TTaurusTLSSecurityBitsHelper }
-
-function TTaurusTLSSecurityBitsHelper.GetAsInteger: TIdC_INT;
-begin
-  Result:=Ord(Self);
-end;
-
-procedure TTaurusTLSSecurityBitsHelper.SetAsInteger(AValue: TIdC_INT);
-begin
-  if not (AValue in [0..5]) then
-    raise ETaurusTLSSecurityBits.CreateFmt(RMSG_SecurityBits_Convert_err, [AValue]);
-  Self:=TTaurusTLSSecurityBits(AValue);
-end;
-
 { TTaurusTLSOpts }
 
 constructor TTaurusTLSOpts.Create;
@@ -306,14 +292,12 @@ end;
 
 procedure TTaurusSNIClientConfig.Assign(Source: TPersistent);
 begin
+  inherited;
   if Source is TTaurusSNIClientConfig then
   begin
     FSNIKind := TTaurusSNIClientConfig(Source).SNIKind;
     FECHKind := TTaurusSNIClientConfig(Source).ECHKind;
-    FForceSNI := TTaurusSNIClientConfig(Source).ForceSNI;
-    FConfigList := TTaurusSNIClientConfig(Source).ConfigList;
-  end
-  else inherited Assign(Source);
+  end;
 end;
 
 { TTaurusTLSCustomECHConfigList }
