@@ -282,6 +282,9 @@ resourcestring
   RMSG_ClientSocketEmptySNIConfig_err = 'Can not setup TLS Connection. '+
     'The Client SNI Config is nil.';
 
+  // TaurusTLS_SSLUI messages
+  RMSG_RegisterUIMeth_err = 'Error registering the UI_METHOD "%s".';
+
 implementation
 
 end.
