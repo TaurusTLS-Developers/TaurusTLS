@@ -805,12 +805,6 @@ type
     constructor Create(AParam: PX509_VERIFY_PARAM);
 
     ///  <summary>
-    ///  Raises an exception with a custom message.
-    ///  </summary>
-    ///  <param name="AMessage">The message to include in the exception.</param>
-    procedure DoException(AMessage: string);
-
-    ///  <summary>
     ///  Provides direct access to the native verification parameter pointer.
     ///  </summary>
     property VfyParam: PX509_VERIFY_PARAM read FParam;
@@ -1048,7 +1042,7 @@ type
   ///  and ensures their cleanup. The native OSSL Store Context is closed
   ///  immediately after loading completes, minimizing the time that
   ///  cryptographic objects (such as private keys) remain in memory
-  ///  in open, unencrypted form.
+  ///  in open text form.
   ///  </remarks>
   TTaurusTLSOSSLStore = class
   public type
@@ -1505,7 +1499,6 @@ type
     TListInfo = TObjectList<TStoreItem>;
 
   private
-    FBio: TTaurusTLSCustomBIO;
     FList: TListInfo;
     FCounters: TCounters;
     function GetCount(AType: TStoreItemType): TIdC_Uint;
@@ -1523,12 +1516,6 @@ type
     ///  </param>
     constructor Create(ACtx: POSSL_STORE_CTX;
         ALoadFilter: TStoreItemTypes = cStoreAElementsAll); overload;
-
-    ///  <summary>
-    ///  Raises a structured exception related to store operations.
-    ///  </summary>
-    ///  <param name="AMessage">The exception message.</param>
-    procedure DoException(AMessage: string);
 
     ///  <summary>
     ///  Loads of objects from the native OpenSSL Store context and clone
@@ -1702,8 +1689,6 @@ type
     procedure SetParam(AVfyParam: TTaurusTLSCustomX509VerifyParam);
     function GetParam: TTaurusTLSCustomX509VerifyParam;
   protected
-    procedure DoException(AMessage: string); {$IFDEF USE_INLINE}inline;{$ENDIF}
-
     ///  <summary>
     ///  Direct access to the native OpenSSL X509_STORE pointer.
     ///  </summary>
@@ -2108,14 +2093,9 @@ end;
 constructor TTaurusTLSCustomX509VerifyParam.Create(AParam: PX509_VERIFY_PARAM);
 begin
   if not Assigned(AParam) then
-    DoException('PX509_VERIFY_PARAM is nil');
+    ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyParamNull_err);
   inherited Create;
   FParam:=AParam;
-end;
-
-procedure TTaurusTLSCustomX509VerifyParam.DoException(AMessage: string);
-begin
-  raise ETaurusTLSX509StoreError.Create(AMessage);
 end;
 
 function TTaurusTLSCustomX509VerifyParam.GetVerifyFlags: TVerifyFlags;
@@ -2130,11 +2110,11 @@ var
 begin
   lFlags:=VerifyFlags;
   if X509_VERIFY_PARAM_set_flags(FParam, Value.AsInt) <> 1 then
-    DoException('Unable to set X509_VERIFY_PARAM flags');
+    ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyParamFlag_err);
   lClearFlags:=lFlags-Value;
   if lClearFlags <> [] then
     if X509_VERIFY_PARAM_clear_flags(FParam, lClearFlags.AsInt) <> 1 then
-      DoException('Unable to set X509_VERIFY_PARAM flags');
+      ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyParamFlag_err);
 end;
 
 function TTaurusTLSCustomX509VerifyParam.GetInheritanceFlags: TInheritanceFlags;
@@ -2146,7 +2126,7 @@ procedure TTaurusTLSCustomX509VerifyParam.SetInheritanceFlags(
   const Value: TInheritanceFlags);
 begin
   if X509_VERIFY_PARAM_set_inh_flags(FParam, Value.AsInt) <> 1 then
-    DoException('Unable to set X509_VERIFY_PARAM Inheritance Flags');
+    ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyParamInhFlag_err);
 end;
 
 function TTaurusTLSCustomX509VerifyParam.GetDepht: TIdC_Int;
@@ -2211,7 +2191,7 @@ end;
 procedure TTaurusTLSCustomX509VerifyParam.SetHostA(Value: RawByteString);
 begin
   if X509_VERIFY_PARAM_set1_host(FParam, PIdAnsiChar(Value), 0) <> 1 then
-    DoException('Unable to set HostName for certificate validation.')
+    ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyHost_err);
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetHostW(Value: UnicodeString);
@@ -2224,7 +2204,7 @@ begin
   if Value = '' then
     Exit;
   if X509_VERIFY_PARAM_add1_host(FParam, PIdAnsiChar(Value), 0) <> 1 then
-    DoException('Unable to add HostName for certificate validation.')
+    ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyHost_err);
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.AddHostW(Value: UnicodeString);
@@ -2261,7 +2241,7 @@ procedure TTaurusTLSCustomX509VerifyParam.SetEMailA(Value: RawByteString);
 begin
   if X509_VERIFY_PARAM_set1_email(FParam, PIdAnsiChar(Value),
     Length(Value)) <> 1 then
-    DoException('Unable to add E-Mail address for certificate validation.')
+    ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyEMail_err);
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetEMailW(Value: UnicodeString);
@@ -2292,13 +2272,13 @@ begin
     end;
   end;
   if X509_VERIFY_PARAM_set1_ip(FParam, lData, lSize) <> 1 then
-    DoException('Unable to add IP address for certificate validation.')
+    ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyIPAddr_err);
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetIpAddressA(Value: RawByteString);
 begin
   if X509_VERIFY_PARAM_set1_ip_asc(FParam, PIdAnsiChar(Value)) <> 1 then
-    DoException('Unable to add IP address for certificate validation.')
+    ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyIPAddr_err);
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetIpAddressW(Value: UnicodeString);
@@ -2342,7 +2322,7 @@ end;
 procedure TTaurusTLSCustomX509VerifyParam.SetPurpose(Value: TPurpose);
 begin
   if X509_VERIFY_PARAM_set_purpose(FParam, Value.AsInt) <> 0 then
-    DoException('Unable to set or change certificate validation purpose.')
+    ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyPurp_err);
 end;
 
 { TTaurusTLSOSSLStore.TStoreInfoHelper }
@@ -2662,12 +2642,12 @@ constructor TTaurusTLSOSSLStore.Create(ACtx: POSSL_STORE_CTX;
   ALoadFilter: TStoreItemTypes);
 begin
   if not Assigned(ACtx) then
-    DoException('OSSL Context was not initialized.');
+    ETaurusTLSOSSLStoreError.RaiseException(RMSG_OsslStoreInit_err);
   inherited Create;
   FList:=TListInfo.Create;
   DoLoad(ACtx, ALoadFilter);
   if OSSL_STORE_close(ACtx) <> 1 then
-    DoException('Error closing OSSL_STORE');
+    ETaurusTLSOSSLStoreError.RaiseException(RMSG_OsslStoreClose_err);
 end;
 
 constructor TTaurusTLSOSSLStore.Create(AUri: RawByteString;
@@ -2692,7 +2672,6 @@ var
   lCtx: POSSL_STORE_CTX;
 
 begin
-  FBio:=ABio;
   lCtx:=POSSL_STORE_CTX.Open(ABio, AUi);
   Create(lCtx, ALoadFilter);
 end;
@@ -2700,18 +2679,12 @@ end;
 destructor TTaurusTLSOSSLStore.Destroy;
 begin
   inherited;
-  FreeAndNil(FBio);
   FreeAndNil(FList);
 end;
 
 function TTaurusTLSOSSLStore.GetCount(AType: TStoreItemType): TIdC_Uint;
 begin
   Result:=FCounters[AType];
-end;
-
-procedure TTaurusTLSOSSLStore.DoException(AMessage: string);
-begin
-  ETaurusTLSOSSLStoreError.RaiseException(AMessage);
 end;
 
 procedure TTaurusTLSOSSLStore.DoLoad(ACtx: POSSL_STORE_CTX;
@@ -2812,7 +2785,7 @@ constructor TaurusTLS_X509Store.Create;
 begin
   FStore:=X509_STORE_new;
   if not Assigned(FStore) then
-    DoException('Unable to create X509_STORE instance.');
+    ETaurusTLSX509StoreError.RaiseException(RMSG_X509StoreCreate_err);
   inherited;
 end;
 
@@ -2827,11 +2800,6 @@ destructor TaurusTLS_X509Store.Destroy;
 begin
   X509_STORE_free(FStore);
   inherited;
-end;
-
-procedure TaurusTLS_X509Store.DoException(AMessage: string);
-begin
-  ETaurusTLSX509StoreError.RaiseException(AMessage);
 end;
 
 procedure TaurusTLS_X509Store.AddFromStore(AStore: TTaurusTLSOSSLStore;
@@ -2855,13 +2823,13 @@ end;
 procedure TaurusTLS_X509Store.AddCert(ACert: PX509);
 begin
   if X509_STORE_add_cert(FStore, ACert) <> 1 then
-    DoException('Unable to add certificate to the X509_STORE.')
+    ETaurusTLSX509StoreError.RaiseException(RMSG_X509StoreCertAdd_err);
 end;
 
 procedure TaurusTLS_X509Store.AddCrl(ACrl: PX509_CRL);
 begin
   if X509_STORE_add_crl(FStore, ACrl) <> 1 then
-    DoException('Unable to add CRL to the X509_STORE.')
+    ETaurusTLSX509StoreError.RaiseException(RMSG_X509StoreCRLAdd_err);
 end;
 
 procedure TaurusTLS_X509Store.SetParam(
@@ -2870,8 +2838,9 @@ begin
   if not Assigned(AVfyParam) then
     Exit;
   if X509_STORE_set1_param(FStore, AVfyParam.VfyParam) <> 1 then
-    DoException('Unable to set X509_Verify_Params to X509_Store.');
-  FVfyParam:=nil;
+    ETaurusTLSX509StoreError.RaiseException(RMSG_X509StoreSetVfyParam_err);
+  // Reset internal params;
+  FreeAndNil(FVfyParam);
 end;
 
 function TaurusTLS_X509Store.GetParam: TTaurusTLSCustomX509VerifyParam;

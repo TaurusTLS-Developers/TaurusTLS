@@ -285,6 +285,22 @@ resourcestring
   // TaurusTLS_SSLUI messages
   RMSG_RegisterUIMeth_err = 'Error registering the UI_METHOD "%s".';
 
+  // TaurusTLS_SSLStores.TTaurusTLSCustomX509VerifyParam messages
+  RMSG_X509VfyParamFlag_err = 'Unable to set X509_VERIFY_PARAM flags';
+  RMSG_X509VfyParamInhFlag_err = 'Unable to set X509_VERIFY_PARAM Inheritance Flags';
+  RMSG_X509VfyHost_err = 'Unable to set HostName for certificate validation.';
+  RMSG_X509VfyEMail_err = 'Unable to add E-Mail address for certificate validation.';
+  RMSG_X509VfyIPAddr_err = 'Unable to add IP address for certificate validation.';
+  RMSG_X509VfyPurp_err = 'Unable to set or change certificate validation purpose.'
+
+  // TaurusTLS_SSLStores.TTaurusTLSOSSLStore messages
+  RMSG_OsslStoreInit_err = 'OSSL_STORE context is not initialized.';
+  RMSG_OsslStoreClose_err = 'Error closing OSSL_STORE context';
+
+  // TaurusTLS_SSLStores.TaurusTLS_X509Store messages
+  RMSG_X509StoreCreate_err = 'Unable to create X509_STORE instance.';
+  RMSG_X509StoreCertAdd_err = 'Unable to add certificate to the X509_STORE.'
+
 implementation
 
 end.
