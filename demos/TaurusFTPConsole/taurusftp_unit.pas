@@ -162,6 +162,42 @@ begin
   end;
 end;
 
+{$IFDEF WINDOWS}
+function StdOutIsRedirected: Boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
+var
+  Mode: DWORD;
+begin
+  Result := not GetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), Mode);
+end;
+{$ENDIF}
+
+procedure WriteString(const S : String); {$IFDEF USE_INLINE}inline; {$ENDIF}
+{$IFNDEF WINDOWS}
+begin
+  WriteLn(S);
+{$ELSE}
+var
+  LDummy : DWORD;
+  LConsole : THandle;
+begin
+  if StdOutIsRedirected then
+  begin
+    WriteLn(S);
+  end
+  else
+  begin
+    LConsole := GetStdHandle(STD_OUTPUT_HANDLE);
+    WriteConsole(LConsole, PChar(S), Length(S),LDummy,nil);
+  end;
+{$ENDIF}
+end;
+
+procedure WriteLnString(const S : String);
+begin
+  WriteString(S);
+  WriteString(sLineBreak);
+end;
+
 procedure ParseArgs(const AArgs: String; AStrings: TStrings);
 var
 {$IFNDEF USE_INLINE_VAR}
@@ -343,7 +379,7 @@ end;
 procedure TFTPApplication.OnReceived(ASender: TComponent;
   const AText, AData: string);
 begin
-  WriteLn(TrimRight(AData));
+  WriteString(AData);
 end;
 
 procedure TFTPApplication.OnSent(ASender: TComponent;
@@ -355,7 +391,7 @@ begin
   end
   else
   begin
-    WriteLn(TrimRight(AData));
+    WriteString(AData);
   end;
 end;
 
@@ -508,7 +544,7 @@ begin
       end;
       for i := 0 to FFTP.ListResult.Count - 1 do
       begin
-        WriteLn(FFTP.ListResult[i]);
+        WriteLnString(FFTP.ListResult[i]);
       end;
     end
     else

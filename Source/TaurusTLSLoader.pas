@@ -435,8 +435,8 @@ type
 
 var
   i: integer;
-  OpenSSL_version_num: TOpenSSL_version_num;
-  SSLVersionNo: TIdC_ULONG;
+  LOpenSSL_version_num: TOpenSSL_version_num;
+  LSSLVersionNo: TIdC_ULONG;
 
 begin
   Result := not FFailedToLoad;
@@ -457,25 +457,25 @@ begin
         Exit;
 
       { Load Version number }
-      OpenSSL_version_num := LoadLibFunction(FLibCrypto, 'OpenSSL_version_num');
-      if not assigned(OpenSSL_version_num) then
-        OpenSSL_version_num := LoadLibFunction(FLibCrypto, 'SSLeay');
-      if not assigned(OpenSSL_version_num) then
+      LOpenSSL_version_num := LoadLibFunction(FLibCrypto, 'OpenSSL_version_num');
+      if not assigned(LOpenSSL_version_num) then
+        LOpenSSL_version_num := LoadLibFunction(FLibCrypto, 'SSLeay');
+      if not assigned(LOpenSSL_version_num) then
         raise ETaurusTLSError.Create(ROSSLCantGetSSLVersionNo);
 
-      SSLVersionNo := OpenSSL_version_num();
-      if SSLVersionNo < min_supported_ssl_version then
+      LSSLVersionNo := LOpenSSL_version_num();
+      if LSSLVersionNo < min_supported_ssl_version then
         raise ETaurusTLSError.CreateFmt(RSOSSUnsupportedVersion,
-          [SSLVersionNo]);
+          [LSSLVersionNo]);
 
-      SSLVersionNo := SSLVersionNo shr 12;
+      LSSLVersionNo := LSSLVersionNo shr 12;
 
       for i := 0 to GLibCryptoLoadList.Count - 1 do
         TOpenSSLLoadProc(GLibCryptoLoadList[i])
-          (FLibCrypto, SSLVersionNo, FFailed);
+          (FLibCrypto, LSSLVersionNo, FFailed);
 
       for i := 0 to GLibSSLLoadList.Count - 1 do
-        TOpenSSLLoadProc(GLibSSLLoadList[i])(FLibSSL, SSLVersionNo, FFailed);
+        TOpenSSLLoadProc(GLibSSLLoadList[i])(FLibSSL, LSSLVersionNo, FFailed);
 
     end;
     FLibraryLoaded.Value := true;
