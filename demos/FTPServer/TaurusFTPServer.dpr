@@ -792,7 +792,7 @@ begin
   LIni := TIniFile.Create(GetCurrentDir + '\server.ini');
   try
     VPassword := LIni.ReadString('Certificate', 'Password', 'testinfg');
-    VOk := VPassword <> '';
+    VOk := True;
   finally
     FreeAndNil(LIni);
   end;
