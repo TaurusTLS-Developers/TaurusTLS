@@ -291,7 +291,7 @@ resourcestring
   RMSG_X509VfyHost_err = 'Unable to set HostName for certificate validation.';
   RMSG_X509VfyEMail_err = 'Unable to add E-Mail address for certificate validation.';
   RMSG_X509VfyIPAddr_err = 'Unable to add IP address for certificate validation.';
-  RMSG_X509VfyPurp_err = 'Unable to set or change certificate validation purpose.'
+  RMSG_X509VfyPurp_err = 'Unable to set or change certificate validation purpose.';
 
   // TaurusTLS_SSLStores.TTaurusTLSOSSLStore messages
   RMSG_OsslStoreInit_err = 'OSSL_STORE context is not initialized.';
@@ -299,7 +299,7 @@ resourcestring
 
   // TaurusTLS_SSLStores.TaurusTLS_X509Store messages
   RMSG_X509StoreCreate_err = 'Unable to create X509_STORE instance.';
-  RMSG_X509StoreCertAdd_err = 'Unable to add certificate to the X509_STORE.'
+  RMSG_X509StoreCertAdd_err = 'Unable to add certificate to the X509_STORE.';
 
 implementation
 
