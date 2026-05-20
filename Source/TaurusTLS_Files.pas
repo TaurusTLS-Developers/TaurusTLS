@@ -280,6 +280,7 @@ begin
         Exit;
       end;
       try
+        LCertChain := nil;
         if PKCS12_parse(LP12, @LPassword[0], LKey, LCert, @LCertChain) <> 1 then
         begin
           SSLerr(SSL_F_SSL_CTX_USE_CERTIFICATE_FILE, ERR_R_PKCS12_LIB);
@@ -288,7 +289,10 @@ begin
         try
           Result := SSL_CTX_use_PrivateKey(ctx, LKey);
         finally
-          sk_pop_free(LCertChain, @X509_free);
+          if Assigned(LCertChain) then
+          begin
+            sk_pop_free(LCertChain, @X509_free);
+          end;
           X509_free(LCert);
           EVP_PKEY_free(LKey);
         end;
@@ -362,6 +366,7 @@ begin
         Exit;
       end;
       try
+        LCertChain := nil;
         if PKCS12_parse(LP12, @LPassword[0], LKey, LCert, @LCertChain) <> 1 then
         begin
           SSLerr(SSL_F_SSL_CTX_USE_CERTIFICATE_FILE, ERR_R_PKCS12_LIB);
@@ -370,7 +375,10 @@ begin
         try
           Result := SSL_CTX_use_certificate(ctx, LCert);
         finally
-          sk_pop_free(LCertChain, @X509_free);
+          if Assigned(LCertChain) then
+          begin
+            sk_pop_free(LCertChain, @X509_free);
+          end;
           X509_free(LCert);
           EVP_PKEY_free(LKey);
         end;
