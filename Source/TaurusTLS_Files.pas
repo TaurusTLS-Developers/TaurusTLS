@@ -260,7 +260,7 @@ begin
       if Assigned(Ldefault_passwd_cb) then
       begin
         if Ldefault_passwd_cb(@LPassword[0], MAX_SSL_PASSWORD_LENGTH, 0,
-          SSL_CTX_get_default_passwd_cb_userdata(ctx)) <= 0 then
+          SSL_CTX_get_default_passwd_cb_userdata(ctx)) < 0 then
         begin
           ERR_set_error(ERR_LIB_PEM, PEM_R_BAD_PASSWORD_READ, nil);
           Exit;
@@ -348,7 +348,7 @@ begin
       if Assigned(Ldefault_passwd_callback) then
       begin
         if Ldefault_passwd_callback(@LPassword[0], MAX_SSL_PASSWORD_LENGTH, 0,
-          SSL_CTX_get_default_passwd_cb_userdata(ctx)) <= 0 then
+          SSL_CTX_get_default_passwd_cb_userdata(ctx)) < 0 then
         begin
           ERR_set_error(ERR_LIB_PEM, PEM_R_BAD_PASSWORD_READ, nil);
           Exit;
