@@ -235,6 +235,9 @@ uses
   Windows,
   {$ENDIF}
 {$ENDIF}
+{$IF Defined(Linux) or Defined(Android)}
+  Posix.Signal,
+{$IFEND}
   Classes,
   IdCTypes,
   IdGlobal,
@@ -1285,6 +1288,9 @@ type
     fSSLContext: TTaurusTLSContext;
     fHostName: String;
     fVerifyHostname: Boolean;
+{$IF Defined(Linux) or Defined(Android)}
+     FSigSet: sigset_t;
+{$IFEND}
     function GetSSLProtocolVersion: TTaurusTLSSSLVersion;
     function GetSSLProtocolVersionStr: string;
     function GetPeerCert: TTaurusTLSX509;
@@ -1292,6 +1298,9 @@ type
     function GetCipher: TTaurusTLSCipher;
     function GetVerifyHostname: Boolean;
     procedure SetVerifyHostName(const Value: Boolean);
+{$IF Defined(Linux) or Defined(Android)}
+    procedure DisableSigPipe;
+{$IFEND}
   public
     /// <summary>
     /// Creates a new instance of TTaurusTLSSocket.
@@ -3959,6 +3968,8 @@ end;
 function TTaurusTLSIOHandlerSocket.Readable
   (AMSec: Integer = IdTimeoutDefault): Boolean;
 //From Tony WHyman - IndySecOpenSSL
+var
+  LSock: TTaurusTLSSocket;
 begin
   repeat
     {Wait for data ready - or timer expiry}
@@ -3968,8 +3979,12 @@ begin
     if not Result then
       Exit;
 
-    if (not fPassThrough) and (fSSLSocket <> nil) then
-      Result := fSSLSocket.Readable in [sslDataAvailable,sslUnRecoverableError,sslEOF];
+    { BUGFIX #217: Use a local variable to prevent a race condition where fSSLSocket
+      could be destroyed or set to nil by another thread (e.g. during a Close) 
+      while this loop is evaluating it. }
+    LSock := fSSLSocket;
+    if (not fPassThrough) and (LSock <> nil) then
+      Result := LSock.Readable in [sslDataAvailable,sslUnRecoverableError,sslEOF];
   until Result;
 end;
 
@@ -4894,6 +4909,9 @@ var
 begin
   Assert(fSSL = nil);
   Assert(fSSLContext <> nil);
+{$IF Defined(Linux) or Defined(Android)}
+  DisableSigPipe;
+{$IFEND}
   fSSL := SSL_new(fSSLContext.Context);
   if fSSL = nil then
   begin
@@ -4926,11 +4944,26 @@ begin
     SSL_copy_session_id(fSSL, LParentIO.fSSLSocket.fSSL);
     end;
   }
-  LRetCode := SSL_accept(fSSL);
-  if LRetCode <= 0 then
-  begin
-    ETaurusTLSAcceptError.RaiseException(fSSL, LRetCode, RSSSLAcceptError);
-  end;
+  { BUGFIX #217: Wrap the handshake in a repeat...until loop to handle 
+    SSL_ERROR_WANT_READ/WRITE return codes. This is essential for non-blocking
+    IO and robust connection establishment. }
+  repeat
+    LRetCode := SSL_accept(fSSL);
+    if LRetCode <= 0 then
+    begin
+      case GetSSLError(LRetCode) of
+        SSL_ERROR_WANT_READ,
+        SSL_ERROR_WANT_WRITE,
+        SSL_ERROR_WANT_X509_LOOKUP:
+          begin
+            { Handshake in progress, wait and retry }
+            Continue;
+          end;
+      else
+        ETaurusTLSAcceptError.RaiseException(fSSL, LRetCode, RSSSLAcceptError);
+      end;
+    end;
+  until LRetCode = 1;
 
   fSession := SSL_get1_session(fSSL);
 end;
@@ -4948,6 +4981,9 @@ var
 begin
   Assert(fSSL = nil);
   Assert(fSSLContext <> nil);
+{$IF Defined(Linux) or Defined(Android)}
+  DisableSigPipe;
+{$IFEND}
   if Supports(FParent, ITaurusTLSCallbackHelper, IInterface(LHelper)) then
   begin
     LParentIO := LHelper.GetIOHandlerSelf;
@@ -5033,16 +5069,28 @@ begin
     end;
   end;
 
+  repeat
+    LRetCode := SSL_connect(fSSL);
+    if LRetCode <= 0 then
+    begin
+      case GetSSLError(LRetCode) of
+        SSL_ERROR_WANT_READ,
+        SSL_ERROR_WANT_WRITE,
+        SSL_ERROR_WANT_X509_LOOKUP:
+          begin
+             { Handshake in progress, wait and retry }
+             Continue;
+          end;
+      else
+        // TODO: if sslv23 is being used, but sslv23 is not being used on the
+        // remote side, SSL_connect() will fail. In that case, before giving up,
+        // try re-connecting using a version-specific method for each enabled
+        // version, maybe one will succeed...
+        ETaurusTLSConnectError.RaiseException(fSSL, LRetCode, RSSSLConnectError);
+      end;
+    end;
+  until LRetCode = 1;
 
-  LRetCode := SSL_connect(fSSL);
-  if LRetCode <= 0 then
-  begin
-    // TODO: if sslv23 is being used, but sslv23 is not being used on the
-    // remote side, SSL_connect() will fail. In that case, before giving up,
-    // try re-connecting using a version-specific method for each enabled
-    // version, maybe one will succeed...
-    ETaurusTLSConnectError.RaiseException(fSSL, LRetCode, RSSSLConnectError);
-  end;
   fSession := SSL_get1_session(fSSL);
   // TODO: even if SSL_connect() returns success, the connection might
   // still be insecure if SSL_connect() detected that certificate validation
@@ -5085,6 +5133,7 @@ var buf : byte;   //PALOFF - Variables that are set, but never referenced
     Lr: integer;
 begin
   Result := sslNoData;
+  if not Assigned(fSSL) then Exit;
   {Confirm that there is application data to be read.}
   Lr := SSL_peek(fSSL, buf, 1);
   {Return DataAvailable if application data pending, or if it looks like we have disconnected,
@@ -5192,6 +5241,15 @@ procedure TTaurusTLSSocket.SetVerifyHostName(const Value: Boolean);
 begin
   fVerifyHostname := Value;
 end;
+
+{$IF Defined(Linux) or Defined(Android)}
+procedure TTaurusTLSSocket.DisableSigPipe;
+begin
+  sigemptyset(FSigSet);
+  sigaddset(FSigSet, SIGPIPE);
+  pthread_sigmask(SIG_BLOCK, @FSigSet, nil);
+end;
+{$IFEND}
 
 function TTaurusTLSSocket.GetSSLProtocolVersion: TTaurusTLSSSLVersion;
 begin
