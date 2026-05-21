@@ -235,9 +235,9 @@ uses
   Windows,
   {$ENDIF}
 {$ENDIF}
-{$IF Defined(Linux) or Defined(Android)}
+{$IFDEF SIGPIPE_MASK}
   Posix.Signal,
-{$IFEND}
+{$ENDIF}
   Classes,
   IdCTypes,
   IdGlobal,
@@ -1312,9 +1312,6 @@ type
     fSSLContext: TTaurusTLSContext;
     fHostName: String;
     fVerifyHostname: Boolean;
-{$IF Defined(Linux) or Defined(Android)}
-     FSigSet: sigset_t;
-{$IFEND}
     function GetSSLProtocolVersion: TTaurusTLSSSLVersion;
     function GetSSLProtocolVersionStr: string;
     function GetPeerCert: TTaurusTLSX509;
@@ -1322,9 +1319,6 @@ type
     function GetCipher: TTaurusTLSCipher;
     function GetVerifyHostname: Boolean;
     procedure SetVerifyHostName(const Value: Boolean);
-{$IF Defined(Linux) or Defined(Android)}
-    procedure DisableSigPipe;
-{$IFEND}
   public
     /// <summary>
     /// Creates a new instance of TTaurusTLSSocket.
@@ -4887,6 +4881,20 @@ begin
   Result.VerifyHostname := VerifyHostname;
 end;
 
+// SIGPIPE crash mitigation in Linux
+procedure SetSigpipeMask; {$IFDEF USE_INLINE}inline; {$ENDIF}
+{$IFDEF SIGPIPE_MASK}
+var
+  LSigSet: sigset_t;
+{$ENDIF}
+begin
+{$IFDEF SIGPIPE_MASK}
+  sigemptyset(LSigSet);
+  sigaddset(LSigSet, SIGPIPE);
+  pthread_sigmask(SIG_BLOCK, @LSigSet, nil);
+{$ENDIF}
+end;
+
 { TTaurusTLSSocket }
 
 constructor TTaurusTLSSocket.Create(AParent: TObject);
@@ -4945,9 +4953,9 @@ var
 begin
   Assert(fSSL = nil);
   Assert(fSSLContext <> nil);
-{$IF Defined(Linux) or Defined(Android)}
-  DisableSigPipe;
-{$IFEND}
+
+  SetSigpipeMask;  // SIGPIPE crash mitigation in Linux
+
   fSSL := SSL_new(fSSLContext.Context);
   if fSSL = nil then
   begin
@@ -5017,9 +5025,6 @@ var
 begin
   Assert(fSSL = nil);
   Assert(fSSLContext <> nil);
-{$IF Defined(Linux) or Defined(Android)}
-  DisableSigPipe;
-{$IFEND}
   if Supports(FParent, ITaurusTLSCallbackHelper, IInterface(LHelper)) then
   begin
     LParentIO := LHelper.GetIOHandlerSelf;
@@ -5277,15 +5282,6 @@ procedure TTaurusTLSSocket.SetVerifyHostName(const Value: Boolean);
 begin
   fVerifyHostname := Value;
 end;
-
-{$IF Defined(Linux) or Defined(Android)}
-procedure TTaurusTLSSocket.DisableSigPipe;
-begin
-  sigemptyset(FSigSet);
-  sigaddset(FSigSet, SIGPIPE);
-  pthread_sigmask(SIG_BLOCK, @FSigSet, nil);
-end;
-{$IFEND}
 
 function TTaurusTLSSocket.GetSSLProtocolVersion: TTaurusTLSSSLVersion;
 begin
