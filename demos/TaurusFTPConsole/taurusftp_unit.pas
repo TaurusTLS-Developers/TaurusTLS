@@ -28,12 +28,12 @@ uses
   IdFTP,
   IdFTPCommon,
   IdGlobal,
-  IdLogEvent,
   IdZLibHeaders,
   TaurusTLS,
   TaurusTLS_X509,
   TaurusTLSHeaders_crypto,
-  TaurusTLSHeaders_types;
+  TaurusTLSHeaders_types,
+  unicode_log;
 
 type
 
@@ -48,11 +48,11 @@ type
     FFTP: TIdFTP;
     FComp: TIdCompressorZLib;
     FIO: TTaurusTLSIOHandlerSocket;
-    FLog: TIdLogEvent;
+    FLog: TIdUnicodeLog;
     function LoadValidConfig : Boolean;
     // log events
-    procedure OnReceived(ASender: TComponent; const AText, AData: string);
-    procedure OnSent(ASender: TComponent; const AText, AData: string);
+    procedure OnReceived(ASender: TComponent; const AData: string);
+    procedure OnSent(ASender: TComponent; const AData: string);
     procedure OnSSLNegotiated(ASender: TTaurusTLSIOHandlerSocket);
     procedure OnDebugMsg(ASender: TObject; const AWrite: Boolean;
       AVersion: TTaurusMsgCBVer; AContentType: TIdC_INT; const buf: TIdBytes;
@@ -377,13 +377,13 @@ begin
 end;
 
 procedure TFTPApplication.OnReceived(ASender: TComponent;
-  const AText, AData: string);
+  const AData: string);
 begin
   WriteString(AData);
 end;
 
 procedure TFTPApplication.OnSent(ASender: TComponent;
-  const AText, AData: string);
+  const AData: string);
 begin
   if IndyPos('PASS ', AData) > 0 then
   begin
@@ -1664,9 +1664,7 @@ begin
   FIO.OnVerifyError := DoOnVerifyError;
   FFTP.IOHandler := FIO;
   FFTP.Passive := True;
-  FLog := TIdLogEvent.Create(nil);
-  FLog.LogTime := False;
-  FLog.ReplaceCRLF := False;
+  FLog := TIdUnicodeLog.Create(nil);
   FLog.OnReceived := OnReceived;
   FLog.OnSent := OnSent;
   FLog.Active := True;
