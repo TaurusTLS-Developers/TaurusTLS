@@ -5,9 +5,9 @@
 ### 1.1. State Enumeration
 ```pascal
 type
-  TTaurusSSLStateEnum = (seIdle, seInitialized, seHandshaking, seEstablished, seClosing, seClosed, seError);
+  TTaurusTLSSslStateEnum = (seIdle, seInitialized, seHandshaking, seEstablished, seClosing, seClosed, seError);
 
-  TOnTaurusTLSStateChange = procedure(Sender: TObject; AOldState, ANewState: TTaurusSSLStateEnum) of object;
+  TOnTaurusTLSStateChange = procedure(Sender: TObject; AOldState, ANewState: TTaurusTLSSslStateEnum) of object;
 ```
 
 ### 1.2. The Handshake Snapshot Class
@@ -59,20 +59,20 @@ type
 ### 1.3. The Abstract Context Class
 ```pascal
 type
-  TTaurusSSLState = class; // Forward declaration
+  TTaurusTLSSslState = class; // Forward declaration
 
   TTaurusTLSBaseSocket = class abstract
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FSSL: PSSL;
-    FStateEnum: TTaurusSSLStateEnum;
-    FCurrentState: TTaurusSSLState;
+    FStateEnum: TTaurusTLSSslStateEnum;
+    FCurrentState: TTaurusTLSSslState;
     FSnapshot: TTaurusTLSHandshakeSnapshot;
-    function IsValidTransition(ACurrent, ATarget: TTaurusSSLStateEnum): Boolean;
+    function IsValidTransition(ACurrent, ATarget: TTaurusTLSSslStateEnum): Boolean;
     procedure ClosePhysicalSocket;
   public
     constructor Create(ASnapshot: TTaurusTLSHandshakeSnapshot); virtual;
     destructor Destroy; override;
-    procedure TransitionTo(ATargetState: TTaurusSSLStateEnum);
+    procedure TransitionTo(ATargetState: TTaurusTLSSslStateEnum);
     
     // Delegated Operations
     procedure Connect; virtual; abstract;
@@ -82,7 +82,7 @@ type
     procedure Shutdown; inline;
     
     property SSL: PSSL read FSSL;
-    property StateEnum: TTaurusSSLStateEnum read FStateEnum;
+    property StateEnum: TTaurusTLSSslStateEnum read FStateEnum;
     property Snapshot: TTaurusTLSHandshakeSnapshot read FSnapshot;
   end;
 ```
@@ -105,7 +105,7 @@ type
     procedure Connect; override;
   end;
 
-  TTaurusSSLState = class abstract
+  TTaurusTLSSslState = class abstract
   public
     procedure Connect(ASocket: TTaurusTLSBaseSocket); virtual; abstract;
     procedure Process(ASocket: TTaurusTLSBaseSocket); virtual; abstract;
@@ -115,7 +115,165 @@ type
   end;
 ```
 
-## 2. Centralized State Guard & Transition Factory
+## 2. Indy Wrapper Integration (`TTaurusTLSIOHandlerSocket`)
+
+This skeleton shows how the high-level Indy component implements the pipeline, delegates read/write/setup calls directly to the internal state machine, and implements the factory methods.
+
+```pascal
+type
+  TTaurusTLSIOHandlerSocket = class(TIdSSLIOHandlerSocketBase)
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
+    FSSLSocket: TTaurusTLSBaseSocket;
+    FSSLContext: PSSL_CTX; // Owned by the wrapper
+  protected
+    procedure SetPassThrough(const AValue: Boolean); override;
+    function RecvEnc(var VBuffer: TIdBytes): Integer; override;
+    function SendEnc(const ABuffer: TIdBytes; const AOffset, ALength: Integer): Integer; override;
+  public
+    procedure InitComponent; override;
+    procedure ConnectClient; override;
+    procedure AfterAccept; override;
+    procedure Close; override;
+    function Clone: TIdSSLIOHandlerSocketBase; override;
+    function MakeClientIOHandler: TIdSSLIOHandlerSocketBase; override;
+    function Readable(AMSec: Integer): Boolean; override;
+  end;
+
+procedure TTaurusTLSIOHandlerSocket.InitComponent;
+begin
+  inherited InitComponent;
+  fPassThrough := True; // Indy default: unencrypted until requested
+  FSSLContext := nil;
+  FSSLSocket := nil;
+end;
+
+procedure TTaurusTLSIOHandlerSocket.SetPassThrough(const AValue: Boolean);
+begin
+  if fPassThrough <> AValue then
+  begin
+    inherited SetPassThrough(AValue);
+    // If transitioning to secure mid-session (e.g., STARTTLS) and we are already connected
+    if (not fPassThrough) and IsOpen then
+      StartSSL;
+  end;
+end;
+
+procedure TTaurusTLSIOHandlerSocket.ConnectClient;
+var
+  LPassThrough: Boolean;
+begin
+  try
+    Init; // Ensure OpenSSL dynamic libraries are loaded
+  except
+    on ETaurusTLSCouldNotLoadSSLLibrary do
+    begin
+      if not PassThrough then
+        raise;
+    end;
+  end;
+
+  LPassThrough := fPassThrough;
+  fPassThrough := True; // Pass through unencrypted during TCP connect (e.g., Proxies)
+  try
+    inherited ConnectClient; // Connects underlying TCP socket
+  finally
+    fPassThrough := LPassThrough;
+  end;
+
+  if Assigned(fOnBeforeConnect) then
+    fOnBeforeConnect(Self);
+
+  // If PassThrough is false, negotiate SSL immediately
+  if not PassThrough then
+    StartSSL;
+end;
+
+procedure TTaurusTLSIOHandlerSocket.AfterAccept;
+begin
+  inherited AfterAccept;
+  if not PassThrough then
+    StartSSL;
+end;
+
+procedure TTaurusTLSIOHandlerSocket.StartSSL;
+var
+  LSnapshot: TTaurusTLSHandshakeSnapshot;
+begin
+  if not Assigned(FSSLSocket) then
+  begin
+    // 1. Create the frozen, thread-safe snapshot
+    LSnapshot := TTaurusTLSHandshakeSnapshot.Create(Self, FSSLContext);
+    
+    // 2. Instantiate the polymorphic engine based on Indy's native IsPeer flag
+    if IsPeer then
+      FSSLSocket := TTaurusTLSPeerSocket.Create(LSnapshot)
+    else
+      FSSLSocket := TTaurusTLSClientSocket.Create(LSnapshot);
+      
+    // 3. Initiate the handshake state loop (seIdle -> seInitialized -> seHandshaking)
+    FSSLSocket.Connect; 
+  end;
+end;
+
+function TTaurusTLSIOHandlerSocket.RecvEnc(var VBuffer: TIdBytes): Integer;
+begin
+  if Assigned(FSSLSocket) and (FSSLSocket.StateEnum = seEstablished) then
+  begin
+    Result := FSSLSocket.Read(VBuffer[0], Length(VBuffer));
+  end;
+end;
+
+function TTaurusTLSIOHandlerSocket.SendEnc(const ABuffer: TIdBytes; const AOffset, ALength: Integer): Integer;
+begin
+  if Assigned(FSSLSocket) and (FSSLSocket.StateEnum = seEstablished) then
+  begin
+    Result := FSSLSocket.Write(ABuffer[AOffset], ALength);
+  end;
+end;
+
+procedure TTaurusTLSIOHandlerSocket.Close;
+begin
+  if Assigned(FSSLSocket) then
+  begin
+    FSSLSocket.Shutdown; // Moves to seClosing -> seClosed
+    FreeAndNil(FSSLSocket);
+  end;
+  inherited Close;
+end;
+
+function TTaurusTLSIOHandlerSocket.Clone: TIdSSLIOHandlerSocketBase;
+var
+  LClone: TTaurusTLSIOHandlerSocket;
+begin
+  LClone := TTaurusTLSIOHandlerSocket(inherited Clone);
+  LClone.FSSLContext := Self.FSSLContext; // Share context reference
+  Result := LClone;
+end;
+
+function TTaurusTLSIOHandlerSocket.MakeClientIOHandler: TIdSSLIOHandlerSocketBase;
+var
+  LClient: TTaurusTLSIOHandlerSocket;
+begin
+  LClient := TTaurusTLSIOHandlerSocket(Create(nil));
+  LClient.FSSLContext := Self.FSSLContext;
+  LClient.IsPeer := False;
+  Result := LClient;
+end;
+
+function TTaurusTLSIOHandlerSocket.Readable(AMSec: Integer): Boolean;
+begin
+  if Assigned(FSSLSocket) and (FSSLSocket.StateEnum = seEstablished) then
+  begin
+    // Memory Optimization: If OpenSSL has decrypted bytes pending in its buffer, we are readable.
+    // This avoids blocking hangs on the raw OS socket poll.
+    if SSL_pending(FSSLSocket.SSL) > 0 then
+      Exit(True);
+  end;
+  Result := inherited Readable(AMSec);
+end;
+```
+
+## 3. Centralized State Guard & Transition Factory
 
 The Context (`TTaurusTLSBaseSocket`) enforces state-transition validity, manages the lifetime of `TTaurusTLSHandshakeSnapshot`, and acts as the factory for state object instantiation.
 
@@ -126,7 +284,7 @@ begin
   FSnapshot := ASnapshot; // Take ownership of the snapshot
   FSSL := nil;
   FStateEnum := seIdle;
-  FCurrentState := TTaurusSSLStateIdle.Create;
+  FCurrentState := TTaurusTLSSslStateIdle.Create;
 end;
 
 destructor TTaurusTLSBaseSocket.Destroy;
@@ -141,7 +299,7 @@ begin
   inherited Destroy;
 end;
 
-function TTaurusTLSBaseSocket.IsValidTransition(ACurrent, ATarget: TTaurusSSLStateEnum): Boolean;
+function TTaurusTLSBaseSocket.IsValidTransition(ACurrent, ATarget: TTaurusTLSSslStateEnum): Boolean;
 begin
   case ACurrent of
     seIdle:          Result := (ATarget = seInitialized);
@@ -155,9 +313,9 @@ begin
   end;
 end;
 
-procedure TTaurusTLSBaseSocket.TransitionTo(ATargetState: TTaurusSSLStateEnum);
+procedure TTaurusTLSBaseSocket.TransitionTo(ATargetState: TTaurusTLSSslStateEnum);
 var
-  LOldState: TTaurusSSLStateEnum;
+  LOldState: TTaurusTLSSslStateEnum;
 begin
   if not IsValidTransition(FStateEnum, ATargetState) then
     raise ETaurusTLSInvalidTransition.CreateFmt('Invalid transition: %d -> %d', [Ord(FStateEnum), Ord(ATargetState)]);
@@ -177,13 +335,13 @@ begin
   end;
 
   case ATargetState of
-    seIdle:          FCurrentState := TTaurusSSLStateIdle.Create;
-    seInitialized:   FCurrentState := TTaurusSSLStateInitialized.Create;
-    seHandshaking:   FCurrentState := TTaurusSSLStateHandshaking.Create;
-    seEstablished:   FCurrentState := TTaurusSSLStateEstablished.Create;
-    seClosing:       FCurrentState := TTaurusSSLStateClosing.Create;
-    seClosed:        FCurrentState := TTaurusSSLStateClosed.Create;
-    seError:         FCurrentState := TTaurusSSLStateError.Create;
+    seIdle:          FCurrentState := TTaurusTLSSslStateIdle.Create;
+    seInitialized:   FCurrentState := TTaurusTLSSslStateInitialized.Create;
+    seHandshaking:   FCurrentState := TTaurusTLSSslStateHandshaking.Create;
+    seEstablished:   FCurrentState := TTaurusTLSSslStateEstablished.Create;
+    seClosing:       FCurrentState := TTaurusTLSSslStateClosing.Create;
+    seClosed:        FCurrentState := TTaurusTLSSslStateClosed.Create;
+    seError:         FCurrentState := TTaurusTLSSslStateError.Create;
   end;
 
   FStateEnum := ATargetState;
@@ -194,7 +352,7 @@ begin
 end;
 ```
 
-### 2.1. Snapshot Memory Protection Implementation
+### 3.1. Snapshot Memory Protection Implementation
 ```pascal
 constructor TTaurusTLSHandshakeSnapshot.Create(AIOHandler: TIdSSLIOHandlerSocketBase; ACTX: PSSL_CTX);
 begin
@@ -235,11 +393,11 @@ begin
 end;
 ```
 
-## 3. Concrete State Implementation Workflows
+## 4. Concrete State Implementation Workflows
 
-### 3.1. Handshake Loop (`TTaurusSSLStateHandshaking`)
+### 4.1. Handshake Loop (`TTaurusTLSSslStateHandshaking`)
 ```pascal
-procedure TTaurusSSLStateHandshaking.Process(ASocket: TTaurusTLSBaseSocket);
+procedure TTaurusTLSSslStateHandshaking.Process(ASocket: TTaurusTLSBaseSocket);
 var
   LRet, LErr: Integer;
   LSecurityAccept: Boolean;
@@ -288,9 +446,9 @@ begin
 end;
 ```
 
-### 3.2. Established Connection (`TTaurusSSLStateEstablished`)
+### 4.2. Established Connection (`TTaurusTLSSslStateEstablished`)
 ```pascal
-function TTaurusSSLStateEstablished.Read(ASocket: TTaurusTLSBaseSocket; var Buf; Size: Integer): Integer;
+function TTaurusTLSSslStateEstablished.Read(ASocket: TTaurusTLSBaseSocket; var Buf; Size: Integer): Integer;
 var
   LRet, LErr: Integer;
 begin
@@ -320,7 +478,7 @@ begin
 end;
 ```
 
-## 4. Callbacks & Bridge Execution
+## 5. Callbacks & Bridge Execution
 Static or non-member `cdecl` functions handle the low-level OpenSSL callbacks. They safely bridge to the active socket context and read from the frozen `FSnapshot` properties and event handlers:
 
 ```pascal
@@ -368,7 +526,7 @@ begin
 end;
 ```
 
-## 5. Client Session Resumption Implementation
+## 6. Client Session Resumption Implementation
 Explicit session resumption is isolated within `TTaurusTLSClientSocket`.
 
 ```pascal
@@ -394,17 +552,17 @@ begin
 end;
 ```
 
-## 6. Platform Safety (Initialization)
+## 7. Platform Safety (Initialization)
 To support the state machine and prevent OS-level process termination:
 *   **Unix/Linux Platforms**: `signal(SIGPIPE, SIG_IGN);` must be invoked during TaurusTLS library startup.
 *   **OpenSSL Handshake Optimization**: `SSL_CTX_set_mode(ctx, SSL_MODE_AUTO_RETRY);` is enabled to automatically process non-application data records without dropping out of `SSL_read` where appropriate.
 
-## 7. Shutdown Sequence
+## 8. Shutdown Sequence
 1.  **stEstablished -> stClosing**: The SSM invokes `SSL_shutdown`.
 2.  **Bi-directional Check**: If `SSL_shutdown` returns 0, the SSM waits for the peer's `CloseNotify` (using a short timeout) before transitioning to `stClosed`.
 3.  **RST Protection**: If the peer sends a TCP RST during shutdown, the SSM catches the syscall error, immediately transitions to `seClosed` (which frees `PSSL`), and suppresses the transport exception to ensure a clean application shutdown.
 
-## 8. State-Specific Exception Mapping
+## 9. State-Specific Exception Mapping
 
 The following table explicitly maps the exact exceptions that are allowed to be raised during each logical state of the connection lifecycle:
 
