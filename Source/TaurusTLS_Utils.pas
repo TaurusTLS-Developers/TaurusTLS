@@ -237,10 +237,35 @@ function AnsiStringToString(const AStr: PIdAnsiChar): String; {$IFDEF USE_INLINE
 /// </param>
 function CertErrorToLongDescr(ACertError: TIdC_LONG): String;
 
+/// <summary>
+///   Returns true of OpenSSL 4.0.0 or greater is loaded or false if OpenSSL is
+///   not loaded or is less than 3.
+/// </summary>
+/// <returns>
+///   True if greater than OpenSSL 4.0.0 is loaded.
+/// </returns>
+function IsOpenSSL4orGreater : Boolean;  {$IFDEF USE_INLINE}inline; {$ENDIF}
+
 implementation
 
 uses TaurusTLS_ResourceStrings, TaurusTLSHeaders_bio, TaurusTLSHeaders_objects,
-  TaurusTLSHeaders_x509, TaurusTLSHeaders_x509_vfy, SysUtils;
+  TaurusTLSHeaders_crypto, TaurusTLSHeaders_x509, TaurusTLSHeaders_x509_vfy, SysUtils;
+
+function IsOpenSSL4orGreater : Boolean;  {$IFDEF USE_INLINE}inline; {$ENDIF}
+begin
+  {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  Result := False;
+  if Assigned(SSLeay) then
+  begin
+  {$ENDIF}
+     if SSLeay shr 28 > 3 then
+     begin
+       Result := True;
+     end;
+  {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  end;
+  {$ENDIF}
+end;
 
 function AnsiStringToString(const AStr: PIdAnsiChar): String;
 {$IFDEF USE_INLINE}inline; {$ENDIF}

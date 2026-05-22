@@ -826,6 +826,8 @@ var
   // BIO_new_mem_buf: function (const buf: Pointer; len: TIdC_INT): PBIO; cdecl = nil;
   BIO_new_mem_buf: function (const buf; len: TIdC_INT): PBIO; cdecl = nil;
 
+  BIO_set_send_flags: function(b : PBIO; flags : TIdC_INT): TIdC_LONG; cdecl = nil;  {introduced in OpenSSL 4.0.0}
+
   BIO_s_socket: function : PBIO_METHOD; cdecl = nil;
   BIO_s_connect: function : PBIO_METHOD; cdecl = nil;
   BIO_s_accept: function : PBIO_METHOD; cdecl = nil;
@@ -1217,6 +1219,8 @@ var
   function BIO_s_secmem: PBIO_METHOD cdecl; external CLibCrypto; {introduced 1.1.0}
   function BIO_new_mem_buf(const buf; len: TIdC_INT): PBIO cdecl; external CLibCrypto;
 
+  function BIO_set_send_flags(b : PBIO; flags : TIdC_INT): TIdC_LONG cdecl; external CLibCrypto; {introduced 4.0.0}
+
   function BIO_s_socket: PBIO_METHOD cdecl; external CLibCrypto;
   function BIO_s_connect: PBIO_METHOD cdecl; external CLibCrypto;
   function BIO_s_accept: PBIO_METHOD cdecl; external CLibCrypto;
@@ -1470,6 +1474,8 @@ const
   BIO_get_mem_ptr_removed = (byte(1) shl 8 or byte(0)) shl 8 or byte(0);
   BIO_set_mem_eof_return_removed = (byte(1) shl 8 or byte(0)) shl 8 or byte(0);
   BIO_err_is_non_fatal_introduced = (byte(3) shl 8 or byte(2)) shl 8 or byte(0);
+  BIO_set_send_flags_introduced = (byte(4) shl 8 or byte(0)) shl 8 or byte(0);
+
 // # define BIO_get_flags(b) BIO_test_flags(b, ~(0x0))
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 const
@@ -1738,6 +1744,8 @@ const
   BIO_s_mem_procname = 'BIO_s_mem';
   BIO_s_secmem_procname = 'BIO_s_secmem'; {introduced 1.1.0}
   BIO_new_mem_buf_procname = 'BIO_new_mem_buf';
+
+  BIO_set_send_flags_procname = 'BIO_set_send_flags';  {introduced 4.0.0}
 
   BIO_s_socket_procname = 'BIO_s_socket';
   BIO_s_connect_procname = 'BIO_s_connect';
@@ -2675,6 +2683,11 @@ end;
 function  ERR_BIO_s_secmem: PBIO_METHOD; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_s_secmem_procname);
+end;
+
+function ERR_BIO_set_send_flags(b : PBIO; flags : TIdC_INT): TIdC_LONG cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_set_send_flags_procname);
 end;
 
  {introduced 1.1.0}
@@ -5804,6 +5817,36 @@ begin
     {$ifend}
   end;
 
+  BIO_set_send_flags := LoadLibFunction(ADllHandle, BIO_set_send_flags_procname);
+  FuncLoadError := not assigned(BIO_set_send_flags);
+  if FuncLoadError then
+  begin
+    {$if not defined(BIO_set_send_flags_allownil)}
+    BIO_set_send_flags := ERR_BIO_set_send_flags;
+    {$ifend}
+    {$if declared(BIO_set_send_flags_introduced)}
+    if LibVersion < BIO_set_send_flags_introduced then
+    begin
+      {$if declared(FC_BIO_set_send_flags)}
+      BIO_set_send_flags := FC_BIO_set_send_flags;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(BIO_set_send_flags_removed)}
+    if BIO_set_send_flags_removed <= LibVersion then
+    begin
+      {$if declared(_BIO_set_send_flags)}
+      BIO_set_send_flags := _BIO_set_send_flags;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(BIO_set_send_flags_allownil)}
+    if FuncLoadError then
+      AFailed.Add('BIO_set_send_flags');
+    {$ifend}
+  end;
 
   BIO_s_socket := LoadLibFunction(ADllHandle, BIO_s_socket_procname);
   FuncLoadError := not assigned(BIO_s_socket);
@@ -7779,6 +7822,7 @@ begin
   BIO_s_mem := nil;
   BIO_s_secmem := nil; {introduced 1.1.0}
   BIO_new_mem_buf := nil;
+  BIO_set_send_flags := nil;
   BIO_s_socket := nil;
   BIO_s_connect := nil;
   BIO_s_accept := nil;
