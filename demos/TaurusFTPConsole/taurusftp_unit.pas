@@ -33,7 +33,7 @@ uses
   TaurusTLS_X509,
   TaurusTLSHeaders_crypto,
   TaurusTLSHeaders_types,
-  unicode_log;
+  TaurusTLS_Unicode_Log;
 
 type
 
@@ -48,7 +48,7 @@ type
     FFTP: TIdFTP;
     FComp: TIdCompressorZLib;
     FIO: TTaurusTLSIOHandlerSocket;
-    FLog: TIdUnicodeLog;
+    FLog: TTaurusTLSUnicodeLog;
     function LoadValidConfig : Boolean;
     // log events
     procedure OnReceived(ASender: TComponent; const AData: string);
@@ -1664,7 +1664,7 @@ begin
   FIO.OnVerifyError := DoOnVerifyError;
   FFTP.IOHandler := FIO;
   FFTP.Passive := True;
-  FLog := TIdUnicodeLog.Create(nil);
+  FLog := TTaurusTLSUnicodeLog.Create(nil);
   FLog.OnReceived := OnReceived;
   FLog.OnSent := OnSent;
   FLog.Active := True;
