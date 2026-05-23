@@ -1547,7 +1547,7 @@ type
 
     /// <summary>
     ///   Creates an instance by opening the store from a memory using a <see
-    ///   cref="ITaurusTLS_Bio" /> interface.
+    ///   cref="TTaurusTLSCustomBIO" /> interface.
     /// </summary>
     /// <param name="ABio">
     ///   The BIO instance with the content that .
