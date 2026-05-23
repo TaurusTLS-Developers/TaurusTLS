@@ -9,6 +9,7 @@ TaurusTLS provides 3.x and 4.x support for Indy - Internet Direct.  It includes 
 
 - TTaurusTLSIOHandlerSocket - Enables TLS in a TIdTCPClientCustom descendant.
 - TTaurusTLSServerIOHandler - Enables TLS in a TIdCustomTCPServer descendant.
+- TTaurusTLSUnicodeLog - Triggers events when data is sent and received and data is provided in Unicode form if supported.
 
 Both components are in the TaurusTLS.pas unit and the components are available on the IDE palette page, “TaurusTLS”.
 
@@ -82,6 +83,7 @@ The run-time package should depend upon your Indy package files and include the 
 - Source\TaurusTLSConsts.pas
 - Source\TaurusTLSExceptionHandlers.pas
 - Source\TaurusTLSFIPS.pas
+- Source\TaurusTLS_Unicode_Log.pas
 - Source\TaurusTLSHeaders_*.pas
 - Source\TaurusTLSLoader.pas
 
@@ -168,6 +170,7 @@ This program requires a certificate to run.  Instructions for creating a self-si
 CertificateFile=[path to your public certificate file]
 KeyFile=[path to your private SSL key]
 Password=[password for your private SSL key]
+RootCertFile=[path to your root certificate file if applicable]
 ```
 
 You can also do the following:
@@ -180,6 +183,7 @@ You can also do the following:
 
 This is a fully functional cross-platform console FTP client that can be built with both Delphi and Lazaurus.  It has been tested with the following servers:
 
+- CompleteFTP Server - <https://enterprisedt.com/products/completeftp/>
 - FileZilla Server - <https://filezilla-project.org/>
 - ProFTPD - <http://www.proftpd.org/>
 - PureFTPD - <https://www.pureftpd.org/>
