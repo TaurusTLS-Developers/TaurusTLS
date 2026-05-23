@@ -1,5 +1,5 @@
 /* Taurus IOHandlers */
 TTaurusTLSServerIOHandler              BITMAP "TTaurusTLSServerIOHandler.bmp"
 TTaurusTLSIOHandlerSocket              BITMAP "TTaurusTLSIOHandlerSocket.bmp"
+TTaurusTLSUnicodeLog                   BITMAP "TTaurusTLSUnicodeLog.bmp"
 SPLASH                                 BITMAP "splash.bmp"
-

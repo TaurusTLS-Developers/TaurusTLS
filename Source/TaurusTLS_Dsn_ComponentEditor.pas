@@ -42,7 +42,8 @@ uses
   IdGlobal,
   TaurusTLS,
   TaurusTLS_Dsn_AboutDlg,
-  TaurusTLS_Dsn_ResourceStrings;
+  TaurusTLS_Dsn_ResourceStrings,
+  TaurusTLS_Unicode_Log;
 
 procedure TTaurusTLSComponentEditor.ExecuteVerb(Index: Integer);
 begin
@@ -67,6 +68,7 @@ procedure Register;
 begin
   RegisterComponentEditor(TTaurusTLSIOHandlerSocket, TTaurusTLSComponentEditor);
   RegisterComponentEditor(TTaurusTLSServerIOHandler, TTaurusTLSComponentEditor);
+  RegisterComponentEditor(TTaurusTLSUnicodeLog, TTaurusTLSComponentEditor);
 end;
 
 end.

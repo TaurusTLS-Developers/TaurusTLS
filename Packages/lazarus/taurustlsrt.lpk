@@ -436,6 +436,10 @@
 				<UnitName Value="TaurusTLS_ResourceStrings"/>
 			</Item>
 			<Item>
+				<Filename Value="..\..\Source\TaurusTLS_Unicode_Log.pas"/>
+				<UnitName Value="TaurusTLS_Unicode_Log"/>
+			</Item>
+			<Item>
 				<Filename Value="..\..\Source\TaurusTLS_Utils.pas"/>
 				<UnitName Value="TaurusTLS_Utils"/>
 			</Item>
@@ -459,5 +463,5 @@
 			<Version Value="2"/>
 			<UseFileFilters Value="True"/>
 		</PublishOptions>
-		<Version Major="1" Release="7" Build="44"/></Package>
+		<Version Major="2" Build="48"/></Package>
 </CONFIG>

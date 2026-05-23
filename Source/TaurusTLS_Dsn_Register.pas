@@ -58,7 +58,8 @@ uses
   {$IFDEF FPC}
   LResources,
   {$ENDIF}
-  TaurusTLS;
+  TaurusTLS,
+  TaurusTLS_Unicode_Log;
 
 {$IFNDEF FPC}
   {$IFDEF Borland}
@@ -126,7 +127,8 @@ procedure Register;
 begin
   RegisterComponents(RSTaurusTLS, [
     TTaurusTLSServerIOHandler,
-    TTaurusTLSIOHandlerSocket
+    TTaurusTLSIOHandlerSocket,
+    TTaurusTLSUnicodeLog
   ]);
 
   {$IFDEF HAS_TSelectionEditor}

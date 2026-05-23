@@ -109,6 +109,7 @@ uses
   TaurusTLS_Files,
   TaurusTLS_NTLM,
   TaurusTLS_ResourceStrings,
+  TaurusTLS_Unicode_Log,
   TaurusTLS_Utils,
   TaurusTLS_X509;
 
