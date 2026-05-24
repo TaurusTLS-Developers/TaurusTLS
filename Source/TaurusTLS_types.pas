@@ -21,9 +21,33 @@ interface
 uses
   IdGlobal,
   IdCTypes,
+  IdSSLOpenSSL,
+  TaurusTLSHeaders_ssl3,
+  TaurusTLSHeaders_tls1,
   TaurusTLSExceptionHandlers;
 
 type
+  TTaurusTLSVerifyMode = (
+    /// <summary>
+    /// For servers, send certificate. For clients, verify server certificate.
+    /// </summary>
+    sslvrfPeer,
+    /// <summary>
+    /// For servers, require client certificate
+    /// </summary>
+    sslvrfFailIfNoPeerCert,
+    /// <summary>
+    /// For servers, request client certificate only at initial handshake. Do
+    /// not ask for certificate during renegotiation.
+    /// </summary>
+    sslvrfClientOnce,
+    /// <summary>
+    /// For servers, server will not send client certificate request during
+    /// initial handshake. Send the request during the
+    /// SSL_verify_client_post_handshake call.
+    /// </summary>
+    sslvrfPostHandshake);
+
   ETaurusTLSSecurityBits = class(ETaurusTLSError);
 
   TTaurusTLSSecurityBits = (sbZero, sb80, sb112, sb128, sb192, sb256);
@@ -34,6 +58,38 @@ type
   public
     property AsInt: TIdC_INT read GetAsInt write SetAsInt;
   end;
+
+  TTaurusTLSSSLVersion = (
+    /// <summary>SSL 2.0</summary>
+    SSLv2,
+    /// <summary>SSL 2.0 or 3.0</summary>
+    SSLv23,
+    /// <summary>SSL 3.0</summary>
+    SSLv3,
+    /// <summary>TLS 1.0</summary>
+    TLSv1,
+    /// <summary>TLS 1.1</summary>
+    TLSv1_1,
+    /// <summary>TLS 1.2</summary>
+    TLSv1_2,
+    /// <summary>TLS 1.3</summary>
+    TLSv1_3);
+
+  TTaurusTLSSSLVersionHelper = record helper for TTaurusTLSSSLVersion
+  public const
+    cMapping: array[TTaurusTLSSSLVersion] of TIdC_LONG = (
+      0, 0, SSL3_VERSION, TLS1_VERSION, TLS1_1_VERSION, TLS1_2_VERSION,
+      TLS1_3_VERSION
+    );
+
+  private
+    function GetAsInt: TIdC_LONG; {$IFDEF USE_INLINE} inline;{$ENDIF}
+    procedure SetAsInt(AValue: TIdC_LONG); {$IFDEF USE_INLINE} inline;{$ENDIF}
+  public
+  end;
+
+  ETaurusTLSSSLVersion = class(ETaurusTLSError);
+
 
 implementation
 
@@ -56,5 +112,27 @@ begin
 end;
 
 
+
+{ TTaurusTLSSSLVersionHelper }
+
+function TTaurusTLSSSLVersionHelper.GetAsInt: TIdC_LONG;
+begin
+  Result:=cMapping[Self];
+end;
+
+procedure TTaurusTLSSSLVersionHelper.SetAsInt(AValue: TIdC_LONG);
+var
+  i: TTaurusTLSSSLVersion;
+
+begin
+  for i:=Low(TTaurusTLSSSLVersion) to High(TTaurusTLSSSLVersion) do
+    if AValue = cMapping[i] then
+    begin
+      Self:=i;
+      Exit;
+    end;
+  ETaurusTLSSSLVersion.RaiseWithMessageFmt('Fail to set TaurusTLSSSLVersion version. '+
+    'Unknown value %d.', [AValue]);
+end;
 
 end.
