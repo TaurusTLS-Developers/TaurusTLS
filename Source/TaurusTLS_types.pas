@@ -160,9 +160,10 @@ end;
 
 procedure TTaurusTLSSecurityBitsHelper.SetAsInt(AValue: TIdC_INT);
 begin
-  if not (AValue in [0..5]) then
+  if (AValue in [0..5]) then
+    Self:=TTaurusTLSSecurityBits(AValue)
+  else
     raise ETaurusTLSSecurityBits.CreateFmt(RMSG_SecurityBits_Convert_err, [AValue]);
-  Self:=TTaurusTLSSecurityBits(AValue);
 end;
 
 
@@ -184,8 +185,7 @@ begin
       Self:=i;
       Exit;
     end;
-  ETaurusTLSSSLVersion.RaiseWithMessageFmt('Fail to set TaurusTLSSSLVersion version '+
-    'as integer value: %d.', [AValue]);
+  ETaurusTLSSSLVersion.RaiseWithMessageFmt(RMSG_SSLVersion_Convert_err, [AValue]);
 end;
 
 end.
