@@ -46,7 +46,27 @@ type
     /// initial handshake. Send the request during the
     /// SSL_verify_client_post_handshake call.
     /// </summary>
-    sslvrfPostHandshake);
+    sslvrfPostHandshake
+  );
+  /// <summary>
+  /// Controls the peer verification. Can contain the following:<para>
+  /// <c>sslvrfPeer</c> For servers, send certificate. For clients, verify
+  /// server certificate.
+  /// </para>
+  /// <para>
+  /// <c>sslvrfFailIfNoPeerCert</c> For servers, require client certificate
+  /// </para>
+  /// <para>
+  /// <c>sslvrfClientOnce</c> For servers, request client certificate only
+  /// at initial handshake. Do not ask for certificate during renegotiation.
+  /// </para>
+  /// <para>
+  /// <c>sslvrfPostHandshake</c> For servers, server will not send client
+  /// certificate request during initial handshake. Send the request during
+  /// the SSL_verify_client_post_handshake call.
+  /// </para>
+  /// </summary>
+  TTaurusTLSVerifyModes = set of TTaurusTLSVerifyMode;
 
   ETaurusTLSSecurityBits = class(ETaurusTLSError);
 
@@ -90,6 +110,40 @@ type
 
   ETaurusTLSSSLVersion = class(ETaurusTLSError);
 
+  TTaurusTLSDebugLogFlag = (
+    dfSocket,
+    dfIOHandler,
+    dfOpenSSLDebug,
+    dfError,
+    dfAccept,
+    dfConnect,
+    dfSend,
+    dfRecv,
+    dfClosing,
+    dfClosed
+  );
+  TTaurusTLSDebugLogFlags = set of TTaurusTLSDebugLogFlag;
+
+  /// <summary>
+  ///   Read status of TLS Connection.
+  /// </summary>
+  TTaurusTLSReadStatus = (
+    /// <summary>
+    ///   if application data pending, or if it looks like we have disconnected
+    /// </summary>
+   sslDataAvailable,
+    /// <summary>
+   ///   try again later
+   /// </summary>
+   sslNoData,
+   /// <summary>
+   ///   if the connection has been shutdown
+   /// </summary>
+   sslEOF,
+   /// <summary>
+   ///   error state indicated
+   /// </summary>
+   sslUnrecoverableError);
 
 implementation
 
@@ -112,7 +166,6 @@ begin
 end;
 
 
-
 { TTaurusTLSSSLVersionHelper }
 
 function TTaurusTLSSSLVersionHelper.GetAsInt: TIdC_LONG;
@@ -131,8 +184,8 @@ begin
       Self:=i;
       Exit;
     end;
-  ETaurusTLSSSLVersion.RaiseWithMessageFmt('Fail to set TaurusTLSSSLVersion version. '+
-    'Unknown value %d.', [AValue]);
+  ETaurusTLSSSLVersion.RaiseWithMessageFmt('Fail to set TaurusTLSSSLVersion version '+
+    'as integer value: %d.', [AValue]);
 end;
 
 end.
