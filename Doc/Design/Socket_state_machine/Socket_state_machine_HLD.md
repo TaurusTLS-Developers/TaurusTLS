@@ -14,7 +14,7 @@ To maintain strict alignment with Indy's component and factory architectures, Ta
                                | ConnectClient / AfterAccept
                                v
 +-------------------------------------------------------------+
-|             TTaurusTLSHandshakeSnapshot                     |  <-- Keeps SSL_CTX alive (SSL_CTX_up_ref)
+|             TTaurusTLSCustomSocketConfig                    |  <-- Keeps SSL_CTX alive (SSL_CTX_up_ref)
 +-------------------------------------------------------------+  <-- Freezes data properties & event pointers
                                |
                                | Instantiates based on "IsPeer"
@@ -29,7 +29,7 @@ To maintain strict alignment with Indy's component and factory architectures, Ta
                                |
                                +------------+
                                             v
-                                     TTaurusSSLState (Active State)
+                                 TTaurusTLSSslStateHandler (Active Handler)
 ```
 
 ## 2. Component Integration & Indy Pipeline Mapping
@@ -46,19 +46,19 @@ At the start of a connection, `TTaurusTLSIOHandlerSocket` evaluates Indy's nativ
 
 ### 2.3. The I/O Pipeline Integration
 When `PassThrough` is set to `False` (encryption is active), Indy’s read/write pipeline routes raw data through the following abstract hooks in our wrapper:
-*   `function RecvEnc(var VBuffer: TIdBytes): Integer; override;` $\rightarrow$ Delegates to the active state's `Read` operation, wrapping the OpenSSL `SSL_read` loop.
-*   `function SendEnc(const ABuffer: TIdBytes; const AOffset, ALength: Integer): Integer; override;` $\rightarrow$ Delegates to the active state's `Write` operation, wrapping the OpenSSL `SSL_write` loop.
+*   `function RecvEnc(var VBuffer: TIdBytes): Integer; override;` $\rightarrow$ Delegates to the active state's `Recv` operation, wrapping the OpenSSL `SSL_read` loop.
+*   `function SendEnc(const ABuffer: TIdBytes; const AOffset, ALength: Integer): Integer; override;` $\rightarrow$ Delegates to the active state's `Send` operation, wrapping the OpenSSL `SSL_write` loop.
 
 ## 3. Core Architectural Patterns
 
 ### 3.1. The GoF State Pattern
-Instead of a monolithic class with complex conditional branching, states are represented as lightweight, polymorphic classes inheriting from a common abstract base (`TTaurusSSLState`). The active state object executes state-specific protocol actions (e.g., ECH, mTLS, TLS 1.3 post-handshake) and delegates standard operations (`Read`, `Write`, `Connect`, `Shutdown`) to the OpenSSL C-API.
+Instead of a monolithic class with complex conditional branching, states are represented as lightweight, polymorphic classes inheriting from a common abstract base (`TTaurusTLSSslStateHandler`). The active handler object executes state-specific protocol actions (e.g., ECH, mTLS, TLS 1.3 post-handshake) and delegates standard operations (`Recv`, `Send`, `Connect`, `Shutdown`) to the OpenSSL C-API.
 
-### 3.2. The Handshake Snapshot Class Pattern
-To prevent data races and avoid Delphi `IInterface` vs. `TComponent` lifecycle conflicts, the connection's parameters and event pointers are frozen into a standard class (`TTaurusTLSHandshakeSnapshot`) right before the handshake starts. The active state classes and static callback bridges refer exclusively to this snapshot. The `TTaurusTLSBaseSocket` owns the snapshot and destroys it during teardown.
+### 3.2. The Handshake Config Class Pattern
+To prevent data races and avoid Delphi `IInterface` vs. `TComponent` lifecycle conflicts, the connection's parameters and event pointers are frozen into a polymorphic configuration class (`TTaurusTLSCustomSocketConfig` and its descendants `TTaurusTLSClientSocketConfig` and `TTaurusTLSPeerSocketConfig`) right before the handshake starts. The active handler classes and static callback bridges refer exclusively to this configuration instance. The `TTaurusTLSBaseSocket` owns the config object and destroys it during teardown.
 
 ### 3.3. Context Memory Protection
-The `TTaurusTLSHandshakeSnapshot` class keeps the shared `SSL_CTX` alive during asynchronous handshakes by incrementing its OpenSSL reference count via `SSL_CTX_up_ref` upon creation. Upon destruction, it decrements the count using `SSL_CTX_free`. This prevents use-after-free bugs if the parent component is destroyed mid-handshake or if the configuration is reassigned.
+The `TTaurusTLSCustomSocketConfig` class keeps the shared `SSL_CTX` alive during asynchronous handshakes by incrementing its OpenSSL reference count via `SSL_CTX_up_ref` upon creation. Upon destruction, it decrements the count using `SSL_CTX_free`. This prevents use-after-free bugs if the parent component is destroyed mid-handshake or if the configuration is reassigned.
 
 ## 4. State Definitions
 *   **seIdle**: The initial state. No OpenSSL objects exist.
@@ -81,7 +81,7 @@ To prevent OS-level process termination during TCP RST events, the SSM implement
 The SSM follows a **"Success or Abort"** policy. If ECH is configured but the server falls back to a decoy "Outer" SNI (returning `SSL_ECH_STATUS_GREASE_ECH` or `SSL_ECH_STATUS_FAILED`), the SSM transitions to `seError` (or `seClosed` if a retry config is retrieved) and aborts the connection before any application data is sent.
 
 ### 5.3. TLS 1.3 Post-Handshake Asynchronicity
-The SSM handles post-handshake events (NewSessionTickets, Post-Handshake Authentication) by treating `SSL_read` as a potential state-changing operation. If `SSL_read` returns `WANT_READ` in `seEstablished`, the SSM transparently processes the protocol message and resumes waiting for application data.
+The SSM handles post-handshake events (NewSessionTickets, Post-Handshake Authentication) by treating `SSL_read` as a potential state-changing operation. If `SSL_read` returns `WANT_READ` in `seEstablished`, the SSM transparently processes the protocol message and resumes waiting for application data via `Recv`.
 
 ## 6. Event Lifecycle & Callback Routing
 The SSM acts as a callback bridge by mapping the `PSSL` handle back to the `TTaurusTLSBaseSocket` instance using `SSL_get_app_data`.
