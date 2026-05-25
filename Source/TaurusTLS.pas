@@ -4864,7 +4864,7 @@ begin
   sigaddset(LSigSet, SIGPIPE);
   pthread_sigmask(SIG_BLOCK, @LSigSet, nil);
 {$ENDIF}
-end;
+end;    //PALOFF - surpress empty begin/end block
 
 { TTaurusTLSSocket }
 

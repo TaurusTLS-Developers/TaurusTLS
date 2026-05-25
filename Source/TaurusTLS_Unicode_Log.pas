@@ -61,15 +61,13 @@ type
 ///   the String type supports. <br />
 /// </summary>
   TTaurusTLSUnicodeLog = class(TIdConnectionIntercept)
-  protected
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} protected
     FActive: Boolean;
     FOnStatus : TTaurusTLSUnicodeLogStatusEvent;
     FOnReceived : TTaurusTLSUnicodeLogDataEvent;
     FOnSent :  TTaurusTLSUnicodeLogDataEvent;
     procedure InitComponent; override;
     procedure LogStatus(const AData: string);   {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure LogReceivedData(const AData: string);  {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure LogSentData(const AData: string);  {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure SetActive(const AValue: Boolean);  {$IFDEF USE_INLINE}inline; {$ENDIF}
   public
     /// <summary>
@@ -128,6 +126,13 @@ uses
 
 { TTaurusTLSUnicodeLog }
 
+procedure TTaurusTLSUnicodeLog.LogStatus(const AData: string);
+begin
+  if Assigned(OnStatus) then begin
+    OnStatus(Self, AData);
+  end;
+end;
+
 procedure TTaurusTLSUnicodeLog.Connect(AConnection: TComponent);
 begin
   inherited Connect(AConnection);
@@ -150,54 +155,19 @@ begin
   FActive := TAURUSTLS_DEF_ACTIVE;
 end;
 
-procedure TTaurusTLSUnicodeLog.LogReceivedData(const AData: string);
-begin
-  if Assigned(OnReceived) then begin
-    OnReceived(Self, AData);
-  end;
-end;
-
-procedure TTaurusTLSUnicodeLog.LogSentData(const AData: string);
-begin
-  if Assigned(OnSent) then begin
-    OnSent(Self, AData);
-  end;
-end;
-
-procedure TTaurusTLSUnicodeLog.LogStatus(const AData: string);
-begin
-  if Assigned(OnStatus) then begin
-    OnStatus(Self, AData);
-  end;
-end;
-
 procedure TTaurusTLSUnicodeLog.Receive(var ABuffer: TIdBytes);
-{$IFNDEF USE_INLINE_VAR}
-var s : String;
-{$ENDIF}
 begin
   inherited Receive(ABuffer);
-  if FActive then begin
-    {$IFDEF USE_INLINE_VAR}
-    var s : String;
-    {$ENDIF}
-    s := BytesToString(ABuffer,IndyTextEncoding_UTF8);
-    LogReceivedData(s);
+  if FActive and Assigned(OnReceived) then begin
+    OnReceived(Self, BytesToString(ABuffer,IndyTextEncoding_UTF8));
   end;
 end;
 
 procedure TTaurusTLSUnicodeLog.Send(var ABuffer: TIdBytes);
-{$IFNDEF USE_INLINE_VAR}
-var s : String;
-{$ENDIF}
 begin
   inherited Send(ABuffer);
-  if FActive then begin
-    {$IFDEF USE_INLINE_VAR}
-    var s : String;
-    {$ENDIF}
-    s := BytesToString(ABuffer,IndyTextEncoding_UTF8);
-    LogSentData(s);
+  if FActive and Assigned(OnSent) then begin
+    OnSent(Self, BytesToString(ABuffer,IndyTextEncoding_UTF8));
   end;
 end;
 
