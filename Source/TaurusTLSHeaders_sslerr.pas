@@ -779,6 +779,7 @@ const
   SSL_R_WRONG_VERSION_NUMBER = 267;
   SSL_R_X509_LIB = 268;
   SSL_R_X509_VERIFICATION_SETUP_PROBLEMS = 269;
+  SSL_R_UNEXPECTED_EOF_WHILE_READING = 294;
 
     { The EXTERNALSYM directive is ignored by FPC, however, it is used by Delphi as follows:
 		
