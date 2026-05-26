@@ -673,7 +673,6 @@ type
     function GetCertificateAuthorityPathLen: TIdC_LONG; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetHasFreshestCRL: Boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
-    property Extensions: TTaurusTLSX509Exts read GetExtensions;
   public
     /// <summary>
     ///   Creates a new instance of TTaurusTLS.
@@ -690,6 +689,10 @@ type
     ///   Frees resources and destroys the current instance.
     /// </summary>
     Destructor Destroy; override;
+    /// <summary>
+    ///  X509 Certificate extensions list.
+    /// </summary>
+    property Extensions: TTaurusTLSX509Exts read GetExtensions;
     /// <summary>
     ///   The number of X509 certificate extensions.
     /// </summary>
