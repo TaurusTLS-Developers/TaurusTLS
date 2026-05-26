@@ -615,18 +615,48 @@ end;
 function TTaurusTLSSslStateHandlerEstablished.Recv(ASocket: TTaurusTLSBaseSocket; var Buf; Size: Integer): Integer;
 var
   LRet, LErr: Integer;
+  LQueueErr: Cardinal;
 begin
   repeat
+    // 1. MUST clear the error queue before the I/O operation
+    ERR_clear_error; 
+    
     LRet := SSL_read(ASocket.SSL, @Buf, Size);
     if LRet <= 0 then
     begin
       LErr := SSL_get_error(ASocket.SSL, LRet);
       case LErr of
         SSL_ERROR_WANT_READ: 
-          Continue; // TLS 1.3 Post-Handshake message processed. Loop again.
+          Continue; // Post-handshake control message, loop again.
+          
+        SSL_ERROR_ZERO_RETURN:
+          begin
+            // Peer sent close_notify. Safe, graceful shutdown.
+            ASocket.TransitionTo(seClosed);
+            raise EIdConnClosedGracefully.Create(RSConClosedGracefully);
+          end;
+          
+        SSL_ERROR_SSL:
+          begin
+            // Read the specific error from the queue
+            LQueueErr := ERR_get_error;
+            if (ERR_GET_LIB(LQueueErr) = ERR_LIB_SSL) and 
+               (ERR_GET_REASON(LQueueErr) = SSL_R_UNEXPECTED_EOF_WHILE_READING) then
+            begin
+              // Treat unexpected EOF as graceful close for web/Indy compatibility
+              ASocket.TransitionTo(seClosed);
+              raise EIdConnClosedGracefully.Create(RSConClosedGracefully);
+            end
+            else
+            begin
+              ASocket.TransitionTo(seError);
+              raise ETaurusTLSIOError.Create('Fatal SSL protocol error during read.');
+            end;
+          end;
+          
         SSL_ERROR_SYSCALL:
           begin
-            ASocket.TransitionTo(seClosed); // Triggers immediate teardown
+            ASocket.TransitionTo(seClosed); // Force-close immediate teardown
             raise ETaurusTLSConnectionReset.Create('Connection reset by peer.');
           end;
         else
@@ -645,6 +675,9 @@ function TTaurusTLSSslStateHandlerEstablished.Send(ASocket: TTaurusTLSBaseSocket
 var
   LRet, LErr: Integer;
 begin
+  // 1. MUST clear the error queue before the I/O operation
+  ERR_clear_error; 
+  
   LRet := SSL_write(ASocket.SSL, @Buf, Size);
   if LRet <= 0 then
   begin
@@ -652,7 +685,7 @@ begin
     case LErr of
       SSL_ERROR_SYSCALL:
         begin
-          ASocket.TransitionTo(seClosed); // Triggers immediate teardown
+          ASocket.TransitionTo(seClosed); // Force-close immediately on RST
           raise ETaurusTLSConnectionReset.Create('Connection reset by peer during write.');
         end;
       else
