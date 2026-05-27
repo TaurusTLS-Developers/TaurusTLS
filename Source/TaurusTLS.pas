@@ -236,7 +236,12 @@ uses
   {$ENDIF}
 {$ENDIF}
 {$IFDEF SIGPIPE_MASK}
+  {$IFDEF FPC}
+  BaseUnix,
+  pthreads,
+  {$ELSE}
   Posix.Signal,
+  {$ENDIF}
 {$ENDIF}
   Classes,
   IdCTypes,
@@ -4860,9 +4865,15 @@ var
 {$ENDIF}
 begin
 {$IFDEF SIGPIPE_MASK}
+  {$IFDEF FPC}
+  FpsigEmptySet(LSigSet);
+  FpSigAddSet(LSigSet, SIGPIPE);
+
+  {$ELSE}
   sigemptyset(LSigSet);
   sigaddset(LSigSet, SIGPIPE);
   pthread_sigmask(SIG_BLOCK, @LSigSet, nil);
+  {$ENDIF}
 {$ENDIF}
 end;    //PALOFF - surpress empty begin/end block
 
