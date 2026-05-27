@@ -1,4 +1,4 @@
-# Detailed Design Document: TaurusTLS "Socket State Machine" (v5.1)
+# Detailed Design Document: TaurusTLS "Socket State Machine"
 
 ## 1. Data Structures & Types
 
@@ -86,34 +86,34 @@ type
 ```
 
 ### 1.3. The Abstract Context Class
-`TTaurusTLSBaseSocket` serves as the state context. It holds a reference to the abstract `TTaurusTLSCustomSocketConfig` and delegates all operational calls to the active state-specific behavioral handler object.
+`TTaurusTLSBaseSocket` serves as the state context. It holds a reference to the abstract `TTaurusTLSCustomSocketConfig` and processes connection states internally using direct, high-performance, enum-driven dispatches.
 
 ```pascal
 type
-  TTaurusTLSSslStateHandler = class; // Forward declaration
-
   TTaurusTLSBaseSocket = class abstract
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FSSL: PSSL;
     FStateEnum: TTaurusTLSSslState;
-    FCurrentState: TTaurusTLSSslStateHandler;
     FConfig: TTaurusTLSCustomSocketConfig;
-    FClosedHandler: TTaurusTLSSslStateHandler;
-    FErrorHandler: TTaurusTLSSslStateHandler;
     function IsValidTransition(ACurrent, ATarget: TTaurusTLSSslState): Boolean;
     procedure ClosePhysicalSocket;
+    procedure DoShutdown;
+  protected
+    procedure DoHandshake; virtual; abstract;
+    procedure CheckActiveState(AExpectedState: TTaurusTLSSslState); {$IFDEF USE_INLINE}inline;{$ENDIF}
   public
     constructor Create(AConfig: TTaurusTLSCustomSocketConfig); virtual;
     destructor Destroy; override;
     procedure TransitionTo(ATargetState: TTaurusTLSSslState);
     
-    // Delegated Operations
-    procedure Connect; virtual; abstract;
-    procedure ProcessSSL; inline;
-    function Recv(var Buf; Size: Integer): Integer; inline;
-    function Send(const Buf; Size: Integer): Integer; inline;
-    function Readable(AMSec: Integer): Boolean; virtual; abstract;
-    procedure Shutdown; inline;
+    // Core Socket Operations
+    procedure Connect; virtual;
+    procedure ProcessSSL;
+    function Recv(var Buf; Size: Integer): Integer;
+    function Send(const Buf; Size: Integer): Integer;
+    function Readable(AMSec: Integer): Boolean; virtual;
+    procedure Shutdown;
+    function GetSSLError(ALastResult: Integer): Integer;
     
     property SSL: PSSL read FSSL;
     property StateEnum: TTaurusTLSSslState read FStateEnum;
@@ -134,10 +134,10 @@ type
   protected
     property ClientConfig: TTaurusTLSClientSocketConfig read GetClientConfig;
     procedure SetupConnection;
+    procedure DoHandshake; override;
   public
     constructor Create(AConfig: TTaurusTLSClientSocketConfig; 
       ASessionToResume: PSSL_SESSION = nil; ASourceSSLForCopy: PSSL = nil); reintroduce;
-    procedure Connect; override;
     function Readable(AMSec: Integer): Boolean; override;
   end;
 
@@ -146,23 +146,10 @@ type
     function GetPeerConfig: TTaurusTLSPeerSocketConfig; {$IFDEF USE_INLINE}inline;{$ENDIF}
   protected
     property PeerConfig: TTaurusTLSPeerSocketConfig read GetPeerConfig;
+    procedure DoHandshake; override;
   public
     constructor Create(AConfig: TTaurusTLSPeerSocketConfig); reintroduce;
-    procedure Connect; override;
     function Readable(AMSec: Integer): Boolean; override;
-  end;
-
-  /// <summary>
-  ///   Abstract base state action class. Concrete descendants override these virtual methods
-  ///   to execute state-specific protocols.
-  /// </summary>
-  TTaurusTLSSslStateHandler = class abstract
-  public
-    procedure ProcessSSL(ASocket: TTaurusTLSBaseSocket); virtual; abstract;
-    function Recv(ASocket: TTaurusTLSBaseSocket; var Buf; Size: Integer): Integer; virtual; abstract;
-    function Send(ASocket: TTaurusTLSBaseSocket; const Buf; Size: Integer): Integer; virtual; abstract;
-    function Readable(ASocket: TTaurusTLSBaseSocket; AMSec: Integer): Boolean; virtual; abstract;
-    procedure Shutdown(ASocket: TTaurusTLSBaseSocket); virtual; abstract;
   end;
 ```
 
@@ -190,6 +177,7 @@ type
     function Clone: TIdSSLIOHandlerSocketBase; override;
     function MakeClientIOHandler: TIdSSLIOHandlerSocketBase; override;
     function Readable(AMSec: Integer): Boolean; override;
+    function CheckForError(ALastResult: Integer): Integer; override;
   end;
 
 procedure TTaurusTLSIOHandlerSocket.InitComponent;
@@ -324,15 +312,48 @@ begin
   end;
   Result := inherited Readable(AMSec);
 end;
+
+function TTaurusTLSIOHandlerSocket.CheckForError(ALastResult: Integer): Integer;
+var
+  LSslErr: Integer;
+begin
+  if PassThrough then
+  begin
+    Result := inherited CheckForError(ALastResult);
+  end
+  else
+  begin
+    if not Assigned(FSSLSocket) then
+    begin
+      Result := inherited CheckForError(ALastResult);
+      Exit;
+    end;
+
+    LSslErr := FSSLSocket.GetSSLError(ALastResult);
+    if LSslErr = SSL_ERROR_NONE then
+    begin
+      Result := 0;
+      Exit;
+    end;
+
+    if LSslErr = SSL_ERROR_SYSCALL then
+    begin
+      Result := inherited CheckForError(Integer(Id_SOCKET_ERROR));
+      Exit;
+    end;
+
+    ETaurusTLSAPISSLError.RaiseExceptionCode(LSslErr, ALastResult);
+  end;
+end;
 ```
 
 ---
 
 ## 3. Centralized State Guard & Transition Factory
 
-The Context (`TTaurusTLSBaseSocket`) enforces state-transition validity, manages the lifetime of `TTaurusTLSCustomSocketConfig`, and acts as the factory for state object instantiation.
+The Context (`TTaurusTLSBaseSocket`) enforces state-transition validity and manages the lifetime of `TTaurusTLSCustomSocketConfig`. State transitions are entirely allocation-free and OOM-immune.
 
-To provide a strong exception guarantee (transactional commit-or-rollback) under memory pressure, the base class pre-allocates the terminal handlers (`FClosedHandler`, `FErrorHandler`) upon creation.
+To prevent memory leaks and access violations during teardown, the destructor unbinds `app_data` from the `SSL` handle prior to invocation of `SSL_free`.
 
 ```pascal
 constructor TTaurusTLSBaseSocket.Create(AConfig: TTaurusTLSCustomSocketConfig);
@@ -341,21 +362,10 @@ begin
   FConfig := AConfig; // Take ownership of the Config
   FSSL := nil;
   FStateEnum := seIdle;
-  
-  // Pre-allocate terminal state handlers to ensure transition safety under OOM conditions
-  FClosedHandler := TTaurusTLSSslStateHandlerClosed.Create;
-  FErrorHandler := TTaurusTLSSslStateHandlerError.Create;
-  
-  FCurrentState := TTaurusTLSSslStateHandlerIdle.Create;
 end;
 
 destructor TTaurusTLSBaseSocket.Destroy;
 begin
-  // Prevent double-freeing if FCurrentState references a pre-allocated terminal handler
-  if (FCurrentState = FClosedHandler) or (FCurrentState = FErrorHandler) then
-    FCurrentState := nil;
-    
-  FreeAndNil(FCurrentState);
   if Assigned(FSSL) then
   begin
     // Break the association so callbacks do not map back to this instance during SSL_free
@@ -363,9 +373,6 @@ begin
     SSL_free(FSSL);
     FSSL := nil;
   end;
-  
-  FreeAndNil(FClosedHandler);
-  FreeAndNil(FErrorHandler);
   FreeAndNil(FConfig); // Safely destroy the reference-counted configuration class
   inherited Destroy;
 end;
@@ -394,7 +401,6 @@ end;
 procedure TTaurusTLSBaseSocket.TransitionTo(ATargetState: TTaurusTLSSslState);
 var
   LOldState: TTaurusTLSSslState;
-  LNewStateObj: TTaurusTLSSslStateHandler;
 begin
   // 1. Redundant Transition Guard (Fails fast in Debug, exits silently in Release)
   if FStateEnum = ATargetState then
@@ -408,21 +414,7 @@ begin
   if not IsValidTransition(FStateEnum, ATargetState) then
     raise ETaurusTLSInvalidTransition.CreateFmt('Invalid transition: %d -> %d', [Ord(FStateEnum), Ord(ATargetState)]);
 
-  // 2. Transactional State Allocation (Commit-or-Rollback)
-  // We allocate the new state handler first. If this raises an EOutOfMemory,
-  // we exit the method cleanly, preserving the old handler and current state intact.
-  LNewStateObj := nil;
-  case ATargetState of
-    seIdle:          LNewStateObj := TTaurusTLSSslStateHandlerIdle.Create;
-    seInitialized:   LNewStateObj := TTaurusTLSSslStateHandlerInitialized.Create;
-    seHandshaking:   LNewStateObj := TTaurusTLSSslStateHandlerHandshaking.Create;
-    seEstablished:   LNewStateObj := TTaurusTLSSslStateHandlerEstablished.Create;
-    seClosing:       LNewStateObj := TTaurusTLSSslStateHandlerClosing.Create;
-    seClosed:        LNewStateObj := FClosedHandler; // Pre-allocated (No allocation)
-    seError:         LNewStateObj := FErrorHandler;  // Pre-allocated (No allocation)
-  end;
-
-  // 3. State Mutation (Point of No Return)
+  // 2. State Mutation (Point of No Return)
   LOldState := FStateEnum;
 
   // Immediate TCP RST Teardown (avoids post-handshake write crashes)
@@ -437,17 +429,6 @@ begin
     ClosePhysicalSocket; // Force-close the physical OS descriptor immediately
   end;
 
-  // Free current state only if it is not one of our shared pre-allocated handlers
-  if (FCurrentState <> nil) and (FCurrentState <> FClosedHandler) and (FCurrentState <> FErrorHandler) then
-  begin
-    FreeAndNil(FCurrentState);
-  end
-  else
-  begin
-    FCurrentState := nil;
-  end;
-
-  FCurrentState := LNewStateObj;
   FStateEnum := ATargetState;
 
   // Fire state change event safely from the configuration snapshot
@@ -455,25 +436,46 @@ begin
     FConfig.OnStateChange(FConfig.Sender, LOldState, ATargetState);
 end;
 
+procedure TTaurusTLSBaseSocket.CheckActiveState(AExpectedState: TTaurusTLSSslState);
+begin
+  if FStateEnum <> AExpectedState then
+    raise ETaurusTLSStateError.Create('Invalid socket operation in current state: ' + Ord(FStateEnum).ToString);
+end;
+
+procedure TTaurusTLSBaseSocket.Connect;
+begin
+  TransitionTo(seInitialized);
+end;
+
 procedure TTaurusTLSBaseSocket.ProcessSSL;
 begin
-  FCurrentState.ProcessSSL(Self);
+  case FStateEnum of
+    seHandshaking: DoHandshake; // Polymorphic dispatch to Client/Peer
+    seClosing:     DoShutdown;  // Standard unified SSL_shutdown loop
+  else
+    raise ETaurusTLSStateError.Create('ProcessSSL is not valid in the current state: ' + Ord(FStateEnum).ToString);
+  end;
 end;
 
-function TTaurusTLSBaseSocket.Recv(var Buf; Size: Integer): Integer;
+function TTaurusTLSBaseSocket.GetSSLError(ALastResult: Integer): Integer;
 begin
-  Result := FCurrentState.Recv(Self, Buf, Size);
-end;
-
-function TTaurusTLSBaseSocket.Send(const Buf; Size: Integer): Integer;
-begin
-  Result := FCurrentState.Send(Self, Buf, Size);
+  if Assigned(FSSL) then
+  begin
+    ERR_clear_error; // Clear error queue to prevent stale reads
+    Result := SSL_get_error(FSSL, ALastResult);
+  end
+  else
+    Result := SSL_ERROR_SYSCALL;
 end;
 
 procedure TTaurusTLSBaseSocket.Shutdown;
 begin
   try
-    FCurrentState.Shutdown(Self);
+    if FStateEnum = seEstablished then
+    begin
+      TransitionTo(seClosing);
+      ProcessSSL;
+    end;
   except
     on E: Exception do
     begin
@@ -485,13 +487,13 @@ end;
 
 ---
 
-## 4. Concrete State Implementation Workflows
+## 4. Concrete Handshake Workflows & Direct I/O
 
-### 4.1. Handshake Loop (`TTaurusTLSSslStateHandlerHandshaking`)
+### 4.1. Handshake Loop (`TTaurusTLSClientSocket` and `TTaurusTLSPeerSocket`)
 The handshake process executes within a dedicated `try..except` block. If `SSL_connect` or `SSL_accept` raises an exception (or triggers a fatal protocol error), the handler transitions the socket to `seError` (or `seClosed` if ECH retry is expected) *prior* to bubbling the exception, preventing uncompleted handshake shutdown errors.
 
 ```pascal
-procedure TTaurusTLSSslStateHandlerHandshaking.ProcessSSL(ASocket: TTaurusTLSBaseSocket);
+procedure TTaurusTLSClientSocket.DoHandshake;
 var
   LRet, LErr: Integer;
   LSecurityAccept: Boolean;
@@ -503,22 +505,20 @@ var
   LClientIO: TTaurusTLSIOHandlerSocket;
 begin
   LClientIO := nil;
-  if ASocket.Config.Sender is TTaurusTLSIOHandlerSocket then
-    LClientIO := TTaurusTLSIOHandlerSocket(ASocket.Config.Sender);
+  if Config.Sender is TTaurusTLSIOHandlerSocket then
+    LClientIO := TTaurusTLSIOHandlerSocket(Config.Sender);
 
   try
     repeat
-      if ASocket is TTaurusTLSClientSocket then
-        LRet := SSL_connect(ASocket.SSL)
-      else
-        LRet := SSL_accept(ASocket.SSL);
+      ERR_clear_error;
+      LRet := SSL_connect(SSL);
 
       if LRet = 1 then
       begin
         // Verify ECH status prior to accepting handshake success
         if Assigned(LClientIO) and LClientIO.ECHEnabled and (LClientIO.ECHConfigList <> '') then
         begin
-          LStatus := SSL_ech_get1_status(ASocket.SSL, @LInner, @LOuter);
+          LStatus := SSL_ech_get1_status(SSL, @LInner, @LOuter);
           
           if LStatus = SSL_ECH_STATUS_GREASE_ECH then
           begin
@@ -526,13 +526,13 @@ begin
             LECHConfigBuf := nil;
             LECHConfigLen := 0;
 
-            if SSL_ech_get1_retry_config(ASocket.SSL, @LECHConfigBuf, @LECHConfigLen) = 1 then
+            if SSL_ech_get1_retry_config(SSL, @LECHConfigBuf, @LECHConfigLen) = 1 then
             begin
               try
                 if (LECHConfigBuf <> nil) and (LECHConfigLen > 0) then
                 begin
                   LNewConfigBase64 := EncodeConfigList(LECHConfigBuf, LECHConfigLen);
-                  ASocket.TransitionTo(seClosed); // Safely close and tear down SSL session
+                  TransitionTo(seClosed); // Safely close and tear down SSL session
                   raise ETaurusTLSECHRetryRequired.Create(
                     'ECH Handshake error. Try to reconnect with updated ECH Config List.',
                     LNewConfigBase64
@@ -543,58 +543,58 @@ begin
               end;
             end;
             
-            ASocket.TransitionTo(seClosed);
+            TransitionTo(seClosed);
             raise ETaurusTLSECHRejectedError.Create(
               'ECH Handshake failed. The server rejected the key and provided no retry configuration.'
             );
           end
           else if LStatus = SSL_ECH_STATUS_FAILED then
           begin
-            ASocket.TransitionTo(seError);
+            TransitionTo(seError);
             raise ETaurusTLSECHProtocolError.Create('ECH Handshake failed due to a protocol or decryption error.');
           end;
         end;
 
         // Perform security level check via snapshot event
         LSecurityAccept := True;
-        if Assigned(ASocket.Config) and Assigned(ASocket.Config.OnSecurityLevel) then
-          ASocket.Config.OnSecurityLevel(ASocket.Config.Sender, LSecurityAccept);
+        if Assigned(Config) and Assigned(Config.OnSecurityLevel) then
+          Config.OnSecurityLevel(Config.Sender, LSecurityAccept);
 
         if not LSecurityAccept then
         begin
-          ASocket.TransitionTo(seError);
+          TransitionTo(seError);
           Exit;
         end;
         
-        ASocket.TransitionTo(seEstablished);
+        TransitionTo(seEstablished);
         
         if Assigned(LClientIO) and LClientIO.ECHEnabled then
         begin
           // Update the status for successful connections
-          LStatus := SSL_ech_get1_status(ASocket.SSL, @LInner, @LOuter);
+          LStatus := SSL_ech_get1_status(SSL, @LInner, @LOuter);
           if LStatus = SSL_ECH_STATUS_SUCCESS then
             LClientIO.SetECHStatus(ech_cli_success)
           else
             LClientIO.SetECHStatus(ech_cli_not_attempted);
         end;
 
-        if Assigned(ASocket.Config) and Assigned(ASocket.Config.OnSSLNegotiated) then
-          ASocket.Config.OnSSLNegotiated(ASocket.Config.Sender);
+        if Assigned(Config) and Assigned(Config.OnSSLNegotiated) then
+          Config.OnSSLNegotiated(Config.Sender);
         Exit;
       end;
 
-      LErr := SSL_get_error(ASocket.SSL, LRet);
+      LErr := SSL_get_error(SSL, LRet);
       case LErr of
         SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE:
-          IndySelect(ASocket, LErr); // Synchronous block using Indy Select
+          IndySelect(Self, LErr); // Synchronous block using Indy Select
         SSL_ERROR_SYSCALL:
           begin
-            ASocket.TransitionTo(seClosed); // Triggers immediate teardown
+            TransitionTo(seClosed); // Triggers immediate teardown
             raise ETaurusTLSConnectionReset.Create('Handshake reset by peer.');
           end;
         else
           begin
-            ASocket.TransitionTo(seError);
+            TransitionTo(seError);
             raise ETaurusTLSHandshakeError.Create('Fatal handshake error.');
           end;
       end;
@@ -602,29 +602,88 @@ begin
   except
     on E: Exception do
     begin
-      if (ASocket.StateEnum = seHandshaking) then
-        ASocket.TransitionTo(seError); // Safely aborts, preventing illegal "shutdown while in init"
+      if (StateEnum = seHandshaking) then
+        TransitionTo(seError); // Safely aborts, preventing illegal "shutdown while in init"
+      raise;
+    end;
+  end;
+end;
+
+procedure TTaurusTLSPeerSocket.DoHandshake;
+var
+  LRet, LErr: Integer;
+  LSecurityAccept: Boolean;
+begin
+  try
+    repeat
+      ERR_clear_error;
+      LRet := SSL_accept(SSL);
+
+      if LRet = 1 then
+      begin
+        // Perform security level check via snapshot event
+        LSecurityAccept := True;
+        if Assigned(Config) and Assigned(Config.OnSecurityLevel) then
+          Config.OnSecurityLevel(Config.Sender, LSecurityAccept);
+
+        if not LSecurityAccept then
+        begin
+          TransitionTo(seError);
+          Exit;
+        end;
+        
+        TransitionTo(seEstablished);
+        Exit;
+      end;
+
+      LErr := SSL_get_error(SSL, LRet);
+      case LErr of
+        SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE:
+          IndySelect(Self, LErr); // Synchronous block using Indy Select
+        SSL_ERROR_SYSCALL:
+          begin
+            TransitionTo(seClosed); // Triggers immediate teardown
+            raise ETaurusTLSConnectionReset.Create('Handshake reset by peer.');
+          end;
+        else
+          begin
+            TransitionTo(seError);
+            raise ETaurusTLSHandshakeError.Create('Fatal handshake error.');
+          end;
+      end;
+    until False;
+  except
+    on E: Exception do
+    begin
+      if (StateEnum = seHandshaking) then
+        TransitionTo(seError); // Safely aborts, preventing illegal "shutdown while in init"
       raise;
     end;
   end;
 end;
 ```
 
-### 4.2. Established Connection (`TTaurusTLSSslStateHandlerEstablished`)
+### 4.2. Direct, High-Performance I/O (`Recv` and `Send`)
+These methods bypass all state action classes, checking the `FStateEnum` directly in-memory to prevent virtual redirect overhead on critical paths.
+
 ```pascal
-function TTaurusTLSSslStateHandlerEstablished.Recv(ASocket: TTaurusTLSBaseSocket; var Buf; Size: Integer): Integer;
+function TTaurusTLSBaseSocket.Recv(var Buf; Size: Integer): Integer;
 var
   LRet, LErr: Integer;
   LQueueErr: Cardinal;
 begin
+  if (Size <= 0) or (@Buf = nil) then Exit(0);
+  
+  CheckActiveState(seEstablished); // Inlined security guard
+
   repeat
-    // 1. MUST clear the error queue before the I/O operation
+    // MUST clear the error queue before the I/O operation
     ERR_clear_error; 
     
-    LRet := SSL_read(ASocket.SSL, @Buf, Size);
+    LRet := SSL_read(FSSL, @Buf, Size);
     if LRet <= 0 then
     begin
-      LErr := SSL_get_error(ASocket.SSL, LRet);
+      LErr := SSL_get_error(FSSL, LRet);
       case LErr of
         SSL_ERROR_WANT_READ: 
           Continue; // Post-handshake control message, loop again.
@@ -632,8 +691,8 @@ begin
         SSL_ERROR_ZERO_RETURN:
           begin
             // Peer sent close_notify. Safe, graceful shutdown.
-            ASocket.TransitionTo(seClosed);
-            raise EIdConnClosedGracefully.Create(RSConClosedGracefully);
+            TransitionTo(seClosed);
+            Exit(0); // Return 0 to let Indy handle graceful close natively
           end;
           
         SSL_ERROR_SSL:
@@ -644,24 +703,31 @@ begin
                (ERR_GET_REASON(LQueueErr) = SSL_R_UNEXPECTED_EOF_WHILE_READING) then
             begin
               // Treat unexpected EOF as graceful close for web/Indy compatibility
-              ASocket.TransitionTo(seClosed);
-              raise EIdConnClosedGracefully.Create(RSConClosedGracefully);
+              TransitionTo(seClosed);
+              Exit(0); // Return 0 to let Indy handle unexpected EOF natively
             end
             else
             begin
-              ASocket.TransitionTo(seError);
+              TransitionTo(seError);
               raise ETaurusTLSIOError.Create('Fatal SSL protocol error during read.');
             end;
           end;
           
         SSL_ERROR_SYSCALL:
           begin
-            ASocket.TransitionTo(seClosed); // Force-close immediate teardown
+            TransitionTo(seClosed); // Force-close immediate teardown
+            
+            // Let Indy's GStack query LastError/errno and raise EIdSocketError
+            GStack.CheckForSocketError(
+              Id_SOCKET_ERROR, 
+              [Id_WSAESHUTDOWN, Id_WSAECONNABORTED, Id_WSAECONNRESET, Id_WSAETIMEDOUT]
+            );
+            
             raise ETaurusTLSConnectionReset.Create('Connection reset by peer.');
           end;
         else
           begin
-            ASocket.TransitionTo(seError);
+            TransitionTo(seError);
             raise ETaurusTLSIOError.Create('Fatal read error.');
           end;
       end;
@@ -671,26 +737,37 @@ begin
   until False;
 end;
 
-function TTaurusTLSSslStateHandlerEstablished.Send(ASocket: TTaurusTLSBaseSocket; const Buf; Size: Integer): Integer;
+function TTaurusTLSBaseSocket.Send(const Buf; Size: Integer): Integer;
 var
   LRet, LErr: Integer;
 begin
-  // 1. MUST clear the error queue before the I/O operation
+  if (Size <= 0) or (@Buf = nil) then Exit(0);
+  
+  CheckActiveState(seEstablished); // Inlined security guard
+
+  // MUST clear the error queue before the I/O operation
   ERR_clear_error; 
   
-  LRet := SSL_write(ASocket.SSL, @Buf, Size);
+  LRet := SSL_write(FSSL, @Buf, Size);
   if LRet <= 0 then
   begin
-    LErr := SSL_get_error(ASocket.SSL, LRet);
+    LErr := SSL_get_error(FSSL, LRet);
     case LErr of
       SSL_ERROR_SYSCALL:
         begin
-          ASocket.TransitionTo(seClosed); // Force-close immediately on RST
+          TransitionTo(seClosed); // Force-close immediate teardown
+          
+          // Let Indy's GStack query LastError/errno and raise EIdSocketError
+          GStack.CheckForSocketError(
+            Id_SOCKET_ERROR, 
+            [Id_WSAESHUTDOWN, Id_WSAECONNABORTED, Id_WSAECONNRESET, Id_WSAETIMEDOUT]
+          );
+          
           raise ETaurusTLSConnectionReset.Create('Connection reset by peer during write.');
         end;
       else
         begin
-          ASocket.TransitionTo(seError);
+          TransitionTo(seError);
           raise ETaurusTLSIOError.Create('Fatal write error.');
         end;
     end;
@@ -700,41 +777,42 @@ begin
 end;
 ```
 
-### 4.3. Closing Connection (`TTaurusTLSSslStateHandlerClosing`)
+### 4.3. Closing Connection (`DoShutdown`)
 Processes bidirectional closing of the TLS session with explicit try..except masking.
 
 ```pascal
-procedure TTaurusTLSSslStateHandlerClosing.ProcessSSL(ASocket: TTaurusTLSBaseSocket);
+procedure TTaurusTLSBaseSocket.DoShutdown;
 var
   LRet, LErr: Integer;
 begin
   try
     repeat
-      LRet := SSL_shutdown(ASocket.SSL);
+      ERR_clear_error;
+      LRet := SSL_shutdown(FSSL);
       if LRet = 1 then
       begin
-        ASocket.TransitionTo(seClosed);
+        TransitionTo(seClosed);
         Exit;
       end
       else if LRet = 0 then
       begin
         // Unidirectional shutdown complete (Sent close_notify, waiting for peer response)
-        if ASocket.Readable(500) then // Short timeout to poll for peer response
+        if Readable(500) then // Short timeout to poll for peer response
           Continue
         else
         begin
-          ASocket.TransitionTo(seClosed);
+          TransitionTo(seClosed);
           Exit;
         end;
       end;
 
-      LErr := SSL_get_error(ASocket.SSL, LRet);
+      LErr := SSL_get_error(FSSL, LRet);
       case LErr of
         SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE:
-          IndySelect(ASocket, LErr);
+          IndySelect(Self, LErr);
         else
           begin
-            ASocket.TransitionTo(seClosed); // Force-closes immediately on syscall errors
+            TransitionTo(seClosed); // Force-closes immediately on syscall errors
             Exit;
           end;
       end;
@@ -742,7 +820,7 @@ begin
   except
     on E: Exception do
     begin
-      ASocket.TransitionTo(seClosed); // Ensures robust cleanup of underlying SSL handle
+      TransitionTo(seClosed); // Ensures robust cleanup of underlying SSL handle
     end;
   end;
 end;
@@ -764,8 +842,6 @@ begin
     LSocket.Config.OnStatusInfo(LSocket.Config.Sender, where, ret);
   end;
 end;
-
-// Verify callback remains aligned to use the FConfig bridge
 ```
 
 ---
@@ -784,7 +860,7 @@ end;
 
 procedure TTaurusTLSClientSocket.Connect;
 begin
-  TransitionTo(seInitialized);
+  inherited Connect; // Base moves state to seInitialized
   SetupConnection; // Handles ECH configs, SNI mappings, and hostname verify settings
   
   if Assigned(FSessionToResume) then
@@ -807,7 +883,7 @@ To support the state machine and prevent OS-level process termination:
 ---
 
 ## 8. Shutdown Sequence
-1.  **seEstablished -> seClosing**: The SSM invokes `SSL_shutdown`.
+1.  **seEstablished -> seClosing**: The SSM invokes `SSL_shutdown` inside `Shutdown` via `ProcessSSL`.
 2.  **Bi-directional Check**: If `SSL_shutdown` returns 0, the SSM waits for the peer's `CloseNotify` (using a short timeout) before transitioning to `seClosed`.
 3.  **RST Protection**: If the peer sends a TCP RST during shutdown, the SSM catches the syscall error, immediately transitions to `seClosed` (which frees `PSSL`), and suppresses the transport exception to ensure a clean application shutdown.
 
