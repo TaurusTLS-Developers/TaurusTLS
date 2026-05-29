@@ -22,6 +22,7 @@ uses
   IdGlobal,
   IdCTypes,
   IdSSLOpenSSL,
+  TaurusTLSHeaders_ssl,
   TaurusTLSHeaders_ssl3,
   TaurusTLSHeaders_tls1,
   TaurusTLSExceptionHandlers;
@@ -106,23 +107,10 @@ type
     function GetAsInt: TIdC_LONG; {$IFDEF USE_INLINE} inline;{$ENDIF}
     procedure SetAsInt(AValue: TIdC_LONG); {$IFDEF USE_INLINE} inline;{$ENDIF}
   public
+    property AsInt: TIdC_LONG read GetAsInt write SetAsInt;
   end;
 
   ETaurusTLSSSLVersion = class(ETaurusTLSError);
-
-  TTaurusTLSDebugLogFlag = (
-    dfSocket,
-    dfIOHandler,
-    dfOpenSSLDebug,
-    dfError,
-    dfAccept,
-    dfConnect,
-    dfSend,
-    dfRecv,
-    dfClosing,
-    dfClosed
-  );
-  TTaurusTLSDebugLogFlags = set of TTaurusTLSDebugLogFlag;
 
   /// <summary>
   ///   Read status of TLS Connection.
@@ -131,19 +119,59 @@ type
     /// <summary>
     ///   if application data pending, or if it looks like we have disconnected
     /// </summary>
-   sslDataAvailable,
+    sslDataAvailable,
     /// <summary>
-   ///   try again later
-   /// </summary>
-   sslNoData,
-   /// <summary>
-   ///   if the connection has been shutdown
-   /// </summary>
-   sslEOF,
-   /// <summary>
-   ///   error state indicated
-   /// </summary>
-   sslUnrecoverableError);
+    ///   try again later
+    /// </summary>
+    sslNoData,
+    /// <summary>
+    ///   if the connection has been shutdown
+    /// </summary>
+    sslEOF,
+    /// <summary>
+    ///   error state indicated
+    /// </summary>
+    sslUnrecoverableError);
+
+
+  TTaurusTLSCertificateVerifyFlag = (
+    cvfPeer,
+    cvfFailIfNoPeer,
+    cvfCliOnce,
+    cvfPostHandshake
+  );
+
+  TTaurusTLSCertificateVerifyFlags = set of TTaurusTLSCertificateVerifyFlag;
+  TTaurusTLSCertificateVerifyFlagSet = record
+  public const
+    cVerifyNone = [];
+
+  private const
+    cMask = SSL_VERIFY_PEER and SSL_VERIFY_FAIL_IF_NO_PEER_CERT and
+            SSL_VERIFY_CLIENT_ONCE and SSL_VERIFY_POST_HANDSHAKE;
+
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
+    FFlags: TTaurusTLSCertificateVerifyFlags;
+
+    function GetAsInt: TIdC_INT; {$IFDEF USE_INLINE} inline;{$ENDIF}
+    procedure SetAsInt(AValue: TIdC_INT); {$IFDEF USE_INLINE} inline;{$ENDIF}
+    procedure SetFlags(AFlags: TTaurusTLSCertificateVerifyFlags);
+      {$IFDEF USE_INLINE} inline;{$ENDIF}
+  public
+    class operator Implicit(AFlags: TTaurusTLSCertificateVerifyFlags): TTaurusTLSCertificateVerifyFlagSet;
+    class operator Implicit(AFlags: TTaurusTLSCertificateVerifyFlagSet): TTaurusTLSCertificateVerifyFlags;
+    class procedure Include(var AValue: TTaurusTLSCertificateVerifyFlagSet;
+      AFlag: TTaurusTLSCertificateVerifyFlag); overload; static;
+      {$IFDEF USE_INLINE} inline;{$ENDIF}
+    procedure Include(AFlag: TTaurusTLSCertificateVerifyFlag); overload;
+      {$IFDEF USE_INLINE} inline;{$ENDIF}
+    class procedure Exclude(var AValue: TTaurusTLSCertificateVerifyFlagSet;
+      AFlag: TTaurusTLSCertificateVerifyFlag); overload; static;
+      {$IFDEF USE_INLINE} inline;{$ENDIF}
+    procedure Exclude(AFlag: TTaurusTLSCertificateVerifyFlag); overload;
+      {$IFDEF USE_INLINE} inline;{$ENDIF}
+    property AsInt: TIdC_INT read GetAsInt write SetAsInt;
+  end;
 
 implementation
 
@@ -163,9 +191,9 @@ begin
   if (AValue in [0..5]) then
     Self:=TTaurusTLSSecurityBits(AValue)
   else
-    raise ETaurusTLSSecurityBits.CreateFmt(RMSG_SecurityBits_Convert_err, [AValue]);
+    ETaurusTLSSecurityBits.RaiseWithMessageFmt(RMSG_SecurityBits_Convert_err,
+      [AValue]);
 end;
-
 
 { TTaurusTLSSSLVersionHelper }
 
@@ -186,6 +214,92 @@ begin
       Exit;
     end;
   ETaurusTLSSSLVersion.RaiseWithMessageFmt(RMSG_SSLVersion_Convert_err, [AValue]);
+end;
+
+{ TTaurusTLSCertificateVerifyFlagSet }
+
+procedure TTaurusTLSCertificateVerifyFlagSet.SetFlags(
+  AFlags: TTaurusTLSCertificateVerifyFlags);
+begin
+  if (AFlags - [cvfPeer]) <> [] then
+    System.Include(AFlags, cvfPeer);
+  Self:=AFlags;
+end;
+
+function TTaurusTLSCertificateVerifyFlagSet.GetAsInt: TIdC_INT;
+begin
+  {$IF SizeOf(Self) = 1}
+  Result:=PByte(@Self)^;
+  {$ELSEIF SizeOf(Self) = 2}
+  Result:=PWord(@Self)^;
+  {$ELSEIF SizeOf(Self) >= 4}
+  Result:=PInteger(@Self)^;
+  {$IFEND}
+  Result:=Result and cMask;
+end;
+
+procedure TTaurusTLSCertificateVerifyFlagSet.SetAsInt(AValue: TIdC_INT);
+var
+  lFlags: TTaurusTLSCertificateVerifyFlags;
+
+begin
+  AValue:=AValue and cMask;
+  {$IF SizeOf(Self) = 1}
+  PByte(@lFlags)^:=PByte(@AValue)^;
+  {$ELSEIF SizeOf(Self) = 2}
+  PWord(@lFlags)^:=PWorld(@AValue)^;
+  {$ELSEIF SizeOf(Self) >= 4}
+  PInteger(@lFlags)^:=PInteger(@AValue)^;
+  {$IFEND}
+  SetFlags(lFlags);
+end;
+
+class operator TTaurusTLSCertificateVerifyFlagSet.Implicit(
+  AFlags: TTaurusTLSCertificateVerifyFlagSet): TTaurusTLSCertificateVerifyFlags;
+begin
+  Result:=AFlags.FFlags;
+end;
+
+class operator TTaurusTLSCertificateVerifyFlagSet.Implicit(
+  AFlags: TTaurusTLSCertificateVerifyFlags): TTaurusTLSCertificateVerifyFlagSet;
+begin
+  Result.SetFlags(AFlags);
+end;
+
+procedure TTaurusTLSCertificateVerifyFlagSet.Exclude(
+  AFlag: TTaurusTLSCertificateVerifyFlag);
+var
+  lFlags: TTaurusTLSCertificateVerifyFlags;
+
+begin
+  lFlags:=FFlags;
+  System.Exclude(lFlags, AFlag);
+  SetFlags(lFLags);
+end;
+
+class procedure TTaurusTLSCertificateVerifyFlagSet.Exclude(
+  var AValue: TTaurusTLSCertificateVerifyFlagSet;
+  AFlag: TTaurusTLSCertificateVerifyFlag);
+begin
+  AValue.Exclude(AFlag);
+end;
+
+procedure TTaurusTLSCertificateVerifyFlagSet.Include(
+  AFlag: TTaurusTLSCertificateVerifyFlag);
+var
+  lFlags: TTaurusTLSCertificateVerifyFlags;
+
+begin
+  lFlags:=FFlags;
+  System.Include(lFlags, AFlag);
+  SetFlags(lFLags);
+end;
+
+class procedure TTaurusTLSCertificateVerifyFlagSet.Include(
+  var AValue: TTaurusTLSCertificateVerifyFlagSet;
+  AFlag: TTaurusTLSCertificateVerifyFlag);
+begin
+  AValue.Include(AFlag);
 end;
 
 end.
