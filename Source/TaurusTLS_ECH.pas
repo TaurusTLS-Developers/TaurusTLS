@@ -48,6 +48,7 @@ type
     FECHConfigList: String;
   public
     constructor Create(const AMsg, AECHConfig: String);
+    class procedure RaiseWithMessage(const AMsg, AECHConfig: String); reintroduce;
     property ECHConfigList: String read FECHConfigList;
   end;
 
@@ -259,6 +260,12 @@ constructor ETaurusTLSECHRetryRequired.Create(const AMsg, AECHConfig: String);
 begin
   inherited Create(SSL_ECH_STATUS_GREASE_ECH, AMsg);
   FECHConfigList := AECHConfig;
+end;
+
+class procedure ETaurusTLSECHRetryRequired.RaiseWithMessage(const AMsg,
+  AECHConfig: String);
+begin
+  raise ETaurusTLSECHRetryRequired.Create(AMsg, AECHConfig);
 end;
 
 { ETaurusTLSECHRejectedError }
