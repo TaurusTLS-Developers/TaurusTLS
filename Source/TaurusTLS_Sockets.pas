@@ -187,9 +187,9 @@ type
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
     FSSL: PSSL;
     class procedure SslInfoCallback(const ASSL: PSSL; AWhere, ARet: TIdC_INT);
-      static;
-    class function SSLVerifyCallback(APreVerify: LongBool;
-      ACtx: PX509_STORE_CTX): TIdC_INT; static;
+      static; cdecl;
+    class function SSLVerifyCallback(const APreVerify: TIdC_INT;
+      ACtx: PX509_STORE_CTX): TIdC_INT; static; cdecl;
   protected
     class function GetInstanceFromSSL<T: TTaurusTLSBaseSocket>(ASSL: PSSL): T;
       static; {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -1044,12 +1044,12 @@ end;
 procedure TTaurusTLSBaseSocket.InitSSLCallbacks;
 begin
   if Assigned(FConfig.OnStatusInfo) then
-    SSL_set_info_callback(FSSL, @TTaurusTLSBaseSocket.SslInfoCallback);
+    SSL_set_info_callback(FSSL, TTaurusTLSBaseSocket.SslInfoCallback);
 
   if Assigned(FConfig.OnVerifyCertificate) then
   begin
     SSL_set_verify(FSSL, FConfig.VerifyFlags.AsInt,
-      @TTaurusTLSBaseSocket.SSLVerifyCallback);
+      TTaurusTLSBaseSocket.SSLVerifyCallback);
   end;
 end;
 
@@ -1086,7 +1086,7 @@ begin
   end;
 end;
 
-class function TTaurusTLSBaseSocket.SSLVerifyCallback(APreVerify: LongBool;
+class function TTaurusTLSBaseSocket.SSLVerifyCallback(const APreVerify: TIdC_INT;
   ACtx: PX509_STORE_CTX): TIdC_INT;
 var
   lInstance: TTaurusTLSBaseSocket;
@@ -1106,7 +1106,7 @@ begin
     lInstance:=GetInstanceFromSSL<TTaurusTLSBaseSocket>(lSSL);
     lConfig:=lInstance.Config;
     if Assigned(lConfig) then
-      lConfig.DoOnVerifyCertificate(APreVerify, ACtx);
+      lConfig.DoOnVerifyCertificate(APreVerify = 1, ACtx);
   except
     // We must not raise exception to the OpenSSL stack
   end;
