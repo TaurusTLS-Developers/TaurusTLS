@@ -118,8 +118,8 @@ type
     function DoOnSecurityLevel: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure DoOnStatusInfo(AWhere, ARet: TIdC_INT);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function DoOnVerifyCertificate(APreVerify: boolean;
-      ACtx: PX509_STORE_CTX): boolean;
+    procedure DoOnVerifyCertificate(ACtx: PX509_STORE_CTX;
+      var AVerify: boolean);
     procedure DoOnSSLNegotiated; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
   public
@@ -571,8 +571,8 @@ begin
   end;
 end;
 
-function TTaurusTLSCustomSocketConfig.DoOnVerifyCertificate(APreVerify: boolean;
-  ACtx: PX509_STORE_CTX): boolean;
+procedure TTaurusTLSCustomSocketConfig.DoOnVerifyCertificate(ACtx: PX509_STORE_CTX;
+  var AVerify: boolean);
 var
   lCert: TTaurusTLSX509;
   lX509: PX509;
@@ -580,7 +580,6 @@ var
   lErr: TIdC_INT;
 
 begin
-  Result:=APreVerify;
   lCert:=nil;
   try
     lX509:=X509_STORE_CTX_get0_cert(ACtx);
@@ -589,7 +588,7 @@ begin
       lCert:=TTaurusTLSX509.Create(lX509, False);
       lDepth:=X509_STORE_CTX_get_error_depth(ACtx);
       lErr:=X509_STORE_CTX_get_error(ACtx);
-      FOnVerifyCertificate(FSender, lCert, lDepth, lErr, Result);
+      FOnVerifyCertificate(FSender, lCert, lDepth, lErr, AVerify);
     except
       // Must stop raising exception up as it OpenSSL callback.
     end;
@@ -1092,21 +1091,25 @@ var
   lInstance: TTaurusTLSBaseSocket;
   lConfig: TTaurusTLSCustomSocketConfig;
   lSSL: PSSL;
+  lResult: boolean;
 
 begin
   if not Assigned(ACtx) then // this shouldn't happen ever
     Exit(0);
 
-  Result:=TIdC_INT(APreVerify);
   try
     lSSL:=X509_STORE_CTX_get_ex_data(ACtx, SSL_get_ex_data_X509_STORE_CTX_idx());
     if not Assigned(lSSL) then
-      Exit;
+      Exit(0);
 
+    lResult:=APreVerify = 1;
     lInstance:=GetInstanceFromSSL<TTaurusTLSBaseSocket>(lSSL);
     lConfig:=lInstance.Config;
     if Assigned(lConfig) then
-      lConfig.DoOnVerifyCertificate(APreVerify = 1, ACtx);
+    begin
+      lConfig.DoOnVerifyCertificate(ACtx, lResult);
+      if lResult then Result:=1 else Result:=0;
+    end;
   except
     // We must not raise exception to the OpenSSL stack
   end;
