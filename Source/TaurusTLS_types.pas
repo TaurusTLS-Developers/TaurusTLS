@@ -147,8 +147,8 @@ type
     cVerifyNone = [];
 
   private const
-    cMask = SSL_VERIFY_PEER and SSL_VERIFY_FAIL_IF_NO_PEER_CERT and
-            SSL_VERIFY_CLIENT_ONCE and SSL_VERIFY_POST_HANDSHAKE;
+    cMask = SSL_VERIFY_PEER or SSL_VERIFY_FAIL_IF_NO_PEER_CERT or
+            SSL_VERIFY_CLIENT_ONCE or SSL_VERIFY_POST_HANDSHAKE;
 
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FFlags: TTaurusTLSCertificateVerifyFlags;
@@ -229,11 +229,11 @@ end;
 function TTaurusTLSCertificateVerifyFlagSet.GetAsInt: TIdC_INT;
 begin
   {$IF SizeOf(Self) = 1}
-  Result:=PByte(@Self)^;
+  Result:=Byte(Self);
   {$ELSEIF SizeOf(Self) = 2}
-  Result:=PWord(@Self)^;
+  Result:=Word(Self);
   {$ELSEIF SizeOf(Self) >= 4}
-  Result:=PInteger(@Self)^;
+  Result:=Integer(Self);
   {$IFEND}
   Result:=Result and cMask;
 end;
@@ -247,7 +247,7 @@ begin
   {$IF SizeOf(Self) = 1}
   PByte(@lFlags)^:=PByte(@AValue)^;
   {$ELSEIF SizeOf(Self) = 2}
-  PWord(@lFlags)^:=PWorld(@AValue)^;
+  PWord(@lFlags)^:=PWord(@AValue)^;
   {$ELSEIF SizeOf(Self) >= 4}
   PInteger(@lFlags)^:=PInteger(@AValue)^;
   {$IFEND}

@@ -277,7 +277,6 @@ resourcestring
   // TaurusTLS_types messages
   RMSG_SecurityBits_Convert_err = 'Invalid integer value set for Security Level.'+
     'Received value: %d; Allowed values from 0 to 5.';
-
   RMSG_SSLVersion_Convert_err = 'Fail to set TaurusTLSSSLVersion version '+
     'as integer value: %d.';
 
