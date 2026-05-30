@@ -1,8 +1,11 @@
 { ****************************************************************************** }
 { *  TaurusTLS                                                                 * }
-{ *           https://github.com/TaurusTLS-Developers/TaurusTLS                * }
+{ *           https://github.com/JPeterMugaas/TaurusTLS                        * }
 { *                                                                            * }
 { *  Copyright (c) 2026 TaurusTLS Developers, All Rights Reserved              * }
+{ *                                                                            * }
+{ * Portions of this software are Copyright (c) 1993 ? 2018,                   * }
+{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew ? http://www.IndyProject.org/  * }
 { ****************************************************************************** }
 {$I TaurusTLSCompilerDefines.inc}
 
@@ -230,7 +233,7 @@ type
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function Recv(var ABuffer: TIdBytes): TIdC_SIZET;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function Readable(AMSec: Integer): boolean;
+    function Readable: boolean;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure Shutdown;
 
@@ -530,7 +533,7 @@ begin
     Exit;
 
   LStore:=FTrustStore;
-  if Assigned(LStore)  and (X509_STORE_up_ref(ATrustStore)  <> 1) then
+  if Assigned(ATrustStore) and (X509_STORE_up_ref(ATrustStore)  <> 1) then
     ETaurusTLSSocketConfigSSLTrustStoreError.
       RaiseWithMessage('Error assigning X509 Trust Store');
   FTrustStore:=ATrustStore;
@@ -863,7 +866,11 @@ end;
 
 procedure TTaurusTLSBaseSocket.Connect(const pHandle: TIdStackSocketHandle);
 begin
+  FSocketHandle:=pHandle;
   TransitionTo(seInitialized);
+  LinkSocket;
+  TransitionTo(seHandshaking);
+  ProcessSSL;
 end;
 
 procedure TTaurusTLSBaseSocket.CheckActiveState(
@@ -903,7 +910,7 @@ begin
   end;
 end;
 
-function TTaurusTLSBaseSocket.Readable(AMSec: Integer): boolean;
+function TTaurusTLSBaseSocket.Readable: boolean;
 begin
   Result:=Assigned(FSSL) and (FState = seEstablished) and
     (SSL_has_pending(FSSL) = 1);
@@ -1042,7 +1049,7 @@ begin
   if Assigned(FConfig.OnVerifyCertificate) then
   begin
     SSL_set_verify(FSSL, FConfig.VerifyFlags.AsInt,
-      @TTaurusTLSBaseSocket.SslInfoCallback);
+      @TTaurusTLSBaseSocket.SSLVerifyCallback);
   end;
 end;
 
