@@ -993,7 +993,8 @@ begin
   // Clear error queue before doing read to avoid getting unhandled previously error
   ERR_clear_error;
 
-  LRet:=SSL_write_ex(FSSL, ABuffer[0], ALength, Result);
+  // We trust Indy that AOffset+ALength never exceeds the Length(ABuffer)
+  LRet:=SSL_write_ex(FSSL, ABuffer[AOffset], ALength, Result);
   if LRet = 1 then
     Exit
   else
