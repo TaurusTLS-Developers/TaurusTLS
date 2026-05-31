@@ -115,7 +115,7 @@ type
     procedure DoOnStateChange(AOldState, ANewState: TTaurusTLSSslState);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure DoOnDebug(const AMsg: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function DoOnSecurityLevel: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure DoOnSecurityLevel(var AAccept: boolean); {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure DoOnStatusInfo(AWhere, ARet: TIdC_INT);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure DoOnVerifyCertificate(ACtx: PX509_STORE_CTX;
@@ -563,11 +563,7 @@ end;
 procedure TTaurusTLSCustomSocketConfig.DoOnStatusInfo(AWhere, ARet: TIdC_INT);
 begin
   if Assigned(FOnStatusInfo) then
-  try
-    FOnStatusInfo(FSender, AWhere, ARet);
-  except
-    // Must stop raising exception up as it OpenSSL callback.
-  end;
+  FOnStatusInfo(FSender, AWhere, ARet);
 end;
 
 procedure TTaurusTLSCustomSocketConfig.DoOnVerifyCertificate(ACtx: PX509_STORE_CTX;
@@ -583,23 +579,19 @@ begin
   try
     lX509:=X509_STORE_CTX_get0_cert(ACtx);
     if Assigned(FOnVerifyCertificate) and Assigned(lX509) then
-    try
-      lCert:=TTaurusTLSX509.Create(lX509, False);
-      lDepth:=X509_STORE_CTX_get_error_depth(ACtx);
-      lErr:=X509_STORE_CTX_get_error(ACtx);
-      FOnVerifyCertificate(FSender, lCert, lDepth, lErr, AVerify);
-    except
-      // Must stop raising exception up as it OpenSSL callback.
-    end;
+    lCert:=TTaurusTLSX509.Create(lX509, False);
+    lDepth:=X509_STORE_CTX_get_error_depth(ACtx);
+    lErr:=X509_STORE_CTX_get_error(ACtx);
+    FOnVerifyCertificate(FSender, lCert, lDepth, lErr, AVerify);
   finally
     lCert.Free;
   end;
 end;
 
-function TTaurusTLSCustomSocketConfig.DoOnSecurityLevel: boolean;
+procedure TTaurusTLSCustomSocketConfig.DoOnSecurityLevel(var AAccept: boolean);
 begin
   if Assigned(FOnSecurityLevel) then
-    FOnSecurityLevel(FSender, Result);
+    FOnSecurityLevel(FSender, AAccept);
 end;
 
 { TaurusTLSClientSocketConfig }
@@ -828,6 +820,7 @@ begin
   lCurrentState:=State; // Using your internal State property
 
   // 1. Redundant Transition Guard (Fails fast in Debug, exits silently in Release)
+  // Do not localize
   Assert(lCurrentState <> ATarget, 'Redundant state transition: ' + lCurrentState.AsString);
   if lCurrentState = ATarget then
   begin
@@ -991,8 +984,9 @@ var
   lRet, lErr: TIdC_INT;
 
 begin
+  Result:=0;
   if (ALength = 0) or (Length(ABuffer) = 0) then
-    Exit(0);
+    Exit;
 
   CheckActiveState(seEstablished); // Security guard
 
@@ -1150,6 +1144,7 @@ var
   lECHConfigLen: NativeUInt;
   lNewConfigBase64: String;
   lConfig: TaurusTLSClientSocketConfig;
+  lAccept: boolean;
 
 begin
   lConfig:=ClientConfig;
@@ -1201,7 +1196,9 @@ begin
         end;
 
         // Perform security level check via snapshot event
-        if not lConfig.DoOnSecurityLevel then
+        lAccept:=True;
+        lConfig.DoOnSecurityLevel(lAccept);
+        if not lAccept then
         begin
           TransitionTo(seError);
           Exit;
