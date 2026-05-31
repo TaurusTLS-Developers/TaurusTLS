@@ -68,6 +68,8 @@ type
     [Test]
     procedure TestEarlyAbortPaths;
     [Test]
+    procedure TestInvalidTransitions;
+    [Test]
     procedure TestRedundantTransitions;
     [Test]
     procedure TestAPIGuards;  end;
@@ -230,6 +232,30 @@ begin
   FSocket.TransitionTo(seClosed);
   Assert.AreEqual(seClosed, FSocket.State, 'Failed to abort from seInitialized.');
   Assert.IsNull(FSocket.SSL, 'FSSL was leaked during early abort.');
+end;
+
+procedure TTaurusTLSSocketsStateMachineFixture.TestInvalidTransitions;
+begin
+  // --- Test 1: seIdle -> seEstablished (Illegal) ---
+  Assert.WillRaise(
+    procedure
+    begin
+      FSocket.TransitionTo(seEstablished);
+    end,
+    ETaurusTLSSocketStateError,
+    'Allowed illegal transition: seIdle -> seEstablished'
+  );
+
+    // --- Test 2: seInitialized -> seClosing (Illegal) ---
+  FSocket.TransitionTo(seInitialized);
+  Assert.WillRaise(
+    procedure
+    begin
+      FSocket.TransitionTo(seClosing);
+    end,
+    ETaurusTLSSocketStateError,
+    'Allowed illegal transition: seInitialized -> seClosing'
+  );
 end;
 
 procedure TTaurusTLSSocketsStateMachineFixture.TestRedundantTransitions;
