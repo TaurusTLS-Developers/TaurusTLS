@@ -26,7 +26,7 @@ uses
 type
   [TestFixture]
   [Category('WRAP.ECHStore, WRAP.ClientECHStore')]
-  TClientECHStoreFixture = class(TOsslBaseFixture)
+  TTaurusTLSECHStoreFixture = class(TOsslBaseFixture)
   public const
     // Valid structurally: [length=00 12 (18 bytes)] [version=fe 0d] [length=00 0e] [payload...]
 //    cValidBase64ECHConfig: RawByteString = 'ABK+DQALAAEAAwABBmJlYmViZQA=';
@@ -52,9 +52,9 @@ uses
 
 { TClientECHStoreFixture }
 
-procedure TClientECHStoreFixture.Test_Create;
+procedure TTaurusTLSECHStoreFixture.Test_Create;
 begin
-  var LStore := TClientECHStore.Create;
+  var LStore := TTaurusTLSECHStore.Create;
   try
     Assert.IsNotNull(LStore, '"TClientECHStore.Create" returns "nil".');
     Assert.IsNotNull(LStore.Store, 'Property "Store" returns "nil".');
@@ -64,9 +64,9 @@ begin
   end;
 end;
 
-procedure TClientECHStoreFixture.Test_SetConfigList_Bio;
+procedure TTaurusTLSECHStoreFixture.Test_SetConfigList_Bio;
 begin
-  var LStore := TClientECHStore.Create;
+  var LStore := TTaurusTLSECHStore.Create;
   var LBio := TTaurusTLSRawByteStringBIO.Create(cValidBase64ECHConfig, False);
   try
     Assert.WillNotRaise(
@@ -80,9 +80,9 @@ begin
   end;
 end;
 
-procedure TClientECHStoreFixture.Test_SetConfigList_String;
+procedure TTaurusTLSECHStoreFixture.Test_SetConfigList_String;
 begin
-  var LStore := TClientECHStore.Create;
+  var LStore := TTaurusTLSECHStore.Create;
   try
     Assert.WillNotRaise(
       procedure begin LStore.SetConfigList(cValidBase64ECHConfig) end,
@@ -94,9 +94,9 @@ begin
   end;
 end;
 
-procedure TClientECHStoreFixture.Test_SetConfigList_Stream;
+procedure TTaurusTLSECHStoreFixture.Test_SetConfigList_Stream;
 begin
-  var LStore := TClientECHStore.Create;
+  var LStore := TTaurusTLSECHStore.Create;
   var LStream := TStringStream.Create(cValidBase64ECHConfig);
   try
     Assert.WillNotRaise(
@@ -110,9 +110,9 @@ begin
   end;
 end;
 
-procedure TClientECHStoreFixture.Test_Count;
+procedure TTaurusTLSECHStoreFixture.Test_Count;
 begin
-  var LStore := TClientECHStore.Create;
+  var LStore := TTaurusTLSECHStore.Create;
   try
     // Ingest the configuration
     LStore.SetConfigList(cValidBase64ECHConfig);
@@ -124,6 +124,6 @@ begin
 end;
 
 initialization
-  TDUnitX.RegisterTestFixture(TClientECHStoreFixture);
+  TDUnitX.RegisterTestFixture(TTaurusTLSECHStoreFixture);
 
 end.
