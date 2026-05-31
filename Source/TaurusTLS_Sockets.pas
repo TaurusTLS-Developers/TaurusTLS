@@ -246,7 +246,6 @@ type
     echCliRetryConfig, echCliNotConfigured);
 
 
-
   TTaurusTLSClientSocket = class(TTaurusTLSBaseSocket)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FECHStatus: TTaurusECHClientStatus;
@@ -271,9 +270,9 @@ type
   ETaurusTLSSocketConfigSSLCtxError = class(ETaurusTLSAPISSLError);
   ETaurusTLSSocketConfigSSLTrustStoreError = class(ETaurusTLSAPISSLError);
 
-  ETaurusTLSBaseSocketInitError = class(ETaurusTLSAPISSLError);
-
+  ETaurusTLSSocketInitError = class(ETaurusTLSAPISSLError);
   ETaurusTLSSocketStateError = class(ETaurusTLSAPISSLError);
+
   ETaurusTLSIOError = class(ETaurusTLSAPISSLError);
   ETaurusTLSConnectionReset = class(ETaurusTLSAPISSLError);
 
@@ -652,7 +651,7 @@ begin
   // 1. Allocate the SSL session structure using the pinned context
   FSSL:=SSL_new(FConfig.SSLCtx);
   if FSSL = nil then
-    ETaurusTLSBaseSocketInitError.RaiseWithMessage('SSL_new failed to allocate session.');
+    ETaurusTLSSocketInitError.RaiseWithMessage('SSL_new failed to allocate session.');
 
   // 2. Bind the Delphi object instance to the SSL handle for callback routing
   if SSL_set_app_data(FSSL, Self) <> 1 then
@@ -1068,18 +1067,24 @@ class procedure TTaurusTLSBaseSocket.SslInfoCallback(const ASSL: PSSL; AWhere,
 var
   lInstance: TTaurusTLSBaseSocket;
   lConfig: TTaurusTLSCustomSocketConfig;
+  LErr: integer;
 
 begin
   if not Assigned(ASSL) then
     Exit;
   try
-    lInstance:=GetInstanceFromSSL<TTaurusTLSBaseSocket>(ASSL);
-    if not Assigned(lInstance) then
-      Exit;
+    lErr:=GStack.WSGetLastError;
+    try
+      lInstance:=GetInstanceFromSSL<TTaurusTLSBaseSocket>(ASSL);
+      if not Assigned(lInstance) then
+        Exit;
 
-    lConfig:=lInstance.Config;
-    if Assigned(lConfig) then
-      lConfig.DoOnStatusInfo(AWhere, ARet);
+      lConfig:=lInstance.Config;
+      if Assigned(lConfig) then
+        lConfig.DoOnStatusInfo(AWhere, ARet);
+    finally
+      GStack.WSSetLastError(lErr);
+    end;
   except
     // We must not raise exception to the OpenSSL stack
   end;
@@ -1091,24 +1096,32 @@ var
   lInstance: TTaurusTLSBaseSocket;
   lConfig: TTaurusTLSCustomSocketConfig;
   lSSL: PSSL;
+  lErr: integer;
   lResult: boolean;
 
 begin
+  Result:=APreVerify;
+
   if not Assigned(ACtx) then // this shouldn't happen ever
     Exit(0);
 
   try
-    lSSL:=X509_STORE_CTX_get_ex_data(ACtx, SSL_get_ex_data_X509_STORE_CTX_idx());
-    if not Assigned(lSSL) then
-      Exit(0);
+    lErr:=GSTack.WSGetLastError;
+    try
+      lSSL:=X509_STORE_CTX_get_ex_data(ACtx, SSL_get_ex_data_X509_STORE_CTX_idx());
+      if not Assigned(lSSL) then
+        Exit(0);
 
-    lResult:=APreVerify = 1;
-    lInstance:=GetInstanceFromSSL<TTaurusTLSBaseSocket>(lSSL);
-    lConfig:=lInstance.Config;
-    if Assigned(lConfig) then
-    begin
-      lConfig.DoOnVerifyCertificate(ACtx, lResult);
-      if lResult then Result:=1 else Result:=0;
+      lResult:=APreVerify = 1;
+      lInstance:=GetInstanceFromSSL<TTaurusTLSBaseSocket>(lSSL);
+      lConfig:=lInstance.Config;
+      if Assigned(lConfig) then
+      begin
+        lConfig.DoOnVerifyCertificate(ACtx, lResult);
+        if lResult then Result:=1 else Result:=0;
+      end;
+    finally
+      GStack.WSSetLastError(lErr);
     end;
   except
     // We must not raise exception to the OpenSSL stack
