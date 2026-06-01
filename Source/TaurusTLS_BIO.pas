@@ -436,7 +436,7 @@ begin
   while lToRead > 0 do
   begin
     // Reads from the BIO
-    lReadSize := Read(lBuf[0], IndyMin(lToRead, AChunkSize));
+    lReadSize := Read(lBuf[0], IndyMin(lToRead, AChunkSize));  //PALOFF "NativeUInt cast to Integer"
     if lReadSize = 0 then Break;
 
     AStream.WriteBuffer(lBuf[0], Integer(lReadSize));

@@ -75,7 +75,7 @@ type
     ACert: TTaurusTLSX509;
     ADepth: TIdC_INT;
     AErrCode: TIdC_INT;
-    var AVerifyOK: Boolean
+    out AVerifyOK: Boolean
   ) of object;
 
   TTaurusTLSSSLOp = (sslOpRead, sslOpWrite);
@@ -119,7 +119,7 @@ type
     procedure DoOnStatusInfo(AWhere, ARet: TIdC_INT);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure DoOnVerifyCertificate(ACtx: PX509_STORE_CTX;
-      var AVerify: boolean);
+      out AVerifyOk: boolean);
     procedure DoOnSSLNegotiated; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
   public
@@ -594,7 +594,7 @@ begin
 end;
 
 procedure TTaurusTLSCustomSocketConfig.DoOnVerifyCertificate(ACtx: PX509_STORE_CTX;
-  var AVerify: boolean);
+  out AVerifyOk: boolean);
 var
   lCert: TTaurusTLSX509;
   lX509: PX509;
@@ -609,7 +609,7 @@ begin
     lCert:=TTaurusTLSX509.Create(lX509, False);
     lDepth:=X509_STORE_CTX_get_error_depth(ACtx);
     lErr:=X509_STORE_CTX_get_error(ACtx);
-    FOnVerifyCertificate(FSender, lCert, lDepth, lErr, AVerify);
+    FOnVerifyCertificate(FSender, lCert, lDepth, lErr, AVerifyOk);
   finally
     lCert.Free;
   end;
@@ -702,6 +702,7 @@ begin
     try
       ReleaseSSLCallbacks;
     except
+      //PALOFF "Empty except-block"
       // Suppress callback unbinding errors locally to ensure we proceed to freeing memory
     end;
   finally
@@ -1002,7 +1003,7 @@ begin
         end;
       end;
     end
-  until False;
+  until False; //PALOFF "Condition evaluates to constant value"
 end;
 
 function TTaurusTLSBaseSocket.Send(const ABuffer: TIdBytes; const AOffset,
@@ -1080,8 +1081,16 @@ begin
 end;
 
 class function TTaurusTLSBaseSocket.GetInstanceFromSSL<T>(ASSL: PSSL): T;
+var
+  lResult: pointer;
 begin
-  Result:=T(SSL_get_app_data(ASSL));
+  // Code converted from `Result:=T(SSL_get_app_data(ASSL);`
+  // to resolve Pascal Analyzer warning
+  lResult:=SSL_get_app_data(ASSL);
+  if Assigned(lResult) then
+    Result:=T(lResult)
+  else
+    Result:=Default(T);
 end;
 
 class procedure TTaurusTLSBaseSocket.SslInfoCallback(const ASSL: PSSL; AWhere,
@@ -1108,6 +1117,7 @@ begin
       GStack.WSSetLastError(lErr);
     end;
   except
+    //PALOFF "Empty except-block"
     // We must not raise exception to the OpenSSL stack
   end;
 end;
@@ -1146,6 +1156,7 @@ begin
       GStack.WSSetLastError(lErr);
     end;
   except
+    //PALOFF "Empty except-block"
     // We must not raise exception to the OpenSSL stack
   end;
 
@@ -1273,7 +1284,7 @@ begin
           raise ETaurusTLSHandshakeError.Create('Fatal handshake error.');
         end;
       end;
-    until False;
+    until False; //PALOFF "Condition evaluates to constant value"
 
   except
     on E: Exception do
@@ -1343,7 +1354,7 @@ begin
           ETaurusTLSHandshakeError.RaiseWithMessage('Fatal handshake error.');
         end;
       end;
-    until False;
+    until False; //PALOFF "Condition evaluates to constant value"
   except
     on E: Exception do
     begin
