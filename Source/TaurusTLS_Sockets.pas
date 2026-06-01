@@ -106,7 +106,7 @@ type
     FOnNegotiated: TNotifyEvent;
 
   protected
-    procedure DoCloneSession(ASSL: PSSL); virtual; abstract;
+    procedure DoCloneSession(ASSL: PSSL); virtual;
     procedure SetTrustStore(ATrustStore: PX509_STORE);
     procedure SetSSLCtx(ASSLCtx: PSSL_CTX);
 
@@ -176,6 +176,15 @@ type
     property ECHDecoy: string read FECHDecoy write FECHDecoy;
   end;
 
+  TTaurusTLSPeerSocketConfig = class(TTaurusTLSCustomSocketConfig)
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
+    FVerifyClientModes: TTaurusTLSVerifyModes;
+    FALPNPreferences: string;
+  public
+    property VerifyClientModes: TTaurusTLSVerifyModes read FVerifyClientModes
+      write FVerifyClientModes;
+    property ALPNPreferences: string read FALPNPreferences write FALPNPreferences;
+  end;
 
   TTaurusTLSBaseSocket = class abstract
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
@@ -257,6 +266,18 @@ type
     procedure DoHandshake; override;
     property ClientConfig: TaurusTLSClientSocketConfig read GetClientConfig;
   public
+    constructor Create(AConfig: TaurusTLSClientSocketConfig); reintroduce;
+  end;
+
+  TTaurusTLSPeerSocket = class(TTaurusTLSBaseSocket)
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
+    function GetPeerConfig: TTaurusTLSPeerSocketConfig;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+  protected
+    procedure DoHandshake; override;
+    property PeerConfig: TTaurusTLSPeerSocketConfig read GetPeerConfig;
+  public
+    constructor Create(AConfig: TTaurusTLSPeerSocketConfig); reintroduce;
   end;
 
   /// <summary>
@@ -540,6 +561,12 @@ begin
   X509_STORE_free(LStore);
 end;
 
+
+procedure TTaurusTLSCustomSocketConfig.DoCloneSession(ASSL: PSSL);
+begin
+//PALOFF WARN37-Empty subprogram parameter list
+// Do nothing in the base class. Derived class(es) can override the behavior.
+end;
 
 procedure TTaurusTLSCustomSocketConfig.DoOnDebug(const AMsg: string);
 begin
@@ -1136,6 +1163,11 @@ begin
   FECHStatus:=AECHStatus;
 end;
 
+constructor TTaurusTLSClientSocket.Create(AConfig: TaurusTLSClientSocketConfig);
+begin
+  inherited Create(AConfig);
+end;
+
 procedure TTaurusTLSClientSocket.DoHandshake;
 var
   lRet, lErr: Integer;
@@ -1222,18 +1254,96 @@ begin
       end;
 
       lErr := SSL_get_error(SSL, lRet);
-      if LErr = SSL_ERROR_SYSCALL then
-      begin
-        TransitionTo(seClosed); // Triggers immediate teardown
-        raise ETaurusTLSConnectionReset.Create('Handshake reset by peer.');
-      end
+      case LErr of
+        SSL_ERROR_SYSCALL:
+        begin
+          TransitionTo(seClosed); // Triggers immediate teardown
+          raise ETaurusTLSConnectionReset.Create('Handshake reset by peer.');
+        end;
+
+        SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE:
+        begin
+          IndySleep(1);
+          Continue;
+        end;
+
       else
-      begin
-        TransitionTo(seError);
-        raise ETaurusTLSHandshakeError.Create('Fatal handshake error.');
+        begin
+          TransitionTo(seError);
+          raise ETaurusTLSHandshakeError.Create('Fatal handshake error.');
+        end;
       end;
     until False;
 
+  except
+    on E: Exception do
+    begin
+      if (State = seHandshaking) then
+        TransitionTo(seError); // Safely aborts, preventing illegal "shutdown while in init"
+      raise;
+    end;
+  end;
+end;
+
+{ TTaurusTLSPeerSocket }
+
+constructor TTaurusTLSPeerSocket.Create(AConfig: TTaurusTLSPeerSocketConfig);
+begin
+  inherited Create(AConfig);
+end;
+
+function TTaurusTLSPeerSocket.GetPeerConfig: TTaurusTLSPeerSocketConfig;
+begin
+  Result:=Config as TTaurusTLSPeerSocketConfig;
+end;
+
+procedure TTaurusTLSPeerSocket.DoHandshake;
+var
+  lRet, lErr: Integer;
+  lAccepted: boolean;
+
+begin
+  try
+    repeat
+      ERR_clear_error;
+      lRet := SSL_accept(SSL);
+
+      if lRet = 1 then
+      begin
+        // Perform security level check via snapshot event
+        lAccepted:=True;
+        Config.DoOnSecurityLevel(lAccepted);
+        if not lAccepted then
+        begin
+          TransitionTo(seError);
+          Exit;
+        end;
+
+        TransitionTo(seEstablished);
+        Exit;
+      end;
+
+      lErr := SSL_get_error(SSL, lRet);
+      case lErr of
+      SSL_ERROR_SYSCALL:
+        begin
+          TransitionTo(seClosed); // Triggers immediate teardown
+          ETaurusTLSConnectionReset.RaiseWithMessage('Handshake reset by peer.');
+        end;
+
+        SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE:
+        begin
+          IndySleep(1);
+          Continue;
+        end;
+
+      else
+        begin
+          TransitionTo(seError);
+          ETaurusTLSHandshakeError.RaiseWithMessage('Fatal handshake error.');
+        end;
+      end;
+    until False;
   except
     on E: Exception do
     begin
