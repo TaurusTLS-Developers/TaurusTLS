@@ -1204,38 +1204,66 @@ begin
         begin
           lStatus := SSL_ech_get1_status(SSL, @lInner, @lOuter);
 
-          if lStatus = SSL_ECH_STATUS_GREASE_ECH then
-          begin
-            SetECHStatus(echCliFailed);
-            lECHConfigBuf := nil;
-            lECHConfigLen := 0;
+          case lStatus of
+          SSL_ECH_STATUS_SUCCESS,
+          SSL_ECH_STATUS_BACKEND:
+            // Success - moving forward.
+            ; //PALOFF "empty block"
 
-            if SSL_ech_get1_retry_config(SSL, @LECHConfigBuf, @LECHConfigLen) = 1 then
+          SSL_ECH_STATUS_GREASE_ECH,
+          SSL_ECH_STATUS_FAILED_ECH,
+          SSL_ECH_STATUS_FAILED_ECH_BAD_NAME:
             begin
-              try
-                if (lECHConfigBuf <> nil) and (lECHConfigLen > 0) then
-                begin
-                  lNewConfigBase64 := EncodeConfigList(lECHConfigBuf, lECHConfigLen);
-                  TransitionTo(seClosed); // Safely close and tear down SSL session
-                  ETaurusTLSECHRetryRequired.RaiseWithMessage(
-                    'ECH Handshake error. Try to reconnect with updated ECH Config List.',
-                    lNewConfigBase64
-                  );
+              SetECHStatus(echCliFailed);
+              lECHConfigBuf := nil;
+              lECHConfigLen := 0;
+
+              // Attempt to extract the updated keys provided by the server
+              if SSL_ech_get1_retry_config(SSL, @lECHConfigBuf, @lECHConfigLen) = 1 then
+              begin
+                try
+                  if (lECHConfigBuf <> nil) and (lECHConfigLen > 0) then
+                  begin
+                    lNewConfigBase64 := EncodeConfigList(lECHConfigBuf, lECHConfigLen);
+                    TransitionTo(seClosed); // Safely close and tear down SSL session
+                    ETaurusTLSECHRetryRequired.RaiseWithMessage(
+                      'ECH Handshake error. Try to reconnect with updated ECH Config List.',
+                      lNewConfigBase64
+                    );
+                  end;
+                finally
+                  OPENSSL_free(lECHConfigBuf);
                 end;
-              finally
-                OPENSSL_free(lECHConfigBuf);
               end;
+
+              // If no keys were returned, it is a hard rejection
+              TransitionTo(seClosed);
+              ETaurusTLSECHRejectedError.RaiseWithMessage(
+                'ECH Handshake failed. The server rejected the key and provided no retry configuration.');
             end;
 
-            TransitionTo(seClosed);
-            ETaurusTLSECHRejectedError.RaiseWithMessage(
-              'ECH Handshake failed. The server rejected the key and provided no retry configuration.');
-          end
-          else if lStatus = SSL_ECH_STATUS_FAILED then
-          begin
-            TransitionTo(seError);
-            ETaurusTLSECHDowngradeError.RaiseWithMessage(
-              'ECH Handshake failed due to a protocol or decryption error.');
+          SSL_ECH_STATUS_NOT_TRIED,
+          SSL_ECH_STATUS_NOT_CONFIGURED:
+            begin
+              TransitionTo(seError);
+              ETaurusTLSECHDowngradeError.RaiseWithMessage(
+                'ECH Handshake bypassed. Possible downgrade attack or configuration mismatch.');
+            end;
+
+          SSL_ECH_STATUS_BAD_NAME:
+            begin
+              TransitionTo(seError);
+              ETaurusTLSECHBadNameError.RaiseWithMessage(
+                'ECH Handshake completed but the server certificate did not match the inner name.');
+            end;
+
+          else
+            begin
+              // Covers SSL_ECH_STATUS_FAILED (0), SSL_ECH_STATUS_BAD_CALL (-100), and any other negative codes
+              TransitionTo(seError);
+              ETaurusTLSECHProtocolError.RaiseWithMessage(
+                'ECH Handshake failed due to an internal OpenSSL or protocol error.');
+            end;
           end;
         end;
 
