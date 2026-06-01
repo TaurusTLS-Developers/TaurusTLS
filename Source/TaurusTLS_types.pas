@@ -245,11 +245,11 @@ var
 begin
   AValue:=AValue and cMask;
   {$IF SizeOf(Self) = 1}
-  PByte(@lFlags)^:=PByte(@AValue)^;
+  Byte(lFlags):=Byte(AValue);
   {$ELSEIF SizeOf(Self) = 2}
-  PWord(@lFlags)^:=PWord(@AValue)^;
+  Word(lFlags):=Word(AValue);
   {$ELSEIF SizeOf(Self) >= 4}
-  PInteger(@lFlags)^:=PInteger(@AValue)^;
+  Integer(lFlags):=Integer(AValue);
   {$IFEND}
   SetFlags(lFlags);
 end;
