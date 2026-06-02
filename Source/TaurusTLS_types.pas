@@ -171,6 +171,7 @@ type
     procedure Exclude(AFlag: TTaurusTLSCertificateVerifyFlag); overload;
       {$IFDEF USE_INLINE} inline;{$ENDIF}
     property AsInt: TIdC_INT read GetAsInt write SetAsInt;
+    property Flags: TTaurusTLSCertificateVerifyFlags read FFlags;
   end;
 
 implementation
