@@ -69,6 +69,9 @@ type
     constructor Create(const AMsg: String);
   end;
 
+  ETaurusTLSECHBadNameError = class(ETaurusTLSECHError);
+  ETaurusTLSECHProtocolError = class(ETaurusTLSECHError);
+
 type
   TOSSLReadStream = class(TCustomMemoryStream)
   public
