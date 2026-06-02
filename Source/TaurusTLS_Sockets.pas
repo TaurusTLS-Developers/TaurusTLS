@@ -48,6 +48,7 @@ type
     seClosed,
     seError
   );
+  TTaurusTLSSslStates = set of TTaurusTLSSslState;
 
   TTaurusTLSSslStateHelper = record helper for TTaurusTLSSslState
   public const
@@ -213,20 +214,22 @@ type
     procedure ReleaseSSLCallbacks; virtual;
     procedure LinkSocket; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
-    procedure DoHandshake; virtual; abstract;
+    procedure DoHandshake;
+    procedure DoHandshakeIteration; virtual; abstract;
     procedure DoShutdown;
 
     function IsValidTransition(ACurrent, ATarget: TTaurusTLSSslState): Boolean;
       virtual;
 
     procedure DoSetState(ATarget: TTaurusTLSSslState); virtual;
-    procedure CheckActiveState(AExpectedState: TTaurusTLSSslState);
+    procedure CheckActiveState(const AExpectedStates: TTaurusTLSSslStates);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure DoStateChangeNotify(ACurrent, ATarget: TTaurusTLSSslState);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure DoDebugLog(const AMessage: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
 
-    property SocketHandle: TIdStackSocketHandle read FSocketHandle;
+    property SocketHandle: TIdStackSocketHandle read FSocketHandle
+      write FSocketHandle;
 
   public
     constructor Create(AConfig: TTaurusTLSCustomSocketConfig);
@@ -236,7 +239,6 @@ type
 
     // Delegated Operations
     procedure Connect(const pHandle: TIdStackSocketHandle); virtual;
-    procedure ProcessSSL; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function Send(const ABuffer: TIdBytes;
       const AOffset, ALength: TIdC_SIZET): TIdC_SIZET;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -261,12 +263,14 @@ type
     function GetClientConfig: TaurusTLSClientSocketConfig;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
   protected
-    procedure SetECHSTatus(AECHStatus: TTaurusECHClientStatus);
+    procedure SetECHStatus(AECHStatus: TTaurusECHClientStatus);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure DoHandshake; override;
+    procedure SetupConnection;
+    procedure DoHandshakeIteration; override;
     property ClientConfig: TaurusTLSClientSocketConfig read GetClientConfig;
   public
     constructor Create(AConfig: TaurusTLSClientSocketConfig); reintroduce;
+    procedure Connect(const pHandle: TIdStackSocketHandle); override;
   end;
 
   TTaurusTLSPeerSocket = class(TTaurusTLSBaseSocket)
@@ -274,7 +278,7 @@ type
     function GetPeerConfig: TTaurusTLSPeerSocketConfig;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
   protected
-    procedure DoHandshake; override;
+    procedure DoHandshakeIteration; override;
     property PeerConfig: TTaurusTLSPeerSocketConfig read GetPeerConfig;
   public
     constructor Create(AConfig: TTaurusTLSPeerSocketConfig); reintroduce;
@@ -495,11 +499,14 @@ implementation
 uses
   TaurusTLSHeaders_err,
   TaurusTLSHeaders_sslerr,
-  IdException,
   TaurusTLS_ResourceStrings,
+  IdException,
   IdResourceStrings,
-  IdResourceStringsProtocols,
-  IdIDN; // For IDNToPunnyCode
+  IdResourceStringsProtocols
+{$IFDEF MSWINDOWS}
+  ,IdIDN // For IDNToPunnyCode
+{$ENDIF}
+  ;
 
 { TTaurusTLSSslStateHelper }
 
@@ -529,36 +536,36 @@ end;
 
 procedure TTaurusTLSCustomSocketConfig.SetSSLCtx(ASSLCtx: PSSL_CTX);
 var
-  LSSLCtx: PSSL_CTX;
+  lSSLCtx: PSSL_CTX;
 
 begin
   if FSSLCtx = ASSLCtx then
     Exit;
 
-  LSSLCtx:=FSSLCtx;
+  lSSLCtx:=FSSLCtx;
   if Assigned(ASSLCtx) and (SSL_CTX_up_ref(ASSLCtx)  <> 1) then
     ETaurusTLSSocketConfigSSLCtxError.
       RaiseWithMessage('Error assigning SSL Context');
   FSSLCtx:=ASSLCtx;
 
-  SSL_CTX_free(LSSLCtx);
+  SSL_CTX_free(lSSLCtx);
 end;
 
 procedure TTaurusTLSCustomSocketConfig.SetTrustStore(ATrustStore: PX509_STORE);
 var
-  LStore: PX509_STORE;
+  lStore: PX509_STORE;
 
 begin
   if FTrustStore = ATrustStore then
     Exit;
 
-  LStore:=FTrustStore;
+  lStore:=FTrustStore;
   if Assigned(ATrustStore) and (X509_STORE_up_ref(ATrustStore)  <> 1) then
     ETaurusTLSSocketConfigSSLTrustStoreError.
       RaiseWithMessage('Error assigning X509 Trust Store');
   FTrustStore:=ATrustStore;
 
-  X509_STORE_free(LStore);
+  X509_STORE_free(lStore);
 end;
 
 
@@ -720,10 +727,20 @@ begin
   if FSocketHandle <> Id_INVALID_SOCKET then
   begin
     ERR_clear_error;
-    LRet:=SSL_set_fd(FSSL, FSocketHandle);
-    if LRet <= 0 then
+    lRet:=SSL_set_fd(FSSL, FSocketHandle);
+    if lRet <= 0 then
       ETaurusTLSFDSetError.RaiseException(FSSL, lRet, RSSSLFDSetError);
   end;
+end;
+
+procedure TTaurusTLSBaseSocket.DoHandshake;
+begin
+  CheckActiveState([seHandshaking]);
+  repeat
+    DoHandshakeIteration;
+    { TODO : IndySleep should be replaced with the smart cross-compiler "spin wait" call. }
+    IndySleep(1);
+  until State <> seHandshaking;
 end;
 
 procedure TTaurusTLSBaseSocket.DoDebugLog(const AMessage: string);
@@ -757,10 +774,10 @@ begin
   try
     try
       ERR_clear_error;
-      LRet:=SSL_shutdown(FSSL);
+      lRet:=SSL_shutdown(FSSL);
 
       // 1. Handle C-Style OpenSSL Failures
-      if LRet < 0 then
+      if lRet < 0 then
       begin
         // If the first call fails (e.g. session was already broken or uninitialized),
         // transition to closed immediately to safely deallocate the SSL handle and exit.
@@ -768,7 +785,7 @@ begin
         Exit;
       end;
 
-      if LRet = 0 then
+      if lRet = 0 then
         // Sent close_notify successfully.
         // In blocking mode, calling it a second time will block synchronously
         // until the peer's close_notify is read or a socket timeout/error occurs.
@@ -849,7 +866,7 @@ begin
 
   // 1. Redundant Transition Guard (Fails fast in Debug, exits silently in Release)
   // Do not localize
-  Assert(lCurrentState <> ATarget, 'Redundant state transition: ' + lCurrentState.AsString);
+  Assert(lCurrentState <> ATarget, 'Redundant state transition: '+lCurrentState.AsString);
   if lCurrentState = ATarget then
   begin
     // TODO: Trigger OnDebugMessage warning here (No-op in production)
@@ -889,15 +906,15 @@ begin
   TransitionTo(seInitialized);
   LinkSocket;
   TransitionTo(seHandshaking);
-  ProcessSSL;
+  DoHandshake;
 end;
 
 procedure TTaurusTLSBaseSocket.CheckActiveState(
-  AExpectedState: TTaurusTLSSslState);
+  const AExpectedStates: TTaurusTLSSslStates);
 begin
-  if FState <> AExpectedState then
+  if not (FState in AExpectedStates) then
     ETaurusTLSSocketStateError.RaiseWithMessageFmt(
-      'Invalid socket operation in the ''%s'' state.', [AExpectedState.AsString]);
+      'Invalid socket operation in the ''%s'' state.', [FState.AsString]);
 end;
 
 function TTaurusTLSBaseSocket.CheckForError(ALastResult: Integer): Integer;
@@ -913,20 +930,6 @@ begin
 
   { TODO : Use correct exception class here. }
   ETaurusTLSAPISSLError.RaiseExceptionCode(Result, ALastResult);
-end;
-
-procedure TTaurusTLSBaseSocket.ProcessSSL;
-begin
-  case FState of
-    seHandshaking:
-      DoHandshake; // Polymorphic dispatch to Client/Peer
-
-    seClosing:
-      DoShutdown;  // Standard unified SSL_shutdown loop
-  else
-    ETaurusTLSSocketStateError.RaiseWithMessageFmt(
-      'Invalid TLS Socket state ''%s'' for negotiation.', [FState.AsString]);
-  end;
 end;
 
 function TTaurusTLSBaseSocket.Readable: boolean;
@@ -947,7 +950,7 @@ begin
   if lLen = 0 then
     Exit;
 
-  CheckActiveState(seEstablished); // Security guard
+  CheckActiveState([seEstablished]); // Security guard
 
   lSSL:=FSSL;
   repeat
@@ -1016,19 +1019,19 @@ begin
   if (ALength = 0) or (Length(ABuffer) = 0) then
     Exit;
 
-  CheckActiveState(seEstablished); // Security guard
+  CheckActiveState([seEstablished]); // Security guard
 
   // Clear error queue before doing read to avoid getting unhandled previously error
   ERR_clear_error;
 
   // We trust Indy that AOffset+ALength never exceeds the Length(ABuffer)
-  LRet:=SSL_write_ex(FSSL, ABuffer[AOffset], ALength, Result);
-  if LRet = 1 then
+  lRet:=SSL_write_ex(FSSL, ABuffer[AOffset], ALength, Result);
+  if lRet = 1 then
     Exit
   else
   begin
-    LErr:=SSL_get_error(FSSL, LRet);
-    if LErr = SSL_ERROR_SYSCALL then
+    lErr:=SSL_get_error(FSSL, lRet);
+    if lErr = SSL_ERROR_SYSCALL then
     begin
       TransitionTo(seClosed); // Force-close immediate teardown
 
@@ -1050,7 +1053,7 @@ begin
     if FState = seEstablished then
     begin
       TransitionTo(seClosing);
-      ProcessSSL;
+      DoShutdown;
     end;
   except
     on E: Exception do
@@ -1098,7 +1101,7 @@ class procedure TTaurusTLSBaseSocket.SslInfoCallback(const ASSL: PSSL; AWhere,
 var
   lInstance: TTaurusTLSBaseSocket;
   lConfig: TTaurusTLSCustomSocketConfig;
-  LErr: integer;
+  lErr: integer;
 
 begin
   if not Assigned(ASSL) then
@@ -1164,22 +1167,139 @@ end;
 
 { TTaurusTLSClientSocket }
 
-function TTaurusTLSClientSocket.GetClientConfig: TaurusTLSClientSocketConfig;
-begin
-  Result:=Config as TaurusTLSClientSocketConfig;
-end;
-
-procedure TTaurusTLSClientSocket.SetECHSTatus(AECHStatus: TTaurusECHClientStatus);
-begin
-  FECHStatus:=AECHStatus;
-end;
-
 constructor TTaurusTLSClientSocket.Create(AConfig: TaurusTLSClientSocketConfig);
 begin
   inherited Create(AConfig);
 end;
 
-procedure TTaurusTLSClientSocket.DoHandshake;
+function TTaurusTLSClientSocket.GetClientConfig: TaurusTLSClientSocketConfig;
+begin
+  Result:=Config as TaurusTLSClientSocketConfig;
+end;
+
+procedure TTaurusTLSClientSocket.SetECHStatus(AECHStatus: TTaurusECHClientStatus);
+begin
+  FECHStatus:=AECHStatus;
+end;
+
+procedure TTaurusTLSClientSocket.SetupConnection;
+var
+  lRetCode: TIdC_INT;
+  lIdentity: string;
+  lIdentityAnsi: RawByteString;
+  lIsIdentityIP: Boolean;
+  lECHStore: TTaurusTLSECHStore;
+  lParams: PX509_VERIFY_PARAM;
+  lConfig: TaurusTLSClientSocketConfig;
+
+begin
+  lConfig:=ClientConfig;
+  if not Assigned(lConfig) then
+    ETaurusTLSClientSocketSSLSetupError.RaiseWithMessage(RSOSSLModeNotSet);
+
+  // 1. Determine Identity (Logical Hostname vs IP)
+  lIdentity:=lConfig.HostName;
+  if IsValidIP(lIdentity) then
+    lIdentity:=LConfig.DefaultSNI;
+
+  lIsIdentityIP:=IsValidIP(lIdentity);
+
+  // 2. Prepare Punycode for SNI
+  if lIdentity <> '' then
+  begin
+    {$IFDEF WINDOWS}
+    if Assigned(IdnToAscii) and (not lIsIdentityIP) then
+      lIdentityAnsi:=RawByteString(IDNToPunnyCode(lIdentity))
+    else
+    {$ENDIF}
+      lIdentityAnsi:=RawByteString(lIdentity);
+  end;
+
+  SetECHStatus(echCliNotConfigured);
+
+  // 3. ECH and SNI Configuration
+  if (lIdentityAnsi <> '') and (not lIsIdentityIP) then
+  begin
+    if lConfig.ECHEnabled and (lConfig.ECHConfigList <> '') then
+    begin
+      // REAL ECH
+      lECHStore:=TTaurusTLSECHStore.Create;
+      try
+        lECHStore.SetConfigList(RawByteString(lConfig.ECHConfigList));
+        lECHStore.Attach(FSSL);
+      finally
+        lECHStore.Free;
+      end;
+
+      if lConfig.ECHDecoy <> '' then
+      begin
+        // Case A: Real ECH with explicit Outer SNI override
+        SSL_ech_set1_server_names(FSSL, PIdAnsiChar(lIdentityAnsi),
+          PIdAnsiChar(AnsiString(lConfig.ECHDecoy)), 0);
+      end
+      else
+      begin
+        // Case B: Real ECH using public_name from ConfigList
+        lRetCode:=SSL_set_tlsext_host_name(FSSL, PIdAnsiChar(lIdentityAnsi));
+        if lRetCode <= 0 then
+          ETaurusTLSSettingTLSHostNameError.RaiseException(FSSL, lRetCode, RSSSLSettingTLSHostNameError_2);
+      end;
+    end
+    else
+    begin
+      // Case C: GREASE or Standard SNI
+      if lConfig.ECHEnabled then
+        SSL_set_options(FSSL, SSL_OP_ECH_GREASE);
+
+      lRetCode:=SSL_set_tlsext_host_name(FSSL, PIdAnsiChar(lIdentityAnsi));
+      if lRetCode <= 0 then
+        ETaurusTLSSettingTLSHostNameError.RaiseException(FSSL, lRetCode, RSSSLSettingTLSHostNameError_2);
+    end;
+  end;
+
+  // 4. Hostname / IP Verification Setup
+  if (lConfig.VerifyFlags.Flags <> []) and (lIdentityAnsi <> '') then
+  begin
+    if lIsIdentityIP then
+    begin
+      lParams:=SSL_get0_param(FSSL);
+      if Assigned(lParams) then
+        if X509_VERIFY_PARAM_set1_ip_asc(lParams, PIdAnsiChar(lIdentityAnsi)) <= 0 then
+          ETaurusTLSSettingSANIPError.RaiseWithMessage(RSSLX509_VERIFY_PARAM_set1_ip_asc);
+    end
+    else
+    begin
+      SSL_set_hostflags(FSSL, 0);
+      lRetCode:=SSL_set1_host(FSSL, PIdAnsiChar(lIdentityAnsi));
+      if lRetCode <= 0 then
+        ETaurusTLSSettingTLSHostNameError.RaiseException(FSSL, lRetCode, RSSSLSettingTLSHostNameError_2);
+    end;
+  end;
+end;
+
+procedure TTaurusTLSClientSocket.Connect(const pHandle: TIdStackSocketHandle);
+begin
+  // 1. Capture the raw OS socket handle
+  SocketHandle:=pHandle;
+
+  // 2. Transition to Initialized (Allocates FSSL and binds callbacks)
+  TransitionTo(seInitialized);
+
+  // 3. Bind the physical socket descriptor to OpenSSL
+  LinkSocket;
+
+  // 4. Configure SNI, ECH, and Hostname/IP validation settings
+  SetupConnection;
+
+  // 5. Clone the session ID if this is a cloned IOHandler (e.g., FTP data channels)
+  ClientConfig.CloneSession(FSSL);
+
+  // 6. Transition to Handshaking and initiate the Handshake loop
+  TransitionTo(seHandshaking);
+  DoHandshake;
+end;
+
+procedure TTaurusTLSClientSocket.DoHandshakeIteration;
 var
   lRet, lErr: Integer;
   lStatus: TIdC_INT;
@@ -1193,126 +1313,122 @@ var
 begin
   lConfig:=ClientConfig;
   try
-    repeat
-      ERR_clear_error;
-      lRet := SSL_connect(SSL);
+    ERR_clear_error;
+    lRet:=SSL_connect(SSL);
 
-      if lRet = 1 then
+    if lRet = 1 then
+    begin
+      // Verify ECH status prior to accepting handshake success
+      if lConfig.ECHEnabled and (lConfig.ECHConfigList <> '') then
       begin
-        // Verify ECH status prior to accepting handshake success
-        if lConfig.ECHEnabled and (lConfig.ECHConfigList <> '') then
-        begin
-          lStatus := SSL_ech_get1_status(SSL, @lInner, @lOuter);
+        lStatus:=SSL_ech_get1_status(SSL, @lInner, @lOuter);
 
-          case lStatus of
-          SSL_ECH_STATUS_SUCCESS,
-          SSL_ECH_STATUS_BACKEND:
-            // Success - moving forward.
-            ; //PALOFF "empty block"
+        case lStatus of
+        SSL_ECH_STATUS_SUCCESS,
+        SSL_ECH_STATUS_BACKEND:
+          // Success - moving forward.
+          ; //PALOFF "empty block"
 
-          SSL_ECH_STATUS_GREASE_ECH,
-          SSL_ECH_STATUS_FAILED_ECH,
-          SSL_ECH_STATUS_FAILED_ECH_BAD_NAME:
+        SSL_ECH_STATUS_GREASE_ECH,
+        SSL_ECH_STATUS_FAILED_ECH,
+        SSL_ECH_STATUS_FAILED_ECH_BAD_NAME:
+          begin
+            SetECHStatus(echCliFailed);
+            lECHConfigBuf:=nil;
+            lECHConfigLen:=0;
+
+            // Attempt to extract the updated keys provided by the server
+            if SSL_ech_get1_retry_config(SSL, @lECHConfigBuf, @lECHConfigLen) = 1 then
             begin
-              SetECHStatus(echCliFailed);
-              lECHConfigBuf := nil;
-              lECHConfigLen := 0;
-
-              // Attempt to extract the updated keys provided by the server
-              if SSL_ech_get1_retry_config(SSL, @lECHConfigBuf, @lECHConfigLen) = 1 then
-              begin
-                try
-                  if (lECHConfigBuf <> nil) and (lECHConfigLen > 0) then
-                  begin
-                    lNewConfigBase64 := EncodeConfigList(lECHConfigBuf, lECHConfigLen);
-                    TransitionTo(seClosed); // Safely close and tear down SSL session
-                    ETaurusTLSECHRetryRequired.RaiseWithMessage(
-                      'ECH Handshake error. Try to reconnect with updated ECH Config List.',
-                      lNewConfigBase64
-                    );
-                  end;
-                finally
-                  OPENSSL_free(lECHConfigBuf);
+              try
+                if (lECHConfigBuf <> nil) and (lECHConfigLen > 0) then
+                begin
+                  lNewConfigBase64:=EncodeConfigList(lECHConfigBuf, lECHConfigLen);
+                  TransitionTo(seClosed); // Safely close and tear down SSL session
+                  ETaurusTLSECHRetryRequired.RaiseWithMessage(
+                    'ECH Handshake error. Try to reconnect with updated ECH Config List.',
+                    lNewConfigBase64
+                  );
                 end;
+              finally
+                OPENSSL_free(lECHConfigBuf);
               end;
-
-              // If no keys were returned, it is a hard rejection
-              TransitionTo(seClosed);
-              ETaurusTLSECHRejectedError.RaiseWithMessage(
-                'ECH Handshake failed. The server rejected the key and provided no retry configuration.');
             end;
 
-          SSL_ECH_STATUS_NOT_TRIED,
-          SSL_ECH_STATUS_NOT_CONFIGURED:
-            begin
-              TransitionTo(seError);
-              ETaurusTLSECHDowngradeError.RaiseWithMessage(
-                'ECH Handshake bypassed. Possible downgrade attack or configuration mismatch.');
-            end;
+            // If no keys were returned, it is a hard rejection
+            TransitionTo(seClosed);
+            ETaurusTLSECHRejectedError.RaiseWithMessage(
+              'ECH Handshake failed. The server rejected the key and provided no retry configuration.');
+          end;
 
-          SSL_ECH_STATUS_BAD_NAME:
-            begin
-              TransitionTo(seError);
-              ETaurusTLSECHBadNameError.RaiseWithMessage(
-                'ECH Handshake completed but the server certificate did not match the inner name.');
-            end;
+        SSL_ECH_STATUS_NOT_TRIED,
+        SSL_ECH_STATUS_NOT_CONFIGURED:
+          begin
+            TransitionTo(seError);
+            ETaurusTLSECHDowngradeError.RaiseWithMessage(
+              'ECH Handshake bypassed. Possible downgrade attack or configuration mismatch.');
+          end;
 
-          else
-            begin
-              // Covers SSL_ECH_STATUS_FAILED (0), SSL_ECH_STATUS_BAD_CALL (-100), and any other negative codes
-              TransitionTo(seError);
-              ETaurusTLSECHProtocolError.RaiseWithMessage(
-                'ECH Handshake failed due to an internal OpenSSL or protocol error.');
-            end;
+        SSL_ECH_STATUS_BAD_NAME:
+          begin
+            TransitionTo(seError);
+            ETaurusTLSECHBadNameError.RaiseWithMessage(
+              'ECH Handshake completed but the server certificate did not match the inner name.');
+          end;
+
+        else
+          begin
+            // Covers SSL_ECH_STATUS_FAILED (0), SSL_ECH_STATUS_BAD_CALL (-100), and any other negative codes
+            TransitionTo(seError);
+            ETaurusTLSECHProtocolError.RaiseWithMessage(
+              'ECH Handshake failed due to an internal OpenSSL or protocol error.');
           end;
         end;
+      end;
 
-        // Perform security level check via snapshot event
-        lAccept:=True;
-        lConfig.DoOnSecurityLevel(lAccept);
-        if not lAccept then
-        begin
-          TransitionTo(seError);
-          Exit;
-        end;
-
-        TransitionTo(seEstablished);
-
-        if lConfig.ECHEnabled then
-        begin
-          // Update the status for successful connections
-          LStatus := SSL_ech_get1_status(SSL, @LInner, @LOuter);
-          if LStatus = SSL_ECH_STATUS_SUCCESS then
-            SetECHStatus(echCliSuccess)
-          else
-            SetECHStatus(echCliNone);
-        end;
-
-        lConfig.DoOnSSLNegotiated;
+      // Perform security level check via snapshot event
+      lAccept:=True;
+      lConfig.DoOnSecurityLevel(lAccept);
+      if not lAccept then
+      begin
+        TransitionTo(seError);
         Exit;
       end;
 
-      lErr := SSL_get_error(SSL, lRet);
-      case LErr of
-        SSL_ERROR_SYSCALL:
-        begin
-          TransitionTo(seClosed); // Triggers immediate teardown
-          raise ETaurusTLSConnectionReset.Create('Handshake reset by peer.');
-        end;
+      TransitionTo(seEstablished);
 
-        SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE:
-        begin
-          IndySleep(1);
-          Continue;
-        end;
-
-      else
-        begin
-          TransitionTo(seError);
-          raise ETaurusTLSHandshakeError.Create('Fatal handshake error.');
-        end;
+      if lConfig.ECHEnabled then
+      begin
+        // Update the status for successful connections
+        lStatus:=SSL_ech_get1_status(SSL, @LInner, @LOuter);
+        if lStatus = SSL_ECH_STATUS_SUCCESS then
+          SetECHStatus(echCliSuccess)
+        else
+          SetECHStatus(echCliNone);
       end;
-    until False; //PALOFF "Condition evaluates to constant value"
+
+      lConfig.DoOnSSLNegotiated;
+      Exit;
+    end;
+
+    lErr:=SSL_get_error(SSL, lRet);
+    case lErr of
+    SSL_ERROR_SYSCALL:
+      begin
+        TransitionTo(seClosed); // Triggers immediate teardown
+        raise ETaurusTLSConnectionReset.Create('Handshake reset by peer.');
+      end;
+
+    SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE:
+      // Waiting for data
+      ;
+
+    else
+      begin
+        TransitionTo(seError);
+        raise ETaurusTLSHandshakeError.Create('Fatal handshake error.');
+      end;
+    end;
 
   except
     on E: Exception do
@@ -1336,16 +1452,15 @@ begin
   Result:=Config as TTaurusTLSPeerSocketConfig;
 end;
 
-procedure TTaurusTLSPeerSocket.DoHandshake;
+procedure TTaurusTLSPeerSocket.DoHandshakeIteration;
 var
   lRet, lErr: Integer;
   lAccepted: boolean;
 
 begin
   try
-    repeat
       ERR_clear_error;
-      lRet := SSL_accept(SSL);
+      lRet:=SSL_accept(SSL);
 
       if lRet = 1 then
       begin
@@ -1362,7 +1477,7 @@ begin
         Exit;
       end;
 
-      lErr := SSL_get_error(SSL, lRet);
+      lErr:=SSL_get_error(SSL, lRet);
       case lErr of
       SSL_ERROR_SYSCALL:
         begin
@@ -1371,10 +1486,7 @@ begin
         end;
 
         SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE:
-        begin
-          IndySleep(1);
-          Continue;
-        end;
+          Exit; // Wait for data from the socket.
 
       else
         begin
@@ -1382,7 +1494,6 @@ begin
           ETaurusTLSHandshakeError.RaiseWithMessage('Fatal handshake error.');
         end;
       end;
-    until False; //PALOFF "Condition evaluates to constant value"
   except
     on E: Exception do
     begin
@@ -1533,11 +1644,11 @@ end;
 constructor TTaurusTLSBaseSocket.Create(AParent: TObject);
 begin
   inherited Create;
-  FParent := AParent;
-  FVerifyHostname := True;
+  FParent:=AParent;
+  FVerifyHostname:=True;
   {$IFDEF UNITTEST}
-  FVirtualHandshakeRet := 0;
-  FVirtualSSLErr := 0;
+  FVirtualHandshakeRet:=0;
+  FVirtualSSLErr:=0;
   {$ENDIF}
 end;
 
@@ -1546,12 +1657,12 @@ begin
   if Assigned(FSession) then
   begin
     SSL_SESSION_free(FSession);
-    FSession := nil;
+    FSession:=nil;
   end;
   if Assigned(FSSL) then
   begin
     SSL_free(FSSL);
-    FSSL := nil;
+    FSSL:=nil;
   end;
   FreeAndNil(FPeerCert);
   inherited Destroy;
@@ -1567,21 +1678,21 @@ end;
 
 function TTaurusTLSBaseSocket.GetSSLError(retCode: Integer): Integer;
 begin
-  Result := SSL_get_error(FSSL, retCode);
+  Result:=SSL_get_error(FSSL, retCode);
 end;
 
 function TTaurusTLSBaseSocket.GetPeerCert: TTaurusTLSX509;
 var
   LX509: PX509;
 begin
-  Result := FPeerCert;
+  Result:=FPeerCert;
   if not Assigned(Result) and Assigned(FSSL) then
   begin
-    LX509 := SSL_get_peer_certificate(FSSL);
+    LX509:=SSL_get_peer_certificate(FSSL);
     if Assigned(LX509) then
     begin
-      Result := TTaurusTLSX509.Create(LX509, False);
-      FPeerCert := Result;
+      Result:=TTaurusTLSX509.Create(LX509, False);
+      FPeerCert:=Result;
     end;
   end;
 end;
@@ -1592,11 +1703,11 @@ begin
     raise ETaurusTLSSessionCanNotBeNil.Create(RSOSSSessionCanNotBeNul)
   else
     case SSL_SESSION_get_protocol_version(FSession) of
-      SSL3_VERSION: Result := SSLv3;
-      TLS1_VERSION: Result := TLSv1;
-      TLS1_1_VERSION: Result := TLSv1_1;
-      TLS1_2_VERSION: Result := TLSv1_2;
-      TLS1_3_VERSION: Result := TLSv1_3;
+      SSL3_VERSION: Result:=SSLv3;
+      TLS1_VERSION: Result:=TLSv1;
+      TLS1_1_VERSION: Result:=TLSv1_1;
+      TLS1_2_VERSION: Result:=TLSv1_2;
+      TLS1_3_VERSION: Result:=TLSv1_3;
     else
       raise ETaurusTLSInvalidSessionValue.Create(RSOSSInvalidSessionValue);
     end;
@@ -1605,21 +1716,21 @@ end;
 function TTaurusTLSBaseSocket.GetSSLProtocolVersionStr: string;
 begin
   case SSLProtocolVersion of
-    SSLv23: Result := 'SSLv2 or SSLv3';
-    SSLv2: Result := 'SSLv2';
-    SSLv3: Result := 'SSLv3';
-    TLSv1: Result := 'TLSv1';
-    TLSv1_1: Result := 'TLSv1.1';
-    TLSv1_2: Result := 'TLSv1.2';
-    TLSv1_3: Result := 'TLSv1.3';
+    SSLv23: Result:='SSLv2 or SSLv3';
+    SSLv2: Result:='SSLv2';
+    SSLv3: Result:='SSLv3';
+    TLSv1: Result:='TLSv1';
+    TLSv1_1: Result:='TLSv1.1';
+    TLSv1_2: Result:='TLSv1.2';
+    TLSv1_3: Result:='TLSv1.3';
   else
-    Result := 'Unknown';
+    Result:='Unknown';
   end;
 end;
 
 procedure TTaurusTLSBaseSocket.SetVerifyHostName(const Value: Boolean);
 begin
-  FVerifyHostname := Value;
+  FVerifyHostname:=Value;
 end;
 
 procedure TTaurusTLSBaseSocket.InitSSL(const pHandle: TIdStackSocketHandle);
@@ -1628,14 +1739,14 @@ var
 begin
   if not Assigned(FSSL) then
   begin
-    LHandle := FSSLContextHandle;
+    LHandle:=FSSLContextHandle;
     if not Assigned(LHandle) and Assigned(FSSLContext) then
-      LHandle := TTaurusTLSContext(FSSLContext).Context;
+      LHandle:=TTaurusTLSContext(FSSLContext).Context;
 
     if not Assigned(LHandle) then
        raise ETaurusTLSError.Create('SSL Context Handle not assigned');
 
-    FSSL := SSL_new(LHandle);
+    FSSL:=SSL_new(LHandle);
     if not Assigned(FSSL) then
     begin
       ETaurusTLSCouldNotCreateSSLObject.RaiseWithMessage(RSOSSCouldNotCreateSSLObject);
@@ -1656,28 +1767,28 @@ var
   Lret, LErr: Integer;
   LOffset, LLength, LWritten: TIdC_SIZET;
 begin
-  Result := 0;
-  LOffset := TIdC_SIZET(AOffset);
-  LLength := TIdC_SIZET(ALength);
+  Result:=0;
+  LOffset:=TIdC_SIZET(AOffset);
+  LLength:=TIdC_SIZET(ALength);
   
   repeat
-    LWritten := 0;
-    Lret := SSL_write_ex(FSSL, ABuffer[LOffset], LLength, LWritten);
+    LWritten:=0;
+    Lret:=SSL_write_ex(FSSL, ABuffer[LOffset], LLength, LWritten);
     if Lret > 0 then
     begin
-      Result := Result + Integer(LWritten);
-      LOffset := LOffset + LWritten;
-      LLength := LLength - LWritten;
+      Result:=Result+Integer(LWritten);
+      LOffset:=LOffset+LWritten;
+      LLength:=LLength-LWritten;
       if LLength < 1 then break;
       Continue;
     end;
     
-    LErr := GetSSLError(Lret);
+    LErr:=GetSSLError(Lret);
     if (LErr = SSL_ERROR_WANT_READ) or (LErr = SSL_ERROR_WANT_WRITE) then
       Continue;
       
     if LErr <> SSL_ERROR_ZERO_RETURN then
-      Result := Lret;
+      Result:=Lret;
     break;
   until False;
 end;
@@ -1687,22 +1798,22 @@ var
   Lret, LErr: Integer;
   LRead: TIdC_SIZET;
 begin
-  Result := 0;
+  Result:=0;
   repeat
-    LRead := 0;
-    Lret := SSL_read_ex(FSSL, VBuffer[0], Length(VBuffer), LRead);
+    LRead:=0;
+    Lret:=SSL_read_ex(FSSL, VBuffer[0], Length(VBuffer), LRead);
     if Lret > 0 then
     begin
-      Result := Integer(LRead);
+      Result:=Integer(LRead);
       break;
     end;
     
-    LErr := GetSSLError(Lret);
+    LErr:=GetSSLError(Lret);
     if (LErr = SSL_ERROR_WANT_READ) or (LErr = SSL_ERROR_WANT_WRITE) then
       Continue;
       
     if LErr <> SSL_ERROR_ZERO_RETURN then
-      Result := Lret;
+      Result:=Lret;
     break;
   until False;
 end;
@@ -1712,21 +1823,21 @@ var
   Lbuf: Byte;
   Lr: Integer;
 begin
-  Result := sslNoData;
-  Lr := SSL_peek(FSSL, Lbuf, 1);
+  Result:=sslNoData;
+  Lr:=SSL_peek(FSSL, Lbuf, 1);
   if Lr > 0 then
-    Result := sslDataAvailable
+    Result:=sslDataAvailable
   else
   begin
     case GetSSLError(Lr) of
       SSL_ERROR_SSL, SSL_ERROR_SYSCALL:
         if SSL_get_shutdown(FSSL) = SSL_RECEIVED_SHUTDOWN then
-          Result := sslEOF
+          Result:=sslEOF
         else
-          Result := sslUnrecoverableError;
+          Result:=sslUnrecoverableError;
       SSL_ERROR_ZERO_RETURN:
         if SSL_get_shutdown(FSSL) = SSL_RECEIVED_SHUTDOWN then
-          Result := sslEOF;
+          Result:=sslEOF;
     end;
   end;
 end;
@@ -1737,8 +1848,8 @@ end;
 constructor TTaurusTLSClientSocket.Create(AParent: TObject);
 begin
   inherited Create(AParent);
-  FVirtualECHStatus := -1;
-  FConfig := TTaurusSNIClientConfig.Create;
+  FVirtualECHStatus:=-1;
+  FConfig:=TTaurusSNIClientConfig.Create;
 end;
 {$ENDIF}
 
@@ -1762,35 +1873,35 @@ begin
 
   // 1. Determine Identity (Logical Hostname)
   if IsValidIP(FHostName) then
-    LIdentity := FConfig.ForceSNI
+    LIdentity:=FConfig.ForceSNI
   else
-    LIdentity := FHostName;
+    LIdentity:=FHostName;
 
-  LIsIdentityIP := IsValidIP(LIdentity);
+  LIsIdentityIP:=IsValidIP(LIdentity);
 
   // 2. Prepare Punycode
   if LIdentity <> '' then
   begin
     {$IFDEF WINDOWS}
     if Assigned(IdnToAscii) and (not LIsIdentityIP) then
-      LIdentityAnsi := RawByteString(IDNToPunnyCode(LIdentity))
+      LIdentityAnsi:=RawByteString(IDNToPunnyCode(LIdentity))
     else
     {$ENDIF}
-      LIdentityAnsi := RawByteString(LIdentity);
+      LIdentityAnsi:=RawByteString(LIdentity);
   end;
 
-  FECHSent := False;
-  FECHStatus := echCliNotConfigured;
+  FECHSent:=False;
+  FECHStatus:=echCliNotConfigured;
 
   if (LIdentityAnsi <> '') and (not LIsIdentityIP) then
   begin
     if (FConfig.ECHKind <> ekNoECH) and (FConfig.ConfigList <> '') then
     begin
-      LECHStore := TClientECHStore.Create;
+      LECHStore:=TClientECHStore.Create;
       try
         LECHStore.SetConfigList(RawByteString(FConfig.ConfigList));
         LECHStore.Attach(FSSL);
-        FECHSent := True;
+        FECHSent:=True;
       finally
         LECHStore.Free;
       end;
@@ -1802,7 +1913,7 @@ begin
       end
       else
       begin
-        LRetCode := SSL_set_tlsext_host_name(FSSL, PIdAnsiChar(LIdentityAnsi));
+        LRetCode:=SSL_set_tlsext_host_name(FSSL, PIdAnsiChar(LIdentityAnsi));
         if LRetCode <= 0 then
           ETaurusTLSSettingTLSHostNameError.RaiseException(FSSL, LRetCode, RSSSLSettingTLSHostNameError_2);
       end;
@@ -1812,7 +1923,7 @@ begin
       if FConfig.ECHKind <> ekNoECH then
         SSL_set_options(FSSL, SSL_OP_ECH_GREASE);
 
-      LRetCode := SSL_set_tlsext_host_name(FSSL, PIdAnsiChar(LIdentityAnsi));
+      LRetCode:=SSL_set_tlsext_host_name(FSSL, PIdAnsiChar(LIdentityAnsi));
       if LRetCode <= 0 then
         ETaurusTLSSettingTLSHostNameError.RaiseException(FSSL, LRetCode, RSSSLSettingTLSHostNameError_2);
     end;
@@ -1822,7 +1933,7 @@ begin
   begin
     if LIsIdentityIP then
     begin
-      LParams := SSL_get0_param(FSSL);
+      LParams:=SSL_get0_param(FSSL);
       if Assigned(LParams) then
         if X509_VERIFY_PARAM_set1_ip_asc(LParams, PIdAnsiChar(LIdentityAnsi)) <= 0 then
           ETaurusTLSSettingSANIPError.RaiseWithMessage(RSSLX509_VERIFY_PARAM_set1_ip_asc);
@@ -1830,7 +1941,7 @@ begin
     else
     begin
       SSL_set_hostflags(FSSL, 0);
-      LRetCode := SSL_set1_host(FSSL, PIdAnsiChar(LIdentityAnsi));
+      LRetCode:=SSL_set1_host(FSSL, PIdAnsiChar(LIdentityAnsi));
       if LRetCode <= 0 then
         ETaurusTLSSettingTLSHostNameError.RaiseException(FSSL, LRetCode, RSSSLSettingTLSHostNameError_2);
     end;
@@ -1851,7 +1962,7 @@ var
 begin
   if Supports(FParent, ITaurusTLSCallbackHelper, LHelper) then
   begin
-    LParentIO := LHelper.GetIOHandlerSelf;
+    LParentIO:=LHelper.GetIOHandlerSelf;
     if Assigned(LParentIO) and Assigned(LParentIO.SSLSocket) and (TObject(LParentIO.SSLSocket) <> TObject(Self)) then
     begin
       if SSL_copy_session_id(FSSL, LParentIO.SSLSocket.SSL) <> 1 then
@@ -1863,27 +1974,27 @@ begin
   SetupConnection;
 
   {$IFDEF UNITTEST}
-  if FVirtualHandshakeRet <> 0 then LRetCode := FVirtualHandshakeRet else
+  if FVirtualHandshakeRet <> 0 then LRetCode:=FVirtualHandshakeRet else
   {$ENDIF}
-    LRetCode := SSL_connect(FSSL);
+    LRetCode:=SSL_connect(FSSL);
 
   if FECHSent then
   begin
     {$IFDEF UNITTEST}
-    if FVirtualECHStatus <> -1 then LStatus := FVirtualECHStatus else
+    if FVirtualECHStatus <> -1 then LStatus:=FVirtualECHStatus else
     {$ENDIF}
-      LStatus := SSL_ech_get1_status(FSSL, nil, nil);
+      LStatus:=SSL_ech_get1_status(FSSL, nil, nil);
 
     case LStatus of
-      SSL_ECH_STATUS_SUCCESS: FECHStatus := ech_cli_success;
+      SSL_ECH_STATUS_SUCCESS: FECHStatus:=ech_cli_success;
 
       SSL_ECH_STATUS_GREASE_ECH: 
       begin
-        FECHStatus := ech_cli_failed;
+        FECHStatus:=ech_cli_failed;
         {$IFDEF UNITTEST}
         if FVirtualECHRetryConfig <> '' then
         begin
-          FECHStatus := ech_cli_retry_config;
+          FECHStatus:=ech_cli_retry_config;
           raise ETaurusTLSECHRetryRequired.Create(RSMsg_ECHRetryRequired_err, FVirtualECHRetryConfig);
         end;
         {$ELSE}
@@ -1892,7 +2003,7 @@ begin
           try
             if Assigned(LECHConfigBuf) and (LECHConfigLen > 0) then
             begin
-              FECHStatus := ech_cli_retry_config;
+              FECHStatus:=ech_cli_retry_config;
               raise ETaurusTLSECHRetryRequired.Create(
                 RSMsg_ECHRetryRequired_err,
                 EncodeConfigList(LECHConfigBuf, LECHConfigLen));
@@ -1907,13 +2018,13 @@ begin
 
       SSL_ECH_STATUS_NOT_CONFIGURED: 
       begin
-        FECHStatus := ech_cli_not_configured;
+        FECHStatus:=ech_cli_not_configured;
         if FConfig.ECHKind = ekForceECH then
           raise ETaurusTLSECHDowngradeError.Create(RSMsg_ECHNotConfigured_err);
       end;
 
     else
-      FECHStatus := ech_cli_failed;
+      FECHStatus:=ech_cli_failed;
       raise ETaurusTLSECHError.CreateFmt(LStatus, RSMsg_ECHFailed_err, [LStatus]);
     end;
   end;
@@ -1929,18 +2040,18 @@ begin
   end;
 
   if Assigned(FSession) then SSL_SESSION_free(FSession);
-  FSession := SSL_get1_session(FSSL);
+  FSession:=SSL_get1_session(FSSL);
 
   if FVerifyHostname then
   begin
-    LVerifyResult := SSL_get_verify_result(FSSL);
+    LVerifyResult:=SSL_get_verify_result(FSSL);
     if LVerifyResult <> X509_V_OK then
     begin
-      LPeerCertHandle := SSL_get_peer_certificate(FSSL);
+      LPeerCertHandle:=SSL_get_peer_certificate(FSSL);
       try
         if Assigned(LPeerCertHandle) and Supports(FParent, ITaurusTLSCallbackHelper, LHelper) then
         begin
-          LWrappedCert := TTaurusTLSX509.Create(LPeerCertHandle, False);
+          LWrappedCert:=TTaurusTLSX509.Create(LPeerCertHandle, False);
           try
             if not LHelper.VerifyError(LWrappedCert, LVerifyResult) then
               ETaurusTLSAPICryptoError.RaiseWithMessage(AnsiStringToString(X509_verify_cert_error_string(LVerifyResult)));
@@ -1963,7 +2074,7 @@ var
 begin
   if FECHConfig <> '' then
   begin
-    LECHStore := TServerECHStore.Create;
+    LECHStore:=TServerECHStore.Create;
     try
       LECHStore.ReadPem(FECHConfig, 0);
       LECHStore.Attach(FSSL);
@@ -1982,10 +2093,10 @@ begin
 
   {$IFDEF UNITTEST}
   if FVirtualHandshakeRet <> 0 then
-    LRetCode := FVirtualHandshakeRet
+    LRetCode:=FVirtualHandshakeRet
   else
   {$ENDIF}
-    LRetCode := SSL_accept(FSSL);
+    LRetCode:=SSL_accept(FSSL);
 
   if LRetCode <= 0 then
   begin
@@ -1993,7 +2104,7 @@ begin
   end;
 
   if Assigned(FSession) then SSL_SESSION_free(FSession);
-  FSession := SSL_get1_session(FSSL);
+  FSession:=SSL_get1_session(FSSL);
 end;
 
 *)
