@@ -613,10 +613,11 @@ begin
   try
     lX509:=X509_STORE_CTX_get0_cert(ACtx);
     if Assigned(FOnVerifyCertificate) and Assigned(lX509) then
-    lCert:=TTaurusTLSX509.Create(lX509, False);
+      lCert:=TTaurusTLSX509.Create(lX509, False);
     lDepth:=X509_STORE_CTX_get_error_depth(ACtx);
     lErr:=X509_STORE_CTX_get_error(ACtx);
-    FOnVerifyCertificate(FSender, lCert, lDepth, lErr, AVerifyOk);
+    if Assigned(FOnVerifyCertificate) then
+      FOnVerifyCertificate(FSender, lCert, lDepth, lErr, AVerifyOk);
   finally
     lCert.Free;
   end;
@@ -749,8 +750,8 @@ var
 
 begin
   lConfig:=FConfig;
-  if Assigned(lConfig)then
-    lConfig.OnDebug(lConfig.Sender, AMessage);
+  if Assigned(lConfig) then
+    lConfig.DoOnDebug(AMessage);
 end;
 
 procedure TTaurusTLSBaseSocket.DoSetState(ATarget: TTaurusTLSSslState);
@@ -935,7 +936,7 @@ end;
 function TTaurusTLSBaseSocket.Readable: boolean;
 begin
   Result:=Assigned(FSSL) and (FState = seEstablished) and
-    (SSL_has_pending(FSSL) = 1);
+    (SSL_has_pending(FSSL) > 0);
 end;
 
 function TTaurusTLSBaseSocket.Recv(var ABuffer: TIdBytes): TIdC_SIZET;
@@ -997,7 +998,7 @@ begin
           TransitionTo(seClosed);
           // Let Indy's GStack query LastError/errno and raise EIdSocketError
           CheckForError(lRet); //PALOFF
-          ETaurusTLSConnectionReset.RaiseWithMessage('Connection reset by peer diring read.');
+          ETaurusTLSConnectionReset.RaiseWithMessage('Connection reset by peer during read.');
         end;
       else
         begin
@@ -1141,7 +1142,7 @@ begin
     Exit(0);
 
   try
-    lErr:=GSTack.WSGetLastError;
+    lErr:=GStack.WSGetLastError;
     try
       lSSL:=X509_STORE_CTX_get_ex_data(ACtx, SSL_get_ex_data_X509_STORE_CTX_idx());
       if not Assigned(lSSL) then
