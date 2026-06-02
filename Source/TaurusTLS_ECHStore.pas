@@ -205,9 +205,10 @@ type
     function GetAsPem(AIdx: TIdC_INT): string;
     function PemToBio(const APemStr: RawByteString): PBIO; {$IFDEF USE_INLINE} inline; {$ENDIF}
     function ReadPemToStr(const AStream: TStream): RawByteString;
-    procedure ReadPem(const APemStr: RawByteString; AIdxForRetry: TIdC_INT); overload;
-    procedure SetKeyAndReadPem(APrivKey: PEVP_PKEY; const APemStr: RawByteString;
-      AIdxForRetry: TIdC_INT); overload;
+    procedure ReadPemRawByteString(const APemStr: RawByteString;
+      AIdxForRetry: TIdC_INT);
+    procedure SetKeyAndReadPemRawByteString(APrivKey: PEVP_PKEY;
+      const APemStr: RawByteString; AIdxForRetry: TIdC_INT);
 
   public
     /// <summary>Generates a new ECH configuration with associated keys.</summary>
@@ -711,10 +712,10 @@ end;
 
 procedure TServerECHStoreHelper.ReadPem(const AStream: TStream; AIdxForRetry: TIdC_INT);
 begin
-  ReadPem(ReadPemToStr(AStream), AIdxForRetry);
+  ReadPemRawByteString(ReadPemToStr(AStream), AIdxForRetry);
 end;
 
-procedure TServerECHStoreHelper.ReadPem(const APemStr: RawByteString;
+procedure TServerECHStoreHelper.ReadPemRawByteString(const APemStr: RawByteString;
   AIdxForRetry: TIdC_INT);
 var
   LBio: PBio;
@@ -730,10 +731,10 @@ end;
 
 procedure TServerECHStoreHelper.ReadPem(const APemStr: string; AIdxForRetry: TIdC_INT);
 begin
-  ReadPem(RawByteString(APemStr), AIdxForRetry);
+  ReadPemRawByteString(RawByteString(APemStr), AIdxForRetry);
 end;
 
-procedure TServerECHStoreHelper.SetKeyAndReadPem(APrivKey: PEVP_PKEY;
+procedure TServerECHStoreHelper.SetKeyAndReadPemRawByteString(APrivKey: PEVP_PKEY;
   const APemStr: RawByteString; AIdxForRetry: TIdC_INT);
 var
   LBio: PBIO;
@@ -750,13 +751,13 @@ end;
 procedure TServerECHStoreHelper.SetKeyAndReadPem(APrivKey: PEVP_PKEY;
   const APemStr: string; AIdxForRetry: TIdC_INT);
 begin
-  SetKeyAndReadPem(APrivKey, RawByteString(APemStr), AIdxForRetry);
+  SetKeyAndReadPemRawByteString(APrivKey, RawByteString(APemStr), AIdxForRetry);
 end;
 
 procedure TServerECHStoreHelper.SetKeyAndReadPem(APrivKey: PEVP_PKEY;
   const AStream: TStream; AIdxForRetry: TIdC_INT);
 begin
-  SetKeyAndReadPem(APrivKey, ReadPemToStr(AStream), AIdxForRetry);
+  SetKeyAndReadPemRawByteString(APrivKey, ReadPemToStr(AStream), AIdxForRetry);
 end;
 
 procedure TServerECHStoreHelper.WritePem(const AStream: TStream; AIdx: TIdC_INT);
