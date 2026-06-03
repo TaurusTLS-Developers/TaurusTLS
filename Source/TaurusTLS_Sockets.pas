@@ -154,7 +154,7 @@ type
       AIOHandler: TIdComponent): TTaurusTLSCustomSocketConfig; virtual; abstract;
   end;
 
-  TaurusTLSClientSocketConfig = class(TTaurusTLSCustomSocketConfig)
+  TTaurusTLSClientSocketConfig = class(TTaurusTLSCustomSocketConfig)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FSessionToResume: PSSL_SESSION;
     FHostname: string;
@@ -260,16 +260,16 @@ type
   TTaurusTLSClientSocket = class(TTaurusTLSBaseSocket)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FECHStatus: TTaurusECHClientStatus;
-    function GetClientConfig: TaurusTLSClientSocketConfig;
+    function GetClientConfig: TTaurusTLSClientSocketConfig;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
   protected
     procedure SetECHStatus(AECHStatus: TTaurusECHClientStatus);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure SetupConnection;
     procedure DoHandshakeIteration; override;
-    property ClientConfig: TaurusTLSClientSocketConfig read GetClientConfig;
+    property ClientConfig: TTaurusTLSClientSocketConfig read GetClientConfig;
   public
-    constructor Create(AConfig: TaurusTLSClientSocketConfig); reintroduce;
+    constructor Create(AConfig: TTaurusTLSClientSocketConfig); reintroduce;
     procedure Connect(const pHandle: TIdStackSocketHandle); override;
   end;
 
@@ -543,7 +543,7 @@ begin
     Exit;
 
   lSSLCtx:=FSSLCtx;
-  if Assigned(ASSLCtx) and (SSL_CTX_up_ref(ASSLCtx)  <> 1) then
+  if Assigned(ASSLCtx) and (SSL_CTX_up_ref(ASSLCtx) <= 0) then
     ETaurusTLSSocketConfigSSLCtxError.
       RaiseWithMessage('Error assigning SSL Context');
   FSSLCtx:=ASSLCtx;
@@ -560,7 +560,7 @@ begin
     Exit;
 
   lStore:=FTrustStore;
-  if Assigned(ATrustStore) and (X509_STORE_up_ref(ATrustStore)  <> 1) then
+  if Assigned(ATrustStore) and (X509_STORE_up_ref(ATrustStore) <= 0) then
     ETaurusTLSSocketConfigSSLTrustStoreError.
       RaiseWithMessage('Error assigning X509 Trust Store');
   FTrustStore:=ATrustStore;
@@ -629,15 +629,15 @@ begin
     FOnSecurityLevel(FSender, AAccept);
 end;
 
-{ TaurusTLSClientSocketConfig }
+{ TTaurusTLSClientSocketConfig }
 
-destructor TaurusTLSClientSocketConfig.Destroy;
+destructor TTaurusTLSClientSocketConfig.Destroy;
 begin
   SSL_SESSION_free(FSessionToResume);
   inherited;
 end;
 
-procedure TaurusTLSClientSocketConfig.DoCloneSession(ASSL: PSSL);
+procedure TTaurusTLSClientSocketConfig.DoCloneSession(ASSL: PSSL);
 var
   lSess: PSSL_SESSION;
 
@@ -650,7 +650,7 @@ begin
     ETaurusTLSSSLCopySessionId.RaiseWithMessage(RSOSSLCopySessionIdError);
 end;
 
-procedure TaurusTLSClientSocketConfig.SetSessionToResume(
+procedure TTaurusTLSClientSocketConfig.SetSessionToResume(
   const ASSL: PSSL);
 begin
   if Assigned(ASSL) then
@@ -725,7 +725,7 @@ var
   lRet: TIdC_INT;
 
 begin
-  if FSocketHandle <> Id_INVALID_SOCKET then
+  if Assigned(FSSL) and (FSocketHandle <> Id_INVALID_SOCKET) then
   begin
     ERR_clear_error;
     lRet:=SSL_set_fd(FSSL, FSocketHandle);
@@ -1168,14 +1168,14 @@ end;
 
 { TTaurusTLSClientSocket }
 
-constructor TTaurusTLSClientSocket.Create(AConfig: TaurusTLSClientSocketConfig);
+constructor TTaurusTLSClientSocket.Create(AConfig: TTaurusTLSClientSocketConfig);
 begin
   inherited Create(AConfig);
 end;
 
-function TTaurusTLSClientSocket.GetClientConfig: TaurusTLSClientSocketConfig;
+function TTaurusTLSClientSocket.GetClientConfig: TTaurusTLSClientSocketConfig;
 begin
-  Result:=Config as TaurusTLSClientSocketConfig;
+  Result:=Config as TTaurusTLSClientSocketConfig;
 end;
 
 procedure TTaurusTLSClientSocket.SetECHStatus(AECHStatus: TTaurusECHClientStatus);
@@ -1191,7 +1191,7 @@ var
   lIsIdentityIP: Boolean;
   lECHStore: TTaurusTLSECHStore;
   lParams: PX509_VERIFY_PARAM;
-  lConfig: TaurusTLSClientSocketConfig;
+  lConfig: TTaurusTLSClientSocketConfig;
 
 begin
   lConfig:=ClientConfig;
@@ -1308,7 +1308,7 @@ var
   lECHConfigBuf: PByte;
   lECHConfigLen: NativeUInt;
   lNewConfigBase64: String;
-  lConfig: TaurusTLSClientSocketConfig;
+  lConfig: TTaurusTLSClientSocketConfig;
   lAccept: boolean;
 
 begin
@@ -1322,68 +1322,76 @@ begin
       // Verify ECH status prior to accepting handshake success
       if lConfig.ECHEnabled and (lConfig.ECHConfigList <> '') then
       begin
-        lStatus:=SSL_ech_get1_status(SSL, @lInner, @lOuter);
+        try
+          lStatus:=SSL_ech_get1_status(SSL, @lInner, @lOuter);
 
-        case lStatus of
-        SSL_ECH_STATUS_SUCCESS,
-        SSL_ECH_STATUS_BACKEND:
-          // Success - moving forward.
-          ; //PALOFF "empty block"
+          case lStatus of
+          SSL_ECH_STATUS_SUCCESS,
+          SSL_ECH_STATUS_BACKEND:
+            // Success - moving forward.
+            ; //PALOFF "empty block"
 
-        SSL_ECH_STATUS_GREASE_ECH,
-        SSL_ECH_STATUS_FAILED_ECH,
-        SSL_ECH_STATUS_FAILED_ECH_BAD_NAME:
-          begin
-            SetECHStatus(echCliFailed);
-            lECHConfigBuf:=nil;
-            lECHConfigLen:=0;
-
-            // Attempt to extract the updated keys provided by the server
-            if SSL_ech_get1_retry_config(SSL, @lECHConfigBuf, @lECHConfigLen) = 1 then
+          SSL_ECH_STATUS_GREASE_ECH,
+          SSL_ECH_STATUS_FAILED_ECH,
+          SSL_ECH_STATUS_FAILED_ECH_BAD_NAME:
             begin
-              try
-                if (lECHConfigBuf <> nil) and (lECHConfigLen > 0) then
-                begin
-                  lNewConfigBase64:=EncodeConfigList(lECHConfigBuf, lECHConfigLen);
-                  TransitionTo(seClosed); // Safely close and tear down SSL session
-                  ETaurusTLSECHRetryRequired.RaiseWithMessage(
-                    'ECH Handshake error. Try to reconnect with updated ECH Config List.',
-                    lNewConfigBase64
-                  );
+              SetECHStatus(echCliFailed);
+              lECHConfigBuf:=nil;
+              lECHConfigLen:=0;
+
+              // Attempt to extract the updated keys provided by the server
+              if SSL_ech_get1_retry_config(SSL, @lECHConfigBuf, @lECHConfigLen) = 1 then
+              begin
+                try
+                  if (lECHConfigBuf <> nil) and (lECHConfigLen > 0) then
+                  begin
+                    lNewConfigBase64:=EncodeConfigList(lECHConfigBuf, lECHConfigLen);
+                    TransitionTo(seClosed); // Safely close and tear down SSL session
+                    ETaurusTLSECHRetryRequired.RaiseWithMessage(
+                      'ECH Handshake error. Try to reconnect with updated ECH Config List.',
+                      lNewConfigBase64
+                    );
+                  end;
+                finally
+                  OPENSSL_free(lECHConfigBuf);
                 end;
-              finally
-                OPENSSL_free(lECHConfigBuf);
               end;
+
+              // If no keys were returned, it is a hard rejection
+              TransitionTo(seClosed);
+              ETaurusTLSECHRejectedError.RaiseWithMessage(
+                'ECH Handshake failed. The server rejected the key and provided no retry configuration.');
             end;
 
-            // If no keys were returned, it is a hard rejection
-            TransitionTo(seClosed);
-            ETaurusTLSECHRejectedError.RaiseWithMessage(
-              'ECH Handshake failed. The server rejected the key and provided no retry configuration.');
-          end;
+          SSL_ECH_STATUS_NOT_TRIED,
+          SSL_ECH_STATUS_NOT_CONFIGURED:
+            begin
+              TransitionTo(seError);
+              ETaurusTLSECHDowngradeError.RaiseWithMessage(
+                'ECH Handshake bypassed. Possible downgrade attack or configuration mismatch.');
+            end;
 
-        SSL_ECH_STATUS_NOT_TRIED,
-        SSL_ECH_STATUS_NOT_CONFIGURED:
-          begin
-            TransitionTo(seError);
-            ETaurusTLSECHDowngradeError.RaiseWithMessage(
-              'ECH Handshake bypassed. Possible downgrade attack or configuration mismatch.');
-          end;
+          SSL_ECH_STATUS_BAD_NAME:
+            begin
+              TransitionTo(seError);
+              ETaurusTLSECHBadNameError.RaiseWithMessage(
+                'ECH Handshake completed but the server certificate did not match the inner name.');
+            end;
 
-        SSL_ECH_STATUS_BAD_NAME:
-          begin
-            TransitionTo(seError);
-            ETaurusTLSECHBadNameError.RaiseWithMessage(
-              'ECH Handshake completed but the server certificate did not match the inner name.');
+          else
+            begin
+              // Covers SSL_ECH_STATUS_FAILED (0), SSL_ECH_STATUS_BAD_CALL (-100), and any other negative codes
+              TransitionTo(seError);
+              ETaurusTLSECHProtocolError.RaiseWithMessage(
+                'ECH Handshake failed due to an internal OpenSSL or protocol error.');
+            end;
           end;
-
-        else
-          begin
-            // Covers SSL_ECH_STATUS_FAILED (0), SSL_ECH_STATUS_BAD_CALL (-100), and any other negative codes
-            TransitionTo(seError);
-            ETaurusTLSECHProtocolError.RaiseWithMessage(
-              'ECH Handshake failed due to an internal OpenSSL or protocol error.');
-          end;
+        finally
+          // Clean up ECH status output buffers allocated by OpenSSL
+          if Assigned(lInner) then
+            OPENSSL_free(lInner);
+          if Assigned(lOuter) then
+            OPENSSL_free(lOuter);
         end;
       end;
 
