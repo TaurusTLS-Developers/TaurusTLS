@@ -2,387 +2,291 @@
 
 ## 1. Class Definitions & Collections
 
-### 1.1.  Polymorphic Config and Dictionary declarations (`TaurusTLS_Sockets.pas` interface)
+### 1.1. Design-Time Collection Classes (`TaurusTLS_Sockets.pas`)
 These classes allow developers to configure multiple virtual servers directly in the Delphi/Lazarus Object Inspector.
 
 ~~~pascal
 type
-  TTaurusTLSIOHandlerSocket = class; // Forward declaration
+  TTaurusTLSVirtualServerCollection = class;
 
   /// <summary>
-  ///   Abstract base capturing shared connection parameters, common callback events.
+  ///   Represents a single virtual server (tenant) with its own credentials and policies.
   /// </summary>
-  TTaurusTLSCustomSocketConfig = class abstract(TPersistent)
-  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
-    FSender: TTaurusTLSIOHandlerSocket;
-    FVerifyDepth: TIdC_INT;
-    FVerifyFlags: TTaurusTLSCertificateVerifyFlagSet;
-
-    FOnStateChange: TTaurusTLSOnStateChange;
-    FOnDebug: TTaurusTLSOnDebugMessage;
-    FOnSecurityLevel: TTaurusTLSOnSecurityLevel;
-    FOnStatusInfo: TTaurusTLSOnSSLStatusInfo;
-    FOnVerifyCertificate: TTaurusTLSOnVerifyCallback;
-    FOnNegotiated: TNotifyEvent;
-
-    function GetSSLCtx: PSSL_CTX; virtual; abstract;
-  protected
-    procedure DoOnStateChange(AOldState, ANewState: TTaurusTLSSslState); {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure DoOnDebug(const AMsg: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function DoOnSecurityLevel: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure DoOnStatusInfo(AWhere, ARet: TIdC_INT); {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function DoOnVerifyCertificate(APreVerify: boolean; ACtx: PX509_STORE_CTX): boolean;
-    procedure DoOnSSLNegotiated; {$IFDEF USE_INLINE}inline; {$ENDIF}
-  public
-    constructor Create(ASender: TTaurusTLSIOHandlerSocket); virtual;
-    destructor Destroy; override;
-    procedure CloneSession(ASSL: PSSL); virtual; abstract;
-
-    property Sender: TTaurusTLSIOHandlerSocket read FSender;
-    property SSLCtx: PSSL_CTX read GetSSLCtx; // Read-only, polymorphic
-    property VerifyDepth: TIdC_INT read FVerifyDepth write FVerifyDepth;
-    property VerifyFlags: TTaurusTLSCertificateVerifyFlagSet read FVerifyFlags write FVerifyFlags;
-
-    property OnStateChange: TTaurusTLSOnStateChange read FOnStateChange write FOnStateChange;
-    property OnDebug: TTaurusTLSOnDebugMessage read FOnDebug write FOnDebug;
-    property OnSecurityLevel: TTaurusTLSOnSecurityLevel read FOnSecurityLevel write FOnSecurityLevel;
-    property OnStatusInfo: TTaurusTLSOnSSLStatusInfo read FOnStatusInfo write FOnStatusInfo;
-    property OnVerifyCertificate: TTaurusTLSOnVerifyCallback read FOnVerifyCertificate write FOnVerifyCertificate;
-    property OnNegotiated: TNotifyEvent read FOnNegotiated write FOnNegotiated;
-  end;
-
-  /// <summary>
-  ///   Captures client-specific connection settings, managing own context.
-  /// </summary>
-  TaurusTLSClientSocketConfig = class(TTaurusTLSCustomSocketConfig)
+  TTaurusTLSVirtualServerItem = class(TCollectionItem)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
-    FSSLCtx: PSSL_CTX;
-    FSessionToResume: PSSL_SESSION;
     FHostName: string;
-    FDefaultSNI: string;
-    FECHEnabled: boolean;
-    FECHConfigList: string;
-    FECHDecoy: string;
+    FNormalizedHostName: RawByteString; // Cached lower-case Punycode
+    FIsWildcard: Boolean;
+    FAssetStore: TTaurusTLSOSSLStore;   // Unified asset store (Delphi Stream, HSM, or URL)
+    FClientTrustStore: TaurusTLS_X509Store;
+    FECHStore: TTaurusTLSECHStore;
+    FSSLCtx: PSSL_CTX;                  // Compiled private context
+    FLeafCert: PX509;                   // Cached, reference-counted leaf certificate
+    FECHPrivateKeyURI: string;          // Tentative/Under Review
+    
+    procedure BuildConfig;
+    procedure FreeConfig;
+    function GetIsWildcard: Boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
   protected
-    function GetSSLCtx: PSSL_CTX; override;
-    procedure SetSSLCtx(ASSLCtx: PSSL_CTX);
-    procedure SetSessionToResume(const ASSL: PSSL); {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure DoCloneSession(ASSL: PSSL);
+    function GetDisplayName: string; override;
   public
     destructor Destroy; override;
-    procedure CloneSession(ASSL: PSSL); override;
-
-    property SessionToResume: PSSL_SESSION read FSessionToResume;
+    
+    property SSLCtx: PSSL_CTX read FSSLCtx;
+    property LeafCert: PX509 read FLeafCert;
+    property IsWildcard: Boolean read GetIsWildcard;
+    property NormalizedHostName: RawByteString read FNormalizedHostName;
+  published
     property HostName: string read FHostName write FHostName;
-    property DefaultSNI: string read FDefaultSNI write FDefaultSNI;
-    property ECHEnabled: boolean read FECHEnabled write FECHEnabled;
-    property ECHConfigList: string read FECHConfigList write FECHConfigList;
-    property ECHDecoy: string read FECHDecoy write FECHDecoy;
+    property AssetStore: TTaurusTLSOSSLStore read FAssetStore write FAssetStore;
+    property ClientTrustStore: TaurusTLS_X509Store read FClientTrustStore write FClientTrustStore;
+    property ECHStore: TTaurusTLSECHStore read FECHStore write FECHStore;
+    property ECHPrivateKeyURI: string read FECHPrivateKeyURI write FECHPrivateKeyURI; // Tentative
   end;
 
-  // Thread-safe, case-insensitive runtime virtual server context lookup map
-  TTaurusTLSVirtualServerMap = TDictionary<RawByteString, PSSL_CTX>;
-
   /// <summary>
-  ///   Captures server-side client connection context, referencing the virtual server map.
+  ///   Manages the collection of virtual servers and compiles their isolated contexts.
   /// </summary>
-  TTaurusTLSPeerSocketConfig = class(TTaurusTLSCustomSocketConfig)
+  TTaurusTLSVirtualServerCollection = class(TOwnedCollection)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
-    FVerifyClientModes: TTaurusTLSVerifyModes;
-    FALPNPreferences: string;
-    FDefaultConfig: TTaurusTLSCustomSocketConfig;
-    FVirtualServerMap: TTaurusTLSVirtualServerMap;
-  protected
-    function GetSSLCtx: PSSL_CTX; override;
+    function GetItem(Index: Integer): TTaurusTLSVirtualServerItem;
+    procedure SetItem(Index: Integer; const Value: TTaurusTLSVirtualServerItem);
   public
-    constructor Create(ASender: TTaurusTLSIOHandlerSocket; ADefaultConfig: TTaurusTLSCustomSocketConfig; AMap: TTaurusTLSVirtualServerMap); reintroduce;
-    destructor Destroy; override;
-    procedure CloneSession(ASSL: PSSL); override;
-
-    property VerifyClientModes: TTaurusTLSVerifyModes read FVerifyClientModes write FVerifyClientModes;
-    property ALPNPreferences: string read FALPNPreferences write FALPNPreferences;
-    property DefaultConfig: TTaurusTLSCustomSocketConfig read FDefaultConfig;
-    property VirtualServerMap: TTaurusTLSVirtualServerMap read FVirtualServerMap;
+    constructor Create(AOwner: TPersistent);
+    function Add: TTaurusTLSVirtualServerItem;
+    function FindServer(const AHostName: string): TTaurusTLSVirtualServerItem;
+    procedure BuildAllConfigs;
+    procedure FreeAllConfigs;
+    property Items[Index: Integer]: TTaurusTLSVirtualServerItem read GetItem write SetItem; default;
   end;
 ~~~
 
-### 1.2. Upgraded Server Configuration snapshot
-The server config snapshot is extended to hold a reference to the compiled virtual server collection.
+### 1.2. The High-Level Server Component Hook (`TaurusTLS.pas`)
+The server-side IOHandler owns the collection, the high-performance runtime map, and the read-write synchronizer.
 
 ~~~pascal
 type
-  TTaurusTLSPeerSocketConfig = class(TTaurusTLSCustomSocketConfig)
+  TTaurusTLSVirtualServerMap = TDictionary<RawByteString, TTaurusTLSVirtualServerItem>;
+
+  TTaurusTLSServerIOHandler = class(TIdServerIOHandlerSSLBase)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
-    FVerifyClientModes: TTaurusTLSVerifyModes;
-    FALPNPreferences: string;
     FVirtualServers: TTaurusTLSVirtualServerCollection;
+    FRuntimeServerMap: TTaurusTLSVirtualServerMap;
+    FMapLock: TMultiReadExclusiveWriteSynchronizer; // Protects the runtime dictionary
+    FStrictSNICheck: Boolean;
+    FDefaultConfig: TTaurusTLSCustomSocketConfig;
   public
-    constructor Create(ASender: TObject); override;
+    constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     
-    property VerifyClientModes: TTaurusTLSVerifyModes read FVerifyClientModes write FVerifyClientModes;
-    property ALPNPreferences: string read FALPNPreferences write FALPNPreferences;
-    property VirtualServers: TTaurusTLSVirtualServerCollection read FVirtualServers write FVirtualServers;
+    procedure InitServerCTX;
+    property VirtualServers: TTaurusTLSVirtualServerCollection read FVirtualServers;
+    property StrictSNICheck: Boolean read FStrictSNICheck write FStrictSNICheck;
+    property DefaultConfig: TTaurusTLSCustomSocketConfig read FDefaultConfig;
   end;
 ~~~
 
 ---
 
-## 2. Upgraded Servername Callback and Context Compilation (`TaurusTLS_Sockets.pas` implementation)
+## 2. Servername Callback Bridge Implementation
 
-The static servername callback is registered on the master `SSL_CTX`. It intercepts the client's SNI and dynamically swaps the active context to the matching virtual server.
+The static servername callback is registered on the master `SSL_CTX`. It intercepts the client's SNI and dynamically swaps the active context to the matching virtual server using thread-safe read locks.
 
 ~~~pascal
-{ TTaurusTLSCustomSocketConfig }
-constructor TTaurusTLSCustomSocketConfig.Create(ASender: TTaurusTLSIOHandlerSocket);
-begin
-  FSender := ASender;
-end;
-
-{ TaurusTLSClientSocketConfig }
-destructor TaurusTLSClientSocketConfig.Destroy;
-begin
-  SSL_SESSION_free(FSessionToResume);
-  SetSSLCtx(nil);
-  inherited;
-end;
-
-function TaurusTLSClientSocketConfig.GetSSLCtx: PSSL_CTX;
-begin
-  Result := FSSLCtx;
-end;
-
-procedure TaurusTLSClientSocketConfig.SetSSLCtx(ASSLCtx: PSSL_CTX);
-var
-  LSSLCtx: PSSL_CTX;
-begin
-  if FSSLCtx = ASSLCtx then Exit;
-  LSSLCtx := FSSLCtx;
-  if Assigned(ASSLCtx) and (SSL_CTX_up_ref(ASSLCtx) <> 1) then
-    raise Exception.Create('Error incrementing SSL Context reference.');
-  FSSLCtx := ASSLCtx;
-  SSL_CTX_free(LSSLCtx);
-end;
-
-{ TTaurusTLSPeerSocketConfig }
-constructor TTaurusTLSPeerSocketConfig.Create(ASender: TTaurusTLSIOHandlerSocket; 
-  ADefaultConfig: TTaurusTLSCustomSocketConfig; AMap: TTaurusTLSVirtualServerMap);
-begin
-  inherited Create(ASender);
-  FDefaultConfig := ADefaultConfig;
-  FVirtualServerMap := AMap;
-  FVerifyClientModes := [];
-end;
-
-destructor TTaurusTLSPeerSocketConfig.Destroy;
-begin
-  // References are passive, no deallocation
-  FDefaultConfig := nil;
-  FVirtualServerMap := nil;
-  inherited;
-end;
-
-function TTaurusTLSPeerSocketConfig.GetSSLCtx: PSSL_CTX;
-begin
-  if Assigned(FDefaultConfig) then
-    Result := FDefaultConfig.SSLCtx
-  else
-    Result := nil;
-end;
-
-procedure TTaurusTLSPeerSocketConfig.CloneSession(ASSL: PSSL);
-begin
-  // No-op on server peer
-end;
-
-{ Static Servername Callback Bridge }
 function TaurusTLS_ServerNameCallback(ssl: PSSL; ad: PInteger; arg: Pointer): Integer; cdecl;
 var
   LServerName: PIdAnsiChar;
   LAnsiName: RawByteString;
-  LServerMap: TTaurusTLSVirtualServerMap;
+  LServerIO: TTaurusTLSServerIOHandler;
+  LServerItem: TTaurusTLSVirtualServerItem;
   LTargetCtx: PSSL_CTX;
+  LIdx: Integer;
 begin
-  Result := SSL_TLSEXT_ERR_OK;
+  Result := SSL_TLSEXT_ERR_OK; // Default: SNI acknowledged [1.2.8]
 
   if not Assigned(ssl) then Exit;
   
   LServerName := SSL_get_servername(ssl, TLSEXT_NAMETYPE_host_name);
   if not Assigned(LServerName) then Exit;
 
-  LServerMap := TTaurusTLSVirtualServerMap(arg);
-  if not Assigned(LServerMap) then Exit;
+  LServerIO := TTaurusTLSServerIOHandler(arg);
+  if not Assigned(LServerIO) then Exit;
 
-  // O(1) hash lookup with zero-copy RawByteString
+  // The wire SNI is already in Punycode. We only need to lowercase it.
   LAnsiName := LowerCase(RawByteString(LServerName));
-  if LServerMap.TryGetValue(LAnsiName, LTargetCtx) then
-  begin
-    SSL_set_SSL_CTX(ssl, LTargetCtx);
+
+  // Acquire a shared read lock to enable parallel, congestion-free lookups
+  LServerIO.FMapLock.BeginRead;
+  try
+    // --- PHASE 1: EXACT MATCH (O(1) Hash Lookup) ---
+    if LServerIO.FRuntimeServerMap.TryGetValue(LAnsiName, LServerItem) then
+    begin
+      LTargetCtx := LServerItem.SSLCtx;
+      if Assigned(LTargetCtx) then
+      begin
+        if SSL_get_SSL_CTX(ssl) <> LTargetCtx then
+          SSL_set_SSL_CTX(ssl, LTargetCtx);
+        Exit;
+      end;
+    end;
+
+    // --- PHASE 2: WILDCARD/SAN FALLBACK (O(N) Collection Walk) ---
+    // If exact match fails, iterate over the complete collection of virtual servers.
+    // X509_check_host natively checks the SAN list first (including wildcards),
+    // then falls back to checking the Common Name (CN).
+    for LIdx := 0 to LServerIO.VirtualServers.Count - 1 do
+    begin
+      LServerItem := LServerIO.VirtualServers[LIdx];
+      
+      if (LServerItem.LeafCert <> nil) and 
+         (X509_check_host(LServerItem.LeafCert, PIdAnsiChar(LAnsiName), Length(LAnsiName), 0, nil) = 1) then
+      begin
+        LTargetCtx := LServerItem.SSLCtx;
+        if Assigned(LTargetCtx) then
+        begin
+          if SSL_get_SSL_CTX(ssl) <> LTargetCtx then
+            SSL_set_SSL_CTX(ssl, LTargetCtx);
+          Exit;
+        end;
+      end;
+    end;
+
+    // --- PHASE 3: UNKNOWN SNI POLICY ---
+    if LServerIO.StrictSNICheck then
+    begin
+      if Assigned(ad) then
+        ad^ := SSL_AD_UNRECOGNIZED_NAME;     // Set unrecognized_name alert byte [1.2.8]
+      Result := SSL_TLSEXT_ERR_ALERT_FATAL; // Hard-abort handshake immediately [1.2.8]
+    end
+    else
+    begin
+      Result := SSL_TLSEXT_ERR_NOACK; // Unacknowledged, fall back to default [1.2.8]
+    end;
+  finally
+    LServerIO.FMapLock.EndRead;
   end;
 end;
 ~~~
 
 ---
 
-## 3. Server Peer Socket Verification and Callback Binding (`TTaurusTLSPeerSocket`)
+## 3. Virtual Server Configuration Compilation (BuildConfig)
 
-The peer socket manages client certificate verification and evaluates the server-side ECH decryption status upon successful handshake completion, ensuring all allocated C-strings are cleanly deallocated.
+Each TTaurusTLSVirtualServerItem compiles its own SSL_CTX during startup.
+
+#### How the ECH private key is safely loaded:
+1.  The standard server certificate and primary private keys are loaded via the main `FAssetStore: TTaurusTLSOSSLStore` [1.1].
+2.  The public ECH config list is loaded into `FECHStore` using `SetConfigList`.
+3.  If `FECHPrivateKeyURI` is specified, we instantiate a temporary, lightweight `TTaurusTLSOSSLStore` specifically to load the HPKE private key (since it *is* a standard `EVP_PKEY` format) [1.1].
+4.  Because both `TTaurusTLSECHStore` and `TTaurusTLSVirtualServerItem` are declared in the same unit (`TaurusTLS_Sockets.pas`), we can safely invoke `FECHStore`'s unit-protected **`DoSetKeyAndReadBioPem`** method [2] to pair the loaded private key with the ECH configuration cleanly [2].
 
 ~~~pascal
-type
-  TTaurusECHServerStatus = (
-    echSrvNone,          // ECH wasn't attempted
-    echSrvSuccess,       // ECH successfully decrypted (Inner SNI active)
-    echSrvFailed,        // ECH decryption failed (Outer SNI active)
-    echSrvBackend,       // Handled in backend split-mode
-    echSrvNotConfigured  // Server has no ECH keys loaded
-  );
-
-  TTaurusTLSPeerSocket = class(TTaurusTLSBaseSocket)
-  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
-    FECHStatus: TTaurusECHServerStatus;
-    FInnerSNI: string;
-    FOuterSNI: string;
-    function GetPeerConfig: TTaurusTLSPeerSocketConfig; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetServerName: string;
-  protected
-    procedure DoHandshakeIteration; override;
-    procedure InitSSLCallbacks; override;
-    property PeerConfig: TTaurusTLSPeerSocketConfig read GetPeerConfig;
-  public
-    constructor Create(AConfig: TTaurusTLSPeerSocketConfig); reintroduce;
-    
-    property ECHStatus: TTaurusECHServerStatus read FECHStatus;
-    property InnerSNI: string read FInnerSNI;
-    property OuterSNI: string read FOuterSNI;
-    property ServerName: string read GetServerName;
-  end;
-
-constructor TTaurusTLSPeerSocket.Create(AConfig: TTaurusTLSPeerSocketConfig);
-begin
-  inherited Create(AConfig);
-  FECHStatus := echSrvNone;
-  FInnerSNI := '';
-  FOuterSNI := '';
-end;
-
-function TTaurusTLSPeerSocket.GetPeerConfig: TTaurusTLSPeerSocketConfig;
-begin
-  Result := Config as TTaurusTLSPeerSocketConfig;
-end;
-
-function TTaurusTLSPeerSocket.GetServerName: string;
+procedure TTaurusTLSVirtualServerItem.BuildConfig;
 var
-  lName: PIdAnsiChar;
+  LItem: TTaurusTLSOSSLStore.TStoreItem;
+  LMatchingKey: PEVP_PKEY;
+  LEchKeyStore: TTaurusTLSOSSLStore;
+  LEchKeyItem: TTaurusTLSOSSLStore.TStoreItem;
+  LItemIdx, LKeyIdx: Integer;
+  LEchKey: PEVP_PKEY;
+  LBio: PBIO;
 begin
-  Result := '';
-  if Assigned(FSSL) then
+  if Assigned(FSSLCtx) then Exit;
+
+  FSSLCtx := SSL_CTX_new(TLS_server_method());
+  if FSSLCtx = nil then
+    raise Exception.Create('Failed to allocate SSL_CTX.');
+
+  // 1. Load and Pair Server PKI Identities from FAssetStore (Standard certs and keys)
+  if Assigned(FAssetStore) then
   begin
-    lName := SSL_get_servername(FSSL, TLSEXT_NAMETYPE_host_name);
-    if Assigned(lName) then
-      Result := String(lName);
-  end;
-end;
-
-procedure TTaurusTLSPeerSocket.InitSSLCallbacks;
-var
-  lMode: Integer;
-  lPeerConfig: TTaurusTLSPeerSocketConfig;
-begin
-  inherited; // Registers standard base SslInfoCallback
-
-  lPeerConfig := PeerConfig;
-  if not Assigned(lPeerConfig) then Exit;
-
-  // Set up mTLS Client Verification Modes
-  lMode := 0;
-  if sslvrfPeer in lPeerConfig.VerifyClientModes then
-    lMode := lMode or SSL_VERIFY_PEER;
-  if sslvrfFailIfNoPeerCert in lPeerConfig.VerifyClientModes then
-    lMode := lMode or SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
-  if sslvrfClientOnce in lPeerConfig.VerifyClientModes then
-    lMode := lMode or SSL_VERIFY_CLIENT_ONCE;
-  if sslvrfPostHandshake in lPeerConfig.VerifyClientModes then
-    lMode := lMode or SSL_VERIFY_POST_HANDSHAKE;
-
-  if lMode <> 0 then
-  begin
-    SSL_set_verify(FSSL, lMode, @TTaurusTLSBaseSocket.SSLVerifyCallback);
-  end;
-end;
-
-procedure TTaurusTLSPeerSocket.DoHandshakeIteration;
-var
-  lRet, lErr: Integer;
-  lAccepted: boolean;
-  lStatus: TIdC_INT;
-  lInner, lOuter: PIdAnsiChar;
-begin
-  try
-    ERR_clear_error;
-    lRet := SSL_accept(SSL);
-
-    if lRet = 1 then
+    for LItemIdx := 0 to FAssetStore.FList.Count - 1 do
     begin
-      // 1. Evaluate ECH Status and Prevent C-Heap Memory Leaks
-      lInner := nil;
-      lOuter := nil;
-      lStatus := SSL_ech_get1_status(SSL, @lInner, @lOuter);
-      try
-        case lStatus of
-          SSL_ECH_STATUS_SUCCESS:        FECHStatus := echSrvSuccess;
-          SSL_ECH_STATUS_FAILED:         FECHStatus := echSrvFailed;
-          SSL_ECH_STATUS_BACKEND:        FECHStatus := echSrvBackend;
-          SSL_ECH_STATUS_NOT_CONFIGURED: FECHStatus := echSrvNotConfigured;
-          else                           FECHStatus := echSrvNone;
-        end;
-
-        if Assigned(lInner) then
-          FInnerSNI := String(lInner);
-        if Assigned(lOuter) then
-          FOuterSNI := String(lOuter);
-      finally
-        // Security Fix: Free C-strings allocated by OpenSSL
-        if Assigned(lInner) then OPENSSL_free(lInner);
-        if Assigned(lOuter) then OPENSSL_free(lOuter);
-      end;
-
-      // 2. Perform security level check via snapshot event
-      lAccepted := True;
-      Config.DoOnSecurityLevel(lAccepted);
-      if not lAccepted then
+      LItem := FAssetStore.FList[LItemIdx];
+      if LItem.&Type = sitCert then
       begin
-        TransitionTo(seError);
-        Exit;
-      end;
-
-      TransitionTo(seEstablished);
-      Exit;
-    end;
-
-    lErr := SSL_get_error(SSL, lRet);
-    case lErr of
-      SSL_ERROR_SYSCALL:
+        // Cache the leaf certificate and increment its reference count safely
+        if FLeafCert = nil then
         begin
-          TransitionTo(seClosed); // Triggers immediate teardown
-          raise ETaurusTLSConnectionReset.Create('Handshake reset by peer.');
+          FLeafCert := LItem.Cert;
+          X509_up_ref(FLeafCert); // Isolate leaf cert lifetime
         end;
 
-      SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE:
-        Exit; // Wait for data from the socket.
+        LMatchingKey := nil;
+        // Search the store for the private key that cryptographically matches this certificate
+        for LKeyIdx := 0 to FAssetStore.FList.Count - 1 do
+        begin
+          if FAssetStore.FList[LKeyIdx].&Type = sitPrivKey then
+          begin
+            if X509_check_private_key(LItem.Cert, FAssetStore.FList[LKeyIdx].PrivKey) = 1 then
+            begin
+              LMatchingKey := FAssetStore.FList[LKeyIdx].PrivKey;
+              Break;
+            end;
+          end;
+        end;
 
-    else
-      begin
-        TransitionTo(seError);
-        raise ETaurusTLSHandshakeError.Create('Fatal handshake error.');
+        // Bind the paired identity atomically
+        if Assigned(LMatchingKey) then
+        begin
+          if SSL_CTX_use_cert_and_key(FSSLCtx, LItem.Cert, LMatchingKey, nil, 0) <> 1 then
+            raise Exception.Create('Failed to bind server certificate/key identity.');
+        end;
       end;
     end;
-  except
-    on E: Exception do
+  end;
+
+  // 2. Load Client mTLS Trust Anchors
+  if Assigned(FClientTrustStore) then
+  begin
+    X509_STORE_up_ref(FClientTrustStore.Store);
+    SSL_CTX_set_cert_store(FSSLCtx, FClientTrustStore.Store);
+  end;
+
+  // 3. Configure and Attach Server ECH Decryption Keys
+  if (FECHConfigList <> '') and Assigned(FECHStore) then
+  begin
+    // Step A: Load the public ECHConfigList payload
+    FECHStore.SetConfigList(RawByteString(FECHConfigList));
+
+    // Step B: Load the associated ECH private key if configured
+    if FECHPrivateKeyURI <> '' then
     begin
-      if (State = seHandshaking) then
-        TransitionTo(seError); // Safely aborts, preventing illegal "shutdown while in init"
-      raise;
+      LEchKey := nil;
+      // Load the ECH private key using our standard OSSL_STORE (since it is a standard EVP_PKEY)
+      LEchKeyStore := TTaurusTLSOSSLStore.Create(RawByteString(FECHPrivateKeyURI), nil, [sitPrivKey]);
+      try
+        if LEchKeyStore.Count[sitPrivKey] > 0 then
+        begin
+          for LItemIdx := 0 to LEchKeyStore.FList.Count - 1 do
+          begin
+            LEchKeyItem := LEchKeyStore.FList[LItemIdx];
+            if LEchKeyItem.&Type = sitPrivKey then
+            begin
+              LEchKey := LEchKeyItem.PrivKey;
+              Break;
+            end;
+          end;
+        end;
+
+        if Assigned(LEchKey) then
+        begin
+          // Create a temporary PEM BIO of the ECH Config to bind the key
+          LBio := BIO_new_mem_buf(PAnsiChar(AnsiString(FECHConfigList)), Length(FECHConfigList));
+          try
+            // Call the unit-protected method to pair the private key with the ECH configuration
+            FECHStore.DoSetKeyAndReadBioPem(LBio, LEchKey, 0);
+          finally
+            BIO_free(LBio);
+          end;
+        end;
+      finally
+        LEchKeyStore.Free;
+      end;
     end;
+
+    // Step C: Attach the configured ECH store to the virtual server's context
+    FECHStore.Attach(FSSLCtx);
   end;
 end;
+~~~
