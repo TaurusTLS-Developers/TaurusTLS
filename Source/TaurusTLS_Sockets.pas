@@ -76,7 +76,7 @@ type
     ACert: TTaurusTLSX509;
     ADepth: TIdC_INT;
     AErrCode: TIdC_INT;
-    out AVerifyOK: Boolean
+    out ASuccess, AContinue: Boolean
   ) of object;
 
   TTaurusTLSSSLOp = (sslOpRead, sslOpWrite);
@@ -120,7 +120,7 @@ type
     procedure DoOnStatusInfo(AWhere, ARet: TIdC_INT);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure DoOnVerifyCertificate(ACtx: PX509_STORE_CTX;
-      out AVerifyOk: boolean);
+      out ASuccess, AContinue: boolean);
     procedure DoOnSSLNegotiated; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
   public
@@ -203,6 +203,9 @@ type
   protected
     class function GetInstanceFromSSL<T: TTaurusTLSBaseSocket>(ASSL: PSSL): T;
       static; {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    procedure CheckPeerCertificateValidationResult; 
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     function CheckForError(ALastResult: Integer): Integer; virtual;
     function GetSSLError(ALastResult: Integer): Integer;
@@ -295,7 +298,7 @@ type
   ETaurusTLSSocketConfigSSLCtxError = class(ETaurusTLSAPISSLError);
   ETaurusTLSSocketConfigSSLTrustStoreError = class(ETaurusTLSAPISSLError);
 
-  ETaurusTLSSocketInitError = class(ETaurusTLSAPISSLError);
+  ETaurusTLSCreatingSessionError = class(ETaurusTLSError);
   ETaurusTLSSocketStateError = class(ETaurusTLSAPISSLError);
 
   ETaurusTLSIOError = class(ETaurusTLSAPISSLError);
@@ -308,6 +311,13 @@ type
   /// SSL_copy_session_id
   /// </seealso>
   ETaurusTLSSSLCopySessionId = class(ETaurusTLSError);
+
+  /// <summary>
+  /// Raised if certificate validation failed and the message breifly
+  /// describes the failure.
+  /// </summary>
+  ETaurusTLSCertValidationError = class(ETaurusTLSError);
+
 
 
 type
@@ -601,7 +611,7 @@ begin
 end;
 
 procedure TTaurusTLSCustomSocketConfig.DoOnVerifyCertificate(ACtx: PX509_STORE_CTX;
-  out AVerifyOk: boolean);
+  out ASuccess, AContinue: boolean);
 var
   lCert: TTaurusTLSX509;
   lX509: PX509;
@@ -617,7 +627,7 @@ begin
     lDepth:=X509_STORE_CTX_get_error_depth(ACtx);
     lErr:=X509_STORE_CTX_get_error(ACtx);
     if Assigned(FOnVerifyCertificate) then
-      FOnVerifyCertificate(FSender, lCert, lDepth, lErr, AVerifyOk);
+      FOnVerifyCertificate(FSender, lCert, lDepth, lErr, ASuccess, AContinue);
   finally
     lCert.Free;
   end;
@@ -674,20 +684,24 @@ begin
 end;
 
 procedure TTaurusTLSBaseSocket.InitSSL;
+var
+  lErr: TIdC_INT;
+  
 begin
-  // 1. Allocate the SSL session structure using the pinned context
-  FSSL:=SSL_new(FConfig.SSLCtx);
-  if FSSL = nil then
-    ETaurusTLSSocketInitError.RaiseWithMessage('SSL_new failed to allocate session.');
-
-  // 2. Bind the Delphi object instance to the SSL handle for callback routing
-  if SSL_set_app_data(FSSL, Self) <> 1 then
-  begin
-    ReleaseSSL;
-    raise ETaurusTLSDataBindingError.Create('SSL_set_app_data failed.');
-  end;
-
   try
+    // 1. Allocate the SSL session structure using the pinned context
+    FSSL:=SSL_new(FConfig.SSLCtx);
+    if not Assigned(FSSL) then
+      ETaurusTLSCreatingSessionError.RaiseWithMessage(RSSSLCreatingSessionError);
+
+    // 2. Bind the Delphi object instance to the SSL handle for callback routing
+    lErr:=SSL_set_app_data(FSSL, Self);
+    if lErr <= 1 then
+    begin
+      ReleaseSSL;
+      ETaurusTLSDataBindingError.RaiseException(FSSL, lErr, RSSSLDataBindingError);
+    end;
+
     // 3. Do initial socket setup
     SSL_set_verify_depth(FSSL, FConfig.VerifyDepth);
 
@@ -739,8 +753,9 @@ begin
   CheckActiveState([seHandshaking]);
   repeat
     DoHandshakeIteration;
+    if State = seHandshaking then
     { TODO : IndySleep should be replaced with the smart cross-compiler "spin wait" call. }
-    IndySleep(1);
+      IndySleep(1);
   until State <> seHandshaking;
 end;
 
@@ -933,6 +948,17 @@ begin
   ETaurusTLSAPISSLError.RaiseExceptionCode(Result, ALastResult);
 end;
 
+procedure TTaurusTLSBaseSocket.CheckPeerCertificateValidationResult;
+var
+  lResult: TIdC_INT;
+  
+begin
+  lResult:=SSL_get_verify_result(FSSL);
+  if lResult <> X509_V_OK then
+     ETaurusTLSCertValidationError.RaiseWithMessage
+                (string(X509_verify_cert_error_string(lResult)));
+end;
+
 function TTaurusTLSBaseSocket.Readable: boolean;
 begin
   Result:=Assigned(FSSL) and (FState = seEstablished) and
@@ -1122,7 +1148,7 @@ begin
     end;
   except
     //PALOFF "Empty except-block"
-    // We must not raise exception to the OpenSSL stack
+    // We must not raise the exception to the OpenSSL stack
   end;
 end;
 
@@ -1133,7 +1159,7 @@ var
   lConfig: TTaurusTLSCustomSocketConfig;
   lSSL: PSSL;
   lErr: integer;
-  lResult: boolean;
+  lResult, lContinue: boolean;
 
 begin
   Result:=APreVerify;
@@ -1149,21 +1175,23 @@ begin
         Exit(0);
 
       lResult:=APreVerify = 1;
+      lContinue:=True;
+      
       lInstance:=GetInstanceFromSSL<TTaurusTLSBaseSocket>(lSSL);
       lConfig:=lInstance.Config;
       if Assigned(lConfig) then
       begin
-        lConfig.DoOnVerifyCertificate(ACtx, lResult);
-        if lResult then Result:=1 else Result:=0;
+        lConfig.DoOnVerifyCertificate(ACtx, lResult, lContinue);
+        if lContinue then Result:=1 else Result:=0;
+        if lResult then
+          X509_STORE_CTX_set_error(ACtx, X509_V_OK);
       end;
     finally
       GStack.WSSetLastError(lErr);
     end;
   except
-    //PALOFF "Empty except-block"
-    // We must not raise exception to the OpenSSL stack
+    Result:=0; 
   end;
-
 end;
 
 { TTaurusTLSClientSocket }
@@ -1188,6 +1216,9 @@ var
   lRetCode: TIdC_INT;
   lIdentity: string;
   lIdentityAnsi: RawByteString;
+  lDecoy: string;
+  lDecoyAnsi: RawByteString;
+  lNoDecoy: TIdC_INT;
   lIsIdentityIP: Boolean;
   lECHStore: TTaurusTLSECHStore;
   lParams: PX509_VERIFY_PARAM;
@@ -1232,19 +1263,29 @@ begin
         lECHStore.Free;
       end;
 
-      if lConfig.ECHDecoy <> '' then
+      lDecoy:=lConfig.ECHDecoy;
+      if lDecoy <> '' then
       begin
-        // Case A: Real ECH with explicit Outer SNI override
-        SSL_ech_set1_server_names(FSSL, PIdAnsiChar(lIdentityAnsi),
-          PIdAnsiChar(AnsiString(lConfig.ECHDecoy)), 0);
+        {$IFDEF WINDOWS}
+        if Assigned(IdnToAscii) then
+          lDecoyAnsi:=RawByteString(IDNToPunnyCode(lDecoy))
+        else
+        {$ENDIF}
+          lDecoyAnsi:=RawByteString(lDecoy);
       end
       else
-      begin
-        // Case B: Real ECH using public_name from ConfigList
-        lRetCode:=SSL_set_tlsext_host_name(FSSL, PIdAnsiChar(lIdentityAnsi));
-        if lRetCode <= 0 then
-          ETaurusTLSSettingTLSHostNameError.RaiseException(FSSL, lRetCode, RSSSLSettingTLSHostNameError_2);
-      end;
+        lDecoyAnsi:='';
+
+      if lDecoyAnsi = '' then
+        lNoDecoy:=1
+      else
+        lNoDecoy:=0;
+
+      // Case A: Real ECH with explicit Outer SNI override
+      lRetCode:=SSL_ech_set1_server_names(FSSL, PIdAnsiChar(lIdentityAnsi),
+        PIdAnsiChar(lDecoyAnsi), lNoDecoy);
+      if lRetCode <= 0 then
+        ETaurusTLSSettingTLSHostNameError.RaiseException(FSSL, lRetCode, RSSSLSettingTLSHostNameError_2);
     end
     else
     begin
@@ -1319,6 +1360,7 @@ begin
 
     if lRet = 1 then
     begin
+      CheckPeerCertificateValidationResult;
       // Verify ECH status prior to accepting handshake success
       if lConfig.ECHEnabled and (lConfig.ECHConfigList <> '') then
       begin
@@ -1373,12 +1415,15 @@ begin
 
           SSL_ECH_STATUS_BAD_NAME:
             begin
+              { TODO :
+                Need to double check if it needs to raise the exception
+                or just fire an OnDebug event }
               TransitionTo(seError);
               ETaurusTLSECHBadNameError.RaiseWithMessage(
                 'ECH Handshake completed but the server certificate did not match the inner name.');
             end;
 
-          else
+          else 
             begin
               // Covers SSL_ECH_STATUS_FAILED (0), SSL_ECH_STATUS_BAD_CALL (-100), and any other negative codes
               TransitionTo(seError);
@@ -1494,7 +1539,9 @@ begin
           ETaurusTLSConnectionReset.RaiseWithMessage('Handshake reset by peer.');
         end;
 
-        SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE:
+        SSL_ERROR_WANT_READ, 
+        SSL_ERROR_WANT_WRITE,
+        SSL_ERROR_WANT_X509_LOOKUP:
           Exit; // Wait for data from the socket.
 
       else
