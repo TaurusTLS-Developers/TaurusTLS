@@ -482,6 +482,12 @@ const
   /// The default value for TSLLOptions.VerifyHostname property.
   /// </summary>
   DEF_VERIFY_HOSTNAME = True;
+  //20260605 xjikka
+  /// <summary>
+  /// The default value for the TTaurusTLSOptions.UseBidirectionalShutdown and
+  /// TTaurusTLSContext.UseBidirectionalShutdown properties.
+  /// </summary>
+  DEF_USE_BIDIRECTIONAL_SHUTDOWN = False;
 
 type
   /// <summary>
@@ -828,6 +834,7 @@ type
     FSecurityLevel: TTaurusTLSSecurityLevel;
     fMethod: TTaurusTLSSSLVersion;
     fVerifyHostname: Boolean;
+    fUseBidirectionalShutdown: Boolean;  //20260605 xjikka
     fVerifyDirs: String;
     fCipherList: String;
     fVerifyMode: TTaurusTLSVerifyModeSet;
@@ -958,6 +965,16 @@ type
     /// </summary>
     property VerifyHostname: Boolean read fVerifyHostname write fVerifyHostname
       default DEF_VERIFY_HOSTNAME;
+    //20260605 xjikka
+    /// <summary>
+    /// When True, the TLS connection is shut down bidirectionally - a
+    /// close_notify is sent and the peer's close_notify is awaited - instead of
+    /// a one-way shutdown. This prevents the peer from treating the data stream
+    /// as truncated (e.g. large FTPS uploads were being cut short at the end).
+    /// Default is False (one-way shutdown, the historical behaviour).
+    /// </summary>
+    property UseBidirectionalShutdown: Boolean read fUseBidirectionalShutdown
+      write fUseBidirectionalShutdown default DEF_USE_BIDIRECTIONAL_SHUTDOWN;
     /// <summary>
     /// Use the system's ROOT and CA certificate stores to verify certificates.
     /// </summary>
@@ -1019,6 +1036,7 @@ type
     fVerifyOn: Boolean;
     fSessionId: Integer;
     fVerifyHostname: Boolean;
+    fUseBidirectionalShutdown: Boolean;  //20260605 xjikka
     //20260116 xjikka:
     //  OnContextLoaderCustom allows custom TLS context initialization/loading
     //  (e.g. loading certificates/keys from TBytes, TStream, or other custom sources).
@@ -1233,6 +1251,12 @@ type
     /// </summary>
     property VerifyHostname: Boolean read fVerifyHostname write fVerifyHostname
        default DEF_VERIFY_HOSTNAME;
+    //20260605 xjikka
+    /// <summary>
+    /// Use bidirectional TLS shutdown (send close_notify and wait for peer's)
+    /// </summary>
+    property UseBidirectionalShutdown: Boolean read fUseBidirectionalShutdown
+       write fUseBidirectionalShutdown default DEF_USE_BIDIRECTIONAL_SHUTDOWN;
   /// <summary>
   ///   This event is triggered when the context is initialized and permits you
   ///   to customize the initialization behavior.
@@ -3489,6 +3513,7 @@ begin
   FSecurityLevel := DEF_SECURITY_LEVEL;
   fVerifyDepth := DEFAULT_VERIFY_DEPTH;
   fVerifyHostname := DEF_VERIFY_HOSTNAME;
+  fUseBidirectionalShutdown := DEF_USE_BIDIRECTIONAL_SHUTDOWN;
 end;
 
 procedure TTaurusTLSOptions.SetMinTLSVersion(const AValue
@@ -3516,6 +3541,7 @@ begin
     LDest.VerifyMode := VerifyMode;
     LDest.VerifyDepth := VerifyDepth;
     LDest.VerifyHostname := VerifyHostname;
+    LDest.UseBidirectionalShutdown := UseBidirectionalShutdown;
     LDest.fUseSystemRootCACertificateStore := fUseSystemRootCACertificateStore;
     LDest.VerifyDirs := VerifyDirs;
     LDest.CipherList := CipherList;
@@ -3594,6 +3620,7 @@ begin
     LUseSystemRootCACertificateStore;
   fSSLContext.VerifyDirs := SSLOptions.VerifyDirs;
   fSSLContext.VerifyHostname := LVerifyHostname;
+  fSSLContext.UseBidirectionalShutdown := SSLOptions.UseBidirectionalShutdown;
   fSSLContext.CipherList := LCipherList;
   fSSLContext.VerifyOn := Assigned(fOnVerifyCallback);
   fSSLContext.StatusInfoOn := Assigned(FOnStatusInfo);
@@ -3634,6 +3661,7 @@ begin
       LContext.UseSystemRootCACertificateStore :=
         LUseSystemRootCACertificateStore;
       LContext.VerifyHostname := LVerifyHostname;
+      LContext.UseBidirectionalShutdown := SSLOptions.UseBidirectionalShutdown;
       LContext.CipherList := LCipherList;
       LContext.VerifyOn := Assigned(fOnVerifyCallback);
       LContext.StatusInfoOn := Assigned(FOnStatusInfo);
@@ -4096,6 +4124,7 @@ begin
     fSSLContext.VerifyDepth := SSLOptions.VerifyDepth;
     fSSLContext.VerifyMode := SSLOptions.VerifyMode;
     fSSLContext.VerifyHostname := SSLOptions.VerifyHostname;
+    fSSLContext.UseBidirectionalShutdown := SSLOptions.UseBidirectionalShutdown;
     // fSSLContext.fVerifyFile := SSLOptions.fVerifyFile;
     fSSLContext.UseSystemRootCACertificateStore :=
       SSLOptions.UseSystemRootCACertificateStore;
@@ -4881,7 +4910,14 @@ begin
       end;
     }
     // SSL_set_shutdown(fSSL, SSL_SENT_SHUTDOWN);
-    SSL_shutdown(fSSL);  //PALOFF - Functions called as procedures
+    //20260605 xjikka - optional bidirectional shutdown (see UseBidirectionalShutdown)
+    if (fSSLContext <> nil) and fSSLContext.UseBidirectionalShutdown then begin
+      // if SSL_shutdown() returns 0 a "close notify" was sent; call it again to
+      // receive the peer's "close notify" in response (bidirectional shutdown).
+      if SSL_shutdown(fSSL) = 0 then SSL_shutdown(fSSL);  //PALOFF - Functions called as procedures
+    end else begin
+      SSL_shutdown(fSSL);  //PALOFF - Functions called as procedures
+    end;
     SSL_free(fSSL);
     fSSL := nil;
   end;
