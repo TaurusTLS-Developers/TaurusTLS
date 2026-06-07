@@ -4,8 +4,8 @@
 { *                                                                            * }
 { *  Copyright (c) 2026 TaurusTLS Developers, All Rights Reserved              * }
 { *                                                                            * }
-{ * Portions of this software are Copyright (c) 1993 – 2018,                   * }
-{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  * }
+{ * Portions of this software are Copyright (c) 1993 - 2018,                   * }
+{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew - http://www.IndyProject.org/  * }
 { ****************************************************************************** }
 
 {$I TaurusTLSCompilerDefines.inc}
@@ -22,9 +22,7 @@ interface
 uses
   SysUtils,
   Classes,
-{$IFDEF DCC}
-  System.Generics.Collections,
-{$ENDIF}
+  Generics.Collections,
   DateUtils,
   IdGlobal,
   IdCTypes,
@@ -1750,6 +1748,18 @@ type
     procedure AddFromStore(AStore: TTaurusTLSOSSLStore; AFilter: TX509Elements);
       overload;
 
+    /// <summary>
+    ///   Attaches <c>X509_STORE</c> to OpenSSL <c>SSL_CTX</c> object.
+    /// </summary>
+    /// <param name="ASSLCtx">
+    ///   OpenSSL <c>SSL_CTX</c> object.
+    /// </param>
+    /// <remarks>
+    ///   This method adds refernce count to the underlined <c>X509_STORE</c>
+    ///   object. The TaurusTLS_X509Store can be freed safely after that.
+    /// </remarks>
+    procedure AttachToSSLCtx(ASSLCtx: PSSL_CTX); {$IFDEF USE_INLINE}inline;{$ENDIF}
+
     ///  <summary>
     ///  Provides access to the verification parameters used for validating
     ///  certificates against this trust store.
@@ -1764,7 +1774,9 @@ type
 implementation
 
 uses
-  TaurusTLSHeaders_crypto, TaurusTLS_ResourceStrings;
+  TaurusTLSHeaders_ssl,
+  TaurusTLSHeaders_crypto,
+  TaurusTLS_ResourceStrings;
 
 { TTaurusTLSCustomX509VerifyParam.TVerifyFlagHelper }
 
@@ -2818,6 +2830,11 @@ begin
     sitCrl:  AddCrl(lElement.GetCrl);
     end;
   end;
+end;
+
+procedure TaurusTLS_X509Store.AttachToSSLCtx(ASSLCtx: PSSL_CTX);
+begin
+  SSL_CTX_set1_cert_store(ASSLCtx, FStore);
 end;
 
 procedure TaurusTLS_X509Store.AddCert(ACert: PX509);
