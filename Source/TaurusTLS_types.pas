@@ -28,6 +28,10 @@ uses
   TaurusTLSExceptionHandlers;
 
 type
+{$IFDEF DCC}
+  TStringArray = TArray<string>;
+{$ENDIF}
+
   TTaurusTLSVerifyMode = (
     /// <summary>
     /// For servers, send certificate. For clients, verify server certificate.
