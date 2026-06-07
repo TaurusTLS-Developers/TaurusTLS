@@ -305,6 +305,7 @@ resourcestring
   RMSG_X509StoreCertAdd_err = 'Error adding certificate to the X509_STORE.';
   RMSG_X509StoreCRLAdd_err = 'Error adding CRL to the X509_STORE.';
   RMSG_X509StoreSetVfyParam_err = 'Error setting the X509_STORE Verify Parameters.';
+  RMSG_X509LoadLocationCreate_err = 'Error loading trusted sertificates from ''%s''.';
 
 implementation
 

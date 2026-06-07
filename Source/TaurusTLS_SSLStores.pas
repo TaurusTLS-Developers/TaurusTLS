@@ -980,23 +980,28 @@ type
     ///  <summary>
     ///  Retrieves the PerName identity string.
     ///  </summary>    property PerName: UnicodeString read GetPerNameW;
-    property Host[i: TIdC_Int]: UnicodeString read GetHostW;
+    property PerName: string read GetPerNameW;
 
     ///  <summary>
     ///  Retrieves a hostname by index.
     ///  </summary>
-    property Email: UnicodeString read GetEmailW;
+    property Host[i: TIdC_Int]: UnicodeString read GetHostW;
 
     ///  <summary>
     ///  Retrieves the email address identity.
     ///  </summary>
+    property Email: UnicodeString read GetEmailW;
+
+    ///  <summary>
+    ///  Retrieves the IP address identity.
+    ///  </summary>
     property IPAddress: UnicodeString read GetIpAddressW;
 {$ENDIF}
 {$IFDEF FPC}
-    property PerName: UTF8String read GetPerNameA;
+    property PerName: RawbyteString read GetPerNameA;
     property Host[i: TIdC_Int]: RawbyteString read GetHostA;
     property Email: RawbyteString read GetEmailA;
-    property IPAddress: UnicodeString read GetIpAddressA;
+    property IPAddress: RawbyteString read GetIpAddressA;
 {$ENDIF}
   end;
 
@@ -1686,6 +1691,10 @@ type
     FVfyParam: TTaurusTLSCustomX509VerifyParam;
     procedure SetParam(AVfyParam: TTaurusTLSCustomX509VerifyParam);
     function GetParam: TTaurusTLSCustomX509VerifyParam;
+    function AppendFromLocationA(const AUri: RawByteString): boolean;
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+    function AppendFromLocationW(const AUri: UnicodeString): boolean;
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
   protected
     ///  <summary>
     ///  Direct access to the native OpenSSL X509_STORE pointer.
@@ -1719,24 +1728,24 @@ type
     destructor Destroy; override;
 
     ///  <summary>
-    ///  Adds a single certificate (PX509) to the trusted repository.
+    ///  Appends a single certificate (PX509) to the trusted repository.
     ///  </summary>
     ///  <param name="ACert">The certificate pointer.</param>
     ///  <remarks>The store increments the certificate's reference count
     ///  and takes ownership of the pointer. Do not free the pointer after
     ///  adding it to the store.</remarks>
-    procedure AddCert(ACert: PX509); {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure AppendCert(ACert: PX509); {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
-    ///  Adds a single Certificate Revocation List (CRL) to the trusted repository.
+    ///  Appends a single Certificate Revocation List (CRL) to the trusted repository.
     ///  </summary>
     ///  <param name="ACrl">The CRL pointer.</param>
     ///  <remarks>The store takes ownership of the pointer. Do not free the
     ///  pointer after adding it to the store.</remarks>
-    procedure AddCrl(ACrl: PX509_CRL); {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure AppendCrl(ACrl: PX509_CRL); {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
-    ///  Adds certificates and CRLs from an existing OSSL Store container
+    ///  Appends certificates and CRLs from an existing OSSL Store container
     ///  into this trust store.
     ///  </summary>
     ///  <param name="AStore">The <see cref="TTaurusTLSOSSLStore" /> instance.</param>
@@ -1745,8 +1754,32 @@ type
     ///  Items are added cumulatively, preserving all previously existing
     ///  certificates and CRLs in the store.
     ///  </remarks>
-    procedure AddFromStore(AStore: TTaurusTLSOSSLStore; AFilter: TX509Elements);
+    procedure AppendFromOsslStore(const AStore: TTaurusTLSOSSLStore; AFilter: TX509Elements);
       overload;
+
+    /// <summary>
+    ///   Appends a single or multiple Certificate(s) Certificate Revocation
+    ///   List(s) (CRL) to the trusted repository from the <c>Uri.</c>
+    /// </summary>
+    /// <param name="AStore">
+    ///   The <see cref="TTaurusTLSOSSLStore" /> instance.
+    /// </param>
+    /// <param name="AFilter">
+    ///   The set of elements ( <see cref="TX509Element" />) to add.
+    /// </param>
+    /// <remarks>
+    ///   <list type="bullet">
+    ///     <item>
+    ///       Items are added cumulatively, preserving all previously existing
+    ///       certificates and CRLs in the store.
+    ///     </item>
+    ///     <item>
+    ///       OpenSSL currently supports file:// location on all platforms and
+    ///       org.openssl.winstore:// on Windows platforms.
+    ///     </item>
+    ///   </list>
+    /// </remarks>
+    procedure AppendFromLocation(AUri: string); {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     /// <summary>
     ///   Attaches <c>X509_STORE</c> to OpenSSL <c>SSL_CTX</c> object.
@@ -2797,7 +2830,7 @@ constructor TaurusTLS_X509Store.Create;
 begin
   FStore:=X509_STORE_new;
   if not Assigned(FStore) then
-    ETaurusTLSX509StoreError.RaiseException(RMSG_X509StoreCreate_err);
+    ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509StoreCreate_err);
   inherited;
 end;
 
@@ -2805,7 +2838,7 @@ constructor TaurusTLS_X509Store.Create(AStore: TTaurusTLSOSSLStore;
   AFilter: TX509Elements);
 begin
   Create;
-  AddFromStore(AStore, AFilter);
+  AppendFromOsslStore(AStore, AFilter);
 end;
 
 destructor TaurusTLS_X509Store.Destroy;
@@ -2814,7 +2847,31 @@ begin
   inherited;
 end;
 
-procedure TaurusTLS_X509Store.AddFromStore(AStore: TTaurusTLSOSSLStore;
+procedure TaurusTLS_X509Store.AppendFromLocation(AUri: string);
+begin
+{$IFDEF DCC}
+  if not AppendFromLocationW(AUri) then
+    ETaurusTLSX509StoreError.RaiseWithMessageFmt(RMSG_X509LoadLocationCreate_err,
+      [AUri]);
+{$ENDIF}
+{$IFDEF FPC}
+  if not AppendFromLocationA(AUri) then
+    ETaurusTLSX509StoreError.RaiseWithMessageFmt(RMSG_X509LoadLocationCreate_err,
+      [AUri]);
+{$ENDIF}
+end;
+
+function TaurusTLS_X509Store.AppendFromLocationA(const AUri: RawByteString): boolean;
+begin
+  Result:=X509_STORE_load_store(FStore, PANsiChar(AUri)) > 0;
+end;
+
+function TaurusTLS_X509Store.AppendFromLocationW(const AUri: UnicodeString): boolean;
+begin
+  Result:=AppendFromLocationA(RawByteString(AUri));
+end;
+
+procedure TaurusTLS_X509Store.AppendFromOsslStore(const AStore: TTaurusTLSOSSLStore;
   AFilter: TX509Elements);
 var
   lElement: TTaurusTLSOSSLStore.TStoreItem;
@@ -2826,8 +2883,8 @@ begin
   for lElement in AStore.GetEnumerator(AFilter) do
   begin
     case lElement.&Type of
-    sitCert: AddCert(lElement.Cert);
-    sitCrl:  AddCrl(lElement.GetCrl);
+    sitCert: AppendCert(lElement.Cert);
+    sitCrl:  AppendCrl(lElement.GetCrl);
     end;
   end;
 end;
@@ -2837,13 +2894,13 @@ begin
   SSL_CTX_set1_cert_store(ASSLCtx, FStore);
 end;
 
-procedure TaurusTLS_X509Store.AddCert(ACert: PX509);
+procedure TaurusTLS_X509Store.AppendCert(ACert: PX509);
 begin
   if X509_STORE_add_cert(FStore, ACert) <> 1 then
     ETaurusTLSX509StoreError.RaiseException(RMSG_X509StoreCertAdd_err);
 end;
 
-procedure TaurusTLS_X509Store.AddCrl(ACrl: PX509_CRL);
+procedure TaurusTLS_X509Store.AppendCrl(ACrl: PX509_CRL);
 begin
   if X509_STORE_add_crl(FStore, ACrl) <> 1 then
     ETaurusTLSX509StoreError.RaiseException(RMSG_X509StoreCRLAdd_err);
