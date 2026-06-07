@@ -21,11 +21,11 @@ unit TaurusTLS_SSLUI;
 interface
 
 uses
-  System.AnsiStrings,
-  System.SysUtils,
-  System.Classes,
-  System.Types,
-  System.SyncObjs,
+  AnsiStrings,
+  SysUtils,
+  Classes,
+  Types,
+  SyncObjs,
   Generics.Collections,
   Generics.Defaults,
   IdCTypes,
