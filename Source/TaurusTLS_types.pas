@@ -193,6 +193,7 @@ type
   ///  typecasting to and from the integer bitmask.
   ///  </remarks>
   TTaurusTLSX509VerifyFlag = (
+    x509vfCallBackIssuerCheck       = $00, // 1 shl $00 = X509_V_FLAG_CB_ISSUER_CHECK - Depricated
     x509vfCheckTime                 = $01, // 1 shl $01 = X509_V_FLAG_USE_CHECK_TIME
     x509vfCheckCrl                  = $02, // 1 shl $02 = X509_V_FLAG_CRL_CHECK
     x509vfCheckCrlAll               = $03, // 1 shl $03 = X509_V_FLAG_CRL_CHECK_ALL
@@ -210,6 +211,8 @@ type
     x509vfTrustedFirst              = $0F, // 1 shl $0F = X509_V_FLAG_TRUSTED_FIRST
     x509vfSuiteB128Only             = $10, // 1 shl $10 = X509_V_FLAG_SUITEB_128_LOS_ONLY
     x509vfSuiteB192                 = $11, // 1 shl $11 = X509_V_FLAG_SUITEB_192_LOS
+    x509vfDummy                     = $12, // This flag is not defined in OpenSSL.
+                                           // However it needs to avoid for Delphi Component designer AV
     // x509vfSuiteB128                         // X509_V_FLAG_SUITEB_128_LOS = X509_V_FLAG_SUITEB_128_LOS_ONLY + X509_V_FLAG_SUITEB_192_LOS
     x509vfPartialChain              = $13, // 1 shl $13 = X509_V_FLAG_PARTIAL_CHAIN
     x509vfNoAlternativeChain        = $14, // 1 shl $14 = X509_V_FLAG_NO_ALT_CHAINS
