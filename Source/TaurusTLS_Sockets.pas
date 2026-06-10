@@ -278,7 +278,9 @@ type
 
   TTaurusTLSBaseSocket = class abstract
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
+  {$IFDEF DCC}
     [Volatile]
+  {$ENDIF}
     FState: TTaurusTLSSslState;
     FConfig: TTaurusTLSSocketCtx;
     FSocketHandle: TIdStackSocketHandle;
