@@ -7,7 +7,6 @@
 { * Portions of this software are Copyright (c) 1993 - 2018,                   * }
 { * Chad Z. Hower (Kudzu) and the Indy Pit Crew - http://www.IndyProject.org/  * }
 { ****************************************************************************** }
-
 {$I TaurusTLSCompilerDefines.inc}
 /// <summary>
 ///   Declares set of classes and interfaces to operate with
@@ -78,7 +77,13 @@ type
     ///  structure pointer.
     ///  </summary>
     ///  <param name="AParam">The native pointer to the structure.</param>
+  {$IFDEF FPC}
+    {$WARN 3018 off : Constructor should be public}
+  {$ENDIF}
     constructor Create(AParam: PX509_VERIFY_PARAM);
+  {$IFDEF FPC}
+    {$WARN 3018 on : Constructor should be public}
+  {$ENDIF}
 
     ///  <summary>
     ///  Provides direct access to the native verification parameter pointer.
@@ -375,9 +380,11 @@ type
     ///  The OSSL_STORE_INFO structure acts as a temporary container for the
     ///  object retrieved during a single iteration of the OSSL Store stream.
     ///  </remarks>
-    TStoreInfoHelper = record helper for POSSL_STORE_INFO
+    TStoreInfo = record
+    private
+      FInfo: POSSL_STORE_INFO;
     public
-
+      constructor Create(const AInfo: POSSL_STORE_INFO);
       ///  <summary>
       ///  Retrieves the object type of the stored item.
       ///  </summary>
@@ -385,8 +392,9 @@ type
       ///  <returns>
       ///  The object type as <see cref="TTaurusTLSOSSLStore.TStoreInfoType" />.
       ///  </returns>
-      class function GetType(AInfo: POSSL_STORE_INFO): TStoreInfoType; static;
-        {$IFDEF USE_INLINE}inline;{$ENDIF}
+      class function GetType(AInfo: POSSL_STORE_INFO): TStoreInfoType;
+        overload; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+      function GetType: TStoreInfoType; overload;{$IFDEF USE_INLINE}inline;{$ENDIF}
 
       ///  <summary>
       ///  Retrieves the raw C-style string pointer identifying the object type.
@@ -394,7 +402,9 @@ type
       ///  <param name="AInfo">The native OSSL_STORE_INFO instance.</param>
       ///  <returns>A C-style string pointer to the type name (e.g., 'CERT').</returns>
       ///  <remarks>The returned pointer is internally managed and must not be freed.</remarks>
-      class function GetTypeName(AInfo: POSSL_STORE_INFO): PIdAnsiChar; static;
+      class function GetTypeName(AInfo: POSSL_STORE_INFO): PIdAnsiChar;
+        overload; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+      function GetTypeName: PIdAnsiChar; overload;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
 
       ///  <summary>
@@ -402,8 +412,9 @@ type
       ///  </summary>
       ///  <param name="AInfo">The native OSSL_STORE_INFO instance.</param>
       ///  <returns>True if the pointer is not nil.</returns>
-      class function IsExist(AInfo: POSSL_STORE_INFO): boolean; static;
+      class function IsExist(AInfo: POSSL_STORE_INFO): boolean; overload; static;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
+      function IsExist: boolean; overload; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
       ///  <summary>
       ///  Retrieves the raw C-style string pointer to the name/URI of the
@@ -412,7 +423,9 @@ type
       ///  <param name="AInfo">The native OSSL_STORE_INFO instance.</param>
       ///  <returns>A C-style string pointer to the name/URI.</returns>
       ///  <remarks>The returned pointer is internally managed and must not be freed.</remarks>
-      class function GetName(AInfo: POSSL_STORE_INFO): PIdAnsiChar; static;
+      class function GetName(AInfo: POSSL_STORE_INFO): PIdAnsiChar;
+        overload; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+      function GetName: PIdAnsiChar; overload;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
 
       ///  <summary>
@@ -422,7 +435,9 @@ type
       ///  <param name="AInfo">The native OSSL_STORE_INFO instance.</param>
       ///  <returns>A pointer to the parameter set.</returns>
       ///  <remarks>No ownership is transferred. Do not free this pointer.</remarks>
-      class function GetParams(AInfo: POSSL_STORE_INFO): PEVP_PKEY; static;
+      class function GetParams(AInfo: POSSL_STORE_INFO): PEVP_PKEY; overload;
+        static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+      function GetParams: PEVP_PKEY; overload;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
 
       ///  <summary>
@@ -430,7 +445,9 @@ type
       ///  </summary>
       ///  <returns>A pointer to the public key component.</returns>
       ///  <remarks>No ownership is transferred. Do not free this pointer.</remarks>
-      class function GetPubKey(AInfo: POSSL_STORE_INFO): PEVP_PKEY; static;
+      class function GetPubKey(AInfo: POSSL_STORE_INFO): PEVP_PKEY;
+        overload; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+      function GetPubKey: PEVP_PKEY; overload;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
 
       ///  <summary>
@@ -438,7 +455,9 @@ type
       ///  </summary>
       ///  <returns>A pointer to the private key component.</returns>
       ///  <remarks>No ownership is transferred. Do not free this pointer.</remarks>
-      class function GetPrivKey(AInfo: POSSL_STORE_INFO): PEVP_PKEY; static;
+      class function GetPrivKey(AInfo: POSSL_STORE_INFO): PEVP_PKEY; overload;
+        static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+      function GetPrivKey: PEVP_PKEY; overload;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
 
       ///  <summary>
@@ -447,8 +466,9 @@ type
       ///  <param name="AInfo">The native OSSL_STORE_INFO instance.</param>
       ///  <returns>A pointer to the certificate.</returns>
       ///  <remarks>No ownership is transferred. Do not free this pointer.</remarks>
-      class function GetCert(AInfo: POSSL_STORE_INFO): PX509; static;
+      class function GetCert(AInfo: POSSL_STORE_INFO): PX509; overload; static;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
+      function GetCert: PX509; overload; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
       ///  <summary>
       ///  Retrieves the CRL structure (PX509_CRL).
@@ -456,7 +476,9 @@ type
       ///  <param name="AInfo">The native OSSL_STORE_INFO instance.</param>
       ///  <returns>A pointer to the CRL.</returns>
       ///  <remarks>No ownership is transferred. Do not free this pointer.</remarks>
-      class function GetCrl(AInfo: POSSL_STORE_INFO): PX509_CRL; static;
+      class function GetCrl(AInfo: POSSL_STORE_INFO): PX509_CRL;
+        overload; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+      function GetCrl: PX509_CRL; overload;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
 
       ///  <summary>
@@ -465,7 +487,9 @@ type
       ///  <param name="AInfo">The native OSSL_STORE_INFO instance.</param>
       ///  <returns>The name/URI string.</returns>
       ///  <remarks>The memory for the resulting string is internally managed.</remarks>
-      class function CloneNameA(AInfo: POSSL_STORE_INFO): RawByteString; static;
+      class function CloneNameA(AInfo: POSSL_STORE_INFO): RawByteString;
+        overload; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+      function CloneNameA: RawByteString; overload;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
 
       ///  <summary>
@@ -474,7 +498,9 @@ type
       ///  <param name="AInfo">The native OSSL_STORE_INFO instance.</param>
       ///  <returns>The name/URI string.</returns>
       ///  <remarks>The memory for the resulting string is internally managed.</remarks>
-      class function CloneNameW(AInfo: POSSL_STORE_INFO): UnicodeString; static;
+      class function CloneNameW(AInfo: POSSL_STORE_INFO): UnicodeString;
+        overload; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+      function CloneNameW: UnicodeString; overload;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
 
       ///  <summary>
@@ -483,7 +509,9 @@ type
       ///  <returns>A new pointer to the parameter set.</returns>
       ///  <remarks>Ownership is transferred. The caller must free the pointer
       ///  using EVP_PKEY_free or equivalent routine.</remarks>
-      class function CloneParams(AInfo: POSSL_STORE_INFO): PEVP_PKEY; static;
+      class function CloneParams(AInfo: POSSL_STORE_INFO): PEVP_PKEY;
+        overload; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+      function CloneParams: PEVP_PKEY; overload;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
 
       ///  <summary>
@@ -492,7 +520,9 @@ type
       ///  <returns>A new pointer to the public key component.</returns>
       ///  <remarks>Ownership is transferred. The caller must free the pointer
       ///  using EVP_PKEY_free or equivalent routine.</remarks>
-      class function ClonePubKey(AInfo: POSSL_STORE_INFO): PEVP_PKEY; static;
+      class function ClonePubKey(AInfo: POSSL_STORE_INFO): PEVP_PKEY;
+        overload; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+      function ClonePubKey: PEVP_PKEY; overload;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
 
       ///  <summary>
@@ -501,7 +531,9 @@ type
       ///  <returns>A new pointer to the private key component.</returns>
       ///  <remarks>Ownership is transferred. The caller must free the pointer
       ///  using EVP_PKEY_free or equivalent routine.</remarks>
-      class function ClonePrivKey(AInfo: POSSL_STORE_INFO): PEVP_PKEY; static;
+      class function ClonePrivKey(AInfo: POSSL_STORE_INFO): PEVP_PKEY;
+        overload; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+      function ClonePrivKey: PEVP_PKEY; overload;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
 
       ///  <summary>
@@ -511,8 +543,9 @@ type
       ///  <returns>A new pointer to the certificate.</returns>
       ///  <remarks>Ownership is transferred. The caller must free the pointer
       ///  using X509_free or equivalent routine.</remarks>
-      class function CloneCert(AInfo: POSSL_STORE_INFO): PX509; static;
+      class function CloneCert(AInfo: POSSL_STORE_INFO): PX509; overload; static;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
+      function CloneCert: PX509; overload; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
       ///  <summary>
       ///  Creates a new copy of the CRL structure (PX509_CRL).
@@ -521,8 +554,9 @@ type
       ///  <returns>A new pointer to the CRL.</returns>
       ///  <remarks>Ownership is transferred. The caller must free the pointer
       ///  using X509_CRL_free or equivalent routine.</remarks>
-      class function CloneCrl(AInfo: POSSL_STORE_INFO): PX509_CRL; static;
+      class function CloneCrl(AInfo: POSSL_STORE_INFO): PX509_CRL; overload; static;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
+      function CloneCrl: PX509_CRL; overload;  {$IFDEF USE_INLINE}inline;{$ENDIF}
 
       ///  <summary>
       ///  Frees the native OSSL_STORE_INFO instance pointer.
@@ -530,8 +564,12 @@ type
       ///  <param name="AInfo">The native OSSL_STORE_INFO pointer, which will be set to nil.</param>
       ///  <remarks>This should be called when finished with the temporary
       ///  information structure retrieved during store iteration.</remarks>
-      class procedure Free(var AInfo: POSSL_STORE_INFO); static;
+      class procedure Free(var AInfo: POSSL_STORE_INFO); overload; static;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
+      procedure Free; overload;
+        {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+      property Info: POSSL_STORE_INFO read FInfo write FInfo;
     end;
 
     ///  <summary>
@@ -542,9 +580,18 @@ type
     ///  The OSSL Store Context (<see cref="POSSL_STORE_CTX" />) manages the
     ///  process of reading cryptographic objects from a URI or BIO.
     ///  </remarks>
-    TOsslStoreCtxHelper = record helper for POSSL_STORE_CTX
-    public
+    TStoreCtx = record
+    private
+      FCtx: POSSL_STORE_CTX;
+    {$IFDEF FPC}
+      {$WARN 3018 off : Constructor should be public}
+    {$ENDIF}
+      constructor Create(ACtx: POSSL_STORE_CTX); overload;
+    {$IFDEF FPC}
+      {$WARN 3018 on : Constructor should be public}
+    {$ENDIF}
 
+    public
       ///  <summary>
       ///  Opens a new OSSL Store Context loading cryptographic objects (PEM, DER, etc.)
       ///  from supporting by OpenSSL URI (e.g., a file path).
@@ -556,8 +603,7 @@ type
       ///  <returns>
       ///  A new <see cref="POSSL_STORE_CTX" /> instance. Ownership is transferred.
       ///  </returns>
-      class function Open(AUri: PIdAnsiChar; AUi: TTaurusTLSCustomOsslUi): POSSL_STORE_CTX;
-        overload; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+      constructor Create(AUri: PIdAnsiChar; AUi: TTaurusTLSCustomOsslUi); overload;
 
       ///  <summary>
       ///  Opens a new OSSL Store Context using a custom BIO interface
@@ -570,8 +616,8 @@ type
       ///  <returns>
       ///  A new <see cref="POSSL_STORE_CTX" /> instance. Ownership is transferred.
       ///  </returns>
-      class function Open(ABio: TTaurusTLSCustomBIO; AUi: TTaurusTLSCustomOsslUi): POSSL_STORE_CTX;
-        overload; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+      constructor Create(ABio: TTaurusTLSCustomBIO; AUi: TTaurusTLSCustomOsslUi);
+        overload;
 
       ///  <summary>
       ///  Closes and frees the native OSSL Store Context instance.
@@ -581,7 +627,7 @@ type
       ///  This method releases all internal resources associated with the
       ///  context.
       ///  </remarks>
-      class procedure Close(ACtx: POSSL_STORE_CTX); overload; static;
+      class procedure Close(var ACtx: POSSL_STORE_CTX); overload; static;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
 
       ///  <summary>
@@ -619,6 +665,10 @@ type
       ///  <returns>True if an error flag is set.</returns>
       function IsLoadError: boolean; overload; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
+      class function IsExist(ACtx: POSSL_STORE_CTX): boolean; overload; static;
+        {$IFDEF USE_INLINE}inline;{$ENDIF}
+      function IsExist: boolean; overload; {$IFDEF USE_INLINE}inline;{$ENDIF}
+
       ///  <summary>
       ///  Attempts to load the next cryptographic object from the store.
       ///  </summary>
@@ -643,7 +693,9 @@ type
       ///  A pointer to the temporary <see cref="POSSL_STORE_INFO" /> instance
       ///  containing the loaded object, or nil on error or EOF.
       ///  </returns>
-      function Load: POSSL_STORE_INFO; overload; {$IFDEF USE_INLINE}inline;{$ENDIF}
+      function Load: TStoreInfo; overload; {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+      property Ctx: POSSL_STORE_CTX read FCtx;
     end;
 
     ///  <summary>
@@ -704,7 +756,8 @@ type
       ///  The native object contained in AInfo is cloned and the new
       ///  pointer's ownership is taken by this instance.
       ///  </remarks>
-      constructor Create(AInfo: POSSL_STORE_INFO); overload;
+//      constructor Create(AInfo: POSSL_STORE_INFO); overload;
+      constructor Create(AInfo: TStoreInfo); overload;
 
       ///  <summary>
       ///  Destroys the instance and frees the owned native OpenSSL pointer
@@ -776,7 +829,7 @@ type
     ///  </summary>
     cStoreAElementsAll = [sitName..sitCRL];
 
-  private type
+  protected type
     TCounters = array [TStoreItemType] of TIdC_Uint;
     TListInfo = TObjectList<TStoreItem>;
 
@@ -796,8 +849,14 @@ type
     ///  A set of <see cref="TStoreItemType" /> to filter which objects are
     ///  cloned and stored. Defaults to all types.
     ///  </param>
-    constructor Create(ACtx: POSSL_STORE_CTX;
+  {$IFDEF FPC}
+    {$WARN 3018 off : Constructor should be public}
+  {$ENDIF}
+    constructor Create(ACtx: TStoreCtx;
         ALoadFilter: TStoreItemTypes = cStoreAElementsAll); overload;
+  {$IFDEF FPC}
+    {$WARN 3018 off : Constructor should be public}
+  {$ENDIF}
 
     ///  <summary>
     ///  Loads of objects from the native OpenSSL Store context and clone
@@ -805,7 +864,7 @@ type
     ///  </summary>
     ///  <param name="ACtx">The native OSSL Store Context pointer.</param>
     ///  <param name="ALoadFilter">The set of types to load.</param>
-    procedure DoLoad(ACtx: POSSL_STORE_CTX; ALoadFilter: TStoreItemTypes);
+    procedure DoLoad(ACtx: TStoreCtx; ALoadFilter: TStoreItemTypes);
 
   public
     ///  <summary>
@@ -877,6 +936,12 @@ type
     ///  optionally filtering by type.
     ///  </summary>
     TEnumerator = class
+    {$IFDEF FPC}
+    public type
+      TListInfo = TTaurusTLSOSSLStore.TListInfo;
+      TStoreItemTypes = TTaurusTLSOSSLStore.TStoreItemTypes;
+      TStoreItem = TTaurusTLSOSSLStore.TStoreItem;
+    {$ENDIF}
     private
       FEnum: TListInfo.TEnumerator;
       FFilter: TStoreItemTypes;
@@ -1143,10 +1208,16 @@ begin
   X509_VERIFY_PARAM_set_depth(FParam, Value);
 end;
 
+{$IFDEF FPC}
+{$WARN 5059 off : Function result variable does not seem to be initialized}
+{$ENDIF}
 function TTaurusTLSCustomX509VerifyParam.GetAuthLevel: TTaurusTLSSecurityBits;
 begin
   Result.AsInt:=X509_VERIFY_PARAM_get_auth_level(FParam);
 end;
+{$IFDEF FPC}
+{$WARN 5059 on : Function result variable does not seem to be initialized}
+{$ENDIF}
 
 procedure TTaurusTLSCustomX509VerifyParam.SetAuthLevel(const Value: TTaurusTLSSecurityBits);
 begin
@@ -1331,251 +1402,26 @@ begin
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyPurp_err);
 end;
 
-{ TTaurusTLSOSSLStore.TStoreInfoHelper }
-
-class function TTaurusTLSOSSLStore.TStoreInfoHelper.GetType(AInfo:
-    POSSL_STORE_INFO): TStoreInfoType;
-begin
-  Result:=TStoreInfoType(OSSL_STORE_INFO_get_type(AInfo));
-end;
-
-class function TTaurusTLSOSSLStore.TStoreInfoHelper.GetTypeName(
-  AInfo: POSSL_STORE_INFO): PIdAnsiChar;
-begin
-  if IsExist(Ainfo) then
-    Result:=OSSL_STORE_INFO_type_string(Ord(GetType(AInfo)))
-  else
-    Result:=nil;
-end;
-
-class function TTaurusTLSOSSLStore.TStoreInfoHelper.IsExist(
-  AInfo: POSSL_STORE_INFO): boolean;
-begin
-  Result:=Assigned(AInfo);
-end;
-
-class function TTaurusTLSOSSLStore.TStoreInfoHelper.GetName(
-  AInfo: POSSL_STORE_INFO): PIdAnsiChar;
-begin
-  if IsExist(AInfo) then
-    Result:=OSSL_STORE_INFO_get0_NAME(AInfo)
-  else
-    Result:=nil;
-end;
-
-class function TTaurusTLSOSSLStore.TStoreInfoHelper.GetParams(
-  AInfo: POSSL_STORE_INFO): PEVP_PKEY;
-begin
-  if IsExist(AInfo) then
-    Result:=OSSL_STORE_INFO_get0_PARAMS(AInfo)
-  else
-    Result:=nil;
-end;
-
-class function TTaurusTLSOSSLStore.TStoreInfoHelper.GetPubKey(
-  AInfo: POSSL_STORE_INFO): PEVP_PKEY;
-begin
-  if IsExist(AInfo) then
-    Result:=OSSL_STORE_INFO_get0_PUBKEY(AInfo)
-  else
-    Result:=nil;
-end;
-
-class function TTaurusTLSOSSLStore.TStoreInfoHelper.GetPrivKey(
-  AInfo: POSSL_STORE_INFO): PEVP_PKEY;
-begin
-  if IsExist(AInfo) then
-    Result:=OSSL_STORE_INFO_get0_PKEY(AInfo)
-  else
-    Result:=nil;
-end;
-
-class function TTaurusTLSOSSLStore.TStoreInfoHelper.GetCert(
-  AInfo: POSSL_STORE_INFO): PX509;
-begin
-  if IsExist(AInfo) then
-    Result:=OSSL_STORE_INFO_get0_CERT(AInfo)
-  else
-    Result:=nil;
-end;
-
-class function TTaurusTLSOSSLStore.TStoreInfoHelper.GetCrl(
-  AInfo: POSSL_STORE_INFO): PX509_CRL;
-begin
-  if IsExist(AInfo) then
-    Result:=OSSL_STORE_INFO_get0_CRL(AInfo)
-  else
-    Result:=nil;
-end;
-
-class function TTaurusTLSOSSLStore.TStoreInfoHelper.CloneNameA(
-  AInfo: POSSL_STORE_INFO): RawByteString;
-begin
-  Result:=AnsiString(GetName(AInfo));
-end;
-
-class function TTaurusTLSOSSLStore.TStoreInfoHelper.CloneNameW(
-  AInfo: POSSL_STORE_INFO): UnicodeString;
-begin
-  Result:=UnicodeString(GetName(AInfo));
-end;
-
-class function TTaurusTLSOSSLStore.TStoreInfoHelper.CloneParams(AInfo:
-    POSSL_STORE_INFO): PEVP_PKEY;
-begin
-  if IsExist(AInfo) then
-    Result:=OSSL_STORE_INFO_get1_PARAMS(AInfo)
-  else
-    Result:=nil;
-end;
-
-class function TTaurusTLSOSSLStore.TStoreInfoHelper.ClonePubKey(
-  AInfo: POSSL_STORE_INFO): PEVP_PKEY;
-begin
-  if IsExist(AInfo) then
-    Result:=OSSL_STORE_INFO_get1_PUBKEY(AInfo)
-  else
-    Result:=nil;
-end;
-
-class function TTaurusTLSOSSLStore.TStoreInfoHelper.ClonePrivKey(
-  AInfo: POSSL_STORE_INFO): PEVP_PKEY;
-begin
-  if IsExist(AInfo) then
-    Result:=OSSL_STORE_INFO_get1_PKEY(AInfo)
-  else
-    Result:=nil;
-end;
-
-class function TTaurusTLSOSSLStore.TStoreInfoHelper.CloneCert(
-  AInfo: POSSL_STORE_INFO): PX509;
-begin
-  if IsExist(AInfo) then
-    Result:=OSSL_STORE_INFO_get1_CERT(AInfo)
-  else
-    Result:=nil;
-end;
-
-class function TTaurusTLSOSSLStore.TStoreInfoHelper.CloneCrl(
-  AInfo: POSSL_STORE_INFO): PX509_CRL;
-begin
-  if IsExist(AInfo) then
-    Result:=OSSL_STORE_INFO_get1_CRL(AInfo)
-  else
-    Result:=nil;
-end;
-
-class procedure TTaurusTLSOSSLStore.TStoreInfoHelper.Free(
-  var AInfo: POSSL_STORE_INFO);
-begin
-  if IsExist(AInfo) then
-    OSSL_STORE_INFO_free(AInfo);
-  AInfo:=nil;
-end;
-
-{ TTaurusTLSOSSLStore.TOsslStoreCtxHelper }
-
-class function TTaurusTLSOSSLStore.TOsslStoreCtxHelper.Open(AUri: PIdAnsiChar;
-  AUi: TTaurusTLSCustomOsslUi): POSSL_STORE_CTX;
-var
-  lMeth: PUI_METHOD;
-
-begin
-  if Assigned(AUi) then
-    lMeth:=AUi.UiMethod
-  else
-  begin
-    AUi:=nil;
-    lMeth:=nil;
-  end;
-
-  Result:=OSSL_STORE_open(PIdAnsiChar(AUri), lMeth, AUi, nil, nil);
-end;
-
-class function TTaurusTLSOSSLStore.TOsslStoreCtxHelper.Open(ABio: TTaurusTLSCustomBIO;
-  AUi: TTaurusTLSCustomOsslUi): POSSL_STORE_CTX;
-var
-  lMeth: PUI_METHOD;
-
-begin
-  if not Assigned(ABio) then
-    Exit (nil);
-
-  if Assigned(AUi) then
-    lMeth:=AUi.UiMethod
-  else
-  begin
-    AUi:=nil;
-    lMeth:=nil;
-  end;
-
-  Result:=OSSL_STORE_attach(ABio.BIO, nil, nil, nil, lMeth, AUi,
-    nil, nil, nil);
-end;
-
-class procedure TTaurusTLSOSSLStore.TOsslStoreCtxHelper.Close(ACtx: POSSL_STORE_CTX);
-begin
-  OSSL_STORE_close(ACtx);
-end;
-
-procedure TTaurusTLSOSSLStore.TOsslStoreCtxHelper.Close;
-begin
-  Close(Self);
-end;
-
-class function TTaurusTLSOSSLStore.TOsslStoreCtxHelper.Eof(
-  ACtx: POSSL_STORE_CTX): boolean;
-begin
-  Result:=OSSL_STORE_eof(ACtx) = 1;
-end;
-
-function TTaurusTLSOSSLStore.TOsslStoreCtxHelper.Eof: boolean;
-begin
-  Result:=Eof(Self);
-end;
-
-class function TTaurusTLSOSSLStore.TOsslStoreCtxHelper.IsLoadError(
-  ACtx: POSSL_STORE_CTX): boolean;
-begin
-  Result:=OSSL_STORE_error(ACtx) = 1;
-end;
-
-function TTaurusTLSOSSLStore.TOsslStoreCtxHelper.IsLoadError: boolean;
-begin
-  Result:=IsLoadError(Self);
-end;
-
-class function TTaurusTLSOSSLStore.TOsslStoreCtxHelper.Load(
-  ACtx: POSSL_STORE_CTX): POSSL_STORE_INFO;
-begin
-  Result:=OSSL_STORE_load(ACtx);
-end;
-
-function TTaurusTLSOSSLStore.TOsslStoreCtxHelper.Load: POSSL_STORE_INFO;
-begin
-  Result:=Load(Self);
-end;
-
 { TTaurusTLSOSSLStore.TStoreItem }
 
-constructor TTaurusTLSOSSLStore.TStoreItem.Create(AInfo: POSSL_STORE_INFO);
+constructor TTaurusTLSOSSLStore.TStoreItem.Create(AInfo: TStoreInfo);
 begin
   inherited Create;
-  if Assigned(AInfo) then
-    FData.FType:=POSSL_STORE_INFO.GetType(AInfo);
+  if not AInfo.IsExist then
+    FData.FType:=AInfo.GetType;
   case FData.FType of
     sitName:
-      FData.FName:=POSSL_STORE_INFO.CloneNameA(AInfo);
+      FData.FName:=AInfo.CloneNameA;
     sitParams:
-      FData.FPKey:=POSSL_STORE_INFO.CloneParams(AInfo);
+      FData.FPKey:=AInfo.CloneParams;
     sitPubKey:
-      FData.FPKey:=POSSL_STORE_INFO.ClonePubKey(AInfo);
+      FData.FPKey:=AInfo.ClonePubKey;
     sitPrivKey:
-      FData.FPKey:=POSSL_STORE_INFO.ClonePrivKey(AInfo);
+      FData.FPKey:=AInfo.ClonePrivKey;
     sitCert:
-      FData.FCert:=POSSL_STORE_INFO.CloneCert(AInfo);
+      FData.FCert:=AInfo.CloneCert;
     sitCRL:
-      FData.FCrl:=POSSL_STORE_INFO.CloneCrl(AInfo);
+      FData.FCrl:=AInfo.CloneCrl;
   end;
 end;
 
@@ -1644,25 +1490,27 @@ end;
 
 { TTaurusTLSOSSLStore }
 
-constructor TTaurusTLSOSSLStore.Create(ACtx: POSSL_STORE_CTX;
+constructor TTaurusTLSOSSLStore.Create(ACtx: TStoreCtx;
   ALoadFilter: TStoreItemTypes);
 begin
-  if not Assigned(ACtx) then
+  if not ACtx.IsExist then
     ETaurusTLSOSSLStoreError.RaiseException(RMSG_OsslStoreInit_err);
-  inherited Create;
-  FList:=TListInfo.Create;
-  DoLoad(ACtx, ALoadFilter);
-  if OSSL_STORE_close(ACtx) <> 1 then
-    ETaurusTLSOSSLStoreError.RaiseException(RMSG_OsslStoreClose_err);
+  try
+    inherited Create;
+    FList:=TListInfo.Create;
+    DoLoad(ACtx, ALoadFilter);
+  finally
+    ACtx.Close;
+  end;
 end;
 
 constructor TTaurusTLSOSSLStore.Create(AUri: RawByteString;
   AUi:TTaurusTLSCustomOsslUi; ALoadFilter: TStoreItemTypes);
 var
-  lCtx: POSSL_STORE_CTX;
+  lCtx: TStoreCtx;
 
 begin
-  lCtx:=POSSL_STORE_CTX.Open(PIdAnsiChar(AUri), AUi);
+  lCtx:=TStoreCtx.Create(PIdAnsiChar(AUri), AUi);
   Create(lCtx, ALoadFilter);
 end;
 
@@ -1675,10 +1523,10 @@ end;
 constructor TTaurusTLSOSSLStore.Create(ABio: TTaurusTLSCustomBIO;
   AUi: TTaurusTLSCustomOsslUi; ALoadFilter: TStoreItemTypes);
 var
-  lCtx: POSSL_STORE_CTX;
+  lCtx: TStoreCtx;
 
 begin
-  lCtx:=POSSL_STORE_CTX.Open(ABio, AUi);
+  lCtx:=TStoreCtx.Create(ABio, AUi);
   Create(lCtx, ALoadFilter);
 end;
 
@@ -1693,27 +1541,24 @@ begin
   Result:=FCounters[AType];
 end;
 
-procedure TTaurusTLSOSSLStore.DoLoad(ACtx: POSSL_STORE_CTX;
+procedure TTaurusTLSOSSLStore.DoLoad(ACtx: TStoreCtx;
   ALoadFilter: TStoreItemTypes);
 var
-  lFilter: TStoreItemTypes;
-  lInfo: POSSL_STORE_INFO;
+  lInfo: TStoreInfo;
   lItem: TStoreItem;
 
 begin
-  lFilter:=ALoadFilter;
-  while not POSSL_STORE_CTX.Eof(ACtx) do
+  while not ACtx.Eof do
   begin
-    lInfo:=POSSL_STORE_CTX.Load(ACtx);
-    if not ((POSSL_STORE_INFO.IsExist(lInfo) and
-      (POSSL_STORE_INFO.GetType(lInfo) in ALoadFilter))) then
+    lInfo:=Actx.Load;
+    if not ((lInfo.IsExist and (lInfo.GetType in ALoadFilter))) then
       continue;
     try
       lItem:=TStoreItem.Create(lInfo);
       FList.Add(lItem);
       Inc(FCounters[lItem.&Type]);
     finally
-      POSSL_STORE_INFO.Free(lInfo);
+      lInfo.Free;
     end;
   end;
 end;
@@ -1883,6 +1728,341 @@ begin
   if not Assigned(FVfyParam) then
     FVfyParam:=TVfyParam.Create(FStore);
   Result:=FVfyParam;
+end;
+
+{ TTaurusTLSOSSLStore.TStoreInfo }
+
+constructor TTaurusTLSOSSLStore.TStoreInfo.Create(
+  const AInfo: POSSL_STORE_INFO);
+begin
+  FInfo:=AInfo;
+end;
+
+procedure TTaurusTLSOSSLStore.TStoreInfo.Free;
+begin
+  Free(FInfo);
+end;
+
+class procedure TTaurusTLSOSSLStore.TStoreInfo.Free(
+  var AInfo: POSSL_STORE_INFO);
+begin
+  if IsExist(AInfo) then
+    OSSL_STORE_INFO_free(AInfo);
+  AInfo:=nil;
+end;
+
+class function TTaurusTLSOSSLStore.TStoreInfo.CloneNameA(
+  AInfo: POSSL_STORE_INFO): RawByteString;
+begin
+  Result:=AnsiString(GetName(AInfo));
+end;
+
+class function TTaurusTLSOSSLStore.TStoreInfo.CloneCert(
+  AInfo: POSSL_STORE_INFO): PX509;
+begin
+  if IsExist(AInfo) then
+    Result:=OSSL_STORE_INFO_get1_CERT(AInfo)
+  else
+    Result:=nil;
+end;
+
+function TTaurusTLSOSSLStore.TStoreInfo.CloneCert: PX509;
+begin
+  Result:=CloneCert(FInfo);
+end;
+
+class function TTaurusTLSOSSLStore.TStoreInfo.CloneCrl(
+  AInfo: POSSL_STORE_INFO): PX509_CRL;
+begin
+  if IsExist(AInfo) then
+    Result:=OSSL_STORE_INFO_get1_CRL(AInfo)
+  else
+    Result:=nil;
+end;
+
+function TTaurusTLSOSSLStore.TStoreInfo.CloneCrl: PX509_CRL;
+begin
+  Result:=CloneCrl(FInfo);
+end;
+
+function TTaurusTLSOSSLStore.TStoreInfo.CloneNameA: RawByteString;
+begin
+  Result:=CloneNameA(FInfo);
+end;
+
+class function TTaurusTLSOSSLStore.TStoreInfo.CloneNameW(
+  AInfo: POSSL_STORE_INFO): UnicodeString;
+begin
+  Result:=UnicodeString(GetName(AInfo));
+end;
+
+function TTaurusTLSOSSLStore.TStoreInfo.CloneNameW: UnicodeString;
+begin
+  Result:=CloneNameW(FInfo);
+end;
+
+class function TTaurusTLSOSSLStore.TStoreInfo.CloneParams(
+  AInfo: POSSL_STORE_INFO): PEVP_PKEY;
+begin
+  if IsExist(AInfo) then
+    Result:=OSSL_STORE_INFO_get1_PARAMS(AInfo)
+  else
+    Result:=nil;
+end;
+
+function TTaurusTLSOSSLStore.TStoreInfo.CloneParams: PEVP_PKEY;
+begin
+  Result:=CloneParams(FInfo);
+end;
+
+class function TTaurusTLSOSSLStore.TStoreInfo.ClonePrivKey(
+  AInfo: POSSL_STORE_INFO): PEVP_PKEY;
+begin
+  if IsExist(AInfo) then
+    Result:=OSSL_STORE_INFO_get1_PKEY(AInfo)
+  else
+    Result:=nil;
+end;
+
+function TTaurusTLSOSSLStore.TStoreInfo.ClonePrivKey: PEVP_PKEY;
+begin
+  Result:=ClonePrivKey(FInfo);
+end;
+
+class function TTaurusTLSOSSLStore.TStoreInfo.ClonePubKey(
+  AInfo: POSSL_STORE_INFO): PEVP_PKEY;
+begin
+  if IsExist(AInfo) then
+    Result:=OSSL_STORE_INFO_get1_PUBKEY(AInfo)
+  else
+    Result:=nil;
+end;
+
+function TTaurusTLSOSSLStore.TStoreInfo.ClonePubKey: PEVP_PKEY;
+begin
+  Result:=ClonePubKey(FInfo);
+end;
+
+class function TTaurusTLSOSSLStore.TStoreInfo.GetType(
+  AInfo: POSSL_STORE_INFO): TStoreInfoType;
+begin
+  Result:=TStoreInfoType(OSSL_STORE_INFO_get_type(AInfo));
+end;
+
+class function TTaurusTLSOSSLStore.TStoreInfo.GetName(
+  AInfo: POSSL_STORE_INFO): PIdAnsiChar;
+begin
+  if IsExist(AInfo) then
+    Result:=OSSL_STORE_INFO_get0_NAME(AInfo)
+  else
+    Result:=nil;
+end;
+
+class function TTaurusTLSOSSLStore.TStoreInfo.GetCert(
+  AInfo: POSSL_STORE_INFO): PX509;
+begin
+  if IsExist(AInfo) then
+    Result:=OSSL_STORE_INFO_get0_CERT(AInfo)
+  else
+    Result:=nil;
+end;
+
+function TTaurusTLSOSSLStore.TStoreInfo.GetCert: PX509;
+begin
+  Result:=GetCert(FInfo);
+end;
+
+class function TTaurusTLSOSSLStore.TStoreInfo.GetCrl(
+  AInfo: POSSL_STORE_INFO): PX509_CRL;
+begin
+  if IsExist(AInfo) then
+    Result:=OSSL_STORE_INFO_get0_CRL(AInfo)
+  else
+    Result:=nil;
+end;
+
+function TTaurusTLSOSSLStore.TStoreInfo.GetCrl: PX509_CRL;
+begin
+  Result:=GetCrl(FInfo);
+end;
+
+function TTaurusTLSOSSLStore.TStoreInfo.GetName: PIdAnsiChar;
+begin
+  Result:=GetName(FInfo);
+end;
+
+class function TTaurusTLSOSSLStore.TStoreInfo.GetParams(
+  AInfo: POSSL_STORE_INFO): PEVP_PKEY;
+begin
+  if IsExist(AInfo) then
+    Result:=OSSL_STORE_INFO_get0_PARAMS(AInfo)
+  else
+    Result:=nil;
+end;
+
+function TTaurusTLSOSSLStore.TStoreInfo.GetParams: PEVP_PKEY;
+begin
+  Result:=GetParams(FInfo);
+end;
+
+class function TTaurusTLSOSSLStore.TStoreInfo.GetPrivKey(
+  AInfo: POSSL_STORE_INFO): PEVP_PKEY;
+begin
+  if IsExist(AInfo) then
+    Result:=OSSL_STORE_INFO_get0_PKEY(AInfo)
+  else
+    Result:=nil;
+end;
+
+function TTaurusTLSOSSLStore.TStoreInfo.GetPrivKey: PEVP_PKEY;
+begin
+  Result:=GetPrivKey(FInfo);
+end;
+
+class function TTaurusTLSOSSLStore.TStoreInfo.GetPubKey(
+  AInfo: POSSL_STORE_INFO): PEVP_PKEY;
+begin
+  if IsExist(AInfo) then
+    Result:=OSSL_STORE_INFO_get0_PUBKEY(AInfo)
+  else
+    Result:=nil;
+end;
+
+function TTaurusTLSOSSLStore.TStoreInfo.GetPubKey: PEVP_PKEY;
+begin
+  Result:=GetPubKey(FInfo);
+end;
+
+function TTaurusTLSOSSLStore.TStoreInfo.GetType: TStoreInfoType;
+begin
+  Result:=GetType(FInfo);
+end;
+
+class function TTaurusTLSOSSLStore.TStoreInfo.GetTypeName(
+  AInfo: POSSL_STORE_INFO): PIdAnsiChar;
+begin
+  if IsExist(Ainfo) then
+    Result:=OSSL_STORE_INFO_type_string(Ord(GetType(AInfo)))
+  else
+    Result:=nil;
+end;
+
+function TTaurusTLSOSSLStore.TStoreInfo.GetTypeName: PIdAnsiChar;
+begin
+  Result:=GetTypeName(FInfo);
+end;
+
+class function TTaurusTLSOSSLStore.TStoreInfo.IsExist(
+  AInfo: POSSL_STORE_INFO): boolean;
+begin
+  Result:=Assigned(AInfo);
+end;
+
+function TTaurusTLSOSSLStore.TStoreInfo.IsExist: boolean;
+begin
+  Result:=IsExist(FInfo);
+end;
+
+{ TTaurusTLSOSSLStore.TStoreCtx }
+
+constructor TTaurusTLSOSSLStore.TStoreCtx.Create(ACtx: POSSL_STORE_CTX);
+begin
+  FCtx:=ACtx;
+end;
+
+constructor TTaurusTLSOSSLStore.TStoreCtx.Create(AUri: PIdAnsiChar;
+  AUi: TTaurusTLSCustomOsslUi);
+var
+  lMeth: PUI_METHOD;
+
+begin
+  if Assigned(AUi) then
+    lMeth:=AUi.UiMethod
+  else
+  begin
+    AUi:=nil;
+    lMeth:=nil;
+  end;
+
+  Create(OSSL_STORE_open(PIdAnsiChar(AUri), lMeth, AUi, nil, nil));
+end;
+
+constructor TTaurusTLSOSSLStore.TStoreCtx.Create(ABio: TTaurusTLSCustomBIO;
+  AUi: TTaurusTLSCustomOsslUi);
+var
+  lMeth: PUI_METHOD;
+
+begin
+  if not Assigned(ABio) then
+    Exit;
+
+  if Assigned(AUi) then
+    lMeth:=AUi.UiMethod
+  else
+  begin
+    AUi:=nil;
+    lMeth:=nil;
+  end;
+
+  Create(OSSL_STORE_attach(ABio.BIO, nil, nil, nil, lMeth, AUi,
+    nil, nil, nil));
+end;
+
+class procedure TTaurusTLSOSSLStore.TStoreCtx.Close(var ACtx: POSSL_STORE_CTX);
+begin
+  if not Assigned(Actx) then
+    Exit;
+  OSSL_STORE_close(ACtx);
+  ACtx:=nil;
+end;
+
+procedure TTaurusTLSOSSLStore.TStoreCtx.Close;
+begin
+  Close(FCtx);
+end;
+
+class function TTaurusTLSOSSLStore.TStoreCtx.Eof(
+  ACtx: POSSL_STORE_CTX): boolean;
+begin
+  Result:=Assigned(ACtx) and (OSSL_STORE_eof(ACtx) = 1);
+end;
+
+function TTaurusTLSOSSLStore.TStoreCtx.Eof: boolean;
+begin
+  Result:=Eof(FCtx);
+end;
+
+class function TTaurusTLSOSSLStore.TStoreCtx.IsLoadError(
+  ACtx: POSSL_STORE_CTX): boolean;
+begin
+  Result:=OSSL_STORE_error(ACtx) = 1;
+end;
+
+class function TTaurusTLSOSSLStore.TStoreCtx.IsExist(
+  ACtx: POSSL_STORE_CTX): boolean;
+begin
+  Result:=Assigned(Actx);
+end;
+
+function TTaurusTLSOSSLStore.TStoreCtx.IsExist: boolean;
+begin
+  Result:=IsExist(FCtx);
+end;
+
+function TTaurusTLSOSSLStore.TStoreCtx.IsLoadError: boolean;
+begin
+  Result:=IsLoadError(FCtx);
+end;
+
+class function TTaurusTLSOSSLStore.TStoreCtx.Load(
+  ACtx: POSSL_STORE_CTX): POSSL_STORE_INFO;
+begin
+  Result:=OSSL_STORE_load(ACtx);
+end;
+
+function TTaurusTLSOSSLStore.TStoreCtx.Load: TStoreInfo;
+begin
+  Result:=TStoreInfo.Create(Load(FCtx));
 end;
 
 end.

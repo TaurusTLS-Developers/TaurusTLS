@@ -962,11 +962,11 @@ end;
 
 function TTaurusTLSCertificateVerifyFlagSet.GetAsInt: TIdC_INT;
 begin
-  {$IF SizeOf(Self) = 1}
+  {$IF SizeOf(TTaurusTLSCertificateVerifyFlagSet) = 1}
   Result:=Byte(Self);
-  {$ELSEIF SizeOf(Self) = 2}
+  {$ELSEIF SizeOf(TTaurusTLSCertificateVerifyFlagSet) = 2}
   Result:=Word(Self);
-  {$ELSEIF SizeOf(Self) >= 4}
+  {$ELSEIF SizeOf(TTaurusTLSCertificateVerifyFlagSet) >= 4}
   Result:=Integer(Self);
   {$IFEND}
   Result:=Result and cMask;
@@ -978,11 +978,11 @@ var
 
 begin
   AValue:=AValue and cMask;
-  {$IF SizeOf(Self) = 1}
+  {$IF SizeOf(TTaurusTLSCertificateVerifyFlagSet) = 1}
   Byte(lFlags):=Byte(AValue);
-  {$ELSEIF SizeOf(Self) = 2}
+  {$ELSEIF SizeOf(TTaurusTLSCertificateVerifyFlagSet) = 2}
   Word(lFlags):=Word(AValue);
-  {$ELSEIF SizeOf(Self) >= 4}
+  {$ELSEIF SizeOf(TTaurusTLSCertificateVerifyFlagSet) >= 4}
   Integer(lFlags):=Integer(AValue);
   {$IFEND}
   SetFlags(lFlags);

@@ -21,7 +21,9 @@ unit TaurusTLS_SSLUI;
 interface
 
 uses
+{$IFDEF DCC}
   AnsiStrings,
+{$ENDIF}
   SysUtils,
   Classes,
   Types,
