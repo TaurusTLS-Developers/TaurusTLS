@@ -105,11 +105,11 @@ type
   protected
     procedure SetName(const AName: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
   public
-    constructor Create(AName: string; AUri: RawByteString; 
+    constructor Create(const AName: string; const AUri: RawByteString;
       AUi: TTaurusTLSCustomOsslUi); reintroduce; overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    constructor Create(AName: string; AUri: UnicodeString; 
+    constructor Create(const AName: string; const AUri: UnicodeString;
       AUi: TTaurusTLSCustomOsslUi); reintroduce; overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    constructor Create(AName: string; ABio: TTaurusTLSCustomBIO; 
+    constructor Create(const AName: string; ABio: TTaurusTLSCustomBIO;
       AUi: TTaurusTLSCustomOsslUi); reintroduce; overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     property Name: string read FName;
@@ -625,21 +625,21 @@ end;
 
 { TTaurusTLSTrustStore }
 
-constructor TTaurusTLSTrustStore.Create(AName: string; AUri: RawByteString;
-  AUi: TTaurusTLSCustomOsslUi);
+constructor TTaurusTLSTrustStore.Create(const AName: string;
+  const AUri: RawByteString; AUi: TTaurusTLSCustomOsslUi);
 begin
   inherited Create(AUri, AUi, CFilter);
   SetName(AName);
 end;
 
-constructor TTaurusTLSTrustStore.Create(AName: string; AUri: UnicodeString;
-  AUi: TTaurusTLSCustomOsslUi);
+constructor TTaurusTLSTrustStore.Create(const AName: string;
+  const AUri: UnicodeString; AUi: TTaurusTLSCustomOsslUi);
 begin
   inherited Create(AUri, AUi, CFilter);
   SetName(AName);
 end;
 
-constructor TTaurusTLSTrustStore.Create(AName: string;
+constructor TTaurusTLSTrustStore.Create(const AName: string;
   ABio: TTaurusTLSCustomBIO; AUi: TTaurusTLSCustomOsslUi);
 begin
   inherited Create(ABio, AUi, CFilter);
@@ -1365,16 +1365,8 @@ begin
 end;
 
 class function TTaurusTLSBaseSocket.GetInstanceFromSSL<T>(ASSL: PSSL): T;
-var
-  lResult: pointer;
 begin
-  // Code converted from `Result:=T(SSL_get_app_data(ASSL);`
-  // to resolve Pascal Analyzer warning
-  lResult:=SSL_get_app_data(ASSL);
-  if Assigned(lResult) then
-    Result:=T(lResult)
-  else
-    Result:=Default(T);
+  Result:=T(SSL_get_app_data(ASSL)); //PALOFF Pointer cast to T
 end;
 
 class procedure TTaurusTLSBaseSocket.SslInfoCallback(const ASSL: PSSL; AWhere,

@@ -439,7 +439,7 @@ begin
     lReadSize := Read(lBuf[0], IndyMin(int64(lToRead), int64(AChunkSize)));  //PALOFF "NativeUInt cast to Integer"
     if lReadSize = 0 then Break;
 
-    AStream.WriteBuffer(lBuf[0], Integer(lReadSize));
+    AStream.WriteBuffer(lBuf[0], Integer(lReadSize)); //PALOFF "NativeUInt cast to Integer"
     Inc(Result, lReadSize);
     Dec(lToRead, lReadSize);
   end;
