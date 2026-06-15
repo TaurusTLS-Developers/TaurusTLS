@@ -1813,18 +1813,18 @@ var
   SSL_set1_chain_cert_store: function (s: PSSL; st: PByte): TIdC_LONG; cdecl = nil; {removed 1.0.0}
   SSL_get1_groups: function (s: PSSL; glist: PIdC_INT): TIdC_LONG; cdecl = nil; {removed 1.0.0}
   SSL_CTX_set1_groups: function (ctx: PSSL_CTX; glist: PByte; glistlen: TIdC_LONG): TIdC_LONG; cdecl = nil; {removed 1.0.0}
-  SSL_CTX_set1_groups_list: function (ctx: PSSL_CTX; s: PAnsiChar): TIdC_LONG; cdecl = nil; {removed 1.0.0}
+  SSL_CTX_set1_groups_list: function (ctx: PSSL_CTX; s: PIdAnsiChar): TIdC_LONG; cdecl = nil; {removed 1.0.0}
   SSL_set1_groups: function (s: PSSL; glist: PByte; glistlen: TIdC_LONG): TIdC_LONG; cdecl = nil; {removed 1.0.0}
-  SSL_set1_groups_list: function (s: PSSL; _str: PAnsiChar): TIdC_LONG; cdecl = nil; {removed 1.0.0}
+  SSL_set1_groups_list: function (s: PSSL; _str: PIdAnsiChar): TIdC_LONG; cdecl = nil; {removed 1.0.0}
   SSL_get_shared_group: function (s: PSSL; n: TIdC_LONG): TIdC_LONG; cdecl = nil; {removed 1.0.0}
   SSL_CTX_set1_sigalgs: function (ctx: PSSL_CTX; slist: PIdC_INT; slistlen: TIdC_LONG): TIdC_LONG; cdecl = nil; {removed 1.0.0}
-  SSL_CTX_set1_sigalgs_list: function (ctx: PSSL_CTX; s: PAnsiChar): TIdC_LONG; cdecl = nil; {removed 1.0.0}
+  SSL_CTX_set1_sigalgs_list: function (ctx: PSSL_CTX; s: PIdAnsiChar): TIdC_LONG; cdecl = nil; {removed 1.0.0}
   SSL_set1_sigalgs: function (s: PSSL; slist: PIdC_INT; slistlen: TIdC_LONG): TIdC_LONG; cdecl = nil; {removed 1.0.0}
-  SSL_set1_sigalgs_list: function (s: PSSL; _str: PAnsiChar): TIdC_LONG; cdecl = nil; {removed 1.0.0}
+  SSL_set1_sigalgs_list: function (s: PSSL; _str: PIdAnsiChar): TIdC_LONG; cdecl = nil; {removed 1.0.0}
   SSL_CTX_set1_client_sigalgs: function (ctx: PSSL_CTX; slist: PIdC_INT; slistlen: TIdC_LONG): TIdC_LONG; cdecl = nil; {removed 1.0.0}
-  SSL_CTX_set1_client_sigalgs_list: function (ctx: PSSL_CTX; s: PAnsiChar): TIdC_LONG; cdecl = nil; {removed 1.0.0}
+  SSL_CTX_set1_client_sigalgs_list: function (ctx: PSSL_CTX; s: PIdAnsiChar): TIdC_LONG; cdecl = nil; {removed 1.0.0}
   SSL_set1_client_sigalgs: function (s: PSSL; slist: PIdC_INT; slistlen: TIdC_LONG): TIdC_LONG; cdecl = nil; {removed 1.0.0}
-  SSL_set1_client_sigalgs_list: function (s: PSSL; _str: PAnsiChar): TIdC_LONG; cdecl = nil; {removed 1.0.0}
+  SSL_set1_client_sigalgs_list: function (s: PSSL; _str: PIdAnsiChar): TIdC_LONG; cdecl = nil; {removed 1.0.0}
   SSL_get0_certificate_types: function (s: PSSL; clist: PByte): TIdC_LONG; cdecl = nil; {removed 1.0.0}
   SSL_CTX_set1_client_certificate_types: function (ctx: PSSL_CTX; clist: PByte; clistlen: TIdC_LONG): TIdC_LONG; cdecl = nil; {removed 1.0.0}
   SSL_set1_client_certificate_types: function (s: PSSL; clist: PByte; clistlen: TIdC_LONG): TIdC_LONG; cdecl = nil; {removed 1.0.0}
@@ -3691,18 +3691,18 @@ function SSL_set0_chain_cert_store(s: PSSL; st: PByte): TIdC_LONG; {removed 1.0.
 function SSL_set1_chain_cert_store(s: PSSL; st: PByte): TIdC_LONG; {removed 1.0.0}
 function SSL_get1_groups(s: PSSL; glist: PIdC_INT): TIdC_LONG; {removed 1.0.0}
 function SSL_CTX_set1_groups(ctx: PSSL_CTX; glist: PByte; glistlen: TIdC_LONG): TIdC_LONG; {removed 1.0.0}
-function SSL_CTX_set1_groups_list(ctx: PSSL_CTX; s: PByte): TIdC_LONG; {removed 1.0.0}
+function SSL_CTX_set1_groups_list(ctx: PSSL_CTX; s: PIdAnsiChar): TIdC_LONG; {removed 1.0.0}
 function SSL_set1_groups(s: PSSL; glist: PByte; glistlen: TIdC_LONG): TIdC_LONG; {removed 1.0.0}
-function SSL_set1_groups_list(s: PSSL; _str: PByte): TIdC_LONG; {removed 1.0.0}
+function SSL_set1_groups_list(s: PSSL; _str: PIdAnsiChar): TIdC_LONG; {removed 1.0.0}
 function SSL_get_shared_group(s: PSSL; n: TIdC_LONG): TIdC_LONG; {removed 1.0.0}
 function SSL_CTX_set1_sigalgs(ctx: PSSL_CTX; slist: PIdC_INT; slistlen: TIdC_LONG): TIdC_LONG; {removed 1.0.0}
 function SSL_CTX_set1_sigalgs_list(ctx: PSSL_CTX; s: PByte): TIdC_LONG; {removed 1.0.0}
 function SSL_set1_sigalgs(s: PSSL; slist: PIdC_INT; slistlen: TIdC_LONG): TIdC_LONG; {removed 1.0.0}
-function SSL_set1_sigalgs_list(s: PSSL; _str: PByte): TIdC_LONG; {removed 1.0.0}
+function SSL_set1_sigalgs_list(s: PSSL; _str: PIdAnsiChar): TIdC_LONG; {removed 1.0.0}
 function SSL_CTX_set1_client_sigalgs(ctx: PSSL_CTX; slist: PIdC_INT; slistlen: TIdC_LONG): TIdC_LONG; {removed 1.0.0}
-function SSL_CTX_set1_client_sigalgs_list(ctx: PSSL_CTX; s: PByte): TIdC_LONG; {removed 1.0.0}
+function SSL_CTX_set1_client_sigalgs_list(ctx: PSSL_CTX; s: PIdAnsiChar): TIdC_LONG; {removed 1.0.0}
 function SSL_set1_client_sigalgs(s: PSSL; slist: PIdC_INT; slistlen: TIdC_LONG): TIdC_LONG; {removed 1.0.0}
-function SSL_set1_client_sigalgs_list(s: PSSL; _str: PByte): TIdC_LONG; {removed 1.0.0}
+function SSL_set1_client_sigalgs_list(s: PSSL; _str: PIdAnsiChar): TIdC_LONG; {removed 1.0.0}
 function SSL_get0_certificate_types(s: PSSL; clist: PByte): TIdC_LONG; {removed 1.0.0}
 function SSL_CTX_set1_client_certificate_types(ctx: PSSL_CTX; clist: PByte; clistlen: TIdC_LONG): TIdC_LONG; {removed 1.0.0}
 function SSL_set1_client_certificate_types(s: PSSL; clist: PByte; clistlen: TIdC_LONG): TIdC_LONG; {removed 1.0.0}
@@ -6043,7 +6043,7 @@ begin
 end;
 
 //# define SSL_CTX_set1_groups_list(ctx, s)                  SSL_CTX_ctrl(ctx,SSL_CTRL_SET_GROUPS_LIST,0,(char *)(s))
-function  _SSL_CTX_set1_groups_list(ctx: PSSL_CTX; s: PByte): TIdC_LONG; cdecl;
+function  _SSL_CTX_set1_groups_list(ctx: PSSL_CTX; s: PIdAnsiChar): TIdC_LONG; cdecl;
 begin
   Result := SSL_CTX_ctrl(ctx, SSL_CTRL_SET_GROUPS_LIST, 0, s);
 end;
@@ -6055,7 +6055,7 @@ begin
 end;
 
 //# define SSL_set1_groups_list(s, str)                      SSL_ctrl(s,SSL_CTRL_SET_GROUPS_LIST,0,(char *)(str))
-function  _SSL_set1_groups_list(s: PSSL; _str: PByte): TIdC_LONG; cdecl;
+function  _SSL_set1_groups_list(s: PSSL; _str: PIdAnsiChar): TIdC_LONG; cdecl;
 begin
   Result := SSL_ctrl(s, SSL_CTRL_SET_GROUPS_LIST, 0, _str);
 end;
@@ -6073,7 +6073,7 @@ begin
 end;
 
 //# define SSL_CTX_set1_sigalgs_list(ctx, s)                 SSL_CTX_ctrl(ctx,SSL_CTRL_SET_SIGALGS_LIST,0,(char *)(s))
-function  _SSL_CTX_set1_sigalgs_list(ctx: PSSL_CTX; s: PByte): TIdC_LONG; cdecl;
+function  _SSL_CTX_set1_sigalgs_list(ctx: PSSL_CTX; s: PIdAnsiChar): TIdC_LONG; cdecl;
 begin
   Result := SSL_CTX_ctrl(ctx, SSL_CTRL_SET_SIGALGS_LIST, 0, s);
 end;
@@ -6085,7 +6085,7 @@ begin
 end;
 
 //# define SSL_set1_sigalgs_list(s, str)                     SSL_ctrl(s,SSL_CTRL_SET_SIGALGS_LIST,0,(char *)(str))
-function  _SSL_set1_sigalgs_list(s: PSSL; _str: PByte): TIdC_LONG; cdecl;
+function  _SSL_set1_sigalgs_list(s: PSSL; _str: PIdAnsiChar): TIdC_LONG; cdecl;
 begin
   Result := SSL_ctrl(s, SSL_CTRL_SET_SIGALGS_LIST, 0, _str);
 end;
@@ -6097,7 +6097,7 @@ begin
 end;
 
 //# define SSL_CTX_set1_client_sigalgs_list(ctx, s)          SSL_CTX_ctrl(ctx,SSL_CTRL_SET_CLIENT_SIGALGS_LIST,0,(char *)(s))
-function  _SSL_CTX_set1_client_sigalgs_list(ctx: PSSL_CTX; s: PByte): TIdC_LONG; cdecl;
+function  _SSL_CTX_set1_client_sigalgs_list(ctx: PSSL_CTX; s: PIdAnsiChar): TIdC_LONG; cdecl;
 begin
   Result := SSL_CTX_ctrl(ctx, SSL_CTRL_SET_CLIENT_SIGALGS_LIST, 0, s);
 end;
@@ -6109,7 +6109,7 @@ begin
 end;
 
 //# define SSL_set1_client_sigalgs_list(s, str)              SSL_ctrl(s,SSL_CTRL_SET_CLIENT_SIGALGS_LIST,0,(char *)(str))
-function  _SSL_set1_client_sigalgs_list(s: PSSL; _str: PByte): TIdC_LONG; cdecl;
+function  _SSL_set1_client_sigalgs_list(s: PSSL; _str: PIdAnsiChar): TIdC_LONG; cdecl;
 begin
   Result := SSL_ctrl(s, SSL_CTRL_SET_CLIENT_SIGALGS_LIST, 0, _str);
 end;
@@ -6598,7 +6598,7 @@ begin
 end;
 
 
-function  ERR_SSL_CTX_set1_groups_list(ctx: PSSL_CTX; s: PByte): TIdC_LONG;  cdecl;
+function  ERR_SSL_CTX_set1_groups_list(ctx: PSSL_CTX; s: PIdAnsiChar): TIdC_LONG;  cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SSL_CTX_set1_groups_list_procname);
 end;
@@ -6610,7 +6610,7 @@ begin
 end;
 
 
-function  ERR_SSL_set1_groups_list(s: PSSL; _str: PByte): TIdC_LONG;  cdecl;
+function  ERR_SSL_set1_groups_list(s: PSSL; _str: PIdAnsiChar): TIdC_LONG;  cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SSL_set1_groups_list_procname);
 end;
@@ -6628,7 +6628,7 @@ begin
 end;
 
 
-function  ERR_SSL_CTX_set1_sigalgs_list(ctx: PSSL_CTX; s: PByte): TIdC_LONG;  cdecl;
+function  ERR_SSL_CTX_set1_sigalgs_list(ctx: PSSL_CTX; s: PIdAnsiChar): TIdC_LONG;  cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SSL_CTX_set1_sigalgs_list_procname);
 end;
@@ -6640,7 +6640,7 @@ begin
 end;
 
 
-function  ERR_SSL_set1_sigalgs_list(s: PSSL; _str: PByte): TIdC_LONG;  cdecl;
+function  ERR_SSL_set1_sigalgs_list(s: PSSL; _str: PIdAnsiChar): TIdC_LONG;  cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SSL_set1_sigalgs_list_procname);
 end;
@@ -6652,7 +6652,7 @@ begin
 end;
 
 
-function  ERR_SSL_CTX_set1_client_sigalgs_list(ctx: PSSL_CTX; s: PByte): TIdC_LONG;  cdecl;
+function  ERR_SSL_CTX_set1_client_sigalgs_list(ctx: PSSL_CTX; s: PIdAnsiChar): TIdC_LONG;  cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SSL_CTX_set1_client_sigalgs_list_procname);
 end;
@@ -6664,7 +6664,7 @@ begin
 end;
 
 
-function  ERR_SSL_set1_client_sigalgs_list(s: PSSL; _str: PByte): TIdC_LONG;  cdecl;
+function  ERR_SSL_set1_client_sigalgs_list(s: PSSL; _str: PIdAnsiChar): TIdC_LONG;  cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SSL_set1_client_sigalgs_list_procname);
 end;
@@ -29433,7 +29433,7 @@ begin
 end;
 
 //# define SSL_set1_groups_list(s, str)                      SSL_ctrl(s,SSL_CTRL_SET_GROUPS_LIST,0,(char *)(str))
-function SSL_set1_groups_list(s: PSSL; _str: PByte): TIdC_LONG;
+function SSL_set1_groups_list(s: PSSL; _str: PIdAnsiChar): TIdC_LONG;
 begin
   Result := SSL_ctrl(s, SSL_CTRL_SET_GROUPS_LIST, 0, _str);
 end;
@@ -29451,7 +29451,7 @@ begin
 end;
 
 //# define SSL_CTX_set1_sigalgs_list(ctx, s)                 SSL_CTX_ctrl(ctx,SSL_CTRL_SET_SIGALGS_LIST,0,(char *)(s))
-function SSL_CTX_set1_sigalgs_list(ctx: PSSL_CTX; s: PByte): TIdC_LONG;
+function SSL_CTX_set1_sigalgs_list(ctx: PSSL_CTX; s: PIdAnsiChar): TIdC_LONG;
 begin
   Result := SSL_CTX_ctrl(ctx, SSL_CTRL_SET_SIGALGS_LIST, 0, s);
 end;
