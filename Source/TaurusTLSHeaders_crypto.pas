@@ -1162,7 +1162,7 @@ end;    //PALOFF - Empty begin/end-blocks
 
 function  _FIPS_mode: TIdC_INT; cdecl;
 begin
-  Result := OSSL_PROVIDER_available(nil,PAnsiChar(AnsiString('fips')));
+  Result := OSSL_PROVIDER_available(nil,PIdAnsiChar(AnsiString('fips')));
 end;
 
 var fips_provider: POSSL_PROVIDER;
@@ -1188,10 +1188,10 @@ begin
   else
   begin
      Result := 0;
-     fips_provider := OSSL_PROVIDER_load(nil, PAnsiChar(AnsiString('fips')));
+     fips_provider := OSSL_PROVIDER_load(nil, PIdAnsiChar(AnsiString('fips')));
      if fips_provider = nil then
        Exit;
-     base_provider := OSSL_PROVIDER_load(nil, PAnsiChar(AnsiString('base')));
+     base_provider := OSSL_PROVIDER_load(nil, PIdAnsiChar(AnsiString('base')));
      if base_provider = nil then
      begin
        OSSL_PROVIDER_unload(fips_provider);  //PALOFF - Functions called as procedures
