@@ -55,8 +55,10 @@ type
     /// initial handshake. Send the request during the
     /// SSL_verify_client_post_handshake call.
     /// </summary>
-    sslvrfPostHandshake
+    sslvrfPostHandshake,
+    sslvrfHostname
   );
+
   /// <summary>
   /// Controls the peer verification. Can contain the following:<para>
   /// <c>sslvrfPeer</c> For servers, send certificate. For clients, verify
@@ -120,6 +122,74 @@ type
 
   ETaurusTLSSSLVersion = class(ETaurusTLSError);
 
+  TTaurusTLSSSLOptionFlag = (
+    sslOpNoExtendedMasterSecret          = 0,  // (1 shl 0)  = SSL_OP_NO_EXTENDED_MASTER_SECRET
+    sslOpCleansePlaintext                = 1,  // (1 shl 1)  = SSL_OP_CLEANSE_PLAINTEXT
+    sslOpLegacyServerConnect             = 2,  // (1 shl 2)  = SSL_OP_LEGACY_SERVER_CONNECT
+    sslOpEnableKtls                      = 3,  // (1 shl 3)  = SSL_OP_ENABLE_KTLS
+    sslOpTlsextPadding                   = 4,  // (1 shl 4)  = SSL_OP_TLSEXT_PADDING
+    sslOpSafariEcdheEcdsaBug             = 6,  // (1 shl 6)  = SSL_OP_SAFARI_ECDHE_ECDSA_BUG
+    sslOpIgnoreUnexpectedEof             = 7,  // (1 shl 7)  = SSL_OP_IGNORE_UNEXPECTED_EOF
+    sslOpAllowClientRenegotiation        = 8,  // (1 shl 8)  = SSL_OP_ALLOW_CLIENT_RENEGOTIATION
+    sslOpDisableTlsextCaNames            = 9,  // (1 shl 9)  = SSL_OP_DISABLE_TLSEXT_CA_NAMES
+    sslOpAllowNoDheKex                   = 10, // (1 shl 10) = SSL_OP_ALLOW_NO_DHE_KEX
+    sslOpDontInsertEmptyFragments        = 11, // (1 shl 11) = SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS
+    sslOpNoQueryMtu                      = 12, // (1 shl 12) = SSL_OP_NO_QUERY_MTU
+    sslOpCookieExchange                  = 13, // (1 shl 13) = SSL_OP_COOKIE_EXCHANGE
+    sslOpNoTicket                        = 14, // (1 shl 14) = SSL_OP_NO_TICKET
+    sslOpCiscoAnyconnect                 = 15, // (1 shl 15) = SSL_OP_CISCO_ANYCONNECT
+    sslOpNoSessionResumptionOnRenegotiation = 16, // (1 shl 16) = SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION
+    sslOpNoCompression                   = 17, // (1 shl 17) = SSL_OP_NO_COMPRESSION
+    sslOpAllowUnsafeLegacyRenegotiation  = 18, // (1 shl 18) = SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
+    sslOpNoEncryptThenMac                = 19, // (1 shl 19) = SSL_OP_NO_ENCRYPT_THEN_MAC
+    sslOpEnableMiddleboxCompat           = 20, // (1 shl 20) = SSL_OP_ENABLE_MIDDLEBOX_COMPAT
+    sslOpPrioritizeChacha                = 21, // (1 shl 21) = SSL_OP_PRIORITIZE_CHACHA
+    sslOpCipherServerPreference          = 22, // (1 shl 22) = SSL_OP_CIPHER_SERVER_PREFERENCE
+    sslOpTlsRollbackBug                  = 23, // (1 shl 23) = SSL_OP_TLS_ROLLBACK_BUG
+    sslOpNoAntiReplay                    = 24, // (1 shl 24) = SSL_OP_NO_ANTI_REPLAY
+    sslOpNoSslv3                         = 25, // (1 shl 25) = SSL_OP_NO_SSLv3
+    sslOpNoTlsv1                         = 26, // (1 shl 26) = SSL_OP_NO_TLSv1
+    sslOpNoTlsv12                        = 27, // (1 shl 27) = SSL_OP_NO_TLSv1_2
+    sslOpNoTlsv11                        = 28, // (1 shl 28) = SSL_OP_NO_TLSv1_1
+    sslOpNoTlsv13                        = 29, // (1 shl 29) = SSL_OP_NO_TLSv1_3
+    sslOpNoDtlsv1                        = 32, // (1 shl 26 duplicated value shifted to free sequence bit)
+    sslOpNoDtlsv12                       = 33, // (1 shl 27 duplicated value shifted to free sequence bit)
+    sslOpNoRenegotiation                 = 30, // (1 shl 30) = SSL_OP_NO_RENEGOTIATION
+    sslOpCryptoproTlsextBug              = 31, // (1 shl 31) = SSL_OP_CRYPTOPRO_TLSEXT_BUG
+    sslOpEchGrease                       = 37, // (1 shl 37) = SSL_OP_ECH_GREASE
+    sslOpEchTrialdecrypt                 = 38, // (1 shl 38) = SSL_OP_ECH_TRIALDECRYPT
+    sslOpEchIgnoreCid                    = 39, // (1 shl 39) = SSL_OP_ECH_IGNORE_CID
+    sslOpEchGreaseRetryConfig            = 40, // (1 shl 40) = SSL_OP_ECH_GREASE_RETRY_CONFIG
+    sslOpGrease                          = 41  // (1 shl 41) = SSL_OP_GREASE
+  );
+
+  TTaurusTLSSSLOptionFlags = set of TTaurusTLSSSLOptionFlag;
+  TTaurusTLSSSLOptionFlagsHelper = record helper for TTaurusTLSSSLOptionFlags
+  public const
+    cMask = (1 shl (Succ(Ord(High(TTaurusTLSSSLOptionFlag))))-1);
+
+  private
+    function GetAsInt: TIdC_UINT64; overload;
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure SetAsInt(AValue: TIdC_UINT64); overload;
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+  public
+    class function ToInt(AValue: TTaurusTLSSSLOptionFlags): TIdC_UINT64;
+      overload; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    class function FromInt(AValue: TIdC_UINT64): TTaurusTLSSSLOptionFlags;
+      overload; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    property AsInt: TIdC_UINT64 read GetAsInt write SetAsInt;
+  end;
+
+const
+  cSSLOptFlagsNoSSL = [sslOpNoSslv3, sslOpNoTlsv1,sslOpNoTlsv11,
+    sslOpNoTlsv12, sslOpNoTlsv13];
+  cSSLOptFlagsNoDTLS = [sslOpNoDtlsv1, sslOpNoDtlsv12];
+  cSSLOptALL = [sslOpCryptoproTlsextBug, sslOpDontInsertEmptyFragments,
+    sslOpLegacyServerConnect, sslOpTlsextPadding, sslOpSafariEcdheEcdsaBug];
+
+type
   /// <summary>
   ///   Read status of TLS Connection.
   /// </summary>
@@ -142,44 +212,37 @@ type
     sslUnrecoverableError);
 
 
-  TTaurusTLSCertificateVerifyFlag = (
-    cvfPeer,
-    cvfFailIfNoPeer,
-    cvfCliOnce,
-    cvfPostHandshake
-  );
-
-  TTaurusTLSCertificateVerifyFlags = set of TTaurusTLSCertificateVerifyFlag;
-  TTaurusTLSCertificateVerifyFlagSet = record
+  TTaurusTLSVerifyModeFlags = record
   public const
     cVerifyNone = [];
+    cOsslFlags = [Low(TTaurusTLSVerifyMode)..sslvrfPostHandshake];
 
   private const
     cMask = SSL_VERIFY_PEER or SSL_VERIFY_FAIL_IF_NO_PEER_CERT or
             SSL_VERIFY_CLIENT_ONCE or SSL_VERIFY_POST_HANDSHAKE;
 
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
-    FFlags: TTaurusTLSCertificateVerifyFlags;
+    FFlags: TTaurusTLSVerifyModes;
 
     function GetAsInt: TIdC_INT; {$IFDEF USE_INLINE} inline;{$ENDIF}
     procedure SetAsInt(AValue: TIdC_INT); {$IFDEF USE_INLINE} inline;{$ENDIF}
-    procedure SetFlags(AFlags: TTaurusTLSCertificateVerifyFlags);
+    procedure SetFlags(AFlags: TTaurusTLSVerifyModes);
       {$IFDEF USE_INLINE} inline;{$ENDIF}
   public
-    class operator Implicit(AFlags: TTaurusTLSCertificateVerifyFlags): TTaurusTLSCertificateVerifyFlagSet;
-    class operator Implicit(AFlags: TTaurusTLSCertificateVerifyFlagSet): TTaurusTLSCertificateVerifyFlags;
-    class procedure Include(var AValue: TTaurusTLSCertificateVerifyFlagSet;
-      AFlag: TTaurusTLSCertificateVerifyFlag); overload; static;
+    class operator Implicit(AFlags: TTaurusTLSVerifyModes): TTaurusTLSVerifyModeFlags;
+    class operator Implicit(AFlags: TTaurusTLSVerifyModeFlags): TTaurusTLSVerifyModes;
+    class procedure Include(var AValue: TTaurusTLSVerifyModeFlags;
+      AFlag: TTaurusTLSVerifyMode); overload; static;
       {$IFDEF USE_INLINE} inline;{$ENDIF}
-    procedure Include(AFlag: TTaurusTLSCertificateVerifyFlag); overload;
+    procedure Include(AFlag: TTaurusTLSVerifyMode); overload;
       {$IFDEF USE_INLINE} inline;{$ENDIF}
-    class procedure Exclude(var AValue: TTaurusTLSCertificateVerifyFlagSet;
-      AFlag: TTaurusTLSCertificateVerifyFlag); overload; static;
+    class procedure Exclude(var AValue: TTaurusTLSVerifyModeFlags;
+      AFlag: TTaurusTLSVerifyMode); overload; static;
       {$IFDEF USE_INLINE} inline;{$ENDIF}
-    procedure Exclude(AFlag: TTaurusTLSCertificateVerifyFlag); overload;
+    procedure Exclude(AFlag: TTaurusTLSVerifyMode); overload;
       {$IFDEF USE_INLINE} inline;{$ENDIF}
     property AsInt: TIdC_INT read GetAsInt write SetAsInt;
-    property Flags: TTaurusTLSCertificateVerifyFlags read FFlags;
+    property Flags: TTaurusTLSVerifyModes read FFlags;
   end;
 
   ///  <summary>
@@ -193,7 +256,7 @@ type
   ///  typecasting to and from the integer bitmask.
   ///  </remarks>
   TTaurusTLSX509VerifyFlag = (
-    x509vfCallBackIssuerCheck       = $00, // 1 shl $00 = X509_V_FLAG_CB_ISSUER_CHECK - Depricated
+//    x509vfCallBackIssuerCheck       = $00, // 1 shl $00 = X509_V_FLAG_CB_ISSUER_CHECK - Depricated
     x509vfCheckTime                 = $01, // 1 shl $01 = X509_V_FLAG_USE_CHECK_TIME
     x509vfCheckCrl                  = $02, // 1 shl $02 = X509_V_FLAG_CRL_CHECK
     x509vfCheckCrlAll               = $03, // 1 shl $03 = X509_V_FLAG_CRL_CHECK_ALL
@@ -211,7 +274,7 @@ type
     x509vfTrustedFirst              = $0F, // 1 shl $0F = X509_V_FLAG_TRUSTED_FIRST
     x509vfSuiteB128Only             = $10, // 1 shl $10 = X509_V_FLAG_SUITEB_128_LOS_ONLY
     x509vfSuiteB192                 = $11, // 1 shl $11 = X509_V_FLAG_SUITEB_192_LOS
-    x509vfDummy                     = $12, // This flag is not defined in OpenSSL.
+//    x509vfDummy                     = $12, // This flag is not defined in OpenSSL.
                                            // However it needs to avoid for Delphi Component designer AV
     // x509vfSuiteB128                         // X509_V_FLAG_SUITEB_128_LOS = X509_V_FLAG_SUITEB_128_LOS_ONLY + X509_V_FLAG_SUITEB_192_LOS
     x509vfPartialChain              = $13, // 1 shl $13 = X509_V_FLAG_PARTIAL_CHAIN
@@ -950,60 +1013,86 @@ begin
   ETaurusTLSSSLVersion.RaiseWithMessageFmt(RMSG_SSLVersion_Convert_err, [AValue]);
 end;
 
-{ TTaurusTLSCertificateVerifyFlagSet }
+{ TTaurusTLSSSLOptionFlagsHelper }
 
-procedure TTaurusTLSCertificateVerifyFlagSet.SetFlags(
-  AFlags: TTaurusTLSCertificateVerifyFlags);
+function TTaurusTLSSSLOptionFlagsHelper.GetAsInt: TIdC_UINT64;
 begin
-  if (AFlags - [cvfPeer]) <> [] then
-    System.Include(AFlags, cvfPeer);
+  Result:=ToInt(Self);
+end;
+
+procedure TTaurusTLSSSLOptionFlagsHelper.SetAsInt(AValue: TIdC_UINT64);
+begin
+  Self:=FromInt(AValue);
+end;
+
+class function TTaurusTLSSSLOptionFlagsHelper.FromInt(
+  AValue: TIdC_UINT64): TTaurusTLSSSLOptionFlags;
+begin
+  AValue:=AValue and cMask;
+  Result:=TTaurusTLSSSLOptionFlags((@AValue)^);
+end;
+
+class function TTaurusTLSSSLOptionFlagsHelper.ToInt(
+  AValue: TTaurusTLSSSLOptionFlags): TIdC_UINT64;
+begin
+  Result:=PIdC_UINT64(@Avalue)^;
+end;
+
+{ TTaurusTLSVerifyModeFlags }
+
+procedure TTaurusTLSVerifyModeFlags.SetFlags(
+  AFlags: TTaurusTLSVerifyModes);
+begin
+  if (AFlags - [sslvrfPeer]) <> [] then
+    System.Include(AFlags, sslvrfPeer);
   Self:=AFlags;
 end;
 
-function TTaurusTLSCertificateVerifyFlagSet.GetAsInt: TIdC_INT;
+function TTaurusTLSVerifyModeFlags.GetAsInt: TIdC_INT;
 begin
-  {$IF SizeOf(TTaurusTLSCertificateVerifyFlagSet) = 1}
+  {$IF SizeOf(TTaurusTLSVerifyModeFlags) = 1}
   Result:=Byte(Self);
-  {$ELSEIF SizeOf(TTaurusTLSCertificateVerifyFlagSet) = 2}
+  {$ELSEIF SizeOf(TTaurusTLSVerifyModeFlags) = 2}
   Result:=Word(Self);
-  {$ELSEIF SizeOf(TTaurusTLSCertificateVerifyFlagSet) >= 4}
+  {$ELSEIF SizeOf(TTaurusTLSVerifyModeFlags) >= 4}
   Result:=Integer(Self);
   {$IFEND}
   Result:=Result and cMask;
 end;
 
-procedure TTaurusTLSCertificateVerifyFlagSet.SetAsInt(AValue: TIdC_INT);
+procedure TTaurusTLSVerifyModeFlags.SetAsInt(AValue: TIdC_INT);
 var
-  lFlags: TTaurusTLSCertificateVerifyFlags;
+  lHighFlags, lFlags: TTaurusTLSVerifyModes;
 
 begin
   AValue:=AValue and cMask;
-  {$IF SizeOf(TTaurusTLSCertificateVerifyFlagSet) = 1}
+  lHighFlags:=FFlags-cOsslFlags;
+  {$IF SizeOf(TTaurusTLSVerifyModeFlags) = 1}
   Byte(lFlags):=Byte(AValue);
-  {$ELSEIF SizeOf(TTaurusTLSCertificateVerifyFlagSet) = 2}
+  {$ELSEIF SizeOf(TTaurusTLSVerifyModeFlags) = 2}
   Word(lFlags):=Word(AValue);
-  {$ELSEIF SizeOf(TTaurusTLSCertificateVerifyFlagSet) >= 4}
+  {$ELSEIF SizeOf(TTaurusTLSVerifyModeFlags) >= 4}
   Integer(lFlags):=Integer(AValue);
   {$IFEND}
-  SetFlags(lFlags);
+  SetFlags(lFlags+lHighFlags);
 end;
 
-class operator TTaurusTLSCertificateVerifyFlagSet.Implicit(
-  AFlags: TTaurusTLSCertificateVerifyFlagSet): TTaurusTLSCertificateVerifyFlags;
+class operator TTaurusTLSVerifyModeFlags.Implicit(
+  AFlags: TTaurusTLSVerifyModeFlags): TTaurusTLSVerifyModes;
 begin
   Result:=AFlags.FFlags;
 end;
 
-class operator TTaurusTLSCertificateVerifyFlagSet.Implicit(
-  AFlags: TTaurusTLSCertificateVerifyFlags): TTaurusTLSCertificateVerifyFlagSet;
+class operator TTaurusTLSVerifyModeFlags.Implicit(
+  AFlags: TTaurusTLSVerifyModes): TTaurusTLSVerifyModeFlags;
 begin
   Result.SetFlags(AFlags);
 end;
 
-procedure TTaurusTLSCertificateVerifyFlagSet.Exclude(
-  AFlag: TTaurusTLSCertificateVerifyFlag);
+procedure TTaurusTLSVerifyModeFlags.Exclude(
+  AFlag: TTaurusTLSVerifyMode);
 var
-  lFlags: TTaurusTLSCertificateVerifyFlags;
+  lFlags: TTaurusTLSVerifyModes;
 
 begin
   lFlags:=FFlags;
@@ -1011,17 +1100,16 @@ begin
   SetFlags(lFLags);
 end;
 
-class procedure TTaurusTLSCertificateVerifyFlagSet.Exclude(
-  var AValue: TTaurusTLSCertificateVerifyFlagSet;
-  AFlag: TTaurusTLSCertificateVerifyFlag);
+class procedure TTaurusTLSVerifyModeFlags.Exclude(
+  var AValue: TTaurusTLSVerifyModeFlags; AFlag: TTaurusTLSVerifyMode);
 begin
   AValue.Exclude(AFlag);
 end;
 
-procedure TTaurusTLSCertificateVerifyFlagSet.Include(
-  AFlag: TTaurusTLSCertificateVerifyFlag);
+procedure TTaurusTLSVerifyModeFlags.Include(
+  AFlag: TTaurusTLSVerifyMode);
 var
-  lFlags: TTaurusTLSCertificateVerifyFlags;
+  lFlags: TTaurusTLSVerifyModes;
 
 begin
   lFlags:=FFlags;
@@ -1029,9 +1117,9 @@ begin
   SetFlags(lFLags);
 end;
 
-class procedure TTaurusTLSCertificateVerifyFlagSet.Include(
-  var AValue: TTaurusTLSCertificateVerifyFlagSet;
-  AFlag: TTaurusTLSCertificateVerifyFlag);
+class procedure TTaurusTLSVerifyModeFlags.Include(
+  var AValue: TTaurusTLSVerifyModeFlags;
+  AFlag: TTaurusTLSVerifyMode);
 begin
   AValue.Include(AFlag);
 end;
