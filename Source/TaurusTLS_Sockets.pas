@@ -107,9 +107,10 @@ type
     function GetUseGrease: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetUseNoOuter: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
   public
-    class function GetKinds(const AValue: TTaurusTLSECHCLiEnums):
+    constructor Create(const AFlags: TTaurusTLSECHCliEnums);
+    class function GetKinds(const AValue: TTaurusTLSECHCliEnums):
       TTaurusTLSECHCliKinds; overload; static; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    class function GetMethods(const AValue: TTaurusTLSECHCLiEnums):
+    class function GetMethods(const AValue: TTaurusTLSECHCliEnums):
       TTaurusTLSECHCliMeths; overload; static; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     property Kind: TTaurusTLSECHCLiKind read GetKind;
@@ -204,9 +205,9 @@ type
     FSSLCtx: PSSL_CTX;
 
     // OpenSSL X509_STORE object compiled from multiple TTaurusTLSTrustStores
-    FTrustStore: TaurusTLS_X509Store;
-    FVerifyParam: TTaurusTLSCustomX509VerifyParam;
-    FMinTLSVersion: TTaurusTLSSSLVersion;
+//    FTrustStore: TaurusTLS_X509Store;
+//    FVerifyParam: TTaurusTLSCustomX509VerifyParam;
+//    FMinTLSVersion: TTaurusTLSSSLVersion;
 //    FCipherList: TStrings;
 //    FCipherSuites: TStrings;
     FCertVerifyFlags: TTaurusTLSVerifyModeFlags;
@@ -263,11 +264,18 @@ type
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure SetKeXGroups(const AValue: string);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure SetTrustStore(const AValue: TaurusTLS_X509Store);
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure SetSigAlgorithms(const AValue: string);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetMinTLSVersion(const AValue: TTaurusTLSSSLVersion);
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetMaxTLSVersion(const AValue: TTaurusTLSSSLVersion);
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetVerifyParam(const AValue: TTaurusTLSCustomX509VerifyParam);
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetTrustStore(const AValue: TaurusTLS_X509Store);
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
     { TODO : Add more SSL_CTX setters here. }
+
 
     property Sender: TObject read FSender;
     property SSLCtx: PSSL_CTX read FSSLCtx;
@@ -736,6 +744,11 @@ end;
 
 { TTaurusTLSECHCliFlags }
 
+constructor TTaurusTLSECHCliFlags.Create(const AFlags: TTaurusTLSECHCliEnums);
+begin
+  SetValue(AFlags);
+end;
+
 class function TTaurusTLSECHCliFlags.GetKinds(
   const AValue: TTaurusTLSECHCLiEnums): TTaurusTLSECHCliKinds;
 begin
@@ -1106,6 +1119,20 @@ begin
       'Error setting key exchange groups ''%s'' to the SSL Context.', [AValue]);
 end;
 
+procedure TTaurusTLSSocketCtx.SetMaxTLSVersion(
+  const AValue: TTaurusTLSSSLVersion);
+begin
+  if SSL_CTX_set_min_proto_version(FSSLCtx, AValue.AsInt) <= 0 then
+    ETaurusTLSSocketCtxError.RaiseWithMessage(RSOSSLMaxProtocolError);
+end;
+
+procedure TTaurusTLSSocketCtx.SetMinTLSVersion(
+  const AValue: TTaurusTLSSSLVersion);
+begin
+  if SSL_CTX_set_min_proto_version(FSSLCtx, AValue.AsInt) <= 0 then
+    ETaurusTLSSocketCtxError.RaiseWithMessage(RSOSSLMinProtocolError);
+end;
+
 procedure TTaurusTLSSocketCtx.SetSigAlgorithms(const AValue: string);
 begin
   if SSL_CTX_set1_sigalgs_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then
@@ -1116,6 +1143,13 @@ end;
 procedure TTaurusTLSSocketCtx.SetTrustStore(const AValue: TaurusTLS_X509Store);
 begin
   AValue.AttachToSSLCtx(FSSLCtx);
+end;
+
+procedure TTaurusTLSSocketCtx.SetVerifyParam(
+  const AValue: TTaurusTLSCustomX509VerifyParam);
+begin
+  if Assigned(AValue) then
+    AValue.AttachToSSLCtx(FSSLCtx);
 end;
 
 procedure TTaurusTLSSocketCtx.DoOnSecurityLevel(var AAccept: boolean);
@@ -1349,7 +1383,6 @@ end;
 destructor TTaurusTLSBaseSocket.Destroy;
 begin
   ReleaseSSL;
-  FreeAndNil(FConfig);
   inherited;
 end;
 
@@ -1366,11 +1399,8 @@ begin
 
     // 2. Bind the Delphi object instance to the SSL handle for callback routing
     lErr:=SSL_set_app_data(FSSL, Self);
-    if lErr <= 1 then
-    begin
-      ReleaseSSL;
+    if lErr <= 0 then
       ETaurusTLSDataBindingError.RaiseException(FSSL, lErr, RSSSLDataBindingError);
-    end;
 
     // 3. Do Socket/Connection specific configuration (Virtual polymorphic hook) [2.2]
     SetupConnection;
