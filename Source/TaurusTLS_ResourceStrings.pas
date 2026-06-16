@@ -299,6 +299,7 @@ resourcestring
   RMSG_X509VfyIPAddr_err = 'Error adding IP address for certificate validation.';
   RMSG_X509VfyClearIPAddr_err = 'Error clearing IP address list from certificate validation.';
   RMSG_X509VfyPurp_err = 'Error setting or changing certificate validation purpose.';
+  RMSG_X509VfyAttachSSL_err = 'Error setting the X509_VERIFY_PARAM object to the SSL_CTX object.';
 
   // TaurusTLS_SSLStores.TTaurusTLSOSSLStore messages
   RMSG_OsslStoreInit_err = 'OSSL_STORE context is not initialized.';

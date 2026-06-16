@@ -1272,11 +1272,11 @@ var
 
 begin
   lFlags:=VerifyFlags;
-  if X509_VERIFY_PARAM_set_flags(FParam, Value.AsInt) <> 1 then
+  if X509_VERIFY_PARAM_set_flags(FParam, Value.AsInt) <= 0 then
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyParamFlag_err);
   lClearFlags:=lFlags-Value;
   if lClearFlags <> [] then
-    if X509_VERIFY_PARAM_clear_flags(FParam, lClearFlags.AsInt) <> 1 then
+    if X509_VERIFY_PARAM_clear_flags(FParam, lClearFlags.AsInt) <= 0 then
       ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyParamFlag_err);
 end;
 
@@ -1289,7 +1289,7 @@ end;
 procedure TTaurusTLSCustomX509VerifyParam.SetInheritanceFlags(
   const Value: TTaurusTLSX509InheritanceFlags);
 begin
-  if X509_VERIFY_PARAM_set_inh_flags(FParam, Value.AsInt) <> 1 then
+  if X509_VERIFY_PARAM_set_inh_flags(FParam, Value.AsInt) <= 0 then
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyParamInhFlag_err);
 end;
 
@@ -1362,7 +1362,7 @@ end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetHostRaw(Value: PAnsiChar);
 begin
-  if X509_VERIFY_PARAM_set1_host(FParam, PIdAnsiChar(Value), 0) <> 1 then
+  if X509_VERIFY_PARAM_set1_host(FParam, PIdAnsiChar(Value), 0) <= 0 then
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyHost_err);
 end;
 
@@ -1380,7 +1380,7 @@ procedure TTaurusTLSCustomX509VerifyParam.AddHostA(const Value: RawByteString);
 begin
   if Value = '' then
     Exit;
-  if X509_VERIFY_PARAM_add1_host(FParam, PIdAnsiChar(Value), 0) <> 1 then
+  if X509_VERIFY_PARAM_add1_host(FParam, PIdAnsiChar(Value), 0) <= 0 then
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyHost_err);
 end;
 
@@ -1391,12 +1391,13 @@ end;
 
 procedure TTaurusTLSCustomX509VerifyParam.AttachToSSLCtx(ASSLCtx: PSSL_CTX);
 begin
-  SSL_CTX_set1_param(ASSLCtx, FParam);
+  if SSL_CTX_set1_param(ASSLCtx, FParam) <= 0 then
+    ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyAttachSSL_err);
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.CleanHosts;
 begin
-  if X509_VERIFY_PARAM_set1_host(FParam, nil, 0) <> 1 then
+  if X509_VERIFY_PARAM_set1_host(FParam, nil, 0) <= 1 then
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyCleanHost_err);
 end;
 
@@ -1427,7 +1428,7 @@ end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetEMailRaw(Value: PAnsiChar);
 begin
-  if X509_VERIFY_PARAM_set1_email(FParam, Value, Length(Value)) <> 1 then
+  if X509_VERIFY_PARAM_set1_email(FParam, Value, Length(Value)) <= 0 then
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyEMail_err);
 end;
 
@@ -1443,7 +1444,7 @@ end;
 
 procedure TTaurusTLSCustomX509VerifyParam.CleanEMails;
 begin
-  if X509_VERIFY_PARAM_set1_host(FParam, nil, 0) <> 1 then
+  if X509_VERIFY_PARAM_set1_host(FParam, nil, 0) <= 0 then
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyCleanHost_err);
 end;
 
@@ -1469,13 +1470,13 @@ begin
       lSize:=SizeOf(Value.IPv6);
     end;
   end;
-  if X509_VERIFY_PARAM_set1_ip(FParam, lData, lSize) <> 1 then
+  if X509_VERIFY_PARAM_set1_ip(FParam, lData, lSize) <= 0 then
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyIPAddr_err);
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetIpAddressRaw(Value: PAnsiChar);
 begin
-  if X509_VERIFY_PARAM_set1_ip_asc(FParam, PIdAnsiChar(Value)) <> 1 then
+  if X509_VERIFY_PARAM_set1_ip_asc(FParam, PIdAnsiChar(Value)) <= 0 then
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyIPAddr_err);
 end;
 
@@ -1519,7 +1520,7 @@ end;
 
 procedure TTaurusTLSCustomX509VerifyParam.CleanIPAddresses;
 begin
-  if X509_VERIFY_PARAM_set1_ip_asc(FParam, nil) <> 1 then
+  if X509_VERIFY_PARAM_set1_ip_asc(FParam, nil) <= 0 then
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyClearIPAddr_err);
 end;
 
@@ -1852,13 +1853,13 @@ end;
 
 procedure TaurusTLS_X509Store.AppendCert(ACert: PX509);
 begin
-  if X509_STORE_add_cert(FStore, ACert) <> 1 then
+  if X509_STORE_add_cert(FStore, ACert) <= 0 then
     ETaurusTLSX509StoreError.RaiseException(RMSG_X509StoreCertAdd_err);
 end;
 
 procedure TaurusTLS_X509Store.AppendCrl(ACrl: PX509_CRL);
 begin
-  if X509_STORE_add_crl(FStore, ACrl) <> 1 then
+  if X509_STORE_add_crl(FStore, ACrl) <= 0 then
     ETaurusTLSX509StoreError.RaiseException(RMSG_X509StoreCRLAdd_err);
 end;
 
@@ -1867,7 +1868,7 @@ procedure TaurusTLS_X509Store.SetParam(
 begin
   if not Assigned(AVfyParam) then
     Exit;
-  if X509_STORE_set1_param(FStore, AVfyParam.VfyParam) <> 1 then
+  if X509_STORE_set1_param(FStore, AVfyParam.VfyParam) <= 0 then
     ETaurusTLSX509StoreError.RaiseException(RMSG_X509StoreSetVfyParam_err);
   // Reset internal params;
   FreeAndNil(FVfyParam);
