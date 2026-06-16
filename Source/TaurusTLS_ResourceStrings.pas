@@ -281,6 +281,8 @@ resourcestring
     'as integer value: %d.';
 
   // TaurusTLS_Sockets messages
+  RMSG_ClientECHFlagsInvalidMethods = 'ECH Client state '+
+    'should have one or more ECH methods when ECH is enabled.';
   RMSG_ClientSocketEmptySNIConfig_err = 'Can not setup TLS Connection. '+
     'The Client SNI Config is nil.';
 
@@ -292,8 +294,10 @@ resourcestring
   RMSG_X509VfyParamFlag_err = 'Error setting X509_VERIFY_PARAM flags';
   RMSG_X509VfyParamInhFlag_err = 'Error setting X509_VERIFY_PARAM Inheritance Flags';
   RMSG_X509VfyHost_err = 'Error setting HostName for certificate validation.';
+  RMSG_X509VfyCleanHost_err = 'Error cleaning HostName list from сertificate validation.';
   RMSG_X509VfyEMail_err = 'Error adding E-Mail address for certificate validation.';
   RMSG_X509VfyIPAddr_err = 'Error adding IP address for certificate validation.';
+  RMSG_X509VfyClearIPAddr_err = 'Error clearing IP address list from certificate validation.';
   RMSG_X509VfyPurp_err = 'Error setting or changing certificate validation purpose.';
 
   // TaurusTLS_SSLStores.TTaurusTLSOSSLStore messages
