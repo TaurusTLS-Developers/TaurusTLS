@@ -57,19 +57,29 @@ type
   private
     FParam: PX509_VERIFY_PARAM ;
     function GetVerifyFlags: TTaurusTLSX509VerifyFlags;
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
     procedure SetVerifyFlags(const Value: TTaurusTLSX509VerifyFlags);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
     function GetInheritanceFlags: TTaurusTLSX509InheritanceFlags;
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
     procedure SetInheritanceFlags(const Value: TTaurusTLSX509InheritanceFlags);
-    function GetDepht: TIdC_Int;
-    procedure SetDepth(const Value: TIdC_Int);
-    function GetAuthLevel: TTaurusTLSSecurityBits;
-    procedure SetAuthLevel(const Value: TTaurusTLSSecurityBits);
-    function GetTime: TDateTime;
-    procedure SetTime(const Value: TDateTime);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+    function GetDepht: TIdC_Int; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure SetDepth(const Value: TIdC_Int); {$IFDEF USE_INLINE}inline;{$ENDIF}
+    function GetSecurityBits: TTaurusTLSSecurityBits;
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure SetSecurityBits(const Value: TTaurusTLSSecurityBits);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+    function GetTime: TDateTime; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure SetTime(const Value: TDateTime); {$IFDEF USE_INLINE}inline;{$ENDIF}
     function GetHostCheckFlags: TTaurusTLSX509HostCheckFlags;
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
     procedure SetHostCheckFlags(const Value: TTaurusTLSX509HostCheckFlags);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
     function GetPurpose: TTaurusTLSX509Purpose;
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
     procedure SetPurpose(Value: TTaurusTLSX509Purpose);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
 
   protected
     ///  <summary>
@@ -97,18 +107,21 @@ type
     ///  <param name="ANumber">Index of the hostname to retrieve.</param>
     ///  <returns>A PIdAnsiChar pointer to the string data.</returns>
     function GetHostRaw(ANumber: TIdC_Int): PIdAnsiChar;
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Retrieves a hostname stored for verification as an AnsiString.
     ///  </summary>
     ///  <param name="ANumber">Index of the hostname to retrieve.</param>
     function GetHostA(ANumber: TIdC_Int): RawByteString;
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Retrieves a hostname stored for verification as a Unicode string.
     ///  </summary>
     ///  <param name="ANumber">Index of the hostname to retrieve.</param>
     function GetHostW(ANumber: TIdC_Int): UnicodeString;
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Sets a single hostname for verification (AnsiString).
@@ -118,7 +131,19 @@ type
     ///  Method value clears hostnames list before setting new one.
     ///  Emtpy value <c>Value</c> keeps it empty.
     ///  </remarks>
-    procedure SetHostA(Value: RawByteString);
+    procedure SetHostRaw(Value: PAnsiChar);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    ///  <summary>
+    ///  Sets a single hostname for verification (AnsiString).
+    ///  </summary>
+    ///  <param name="Value">The hostname string.</param>
+    ///  <remarks>
+    ///  Method value clears hostnames list before setting new one.
+    ///  Emtpy value <c>Value</c> keeps it empty.
+    ///  </remarks>
+    procedure SetHostA(const Value: RawByteString);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Sets a single hostname for verification (UnicodeString).
@@ -128,94 +153,147 @@ type
     ///  Method value clears hostnames list before setting new one.
     ///  Emtpy value <c>Value</c> keeps it empty.
     ///  </remarks>
-    procedure SetHostW(Value: UnicodeString);
+    procedure SetHostW(const Value: UnicodeString);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Adds a hostname (AnsiString) to the list checked during
     ///  verification.
     ///  </summary>
     ///  <param name="Value">The hostname string.</param>
-    procedure AddHostA(Value: RawByteString);
+    procedure AddHostA(const Value: RawByteString);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Adds a hostname (UnicodeString) to the list checked during
     ///  verification.
     ///  </summary>
     ///  <param name="Value">The hostname string.</param>
-    procedure AddHostW(Value: UnicodeString);
+    procedure AddHostW(const Value: UnicodeString);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    ///  <summary>
+    ///  Removes all previously added hostnames addresses from the validation
+    ///  </summary>
+    procedure CleanHosts; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Retrieves the PerName identity for application domain checks
     ///  as an AnsiString.
     ///  </summary>
-    function GetPerNameA: RawByteString;
+    function GetPerNameA: RawByteString; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Retrieves the PerName identity for application domain checks
     ///  as a Unicode string.
     ///  </summary>
-    function GetPerNameW: UnicodeString;
+    function GetPerNameW: UnicodeString; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Retrieves the raw C-style string pointer to the email address set for
     ///  identity checking.
     ///  </summary>
     ///  <returns>A PIdAnsiChar pointer to the string data.</returns>
-    function GetEmailRaw: PIdAnsiChar;
+    function GetEmailRaw: PIdAnsiChar; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Retrieves the expected email address as an Ansi or UTF8 string.
     ///  </summary>
-    function GetEmailA: RawByteString;
+    function GetEmailA: RawByteString; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Retrieves the expected email address as a Unicode string.
     ///  </summary>
-    function GetEmailW: UnicodeString;
+    function GetEmailW: UnicodeString; {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    /// <summary>
+    ///   Sets the expected email address for identity checking.
+    /// </summary>
+    /// <param name="Value">
+    ///   The email address string.
+    /// </param>
+    /// <remarks>
+    ///   All previously set or added eamil addresses are replaced with new
+    ///   eamail address.
+    /// </remarks>
+    procedure SetEMailRaw(Value: PAnsiChar); {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Sets the expected email address (Ansi or UTF8 String) for identity
     ///  checking.
     ///  </summary>
     ///  <param name="Value">The email address string.</param>
-    procedure SetEMailA(Value: RawByteString);
+    /// <remarks>
+    ///   All previously set or added eamil addresses are replaced with new
+    ///   eamail address.
+    /// </remarks>
+    procedure SetEMailA(const Value: RawByteString);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Sets the expected email address (UnicodeString) for identity
     ///  checking.
     ///  </summary>
     ///  <param name="Value">The email address string.</param>
-    procedure SetEMailW(Value: UnicodeString);
+    /// <remarks>
+    ///   All previously set or added eamil addresses are replaced with new
+    ///   eamail address.
+    /// </remarks>
+    procedure SetEMailW(const Value: UnicodeString);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    ///  <summary>
+    ///  Removes all previously added email addresses from the validation
+    ///  </summary>
+    procedure CleanEMails; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Sets the expected IP address using a TIdIPAddress record.
     ///  </summary>
     ///  <param name="Value">The IP address structure.</param>
-    procedure SetIpAddress(Value: TIdIPAddress);
+    procedure SetIpAddress(const Value: TIdIPAddress);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    ///  <summary>
+    ///  Sets the expected IP address (PAnsiChar) for identity
+    ///  checking.
+    ///  </summary>
+    ///  <param name="Value">The IP address string.</param>
+    procedure SetIpAddressRaw(Value: PAnsiChar);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Sets the expected IP address (AnsiString) for identity
     ///  checking.
     ///  </summary>
     ///  <param name="Value">The IP address string.</param>
-    procedure SetIpAddressA(Value: RawByteString);
+    procedure SetIpAddressA(const Value: RawByteString);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Sets the expected IP address (UnicodeString) for identity
     ///  checking.
     ///  </summary>
     ///  <param name="Value">The IP address string.</param>
-    procedure SetIpAddressW(Value: UnicodeString);
+    procedure SetIpAddressW(const Value: UnicodeString);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Retrieves the expected IP address as an AnsiString.
     ///  </summary>
-    function GetIpAddressA: RawByteString;
+    function GetIpAddressA: RawByteString; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Retrieves the expected IP address as a Unicode string.
     ///  </summary>
-    function GetIpAddressW: UnicodeString;
+    function GetIpAddressW: UnicodeString; {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    ///  <summary>
+    ///  Removes all previously added IP addresses from the validation
+    ///  </summary>
+    procedure CleanIPAddresses; {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    procedure AttachToSSLCtx(ASSLCtx: PSSL_CTX); {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Gets or sets flags controlling certificate path validation
@@ -253,7 +331,8 @@ type
     ///  Gets or sets the required security level (0-5) for key strength
     ///  and acceptable cryptography.
     ///  </summary>
-    property AuthLevel: TTaurusTLSSecurityBits read GetAuthLevel write SetAuthLevel;
+    property SecurityBits: TTaurusTLSSecurityBits read GetSecurityBits
+      write SetSecurityBits;
 
     ///  <summary>
     ///  Gets or sets the specific time used for certificate validity
@@ -287,6 +366,20 @@ type
     property Email: RawbyteString read GetEmailA;
     property IPAddress: RawbyteString read GetIpAddressA;
 {$ENDIF}
+  end;
+
+  ///  <summary>
+  ///  Concrete class implementation that wraps a native OpenSSL
+  ///  X509_VERIFY_PARAM structure holds by <c>SSL</c> or <c>SSL_CTX</c> instance.
+  ///  </summary>
+  ///  <remarks>
+  ///  This instance does not manage the X509_VERIFY_PARAM structure
+  ///  lifecycle as <c>SSL</c> or <c>SSL_CTX</c> instances does it do.
+  ///  </remarks>
+  TTaurusTLSX509VerifyParamSSL = class(TTaurusTLSCustomX509VerifyParam)
+    constructor Create(AParam: PX509_VERIFY_PARAM); overload;
+    constructor Create(ASSL: PSSL); overload;
+    constructor Create(ASSLCtx: PSSL_CTX); overload;
   end;
 
   ///  <summary>
@@ -1034,7 +1127,9 @@ type
     FStore: PX509_STORE;
     FVfyParam: TTaurusTLSCustomX509VerifyParam;
     procedure SetParam(AVfyParam: TTaurusTLSCustomX509VerifyParam);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
     function GetParam: TTaurusTLSCustomX509VerifyParam;
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
     function AppendFromLocationA(const AUri: RawByteString): boolean;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
     function AppendFromLocationW(const AUri: UnicodeString): boolean;
@@ -1099,7 +1194,7 @@ type
     ///  certificates and CRLs in the store.
     ///  </remarks>
     procedure AppendFromOsslStore(const AStore: TTaurusTLSOSSLStore; AFilter: TX509Elements);
-      overload;
+      overload; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     /// <summary>
     ///   Appends a single or multiple Certificate(s) Certificate Revocation
@@ -1211,7 +1306,7 @@ end;
 {$IFDEF FPC}
 {$WARN 5059 off : Function result variable does not seem to be initialized}
 {$ENDIF}
-function TTaurusTLSCustomX509VerifyParam.GetAuthLevel: TTaurusTLSSecurityBits;
+function TTaurusTLSCustomX509VerifyParam.GetSecurityBits: TTaurusTLSSecurityBits;
 begin
   Result.AsInt:=X509_VERIFY_PARAM_get_auth_level(FParam);
 end;
@@ -1219,7 +1314,8 @@ end;
 {$WARN 5059 on : Function result variable does not seem to be initialized}
 {$ENDIF}
 
-procedure TTaurusTLSCustomX509VerifyParam.SetAuthLevel(const Value: TTaurusTLSSecurityBits);
+procedure TTaurusTLSCustomX509VerifyParam.SetSecurityBits(
+  const Value: TTaurusTLSSecurityBits);
 begin
   X509_VERIFY_PARAM_set_auth_level(FParam, Value.AsInt);
 end;
@@ -1264,18 +1360,23 @@ begin
   Result:=UnicodeString(GetHostRaw(ANumber));
 end;
 
-procedure TTaurusTLSCustomX509VerifyParam.SetHostA(Value: RawByteString);
+procedure TTaurusTLSCustomX509VerifyParam.SetHostRaw(Value: PAnsiChar);
 begin
   if X509_VERIFY_PARAM_set1_host(FParam, PIdAnsiChar(Value), 0) <> 1 then
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyHost_err);
 end;
 
-procedure TTaurusTLSCustomX509VerifyParam.SetHostW(Value: UnicodeString);
+procedure TTaurusTLSCustomX509VerifyParam.SetHostA(const Value: RawByteString);
+begin
+  SetHostRaw(PAnsiChar(Value));
+end;
+
+procedure TTaurusTLSCustomX509VerifyParam.SetHostW(const Value: UnicodeString);
 begin
   SetHostA(RawByteString(Value));
 end;
 
-procedure TTaurusTLSCustomX509VerifyParam.AddHostA(Value: RawByteString);
+procedure TTaurusTLSCustomX509VerifyParam.AddHostA(const Value: RawByteString);
 begin
   if Value = '' then
     Exit;
@@ -1283,9 +1384,20 @@ begin
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyHost_err);
 end;
 
-procedure TTaurusTLSCustomX509VerifyParam.AddHostW(Value: UnicodeString);
+procedure TTaurusTLSCustomX509VerifyParam.AddHostW(const Value: UnicodeString);
 begin
   AddHostA(RawByteString(Value));
+end;
+
+procedure TTaurusTLSCustomX509VerifyParam.AttachToSSLCtx(ASSLCtx: PSSL_CTX);
+begin
+  SSL_CTX_set1_param(ASSLCtx, FParam);
+end;
+
+procedure TTaurusTLSCustomX509VerifyParam.CleanHosts;
+begin
+  if X509_VERIFY_PARAM_set1_host(FParam, nil, 0) <> 1 then
+    ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyCleanHost_err);
 end;
 
 function TTaurusTLSCustomX509VerifyParam.GetPerNameA: RawByteString;
@@ -1313,19 +1425,29 @@ begin
   Result:=UnicodeString(GetEmailRaw);
 end;
 
-procedure TTaurusTLSCustomX509VerifyParam.SetEMailA(Value: RawByteString);
+procedure TTaurusTLSCustomX509VerifyParam.SetEMailRaw(Value: PAnsiChar);
 begin
-  if X509_VERIFY_PARAM_set1_email(FParam, PIdAnsiChar(Value),
-    Length(Value)) <> 1 then
+  if X509_VERIFY_PARAM_set1_email(FParam, Value, Length(Value)) <> 1 then
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyEMail_err);
 end;
 
-procedure TTaurusTLSCustomX509VerifyParam.SetEMailW(Value: UnicodeString);
+procedure TTaurusTLSCustomX509VerifyParam.SetEMailA(const Value: RawByteString);
+begin
+  SetEmailRaw(PAnsiChar(Value));
+end;
+
+procedure TTaurusTLSCustomX509VerifyParam.SetEMailW(const Value: UnicodeString);
 begin
   SetEMailA(RawByteString(Value));
 end;
 
-procedure TTaurusTLSCustomX509VerifyParam.SetIpAddress(Value: TIdIPAddress);
+procedure TTaurusTLSCustomX509VerifyParam.CleanEMails;
+begin
+  if X509_VERIFY_PARAM_set1_host(FParam, nil, 0) <> 1 then
+    ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyCleanHost_err);
+end;
+
+procedure TTaurusTLSCustomX509VerifyParam.SetIpAddress(const Value: TIdIPAddress);
 var
   lData: Pointer;
   lIpv4: UInt32;
@@ -1351,13 +1473,18 @@ begin
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyIPAddr_err);
 end;
 
-procedure TTaurusTLSCustomX509VerifyParam.SetIpAddressA(Value: RawByteString);
+procedure TTaurusTLSCustomX509VerifyParam.SetIpAddressRaw(Value: PAnsiChar);
 begin
   if X509_VERIFY_PARAM_set1_ip_asc(FParam, PIdAnsiChar(Value)) <> 1 then
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyIPAddr_err);
 end;
 
-procedure TTaurusTLSCustomX509VerifyParam.SetIpAddressW(Value: UnicodeString);
+procedure TTaurusTLSCustomX509VerifyParam.SetIpAddressA(const Value: RawByteString);
+begin
+  SetIpAddressRaw(PAnsiChar(Value));
+end;
+
+procedure TTaurusTLSCustomX509VerifyParam.SetIpAddressW(const Value: UnicodeString);
 begin
   SetIpAddressA(RawByteString(Value));
 end;
@@ -1390,6 +1517,12 @@ begin
   end;
 end;
 
+procedure TTaurusTLSCustomX509VerifyParam.CleanIPAddresses;
+begin
+  if X509_VERIFY_PARAM_set1_ip_asc(FParam, nil) <> 1 then
+    ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyClearIPAddr_err);
+end;
+
 function TTaurusTLSCustomX509VerifyParam.GetPurpose: TTaurusTLSX509Purpose;
 begin
   Result:=TTaurusTLSX509Purpose.FromInt(X509_VERIFY_PARAM_get_purpose(FParam));
@@ -1400,6 +1533,23 @@ procedure TTaurusTLSCustomX509VerifyParam.SetPurpose(
 begin
   if X509_VERIFY_PARAM_set_purpose(FParam, Value.AsInt) <> 0 then
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyPurp_err);
+end;
+
+{ TTaurusTLSX509VerifyParamWrap }
+
+constructor TTaurusTLSX509VerifyParamSSL.Create(AParam: PX509_VERIFY_PARAM);
+begin
+  inherited;
+end;
+
+constructor TTaurusTLSX509VerifyParamSSL.Create(ASSL: PSSL);
+begin
+  Create(SSL_get0_param(ASSL));
+end;
+
+constructor TTaurusTLSX509VerifyParamSSL.Create(ASSLCtx: PSSL_CTX);
+begin
+  Create(SSL_CTX_get0_param(ASSLCtx));
 end;
 
 { TTaurusTLSOSSLStore.TStoreItem }
