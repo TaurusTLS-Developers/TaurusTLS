@@ -124,6 +124,13 @@ type
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
+    ///  Retrieves a hostname stored for verification.
+    ///  </summary>
+    ///  <param name="ANumber">Index of the hostname to retrieve.</param>
+    function GetHost(ANumber: TIdC_Int): string;
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    ///  <summary>
     ///  Sets a single hostname for verification (AnsiString).
     ///  </summary>
     ///  <param name="Value">The hostname string.</param>
@@ -157,6 +164,17 @@ type
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
+    ///  Sets a single hostname for verification.
+    ///  </summary>
+    ///  <param name="Value">The hostname string.</param>
+    ///  <remarks>
+    ///  Method value clears hostnames list before setting new one.
+    ///  Emtpy value <c>Value</c> keeps it empty.
+    ///  </remarks>
+    procedure SetHost(const Value: string);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    ///  <summary>
     ///  Adds a hostname (AnsiString) to the list checked during
     ///  verification.
     ///  </summary>
@@ -170,6 +188,14 @@ type
     ///  </summary>
     ///  <param name="Value">The hostname string.</param>
     procedure AddHostW(const Value: UnicodeString);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    ///  <summary>
+    ///  Adds a hostname to the list checked during
+    ///  verification.
+    ///  </summary>
+    ///  <param name="Value">The hostname string.</param>
+    procedure AddHost(const Value: string);
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
@@ -190,6 +216,12 @@ type
     function GetPerNameW: UnicodeString; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
+    ///  Retrieves the PerName identity for application domain checks
+    ///  as a string.
+    ///  </summary>
+    function GetPerName: string; {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    ///  <summary>
     ///  Retrieves the raw C-style string pointer to the email address set for
     ///  identity checking.
     ///  </summary>
@@ -205,6 +237,11 @@ type
     ///  Retrieves the expected email address as a Unicode string.
     ///  </summary>
     function GetEmailW: UnicodeString; {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    ///  <summary>
+    ///  Retrieves the expected email address as a string.
+    ///  </summary>
+    function GetEmail: string; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     /// <summary>
     ///   Sets the expected email address for identity checking.
@@ -243,6 +280,17 @@ type
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
+    ///  Sets the expected email address for identity checking.
+    ///  </summary>
+    ///  <param name="Value">The email address string.</param>
+    /// <remarks>
+    ///   All previously set or added eamil addresses are replaced with new
+    ///   eamail address.
+    /// </remarks>
+    procedure SetEMail(const Value: string);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    ///  <summary>
     ///  Removes all previously added email addresses from the validation
     ///  </summary>
     procedure CleanEMails; {$IFDEF USE_INLINE}inline;{$ENDIF}
@@ -251,7 +299,7 @@ type
     ///  Sets the expected IP address using a TIdIPAddress record.
     ///  </summary>
     ///  <param name="Value">The IP address structure.</param>
-    procedure SetIpAddress(const Value: TIdIPAddress);
+    procedure SetIpAddressBinary(const Value: TIdIPAddress);
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
@@ -279,6 +327,13 @@ type
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
+    ///  Sets the expected IP address for identity checking.
+    ///  </summary>
+    ///  <param name="Value">The IP address string.</param>
+    procedure SetIpAddress(const Value: string);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    ///  <summary>
     ///  Retrieves the expected IP address as an AnsiString.
     ///  </summary>
     function GetIpAddressA: RawByteString; {$IFDEF USE_INLINE}inline;{$ENDIF}
@@ -287,6 +342,11 @@ type
     ///  Retrieves the expected IP address as a Unicode string.
     ///  </summary>
     function GetIpAddressW: UnicodeString; {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    ///  <summary>
+    ///  Retrieves the expected IP address as a string.
+    ///  </summary>
+    function GetIpAddress: string; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Removes all previously added IP addresses from the validation
@@ -325,7 +385,7 @@ type
     ///  <summary>
     ///  Gets or sets the maximum acceptable chain length for verification.
     ///  </summary>
-    property Depth: TIdC_Int read GetDepht write SetDepth;
+    property Depth: TIdC_INT read GetDepht write SetDepth;
 
     ///  <summary>
     ///  Gets or sets the required security level (0-5) for key strength
@@ -1348,6 +1408,15 @@ begin
   Result:=X509_VERIFY_PARAM_get0_host(FParam, ANumber);
 end;
 
+function TTaurusTLSCustomX509VerifyParam.GetHost(ANumber: TIdC_Int): string;
+begin
+{$IFDEF STRING_IS_UNICODE}
+  Result:=GetHostW(ANumber);
+{$ELSE}
+  Result:=GetHostA(ANumber);
+{$ENDIF}
+end;
+
 function TTaurusTLSCustomX509VerifyParam.GetHostA(
   ANumber: TIdC_Int): RawByteString;
 begin
@@ -1366,6 +1435,15 @@ begin
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyHost_err);
 end;
 
+procedure TTaurusTLSCustomX509VerifyParam.SetHost(const Value: string);
+begin
+{$IFDEF STRING_IS_UNICODE}
+  SetHostW(Value);
+{$ELSE}
+  SetHostA(Value);
+{$ENDIF}
+end;
+
 procedure TTaurusTLSCustomX509VerifyParam.SetHostA(const Value: RawByteString);
 begin
   SetHostRaw(PAnsiChar(Value));
@@ -1374,6 +1452,15 @@ end;
 procedure TTaurusTLSCustomX509VerifyParam.SetHostW(const Value: UnicodeString);
 begin
   SetHostA(RawByteString(Value));
+end;
+
+procedure TTaurusTLSCustomX509VerifyParam.AddHost(const Value: string);
+begin
+{$IFDEF STRING_IS_UNICODE}
+  AddHostW(Value);
+{$ELSE}
+  AddHostA(Value);
+{$ENDIF}
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.AddHostA(const Value: RawByteString);
@@ -1401,6 +1488,15 @@ begin
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyCleanHost_err);
 end;
 
+function TTaurusTLSCustomX509VerifyParam.GetPerName: string;
+begin
+{$IFDEF STRING_IS_UNICODE}
+  Result:=GetPerNameW;
+{$ELSE}
+  Result:=GetPerNameA;
+{$ENDIF}
+end;
+
 function TTaurusTLSCustomX509VerifyParam.GetPerNameA: RawByteString;
 begin
   Result:=RawByteString(X509_VERIFY_PARAM_get0_peername(FParam));
@@ -1414,6 +1510,15 @@ end;
 function TTaurusTLSCustomX509VerifyParam.GetEmailRaw: PIdAnsiChar;
 begin
   Result:=X509_VERIFY_PARAM_get0_email(FParam);
+end;
+
+function TTaurusTLSCustomX509VerifyParam.GetEmail: string;
+begin
+{$IFDEF STRING_IS_UNICODE}
+  Result:=GetEmailW;
+{$ELSE}
+  Result:=GetEmailA;
+{$ENDIF}
 end;
 
 function TTaurusTLSCustomX509VerifyParam.GetEmailA: RawByteString;
@@ -1432,6 +1537,15 @@ begin
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyEMail_err);
 end;
 
+procedure TTaurusTLSCustomX509VerifyParam.SetEMail(const Value: string);
+begin
+{$IFDEF STRING_IS_UNICODE}
+  SetEmailW(Value);
+{$ELSE}
+  SetEmailA(Value);
+{$ENDIF}
+end;
+
 procedure TTaurusTLSCustomX509VerifyParam.SetEMailA(const Value: RawByteString);
 begin
   SetEmailRaw(PAnsiChar(Value));
@@ -1448,7 +1562,8 @@ begin
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyCleanHost_err);
 end;
 
-procedure TTaurusTLSCustomX509VerifyParam.SetIpAddress(const Value: TIdIPAddress);
+procedure TTaurusTLSCustomX509VerifyParam.SetIpAddressBinary(
+  const Value: TIdIPAddress);
 var
   lData: Pointer;
   lIpv4: UInt32;
@@ -1480,6 +1595,15 @@ begin
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyIPAddr_err);
 end;
 
+procedure TTaurusTLSCustomX509VerifyParam.SetIpAddress(const Value: string);
+begin
+{$IFDEF STRING_IS_UNICODE}
+  SetIpAddressW(Value);
+{$ELSE}
+  SetIpAddressA(Value);
+{$ENDIF}
+end;
+
 procedure TTaurusTLSCustomX509VerifyParam.SetIpAddressA(const Value: RawByteString);
 begin
   SetIpAddressRaw(PAnsiChar(Value));
@@ -1488,6 +1612,15 @@ end;
 procedure TTaurusTLSCustomX509VerifyParam.SetIpAddressW(const Value: UnicodeString);
 begin
   SetIpAddressA(RawByteString(Value));
+end;
+
+function TTaurusTLSCustomX509VerifyParam.GetIpAddress: string;
+begin
+{$IFDEF STRING_IS_UNICODE}
+  Result:=GetIpAddressW;
+{$ELSE}
+  Result:=GetIpAddressA;
+{$ENDIF}
 end;
 
 function TTaurusTLSCustomX509VerifyParam.GetIpAddressA: RawByteString;
