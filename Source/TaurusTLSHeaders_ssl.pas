@@ -3679,7 +3679,7 @@ function SSL_set1_groups(s: PSSL; glist: PByte; glistlen: TIdC_LONG): TIdC_LONG;
 function SSL_set1_groups_list(s: PSSL; _str: PIdAnsiChar): TIdC_LONG; {removed 1.0.0}
 function SSL_get_shared_group(s: PSSL; n: TIdC_LONG): TIdC_LONG; {removed 1.0.0}
 function SSL_CTX_set1_sigalgs(ctx: PSSL_CTX; slist: PIdC_INT; slistlen: TIdC_LONG): TIdC_LONG; {removed 1.0.0}
-function SSL_CTX_set1_sigalgs_list(ctx: PSSL_CTX; s: PByte): TIdC_LONG; {removed 1.0.0}
+function SSL_CTX_set1_sigalgs_list(ctx: PSSL_CTX; s: PIdAnsiChar): TIdC_LONG; {removed 1.0.0}
 function SSL_set1_sigalgs(s: PSSL; slist: PIdC_INT; slistlen: TIdC_LONG): TIdC_LONG; {removed 1.0.0}
 function SSL_set1_sigalgs_list(s: PSSL; _str: PIdAnsiChar): TIdC_LONG; {removed 1.0.0}
 function SSL_CTX_set1_client_sigalgs(ctx: PSSL_CTX; slist: PIdC_INT; slistlen: TIdC_LONG): TIdC_LONG; {removed 1.0.0}
@@ -29404,7 +29404,7 @@ begin
 end;
 
 //# define SSL_CTX_set1_groups_list(ctx, s)                  SSL_CTX_ctrl(ctx,SSL_CTRL_SET_GROUPS_LIST,0,(char *)(s))
-function SSL_CTX_set1_groups_list(ctx: PSSL_CTX; s: PByte): TIdC_LONG;
+function SSL_CTX_set1_groups_list(ctx: PSSL_CTX; s: PIdAnsiChar): TIdC_LONG;
 begin
   Result := SSL_CTX_ctrl(ctx, SSL_CTRL_SET_GROUPS_LIST, 0, s);
 end;
@@ -29446,7 +29446,7 @@ begin
 end;
 
 //# define SSL_set1_sigalgs_list(s, str)                     SSL_ctrl(s,SSL_CTRL_SET_SIGALGS_LIST,0,(char *)(str))
-function SSL_set1_sigalgs_list(s: PSSL; _str: PByte): TIdC_LONG;
+function SSL_set1_sigalgs_list(s: PSSL; _str: PIdAnsiChar): TIdC_LONG;
 begin
   Result := SSL_ctrl(s, SSL_CTRL_SET_SIGALGS_LIST, 0, _str);
 end;
@@ -29458,7 +29458,7 @@ begin
 end;
 
 //# define SSL_CTX_set1_client_sigalgs_list(ctx, s)          SSL_CTX_ctrl(ctx,SSL_CTRL_SET_CLIENT_SIGALGS_LIST,0,(char *)(s))
-function SSL_CTX_set1_client_sigalgs_list(ctx: PSSL_CTX; s: PByte): TIdC_LONG;
+function SSL_CTX_set1_client_sigalgs_list(ctx: PSSL_CTX; s: PIdAnsiChar): TIdC_LONG;
 begin
   Result := SSL_CTX_ctrl(ctx, SSL_CTRL_SET_CLIENT_SIGALGS_LIST, 0, s);
 end;
@@ -29470,7 +29470,7 @@ begin
 end;
 
 //# define SSL_set1_client_sigalgs_list(s, str)              SSL_ctrl(s,SSL_CTRL_SET_CLIENT_SIGALGS_LIST,0,(char *)(str))
-function SSL_set1_client_sigalgs_list(s: PSSL; _str: PByte): TIdC_LONG;
+function SSL_set1_client_sigalgs_list(s: PSSL; _str: PIdAnsiChar): TIdC_LONG;
 begin
   Result := SSL_ctrl(s, SSL_CTRL_SET_CLIENT_SIGALGS_LIST, 0, _str);
 end;
