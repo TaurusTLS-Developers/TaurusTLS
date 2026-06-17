@@ -1545,6 +1545,9 @@ procedure TTaurusTLSBaseSocket.DoHandshake;
 begin
   CheckActiveState([seHandshaking]);
   repeat
+    // Emergency exit on thread termination
+    if TThread.CurrentThread.CheckTerminated then
+      Break;
     DoHandshakeIteration;
     if State = seHandshaking then
     { TODO : IndySleep should be replaced with the smart cross-compiler "spin wait" call. }
