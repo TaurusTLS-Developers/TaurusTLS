@@ -36,6 +36,162 @@ type
   TStringArray = TArray<string>;
 {$ENDIF}
 
+  //  TTaurusTLSOSSLVersion class granted and adapted to the TaurusTLS project.
+  //  Original implementation: https://github.com/tregubovav-dev/Ossl4Pas/blob/main/Source/Ossl4Pas.Types.pas
+  /// <summary>
+  ///   Represents an OpenSSL version number parsed from the C unsigned long format.
+  /// </summary>
+  /// <remarks>
+  ///   Encapsulates the OpenSSL versioning scheme (MNN00PP0) and provides
+  ///   helpers for comparison and string formatting.
+  /// </remarks>
+  TTaurusTLSOSSLVersion = record
+  public const
+    cEmpty = 0;
+  private const
+    cMajorShift  = 28;
+    cMinorShift  = 20;
+    cFixShift    = 12;
+    cPatchShift  = 4;
+
+    cByteMask    = $FF;
+    cStatusMask  = $0F;
+
+  private
+    FVersion: TIdC_LONG;
+
+    function GetMajor: TIdC_UINT8; {$IFDEF INLINE_ON}inline;{$ENDIF}
+    function GetMinor: TIdC_UINT8; {$IFDEF INLINE_ON}inline;{$ENDIF}
+    function GetFix: TIdC_UINT8; {$IFDEF INLINE_ON}inline;{$ENDIF}
+    function GetPatch: TIdC_UINT8; {$IFDEF INLINE_ON}inline;{$ENDIF}
+    function GetStatus: TIdC_UINT8; {$IFDEF INLINE_ON}inline;{$ENDIF}
+    function GetIsRelease: boolean; {$IFDEF INLINE_ON}inline;{$ENDIF}
+    function GetAsString: string; {$IFDEF INLINE_ON}inline;{$ENDIF}
+    function GetIsEmpty: boolean; {$IFDEF INLINE_ON}inline;{$ENDIF}
+
+  public
+    /// <summary>
+    ///   Initializes a new instance of the TOsslVersion record from a raw integer.
+    /// </summary>
+    /// <param name="AVersion">
+    ///   The raw version number (e.g., from OpenSSL_version_num).
+    /// </param>
+    constructor Create(AVersion: TIdC_LONG); overload;
+
+    /// <summary>
+    ///   Initializes a new instance of the TOsslVersion record from components.
+    /// </summary>
+    /// <param name="AMajor">The major version number.</param>
+    /// <param name="AMinor">The minor version number.</param>
+    /// <param name="AFix">The fix level (usually 0 in OpenSSL 3.x).</param>
+    /// <param name="APatch">The patch level.</param>
+    /// <param name="AStatus">The status tag (default is $F for Release).</param>
+    constructor Create(AMajor, AMinor, AFix: TIdC_UINT8;
+      APatch: TIdC_UINT8 = 0; AStatus: TIdC_UINT8 = $F); overload;
+
+    /// <summary>
+    ///   Implicitly converts a raw TIdC_LONG to TOsslVersion.
+    /// </summary>
+    class operator Implicit(a: TIdC_LONG): TTaurusTLSOSSLVersion;
+      {$IFDEF INLINE_ON}inline;{$ENDIF}
+
+    /// <summary>
+    ///   Implicitly converts TTaurusTLSOSSLVersion to a raw TIdC_LONG.
+    /// </summary>
+    class operator Implicit(a: TTaurusTLSOSSLVersion): TIdC_LONG; inline;
+      {$IFDEF INLINE_ON}inline;{$ENDIF}
+
+    /// <summary>
+    ///   Strictly compares two TTaurusTLSOSSLVersion instances.
+    /// </summary>
+    class operator Equal(a, b: TTaurusTLSOSSLVersion): boolean;
+      {$IFDEF INLINE_ON}inline;{$ENDIF}
+
+    /// <summary>
+    ///   Strictly compares two TTaurusTLSOSSLVersion instances.
+    /// </summary>
+    class operator NotEqual(a, b: TTaurusTLSOSSLVersion): boolean;
+      {$IFDEF INLINE_ON}inline;{$ENDIF}
+
+    /// <summary>
+    ///   Strictly compares two TTaurusTLSOSSLVersion instances.
+    /// </summary>
+    class operator GreaterThan(a, b: TTaurusTLSOSSLVersion): boolean;
+      {$IFDEF INLINE_ON}inline;{$ENDIF}
+
+
+    /// <summary>
+    ///   Strictly compares two TTaurusTLSOSSLVersion instances.
+    /// </summary>
+    class operator GreaterThanOrEqual(a, b: TTaurusTLSOSSLVersion): boolean;
+      {$IFDEF INLINE_ON}inline;{$ENDIF}
+
+    /// <summary>
+    ///   Strictly compares two TTaurusTLSOSSLVersion instances.
+    /// </summary>
+    class operator LessThan(a, b: TTaurusTLSOSSLVersion): boolean;
+      {$IFDEF INLINE_ON}inline;{$ENDIF}
+
+
+    /// <summary>
+    ///   Strictly compares two TTaurusTLSOSSLVersion instances.
+    /// </summary>
+    class operator LessThanOrEqual(a, b: TTaurusTLSOSSLVersion): boolean;
+      {$IFDEF INLINE_ON}inline;{$ENDIF}
+
+    /// <summary>
+    ///   Checks if the provided version is binary compatible with this version.
+    /// </summary>
+    /// <param name="AVersion">The version to check against.</param>
+    /// <returns>True if Major and Minor versions match.</returns>
+    function AreCompatible(AVersion: TTaurusTLSOSSLVersion): boolean; overload;
+      {$IFDEF INLINE_ON}inline;{$ENDIF}
+
+    /// <summary>
+    ///   Checks if the provided version is binary compatible with this version.
+    /// </summary>
+    /// <param name="AVersion">The version to check against.</param>
+    /// <returns>True if Major and Minor versions match.</returns>
+    function AreCompatible(AVersion: TIdC_LONG): boolean; overload;
+      {$IFDEF INLINE_ON}inline;{$ENDIF}
+
+    /// <summary>
+    ///   The raw integer representation of the version.
+    /// </summary>
+    property Version: TIdC_LONG read FVersion;
+
+    /// <summary>The Major version component.</summary>
+    property Major:   TIdC_UINT8 read GetMajor;
+
+    /// <summary>The Minor version component.</summary>
+    property Minor:   TIdC_UINT8 read GetMinor;
+
+    /// <summary>The Fix version component (rarely used in 3.x).</summary>
+    property Fix:     TIdC_UINT8 read GetFix;
+
+    /// <summary>The Patch version component.</summary>
+    property Patch:   TIdC_UINT8 read GetPatch;
+
+    /// <summary>The Status tag (0=Dev, $F=Release).</summary>
+    property Status:  TIdC_UINT8 read GetStatus;
+
+    /// <summary>
+    ///   True if this version represents a final release (Status = $F).
+    /// </summary>
+    property IsRelease: boolean read GetIsRelease;
+
+    /// <summary>
+    ///   True if this version represents is not set (all zeros).
+    /// </summary>
+    property IsEmpty: boolean read GetIsEmpty;
+
+    /// <summary>
+    ///   Returns the string representation in format "M.Mi.Fx.Pa.S".
+    /// </summary>
+    property AsString: string read GetAsString;
+  end;
+
+
   TTaurusTLSVerifyMode = (
     /// <summary>
     /// For servers, send certificate. For clients, verify server certificate.
@@ -229,8 +385,10 @@ type
     procedure SetFlags(AFlags: TTaurusTLSVerifyModes);
       {$IFDEF USE_INLINE} inline;{$ENDIF}
   public
-    class operator Implicit(AFlags: TTaurusTLSVerifyModes): TTaurusTLSVerifyModeFlags;
-    class operator Implicit(AFlags: TTaurusTLSVerifyModeFlags): TTaurusTLSVerifyModes;
+    constructor Create(const AFlags: TTaurusTLSVerifyModes); overload;
+    constructor Create(const AIntFlags: TIdC_INT); overload;
+//    class operator Implicit(AFlags: TTaurusTLSVerifyModes): TTaurusTLSVerifyModeFlags;
+//    class operator Implicit(AFlags: TTaurusTLSVerifyModeFlags): TTaurusTLSVerifyModes;
     class procedure Include(var AValue: TTaurusTLSVerifyModeFlags;
       AFlag: TTaurusTLSVerifyMode); overload; static;
       {$IFDEF USE_INLINE} inline;{$ENDIF}
@@ -976,6 +1134,114 @@ implementation
 uses
   TaurusTLS_ResourceStrings;
 
+{ TTaurusTLSOSSLVersion }
+
+constructor TTaurusTLSOSSLVersion.Create(AVersion: TIdC_LONG);
+begin
+  FVersion:=AVersion;
+end;
+
+constructor TTaurusTLSOSSLVersion.Create(AMajor, AMinor, AFix, APatch, AStatus: TIdC_UINT8);
+begin
+  FVersion:=(TIdC_LONG(AMajor)   shl cMajorShift) or
+              (TIdC_LONG(AMinor)   shl cMinorShift) or
+              (TIdC_LONG(AFix)     shl cFixShift)   or
+              (TIdC_LONG(APatch)   shl cPatchShift) or
+              (TIdC_LONG(AStatus)  and cStatusMask);
+end;
+
+function TTaurusTLSOSSLVersion.GetMajor: TIdC_UINT8;
+begin
+  Result:=(FVersion shr cMajorShift) and cByteMask;
+end;
+
+function TTaurusTLSOSSLVersion.GetMinor: TIdC_UINT8;
+begin
+  Result:=(FVersion shr cMinorShift) and cByteMask;
+end;
+
+function TTaurusTLSOSSLVersion.GetFix: TIdC_UINT8;
+begin
+  Result:=(FVersion shr cFixShift) and cByteMask;
+end;
+
+function TTaurusTLSOSSLVersion.GetPatch: TIdC_UINT8;
+begin
+  Result:=(FVersion shr cPatchShift) and cByteMask;
+end;
+
+function TTaurusTLSOSSLVersion.GetStatus: TIdC_UINT8;
+begin
+  Result:=FVersion and cStatusMask;
+end;
+
+function TTaurusTLSOSSLVersion.GetIsRelease: boolean;
+begin
+  Result:=GetStatus = cStatusMask;
+end;
+
+function TTaurusTLSOSSLVersion.GetIsEmpty: boolean;
+begin
+  Result:=FVersion = cEmpty;
+end;
+
+function TTaurusTLSOSSLVersion.GetAsString: string;
+begin
+  Result:=Format(RMSG_VersionShort,
+    [Major, Minor, Fix, Patch, Status]);
+end;
+
+class operator TTaurusTLSOSSLVersion.Implicit(a: TIdC_LONG): TTaurusTLSOSSLVersion;
+begin
+  Result.FVersion:=a;
+end;
+
+class operator TTaurusTLSOSSLVersion.Implicit(a: TTaurusTLSOSSLVersion): TIdC_LONG;
+begin
+  Result:=a.FVersion;
+end;
+
+class operator TTaurusTLSOSSLVersion.Equal(a, b: TTaurusTLSOSSLVersion): boolean;
+begin
+  Result:=a.FVersion = b.FVersion;
+end;
+
+class operator TTaurusTLSOSSLVersion.NotEqual(a, b: TTaurusTLSOSSLVersion): boolean;
+begin
+  Result:=a.FVersion <> b.FVersion;
+end;
+
+class operator TTaurusTLSOSSLVersion.GreaterThan(a, b: TTaurusTLSOSSLVersion): boolean;
+begin
+  Result:=a.FVersion > b.FVersion;
+end;
+
+class operator TTaurusTLSOSSLVersion.GreaterThanOrEqual(a, b: TTaurusTLSOSSLVersion): boolean;
+begin
+  Result:=a.FVersion >= b.FVersion;
+end;
+
+class operator TTaurusTLSOSSLVersion.LessThan(a, b: TTaurusTLSOSSLVersion): boolean;
+begin
+  Result:=a.FVersion < b.FVersion;
+end;
+
+class operator TTaurusTLSOSSLVersion.LessThanOrEqual(a, b: TTaurusTLSOSSLVersion): boolean;
+begin
+  Result:=a.FVersion <= b.FVersion;
+end;
+
+function TTaurusTLSOSSLVersion.AreCompatible(AVersion: TIdC_LONG): boolean;
+begin
+  Result:=AreCompatible(TTaurusTLSOSSLVersion.Create(AVersion));
+end;
+
+function TTaurusTLSOSSLVersion.AreCompatible(AVersion: TTaurusTLSOSSLVersion): boolean;
+begin
+  Result:=(Self.Major = AVersion.Major) and (Self.Minor = AVersion.Minor);
+end;
+
+
 { TTaurusTLSSecurityBitsHelper }
 
 function TTaurusTLSSecurityBitsHelper.GetAsInt: TIdC_INT;
@@ -1015,6 +1281,18 @@ end;
 
 { TTaurusTLSSSLOptionFlagsHelper }
 
+constructor TTaurusTLSVerifyModeFlags.Create(const AIntFlags: TIdC_INT);
+begin
+  FFlags:=[];
+  SetAsInt(AIntFlags);
+end;
+
+constructor TTaurusTLSVerifyModeFlags.Create(
+  const AFlags: TTaurusTLSVerifyModes);
+begin
+  FFlags:=AFlags;
+end;
+
 function TTaurusTLSSSLOptionFlagsHelper.GetAsInt: TIdC_UINT64;
 begin
   Result:=ToInt(Self);
@@ -1045,7 +1323,7 @@ procedure TTaurusTLSVerifyModeFlags.SetFlags(
 begin
   if (AFlags - [sslvrfPeer]) <> [] then
     System.Include(AFlags, sslvrfPeer);
-  Self:=AFlags;
+  Self.FFlags:=AFlags;
 end;
 
 function TTaurusTLSVerifyModeFlags.GetAsInt: TIdC_INT;
@@ -1077,6 +1355,7 @@ begin
   SetFlags(lFlags+lHighFlags);
 end;
 
+(*
 class operator TTaurusTLSVerifyModeFlags.Implicit(
   AFlags: TTaurusTLSVerifyModeFlags): TTaurusTLSVerifyModes;
 begin
@@ -1088,6 +1367,7 @@ class operator TTaurusTLSVerifyModeFlags.Implicit(
 begin
   Result.SetFlags(AFlags);
 end;
+*)
 
 procedure TTaurusTLSVerifyModeFlags.Exclude(
   AFlag: TTaurusTLSVerifyMode);

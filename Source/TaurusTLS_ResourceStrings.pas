@@ -279,9 +279,11 @@ resourcestring
     'Received value: %d; Allowed values from 0 to 5.';
   RMSG_SSLVersion_Convert_err = 'Fail to set TaurusTLSSSLVersion version '+
     'as integer value: %d.';
+  RMSG_VersionShort = '%.1d.%.2d.%.2d.%.2d.%.1x';
 
   // TaurusTLS_Sockets messages
-  RMSG_ClientECHFlagsInvalidMethods = 'ECH Client state '+
+  RMSG_ECHNotSupported_err = 'This OpenSSL version does not support ECH.';
+  RMSG_ClientECHFlagsInvalidMethods_err = 'ECH Client state '+
     'should have one or more ECH methods when ECH is enabled.';
   RMSG_ClientSocketEmptySNIConfig_err = 'Can not setup TLS Connection. '+
     'The Client SNI Config is nil.';
