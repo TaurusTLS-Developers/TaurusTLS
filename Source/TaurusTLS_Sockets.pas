@@ -178,6 +178,10 @@ type
       AUi: TTaurusTLSCustomOsslUi); reintroduce; overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
     constructor Create(const AName: string; ABio: TTaurusTLSCustomBIO;
       AUi: TTaurusTLSCustomOsslUi); reintroduce; overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    constructor CreateMem(const AName: string; AData: TBytes;
+      AUi: TTaurusTLSCustomOsslUi); reintroduce; overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    constructor CreateMem(const AName: string; AData: string;
+      AUi: TTaurusTLSCustomOsslUi); reintroduce; overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     property Name: string read FName;
   end;
@@ -855,6 +859,34 @@ begin
   SetName(AName);
 end;
 
+constructor TTaurusTLSTrustStore.CreateMem(const AName: string; AData: string;
+  AUi: TTaurusTLSCustomOsslUi);
+var
+  lBio: TTaurusTLSRawByteStringBIO;
+
+begin
+  lBio:=TTaurusTLSRawByteStringBIO.Create(RawByteString(AData));
+  try
+    Create(AName, lBio, AUi);
+  finally
+    lBio.Free;
+  end;
+end;
+
+constructor TTaurusTLSTrustStore.CreateMem(const AName: string; AData: TBytes;
+  AUi: TTaurusTLSCustomOsslUi);
+var
+  lBio: TTaurusTLSBytesBio;
+
+begin
+  lBio:=TTaurusTLSBytesBio.Create(AData);
+  try
+    Create(AName, lBio, AUi);
+  finally
+    lBio.Free;
+  end;
+end;
+
 procedure TTaurusTLSTrustStore.SetName(const AName: string);
 begin
   FName:=AName;
@@ -1024,6 +1056,7 @@ begin
   if SSL_CTX_set_ciphersuites(lCtx, PAnsiChar(RawByteString(FCipherSuites))) <= 0 then
     ETaurusTLSSocketCtxBuildError.RaiseWithMessageFmt(
       'Error setting list of cipher suites: ''%s''.', [FCipherSuites]);
+
 {
       FOnStateChange: TTaurusTLSOnStateChange;
       FOnDebugMessage: TTaurusTLSOnDebugMessage;
@@ -1031,6 +1064,7 @@ begin
       FOnStatusInfo: TTaurusTLSOnSSLStatusInfo;
       FOnVerifyCertificate: TTaurusTLSOnVerifyCallback;
 }
+  ASocketCtx.SetVerifyModes(FVerifyModes);
 end;
 
 function TTaurusTLSSocketCtxBuilder.Build(ASender: TObject): ITaurusTLSSocketCtx;
