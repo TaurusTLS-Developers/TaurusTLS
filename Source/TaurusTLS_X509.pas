@@ -837,6 +837,50 @@ type
     property Warnings: TTaurusTLSX509Warnings read GetWarnings;
   end;
 
+
+  TTaurusTLSX509Error = record
+  private
+    FErrCode: TIdC_LONG;
+
+    function GetErrShortDescription: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetErrLongDescription: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+  public
+    constructor Create(AErrCode: TIdC_LONG);
+    class function ErrShortDescription(AErrCode: TIdC_LONG): string;
+      overload; static; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    class function ErrLongDescription(AErrCode: TIdC_LONG): string;
+      overload; static; {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    property ErrorCode: TIdC_LONG read FErrCode;
+    property ErrorShortDescription: string read GetErrShortDescription;
+    property ErrorLongDescription: string read GetErrLongDescription;
+  end;
+
+  TTaurusTLSX509CertValidator = class
+  private
+    FCtx: PX509_STORE_CTX;
+    FCurrentCert: TTaurusTLSX509;
+
+    function GetError: TIdC_LONG; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetError(AValue: TIdC_LONG); {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetErrDepth: TIdC_INT; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetErrDepth(AValue: TIdC_INT); {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetCurrentCert: TTaurusTLSX509; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetErrShortDescription: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetErrLongDescription: string;
+    function GetHasCertificate: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
+  public
+    constructor Create(ACtx: PX509_STORE_CTX);
+    destructor Destroy; override;
+
+    property HasCertificate: boolean read GetHasCertificate;
+    property ErrorCode: TIdC_INT read GetError write SetError;
+    property ErrorDepth: TIdC_INT read GetErrDepth write SetErrDepth;
+    property CurrentCertificate: TTaurusTLSX509 read GetCurrentCert;
+    property ErrorShortDescription: string read GetErrShortDescription;
+    property ErrorLongDescription: string read GetErrLongDescription;
+  end;
+
 implementation
 
 uses
@@ -1815,6 +1859,101 @@ begin
   begin
     Result := sk_GENERAL_NAME_num(FGeneralNames);
   end;
+end;
+
+{ TTaurusTLSX509Error }
+
+constructor TTaurusTLSX509Error.Create(AErrCode: TIdC_LONG);
+begin
+  FErrCode:=AErrCode;
+end;
+
+class function TTaurusTLSX509Error.ErrLongDescription(
+  AErrCode: TIdC_LONG): string;
+begin
+  Result:=CertErrorToLongDescr(AErrCode);
+end;
+
+class function TTaurusTLSX509Error.ErrShortDescription(
+  AErrCode: TIdC_LONG): string;
+begin
+  Result:=string(X509_verify_cert_error_string(AErrCode));
+end;
+
+function TTaurusTLSX509Error.GetErrLongDescription: string;
+begin
+  Result:=ErrLongDescription(FErrCode);
+end;
+
+function TTaurusTLSX509Error.GetErrShortDescription: string;
+begin
+  Result:=ErrShortDescription(FErrCode);
+end;
+
+{ TTaurusTLSX509Error }
+
+constructor TTaurusTLSX509CertValidator.Create(ACtx: PX509_STORE_CTX);
+begin
+  Assert(Assigned(ACtx), '''ACtx'' parameter must not be nil value.'); // Do not localize
+  FCtx:=ACtx;
+end;
+
+destructor TTaurusTLSX509CertValidator.Destroy;
+begin
+  FreeAndNil(FCurrentCert);
+  inherited;
+end;
+
+function TTaurusTLSX509CertValidator.GetCurrentCert: TTaurusTLSX509;
+begin
+  if HasCertificate then
+    Result:=FCurrentCert
+  else
+    Result:=nil;
+end;
+
+function TTaurusTLSX509CertValidator.GetErrDepth: TIdC_INT;
+begin
+  Result:=X509_STORE_CTX_get_error_depth(FCtx);
+end;
+
+function TTaurusTLSX509CertValidator.GetErrLongDescription: string;
+begin
+  Result:=TTaurusTLSX509Error.ErrLongDescription(ErrorCode)
+end;
+
+function TTaurusTLSX509CertValidator.GetError: TIdC_LONG;
+begin
+  Result:=X509_STORE_CTX_get_error(FCtx);
+end;
+
+function TTaurusTLSX509CertValidator.GetErrShortDescription: string;
+begin
+  Result:=TTaurusTLSX509Error.ErrShortDescription(ErrorCode)
+end;
+
+function TTaurusTLSX509CertValidator.GetHasCertificate: boolean;
+var
+  lX509: PX509;
+
+begin
+  if not Assigned(FCurrentCert) then
+  begin
+    lX509:=X509_STORE_CTX_get_current_cert(FCtx);
+    if Assigned(lX509) then
+      FCurrentCert:=TTaurusTLSX509.Create(lX509, False);
+  end;
+  Result:=Assigned(FCurrentCert);
+end;
+
+procedure TTaurusTLSX509CertValidator.SetErrDepth(AValue: TIdC_INT);
+begin
+  X509_STORE_CTX_set_error_depth(FCtx, AValue);
+end;
+
+procedure TTaurusTLSX509CertValidator.SetError(AValue: TIdC_LONG);
+begin
+  X509_STORE_CTX_set_error(FCtx, AValue);
 end;
 
 end.
