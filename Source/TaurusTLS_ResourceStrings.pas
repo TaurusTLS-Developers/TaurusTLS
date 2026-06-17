@@ -297,8 +297,10 @@ resourcestring
   RMSG_X509VfyParamInhFlag_err = 'Error setting X509_VERIFY_PARAM Inheritance Flags';
   RMSG_X509VfyHost_err = 'Error setting HostName for certificate validation.';
   RMSG_X509VfyCleanHost_err = 'Error cleaning HostName list from сertificate validation.';
-  RMSG_X509VfyEMail_err = 'Error adding E-Mail address for certificate validation.';
-  RMSG_X509VfyIPAddr_err = 'Error adding IP address for certificate validation.';
+  RMSG_X509VfyEMail_set_err = 'Error setting E-Mail address for certificate validation.';
+  RMSG_X509VfyEMail_add_err = 'Error adding E-Mail address for certificate validation.';
+  RMSG_X509VfyIPAddr_set_err = 'Error setting IP address for certificate validation.';
+  RMSG_X509VfyIPAddr_add_err = 'Error adding IP address for certificate validation.';
   RMSG_X509VfyClearIPAddr_err = 'Error clearing IP address list from certificate validation.';
   RMSG_X509VfyPurp_err = 'Error setting or changing certificate validation purpose.';
   RMSG_X509VfyAttachSSL_err = 'Error setting the X509_VERIFY_PARAM object to the SSL_CTX object.';

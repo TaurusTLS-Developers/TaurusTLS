@@ -138,7 +138,7 @@ type
     ///  Method value clears hostnames list before setting new one.
     ///  Emtpy value <c>Value</c> keeps it empty.
     ///  </remarks>
-    procedure SetHostRaw(Value: PAnsiChar);
+    procedure SetHostRaw(Value: PIdAnsiChar);
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
@@ -250,10 +250,10 @@ type
     ///   The email address string.
     /// </param>
     /// <remarks>
-    ///   All previously set or added eamil addresses are replaced with new
+    ///   All previously set or added email addresses are replaced with new
     ///   eamail address.
     /// </remarks>
-    procedure SetEMailRaw(Value: PAnsiChar); {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure SetEMailRaw(Value: PIdAnsiChar); {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Sets the expected email address (Ansi or UTF8 String) for identity
@@ -261,7 +261,7 @@ type
     ///  </summary>
     ///  <param name="Value">The email address string.</param>
     /// <remarks>
-    ///   All previously set or added eamil addresses are replaced with new
+    ///   All previously set or added email addresses are replaced with new
     ///   eamail address.
     /// </remarks>
     procedure SetEMailA(const Value: RawByteString);
@@ -273,7 +273,7 @@ type
     ///  </summary>
     ///  <param name="Value">The email address string.</param>
     /// <remarks>
-    ///   All previously set or added eamil addresses are replaced with new
+    ///   All previously set or added email addresses are replaced with new
     ///   eamail address.
     /// </remarks>
     procedure SetEMailW(const Value: UnicodeString);
@@ -284,11 +284,62 @@ type
     ///  </summary>
     ///  <param name="Value">The email address string.</param>
     /// <remarks>
-    ///   All previously set or added eamil addresses are replaced with new
+    ///   All previously set or added email addresses are replaced with new
     ///   eamail address.
     /// </remarks>
     procedure SetEMail(const Value: string);
       {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+
+
+    /// <summary>
+    ///   Sets the expected email address for identity checking.
+    /// </summary>
+    /// <param name="Value">
+    ///   The email address string.
+    /// </param>
+    /// <remarks>
+    ///   All previously set or added email addresses are retained.
+    ///   This method avalable only with OpenSSL 4.0 and higher.
+    /// </remarks>
+    procedure AddEMailRaw(Value: PIdAnsiChar); {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    ///  <summary>
+    ///  Sets the expected email address (Ansi or UTF8 String) for identity
+    ///  checking.
+    ///  </summary>
+    ///  <param name="Value">The email address string.</param>
+    /// <remarks>
+    ///   All previously set or added email addresses are retained.
+    ///   This method avalable only with OpenSSL 4.0 and higher.
+    /// </remarks>
+    procedure AddEMailA(const Value: RawByteString);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    ///  <summary>
+    ///  Sets the expected email address (UnicodeString) for identity
+    ///  checking.
+    ///  </summary>
+    ///  <param name="Value">The email address string.</param>
+    /// <remarks>
+    ///   All previously set or added email addresses are retained.
+    ///   This method avalable only with OpenSSL 4.0 and higher.
+    /// </remarks>
+    procedure AddEMailW(const Value: UnicodeString);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    ///  <summary>
+    ///  Sets the expected email address for identity checking.
+    ///  </summary>
+    ///  <param name="Value">The email address string.</param>
+    /// <remarks>
+    ///   All previously set or added email addresses are retained.
+    ///   This method avalable only with OpenSSL 4.0 and higher.
+    /// </remarks>
+    procedure AddEMail(const Value: string);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+
 
     ///  <summary>
     ///  Removes all previously added email addresses from the validation
@@ -303,11 +354,19 @@ type
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
-    ///  Sets the expected IP address (PAnsiChar) for identity
+    ///  Adds the IP address to the expected IP addresses list
+    ///  using a TIdIPAddress record.
+    ///  </summary>
+    ///  <param name="Value">The IP address structure.</param>
+    procedure AddIpAddressBinary(const Value: TIdIPAddress);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    ///  <summary>
+    ///  Sets the expected IP address (PIdAnsiChar) for identity
     ///  checking.
     ///  </summary>
     ///  <param name="Value">The IP address string.</param>
-    procedure SetIpAddressRaw(Value: PAnsiChar);
+    procedure SetIpAddressRaw(Value: PIdAnsiChar);
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
@@ -331,6 +390,37 @@ type
     ///  </summary>
     ///  <param name="Value">The IP address string.</param>
     procedure SetIpAddress(const Value: string);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    ///  <summary>
+    ///  Sets the expected IP address (PIdAnsiChar) for identity
+    ///  checking.
+    ///  </summary>
+    ///  <param name="Value">The IP address string.</param>
+    procedure AddIpAddressRaw(Value: PIdAnsiChar);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    ///  <summary>
+    ///  Sets the expected IP address (AnsiString) for identity
+    ///  checking.
+    ///  </summary>
+    ///  <param name="Value">The IP address string.</param>
+    procedure AddIpAddressA(const Value: RawByteString);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    ///  <summary>
+    ///  Sets the expected IP address (UnicodeString) for identity
+    ///  checking.
+    ///  </summary>
+    ///  <param name="Value">The IP address string.</param>
+    procedure AddIpAddressW(const Value: UnicodeString);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    ///  <summary>
+    ///  Sets the expected IP address for identity checking.
+    ///  </summary>
+    ///  <param name="Value">The IP address string.</param>
+    procedure AddIpAddress(const Value: string);
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
@@ -1429,7 +1519,7 @@ begin
   Result:=UnicodeString(GetHostRaw(ANumber));
 end;
 
-procedure TTaurusTLSCustomX509VerifyParam.SetHostRaw(Value: PAnsiChar);
+procedure TTaurusTLSCustomX509VerifyParam.SetHostRaw(Value: PIdAnsiChar);
 begin
   if X509_VERIFY_PARAM_set1_host(FParam, PIdAnsiChar(Value), 0) <= 0 then
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyHost_err);
@@ -1446,7 +1536,7 @@ end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetHostA(const Value: RawByteString);
 begin
-  SetHostRaw(PAnsiChar(Value));
+  SetHostRaw(PIdAnsiChar(Value));
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetHostW(const Value: UnicodeString);
@@ -1531,10 +1621,10 @@ begin
   Result:=UnicodeString(GetEmailRaw);
 end;
 
-procedure TTaurusTLSCustomX509VerifyParam.SetEMailRaw(Value: PAnsiChar);
+procedure TTaurusTLSCustomX509VerifyParam.SetEMailRaw(Value: PIdAnsiChar);
 begin
   if X509_VERIFY_PARAM_set1_email(FParam, Value, Length(Value)) <= 0 then
-    ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyEMail_err);
+    ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyEMail_set_err);
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetEMail(const Value: string);
@@ -1548,12 +1638,44 @@ end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetEMailA(const Value: RawByteString);
 begin
-  SetEmailRaw(PAnsiChar(Value));
+  SetEmailRaw(PIdAnsiChar(Value));
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetEMailW(const Value: UnicodeString);
 begin
   SetEMailA(RawByteString(Value));
+end;
+
+procedure TTaurusTLSCustomX509VerifyParam.AddEMailRaw(Value: PIdAnsiChar);
+var
+  lLen: TIdC_INT;
+  lRes: boolean;
+
+begin
+  lLen:=Length(Value);
+  lRes:=(X509_VERIFY_PARAM_add1_rfc822(FParam, Value, lLen) > 0);
+  lRes:=lRes or (X509_VERIFY_PARAM_add1_smtputf8(FParam, Value, lLen) > 0);
+  if not lRes then
+    ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyEMail_add_err);
+end;
+
+procedure TTaurusTLSCustomX509VerifyParam.AddEMailA(const Value: RawByteString);
+begin
+  AddEMailRaw(PIdAnsiChar(Value));
+end;
+
+procedure TTaurusTLSCustomX509VerifyParam.AddEMailW(const Value: UnicodeString);
+begin
+  AddEmailA(UTF8String(Value));
+end;
+
+procedure TTaurusTLSCustomX509VerifyParam.AddEMail(const Value: string);
+begin
+{$IFDEF STRING_IS_UNICODE}
+  AddEmailW(Value);
+{$ELSE}
+  AddEmailA(Value);
+{$ENDIF}
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.CleanEMails;
@@ -1586,13 +1708,40 @@ begin
     end;
   end;
   if X509_VERIFY_PARAM_set1_ip(FParam, lData, lSize) <= 0 then
-    ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyIPAddr_err);
+    ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyIPAddr_set_err);
 end;
 
-procedure TTaurusTLSCustomX509VerifyParam.SetIpAddressRaw(Value: PAnsiChar);
+procedure TTaurusTLSCustomX509VerifyParam.AddIpAddressBinary(
+  const Value: TIdIPAddress);
+var
+  lData: Pointer;
+  lIpv4: UInt32;
+  lSize: TIdC_SizeT;
+
+begin
+  lData:=nil;
+  lSize:=0;
+  case Value.AddrType of
+  Id_IPv4:
+    begin
+      lIpv4:=Value.IPv4;
+      lData:=@lIpv4;
+      lSize:=SizeOf(lIpv4);
+    end;
+  Id_IPv6:
+    begin
+      lData:=@Value.IPv6;
+      lSize:=SizeOf(Value.IPv6);
+    end;
+  end;
+  if X509_VERIFY_PARAM_add1_ip(FParam, lData, lSize) <= 0 then
+    ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyIPAddr_add_err);
+end;
+
+procedure TTaurusTLSCustomX509VerifyParam.SetIpAddressRaw(Value: PIdAnsiChar);
 begin
   if X509_VERIFY_PARAM_set1_ip_asc(FParam, PIdAnsiChar(Value)) <= 0 then
-    ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyIPAddr_err);
+    ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyIPAddr_set_err);
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetIpAddress(const Value: string);
@@ -1606,12 +1755,39 @@ end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetIpAddressA(const Value: RawByteString);
 begin
-  SetIpAddressRaw(PAnsiChar(Value));
+  SetIpAddressRaw(PIdAnsiChar(Value));
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetIpAddressW(const Value: UnicodeString);
 begin
   SetIpAddressA(RawByteString(Value));
+end;
+
+procedure TTaurusTLSCustomX509VerifyParam.AddIpAddressRaw(Value: PIdAnsiChar);
+begin
+  if X509_VERIFY_PARAM_add1_ip_asc(FParam, PIdAnsiChar(Value)) <= 0 then
+    ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyIPAddr_add_err);
+end;
+
+procedure TTaurusTLSCustomX509VerifyParam.AddIpAddressA(
+  const Value: RawByteString);
+begin
+  AddIpAddressRaw(PIdAnsiChar(Value));
+end;
+
+procedure TTaurusTLSCustomX509VerifyParam.AddIpAddressW(
+  const Value: UnicodeString);
+begin
+  AddIpAddressA(RawByteString(Value));
+end;
+
+procedure TTaurusTLSCustomX509VerifyParam.AddIpAddress(const Value: string);
+begin
+{$IFDEF STRING_IS_UNICODE}
+  AddIpAddressW(Value);
+{$ELSE}
+  AddIpAddressA(Value);
+{$ENDIF}
 end;
 
 function TTaurusTLSCustomX509VerifyParam.GetIpAddress: string;
@@ -1953,7 +2129,7 @@ end;
 
 function TaurusTLS_X509Store.AppendFromLocationA(const AUri: RawByteString): boolean;
 begin
-  Result:=X509_STORE_load_store(FStore, PANsiChar(AUri)) > 0;
+  Result:=X509_STORE_load_store(FStore, PIdAnsiChar(AUri)) > 0;
 end;
 
 function TaurusTLS_X509Store.AppendFromLocationW(const AUri: UnicodeString): boolean;
