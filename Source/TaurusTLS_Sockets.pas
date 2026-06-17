@@ -203,7 +203,7 @@ type
     property Config: TTaurusTLSSocketCtx read GetConfig;
   end;
 
-  TTaurusTLSSocketCtx = class(TInterfacedObject, ITaurusTLSSocketCtx)
+  TTaurusTLSSocketCtx = class abstract(TInterfacedObject, ITaurusTLSSocketCtx)
   public const
     cVerifyModesDef = [sslvrfPeer, sslvrfHostname];
 
@@ -290,7 +290,7 @@ type
 
   ETaurusTLSSocketCtxError = class(ETaurusTLSError);
 
-  TTaurusTLSSocketCtxBuilder = class
+  TTaurusTLSSocketCtxBuilder = class abstract
   private
     FLock: TIdCriticalSection;
     FTLSMeth: PSSL_METHOD;
@@ -334,7 +334,7 @@ type
     procedure Unlock; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     procedure CheckRequirements; virtual;
-    function DoNewSocketCtx(ASender: TObject): TTaurusTLSSocketCtx; virtual;
+    function DoNewSocketCtx(ASender: TObject): TTaurusTLSSocketCtx; virtual; abstract;
     procedure DoBuildTrustStore(ASocketCtx: TTaurusTLSSocketCtx);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure DoBuildVerifyParam(ASocketCtx: TTaurusTLSSocketCtx);
@@ -918,11 +918,6 @@ begin
   FLock.Leave;
 end;
 
-function TTaurusTLSSocketCtxBuilder.DoNewSocketCtx(ASender: TObject): TTaurusTLSSocketCtx;
-begin
-  Result:=TTaurusTLSSocketCtx.Create(ASender, FTLSMeth);
-end;
-
 procedure TTaurusTLSSocketCtxBuilder.DoBuildTrustStore(
   ASocketCtx: TTaurusTLSSocketCtx);
 var
@@ -976,9 +971,8 @@ begin
         if not IsX509StoreMultiIPSupported and (lHigh > 0) then
           SetIpAddress(FVfyParamIpAddress[0])
         else
-          SetIpAddress(FVfyParamIpAddress[0])
-//          for i:=0 to FVfyParamIpAddress.Count-1 do
-//            AddIPAddress(FVfyParamIpAddress[i]);
+          for i:=0 to FVfyParamIpAddress.Count-1 do
+            AddIPAddress(FVfyParamIpAddress[i]);
       end;
 
       if Assigned(FVfyParamEmail) then
@@ -987,9 +981,8 @@ begin
         if not IsX509StoreMultiIPSupported and (lHigh > 0) then
           SetEMail(FVfyParamEmail[0])
         else
-          SetEMail(FVfyParamEmail[0])
-//          for i:=0 to FVfyParamEmail.Count-1 do
-//            AddIPAddress(FVfyParamEmail[i]);
+          for i:=0 to FVfyParamEmail.Count-1 do
+            AddIPAddress(FVfyParamEmail[i]);
       end;
 
     end;
@@ -1016,6 +1009,8 @@ begin
   lCtx:=ASocketCtx.SSLCtx;
 
   DoBuildTrustStore(ASocketCtx);
+  DoBuildVerifyParam(ASocketCtx);
+
   if SSL_CTX_set_min_proto_version(lCtx, FMinTLSVersion.AsInt) <= 0 then
     ETaurusTLSSocketCtxBuildError.RaiseWithMessage('Error setting Minimal TLS Version.');
 

@@ -296,8 +296,21 @@ type
     destructor Destroy; override;
   end;
 
-  /// <summary>A read-only BIO wrapper for a TIdBytes array.</summary>
+  /// <summary>A read-only BIO wrapper for a TBytes array.</summary>
   TTaurusTLSBytesBio = class(TTaurusTLSCustomRawMemBio)
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
+    FData: TBytes;
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
+    property Data: TBytes read FData;
+  public
+    /// <summary>
+    ///   Creates a BIO that reads directly from the provided TIdBytes.
+    /// </summary>
+    constructor Create(const AData: TBytes);
+  end;
+
+  /// <summary>A read-only BIO wrapper for a TIdBytes array.</summary>
+  TTaurusTLSIdBytesBio = class(TTaurusTLSCustomRawMemBio)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FData: TIdBytes;
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
@@ -618,7 +631,15 @@ end;
 
 { TTaurusTLSBytesBio }
 
-constructor TTaurusTLSBytesBio.Create(const AData: TIdBytes);
+constructor TTaurusTLSBytesBio.Create(const AData: TBytes);
+begin
+  inherited Create(PByte(AData), Length(AData)*SizeOf(Byte));
+  FData:=AData;
+end;
+
+{ TTaurusTLSIdBytesBio }
+
+constructor TTaurusTLSIdBytesBio.Create(const AData: TIdBytes);
 begin
   inherited Create(PByte(AData), Length(AData)*SizeOf(Byte));
   FData:=AData;
