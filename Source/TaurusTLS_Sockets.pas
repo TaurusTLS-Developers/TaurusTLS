@@ -132,35 +132,40 @@ type
   ETaurusTLSECHCliFlagsError = class(ETaurusTLSError);
   EECHNotSupported = class(ETaurusTLSError);
 
+  // Forward declaration
+  TTaurusTLSBaseSocket = class;
+
+  // Event type declarations
+
+  TTaurusTLSOnIOHandlerNotify = procedure(ASender: TObject;
+    ASocket: TTaurusTLSBaseSocket) of object;
+
   TTaurusTLSOnStateChange = procedure(ASender: TObject;
-    AOldState, ANewState: TTaurusTLSSslState) of object;
-  TTaurusTLSOnIOHandlerNotify = procedure(ASender: TObject) of object;
+    ASocket: TTaurusTLSBaseSocket; AOldState, ANewState: TTaurusTLSSslState) of object;
+
+
   TTaurusTLSOnSSLStatusInfo = procedure(ASender: TObject;
-    AWhere, ARet: TIdC_INT) of object;
+    ASocket: TTaurusTLSBaseSocket; AWhere, ARet: TIdC_INT) of object;
+
   TTaurusTLSOnDebugMessage = procedure(ASender: TObject;
     const AMessage: String) of object;
-  TTaurusTLSOnSecurityLevel = procedure(ASender: TObject;
-    var AAccept: Boolean) of object;
+
+  TTaurusTLSOnPeerCertError = procedure(ASender: TObject;
+    ASocket: TTaurusTLSBaseSocket; ACertificate: TTaurusTLSX509;
+    const AError: TTaurusTLSX509Error; out ASuccess: boolean) of object;
 
   TTaurusTLSOnVerifyCallback = procedure(
-    ASender: TObject;
-    ACert: TTaurusTLSX509;
-    ADepth: TIdC_INT;
-    AErrCode: TIdC_INT;
+    ASender: TObject; ASocket: TTaurusTLSBaseSocket;
+    ACertValidator: TTaurusTLSX509CertValidator;
     out ASuccess, AContinue: Boolean
   ) of object;
 
   TTaurusTLSSSLOp = (sslOpRead, sslOpWrite);
 
   TTaurusTLSOnSSLMessageCallback = procedure(
-    ASender: TObject;
-    AOp: TTaurusTLSSSLOp;
-    AVersion: Integer;
-    AContentType: Integer;
-    ABuf: Pointer;
-    ALen: NativeUInt
-  ) of object;
-
+    ASender: TObject; ASocket: TTaurusTLSBaseSocket;
+    AOp: TTaurusTLSSSLOp; AVersion: Integer; AContentType: Integer;
+    ABuf: Pointer; ALen: NativeUInt) of object;
 
   TTaurusTLSTrustStore = class(TTaurusTLSOSSLStore)
   public const
@@ -185,7 +190,7 @@ type
 
     property Name: string read FName;
   end;
-    
+
   TTaurusTLSTrustStores = class(TDictionary<string, TTaurusTLSTrustStore>)
   protected
     procedure CheckStore(const AStore: TTaurusTLSTrustStore);
@@ -222,9 +227,9 @@ type
 
     FOnStateChange: TTaurusTLSOnStateChange;
     FOnDebugMessage: TTaurusTLSOnDebugMessage;
-    FOnSecurityLevel: TTaurusTLSOnSecurityLevel;
     FOnStatusInfo: TTaurusTLSOnSSLStatusInfo;
     FOnVerifyCertificate: TTaurusTLSOnVerifyCallback;
+    FOnPeerCertError: TTaurusTLSOnPeerCertError;
 
     function GetVerifyHostname: boolean;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -232,14 +237,18 @@ type
   protected
     class function NormalizeHostName(const AValue: RawByteString): RawByteString;
       static; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure DoOnStateChange(AOldState, ANewState: TTaurusTLSSslState);
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure DoOnStateChange(ASocket: TTaurusTLSBaseSocket;
+      AOldState, ANewState: TTaurusTLSSslState); {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure DoOnDebug(const AMsg: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure DoOnSecurityLevel(var AAccept: boolean); {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure DoOnStatusInfo(AWhere, ARet: TIdC_INT);
+    procedure DoOnStatusInfo(ASocket: TTaurusTLSBaseSocket;
+      AWhere, ARet: TIdC_INT); {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure DoOnVerifyCertificate(ASocket: TTaurusTLSBaseSocket;
+      ACtx: PX509_STORE_CTX; out ASuccess, AContinue: boolean);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure DoOnVerifyCertificate(ACtx: PX509_STORE_CTX;
-      out ASuccess, AContinue: boolean);
+    procedure DoOnPeerCertError(ASocket: TTaurusTLSBaseSocket;
+      ACertificate: TTaurusTLSX509; const AError: TTaurusTLSX509Error;
+      out ASuccess: boolean); {$IFDEF USE_INLINE}inline; {$ENDIF}
+
 
     // IITaurusTLSSocketCtx method(s)
     function GetConfig: TTaurusTLSSocketCtx;
@@ -273,8 +282,8 @@ type
       write FOnStateChange;
     property OnDebugMessage: TTaurusTLSOnDebugMessage read FOnDebugMessage
       write FOnDebugMessage;
-    property OnSecurityLevel: TTaurusTLSOnSecurityLevel read FOnSecurityLevel
-      write FOnSecurityLevel;
+    property OnPeerCertError: TTaurusTLSOnPeerCertError read FOnPeerCertError
+      write FOnPeerCertError;
     property OnStatusInfo: TTaurusTLSOnSSLStatusInfo read FOnStatusInfo
       write FOnStatusInfo;
     property OnVerifyCertificate: TTaurusTLSOnVerifyCallback read FOnVerifyCertificate
@@ -330,7 +339,7 @@ type
 
     FOnStateChange: TTaurusTLSOnStateChange;
     FOnDebugMessage: TTaurusTLSOnDebugMessage;
-    FOnSecurityLevel: TTaurusTLSOnSecurityLevel;
+    FOnPeerCertError: TTaurusTLSOnPeerCertError;
     FOnStatusInfo: TTaurusTLSOnSSLStatusInfo;
     FOnVerifyCertificate: TTaurusTLSOnVerifyCallback;
   protected
@@ -397,7 +406,9 @@ type
     function GetECHOuterSNIRaw: RawByteString; {$IFDEF USE_INLINE}inline; {$ENDIF}
   protected
     procedure SetSessionToResume(const ASSL: PSSL);
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
+      {$IFDEF USE_INLINE}inline;
+          property OnPeerCertError;
+          property OnPeerCertError;{$ENDIF}
   public
     destructor Destroy; override;
 
@@ -425,7 +436,7 @@ type
 
     property OnStateChange;
     property OnDebugMessage;
-    property OnSecurityLevel;
+    property OnPeerCertError;
     property OnStatusInfo;
     property OnVerifyCertificate;
   end;
@@ -450,7 +461,8 @@ type
 
     // The Dual-Track State Fields
     FConfigIntf: ITaurusTLSSocketCtx;  // Holds reference count safely
-    FConfig: TTaurusTLSSocketCtx;       // Fast class pointer
+    FConfig: TTaurusTLSSocketCtx;
+    function GetPerCertificate: TTaurusTLSX509;       // Fast class pointer
   protected
     FSSL: PSSL;
     class procedure SslInfoCallback(const ASSL: PSSL; AWhere, ARet: TIdC_INT); static; cdecl;
@@ -483,6 +495,7 @@ type
     procedure DoDebugLog(const AMessage: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     property SocketHandle: TIdStackSocketHandle read FSocketHandle write FSocketHandle;
+    property PeerCertificate: TTaurusTLSX509 read GetPerCertificate;
   public
     // Accepts the interface rather than raw class
     constructor Create(const AConfigIntf: ITaurusTLSSocketCtx); virtual;
@@ -1118,39 +1131,42 @@ begin
     FOnDebugMessage(FSender, AMsg);
 end;
 
-procedure TTaurusTLSSocketCtx.DoOnStateChange(AOldState,
-  ANewState: TTaurusTLSSslState);
+procedure TTaurusTLSSocketCtx.DoOnPeerCertError(ASocket: TTaurusTLSBaseSocket;
+  ACertificate: TTaurusTLSX509; const AError: TTaurusTLSX509Error;
+  out ASuccess: boolean);
+begin
+  if Assigned(FOnPeerCertError) and Assigned(ASocket) then
+    FOnPeerCertError(FSender, ASocket, ACertificate, AError, ASuccess);
+end;
+
+procedure TTaurusTLSSocketCtx.DoOnStateChange(ASocket: TTaurusTLSBaseSocket;
+  AOldState, ANewState: TTaurusTLSSslState);
 begin
   if Assigned(FOnStateChange) then
-    FOnStateChange(FSender, AOldState, ANewState);
+    FOnStateChange(FSender, ASocket, AOldState, ANewState);
 end;
 
-procedure TTaurusTLSSocketCtx.DoOnStatusInfo(AWhere, ARet: TIdC_INT);
+procedure TTaurusTLSSocketCtx.DoOnStatusInfo(ASocket: TTaurusTLSBaseSocket;
+  AWhere, ARet: TIdC_INT);
 begin
   if Assigned(FOnStatusInfo) then
-  FOnStatusInfo(FSender, AWhere, ARet);
+  FOnStatusInfo(FSender, ASocket, AWhere, ARet);
 end;
 
-procedure TTaurusTLSSocketCtx.DoOnVerifyCertificate(ACtx: PX509_STORE_CTX;
-  out ASuccess, AContinue: boolean);
+procedure TTaurusTLSSocketCtx.DoOnVerifyCertificate(ASocket: TTaurusTLSBaseSocket;
+  ACtx: PX509_STORE_CTX; out ASuccess, AContinue: boolean);
 var
-  lCert: TTaurusTLSX509;
-  lX509: PX509;
-  lDepth: TIdC_INT;
-  lErr: TIdC_INT;
+  lValidator: TTaurusTLSX509CertValidator;
 
 begin
-  lCert:=nil;
+  if not (Assigned(FOnVerifyCertificate) and Assigned(ACtx)) then
+    Exit;
+
+  lValidator:=TTaurusTLSX509CertValidator.Create(ACtx);
   try
-    lX509:=X509_STORE_CTX_get0_cert(ACtx);
-    if Assigned(FOnVerifyCertificate) and Assigned(lX509) then
-      lCert:=TTaurusTLSX509.Create(lX509, False);
-    lDepth:=X509_STORE_CTX_get_error_depth(ACtx);
-    lErr:=X509_STORE_CTX_get_error(ACtx);
-    if Assigned(FOnVerifyCertificate) then
-      FOnVerifyCertificate(FSender, lCert, lDepth, lErr, ASuccess, AContinue);
+    FOnVerifyCertificate(FSender, ASocket, lValidator, ASuccess, AContinue);
   finally
-    lCert.Free;
+    lValidator.Free;
   end;
 end;
 
@@ -1243,12 +1259,6 @@ var
 begin
   lFlags:=TTaurusTLSVerifyModeFlags.Create(AValue);
   SSL_CTX_set_verify(FSSLCtx, lFlags.AsInt, nil);
-end;
-
-procedure TTaurusTLSSocketCtx.DoOnSecurityLevel(var AAccept: boolean);
-begin
-  if Assigned(FOnSecurityLevel) then
-    FOnSecurityLevel(FSender, AAccept);
 end;
 
 { TTaurusTLSClientSocketCtx }
@@ -1627,7 +1637,7 @@ var
 begin
   lConfig:=FConfig;
   if Assigned(lConfig) then
-    lConfig.DoOnStateChange(ACurrent, ATarget);
+    lConfig.DoOnStateChange(Self, ACurrent, ATarget);
 end;
 
 function TTaurusTLSBaseSocket.GetSSLError(ALastResult: Integer): Integer;
@@ -1746,13 +1756,23 @@ end;
 
 procedure TTaurusTLSBaseSocket.CheckPeerCertificateValidationResult;
 var
-  lResult: TIdC_INT;
-  
+  lErr: TTaurusTLSX509Error;
+  lCert: TTaurusTLSX509;
+  lSuccess: boolean;
+
 begin
-  lResult:=SSL_get_verify_result(FSSL);
-  if lResult <> X509_V_OK then
-     ETaurusTLSCertValidationError.RaiseWithMessage
-                (string(X509_verify_cert_error_string(lResult)));
+  lCert:=nil;
+  lErr:=TTaurusTLSX509Error.Create(SSL_get_verify_result(FSSL));
+  lSuccess:=lErr.ErrorCode <> X509_V_OK;
+  if not lSuccess then
+  try
+    lCert:=GetPerCertificate;
+    Config.DoOnPeerCertError(Self, lCert, lErr, lSuccess);
+  finally
+    lCert.Free;
+  end;
+  if not lSuccess then
+    ETaurusTLSCertValidationError.RaiseWithMessage(lErr.ErrorShortDescription);
 end;
 
 function TTaurusTLSBaseSocket.Readable: boolean;
@@ -1923,6 +1943,24 @@ begin
   Result:=TObject(SSL_get_app_data(ASSL)) as T; //PALOFF Pointer cast to TObject
 end;
 
+function TTaurusTLSBaseSocket.GetPerCertificate: TTaurusTLSX509;
+var
+  lX509: PX509;
+
+begin
+  Result:=nil;
+  if not (State in [seHandshaking, seEstablished]) then
+    Exit;
+  lX509:=nil;
+  try
+    lX509:=SSL_get_certificate(FSSL);
+    if Assigned(lX509) then
+      Result:=TTaurusTLSX509.Create(lX509, False);
+  except
+    FreeAndNil(Result);
+  end;
+end;
+
 class procedure TTaurusTLSBaseSocket.SslInfoCallback(const ASSL: PSSL; AWhere,
   ARet: TIdC_INT);
 var
@@ -1942,7 +1980,7 @@ begin
 
       lConfig:=lInstance.Config;
       if Assigned(lConfig) then
-        lConfig.DoOnStatusInfo(AWhere, ARet);
+        lConfig.DoOnStatusInfo(lInstance, AWhere, ARet);
     finally
       GStack.WSSetLastError(lErr);
     end;
@@ -1976,12 +2014,12 @@ begin
 
       lResult:=APreVerify = 1;
       lContinue:=True;
-      
+
       lInstance:=GetInstanceFromSSL<TTaurusTLSBaseSocket>(lSSL);
       lConfig:=lInstance.Config;
       if Assigned(lConfig) then
       begin
-        lConfig.DoOnVerifyCertificate(ACtx, lResult, lContinue);
+        lConfig.DoOnVerifyCertificate(lInstance, ACtx, lResult, lContinue);
         if lContinue then Result:=1 else Result:=0;
         if lResult then
           X509_STORE_CTX_set_error(ACtx, X509_V_OK);
@@ -2221,15 +2259,6 @@ begin
         end;
       end;
 
-      // Perform security level check via snapshot event
-      lAccept:=True;
-      lConfig.DoOnSecurityLevel(lAccept);
-      if not lAccept then
-      begin
-        TransitionTo(seError);
-        Exit;
-      end;
-
       TransitionTo(seEstablished);
 
       if lConfig.UseECH then
@@ -2298,15 +2327,6 @@ begin
 
       if lRet = 1 then
       begin
-        // Perform security level check via snapshot event
-        lAccepted:=True;
-        Config.DoOnSecurityLevel(lAccepted);
-        if not lAccepted then
-        begin
-          TransitionTo(seError);
-          Exit;
-        end;
-
         TransitionTo(seEstablished);
         Exit;
       end;
