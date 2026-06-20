@@ -15,6 +15,7 @@
 ///   library.
 /// </summary>
 unit TaurusTLS_types;
+{$I TaurusTLSLinkDefines.inc}
 
 interface
 

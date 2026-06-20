@@ -14,6 +14,7 @@
 ///   OpenSSL BIO Object wrapper classes.
 /// </summary>
 unit TaurusTLS_BIO;
+{$I TaurusTLSLinkDefines.inc}
 
 interface
 

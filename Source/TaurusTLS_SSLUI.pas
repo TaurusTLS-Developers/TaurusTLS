@@ -17,6 +17,7 @@
 ///   management.
 /// </summary>
 unit TaurusTLS_SSLUI;
+{$I TaurusTLSLinkDefines.inc}
 
 interface
 

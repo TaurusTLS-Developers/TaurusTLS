@@ -12,6 +12,7 @@
 unit TaurusTLS2;
 
 interface
+{$I TaurusTLSLinkDefines.inc}
 
 uses
 {$IFDEF WINDOWS}
@@ -128,6 +129,15 @@ type
   end;
 
   TTaurusTLSIOHandlerX509TrustConfig = class(TComponent)
+  public const
+    cVerifyDefault = [x509vfTrustedFirst];
+    cInheritanceDefault = [x509ihfDefault];
+    cTrust = trSslClient;
+    cPurposeDefault = prpSslClient;
+    cHostCheckDefault = [];
+    cDepthDefault = 100;
+    cSecurityLevelDefault = sb128;
+
   private
     FAssets: TTaurusTLSIOHandlerStoreAssets;
     FVerify: TTaurusTLSX509VerifyFlags;
@@ -136,7 +146,7 @@ type
     FPurpose: TTaurusTLSX509Purpose;
     FHostCheck: TTaurusTLSX509HostCheckFlags;
     FDepth: cardinal;
-    FAuthLevel: TTaurusTLSSecurityBits;
+    FSecurityLevel: TTaurusTLSSecurityBits;
     FTime: TDateTime;
     FHostNames: TTaurusTLSIOHandlerTrustFqdns;
     FEmails: TTaurusTLSIOHandlerTrustEmails;
@@ -145,17 +155,21 @@ type
     procedure SetHostNames(const Value: TTaurusTLSIOHandlerTrustFqdns);
     procedure SetIPAddresses(const Value: TTaurusTLSIOHandlerTrustIPAddresses);
   public
-    constructor Create(AOwner: TComponent);
+    constructor Create(AOwner: TComponent); override;
   published
     property Assets: TTaurusTLSIOHandlerStoreAssets read FAssets write FAssets;
-    property Verify: TTaurusTLSX509VerifyFlags read FVerify write FVerify;
+    property Verify: TTaurusTLSX509VerifyFlags read FVerify write FVerify
+      default cVerifyDefault;
     property Inheritance: TTaurusTLSX509InheritanceFlags read FInheritance
-      write FInheritance;
-    property Trust: TTaurusTLSX509Trust read FTrust write FTrust default trSslClient;
-    property Purpose: TTaurusTLSX509Purpose read FPurpose write FPurpose default prpSslClient;
-    property HostCheck: TTaurusTLSX509HostCheckFlags read FHostCheck write FHostCheck;
-    property Depth: cardinal read FDepth write FDepth default 100;
-    property AuthLevel: TTaurusTLSSecurityBits read FAuthLevel write FAuthLevel default sb128;
+      write FInheritance default cInheritanceDefault;
+    property Trust: TTaurusTLSX509Trust read FTrust write FTrust default cTrust;
+    property Purpose: TTaurusTLSX509Purpose read FPurpose write FPurpose
+      default cPurposeDefault;
+    property HostCheck: TTaurusTLSX509HostCheckFlags read FHostCheck
+      write FHostCheck default cHostCheckDefault;
+    property Depth: cardinal read FDepth write FDepth default cDepthDefault;
+    property SecurityLevel: TTaurusTLSSecurityBits read FSecurityLevel
+      write FSecurityLevel default cSecurityLevelDefault;
     property Time: TDateTime read FTime write FTime;
     property HostNames: TTaurusTLSIOHandlerTrustFqdns read FHostNames
       write SetHostNames;
@@ -262,10 +276,18 @@ end;
 constructor TTaurusTLSIOHandlerX509TrustConfig.Create(AOwner: TComponent);
 begin
   inherited;
+  Name:=Format('%sTrustVerification', [AOwner.Name]);
   FAssets:=TTaurusTLSIOHandlerStoreAssets.Create(Self);
   FHostNames:=TTaurusTLSIOHandlerTrustFqdns.Create(Self);
   FEmails:=TTaurusTLSIOHandlerTrustEmails.Create(Self);
   FIPAddresses:=TTaurusTLSIOHandlerTrustIPAddresses.Create(Self);
+  FVerify:=cVerifyDefault;
+  FInheritance:=cInheritanceDefault;
+  FTrust:=cTrust;
+  FPurpose:=cPurposeDefault;
+  FHostCheck:=cHostCheckDefault;
+  FDepth:=cDepthDefault;
+  FSecurityLevel:=cSecurityLevelDefault;
 end;
 
 procedure TTaurusTLSIOHandlerX509TrustConfig.SetEmails(const Value: TTaurusTLSIOHandlerTrustEmails);

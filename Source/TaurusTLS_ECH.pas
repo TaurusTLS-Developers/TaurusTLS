@@ -13,6 +13,7 @@
 ///   Miscelanious ECH (Encrypted Client Hello) functions and classes.
 /// </summary>
 unit TaurusTLS_ECH;
+{$I TaurusTLSLinkDefines.inc}
 
 interface
 uses
