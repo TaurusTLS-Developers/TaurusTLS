@@ -1339,7 +1339,7 @@ end;
 
 procedure TTaurusTLSVerifyModeFlags.SetAsInt(AValue: TIdC_INT);
 var
-  lHighFlags, lFlags: TTaurusTLSVerifyModes;
+  lHighFlags, lFlags: TTaurusTLSVerifyModes; // PALOFF Variables that are referenced, but never set
 
 begin
   AValue:=AValue and cMask;

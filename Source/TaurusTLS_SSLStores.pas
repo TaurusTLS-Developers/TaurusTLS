@@ -1653,7 +1653,7 @@ var
 
 begin
   lLen:=Length(Value);
-  lRes:=(X509_VERIFY_PARAM_add1_rfc822(FParam, Value, lLen) > 0);
+  lRes:=X509_VERIFY_PARAM_add1_rfc822(FParam, Value, lLen) > 0;
   lRes:=lRes or (X509_VERIFY_PARAM_add1_smtputf8(FParam, Value, lLen) > 0);
   if not lRes then
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyEMail_add_err);

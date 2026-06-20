@@ -1845,12 +1845,7 @@ begin
   end;
 
   // 3. Cryptographically check if the resolved identity is an IP address.
-  FIdentityIP:=(FIdentity <> '') and IsValidIP(String(FIdentity));
-  if FIdentity <> '' then
-    FIdentityIP:=IsValidIP(String(FIdentity))
-  else
-    FIdentityIP:=False;
-
+  FIdentityIP:=(FIdentity <> '') and IsValidIP(string(FIdentity)); // PALOFF Common subexpression, consider elimination
   FIdentityBuilt:=True;
 end;
 
@@ -2194,15 +2189,15 @@ begin
 
   case ACurrent of
     seIdle:
-      Result:=(ATarget = seInitialized);
+      Result:=ATarget = seInitialized;
     seInitialized:
-      Result:=(ATarget = seHandshaking) or (ATarget = seClosed);
+      Result:=ATarget in [seHandshaking, seClosed];
     seHandshaking:
-      Result:=(ATarget = seEstablished) or (ATarget = seClosed);
+      Result:=ATarget in [seEstablished, seClosed];
     seEstablished:
-      Result:=(ATarget = seClosing) or (ATarget = seClosed);
+      Result:=ATarget in [seClosing, seClosed];
     seClosing:
-      Result:=(ATarget = seClosed);
+      Result:=ATarget = seClosed;
     seClosed, seError:
       Result:=False; // Terminal states cannot transition out
   else
