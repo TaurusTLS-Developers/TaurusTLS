@@ -237,35 +237,10 @@ function AnsiStringToString(const AStr: PIdAnsiChar): String; {$IFDEF USE_INLINE
 /// </param>
 function CertErrorToLongDescr(ACertError: TIdC_LONG): String;
 
-/// <summary>
-///   Returns true of OpenSSL 4.0.0 or greater is loaded or false if OpenSSL is
-///   not loaded or is less than 3.
-/// </summary>
-/// <returns>
-///   True if greater than OpenSSL 4.0.0 is loaded.
-/// </returns>
-function IsOpenSSL4orGreater : Boolean;  {$IFDEF USE_INLINE}inline; {$ENDIF}
-
 implementation
 
 uses TaurusTLS_ResourceStrings, TaurusTLSHeaders_bio, TaurusTLSHeaders_objects,
-  TaurusTLSHeaders_crypto, TaurusTLSHeaders_x509, TaurusTLSHeaders_x509_vfy, SysUtils;
-
-function IsOpenSSL4orGreater : Boolean;  {$IFDEF USE_INLINE}inline; {$ENDIF}
-begin
-  {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Result := False;
-  if Assigned(SSLeay) then
-  begin
-  {$ENDIF}
-     if SSLeay shr 28 > 3 then
-     begin
-       Result := True;
-     end;
-  {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  end;
-  {$ENDIF}
-end;
+  TaurusTLSHeaders_x509, TaurusTLSHeaders_x509_vfy, SysUtils;
 
 function AnsiStringToString(const AStr: PIdAnsiChar): String;
 {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -442,9 +417,9 @@ begin
   Result := '';
   if Assigned(a) then
   begin
-    LPtr := ASN1_STRING_get0_data(PASN1_STRING(a));
+    LPtr := ASN1_STRING_get0_data(PASN1_STRING(a)); //PALOFF - Possible bad typecast
     //ASN1_STRING_get0_data(PASN1_STRING(a));
-    LLen := ASN1_STRING_length(PASN1_STRING(a));
+    LLen := ASN1_STRING_length(PASN1_STRING(a)); //PALOFF - Possible bad typecast
     //ASN1_STRING_length(PASN1_STRING(a));
     Result := BytesToHexString(LPtr, LLen);
   end;
@@ -533,7 +508,7 @@ begin
   tz_hour := 0;
   tz_min := 0;
   Result := False; { default is to return with an error indication }
-  if ASN1_STRING_length(PASN1_STRING(a)) < 12 then
+  if ASN1_STRING_length(PASN1_STRING(a)) < 12 then //PALOFF - Possible bad typecast
   begin
     Exit;
   end;
@@ -648,15 +623,15 @@ begin
 
   if Assigned(a) then
   begin
-    LData := PTBa(ASN1_STRING_get0_data(PASN1_STRING(a)));
-    if ASN1_STRING_length(PASN1_STRING(a)) = 4 then
+    LData := PTBa(ASN1_STRING_get0_data(PASN1_STRING(a))); //PALOFF - Possible bad typecast
+    if ASN1_STRING_length(PASN1_STRING(a)) = 4 then   //PALOFF - Possible bad typecast
     begin
       Result := IntToStr(LData^[0]) + '.' + IntToStr(LData^[1]) + '.'
         + IntToStr(LData^[2]) + '.' + IntToStr(LData^[3]);
     end
     else
     begin
-      if ASN1_STRING_length(PASN1_STRING(a)) = 16 then
+      if ASN1_STRING_length(PASN1_STRING(a)) = 16 then   //PALOFF - Possible bad typecast
       begin
         for i := 0 to 7 do
         begin
