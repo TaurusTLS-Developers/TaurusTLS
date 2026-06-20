@@ -4976,7 +4976,7 @@ begin
   if LRetCode <= 0 then
   begin
     ETaurusTLSDataBindingError.RaiseException(fSSL, LRetCode,
-      RSSSLDataBindingError);
+      TaurusTLS_ResourceStrings.RSSSLDataBindingError);
   end;
   // ignore warning about 64-bit value being passed to a 32bit parameter.
   // See: https://docs.openssl.org/3.0/man3/SSL_set_fd/#return-values
@@ -5053,7 +5053,7 @@ begin
   if LRetCode <= 0 then
   begin
     ETaurusTLSDataBindingError.RaiseException(fSSL, LRetCode,
-      RSSSLDataBindingError);
+      TaurusTLS_ResourceStrings.RSSSLDataBindingError);
   end;
   // ignore 64 value passed to 32bit parameter.
   // see: https://docs.openssl.org/3.0/man3/SSL_set_fd/#return-values
