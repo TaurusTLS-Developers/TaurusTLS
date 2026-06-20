@@ -93,51 +93,49 @@ type
     /// <summary>
     ///   Implicitly converts a raw TIdC_LONG to TOsslVersion.
     /// </summary>
-    class operator Implicit(a: TIdC_LONG): TTaurusTLSOSSLVersion;
+    class operator Implicit(a: TIdC_LONG): TTaurusTLSOSSLVersion; // Missing "const" for unmodified record parameter
       {$IFDEF INLINE_ON}inline;{$ENDIF}
 
     /// <summary>
     ///   Implicitly converts TTaurusTLSOSSLVersion to a raw TIdC_LONG.
     /// </summary>
-    class operator Implicit(a: TTaurusTLSOSSLVersion): TIdC_LONG; inline;
+    class operator Implicit(a: TTaurusTLSOSSLVersion): TIdC_LONG; inline; // PALOFF Missing "const" for unmodified record parameter
       {$IFDEF INLINE_ON}inline;{$ENDIF}
 
     /// <summary>
     ///   Strictly compares two TTaurusTLSOSSLVersion instances.
     /// </summary>
-    class operator Equal(a, b: TTaurusTLSOSSLVersion): boolean;
+    class operator Equal(a, b: TTaurusTLSOSSLVersion): boolean; // PALOFF Missing "const" for unmodified record parameter
       {$IFDEF INLINE_ON}inline;{$ENDIF}
 
     /// <summary>
     ///   Strictly compares two TTaurusTLSOSSLVersion instances.
     /// </summary>
-    class operator NotEqual(a, b: TTaurusTLSOSSLVersion): boolean;
+    class operator NotEqual(a, b: TTaurusTLSOSSLVersion): boolean; // PALOFF Missing "const" for unmodified record parameter
       {$IFDEF INLINE_ON}inline;{$ENDIF}
 
     /// <summary>
     ///   Strictly compares two TTaurusTLSOSSLVersion instances.
     /// </summary>
-    class operator GreaterThan(a, b: TTaurusTLSOSSLVersion): boolean;
-      {$IFDEF INLINE_ON}inline;{$ENDIF}
-
-
-    /// <summary>
-    ///   Strictly compares two TTaurusTLSOSSLVersion instances.
-    /// </summary>
-    class operator GreaterThanOrEqual(a, b: TTaurusTLSOSSLVersion): boolean;
+    class operator GreaterThan(a, b: TTaurusTLSOSSLVersion): boolean; // PALOFF Missing "const" for unmodified record parameter
       {$IFDEF INLINE_ON}inline;{$ENDIF}
 
     /// <summary>
     ///   Strictly compares two TTaurusTLSOSSLVersion instances.
     /// </summary>
-    class operator LessThan(a, b: TTaurusTLSOSSLVersion): boolean;
+    class operator GreaterThanOrEqual(a, b: TTaurusTLSOSSLVersion): boolean; // PALOFF Missing "const" for unmodified record parameter
       {$IFDEF INLINE_ON}inline;{$ENDIF}
-
 
     /// <summary>
     ///   Strictly compares two TTaurusTLSOSSLVersion instances.
     /// </summary>
-    class operator LessThanOrEqual(a, b: TTaurusTLSOSSLVersion): boolean;
+    class operator LessThan(a, b: TTaurusTLSOSSLVersion): boolean; // PALOFF Missing "const" for unmodified record parameter
+      {$IFDEF INLINE_ON}inline;{$ENDIF}
+
+    /// <summary>
+    ///   Strictly compares two TTaurusTLSOSSLVersion instances.
+    /// </summary>
+    class operator LessThanOrEqual(a, b: TTaurusTLSOSSLVersion): boolean; // PALOFF Missing "const" for unmodified record parameter
       {$IFDEF INLINE_ON}inline;{$ENDIF}
 
     /// <summary>
@@ -145,7 +143,7 @@ type
     /// </summary>
     /// <param name="AVersion">The version to check against.</param>
     /// <returns>True if Major and Minor versions match.</returns>
-    function AreCompatible(AVersion: TTaurusTLSOSSLVersion): boolean; overload;
+    function AreCompatible(const AVersion: TTaurusTLSOSSLVersion): boolean; overload;
       {$IFDEF INLINE_ON}inline;{$ENDIF}
 
     /// <summary>
@@ -1237,11 +1235,11 @@ begin
   Result:=AreCompatible(TTaurusTLSOSSLVersion.Create(AVersion));
 end;
 
-function TTaurusTLSOSSLVersion.AreCompatible(AVersion: TTaurusTLSOSSLVersion): boolean;
+function TTaurusTLSOSSLVersion.AreCompatible(
+  const AVersion: TTaurusTLSOSSLVersion): boolean;
 begin
   Result:=(Self.Major = AVersion.Major) and (Self.Minor = AVersion.Minor);
 end;
-
 
 { TTaurusTLSSecurityBitsHelper }
 

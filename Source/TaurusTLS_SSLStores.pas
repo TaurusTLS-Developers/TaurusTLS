@@ -1000,7 +1000,7 @@ type
       ///  pointer's ownership is taken by this instance.
       ///  </remarks>
 //      constructor Create(AInfo: POSSL_STORE_INFO); overload;
-      constructor Create(AInfo: TStoreInfo); overload;
+      constructor Create(const AInfo: TStoreInfo); overload;
 
       ///  <summary>
       ///  Destroys the instance and frees the owned native OpenSSL pointer
@@ -1095,7 +1095,7 @@ type
   {$IFDEF FPC}
     {$WARN 3018 off : Constructor should be public}
   {$ENDIF}
-    constructor Create(ACtx: TStoreCtx;
+    constructor Create(const ACtx: TStoreCtx;
         ALoadFilter: TStoreItemTypes = cStoreAElementsAll); overload;
   {$IFDEF FPC}
     {$WARN 3018 off : Constructor should be public}
@@ -1107,7 +1107,7 @@ type
     ///  </summary>
     ///  <param name="ACtx">The native OSSL Store Context pointer.</param>
     ///  <param name="ALoadFilter">The set of types to load.</param>
-    procedure DoLoad(ACtx: TStoreCtx; ALoadFilter: TStoreItemTypes);
+    procedure DoLoad(const ACtx: TStoreCtx; ALoadFilter: TStoreItemTypes);
 
   public
     ///  <summary>
@@ -1117,7 +1117,7 @@ type
     ///  <param name="AUri">The URI (Ansi or UTF8 String).</param>
     ///  <param name="AUi">The User Interaction instance for password prompts.</param>
     ///  <param name="ALoadFilter">The set of types to load.</param>
-    constructor Create(AUri: RawByteString; AUi: TTaurusTLSCustomOsslUi;
+    constructor Create(const AUri: RawByteString; AUi: TTaurusTLSCustomOsslUi;
       ALoadFilter: TStoreItemTypes = cStoreAElementsAll); overload;
 
     ///  <summary>
@@ -1126,7 +1126,7 @@ type
     ///  <param name="AUri">The URI (e.g., file path).</param>
     ///  <param name="AUi">The User Interaction instance for password prompts.</param>
     ///  <param name="ALoadFilter">The set of types to load.</param>
-    constructor Create(AUri: UnicodeString; AUi: TTaurusTLSCustomOsslUi;
+    constructor Create(const AUri: UnicodeString; AUi: TTaurusTLSCustomOsslUi;
       ALoadFilter: TStoreItemTypes = cStoreAElementsAll); overload;
 
     /// <summary>
@@ -1368,7 +1368,7 @@ type
     ///     </item>
     ///   </list>
     /// </remarks>
-    procedure AppendFromLocation(AUri: string); {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure AppendFromLocation(const AUri: string); {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     /// <summary>
     ///   Attaches <c>X509_STORE</c> to OpenSSL <c>SSL_CTX</c> object.
@@ -1864,7 +1864,7 @@ end;
 
 { TTaurusTLSOSSLStore.TStoreItem }
 
-constructor TTaurusTLSOSSLStore.TStoreItem.Create(AInfo: TStoreInfo);
+constructor TTaurusTLSOSSLStore.TStoreItem.Create(const AInfo: TStoreInfo);
 begin
   inherited Create;
   if not AInfo.IsExist then
@@ -1950,7 +1950,7 @@ end;
 
 { TTaurusTLSOSSLStore }
 
-constructor TTaurusTLSOSSLStore.Create(ACtx: TStoreCtx;
+constructor TTaurusTLSOSSLStore.Create(const ACtx: TStoreCtx;
   ALoadFilter: TStoreItemTypes);
 begin
   if not ACtx.IsExist then
@@ -1964,7 +1964,7 @@ begin
   end;
 end;
 
-constructor TTaurusTLSOSSLStore.Create(AUri: RawByteString;
+constructor TTaurusTLSOSSLStore.Create(const AUri: RawByteString;
   AUi:TTaurusTLSCustomOsslUi; ALoadFilter: TStoreItemTypes);
 var
   lCtx: TStoreCtx;
@@ -1974,7 +1974,7 @@ begin
   Create(lCtx, ALoadFilter);
 end;
 
-constructor TTaurusTLSOSSLStore.Create(AUri: UnicodeString;
+constructor TTaurusTLSOSSLStore.Create(const AUri: UnicodeString;
   AUi: TTaurusTLSCustomOsslUi; ALoadFilter: TStoreItemTypes);
 begin
   Create(RawByteString(AUri), AUi, ALoadFilter);
@@ -2001,7 +2001,7 @@ begin
   Result:=FCounters[AType];
 end;
 
-procedure TTaurusTLSOSSLStore.DoLoad(ACtx: TStoreCtx;
+procedure TTaurusTLSOSSLStore.DoLoad(const ACtx: TStoreCtx;
   ALoadFilter: TStoreItemTypes);
 var
   lInfo: TStoreInfo;
@@ -2113,7 +2113,7 @@ begin
   inherited;
 end;
 
-procedure TaurusTLS_X509Store.AppendFromLocation(AUri: string);
+procedure TaurusTLS_X509Store.AppendFromLocation(const AUri: string);
 begin
 {$IFDEF DCC}
   if not AppendFromLocationW(AUri) then

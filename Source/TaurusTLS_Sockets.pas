@@ -329,7 +329,7 @@ type
       AUi: TTaurusTLSCustomOsslUi); reintroduce; overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
     constructor CreateMem(const AName: string; AData: TBytes;
       AUi: TTaurusTLSCustomOsslUi); reintroduce; overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    constructor CreateMem(const AName: string; AData: string;
+    constructor CreateMem(const AName, AData: string;
       AUi: TTaurusTLSCustomOsslUi); reintroduce; overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     property Name: string read FName;
@@ -1367,7 +1367,7 @@ begin
   SetName(AName);
 end;
 
-constructor TTaurusTLSTrustStore.CreateMem(const AName: string; AData: string;
+constructor TTaurusTLSTrustStore.CreateMem(const AName, AData: string;
   AUi: TTaurusTLSCustomOsslUi);
 var
   lBio: TTaurusTLSRawByteStringBIO;

@@ -106,7 +106,7 @@ type
     /// <c>True</c> if operation succeed, <c>False</c> otherwise.
     /// </returns>
     /// </summary>
-    function SetPassword(APass: PIdAnsiChar): boolean;
+    function SetPassword(const APass: PIdAnsiChar): boolean;
       overload;
 
     /// <summary> Wrapper for <c>UI_set_result_ex</c> routine. Sets the <b>password</b>
@@ -121,7 +121,7 @@ type
     /// <c>True</c> if operation succeed, <c>False</c> otherwise.
     /// </returns>
     /// </summary>
-    function SetPassword(APass: RawByteString): boolean;
+    function SetPassword(const APass: RawByteString): boolean;
       overload;
 
     /// <summary> Wrapper for <c>UI_set_result_ex</c> routine. Sets the <b>password</b>
@@ -137,7 +137,7 @@ type
     /// <returns>
     /// <c>True</c> if operation succeed, <c>False</c> otherwise.
     /// </returns>
-    function SetPassword(APass: TBytes): boolean; overload;
+    function SetPassword(const APass: TBytes): boolean; overload;
 
     /// <summary> Returns UI_STRING type. See <see cref="UI_string_types" /> and <see
     /// href="https://docs.openssl.org/master/man3/UI_STRING/#synopsis" />
@@ -481,7 +481,7 @@ type
     function DoCheckString(AString: TTaurusTLS_UiString): TTaurusTLS_UiResult;
       override;
   public
-    constructor Create(APass: RawByteString);
+    constructor Create(const APass: RawByteString);
   end;
 
 implementation
@@ -551,12 +551,12 @@ begin
     Result:=UI_set_result_ex(Ui, FString, APass, ALen) = 0;
 end;
 
-function TTaurusTLS_UiString.SetPassword(APass: RawByteString): boolean;
+function TTaurusTLS_UiString.SetPassword(const APass: RawByteString): boolean;
 begin
   Result:=SetPassword(PIdAnsiChar(APass));
 end;
 
-function TTaurusTLS_UiString.SetPassword(APass: TBytes): boolean;
+function TTaurusTLS_UiString.SetPassword(const APass: TBytes): boolean;
 var
   lLen: TIdC_Long;
   var lPass: PAnsiChar;
@@ -571,7 +571,7 @@ begin
   SetPassword(lPass, lLen);
 end;
 
-function TTaurusTLS_UiString.SetPassword(APass: PIdAnsiChar): boolean;
+function TTaurusTLS_UiString.SetPassword(const APass: PIdAnsiChar): boolean;
 begin
   Result:=SetPassword(APass, Length(APass));
 end;
@@ -1027,7 +1027,7 @@ end;
 
 { TTaurusTLS_SimplePasswordUI }
 
-constructor TTaurusTLS_SimplePasswordUI.Create(APass: RawByteString);
+constructor TTaurusTLS_SimplePasswordUI.Create(const APass: RawByteString);
 begin
   FPass:=APass;
   inherited Create;
