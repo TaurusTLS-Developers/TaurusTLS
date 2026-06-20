@@ -66,8 +66,12 @@ resourcestring
   RSOSSLX509DigestFailed = 'X509_digest failed';
   
   RSOSSCouldNotCreateSSLObject = 'Could not create SSL object';
+<<<<<<< HEAD
   RSSSLDataBindingError = 'SSL_set_fd failed';
 
+=======
+  RSSSLDataBindingError_2 = 'SSL_set_fd failed';
+>>>>>>> 3041f87 (Avoid name conflict with Indy OpenSSL Support resource-strings.)
   // long desciptions for cert errors.
   RSMSG_X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT = 'the issuer certificate could ' +
     'not be found: this occurs if the issuer certificate of an untrusted ' +
