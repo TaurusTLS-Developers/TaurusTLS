@@ -1174,14 +1174,14 @@ var
   function BIO_get_shutdown(a: PBIO): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
   procedure BIO_vfree(a: PBIO) cdecl; external CLibCrypto;
   function BIO_up_ref(a: PBIO): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
-  function BIO_read(b: PBIO; data: Pointer; dlen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
-  function BIO_read_ex(b: PBIO; data: Pointer; dlen: TIdC_SIZET; var readbytes: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  function BIO_read(b: PBIO; var data; dlen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  function BIO_read_ex(b: PBIO; var data; dlen: TIdC_SIZET; var readbytes: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
   function BIO_recvmmsg(b : PBIO; msg : PBIO_MSG;
     stride, num_msg : TIdC_SIZET; flags : TIdC_UINT64;
     msgs_processed : PIdC_SIZET): TIdC_INT;  cdecl; external CLibCrypto; {introduced 3.2.0}
   function BIO_gets( bp: PBIO; buf: PIdAnsiChar; size: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
-  function BIO_write(b: PBIO; const data: Pointer; dlen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
-  function BIO_write_ex(b: PBIO; const data: Pointer; dlen: TIdC_SIZET; var written: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  function BIO_write(b: PBIO; const data; dlen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  function BIO_write_ex(b: PBIO; const data; dlen: TIdC_SIZET; var written: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
 
   function BIO_sendmmsg(b0 : PBIO; msg : PBIO_MSG;
     stride, num_msg : TIdC_SIZET; flags : TIdC_UINT64;
