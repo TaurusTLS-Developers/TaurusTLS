@@ -874,7 +874,7 @@ type
     destructor Destroy; override;
 
     property HasCertificate: boolean read GetHasCertificate;
-    property ErrorCode: TIdC_INT read GetError write SetError;
+    property ErrorCode: TIdC_LONG read GetError write SetError;
     property ErrorDepth: TIdC_INT read GetErrDepth write SetErrDepth;
     property CurrentCertificate: TTaurusTLSX509 read GetCurrentCert;
     property ErrorShortDescription: string read GetErrShortDescription;
