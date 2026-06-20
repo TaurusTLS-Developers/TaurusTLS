@@ -1144,11 +1144,11 @@ end;
 
 constructor TTaurusTLSOSSLVersion.Create(AMajor, AMinor, AFix, APatch, AStatus: TIdC_UINT8);
 begin
-  FVersion:=(TIdC_LONG(AMajor)   shl cMajorShift) or
-              (TIdC_LONG(AMinor)   shl cMinorShift) or
-              (TIdC_LONG(AFix)     shl cFixShift)   or
-              (TIdC_LONG(APatch)   shl cPatchShift) or
-              (TIdC_LONG(AStatus)  and cStatusMask);
+  FVersion:=(TIdC_LONG(AMajor     shl cMajorShift)) or
+              (TIdC_LONG(AMinor   shl cMinorShift)) or
+              (TIdC_LONG(AFix     shl cFixShift))   or
+              (TIdC_LONG(APatch   shl cPatchShift)) or
+              (TIdC_LONG(AStatus  and cStatusMask));
 end;
 
 function TTaurusTLSOSSLVersion.GetMajor: TIdC_UINT8;
@@ -1307,8 +1307,8 @@ end;
 class function TTaurusTLSSSLOptionFlagsHelper.FromInt(
   AValue: TIdC_UINT64): TTaurusTLSSSLOptionFlags;
 begin
-  AValue:=AValue and cMask;
-  Result:=TTaurusTLSSSLOptionFlags((@AValue)^);
+  AValue:=AValue and cMask; // clean-up possible garbage
+  Result:=TTaurusTLSSSLOptionFlags((@AValue)^); // PALOFF Possible bad pointer usage
 end;
 
 class function TTaurusTLSSSLOptionFlagsHelper.ToInt(
@@ -1469,7 +1469,7 @@ end;
 class function TTaurusTLSX509VerifyFlagsHelper.ToInt(
   Value: TTaurusTLSX509VerifyFlags): TIdC_ULONG;
 begin
-  Result:=(TIdC_ULONG((@Value)^) and cX509vfMask);
+  Result:=(TIdC_ULONG((@Value)^) and cX509vfMask); // PALOFF Possible bad pointer usage
 end;
 
 class function TTaurusTLSX509VerifyFlagsHelper.FromInt(
@@ -1478,7 +1478,7 @@ begin
   if (Value or cX509vfMask) <> cX509vfMask then
     raise EInvalidCast.Create('Invalid X509 Verify Flags.');
 //{$I RangeCheck-OFF.inc}
-  Result:=TTaurusTLSX509VerifyFlags((@Value)^);
+  Result:=TTaurusTLSX509VerifyFlags((@Value)^); // PALOFF Possible bad pointer usage
 //{$I RangeCheck-ON.inc}
 end;
 
@@ -1487,7 +1487,7 @@ class function TTaurusTLSX509VerifyFlagsHelper.SafeFromInt(
 begin
   Value:=Value and cX509vfMask;
 //{$I RangeCheck-OFF.inc}
-  Result:=TTaurusTLSX509VerifyFlags((@Value)^);
+  Result:=TTaurusTLSX509VerifyFlags((@Value)^); // PALOFF Possible bad pointer usage
 //{$I RangeCheck-ON.inc}
 end;
 
@@ -1557,7 +1557,7 @@ end;
 class function TTaurusTLSX509InheritanceFlagsHelper.ToInt(
   Value: TTaurusTLSX509InheritanceFlags): TIdC_UINT32;
 begin
-  Result:=(TIdC_UINT32((@Value)^) and cX509ihfMask);
+  Result:=(TIdC_UINT32((@Value)^) and cX509ihfMask); // PALOFF Possible bad pointer usage
 end;
 
 class function TTaurusTLSX509InheritanceFlagsHelper.FromInt(
@@ -1566,7 +1566,7 @@ begin
   if (Value or cX509ihfMask) <> cX509ihfMask then
     raise EInvalidCast.Create('Invalid X509 Inheritance Flags.');
 //{$I RangeCheck-OFF.inc}
-  Result:=TTaurusTLSX509InheritanceFlags((@Value)^);
+  Result:=TTaurusTLSX509InheritanceFlags((@Value)^); // PALOFF Possible bad pointer usage
 //{$I RangeCheck-ON.inc}
 end;
 
@@ -1711,14 +1711,14 @@ begin
   if ((Value or cX509hckMask) <> cX509hckMask) then
     raise EInvalidCast.Create('Invalid X509 Host Check Verify Flags.');
 //{$I RangeCheck-OFF.inc}
-  Result:=TTaurusTLSX509HostCheckFlags((@Value)^);
+  Result:=TTaurusTLSX509HostCheckFlags((@Value)^); // PALOFF Possible bad pointer usage
 //{$I RangeCheck-ON.inc}
 end;
 
 class function TTaurusTLSX509HostCheckFlagsHelper.ToInt(
   Value: TTaurusTLSX509HostCheckFlags): TIdC_UINT;
 begin
-  Result:=(TIdC_UINT((@Value)^) and cX509hckMask);
+  Result:=(TIdC_UINT((@Value)^) and cX509hckMask);  // PALOFF Possible bad pointer usage
 end;
 
 function TTaurusTLSX509HostCheckFlagsHelper.IsEqualTo(

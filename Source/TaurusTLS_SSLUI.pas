@@ -980,7 +980,7 @@ begin
     if Assigned(Result) then
     begin
       {$IFDEF DCC}
-      if TInterlocked.CompareExchange(Pointer(FUiMeth), Result, nil) <> nil then
+      if TInterlocked.CompareExchange(Pointer(FUiMeth), Result, nil) <> nil then // PALOFF Possible bad pointer usage
       {$ELSE}
       if InterlockedCompareExchange(Pointer(FUiMeth), Result, nil)  <> nil then
       {$ENDIF}

@@ -1521,7 +1521,7 @@ end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetHostRaw(Value: PIdAnsiChar);
 begin
-  if X509_VERIFY_PARAM_set1_host(FParam, PIdAnsiChar(Value), 0) <= 0 then
+  if X509_VERIFY_PARAM_set1_host(FParam, PIdAnsiChar(Value), 0) <= 0 then // PALOFF Possible bad typecast
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyHost_err);
 end;
 
@@ -1536,7 +1536,7 @@ end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetHostA(const Value: RawByteString);
 begin
-  SetHostRaw(PIdAnsiChar(Value));
+  SetHostRaw(PIdAnsiChar(Value));  // PALOFF Possible bad typecast
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetHostW(const Value: UnicodeString);
@@ -1557,7 +1557,7 @@ procedure TTaurusTLSCustomX509VerifyParam.AddHostA(const Value: RawByteString);
 begin
   if Value = '' then
     Exit;
-  if X509_VERIFY_PARAM_add1_host(FParam, PIdAnsiChar(Value), 0) <= 0 then
+  if X509_VERIFY_PARAM_add1_host(FParam, PIdAnsiChar(Value), 0) <= 0 then  // PALOFF Possible bad typecast
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyHost_err);
 end;
 
@@ -1638,7 +1638,7 @@ end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetEMailA(const Value: RawByteString);
 begin
-  SetEmailRaw(PIdAnsiChar(Value));
+  SetEmailRaw(PIdAnsiChar(Value));  // PALOFF Possible bad typecast
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetEMailW(const Value: UnicodeString);
@@ -1661,7 +1661,7 @@ end;
 
 procedure TTaurusTLSCustomX509VerifyParam.AddEMailA(const Value: RawByteString);
 begin
-  AddEMailRaw(PIdAnsiChar(Value));
+  AddEMailRaw(PIdAnsiChar(Value));  // PALOFF Possible bad typecast
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.AddEMailW(const Value: UnicodeString);
@@ -1740,7 +1740,7 @@ end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetIpAddressRaw(Value: PIdAnsiChar);
 begin
-  if X509_VERIFY_PARAM_set1_ip_asc(FParam, PIdAnsiChar(Value)) <= 0 then
+  if X509_VERIFY_PARAM_set1_ip_asc(FParam, PIdAnsiChar(Value)) <= 0 then  // PALOFF Possible bad typecast
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyIPAddr_set_err);
 end;
 
@@ -1755,7 +1755,7 @@ end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetIpAddressA(const Value: RawByteString);
 begin
-  SetIpAddressRaw(PIdAnsiChar(Value));
+  SetIpAddressRaw(PIdAnsiChar(Value)); // PALOFF Possible bad typecast
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetIpAddressW(const Value: UnicodeString);
@@ -1765,14 +1765,14 @@ end;
 
 procedure TTaurusTLSCustomX509VerifyParam.AddIpAddressRaw(Value: PIdAnsiChar);
 begin
-  if X509_VERIFY_PARAM_add1_ip_asc(FParam, PIdAnsiChar(Value)) <= 0 then
+  if X509_VERIFY_PARAM_add1_ip_asc(FParam, PIdAnsiChar(Value)) <= 0 then // PALOFF Possible bad typecast
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyIPAddr_add_err);
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.AddIpAddressA(
   const Value: RawByteString);
 begin
-  AddIpAddressRaw(PIdAnsiChar(Value));
+  AddIpAddressRaw(PIdAnsiChar(Value)); // PALOFF Possible bad typecast
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.AddIpAddressW(
@@ -1970,7 +1970,7 @@ var
   lCtx: TStoreCtx;
 
 begin
-  lCtx:=TStoreCtx.Create(PIdAnsiChar(AUri), AUi);
+  lCtx:=TStoreCtx.Create(PIdAnsiChar(AUri), AUi); // PALOFF Possible bad typecast
   Create(lCtx, ALoadFilter);
 end;
 
@@ -2129,7 +2129,7 @@ end;
 
 function TaurusTLS_X509Store.AppendFromLocationA(const AUri: RawByteString): boolean;
 begin
-  Result:=X509_STORE_load_store(FStore, PIdAnsiChar(AUri)) > 0;
+  Result:=X509_STORE_load_store(FStore, PIdAnsiChar(AUri)) > 0;  // PALOFF Possible bad typecast
 end;
 
 function TaurusTLS_X509Store.AppendFromLocationW(const AUri: UnicodeString): boolean;
@@ -2444,7 +2444,7 @@ begin
     lMeth:=nil;
   end;
 
-  Create(OSSL_STORE_open(PIdAnsiChar(AUri), lMeth, AUi, nil, nil));
+  Create(OSSL_STORE_open(PIdAnsiChar(AUri), lMeth, AUi, nil, nil)); // PALOFF Possible bad typecast
 end;
 
 constructor TTaurusTLSOSSLStore.TStoreCtx.Create(ABio: TTaurusTLSCustomBIO;

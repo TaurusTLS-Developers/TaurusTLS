@@ -1725,14 +1725,14 @@ end;
 
 procedure TTaurusTLSSocketCtx.SetCipherList(const AValue: string);
 begin
-  if SSL_CTX_set_cipher_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <=0 then
+  if SSL_CTX_set_cipher_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <=0 then  // PALOFF Possible bad typecast
     ETaurusTLSSocketCtxError.RaiseWithMessageFmt(
       'Error setting cipher list ''%s'' to the SSL Context.', [AValue]);
 end;
 
 procedure TTaurusTLSSocketCtx.SetCipherSuites(const AValue: string);
 begin
-  if SSL_CTX_set_ciphersuites(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <=0 then
+  if SSL_CTX_set_ciphersuites(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <=0 then // PALOFF Possible bad typecast
     ETaurusTLSSocketCtxError.RaiseWithMessageFmt(
       'Error setting cipher suites ''%s'' to the SSL Context.', [AValue]);
 end;
@@ -1745,7 +1745,7 @@ end;
 
 procedure TTaurusTLSSocketCtx.SetKeXGroups(const AValue: string);
 begin
-  if SSL_CTX_set1_groups_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <=0 then
+  if SSL_CTX_set1_groups_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <=0 then // PALOFF Possible bad typecast
     ETaurusTLSSocketCtxError.RaiseWithMessageFmt(
       'Error setting key exchange groups ''%s'' to the SSL Context.', [AValue]);
 end;
@@ -1766,7 +1766,7 @@ end;
 
 procedure TTaurusTLSSocketCtx.SetSigAlgorithms(const AValue: string);
 begin
-  if SSL_CTX_set1_sigalgs_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then
+  if SSL_CTX_set1_sigalgs_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then // PALOFF Possible bad typecast
     ETaurusTLSSocketCtxError.RaiseWithMessageFmt(
       'Error setting signiture algorithms ''%s'' to the SSL Context.', [AValue]);
 end;
@@ -2475,7 +2475,7 @@ end;
 
 class function TTaurusTLSBaseSocket.GetInstanceFromSSL<T>(ASSL: PSSL): T;
 begin
-  Result:=TObject(SSL_get_app_data(ASSL)) as T; //PALOFF Pointer cast to TObject
+  Result:=TObject(SSL_get_app_data(ASSL)) as T; // PALOFF Pointer cast to TObject
 end;
 
 function TTaurusTLSBaseSocket.GetPerCertificate: TTaurusTLSX509;
@@ -2659,8 +2659,8 @@ begin
       // Configure ECH Server Names using pre-computed parameters
       lRetCode := SSL_ech_set1_server_names(
         FSSL,
-        PIdAnsiChar(lIdentity),
-        PIdAnsiChar(lConfig.ECHOuterSNIRaw),
+        PIdAnsiChar(lIdentity),  // PALOFF Possible bad typecast
+        PIdAnsiChar(lConfig.ECHOuterSNIRaw),  // PALOFF Possible bad typecast
         lConfig.ECHNoOuterVal
       );
 
@@ -2673,7 +2673,7 @@ begin
       if lConfig.UseGREASE then
         SSL_set_options(FSSL, SSL_OP_ECH_GREASE);
 
-      lRetCode := SSL_set_tlsext_host_name(FSSL, PIdAnsiChar(lIdentity));
+      lRetCode := SSL_set_tlsext_host_name(FSSL, PIdAnsiChar(lIdentity));  // PALOFF Possible bad typecast
       if lRetCode <= 0 then
         ETaurusTLSSettingTLSHostNameError.RaiseException(FSSL, lRetCode, RSSSLSettingTLSHostNameError_2);
     end;

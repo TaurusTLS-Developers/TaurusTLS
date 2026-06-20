@@ -634,7 +634,7 @@ end;
 
 constructor TTaurusTLSBytesBio.Create(const AData: TBytes);
 begin
-  inherited Create(PByte(AData), Length(AData)*SizeOf(Byte));
+  inherited Create(PByte(AData), Length(AData)*SizeOf(Byte)); // PALOFF Possible bad pointer usage
   FData:=AData;
 end;
 
@@ -642,7 +642,7 @@ end;
 
 constructor TTaurusTLSIdBytesBio.Create(const AData: TIdBytes);
 begin
-  inherited Create(PByte(AData), Length(AData)*SizeOf(Byte));
+  inherited Create(PByte(AData), Length(AData)*SizeOf(Byte)); // PALOFF Possible bad pointer usage
   FData:=AData;
 end;
 

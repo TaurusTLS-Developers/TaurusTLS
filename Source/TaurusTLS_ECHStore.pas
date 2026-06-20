@@ -562,7 +562,7 @@ begin
 
   LBio := TTaurusTLSMemBio.Create;
   try
-    LBio.LoadFromStream(AStream, TIdC_SIZET(lLen));
+    LBio.LoadFromStream(AStream, TIdC_SIZET(lLen));  // PALOFF Possible bad typecast
     DoSetConfigList(LBio);
   finally
     LBio.Free;
@@ -628,7 +628,7 @@ begin
   {$ENDIF}
   ETaurusTLSECHStore_new_config.CheckAndRaise(
      OSSL_ECHSTORE_new_config(Store, GetECHVersion, 0,
-      PIdAnsiChar(LPublicName), ASuite),
+      PIdAnsiChar(LPublicName), ASuite),  // PALOFF Possible bad typecast
     RSMsg_ECHStore_new_config_err);
 end;
 
