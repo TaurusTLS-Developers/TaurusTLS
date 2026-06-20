@@ -63,6 +63,9 @@ resourcestring
   RSOSSLHMACUpdateError = 'HMAC_Update error';
   RSOSSLHMACFinalError = 'HMAC_Final error';
   RSOSSLX509DigestFailed = 'X509_digest failed';
+  
+  RSOSSCouldNotCreateSSLObject = 'Could not create SSL object';
+  RSSSLDataBindingError_2 = 'SSL_set_fd failed';
   // long desciptions for cert errors.
   RSMSG_X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT = 'the issuer certificate could ' +
     'not be found: this occurs if the issuer certificate of an untrusted ' +
