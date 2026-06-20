@@ -1006,8 +1006,8 @@ begin
     lValue:=AValue - [ekNoECH, ekTryECH]
   else if ekTryECH in AValue then
     lValue:=AValue - [ekNoECH]
-  else if ekNoECH in AValue then
-    lValue:=[ekNoECH]; // drop all other flags
+  else
+    lValue:=[ekNoECH];
 
   if IsEnabled(lValue) and (GetMethods(lValue) <> []) then
     ETaurusTLSECHCliFlagsError.RaiseWithMessage(RMSG_ClientECHFlagsInvalidMethods_err);
@@ -1470,9 +1470,8 @@ begin
   if not (Assigned(lTrustStores) and (lTrustStores.Count > 0)) then
     Exit;
 
-  lX509Store:=nil;
+  lX509Store:=TaurusTLS_X509Store.Create;
   try
-    lX509Store:=TaurusTLS_X509Store.Create;
     for lStorePair in FTrustStores do
       lX509Store.AppendFromOsslStore(lStorePair.Value, [sitCert, sitCRL]);
     lX509Store.AttachToSSLCtx(ASocketCtx.SSLCtx);
@@ -1488,9 +1487,8 @@ var
   i, lHigh: integer;
 
 begin
-  lVfyParam:=nil;
+  lVfyParam:=TTaurusTLSX509VerifyParam.Create;
   try
-    lVfyParam:=TTaurusTLSX509VerifyParam.Create;
     with lVfyParam do
     begin
       VerifyFlags:=FVfyParamVerifyFlags;
@@ -2741,7 +2739,7 @@ var
   lInner, lOuter: PIdAnsiChar;
   lECHConfigBuf: PByte;
   lECHConfigLen: NativeUInt;
-  lNewConfigBase64: String;
+  lNewConfigBase64: string; // PALOFF Managed local variable can be declared inline
   lConfig: TTaurusTLSClientSocketCtx;
 
 begin

@@ -683,19 +683,18 @@ begin
   Result:=0;
   if not Assigned(FHandler) then
     Exit;
-  lStr:=nil;
   try
     lStr:=TTaurusTLS_UiString.Create(uis, ui);
     try
       Result:=Pred(Ord(FHandler.DoSetString(ui, lStr)));
       if Result < 0 then
         Result:=0;
-    except
-      // Do nothing for now
-      // Need to think about custom OpenSSL Error codes and messages
+    finally
+      lStr.Free;
     end;
-  finally
-    lStr.Free;
+  except
+    // Do nothing for now
+    // Need to think about custom OpenSSL Error codes and messages
   end;
 end;
 
@@ -721,17 +720,16 @@ begin
   Result:=0;
   if not Assigned(FHandler) then
     Exit;
-  lStr:=nil;
   try
     lStr:=TTaurusTLS_UiString.Create(uis, ui);
     try
       Result:=Pred(Ord(FHandler.DoCheckString(ui, lStr)));
-    except
-      // Do nothing for now
-      // Need to think about custom OpenSSL Error codes and messages
+    finally
+      lStr.Free;
     end;
-  finally
-    lStr.Free;
+  except
+    // Do nothing for now
+    // Need to think about custom OpenSSL Error codes and messages
   end;
 end;
 

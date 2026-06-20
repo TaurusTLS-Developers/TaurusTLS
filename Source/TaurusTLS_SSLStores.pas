@@ -2014,7 +2014,8 @@ begin
     if not ((lInfo.IsExist and (lInfo.GetType in ALoadFilter))) then
       continue;
     try
-      lItem:=TStoreItem.Create(lInfo);
+      lItem:=TStoreItem.Create(lInfo); // PALOFF Unbalanced Create/Free
+      // FList takes ownerthip on lItem
       FList.Add(lItem);
       Inc(FCounters[lItem.&Type]);
     finally
