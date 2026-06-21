@@ -147,7 +147,7 @@ type
 
   TTaurusTLSSSLStateFlags = set of TTaurusTLSSSLStateFlag;
 
-  TTaurusTLSState = record
+  TTaurusTLSSSLState = record
   public const
     cLowMin   = Ord(Low(TTaurusTLSSSLStateFlag));
     cLowMax   = Ord(sfHandShakeDone);
@@ -289,7 +289,7 @@ type
 
 
   TTaurusTLSOnSSLStatusInfo = procedure(ASender: TObject;
-    ASocket: TTaurusTLSBaseSocket; const AState: TTaurusTLSState) of object;
+    ASocket: TTaurusTLSBaseSocket; const AState: TTaurusTLSSSLState) of object;
 
   TTaurusTLSOnDebugMessage = procedure(ASender: TObject;
     const AMessage: String) of object;
@@ -377,6 +377,7 @@ type
     FOnPeerCertError: TTaurusTLSOnPeerCertError;
     FOnSecurityCheck: TTaurusTLSOnSecurityCheck;
 
+    // callback event assignment status flags
     function GetVerifyHostname: boolean;
     function GetHasOnStatusInfo: boolean;
     function GetOnSecurityCheck: boolean;
@@ -386,6 +387,8 @@ type
   protected
     class function NormalizeHostName(const AValue: RawByteString): RawByteString;
       static; {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    // Event handlers
     procedure DoOnStateChange(ASocket: TTaurusTLSBaseSocket;
       AOldState, ANewState: TTaurusTLSSslSocketState); {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure DoOnDebug(const AMsg: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -495,9 +498,9 @@ type
 
     FOnStateChange: TTaurusTLSOnStateChange;
     FOnDebugMessage: TTaurusTLSOnDebugMessage;
+    FOnPeerCertError: TTaurusTLSOnPeerCertError;
     FOnStatusInfo: TTaurusTLSOnSSLStatusInfo;
     FOnVerifyCertificate: TTaurusTLSOnVerifyCallback;
-    FOnPeerCertError: TTaurusTLSOnPeerCertError;
 
   protected
     procedure Lock; {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -508,7 +511,6 @@ type
     procedure DoBuildTrustStore(ASocketCtx: TTaurusTLSSocketCtx);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure DoBuildVerifyParam(ASocketCtx: TTaurusTLSSocketCtx);
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure DoBuild(ASender: TObject; ASocketCtx: TTaurusTLSSocketCtx); virtual;
 
     property TLSMeth: PSSL_METHOD read FTLSMeth;
@@ -651,12 +653,14 @@ type
     procedure DoHandshake;
     procedure DoHandshakeIteration; virtual; abstract;
     procedure DoShutdown;
+    procedure DoSetState(ATarget: TTaurusTLSSslSocketState); virtual;
 
     function IsValidTransition(ACurrent, ATarget: TTaurusTLSSslSocketState): Boolean; virtual;
-    procedure DoSetState(ATarget: TTaurusTLSSslSocketState); virtual;
-    procedure CheckActiveState(const AExpectedStates: TTaurusTLSSslSocketStates); {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    // Event handlers
     procedure DoStateChangeNotify(ACurrent, ATarget: TTaurusTLSSslSocketState); {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure DoDebugLog(const AMessage: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure CheckActiveState(const AExpectedStates: TTaurusTLSSslSocketStates); {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     property SocketHandle: TIdStackSocketHandle read FSocketHandle write FSocketHandle;
     property PeerCertificate: TTaurusTLSX509 read GetPerCertificate;
@@ -1014,21 +1018,21 @@ begin
   FValue:=lValue;
 end;
 
-{ TTaurusTLSState }
+{ TTaurusTLSSSLState }
 
-constructor TTaurusTLSState.Create(const ASSLStates, ACode: TIdC_INT;
+constructor TTaurusTLSSSLState.Create(const ASSLStates, ACode: TIdC_INT;
   ASSL: PSSL);
 begin
   Init(ASSLStates, ACode, ASSL);
 end;
 
-constructor TTaurusTLSState.Create(const AStates: TTaurusTLSSSLStateFlags;
+constructor TTaurusTLSSSLState.Create(const AStates: TTaurusTLSSSLStateFlags;
   const ACode: TIdC_INT; ASSL: PSSL);
 begin
   Init(ToInt(AStates), ACode, ASSL);
 end;
 
-procedure TTaurusTLSState.Init(const ASSLStates, ACode: TIdC_INT; ASSL: PSSL);
+procedure TTaurusTLSSSLState.Init(const ASSLStates, ACode: TIdC_INT; ASSL: PSSL);
 begin
   FStates:=ASSLStates and cStateFlagsMask; // cleanup possible unknown flags
   FCode:=ACode;
@@ -1036,7 +1040,7 @@ begin
   InitMessages;
 end;
 
-procedure TTaurusTLSState.InitMessages;
+procedure TTaurusTLSSSLState.InitMessages;
 var
   lStatusMessage, lAlertMessage: string;
 
@@ -1124,7 +1128,7 @@ begin
   end;
 end;
 
-class function TTaurusTLSState.ToInt(
+class function TTaurusTLSSSLState.ToInt(
   const AValue: TTaurusTLSSSLStateFlags): TIdC_INT;
 begin
 {$IF SizeOf(TTaurusTLSSSLStateFlags) = 1}
@@ -1136,82 +1140,82 @@ begin
 {$IFEND}
 end;
 
-function TTaurusTLSState.GetIsConnect: boolean;
+function TTaurusTLSSSLState.GetIsConnect: boolean;
 begin
   Result := sfConnect in StateFlags;
 end;
 
-function TTaurusTLSState.GetIsAccept: boolean;
+function TTaurusTLSSSLState.GetIsAccept: boolean;
 begin
   Result := sfAccept in StateFlags;
 end;
 
-function TTaurusTLSState.GetIsInLoop: boolean;
+function TTaurusTLSSSLState.GetIsInLoop: boolean;
 begin
   Result := sfLoop in StateFlags;
 end;
 
-function TTaurusTLSState.GetIsAlert: boolean;
+function TTaurusTLSSSLState.GetIsAlert: boolean;
 begin
   Result := sfAlert in StateFlags;
 end;
 
-function TTaurusTLSState.GetIsRead: boolean;
+function TTaurusTLSSSLState.GetIsRead: boolean;
 begin
   Result := sfRead in StateFlags;
 end;
 
-function TTaurusTLSState.GetIsWrite: boolean;
+function TTaurusTLSSSLState.GetIsWrite: boolean;
 begin
   Result := sfWrite in StateFlags;
 end;
 
-function TTaurusTLSState.GetIsHandshakeStars: boolean;
+function TTaurusTLSSSLState.GetIsHandshakeStars: boolean;
 begin
   Result := sfHandShakeStart in StateFlags;
 end;
 
-function TTaurusTLSState.GetIsHandshakeDone: boolean;
+function TTaurusTLSSSLState.GetIsHandshakeDone: boolean;
 begin
   Result := sfHandShakeDone in StateFlags;
 end;
 
-function TTaurusTLSState.GetIsReadAlert: boolean;
+function TTaurusTLSSSLState.GetIsReadAlert: boolean;
 begin
   Result := IsAlert and IsRead;
 end;
 
-function TTaurusTLSState.GetIsWriteAlert: boolean;
+function TTaurusTLSSSLState.GetIsWriteAlert: boolean;
 begin
   Result := IsAlert and IsWrite;
 end;
 
-function TTaurusTLSState.GetIsAcceptLoop: boolean;
+function TTaurusTLSSSLState.GetIsAcceptLoop: boolean;
 begin
   Result := IsAccept and IsInLoop;
 end;
 
-function TTaurusTLSState.GetIsAcceptExit: boolean;
+function TTaurusTLSSSLState.GetIsAcceptExit: boolean;
 begin
   Result := IsAccept and IsExit;
 end;
 
-function TTaurusTLSState.GetIsConnectLoop: boolean;
+function TTaurusTLSSSLState.GetIsConnectLoop: boolean;
 begin
   Result := IsConnect and IsInLoop;
 end;
 
-function TTaurusTLSState.GetIsExit: boolean;
+function TTaurusTLSSSLState.GetIsExit: boolean;
 begin
   Result:=sfExit in StateFlags;
 end;
 
-function TTaurusTLSState.GetIsConnectExit: boolean;
+function TTaurusTLSSSLState.GetIsConnectExit: boolean;
 begin
   Result := IsConnect and IsExit;
 end;
 
-function TTaurusTLSState.GetStateFlags: TTaurusTLSSSLStateFlags;
+function TTaurusTLSSSLState.GetStateFlags: TTaurusTLSSSLStateFlags;
 begin
 {$IF SizeOf(TTaurusTLSSSLStateFlags) = 1}
   PIdC_INT8(@Result)^:=FStates;
@@ -1222,14 +1226,14 @@ begin
 {$IFEND}
 end;
 
-function TTaurusTLSState.GetAlertMessage: string;
+function TTaurusTLSSSLState.GetAlertMessage: string;
 begin
   if FAlertMessage = '' then
     InitMessages;
   Result:=FAlertMessage;
 end;
 
-function TTaurusTLSState.GetStateStatusMessage: string;
+function TTaurusTLSSSLState.GetStateStatusMessage: string;
 begin
   if FStatusMessage = '' then
     InitMessages;
@@ -1506,7 +1510,7 @@ begin
       if Assigned(FVfyParamIpAddress) then
       begin
         lHigh:=FVfyParamIpAddress.Count;
-        if not IsX509StoreMultiIPSupported and (lHigh > 0) then
+        if not (IsX509StoreMultiIPSupported and (lHigh > 0)) then
           SetIpAddress(FVfyParamIpAddress[0])
         else
           for i:=0 to FVfyParamIpAddress.Count-1 do
@@ -1516,7 +1520,7 @@ begin
       if Assigned(FVfyParamEmail) then
       begin
         lHigh:=FVfyParamEmail.Count;
-        if not IsX509StoreMultiIPSupported and (lHigh > 0) then
+        if not (IsX509StoreMultiIPSupported and (lHigh > 0)) then
           SetEMail(FVfyParamEmail[0])
         else
           for i:=0 to FVfyParamEmail.Count-1 do
@@ -1642,13 +1646,13 @@ end;
 procedure TTaurusTLSSocketCtx.DoOnStatusInfo(ASocket: TTaurusTLSBaseSocket;
   AWhere, ARet: TIdC_INT);
 var
-  lState: TTaurusTLSState;
+  lState: TTaurusTLSSSLState;
 
 begin
   if not Assigned(FOnStatusInfo) then
     Exit;
 
-  lState:=TTaurusTLSState.Create(AWhere, ARet, ASocket.SSL);
+  lState:=TTaurusTLSSSLState.Create(AWhere, ARet, ASocket.SSL);
   FOnStatusInfo(FSender, ASocket, lState);
 end;
 
