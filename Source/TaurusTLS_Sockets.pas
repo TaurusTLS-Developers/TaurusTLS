@@ -368,14 +368,16 @@ type
 
     FSession: PSSL_SESSION;
 
+    // Events
     FOnStateChange: TTaurusTLSOnStateChange;
     FOnDebugMessage: TTaurusTLSOnDebugMessage;
+    FOnPeerCertError: TTaurusTLSOnPeerCertError;
+
+    // OpenSSL callback events
+    FOnVerifyCertificate: TTaurusTLSOnVerifyCallback;
+    FOnSecurityCheck: TTaurusTLSOnSecurityCheck;
     FOnStatusInfo: TTaurusTLSOnSSLStatusInfo;
 
-    // OpenSSL callbacks
-    FOnVerifyCertificate: TTaurusTLSOnVerifyCallback;
-    FOnPeerCertError: TTaurusTLSOnPeerCertError;
-    FOnSecurityCheck: TTaurusTLSOnSecurityCheck;
 
     // callback event assignment status flags
     function GetVerifyHostname: boolean;
@@ -496,10 +498,14 @@ type
     FVfyParamEmail: TStrings;
     FVfyParamIpAddress: TStrings;
 
+    // Events
     FOnStateChange: TTaurusTLSOnStateChange;
     FOnDebugMessage: TTaurusTLSOnDebugMessage;
     FOnPeerCertError: TTaurusTLSOnPeerCertError;
+
+    // OpenSSL callback events
     FOnStatusInfo: TTaurusTLSOnSSLStatusInfo;
+    FOnSecurityCheck: TTaurusTLSOnSecurityCheck;
     FOnVerifyCertificate: TTaurusTLSOnVerifyCallback;
 
   protected
