@@ -1,11 +1,11 @@
 # High-Level Design: TaurusTLS "Socket State Machine"
 
 ## 1. Architecture Overview
-The **TaurusTLS "Socket State Machine" (SSM)** is a core architectural layer designed to manage the lifecycle of a secure connection. It acts as an intermediary between the Indy `TIdIOHandler` pipeline and the OpenSSL 3.x/4.0 engine. 
+The **TaurusTLS "Socket State Machine" (SSM)** is a core architectural layer designed to manage the lifecycle of a secure connection. It acts as an intermediary between the Indy `TIdIOHandler` pipeline and the OpenSSL 3.x and 4.0 engine. 
 
 To maintain strict alignment with Indy's component and factory architectures, TaurusTLS utilizes a single outer component wrapper (`TTaurusTLSIOHandlerSocket`) that inherits from Indy's native `TIdSSLIOHandlerSocketBase`. Internally, this component encapsulates a polymorphic execution engine (`TTaurusTLSBaseSocket`) that isolates client-specific and server-specific connection logic depending on whether the connection is executing in a client or server-peer role.
 
-```
+~~~
 +-------------------------------------------------------------+
 |                 TTaurusTLSIOHandlerSocket                   |  <-- Registered in DFM / dropped on form
 |            (Inherits TIdSSLIOHandlerSocketBase)             |  <-- Implements RecvEnc/SendEnc, Clone, etc.
@@ -29,8 +29,8 @@ To maintain strict alignment with Indy's component and factory architectures, Ta
                                |
                                +------------+
                                             v
-                                     TTaurusTLSSslState (Active Enum State)
-```
+                                     TTaurusTLSSslState (Active State Enum)
+~~~
 
 ## 2. Component Integration & Indy Pipeline Mapping
 
@@ -46,8 +46,8 @@ At the start of a connection, `TTaurusTLSIOHandlerSocket` evaluates Indy's nativ
 
 ### 2.3. The I/O Pipeline Integration
 When `PassThrough` is set to `False` (encryption is active), Indy’s read/write pipeline routes raw data through the following abstract hooks in our wrapper:
-*   `function RecvEnc(var VBuffer: TIdBytes): Integer; override;` $\rightarrow$ Delegates to the active context's `Recv` operation, wrapping the OpenSSL `SSL_read` loop.
-*   `function SendEnc(const ABuffer: TIdBytes; const AOffset, ALength: Integer): Integer; override;` $\rightarrow$ Delegates to the active context's `Send` operation, wrapping the OpenSSL `SSL_write` loop.
+*   `function RecvEnc(var VBuffer: TIdBytes): Integer; override;` $\rightarrow$ Delegates to the active context's `Recv` operation, wrapping the OpenSSL `SSL_read_ex` API.
+*   `function SendEnc(const ABuffer: TIdBytes; const AOffset, ALength: Integer): Integer; override;` $\rightarrow$ Delegates to the active context's `Send` operation, wrapping the OpenSSL `SSL_write_ex` API.
 
 ## 3. Core Architectural Patterns
 
@@ -58,7 +58,7 @@ To optimize execution speed on hot I/O paths, TaurusTLS implements a high-perfor
 *   **Retained Polymorphism:** Core handshake logic remains decoupled and testable by letting `TTaurusTLSClientSocket` and `TTaurusTLSPeerSocket` override the protected `DoHandshake` method.
 
 ### 3.2. The Handshake Config Class Pattern
-To prevent data races and avoid Delphi `IInterface` vs. `TComponent` lifecycle conflicts, the connection's parameters and event pointers are frozen into a polymorphic configuration class (`TTaurusTLSCustomSocketConfig` and its descendants `TTaurusTLSClientSocketConfig` and `TTaurusTLSPeerSocketConfig`) right before the handshake starts. The active sockets and static callback bridges refer exclusively to this configuration instance. The `TTaurusTLSBaseSocket` owns the config object and destroys it during teardown.
+To prevent data races and avoid Delphi `IInterface` vs. `TComponent` lifecycle conflicts, the connection's parameters and event pointers are frozen into a polymorphic configuration class (`TTaurusTLSCustomSocketConfig` and its descendants `TaurusTLSClientSocketConfig` and `TTaurusTLSPeerHandshakeSnapshot`) right before the handshake starts. The active sockets and static callback bridges refer exclusively to this configuration instance. The `TTaurusTLSBaseSocket` owns the config object and destroys it during teardown.
 
 ### 3.3. Context Memory Protection
 The `TTaurusTLSCustomSocketConfig` class keeps the shared `SSL_CTX` alive during asynchronous handshakes by incrementing its OpenSSL reference count via `SSL_CTX_up_ref` upon creation. Upon destruction, it decrements the count using `SSL_CTX_free`. This prevents use-after-free bugs if the parent component is destroyed mid-handshake or if the configuration is reassigned.
@@ -77,14 +77,14 @@ The `TTaurusTLSCustomSocketConfig` class keeps the shared `SSL_CTX` alive during
 ### 5.1. The SIGPIPE / TCP RST Shield
 To prevent OS-level process termination during TCP RST events, the SSM implements:
 1.  **Global Signal Masking**: Ignoring `SIGPIPE` at the POSIX level (`signal(SIGPIPE, SIG_IGN)`).
-2.  **State-Gated I/O**: No `SSL_write` is attempted if the state is `seError` or `seClosed`.
+2.  **State-Gated I/O**: No `SSL_write_ex` is attempted if the state is `seError` or `seClosed`.
 3.  **Immediate RST Teardown**: Mapping `SSL_ERROR_SYSCALL` + `EPIPE/ECONNRESET` to an immediate `seClosed` transition. This instantly calls `SSL_free` (bypassing `SSL_shutdown`) and closes the physical socket.
 
 ### 5.2. Strict ECH Enforcement
 The SSM follows a **"Success or Abort"** policy. If ECH is configured but the server falls back to a decoy "Outer" SNI (returning `SSL_ECH_STATUS_GREASE_ECH` or `SSL_ECH_STATUS_FAILED`), the SSM transitions to `seError` (or `seClosed` if a retry config is retrieved) and aborts the connection before any application data is sent.
 
 ### 5.3. TLS 1.3 Post-Handshake Asynchronicity
-The SSM handles post-handshake events (NewSessionTickets, Post-Handshake Authentication) by treating `SSL_read` as a potential state-changing operation. If `SSL_read` returns `WANT_READ` in `seEstablished`, the SSM transparently processes the protocol message and resumes waiting for application data via `Recv`.
+The SSM handles post-handshake events (NewSessionTickets, Post-Handshake Authentication) by treating `SSL_read_ex` as a potential state-changing operation. If `SSL_read_ex` returns `WANT_READ` or `WANT_WRITE` during active data exchange (e.g., for key updates or post-handshake message exchanges), the SSM transparently processes the protocol message and resumes waiting for application data via `Recv`.
 
 ## 6. Event Lifecycle & Callback Routing
 The SSM acts as a callback bridge by mapping the `PSSL` handle back to the `TTaurusTLSBaseSocket` instance using `SSL_get_app_data`.
