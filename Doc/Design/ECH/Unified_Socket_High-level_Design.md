@@ -4,9 +4,9 @@
 The **TaurusTLS Socket State Machine (SSM)** is a core architectural layer designed to manage the lifecycle of a secure connection. It acts as an intermediary between the Indy `TIdIOHandler` pipeline and the OpenSSL 3.x/4.0 engine. 
 
 To achieve maximum simplicity, execution performance, and native support for complex protocols (such as active FTPS), TaurusTLS consolidates its engine classes into two unified, highly optimized abstractions:
-*   **The Universal Socket (`TTaurusTLSSocket`):** A single, bidirectional socket class that can execute both client-side (`SSL_connect`) and server-side (`SSL_accept`) handshakes natively depending on Indy's `IsPeer` boolean flag. This completely eliminates the need for specialized client and server socket descendants.
-*   **The Universal Context (`TTaurusTLSSocketCtx`):** A single, reference-counted configuration context snapshot that stores both client-specific (SNI, ECH) and server-specific (mTLS, ALPN) parameters. It manages the underlying, shared OpenSSL context (`PSSL_CTX`) cleanly.
-*   **The Dual-Track Reference Pattern:** Sockets hold a reference to `IITaurusTLSSocketConfig` (the base interface) to track lifetime and prevent leaks. Internally, the socket resolves this interface to a direct class pointer (`FConfig: TTaurusTLSSocketCtx`) exactly once during creation, allowing hot I/O paths to execute with zero virtual-method dispatch or reference-counting overhead.
+*   **The Universal Socket (`TTaurusTLSSslSocket`):** A single, bidirectional socket class that can execute both client-side (`SSL_connect`) and server-side (`SSL_accept`) handshakes natively depending on Indy's `IsPeer` boolean flag. This completely eliminates the need for specialized client and server socket descendants.
+*   **The Universal Context (`TTaurusTLSSslSocketCtx`):** A single, reference-counted configuration context snapshot that stores both client-specific (SNI, ECH) and server-specific (mTLS, ALPN) parameters. It manages the underlying, shared OpenSSL context (`PSSL_CTX`) cleanly.
+*   **The Dual-Track Reference Pattern:** Sockets hold a reference to `IITaurusTLSSocketConfig` (the base interface) to track lifetime and prevent leaks. Internally, the socket resolves this interface to a direct class pointer (`FConfig: TTaurusTLSSslSocketCtx`) exactly once during creation, allowing hot I/O paths to execute with zero virtual-method dispatch or reference-counting overhead.
 
 ```
 +-------------------------------------------------------------+
@@ -28,9 +28,9 @@ To achieve maximum simplicity, execution performance, and native support for com
                                | Passed to Constructor
                                v
 +-------------------------------------------------------------+
-|                      TTaurusTLSSocket                       |  <-- Unified State Machine Context Engine
+|                    TTaurusTLSSslSocket                      |  <-- Unified State Machine Context Engine
 |    - FConfigIntf: IITaurusTLSSocketConfig (Lifetime)        |  <-- Interface tracking prevents leaks
-|    - FConfig: TTaurusTLSSocketCtx (Direct)                  |  <-- Concrete config class instance
+|    - FConfig: TTaurusTLSSslSocketCtx (Direct)               |  <-- Concrete config class instance
 +-------------------------------------------------------------+
 ```
 
@@ -41,7 +41,7 @@ To achieve maximum simplicity, execution performance, and native support for com
 ### 2.1. Configuration Snapshot Storage & Sharing
 To decouple user-facing configuration properties from active connection threads, TaurusTLS separates the **Control Plane** (the design-time `TIdSSLIOHandlerSocketBase` component operating on the main thread) from the **Data Plane** (the socket engine running on a background connection thread).
 
-*   **Config Instance Storage:** All configuration properties (such as domain names, ECH modes, and verification flags) and event handlers (such as `OnStateChange` and `OnVerifyCertificate`) are stored exclusively in the **Config Instance** (the compiled `TTaurusTLSSocketCtx` snapshot class), and **never in the Socket instance**. This keeps the Socket class entirely lightweight, focused solely on the operational state-machine, and free from configuration state management.
+*   **Config Instance Storage:** All configuration properties (such as domain names, ECH modes, and verification flags) and event handlers (such as `OnStateChange` and `OnVerifyCertificate`) are stored exclusively in the **Config Instance** (the compiled `TTaurusTLSSslSocketCtx` snapshot class), and **never in the Socket instance**. This keeps the Socket class entirely lightweight, focused solely on the operational state-machine, and free from configuration state management.
 *   **Single-IOHandler Ownership:** Each `TTaurusTLSIOHandlerSocket` (and its server-peer descendant) owns its own dedicated, private configuration builder. No shared, global configuration components are used at this stage, completely avoiding cross-component locking or thread-contention hazards.
 *   **Immutable Sharing via Cloning (FTP Channel Sync):** During multi-channel operations (such as FTPS active `PORT` or passive `PASV` data channel cloning), the control channel's `IOHandler` simply copies/hands off its active, reference-counted `FConfigIntf` interface reference directly to the cloned data channel . Because the data channel receives the *exact same* frozen, reference-counted `ITaurusTLSSocketCtx` configuration interface as the control channel, it is $100\%$ insulated from any subsequent property changes made to the parent components during the transfer, ensuring perfect channel synchronization with **zero thread-locking or cross-component synchronization issues**.
 
@@ -80,7 +80,7 @@ All heavyweight cryptographic configuration, context compilation, and string nor
 1.  **Dynamic Ingestion & Context Compilation:** The local builder compiles its own `SSL_CTX` and wraps it inside a reference-counted `TTaurusTLSSslContext` container. This `SSL_CTX` can be shared safely across any cloned sockets (such as FTP data connections).
 2.  **Domain Normalization:** The builder normalizes the input IDN hostnames (`HostName`, `DefaultSNI`, and `ECHDecoy`) to lower-case ASCII Punycode (RFC 3492) and caches them in the snapshot properties.
 3.  **RAII ECH Key Loading:** If ECH is enabled and raw configurations are provided, the builder decodes the Base64 `ECHConfigs` string, loads it into a `TTaurusTLSECHStore` instance, and attaches it to the `SSL_CTX` using `Attach(ASSLCtx: PSSL_CTX)`. To prevent unmanaged OpenSSL memory leaks, this setup is wrapped strictly inside a `try..finally` block.
-4.  **Snapshot Packing:** The builder creates the unified `TTaurusTLSSocketCtx` snapshot, populates its parameters, and returns it directly as a reference-counted `IITaurusTLSSocketConfig` interface.
+4.  **Snapshot Packing:** The builder creates the unified `TTaurusTLSSslSocketCtx` snapshot, populates its parameters, and returns it directly as a reference-counted `IITaurusTLSSocketConfig` interface.
 
 ### 4.2. Hybrid ServerName/SAN Routing Engine
 For server-side multi-tenancy, the design-time virtual server collection is compiled once at startup into a thread-safe **`TDictionary<RawByteString, ITaurusTLSSocketCtx>`**. When a client SNI (or decrypted inner SNI) is parsed during the handshake, OpenSSL executes the static callback bridge:
@@ -95,7 +95,7 @@ For server-side multi-tenancy, the design-time virtual server collection is comp
 All heavyweight cryptographic configuration, context compilation, and string normalizations (IDN domains converted to lower-case Punycode) are completed inside the builder prior to socket creation.
 
 ### 5.2. Socket Initialization (`Connect`)
-1.  The background connection thread instantiates `TTaurusTLSSocket` by passing the `IITaurusTLSSocketConfig` interface (`FConfigIntf`) to its constructor, natively incrementing its reference count to pin the configuration in memory.
+1.  The background connection thread instantiates `TTaurusTLSSslSocket` by passing the `IITaurusTLSSocketConfig` interface (`FConfigIntf`) to its constructor, natively incrementing its reference count to pin the configuration in memory.
 2.  Inside the socket's constructor, the engine resolves and caches its high-performance, typed class pointer **exactly once** by reading the interface property directly:
     ~~~pascal
     FConfig := AConfigIntf.GetConfig;
@@ -126,7 +126,7 @@ Immediately upon a successful connection return (`lRet = 1`):
 ## 7. Testing & Verification Strategy (In-Memory Loopbacks)
 
 To test the blocking sockets of TaurusTLS without relying on physical network resources, we implement an in-memory loopback test harness:
-*   **Threaded Handshake Harness:** Since Indy’s socket operations are synchronously blocking, a single-threaded loopback cannot negotiate a handshake (as `SSL_connect` would block waiting for data that hasn't been pumped). We instantiate background threads running `TTaurusTLSSocket.Connect` in both client and server roles.
+*   **Threaded Handshake Harness:** Since Indy’s socket operations are synchronously blocking, a single-threaded loopback cannot negotiate a handshake (as `SSL_connect` would block waiting for data that hasn't been pumped). We instantiate background threads running `TTaurusTLSSslSocket.Connect` in both client and server roles.
 *   **The Bytes Pump:** The main test thread runs a non-blocking loop that pumps raw encrypted bytes back and forth between the client's and server's `TTaurusTLSMemBio` instances until both threads complete.
 *   **Non-Blocking Retries in Test:** Because Memory BIOs cannot block, `SSL_connect` and `SSL_accept` will return `SSL_ERROR_WANT_READ` or `SSL_ERROR_WANT_WRITE` in the tests. We handle these cases in our `DoHandshakeIteration` loops by calling `Sleep(1)` to yield the CPU, allowing the main test thread's bytes pump to run.
 *   **Thread-Termination Safety:** The blocking `DoHandshake` loop checks `TThread.CurrentThread.Terminated` on every iteration to prevent background threads from hanging indefinitely when a test crashes and the runner tries to deallocate them.

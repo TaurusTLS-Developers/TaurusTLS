@@ -13,12 +13,12 @@ Before a connection begins, the high-level `IOHandler` freezes its current prope
 ### 1.2. The Dual-Track Reference Pattern
 To manage the lifecycle of these snapshots automatically without introducing runtime CPU overhead, TaurusTLS combines reference-counted Delphi interfaces with direct class pointers:
 *   **The Lifetime Track (The Interface):** Sockets hold a reference to `IITaurusTLSSocketConfig` (renamed to `ITaurusTLSSocketCtx`). This interface keeps the snapshot and its compiled `SSL_CTX` alive in memory for the exact duration of the socket's lifecycle. Once the socket is destroyed, releasing this reference automatically decrements the context reference count, deallocating memory cleanly on the C-heap.
-*   **The Performance Track (The Class Pointer):** During construction, the socket resolves the interface to a direct, raw class pointer (`FConfig: TTaurusTLSSocketCtx`) using a fast, non-virtual assignment. During active network reading, writing, and setup connection, the state engine reads configuration parameters directly from this cached class pointer, **bypassing the virtual-method table (VMT) dispatch and reference-counting overhead of interface calls entirely.**
+*   **The Performance Track (The Class Pointer):** During construction, the socket resolves the interface to a direct, raw class pointer (`FConfig: TTaurusTLSSslSocketCtx`) using a fast, non-virtual assignment. During active network reading, writing, and setup connection, the state engine reads configuration parameters directly from this cached class pointer, **bypassing the virtual-method table (VMT) dispatch and reference-counting overhead of interface calls entirely.**
 
 ### 1.3. Symmetrical, Single-Class Design
-TaurusTLS 2 bypasses subclass-level socket splitting entirely, implementing a single, unified bidirectional socket engine (**`TTaurusTLSSocket`**) and a single, reference-counted configuration context snapshot (**`TTaurusTLSSocketCtx`**). 
+TaurusTLS 2 bypasses subclass-level socket splitting entirely, implementing a single, unified bidirectional socket engine (**`TTaurusTLSSslSocket`**) and a single, reference-counted configuration context snapshot (**`TTaurusTLSSslSocketCtx`**). 
 *   **Context Unification:** A single compiled context contains both client and server properties, allowing the same snapshot instance to be passed seamlessly to any socket.
-*   **Handshake Unification:** Since OpenSSL's `TLS_method()` is bidirectional, the unified `TTaurusTLSSocket` class executes both `SSL_connect` and `SSL_accept` handshakes natively based on Indy's `IsPeer` boolean flag, cleanly supporting active FTPS modes with zero boilerplate.
+*   **Handshake Unification:** Since OpenSSL's `TLS_method()` is bidirectional, the unified `TTaurusTLSSslSocket` class executes both `SSL_connect` and `SSL_accept` handshakes natively based on Indy's `IsPeer` boolean flag, cleanly supporting active FTPS modes with zero boilerplate.
 
 ---
 
@@ -33,7 +33,7 @@ The relationships and definitions of the core configuration types are illustrate
                                ^
                                | Implemented by
 +-------------------------------------------------------------+
-|                     TTaurusTLSSocketCtx                     |  <-- Unified Runtime Config Class
+|                   TTaurusTLSSslSocketCtx                    |  <-- Unified Runtime Config Class
 +-------------------------------------------------------------+
                                ^
                                | Managed by
@@ -47,19 +47,19 @@ These are **pure, runtime-only classes inheriting from `TInterfacedObject`** (om
 
 ~~~pascal
 type
-  TTaurusTLSSocketCtx = class; // Forward declaration
+  TTaurusTLSSslSocketCtx = class; // Forward declaration
 
   /// <summary>The single, unified lifetime interface used across the entire library.</summary>
   ITaurusTLSSocketCtx = interface(IInterface)
     ['{DCD600F0-1D28-482D-A883-A563CFE0D6FC}']
-    function GetConfig: TTaurusTLSSocketCtx;
-    property Config: TTaurusTLSSocketCtx read GetConfig;
+    function GetConfig: TTaurusTLSSslSocketCtx;
+    property Config: TTaurusTLSSslSocketCtx read GetConfig;
   end;
 
   /// <summary>
   ///   Unified, runtime-only configuration snapshot. Managed via reference-counting.
   /// </summary>
-  TTaurusTLSSocketCtx = class(TInterfacedObject, ITaurusTLSSocketCtx)
+  TTaurusTLSSslSocketCtx = class(TInterfacedObject, ITaurusTLSSocketCtx)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FSender: TObject;
     FSSLCtx: PSSL_CTX; // Managed via SSL_CTX_up_ref / SSL_CTX_free
@@ -128,13 +128,13 @@ type
     function GetIsIdentityIP: boolean;
   protected
     procedure SetSSLCtx(ASSLCtx: PSSL_CTX);
-    function GetConfig: TTaurusTLSSocketCtx; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    function GetConfig: TTaurusTLSSslSocketCtx; {$IFDEF USE_INLINE}inline;{$ENDIF}
     procedure SetSessionToResume(const ASSL: PSSL); {$IFDEF USE_INLINE}inline; {$ENDIF}
   public
     constructor Create(ASender: TObject; ATLSMeth: PSSL_METHOD); virtual;
     destructor Destroy; override;
 
-    property Config: TTaurusTLSSocketCtx read GetConfig;
+    property Config: TTaurusTLSSslSocketCtx read GetConfig;
     property SSLCtx: PSSL_CTX read FSSLCtx write SetSSLCtx;
     property VerifyHostname: Boolean read GetVerifyHostname write SetVerifyHostname;
     property CertVerifyFlags: TTaurusTLSVerifyModeFlags read FCertVerifyFlags write FCertVerifyFlags;
@@ -245,10 +245,10 @@ type
 ## 3. Handshake & Connection Lifecycles
 
 ### 3.1. Handshake Loop Execution (`Handshake`)
-The base class (`TTaurusTLSSocket`) manages the synchronous, blocking loop driver. It is completely decoupled from the concrete cryptographic operations and executes on the background thread:
+The base class (`TTaurusTLSSslSocket`) manages the synchronous, blocking loop driver. It is completely decoupled from the concrete cryptographic operations and executes on the background thread:
 
 ~~~pascal
-procedure TTaurusTLSSocket.DoHandshake;
+procedure TTaurusTLSSslSocket.DoHandshake;
 begin
   CheckActiveState([seHandshaking]);
   repeat
@@ -273,7 +273,7 @@ Immediately upon entering the `seInitialized` state, the socket allocates `FSSL`
 By operating directly on the connection's private, cloned parameters pointer via `SSL_get0_param(FSSL)`, we dynamically bind the expected validation target without disrupting or resetting any of the other properties inherited from the `SSL_CTX` (such as verification depths or CRL flags).
 
 ~~~pascal
-procedure TTaurusTLSSocket.ConfigureHostnameVerification;
+procedure TTaurusTLSSslSocket.ConfigureHostnameVerification;
 var
   LParams: PX509_VERIFY_PARAM;
   LTargetName: RawByteString;
@@ -318,7 +318,7 @@ The concrete socket class overrides `DoHandshakeIteration` to execute a single s
 Manual post-handshake `SSL_get_verify_result` checks are omitted here. Because the verification hostnames are configured natively on the `SSL` session via `SSL_set1_host`, OpenSSL’s internal validation engine automatically handles all trust path and wildcard checks, feeding any failures directly into `SSLVerifyCallback`.
 
 ~~~pascal
-procedure TTaurusTLSSocket.DoHandshakeIteration;
+procedure TTaurusTLSSslSocket.DoHandshakeIteration;
 var
   lRet, lErr: Integer;
   lStatus: TIdC_INT;
@@ -326,7 +326,7 @@ var
   lECHConfigBuf: PByte;
   lECHConfigLen: NativeUInt;
   lNewConfigBase64: String;
-  lConfig: TTaurusTLSSocketCtx;
+  lConfig: TTaurusTLSSslSocketCtx;
   lAccept: boolean;
 begin
   lConfig := Config;
@@ -473,11 +473,11 @@ Static or non-member `cdecl` functions handle the low-level OpenSSL callbacks th
 The `SSLVerifyCallback` implementation preserves the platform-specific socket last error (`GStack.WSGetLastError` / `WSSetLastError`) safely across the OpenSSL C-boundary. It clears the validation error in OpenSSL (`X509_STORE_CTX_set_error(ACtx, X509_V_OK)`) if the user chooses to override and accept a failure.
 
 ~~~pascal
-class function TTaurusTLSSocket.SSLVerifyCallback(const APreVerify: TIdC_INT;
+class function TTaurusTLSSslSocket.SSLVerifyCallback(const APreVerify: TIdC_INT;
   ACtx: PX509_STORE_CTX): TIdC_INT;
 var
-  lInstance: TTaurusTLSSocket;
-  lConfig: TTaurusTLSSocketCtx;
+  lInstance: TTaurusTLSSslSocket;
+  lConfig: TTaurusTLSSslSocketCtx;
   lSSL: PSSL;
   lErr: integer;
   lResult, lContinue: boolean;
@@ -497,7 +497,7 @@ begin
       lResult := APreVerify = 1;
       lContinue := True;
       
-      lInstance := GetInstanceFromSSL<TTaurusTLSSocket>(lSSL);
+      lInstance := GetInstanceFromSSL<TTaurusTLSSslSocket>(lSSL);
       lConfig := lInstance.Config;
       if Assigned(lConfig) then
       begin
