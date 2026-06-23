@@ -286,6 +286,7 @@ resourcestring
     'should have one or more ECH methods when ECH is enabled.';
   RMSG_ClientSocketEmptySNIConfig_err = 'Can not setup TLS Connection. '+
     'The Client SNI Config is nil.';
+  RMSG_SslSocketSetAppData_err = 'SSL_set_app_data error';
 
   // TaurusTLS_SSLUI messages
   RMSG_RegisterUIMeth_err = 'Error registering the UI_METHOD "%s".';
