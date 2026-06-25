@@ -107,6 +107,10 @@ templates:
   - name: default
     source:
       - src: ./LICENSE.md
+      - src: ./LICENSE_MPL_1_1.txt
+      - src: ./Modified_BSD_LICENSE.md
+      - src: ./DifferencesBetweenIndyOpenSSLAndTaurusTLS.md
+      - src: ./What_needs_to_be_done.MD
       - src: ./Source/TaurusTLS.pas
       - src: ./Source/TaurusTLSConsts.pas
       - src: ./Source/TaurusTLSExceptionHandlers.pas
