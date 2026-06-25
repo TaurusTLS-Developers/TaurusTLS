@@ -59,7 +59,7 @@ type
   public const
     // Do not localize
     cNames: array[TTaurusTLSSslSocketState] of string = ('Idle', 'Initialized',
-      'Handshaking', 'Established', 'Closing', 'Closed', 'Error');
+      'Handshaking', 'Established', 'Closing', 'Closed', 'Error');  // Do not localize
   private
     function GetAsString: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
   public
@@ -136,13 +136,13 @@ type
   TTaurusTLSSslStateFlag  = (
     stfLoop               = 0,    // 1 shl 0  = SSL_CB_LOOP
     stfExit               = 1,    // 1 shl 1  = SSL_CB_EXIT
-    stfRead                = 2,    // 1 shl 2  = SSL_CB_READ
-    stfWrite               = 3,    // 1 shl 3  = SSL_CB_WRITE
-    stfHandShakeStart      = 4,    // 1 shl 4  = SSL_CB_HANDSHAKE_START
-    stfHandShakeDone       = 5,    // 1 shl 5  = SSL_CB_HANDSHAKE_DONE
-    stfConnect             = 12,   // 1 shl 12 = SSL_ST_CONNECT
-    stfAccept              = 13,   // 1 shl 13 = SSL_ST_ACCEPT
-    stfAlert               = 14    // 1 shl 14 = SSL_ST_ALERT
+    stfRead               = 2,    // 1 shl 2  = SSL_CB_READ
+    stfWrite              = 3,    // 1 shl 3  = SSL_CB_WRITE
+    stfHandShakeStart     = 4,    // 1 shl 4  = SSL_CB_HANDSHAKE_START
+    stfHandShakeDone      = 5,    // 1 shl 5  = SSL_CB_HANDSHAKE_DONE
+    stfConnect            = 12,   // 1 shl 12 = SSL_ST_CONNECT
+    stfAccept             = 13,   // 1 shl 13 = SSL_ST_ACCEPT
+    stfAlert              = 14    // 1 shl 14 = SSL_ST_ALERT
   );
 
   TTaurusTLSSslStateFlags = set of TTaurusTLSSslStateFlag;
