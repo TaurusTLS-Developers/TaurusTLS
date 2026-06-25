@@ -1,0 +1,233 @@
+# DPM package spec file
+min dpm client version: 1.0.0
+metadata:
+  id: TaurusTLS_Developers.TaurusTLS
+  version: 1.0.8
+  description: TaurusTLS provides OpenSSL 3.x and 4.x support for Indy - Internet Direct
+  icon: ..\..\TaurusTLS\logo\bullhead.png
+  authors:
+    - TaurusTLS Developers
+  projectUrl: https://github.com/TaurusTLS-Developers/TaurusTLS
+  repositoryUrl: https://github.com/TaurusTLS-Developers/TaurusTLS
+  license: Mozilla Public License 1.1
+  copyright: TaurusTLS Developers
+  tags:
+    - indy
+    - TLS
+  readme: README.md
+variables:
+  packagesource: d$compilerCodeName$
+targetPlatforms:
+  - compiler: delphi10.0
+    platforms:
+      - win32
+      - win64
+      - macos32
+      - android
+      - ios32
+      - ios64
+      - iossimulator
+  - compiler: delphi10.1
+    platforms:
+      - win32
+      - win64
+      - android
+      - ios32
+      - ios64
+      - iossimulator
+  - compiler: delphi10.2
+    platforms:
+      - win32
+      - win64
+      - macos32
+      - android
+      - ios32
+      - ios64
+      - iossimulator
+      - linux64
+  - compiler: delphi10.3
+    platforms:
+      - win32
+      - win64
+      - macos32
+      - macos64
+      - android
+      - android64
+      - ios32
+      - ios64
+      - iossimulator
+      - linux64
+  - compiler: delphi10.4
+    platforms:
+      - win32
+      - win64
+      - macos64
+      - android
+      - android64
+      - ios64
+      - iossimulator
+      - linux64
+  - compiler: delphi11.0
+    platforms:
+      - win32
+      - win64
+      - macos64
+      - macosarm64
+      - android
+      - android64
+      - ios64
+      - linux64
+    variables:
+      packagesource: d11
+  - compiler: delphi12.0
+    platforms:
+      - win32
+      - win64
+      - macos64
+      - macosarm64
+      - android
+      - android64
+      - ios64
+      - linux64
+    variables:
+      packagesource: d12
+  - compiler: delphi13.0
+    platforms:
+      - win32
+      - win64
+      - winarm64ec
+      - macos64
+      - macosarm64
+      - android
+      - android64
+      - linux64
+    variables:
+      packagesource: d13
+templates:
+  - name: default
+    source:
+      - src: ./LICENSE.md
+      - src: ./Source/TaurusTLS.pas
+      - src: ./Source/TaurusTLSConsts.pas
+      - src: ./Source/TaurusTLSExceptionHandlers.pas
+      - src: ./Source/TaurusTLSFIPS.pas
+      - src: ./Source/TaurusTLSHeaders_aes.pas
+      - src: ./Source/TaurusTLSHeaders_asn1.pas
+      - src: ./Source/TaurusTLSHeaders_asn1err.pas
+      - src: ./Source/TaurusTLSHeaders_asn1t.pas
+      - src: ./Source/TaurusTLSHeaders_asn1_mac.pas
+      - src: ./Source/TaurusTLSHeaders_async.pas
+      - src: ./Source/TaurusTLSHeaders_asyncerr.pas
+      - src: ./Source/TaurusTLSHeaders_bio.pas
+      - src: ./Source/TaurusTLSHeaders_bioerr.pas
+      - src: ./Source/TaurusTLSHeaders_blowfish.pas
+      - src: ./Source/TaurusTLSHeaders_bn.pas
+      - src: ./Source/TaurusTLSHeaders_bnerr.pas
+      - src: ./Source/TaurusTLSHeaders_buffer.pas
+      - src: ./Source/TaurusTLSHeaders_buffererr.pas
+      - src: ./Source/TaurusTLSHeaders_camellia.pas
+      - src: ./Source/TaurusTLSHeaders_cast.pas
+      - src: ./Source/TaurusTLSHeaders_cmac.pas
+      - src: ./Source/TaurusTLSHeaders_cms.pas
+      - src: ./Source/TaurusTLSHeaders_cmserr.pas
+      - src: ./Source/TaurusTLSHeaders_comp.pas
+      - src: ./Source/TaurusTLSHeaders_comperr.pas
+      - src: ./Source/TaurusTLSHeaders_conf.pas
+      - src: ./Source/TaurusTLSHeaders_conferr.pas
+      - src: ./Source/TaurusTLSHeaders_conf_api.pas
+      - src: ./Source/TaurusTLSHeaders_core.pas
+      - src: ./Source/TaurusTLSHeaders_crypto.pas
+      - src: ./Source/TaurusTLSHeaders_cryptoerr.pas
+      - src: ./Source/TaurusTLSHeaders_crypto_decoder.pas
+      - src: ./Source/TaurusTLSHeaders_crypto_decodererr.pas
+      - src: ./Source/TaurusTLSHeaders_crypto_encoder.pas
+      - src: ./Source/TaurusTLSHeaders_crypto_encodererr.pas
+      - src: ./Source/TaurusTLSHeaders_ct.pas
+      - src: ./Source/TaurusTLSHeaders_cterr.pas
+      - src: ./Source/TaurusTLSHeaders_des.pas
+      - src: ./Source/TaurusTLSHeaders_dh.pas
+      - src: ./Source/TaurusTLSHeaders_dherr.pas
+      - src: ./Source/TaurusTLSHeaders_dsa.pas
+      - src: ./Source/TaurusTLSHeaders_dsaerr.pas
+      - src: ./Source/TaurusTLSHeaders_ebcdic.pas
+      - src: ./Source/TaurusTLSHeaders_ec.pas
+      - src: ./Source/TaurusTLSHeaders_ecerr.pas
+      - src: ./Source/TaurusTLSHeaders_ech.pas
+      - src: ./Source/TaurusTLSHeaders_engine.pas
+      - src: ./Source/TaurusTLSHeaders_engineerr.pas
+      - src: ./Source/TaurusTLSHeaders_err.pas
+      - src: ./Source/TaurusTLSHeaders_evp.pas
+      - src: ./Source/TaurusTLSHeaders_evperr.pas
+      - src: ./Source/TaurusTLSHeaders_hmac.pas
+      - src: ./Source/TaurusTLSHeaders_hpke.pas
+      - src: ./Source/TaurusTLSHeaders_idea.pas
+      - src: ./Source/TaurusTLSHeaders_kdferr.pas
+      - src: ./Source/TaurusTLSHeaders_objects.pas
+      - src: ./Source/TaurusTLSHeaders_objectserr.pas
+      - src: ./Source/TaurusTLSHeaders_obj_mac.pas
+      - src: ./Source/TaurusTLSHeaders_ocsperr.pas
+      - src: ./Source/TaurusTLSHeaders_openssl_decoder.pas
+      - src: ./Source/TaurusTLSHeaders_openssl_decodererr.pas
+      - src: ./Source/TaurusTLSHeaders_openssl_encoder.pas
+      - src: ./Source/TaurusTLSHeaders_openssl_encoderer.pas
+      - src: ./Source/TaurusTLSHeaders_params.pas
+      - src: ./Source/TaurusTLSHeaders_pem.pas
+      - src: ./Source/TaurusTLSHeaders_pemerr.pas
+      - src: ./Source/TaurusTLSHeaders_pkcs12.pas
+      - src: ./Source/TaurusTLSHeaders_pkcs7.pas
+      - src: ./Source/TaurusTLSHeaders_pkcs7err.pas
+      - src: ./Source/TaurusTLSHeaders_provider.pas
+      - src: ./Source/TaurusTLSHeaders_quic.pas
+      - src: ./Source/TaurusTLSHeaders_rand.pas
+      - src: ./Source/TaurusTLSHeaders_randerr.pas
+      - src: ./Source/TaurusTLSHeaders_rc4.pas
+      - src: ./Source/TaurusTLSHeaders_rsa.pas
+      - src: ./Source/TaurusTLSHeaders_rsaerr.pas
+      - src: ./Source/TaurusTLSHeaders_safestack.pas
+      - src: ./Source/TaurusTLSHeaders_sha.pas
+      - src: ./Source/TaurusTLSHeaders_srtp.pas
+      - src: ./Source/TaurusTLSHeaders_ssl.pas
+      - src: ./Source/TaurusTLSHeaders_ssl3.pas
+      - src: ./Source/TaurusTLSHeaders_sslerr.pas
+      - src: ./Source/TaurusTLSHeaders_stack.pas
+      - src: ./Source/TaurusTLSHeaders_store.pas
+      - src: ./Source/TaurusTLSHeaders_storeerr.pas
+      - src: ./Source/TaurusTLSHeaders_tls1.pas
+      - src: ./Source/TaurusTLSHeaders_ts.pas
+      - src: ./Source/TaurusTLSHeaders_tserr.pas
+      - src: ./Source/TaurusTLSHeaders_txt_db.pas
+      - src: ./Source/TaurusTLSHeaders_types.pas
+      - src: ./Source/TaurusTLSHeaders_ui.pas
+      - src: ./Source/TaurusTLSHeaders_uierr.pas
+      - src: ./Source/TaurusTLSHeaders_whrlpool.pas
+      - src: ./Source/TaurusTLSHeaders_x509.pas
+      - src: ./Source/TaurusTLSHeaders_x509err.pas
+      - src: ./Source/TaurusTLSHeaders_x509v3.pas
+      - src: ./Source/TaurusTLSHeaders_x509_vfy.pas
+      - src: ./Source/TaurusTLSLoader.pas
+      - src: ./Source/TaurusTLS_Files.pas
+      - src: ./Source/TaurusTLS_NTLM.pas
+      - src: ./Source/TaurusTLS_ResourceStrings.pas
+      - src: ./Source/TaurusTLS_Unicode_Log.pas
+      - src: ./Source/TaurusTLS_Utils.pas
+      - src: ./Source/TaurusTLS_X509.pas
+      - src: ./Source/TaurusTLS_Dsn_AboutDlg.pas
+      - src: ./Source/TaurusTLS_Dsn_ComponentEditor.pas
+      - src: ./Source/TaurusTLS_Dsn_Register.pas
+      - src: ./Source/TaurusTLS_Dsn_ResourceStrings.pas
+      - src: ./Source/**.dcr
+      - src: ./Source/**.lrs      
+      - src: ./Source/**.inc
+      - src: ./Packages/$packageSource$/*.dpk
+      - src: ./Packages/$packageSource$/*.dproj
+      - src: ./Demos/FTPServer/*.*
+      - src: ./Demos/TaurusFTPConsole/*.*
+      - src: ./Demos/TaurusHTTPServer/*.*
+      - src: ./Help/chm/TaurusForIndy290All.chm
+    build:
+      - project: ./Packages/$packageSource$/TaurusTLS_RT.dproj
+    design:
+      - project: ./Packages/$packageSource$/TaurusTLS_DT.dproj
+        platforms:
+          - win32
+          - win64
