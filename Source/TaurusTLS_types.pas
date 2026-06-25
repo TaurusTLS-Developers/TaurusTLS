@@ -210,8 +210,7 @@ type
     /// initial handshake. Send the request during the
     /// SSL_verify_client_post_handshake call.
     /// </summary>
-    sslvrfPostHandshake,
-    sslvrfHostname
+    sslvrfPostHandshake
   );
 
   /// <summary>
