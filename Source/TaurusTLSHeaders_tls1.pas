@@ -1309,7 +1309,7 @@ var
 {$ENDIF}
 
 type
-  SSL_CTX_set_tlsext_servername_callback_cb = function (ssl : PSSL; alert : PIdC_INT; arg : Pointer) : TIdC_INT; cdecl;
+  SSL_CTX_set_tlsext_servername_callback_cb = function (ssl : PSSL; var alert : TIdC_INT; arg : Pointer) : TIdC_INT; cdecl;
 
 function SSL_CTX_set_tlsext_servername_callback(ctx : PSSL_CTX; cb : SSL_CTX_set_tlsext_servername_callback_cb) : TIdC_LONG;
 function SSL_CTX_set_tlsext_servername_arg(ctx : PSSL_CTX; arg : Pointer)  : TIdC_LONG;
