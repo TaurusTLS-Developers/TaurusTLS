@@ -3000,7 +3000,7 @@ begin
   end;
 end;
 
-function g_tlsext_SNI_callback(SSL: PSSL; alert: PIdC_INT; arg: Pointer) //FI:O804 //surpress method parameter is declared but never used.
+function g_tlsext_SNI_callback(SSL: PSSL; var alert: TIdC_INT; arg: Pointer) //FI:O804 //surpress method parameter is declared but never used.
   : TIdC_INT; cdecl;
 var
   LErr: Integer;   //PALOFF
