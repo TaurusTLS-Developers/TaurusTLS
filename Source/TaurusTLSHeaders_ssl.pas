@@ -356,6 +356,23 @@ const
   SSL_OP_ALL = SSL_OP_CRYPTOPRO_TLSEXT_BUG or SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS
     or SSL_OP_LEGACY_SERVER_CONNECT or SSL_OP_TLSEXT_PADDING or SSL_OP_SAFARI_ECDHE_ECDSA_BUG;
 
+  (* TLS ECH OPTIONS. Added in OpenSSL 4.0.0 *)
+  // Set this to tell client to emit greased ECH values
+  SSL_OP_ECH_GREASE                               = TIdC_INT64(1 shl 37);
+  // If this is set then the server side will attempt trial decryption
+  // of ECHs even if there is no matching ECH config_id. That's a bit
+  // inefficient, but more privacy friendly.
+  SSL_OP_ECH_TRIALDECRYPT                         = TIdC_INT64(1 shl 38);
+  // If set, clients will ignore the supplied ECH config_id and replace
+  // that with a random value.
+  SSL_OP_ECH_IGNORE_CID                           = TIdC_INT64(1 shl 39);
+  // If set, servers will add GREASEy ECHConfig values to those sent
+  // in retry_configs.
+  SSL_OP_ECH_GREASE_RETRY_CONFIG                  = TIdC_INT64(1 shl 40);
+  // RFC 8701: Send GREASE values in ClientHello
+  SSL_OP_GREASE                                   = TIdC_INT64(1 shl 41);
+
+
   (* OBSOLETE OPTIONS: retained for compatibility *)
 
   (* Removed from OpenSSL 1.1.0. Was $00000001L *)
