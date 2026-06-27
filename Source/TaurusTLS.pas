@@ -236,7 +236,12 @@ uses
   {$ENDIF}
 {$ENDIF}
 {$IFDEF SIGPIPE_MASK}
+  {$IFDEF FPC}
+  BaseUnix,
+  pthreads,
+  {$ELSE}
   Posix.Signal,
+  {$ENDIF}
 {$ENDIF}
   Classes,
   IdCTypes,
