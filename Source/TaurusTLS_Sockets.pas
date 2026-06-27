@@ -1525,6 +1525,7 @@ begin
   { TODO : Make a ResourceString for Exception call }
   if not (AValue in [Ord(Low(TTaurusTLSAlpnResult))..Ord(High(TTaurusTLSAlpnResult))]) then
     ETaurusTLSAlpnResultError.RaiseWithMessageFmt(
+      { TODO : To make ResourseString }
       'Invalid ALPN result value: %d.', [AValue]);
   Self:=TTaurusTLSAlpnResult(AValue);
 end;
@@ -1560,12 +1561,14 @@ begin
     lLen:=PIdC_UINT8(lPos)^;
     if lLen = 0 then
       ETaurusTLSAlpnResultError.RaiseWithMessage(
+        { TODO : To make ResourseString }
         'ALPN Input list corrupted. Unexpected Zero Lenght element found.');
 
     Inc(lPos);
     lPair.FOffset:=lPos;
     if ((lPos-AInProtos)+lLen) > AInLen then // Boundary check
       ETaurusTLSAlpnResultError.RaiseWithMessage(
+        { TODO : To make ResourseString }
         'ALPN Input list corrupted. Element length is out input bounds.');
 
     SetString(lPair.FValue, PIdAnsiChar(lPos), lLen); // PALOFF PIdC_UINT8 cast to PIdAnsiChar
@@ -1609,7 +1612,7 @@ var
 
 begin
   if (AItem < 0) or (AItem > (Count-1)) then
-    { TODO : Make a ResourceString for Exception call }
+    { TODO : To make ResourseString }
     raise ERangeError.CreateFmt('ALPN selection index out of range: %d.', [AItem]);
 
   lPair:=FPairs[AItem];
@@ -1758,17 +1761,21 @@ begin
   DoBuildVerifyParam(ASocketCtx);
 
   if SSL_CTX_set_min_proto_version(lCtx, FMinTLSVersion.AsInt) <= 0 then
+    { TODO : To make ResourseString }
     ETaurusTLSSslSocketCtxBuildError.RaiseWithMessage('Error setting Minimal TLS Version.');
 
   if SSL_CTX_set_max_proto_version(lCtx, FMaxTLSVersion.AsInt) <= 0 then
+    { TODO : To make ResourseString }
     ETaurusTLSSslSocketCtxBuildError.RaiseWithMessage('Error setting Maximal TLS Version.');
 
   if SSL_CTX_set_cipher_list(lCtx, PAnsiChar(RawByteString(FCipherList))) <= 0 then
     ETaurusTLSSslSocketCtxBuildError.RaiseWithMessageFmt(
+    { TODO : To make ResourseString }
       'Error setting list of ciphers: ''%s''.', [FCipherList]);
 
   if SSL_CTX_set_ciphersuites(lCtx, PAnsiChar(RawByteString(FCipherSuites))) <= 0 then
     ETaurusTLSSslSocketCtxBuildError.RaiseWithMessageFmt(
+    { TODO : To make ResourseString }
       'Error setting list of cipher suites: ''%s''.', [FCipherSuites]);
 
 {
@@ -2089,11 +2096,13 @@ end;
 
 procedure TTaurusTLSSslSocketCtx.InitSslCtxCallbacks;
 begin
+  if SSL_CTX_set_app_data(FSSLCtx, Self) <= 0 then
+    ETaurusTLSDataBindingError.RaiseWithMessage(
+      { TODO : To make ResourseString }
+      'Unable to link TTaurusTLSSslSocketCtx instance with SSL_CTX object');
+
   if HasOnKeylog then
     SSL_CTX_set_keylog_callback(FSSLCtx, CbCtxKeyLogCallback);
-
-  if HasOnPeerSniSelect then
-    SSL_CTX_set_tlsext_servername_callback(FSSLCtx, CbPeerSniSelect);
 
   if HasOnPeerSniSelect then
     SSL_CTX_set_tlsext_servername_callback(FSSLCtx, CbPeerSniSelect);
