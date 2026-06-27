@@ -677,7 +677,7 @@ end;
 class function TTaurusTLS_DefaultUI.Writer(ui: PUI;
   uis: PUI_STRING): TIdC_INT;
 var
-  lStr: TTaurusTLS_UiString;
+  lStr: TTaurusTLS_UiString; // PALOFF 'Created and freed objects'
 
 begin
   Result:=0;
@@ -714,7 +714,7 @@ end;
 class function TTaurusTLS_DefaultUI.Reader(ui: PUI;
   uis: PUI_STRING): TIdC_INT;
 var
-  lStr: TTaurusTLS_UiString;
+  lStr: TTaurusTLS_UiString; // PALOFF 'Created and freed objects'
 
 begin
   Result:=0;
@@ -755,7 +755,7 @@ end;
 
 class procedure TTaurusTLS_DefaultUI.SetHandler(AHandler: TCustomUIHandler);
 var
-  lHandler: TCustomUIHandler;
+  lHandler: TCustomUIHandler; // PALOFF 'Created and freed objects'
 begin
   if FHandler = AHandler then
     Exit;
@@ -843,7 +843,7 @@ class function TTaurusTLSCustomOsslUi.Writer(ui: PUI;
   uis: PUI_STRING): TIdC_INT;
 var
   lUi: TTaurusTLSCustomOsslUi;
-  lStr: TTaurusTLS_UiString;
+  lStr: TTaurusTLS_UiString; // PALOFF 'Created and freed objects'
 
 begin
   Result:=0;
@@ -892,7 +892,7 @@ class function TTaurusTLSCustomOsslUi.Reader(ui: PUI;
   uis: PUI_STRING): TIdC_INT;
 var
   lUi: TTaurusTLSCustomOsslUi;
-  lStr: TTaurusTLS_UiString;
+  lStr: TTaurusTLS_UiString; // PALOFF 'Created and freed objects'
 
 begin
   Result:=0;

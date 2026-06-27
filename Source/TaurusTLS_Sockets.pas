@@ -1451,7 +1451,7 @@ end;
 constructor TTaurusTLSTrustStore.CreateMem(const AName: string;
   AUi: TTaurusTLSCustomOsslUi; const AData: string);
 var
-  lBio: TTaurusTLSRawByteStringBIO;
+  lBio: TTaurusTLSRawByteStringBIO; // PALOFF 'Created and freed objects'
 
 begin
   lBio:=TTaurusTLSRawByteStringBIO.Create(RawByteString(AData)); // PALOFF 'TBytes cast to RawByteString' // Why PAL detects AData as  TBytes ???
@@ -1465,7 +1465,7 @@ end;
 constructor TTaurusTLSTrustStore.CreateMem(const AName: string;
   AUi: TTaurusTLSCustomOsslUi; const AData: TBytes);
 var
-  lBio: TTaurusTLSBytesBio;
+  lBio: TTaurusTLSBytesBio;  // PALOFF 'Created and freed objects'
 
 begin
   lBio:=TTaurusTLSBytesBio.Create(AData);
@@ -1673,7 +1673,7 @@ procedure TTaurusTLSSslSocketCtxBuilder.DoBuildTrustStore(
   ASocketCtx: TTaurusTLSSslSocketCtx);
 var
   lTrustStores: TTaurusTLSTrustStores;
-  lX509Store: TaurusTLS_X509Store;
+  lX509Store: TaurusTLS_X509Store; // PALOFF 'Created and freed objects'
   lStorePair: TPair<string, TTaurusTLSTrustStore>;
 
 begin
@@ -1694,7 +1694,7 @@ end;
 procedure TTaurusTLSSslSocketCtxBuilder.DoBuildVerifyParam(
   ASocketCtx: TTaurusTLSSslSocketCtx);
 var
-  lVfyParam: TTaurusTLSX509VerifyParam;
+  lVfyParam: TTaurusTLSX509VerifyParam; // PALOFF 'Created and freed objects'
   i, lHigh: integer;
 
 begin
@@ -1790,7 +1790,7 @@ end;
 
 function TTaurusTLSSslSocketCtxBuilder.Build(ASender: TObject): ITaurusTLSSslSocketCtx;
 var
-  lSocketCtx: TTaurusTLSSslSocketCtx;
+  lSocketCtx: TTaurusTLSSslSocketCtx; // PALOFF 'Created and freed objects'
 
 begin
   Lock;
@@ -2325,7 +2325,7 @@ end;
 procedure TTaurusTLSSslSocketCtx.DoOnVerifyCertificate(ASocket: TTaurusTLSSslSocket;
   ACtx: PX509_STORE_CTX; out ASuccess, AContinue: boolean);
 var
-  lValidator: TTaurusTLSX509CertValidator;
+  lValidator: TTaurusTLSX509CertValidator; // PALOFF 'Created and freed objects'
 
 begin
   if not (Assigned(FOnVerifyCertificate) and Assigned(ACtx)) then
@@ -2794,7 +2794,7 @@ end;
 procedure TTaurusTLSSslSocket.CheckPeerCertificateValidationResult;
 var
   lErr: TTaurusTLSX509Error;
-  lCert: TTaurusTLSX509;
+  lCert: TTaurusTLSX509; // PALOFF 'Created and freed objects'
   lSuccess: boolean;
 
 begin
@@ -3216,7 +3216,7 @@ var
   lRetCode: TIdC_INT;
   lContext: TTaurusTLSSslSocketCtx.TClientCtx;
   lIdentity: RawByteString;
-  lECHStore: TTaurusTLSECHStore;
+  lECHStore: TTaurusTLSECHStore; // PALOFF 'Created and freed objects'
 
 begin
   lContext:=ClientCtx;
@@ -3275,7 +3275,7 @@ end;
 
 procedure TTaurusTLSClientSocket.SetupHostnameVerification;
 var
-  lParams: TTaurusTLSX509VerifyParamSSL;
+  lParams: TTaurusTLSX509VerifyParamSSL; // PALOFF 'Created and freed objects'
   lTargetName: RawByteString;
   lContext: TTaurusTLSSslSocketCtx;
   lIsIP: Boolean;

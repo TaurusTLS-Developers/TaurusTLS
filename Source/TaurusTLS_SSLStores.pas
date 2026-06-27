@@ -1275,7 +1275,7 @@ type
 
   private
     FStore: PX509_STORE;
-    FVfyParam: TTaurusTLSCustomX509VerifyParam;
+    FVfyParam: TTaurusTLSCustomX509VerifyParam; // PALOFF 'Created and freed objects'
     procedure SetParam(AVfyParam: TTaurusTLSCustomX509VerifyParam);
       {$IFDEF USE_INLINE}inline;{$ENDIF}
     function GetParam: TTaurusTLSCustomX509VerifyParam;

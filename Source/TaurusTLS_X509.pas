@@ -859,7 +859,7 @@ type
   TTaurusTLSX509CertValidator = class
   private
     FCtx: PX509_STORE_CTX;
-    FCurrentCert: TTaurusTLSX509;
+    FCurrentCert: TTaurusTLSX509; // PALOFF 'Created and freed objects'
 
     function GetError: TIdC_LONG; {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure SetError(AValue: TIdC_LONG); {$IFDEF USE_INLINE}inline; {$ENDIF}

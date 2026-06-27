@@ -550,7 +550,7 @@ end;
 
 procedure TTaurusTLSECHStore.SetConfigList(const AStream: TStream);
 var
-  LBio: TTaurusTLSMemBio;
+  LBio: TTaurusTLSMemBio; // PALOFF Created and freed objects
   lLen: Int64;
 begin
   if not Assigned(AStream) then
@@ -562,7 +562,7 @@ begin
 
   LBio := TTaurusTLSMemBio.Create;
   try
-    LBio.LoadFromStream(AStream, TIdC_SIZET(lLen));  // PALOFF Possible bad typecast
+    LBio.LoadFromStream(AStream, TIdC_SIZET(lLen));  // PALOFF 'Possible bad typecast'
     DoSetConfigList(LBio);
   finally
     LBio.Free;
@@ -571,7 +571,7 @@ end;
 
 procedure TTaurusTLSECHStore.SetConfigList(const AECHConfigList: RawByteString);
 var
-  LBio: TTaurusTLSRawByteStringBIO;
+  LBio: TTaurusTLSRawByteStringBIO; // PALOFF 'Created and freed objects'
 begin
   if Length(AECHConfigList) > cECHConfigListMaxLen then
     ETaurusTLSECHStore_too_long_echconfiglist_err.RaiseWithMessage(RSMsg_ECHStore_too_long_echconfiglist_err);
