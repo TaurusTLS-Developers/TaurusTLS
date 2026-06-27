@@ -1317,9 +1317,9 @@ type
     fSSLContext: TTaurusTLSContext;
     fHostName: String;
     fVerifyHostname: Boolean;
-{$IF Defined(Linux) or Defined(Android)}
+{$IFDEF SIGPIPE_MASK}
      FSigSet: sigset_t;
-{$IFEND}
+{$ENDIF}
     function GetSSLProtocolVersion: TTaurusTLSSSLVersion;
     function GetSSLProtocolVersionStr: string;
     function GetPeerCert: TTaurusTLSX509;
@@ -1327,9 +1327,9 @@ type
     function GetCipher: TTaurusTLSCipher;
     function GetVerifyHostname: Boolean;
     procedure SetVerifyHostName(const Value: Boolean);
-{$IF Defined(Linux) or Defined(Android)}
+{$IFDEF SIGPIPE_MASK}
     procedure DisableSigPipe;
-{$IFEND}
+{$ENDIF}
   public
     /// <summary>
     /// Creates a new instance of TTaurusTLSSocket.
@@ -4950,9 +4950,9 @@ var
 begin
   Assert(fSSL = nil);
   Assert(fSSLContext <> nil);
-{$IF Defined(Linux) or Defined(Android)}
+{$IFDEF SIGPIPE_MASK}
   DisableSigPipe;
-{$IFEND}
+{$ENDIF}
   fSSL := SSL_new(fSSLContext.Context);
   if fSSL = nil then
   begin
@@ -5022,9 +5022,9 @@ var
 begin
   Assert(fSSL = nil);
   Assert(fSSLContext <> nil);
-{$IF Defined(Linux) or Defined(Android)}
+{$IFDEF SIGPIPE_MASK}
   DisableSigPipe;
-{$IFEND}
+{$ENDIF}
   if Supports(FParent, ITaurusTLSCallbackHelper, IInterface(LHelper)) then
   begin
     LParentIO := LHelper.GetIOHandlerSelf;
@@ -5283,14 +5283,14 @@ begin
   fVerifyHostname := Value;
 end;
 
-{$IF Defined(Linux) or Defined(Android)}
+{$IFDEF SIGPIPE_MASK}
 procedure TTaurusTLSSocket.DisableSigPipe;
 begin
   sigemptyset(FSigSet);
   sigaddset(FSigSet, SIGPIPE);
   pthread_sigmask(SIG_BLOCK, @FSigSet, nil);
 end;
-{$IFEND}
+{$ENDIF}
 
 function TTaurusTLSSocket.GetSSLProtocolVersion: TTaurusTLSSSLVersion;
 begin
