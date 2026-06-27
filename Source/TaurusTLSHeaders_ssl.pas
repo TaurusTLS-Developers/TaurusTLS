@@ -1995,6 +1995,9 @@ var
   SSL_get_app_data: function (const ssl: PSSL): Pointer ; cdecl = nil; {removed 1.0.0}
   SSL_set_app_data: function (ssl: PSSL; data: Pointer): TIdC_INT; cdecl = nil; {removed 1.0.0}
 
+  SSL_CTX_get_app_data: function (const ctx: PSSL_CTX): Pointer; cdecl = nil;
+  SSL_CTX_set_app_data: function (ctx: PSSL_CTX; data: Pointer): TIdC_INT; cdecl = nil;
+
   ///* Is the SSL_connection established? */
   //# define SSL_in_connect_init(a)          (SSL_in_init(a) && !SSL_is_server(a))
   //# define SSL_in_accept_init(a)           (SSL_in_init(a) && SSL_is_server(a))
@@ -3712,8 +3715,10 @@ function SSL_get_peer_tmp_key(s: PSSL; pk: Pointer): TIdC_LONG; {removed 1.0.0}
 function SSL_get_tmp_key(s: PSSL; pk: Pointer): TIdC_LONG; {removed 1.0.0}
 function SSL_get0_raw_cipherlist(s: PSSL; plst: Pointer): TIdC_LONG; {removed 1.0.0}
 function SSL_get0_ec_point_formats(s: PSSL; plst: Pointer): TIdC_LONG; {removed 1.0.0}
-  function SSL_get_app_data(const ssl: PSSL): Pointer ; {removed 1.0.0} 
+  function SSL_get_app_data(const ssl: PSSL): Pointer ; {removed 1.0.0}
   function SSL_set_app_data(ssl: PSSL; data: Pointer): TIdC_INT; {removed 1.0.0}
+  function SSL_CTX_get_app_data(const ctx: PSSL_CTX): Pointer;
+  function SSL_CTX_set_app_data(ctx: PSSL_CTX; data: Pointer): TIdC_INT;
   function SSLeay_add_ssl_algorithms: TIdC_INT; {removed 1.0.0}
   procedure SSL_load_error_strings; {removed 1.1.0}
   function SSL_get_peer_certificate(const s: PSSL): PX509; {removed 3.0.0}
@@ -4610,8 +4615,10 @@ const
   SSL_get_tmp_key_removed = (byte(1) shl 8 or byte(0)) shl 8 or byte(0);
   SSL_get0_raw_cipherlist_removed = (byte(1) shl 8 or byte(0)) shl 8 or byte(0);
   SSL_get0_ec_point_formats_removed = (byte(1) shl 8 or byte(0)) shl 8 or byte(0);
-  SSL_get_app_data_removed = (byte(1) shl 8 or byte(0)) shl 8 or byte(0); 
+  SSL_get_app_data_removed = (byte(1) shl 8 or byte(0)) shl 8 or byte(0);
   SSL_set_app_data_removed = (byte(1) shl 8 or byte(0)) shl 8 or byte(0);
+  SSL_CTX_get_app_data_removed = (byte(1) shl 8 or byte(0)) shl 8 or byte(0);
+  SSL_CTX_set_app_data_removed = (byte(1) shl 8 or byte(0)) shl 8 or byte(0);
   SSLeay_add_ssl_algorithms_removed = (byte(1) shl 8 or byte(0)) shl 8 or byte(0);
   SSL_load_error_strings_removed = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
   SSL_get_peer_certificate_removed = (byte(3) shl 8 or byte(0)) shl 8 or byte(0);
@@ -4972,8 +4979,10 @@ const
   //# define SSL_CTX_get_app_data(ctx)       (SSL_CTX_get_ex_data(ctx,0))
   //# define SSL_CTX_set_app_data(ctx,arg)   (SSL_CTX_set_ex_data(ctx,0, \
   //                                                            (PIdAnsiChar *)(arg)))
-  SSL_get_app_data_procname = 'SSL_get_app_data'; {removed 1.0.0} 
+  SSL_get_app_data_procname = 'SSL_get_app_data'; {removed 1.0.0}
   SSL_set_app_data_procname = 'SSL_set_app_data'; {removed 1.0.0}
+  SSL_CTX_get_app_data_procname = 'SSL_CTX_get_app_data'; {removed 1.0.0}
+  SSL_CTX_set_app_data_procname = 'SSL_CTX_set_app_data'; {removed 1.0.0}
 
   ///* Is the SSL_connection established? */
   //# define SSL_in_connect_init(a)          (SSL_in_init(a) && !SSL_is_server(a))
@@ -6174,9 +6183,24 @@ begin
   Result := SSL_get_ex_data(ssl,0);
 end;
 
-procedure  _SSL_load_error_strings; cdecl; 
+function  _SSL_set_app_data(ssl: PSSL; data: Pointer): TIdC_INT; cdecl;
 begin
-  OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS or OPENSSL_INIT_LOAD_CRYPTO_STRINGS,nil); 
+  Result := SSL_set_ex_data(ssl,0,data);
+end;
+
+function  _SSL_CTX_get_app_data(const ctx: PSSL_CTX): Pointer ; cdecl;
+begin
+  Result := SSL_CTX_get_ex_data(ctx,0);
+end;
+
+function  _SSL_CTX_set_app_data(ctx: PSSL_CTX; data: Pointer): TIdC_INT; cdecl;
+begin
+  Result := SSL_CTX_set_ex_data(ctx,0,data);
+end;
+
+procedure  _SSL_load_error_strings; cdecl;
+begin
+  OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS or OPENSSL_INIT_LOAD_CRYPTO_STRINGS,nil);
 end;
 
 function  _SSL_library_init: TIdC_INT; cdecl;
@@ -6187,11 +6211,6 @@ end;
 function  _SSLeay_add_ssl_algorithms: TIdC_INT; cdecl;
 begin
   Result := SSL_library_init;
-end;
-
-function  _SSL_set_app_data(ssl: PSSL; data: Pointer): TIdC_INT; cdecl;
-begin
-  Result := SSL_set_ex_data(ssl,0,data);
 end;
 
 
@@ -7115,6 +7134,16 @@ begin
 end;
 
 
+function  ERR_SSL_CTX_get_app_data(const ctx: PSSL_CTX): Pointer ;  cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(SSL_get_app_data_procname);
+end;
+
+
+function  ERR_SSL_CTX_set_app_data(ctx: PSSL_CTX; data: Pointer): TIdC_INT;  cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(SSL_set_app_data_procname);
+end;
 
   ///* Is the SSL_connection established? */
   //# define SSL_in_connect_init(a)          (SSL_in_init(a) && !SSL_is_server(a))
@@ -13768,7 +13797,6 @@ begin
     {$ifend}
   end;
 
-  
   SSL_set_app_data := LoadLibFunction(ADllHandle, SSL_set_app_data_procname);
   FuncLoadError := not assigned(SSL_set_app_data);
   if FuncLoadError then
@@ -13800,7 +13828,68 @@ begin
     {$ifend}
   end;
 
- 
+  SSL_CTX_get_app_data := LoadLibFunction(ADllHandle, SSL_CTX_get_app_data_procname);
+  FuncLoadError := not assigned(SSL_CTX_get_app_data);
+  if FuncLoadError then
+  begin
+    {$if not defined(SSL_CTX_get_app_data_allownil)}
+    SSL_CTX_get_app_data := ERR_SSL_CTX_get_app_data;
+    {$ifend}
+    {$if declared(SSL_CTX_get_app_data_introduced)}
+    if LibVersion < SSL_CTX_get_app_data_introduced then
+    begin
+      {$if declared(FC_SSL_CTX_get_app_data)}
+      SSL_CTX_get_app_data := FC_SSL_CTX_get_app_data;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(SSL_CTX_get_app_data_removed)}
+    if SSL_CTX_get_app_data_removed <= LibVersion then
+    begin
+      {$if declared(_SSL_CTX_get_app_data)}
+      SSL_CTX_get_app_data := _SSL_CTX_get_app_data;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(SSL_CTX_get_app_data_allownil)}
+    if FuncLoadError then
+      AFailed.Add('SSL_CTX_get_app_data');
+    {$ifend}
+  end;
+
+  SSL_CTX_set_app_data := LoadLibFunction(ADllHandle, SSL_CTX_set_app_data_procname);
+  FuncLoadError := not assigned(SSL_CTX_set_app_data);
+  if FuncLoadError then
+  begin
+    {$if not defined(SSL_CTX_set_app_data_allownil)}
+    SSL_CTX_set_app_data := ERR_SSL_CTX_set_app_data;
+    {$ifend}
+    {$if declared(SSL_CTX_set_app_data_introduced)}
+    if LibVersion < SSL_CTX_set_app_data_introduced then
+    begin
+      {$if declared(FC_SSL_CTX_set_app_data)}
+      SSL_CTX_set_app_data := FC_SSL_CTX_set_app_data;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(SSL_CTX_set_app_data_removed)}
+    if SSL_CTX_set_app_data_removed <= LibVersion then
+    begin
+      {$if declared(_SSL_CTX_set_app_data)}
+      SSL_CTX_set_app_data := _SSL_CTX_set_app_data;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(SSL_CTX_set_app_data_allownil)}
+    if FuncLoadError then
+      AFailed.Add('SSL_CTX_set_app_data');
+    {$ifend}
+  end;
+
   SSL_in_init := LoadLibFunction(ADllHandle, SSL_in_init_procname);
   FuncLoadError := not assigned(SSL_in_init);
   if FuncLoadError then
@@ -29546,13 +29635,27 @@ begin
   Result := SSL_ctrl(s, SSL_CTRL_GET_EC_POINT_FORMATS, 0, plst);
 end;
 
-
 function SSL_get_app_data(const ssl: PSSL): Pointer ;
 begin
   Result := SSL_get_ex_data(ssl,0);
 end;
 
-procedure SSL_load_error_strings; 
+function SSL_set_app_data(ssl: PSSL; data: Pointer): TIdC_INT;
+begin
+  Result := SSL_set_ex_data(ssl,0,data);
+end;
+
+function SSL_CTX_get_app_data(const ctx: PSSL_CTX): Pointer ;
+begin
+  Result := SSL_CTX_get_ex_data(ctx,0);
+end;
+
+function SSL_CTX_set_app_data(ctx: PSSL_CTX; data: Pointer): TIdC_INT;
+begin
+  Result := SSL_CTX_set_ex_data(ctx,0,data);
+end;
+
+procedure SSL_load_error_strings;
 begin
   OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS or OPENSSL_INIT_LOAD_CRYPTO_STRINGS,nil); //PALOFF - Functions called as procedures
 end;
@@ -29566,12 +29669,6 @@ function SSLeay_add_ssl_algorithms: TIdC_INT;
 begin
   Result := SSL_library_init;
 end;
-
-function SSL_set_app_data(ssl: PSSL; data: Pointer): TIdC_INT;
-begin
-  Result := SSL_set_ex_data(ssl,0,data);
-end;
-
 
 {$ENDIF}
 
