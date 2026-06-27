@@ -668,7 +668,8 @@ begin
   end
   else
     FData:=AData;
-  inherited Create(PAnsiChar(FData), lLen*SizeOf(AnsiChar), lFlags); // include null-terminator if requested
+  // created includes null-terminator if requested
+  inherited Create(PAnsiChar(FData), lLen*SizeOf(AnsiChar), lFlags); //PALOFF RawByteString cast to PAnsiChar 
 end;
 
 { TTaurusTLSRecordBIO<T> }

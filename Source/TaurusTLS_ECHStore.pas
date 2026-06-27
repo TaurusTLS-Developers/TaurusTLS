@@ -731,7 +731,7 @@ end;
 
 procedure TServerECHStoreHelper.ReadPem(const APemStr: string; AIdxForRetry: TIdC_INT);
 begin
-  ReadPemRawByteString(RawByteString(APemStr), AIdxForRetry);
+  ReadPemRawByteString(RawByteString(APemStr), AIdxForRetry); // PALOFF 'UnicodeString cast to RawByteString'
 end;
 
 procedure TServerECHStoreHelper.SetKeyAndReadPemRawByteString(APrivKey: PEVP_PKEY;
@@ -751,7 +751,7 @@ end;
 procedure TServerECHStoreHelper.SetKeyAndReadPem(APrivKey: PEVP_PKEY;
   const APemStr: string; AIdxForRetry: TIdC_INT);
 begin
-  SetKeyAndReadPemRawByteString(APrivKey, RawByteString(APemStr), AIdxForRetry);
+  SetKeyAndReadPemRawByteString(APrivKey, RawByteString(APemStr), AIdxForRetry); // PALOFF 'UnicodeString cast to RawByteString'
 end;
 
 procedure TServerECHStoreHelper.SetKeyAndReadPem(APrivKey: PEVP_PKEY;

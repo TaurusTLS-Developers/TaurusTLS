@@ -1541,7 +1541,7 @@ end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetHostW(const Value: UnicodeString);
 begin
-  SetHostA(RawByteString(Value));
+  SetHostA(RawByteString(Value)); // PALOFF 'UnicodeString cast to RawByteString'
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.AddHost(const Value: string);
@@ -1563,7 +1563,7 @@ end;
 
 procedure TTaurusTLSCustomX509VerifyParam.AddHostW(const Value: UnicodeString);
 begin
-  AddHostA(RawByteString(Value));
+  AddHostA(RawByteString(Value)); // PALOFF 'UnicodeString cast to RawByteString'
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.AttachToSSLCtx(ASSLCtx: PSSL_CTX);
@@ -1643,7 +1643,7 @@ end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetEMailW(const Value: UnicodeString);
 begin
-  SetEMailA(RawByteString(Value));
+  SetEMailA(RawByteString(Value)); // PALOFF 'UnicodeString cast to RawByteString'
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.AddEMailRaw(Value: PIdAnsiChar);
@@ -1760,7 +1760,7 @@ end;
 
 procedure TTaurusTLSCustomX509VerifyParam.SetIpAddressW(const Value: UnicodeString);
 begin
-  SetIpAddressA(RawByteString(Value));
+  SetIpAddressA(RawByteString(Value)); // PALOFF 'UnicodeString cast to RawByteString'
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.AddIpAddressRaw(Value: PIdAnsiChar);
@@ -1778,7 +1778,7 @@ end;
 procedure TTaurusTLSCustomX509VerifyParam.AddIpAddressW(
   const Value: UnicodeString);
 begin
-  AddIpAddressA(RawByteString(Value));
+  AddIpAddressA(RawByteString(Value)); // PALOFF 'UnicodeString cast to RawByteString'
 end;
 
 procedure TTaurusTLSCustomX509VerifyParam.AddIpAddress(const Value: string);
@@ -1807,7 +1807,7 @@ begin
   lResult:=nil;
   try
     lResult:=X509_VERIFY_PARAM_get1_ip_asc(FParam);
-    Result:=RawByteString(lResult);
+    Result:=RawByteString(lResult); // PALOFF 'PIdAnsiChar cast to RawByteString'
   finally
     OPENSSL_free(lResult);
   end;
@@ -1977,7 +1977,7 @@ end;
 constructor TTaurusTLSOSSLStore.Create(const AUri: UnicodeString;
   AUi: TTaurusTLSCustomOsslUi; ALoadFilter: TStoreItemTypes);
 begin
-  Create(RawByteString(AUri), AUi, ALoadFilter);
+  Create(RawByteString(AUri), AUi, ALoadFilter); // PALOFF 'UnicodeString cast to RawByteString'
 end;
 
 constructor TTaurusTLSOSSLStore.Create(ABio: TTaurusTLSCustomBIO;
@@ -2005,7 +2005,7 @@ procedure TTaurusTLSOSSLStore.DoLoad(const ACtx: TStoreCtx;
   ALoadFilter: TStoreItemTypes);
 var
   lInfo: TStoreInfo;
-  lItem: TStoreItem;
+  lItem: TStoreItem; // PALOFF 'Unbalanced Create/Free'
 
 begin
   while not ACtx.Eof do
@@ -2014,7 +2014,7 @@ begin
     if not ((lInfo.IsExist and (lInfo.GetType in ALoadFilter))) then
       continue;
     try
-      lItem:=TStoreItem.Create(lInfo); // PALOFF Unbalanced Create/Free
+      lItem:=TStoreItem.Create(lInfo); // PALOFF 'Unbalanced Create/Free'
       // FList takes ownerthip on lItem
       FList.Add(lItem);
       Inc(FCounters[lItem.&Type]);
@@ -2135,7 +2135,7 @@ end;
 
 function TaurusTLS_X509Store.AppendFromLocationW(const AUri: UnicodeString): boolean;
 begin
-  Result:=AppendFromLocationA(RawByteString(AUri));
+  Result:=AppendFromLocationA(RawByteString(AUri)); // PALOFF 'UnicodeString cast to RawByteString'
 end;
 
 procedure TaurusTLS_X509Store.AppendFromOsslStore(const AStore: TTaurusTLSOSSLStore;

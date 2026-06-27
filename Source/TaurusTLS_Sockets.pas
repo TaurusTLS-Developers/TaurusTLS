@@ -1454,7 +1454,7 @@ var
   lBio: TTaurusTLSRawByteStringBIO;
 
 begin
-  lBio:=TTaurusTLSRawByteStringBIO.Create(RawByteString(AData));
+  lBio:=TTaurusTLSRawByteStringBIO.Create(RawByteString(AData)); // PALOFF 'TBytes cast to RawByteString' // Why PAL detects AData as  TBytes ???
   try
     Create(AName, lBio, AUi);
   finally
@@ -1568,7 +1568,7 @@ begin
       ETaurusTLSAlpnResultError.RaiseWithMessage(
         'ALPN Input list corrupted. Element length is out input bounds.');
 
-    SetString(lPair.FValue, PIdAnsiChar(lPos), lLen);
+    SetString(lPair.FValue, PIdAnsiChar(lPos), lLen); // PALOFF PIdC_UINT8 cast to PIdAnsiChar
     FPairs[lCount]:=lPair;
 
     Inc(lCount);
@@ -1892,7 +1892,7 @@ end;
 
 procedure TTaurusTLSSslSocketCtx.TClientCtx.SetDefaultSNI(const AValue: string);
 begin
-  FDefaultSNI:=NormalizeHostName(RawByteString(AValue));
+  FDefaultSNI:=NormalizeHostName(RawByteString(AValue)); // PALOFF 'UnicodeString cast to RawByteString'
   ResetIdentity;
 end;
 
@@ -1929,7 +1929,7 @@ end;
 
 procedure TTaurusTLSSslSocketCtx.TClientCtx.SetECHOuterSNI(const AValue: string);
 begin
-  FECHOuterSNI:=NormalizeHostName(RawByteString(AValue));
+  FECHOuterSNI:=NormalizeHostName(RawByteString(AValue)); // PALOFF 'UnicodeString cast to RawByteString'
   ResetIdentity;
 end;
 
@@ -1965,7 +1965,7 @@ var
   lValue: RawByteString;
 
 begin
-  lValue:=NormalizeHostName(RawByteString(AValue));
+  lValue:=NormalizeHostName(RawByteString(AValue)); // PALOFF 'UnicodeString cast to RawByteString'
   if FHostname = lValue then
     Exit;
   FHostname:=lValue;
@@ -1981,7 +1981,7 @@ var
   lValue: RawByteString;
 
 begin
-  lValue:=NormalizeHostName(RawByteString(AValue));
+  lValue:=NormalizeHostName(RawByteString(AValue)); // PALOFF 'UnicodeString cast to RawByteString'
   if FECHConfigList = lValue then
     Exit;
   FECHConfigList:=lValue;
@@ -2402,8 +2402,8 @@ var
   lResult: pointer;
 
 begin
-  lResult:=TTaurusTLSSslSocket(SSL_CTX_get_app_data(ACtx)); // PALOFF Pointer cast to TObject
-  if Assigned(lResult) and (TObject(lResult) is TTaurusTLSSslSocketCtx) then
+  lResult:=SSL_CTX_get_app_data(ACtx);
+  if Assigned(lResult) and (TObject(lResult) is TTaurusTLSSslSocketCtx) then // PALOFF 'Pointer cast to TObject'
     Result:=TTaurusTLSSslSocketCtx(lResult)
   else
     ETaurusTLSDataBindingError.RaiseWithMessageFmt(
@@ -2963,8 +2963,8 @@ var
   lResult: pointer;
 
 begin
-  lResult:=TTaurusTLSSslSocket(SSL_get_app_data(ASSL)); // PALOFF Pointer cast to TObject
-  if Assigned(lResult) and (TObject(lResult) is TTaurusTLSSslSocket) then
+  lResult:=SSL_get_app_data(ASSL); 
+  if Assigned(lResult) and (TObject(lResult) is TTaurusTLSSslSocket) then // PALOFF 'Pointer cast to TObject'
     Result:=TTaurusTLSSslSocket(lResult)
   else
     ETaurusTLSDataBindingError.RaiseWithMessageFmt(
