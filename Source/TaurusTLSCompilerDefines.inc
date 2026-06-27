@@ -27,9 +27,6 @@
 
 {$UNDEF STATICLOAD_OPENSSL}
 
-// Mke shure the  SIGPIPE_MASK is defined only for specific platfrom(s).
-{$UNDEF SIGPIPE_MASK}
-
 // Make sure the following are $DEFINE'd only for Delphi/C++Builder 2009 onwards
 // as specified further below.  The VCL is fully Unicode, where the 'String'
 // type maps to System.UnicodeString, not System.AnsiString anymore
@@ -1234,7 +1231,6 @@
     {$ENDIF}
   {$ENDIF}
 {$ENDIF}
-
 {$IFDEF LINUX}
   {$IFDEF LINUX64}
     {$DEFINE CPU64}
@@ -1243,9 +1239,8 @@
       {$DEFINE CPU32}
     {$ENDIF}
   {$ENDIF}
-  // enables // SIGPIPE crash mitigation in Linux
-  {$DEFINE SIGPIPE_MASK}
 {$ENDIF}
+
 {end Unix OS specific stuff}
 
 {$IFDEF DEBUG}
