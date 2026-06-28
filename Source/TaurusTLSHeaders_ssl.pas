@@ -1126,7 +1126,7 @@ type
   GEN_SESSION_CB = function (ssl: PSSL; id: PByte; id_len: PIdC_UINT): TIdC_INT; cdecl;
 
   SSL_CTX_info_callback = procedure (const ssl: PSSL; type_: TIdC_INT; _val: TIdC_INT); cdecl;
-  SSL_CTX_client_cert_cb = function (ssl: PSSL; x509: PPx509; pkey: PPEVP_PKEY): TIdC_INT; cdecl;
+  SSL_CTX_client_cert_cb = function (ssl: PSSL; var x509: Px509; var pkey: PEVP_PKEY): TIdC_INT; cdecl;
 
   SSL_CTX_cookie_verify_cb = function (ssl: PSSL; cookie: PByte; cookie_len: PIdC_UINT): TIdC_INT; cdecl;
   SSL_CTX_set_cookie_verify_cb_app_verify_cookie_cb = function (ssl: PSSL; const cookie: PByte; cookie_len: TIdC_UINT): TIdC_INT; cdecl;
