@@ -1994,8 +1994,11 @@ end;
 
 procedure TTaurusTLSSslSocketCtx.ReleaseCtxCallbacks;
 begin
-  SSL_CTX_set_app_data(SSLCtx, nil);
-  SSL_CTX_set_keylog_callback(SSLCtx, nil);
+  try
+    SSL_CTX_set_keylog_callback(SSLCtx, nil);
+  finally
+    SSL_CTX_set_app_data(SSLCtx, nil);
+  end;
 end;
 
 class function TTaurusTLSSslSocketCtx.NormalizeHostName(
