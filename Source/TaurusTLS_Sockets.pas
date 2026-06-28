@@ -427,20 +427,23 @@ type
     property Ctx: TTaurusTLSSslSocketCtx read GetCtx;
   end;
 
-  TaurusTLSSslSocketFlag = (
+  TaurusTLSSslSocketCtxFlag = (
+    slfFrozen,
     slfClient,
     slfServer,
     slfVerifyHostname
   );
 
-  TaurusTLSSslSocketFlags = set of TaurusTLSSslSocketFlag;
+  TaurusTLSSslSocketCtxFlags = set of TaurusTLSSslSocketCtxFlag;
 
-  TaurusTLSSslSocketFlagsHelper = record helper for TaurusTLSSslSocketFlags
+  TaurusTLSSslSocketCtxFlagsHelper = record helper for TaurusTLSSslSocketCtxFlags
   private
+    function GetIsFrozen: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetIsClientSocket: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetIsServerSocket: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetVerifyHostName: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
   public
+    property IsFrozen: boolean read GetIsFrozen;
     property IsClientSocket: boolean read GetIsClientSocket;
     property IsServerSocket: Boolean read GetIsServerSocket;
     property VerifyHostName: boolean read GetVerifyHostName;
@@ -456,7 +459,7 @@ type
     FSSLCtx: PSSL_CTX;
 
     // Common fields
-    FFlags: TaurusTLSSslSocketFlags;
+    FFlags: TaurusTLSSslSocketCtxFlags;
     FCertVerifyFlags: TTaurusTLSVerifyModeFlags;
     FSession: PSSL_SESSION;
 
@@ -486,11 +489,16 @@ type
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetHasOnKeyLog: boolean;
   protected
-    class function NormalizeHostName(const AValue: RawByteString): RawByteString;
-      static; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    // IITaurusTLSSocketCtx method(s)
+    function GetCtx: TTaurusTLSSslSocketCtx; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     class function GetInstanceFromCtx(ACtx: PSSL_CTX): TTaurusTLSSslSocketCtx;
       static; {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    class function NormalizeHostName(const AValue: RawByteString): RawByteString;
+      static; {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    procedure CheckFrozen; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     // Event handlers
     procedure DoOnStateChange(ASocket: TTaurusTLSSslSocket;
@@ -512,58 +520,67 @@ type
     procedure DoOnKeyLog(ASocket: TTaurusTLSSslSocket; ALine: PIdAnsiChar);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
-    procedure InitCtxCallbacks; virtual;
-    procedure ReleaseCtxCallbacks; virtual;
-
     // OpenSSL Callback status checkers
-    property HasOnStatusInfo: boolean read GetHasOnStatusInfo;
     property HasOnVerifyCertificate: boolean read GetHasOnVerifyCertificate;
     property HasOnSecurityCheck: boolean read GetHasOnSecurityCheck;
+    property HasOnStatusInfo: boolean read GetHasOnStatusInfo;
     property HasOnKeylog: boolean read GetHasOnKeyLog;
 
-    // IITaurusTLSSocketCtx method(s)
-    function GetCtx: TTaurusTLSSslSocketCtx; {$IFDEF USE_INLINE}inline; {$ENDIF}
-
     // protected setters
-    procedure SetCtxOptions(const AValue: TTaurusTLSSSLOptionFlags);
+    function SetCtxOptions(const AValue: TTaurusTLSSSLOptionFlags): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure SetCipherList(const AValue: string);
+    function SetCipherList(const AValue: string): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure SetCipherSuites(const AValue: string);
+    function SetCipherSuites(const AValue: string): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure SetKeXGroups(const AValue: string);
+    function SetKeXGroups(const AValue: string): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure SetSigAlgorithms(const AValue: string);
+    // Corrected spelling from 'signiture' in your log message to match declaration order
+    function SetSigAlgorithms(const AValue: string): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure SetMinTLSVersion(const AValue: TTaurusTLSSSLVersion);
+    function SetMinTLSVersion(const AValue: TTaurusTLSSSLVersion): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure SetMaxTLSVersion(const AValue: TTaurusTLSSSLVersion);
+    function SetMaxTLSVersion(const AValue: TTaurusTLSSSLVersion): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure SetVerifyModes(const AValue: TTaurusTLSVerifyModes);
+    function SetVerifyModes(const AValue: TTaurusTLSVerifyModes): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure SetVerifyParam(const AValue: TTaurusTLSCustomX509VerifyParam);
+    function SetVerifyParam(const AValue: TTaurusTLSCustomX509VerifyParam): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure SetTrustStore(const AValue: TaurusTLS_X509Store);
+    function SetTrustStore(const AValue: TaurusTLS_X509Store): TTaurusTLSSslSocketCtx;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function SetOnDebugMessage(const AValue: TTaurusTLSOnDebugMessage): TTaurusTLSSslSocketCtx;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function SetOnPeerCertError(const AValue: TTaurusTLSOnPeerCertError): TTaurusTLSSslSocketCtx;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function SetOnStateChange(const AValue: TTaurusTLSOnStateChange): TTaurusTLSSslSocketCtx;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function SetOnStatusInfo(const AValue: TTaurusTLSOnSSLStatusInfo): TTaurusTLSSslSocketCtx;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function SetOnVerifyCertificate(const AValue: TTaurusTLSOnVerifyCallback): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     { TODO : Add more SSL_CTX setters here. }
 
+    // CtxBuild methods
+    procedure InitCtx; virtual;
+    procedure ReleaseCtx; virtual;
+    procedure DoFreeze;
+
+    property Flags: TaurusTLSSslSocketCtxFlags read FFlags;
     property Session: PSSL_SESSION read FSession write FSession;
 
-    property OnStateChange: TTaurusTLSOnStateChange read FOnStateChange
-      write FOnStateChange;
-    property OnDebugMessage: TTaurusTLSOnDebugMessage read FOnDebugMessage
-      write FOnDebugMessage;
-    property OnPeerCertError: TTaurusTLSOnPeerCertError read FOnPeerCertError
-      write FOnPeerCertError;
-    property OnStatusInfo: TTaurusTLSOnSSLStatusInfo read FOnStatusInfo
-      write FOnStatusInfo;
-    property OnVerifyCertificate: TTaurusTLSOnVerifyCallback read FOnVerifyCertificate
-      write FOnVerifyCertificate;
+    property OnStateChange: TTaurusTLSOnStateChange read FOnStateChange;
+    property OnDebugMessage: TTaurusTLSOnDebugMessage read FOnDebugMessage;
+    property OnPeerCertError: TTaurusTLSOnPeerCertError read FOnPeerCertError;
+    property OnStatusInfo: TTaurusTLSOnSSLStatusInfo read FOnStatusInfo;
+    property OnVerifyCertificate: TTaurusTLSOnVerifyCallback
+      read FOnVerifyCertificate;
 
   public
     constructor Create(ASender: TObject; ATLSMeth: PSSL_METHOD);
     destructor Destroy; override;
     procedure CloneSession(ASSL: PSSL); {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function FreezeCtx: TTaurusTLSSslSocketCtx;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     property Sender: TObject read FSender;
     property SSLCtx: PSSL_CTX read FSSLCtx;
@@ -599,24 +616,12 @@ type
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetECHMethods: TTaurusTLSECHCliMeths;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure SetECHConfigList(const AValue: string);
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetDefaultSNI: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure SetDefaultSNI(const AValue: string);
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetECHOuterSNI: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure SetECHOuterSNI(const AValue: string);
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetHostName: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure SetHostName(const AValue: string);
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetECHConfigList: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetIdentity: RawByteString; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetIsIdentityIP: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure SetECHFlags(const AValue: TTaurusTLSECHCliFlags);
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure SetSNIKind(const AValue: TTaurusTLSSNICliKind);
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetECHNoOuterVal: TIdC_INT; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetUseECH: Boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetUseGrease: Boolean;
@@ -624,8 +629,26 @@ type
 
     function GetHasOnClientCert: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
   protected
-    procedure SetSessionToResume(const ASSL: PSSL);
+    procedure InitCtx; override;
+    procedure ReleaseCtx; override;
+
+
+    // protected setters
+    function SetSessionToResume(const ASSL: PSSL): TTaurusTLSSslClientCtx;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
+    function SetHostName(const AValue: string): TTaurusTLSSslClientCtx;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function SetDefaultSNI(const AValue: string): TTaurusTLSSslClientCtx;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function SetSNIKind(const AValue: TTaurusTLSSNICliKind): TTaurusTLSSslClientCtx;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    function SetECHFlags(const AValue: TTaurusTLSECHCliFlags): TTaurusTLSSslClientCtx;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function SetECHOuterSNI(const AValue: string): TTaurusTLSSslClientCtx;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function SetECHConfigList(const AValue: string): TTaurusTLSSslClientCtx;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     //
     procedure DoOnClientCertCallback(ASocket: TTaurusTLSSslSocket;
@@ -636,14 +659,14 @@ type
 
     property HasOnClientCert: boolean read GetHasOnClientCert;
     property SessionToResume: PSSL_SESSION read FSessionToResume;
-    property HostName: string read GetHostName write SetHostName;
-    property DefaultSNI: string read GetDefaultSNI write SetDefaultSNI;
-    property SNIKind: TTaurusTLSSNICliKind read FSNIKind write SetSNIKind;
-    property ECHFlags: TTaurusTLSECHCliFlags write SetECHFlags;
+    property HostName: string read GetHostName;
+    property DefaultSNI: string read GetDefaultSNI;
+    property SNIKind: TTaurusTLSSNICliKind read FSNIKind;
+    property ECHFlags: TTaurusTLSECHCliFlags read FECHFlags;
     property ECHKind: TTaurusTLSECHCliKind read GetECHKind;
     property ECHMethod: TTaurusTLSECHCliMeths read GetECHMethods;
-    property ECHOuterSNI: string read GetECHOuterSNI write SetECHOuterSNI;
-    property ECHConfigList: string read GetECHConfigList write SetECHConfigList;
+    property ECHOuterSNI: string read GetECHOuterSNI;
+    property ECHConfigList: string read GetECHConfigList;
 
     property Identity: RawByteString read GetIdentity;
     property IsIdentityIP: boolean read GetIsIdentityIP;
@@ -684,8 +707,8 @@ type
     function GetHasOnPeerSslSessionRemove: boolean;
 
   protected
-    procedure InitCtxCallbacks; override;
-    procedure ReleaseCtxCallbacks; override;
+    procedure InitCtx; override;
+    procedure ReleaseCtx; override;
 
     { TODO : This method is subject to change by implementing SNI Contexts Dictionary. }
     procedure DoOnPeerSniSelect(ASocket: TTaurusTLSSslSocket;
@@ -1617,19 +1640,24 @@ begin
   FResultValue:=alpnSuccess;
 end;
 
-{ TaurusTLSSslSocketFlagsHelper }
+{ TaurusTLSSslSocketCtxFlagsHelper }
 
-function TaurusTLSSslSocketFlagsHelper.GetIsClientSocket: boolean;
+function TaurusTLSSslSocketCtxFlagsHelper.GetIsClientSocket: boolean;
 begin
   Result:=slfClient in Self;
 end;
 
-function TaurusTLSSslSocketFlagsHelper.GetIsServerSocket: boolean;
+function TaurusTLSSslSocketCtxFlagsHelper.GetIsFrozen: boolean;
+begin
+  Result:=slfFrozen in Self;
+end;
+
+function TaurusTLSSslSocketCtxFlagsHelper.GetIsServerSocket: boolean;
 begin
   Result:=slfServer in Self;
 end;
 
-function TaurusTLSSslSocketFlagsHelper.GetVerifyHostName: boolean;
+function TaurusTLSSslSocketCtxFlagsHelper.GetVerifyHostName: boolean;
 begin
   Result:=slfVerifyHostname in Self;
 end;
@@ -1820,9 +1848,21 @@ end;
 
 destructor TTaurusTLSSslSocketCtx.Destroy;
 begin
-  ReleaseCtxCallbacks;
+  ReleaseCtx;
   SSL_CTX_free(FSSLCtx);
   inherited;
+end;
+
+function TTaurusTLSSslSocketCtx.FreezeCtx: TTaurusTLSSslSocketCtx;
+begin
+  Result:=Self;
+  InitCtx;
+  DoFreeze;
+end;
+
+procedure TTaurusTLSSslSocketCtx.DoFreeze;
+begin
+  Include(FFlags, slfFrozen);
 end;
 
 class procedure TTaurusTLSSslSocketCtx.CbCtxKeyLog(const ASSL: PSSL;
@@ -1848,10 +1888,17 @@ begin
     finally
       GStack.WSSetLastError(lErr);
     end;
-  except
-    //PALOFF "Empty except-block"
+  except //PALOFF "Empty except-block"
     // We must not raise the exception to the OpenSSL stack
   end;
+end;
+
+procedure TTaurusTLSSslSocketCtx.CheckFrozen;
+begin
+  if FLags.IsFrozen then
+    ETaurusTLSSslSocketCtxError.RaiseWithMessage(
+      { TODO : To make ResourseString }
+      'TTaurusTLSSslSocketCtx instance is frozen and cannot be modified.');
 end;
 
 procedure TTaurusTLSSslSocketCtx.CloneSession(ASSL: PSSL);
@@ -1980,7 +2027,7 @@ begin
   Result:=slfVerifyHostname in FFlags;
 end;
 
-procedure TTaurusTLSSslSocketCtx.InitCtxCallbacks;
+procedure TTaurusTLSSslSocketCtx.InitCtx;
 begin
   // Attach Self to the SSL_CTX
   if SSL_CTX_set_app_data(SSLCtx, Self) <= 0 then
@@ -1992,7 +2039,7 @@ begin
     SSL_CTX_set_keylog_callback(SSLCtx, CbCtxKeyLog);
 end;
 
-procedure TTaurusTLSSslSocketCtx.ReleaseCtxCallbacks;
+procedure TTaurusTLSSslSocketCtx.ReleaseCtx;
 begin
   try
     SSL_CTX_set_keylog_callback(SSLCtx, nil);
@@ -2012,74 +2059,152 @@ begin
 {$ENDIF}
 end;
 
-procedure TTaurusTLSSslSocketCtx.SetCipherList(const AValue: string);
+function TTaurusTLSSslSocketCtx.SetCtxOptions(
+  const AValue: TTaurusTLSSSLOptionFlags): TTaurusTLSSslSocketCtx;
 begin
-  if SSL_CTX_set_cipher_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <=0 then  // PALOFF Possible bad typecast
-    ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
-      'Error setting cipher list ''%s'' to the SSL Context.', [AValue]);
-end;
-
-procedure TTaurusTLSSslSocketCtx.SetCipherSuites(const AValue: string);
-begin
-  if SSL_CTX_set_ciphersuites(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <=0 then // PALOFF Possible bad typecast
-    ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
-      'Error setting cipher suites ''%s'' to the SSL Context.', [AValue]);
-end;
-
-procedure TTaurusTLSSslSocketCtx.SetCtxOptions(
-  const AValue: TTaurusTLSSSLOptionFlags);
-begin
+  Result:=Self;
+  CheckFrozen;
   SSL_CTX_set_options(FSSLCtx, AValue.AsInt);
 end;
 
-procedure TTaurusTLSSslSocketCtx.SetKeXGroups(const AValue: string);
+function TTaurusTLSSslSocketCtx.SetCipherList(const AValue: string): TTaurusTLSSslSocketCtx;
 begin
-  if SSL_CTX_set1_groups_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <=0 then // PALOFF Possible bad typecast
+  Result:=Self;
+  CheckFrozen;
+  if SSL_CTX_set_cipher_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then  // PALOFF Possible bad typecast
     ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
+    { TODO : To make ResourseString }
+      'Error setting cipher list ''%s'' to the SSL Context.', [AValue]);
+end;
+
+function TTaurusTLSSslSocketCtx.SetCipherSuites(const AValue: string): TTaurusTLSSslSocketCtx;
+begin
+  Result:=Self;
+  CheckFrozen;
+  if SSL_CTX_set_ciphersuites(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then // PALOFF Possible bad typecast
+    ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
+    { TODO : To make ResourseString }
+      'Error setting cipher suites ''%s'' to the SSL Context.', [AValue]);
+end;
+
+function TTaurusTLSSslSocketCtx.SetKeXGroups(const AValue: string): TTaurusTLSSslSocketCtx;
+begin
+  Result:=Self;
+  CheckFrozen;
+  if SSL_CTX_set1_groups_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then // PALOFF Possible bad typecast
+    ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
+    { TODO : To make ResourseString }
       'Error setting key exchange groups ''%s'' to the SSL Context.', [AValue]);
 end;
 
-procedure TTaurusTLSSslSocketCtx.SetMaxTLSVersion(
-  const AValue: TTaurusTLSSSLVersion);
+function TTaurusTLSSslSocketCtx.SetSigAlgorithms(const AValue: string): TTaurusTLSSslSocketCtx;
 begin
-  if SSL_CTX_set_min_proto_version(FSSLCtx, AValue.AsInt) <= 0 then
-    ETaurusTLSSslSocketCtxError.RaiseWithMessage(RSOSSLMaxProtocolError);
+  Result:=Self;
+  CheckFrozen;
+  if SSL_CTX_set1_sigalgs_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then // PALOFF Possible bad typecast
+    ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
+    { TODO : To make ResourseString }
+      'Error setting signiture algorithms ''%s'' to the SSL Context.', [AValue]);
 end;
 
-procedure TTaurusTLSSslSocketCtx.SetMinTLSVersion(
-  const AValue: TTaurusTLSSSLVersion);
+function TTaurusTLSSslSocketCtx.SetMinTLSVersion(
+  const AValue: TTaurusTLSSSLVersion): TTaurusTLSSslSocketCtx;
 begin
+  Result:=Self;
+  CheckFrozen;
   if SSL_CTX_set_min_proto_version(FSSLCtx, AValue.AsInt) <= 0 then
     ETaurusTLSSslSocketCtxError.RaiseWithMessage(RSOSSLMinProtocolError);
 end;
 
-procedure TTaurusTLSSslSocketCtx.SetSigAlgorithms(const AValue: string);
+function TTaurusTLSSslSocketCtx.SetMaxTLSVersion(
+  const AValue: TTaurusTLSSSLVersion): TTaurusTLSSslSocketCtx;
 begin
-  if SSL_CTX_set1_sigalgs_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then // PALOFF Possible bad typecast
-    ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
-      'Error setting signiture algorithms ''%s'' to the SSL Context.', [AValue]);
+  Result:=Self;
+  CheckFrozen;
+  if SSL_CTX_set_max_proto_version(FSSLCtx, AValue.AsInt) <= 0 then
+    ETaurusTLSSslSocketCtxError.RaiseWithMessage(RSOSSLMaxProtocolError);
 end;
 
-procedure TTaurusTLSSslSocketCtx.SetTrustStore(const AValue: TaurusTLS_X509Store);
+function TTaurusTLSSslSocketCtx.SetVerifyModes(
+  const AValue: TTaurusTLSVerifyModes): TTaurusTLSSslSocketCtx;
+var
+  lFlags: TTaurusTLSVerifyModeFlags;
 begin
-  AValue.AttachToSSLCtx(FSSLCtx);
+  Result:=Self;
+  CheckFrozen;
+  lFlags:=TTaurusTLSVerifyModeFlags.Create(AValue);
+  SSL_CTX_set_verify(FSSLCtx, lFlags.AsInt, nil);
 end;
 
-procedure TTaurusTLSSslSocketCtx.SetVerifyParam(
-  const AValue: TTaurusTLSCustomX509VerifyParam);
+function TTaurusTLSSslSocketCtx.SetVerifyParam(
+  const AValue: TTaurusTLSCustomX509VerifyParam): TTaurusTLSSslSocketCtx;
 begin
+  Result:=Self;
+  CheckFrozen;
   if Assigned(AValue) then
     AValue.AttachToSSLCtx(FSSLCtx);
 end;
 
-procedure TTaurusTLSSslSocketCtx.SetVerifyModes(
-  const AValue: TTaurusTLSVerifyModes);
-var
-  lFlags: TTaurusTLSVerifyModeFlags;
-
+function TTaurusTLSSslSocketCtx.SetTrustStore(const AValue: TaurusTLS_X509Store): TTaurusTLSSslSocketCtx;
 begin
-  lFlags:=TTaurusTLSVerifyModeFlags.Create(AValue);
-  SSL_CTX_set_verify(FSSLCtx, lFlags.AsInt, nil);
+  Result:=Self;
+  CheckFrozen;
+  AValue.AttachToSSLCtx(FSSLCtx);
+end;
+
+function TTaurusTLSSslSocketCtx.SetOnDebugMessage(
+  const AValue: TTaurusTLSOnDebugMessage): TTaurusTLSSslSocketCtx;
+begin
+  Result:=Self;
+  if @FOnDebugMessage = @AValue then
+    Exit;
+
+  CheckFrozen;
+  FOnDebugMessage:=AValue;
+end;
+
+function TTaurusTLSSslSocketCtx.SetOnPeerCertError(
+  const AValue: TTaurusTLSOnPeerCertError): TTaurusTLSSslSocketCtx;
+begin
+  Result:=Self;
+  if @FOnPeerCertError = @AValue then
+    Exit;
+
+  CheckFrozen;
+  FOnPeerCertError:=AValue;
+end;
+
+function TTaurusTLSSslSocketCtx.SetOnStateChange(
+  const AValue: TTaurusTLSOnStateChange): TTaurusTLSSslSocketCtx;
+begin
+  Result:=Self;
+  if @FOnStateChange = @AValue then
+    Exit;
+
+  CheckFrozen;
+  FOnStateChange:=AValue;
+end;
+
+function TTaurusTLSSslSocketCtx.SetOnStatusInfo(
+  const AValue: TTaurusTLSOnSSLStatusInfo): TTaurusTLSSslSocketCtx;
+begin
+  Result:=Self;
+  if @FOnStatusInfo = @AValue then
+    Exit;
+
+  CheckFrozen;
+  FOnStatusInfo:=AValue;
+end;
+
+function TTaurusTLSSslSocketCtx.SetOnVerifyCertificate(
+  const AValue: TTaurusTLSOnVerifyCallback): TTaurusTLSSslSocketCtx;
+begin
+  Result:=Self;
+  if @FOnVerifyCertificate = @AValue then
+    Exit;
+
+  CheckFrozen;
+  FOnVerifyCertificate:=AValue;
 end;
 
 { TTaurusTLSSslClientCtx }
@@ -2122,6 +2247,22 @@ destructor TTaurusTLSSslClientCtx.Destroy;
 begin
   SSL_SESSION_free(FSessionToResume);
   inherited;
+end;
+
+procedure TTaurusTLSSslClientCtx.InitCtx;
+begin
+  inherited;
+  if HasOnClientCert then
+    SSL_CTX_set_client_cert_cb(SSLCtx, CbCliCert);
+end;
+
+procedure TTaurusTLSSslClientCtx.ReleaseCtx;
+begin
+  try
+    SSL_CTX_set_client_cert_cb(SSLCtx, nil);
+  finally
+    inherited;
+  end;
 end;
 
 procedure TTaurusTLSSslClientCtx.DoOnClientCertCallback(
@@ -2191,12 +2332,6 @@ begin
   Result:=string(FDefaultSNI);
 end;
 
-procedure TTaurusTLSSslClientCtx.SetDefaultSNI(const AValue: string);
-begin
-  FDefaultSNI:=NormalizeHostName(RawByteString(AValue)); // PALOFF 'UnicodeString cast to RawByteString'
-  ResetIdentity;
-end;
-
 function TTaurusTLSSslClientCtx.GetECHKind: TTaurusTLSECHCliKind;
 begin
   Result:=FECHFlags.Kind;
@@ -2226,12 +2361,6 @@ begin
     Result:=FECHOuterSNI
   else
     Result:='';
-end;
-
-procedure TTaurusTLSSslClientCtx.SetECHOuterSNI(const AValue: string);
-begin
-  FECHOuterSNI:=NormalizeHostName(RawByteString(AValue)); // PALOFF 'UnicodeString cast to RawByteString'
-  ResetIdentity;
 end;
 
 function TTaurusTLSSslClientCtx.GetHasOnClientCert: boolean;
@@ -2266,55 +2395,101 @@ begin
   Result:=FECHFlags.UseGrease;
 end;
 
-procedure TTaurusTLSSslClientCtx.SetHostName(const AValue: string);
-var
-  lValue: RawByteString;
-
-begin
-  lValue:=NormalizeHostName(RawByteString(AValue)); // PALOFF 'UnicodeString cast to RawByteString'
-  if FHostname = lValue then
-    Exit;
-  FHostname:=lValue;
-end;
-
 function TTaurusTLSSslClientCtx.GetECHConfigList: string;
 begin
   Result:=string(FECHConfigList);
 end;
 
-procedure TTaurusTLSSslClientCtx.SetECHConfigList(const AValue: string);
+function TTaurusTLSSslClientCtx.SetDefaultSNI(const AValue: string): TTaurusTLSSslClientCtx;
 var
   lValue: RawByteString;
 
 begin
+  Result:=Self;
+  lValue:=NormalizeHostName(RawByteString(AValue)); // PALOFF 'UnicodeString cast to RawByteString'
+  if FDefaultSNI = lValue then
+    Exit;
+
+  CheckFrozen;
+  FDefaultSNI:=lValue;
+  ResetIdentity;
+end;
+
+function TTaurusTLSSslClientCtx.SetECHOuterSNI(const AValue: string): TTaurusTLSSslClientCtx;
+var
+  lValue: RawByteString;
+
+begin
+  Result:=Self;
+  lValue:=NormalizeHostName(RawByteString(AValue)); // PALOFF 'UnicodeString cast to RawByteString'
+  if FECHOuterSNI = lValue then
+    Exit;
+
+  CheckFrozen;
+  FECHOuterSNI:=lValue;
+  ResetIdentity;
+end;
+
+function TTaurusTLSSslClientCtx.SetHostName(const AValue: string): TTaurusTLSSslClientCtx;
+var
+  lValue: RawByteString;
+
+begin
+  Result:=Self;
+  lValue:=NormalizeHostName(RawByteString(AValue)); // PALOFF 'UnicodeString cast to RawByteString'
+  if FHostname = lValue then
+    Exit;
+
+  CheckFrozen;
+  FHostname:=lValue;
+end;
+
+function TTaurusTLSSslClientCtx.SetECHConfigList(const AValue: string): TTaurusTLSSslClientCtx;
+var
+  lValue: RawByteString;
+
+begin
+  Result:=Self;
   lValue:=NormalizeHostName(RawByteString(AValue)); // PALOFF 'UnicodeString cast to RawByteString'
   if FECHConfigList = lValue then
     Exit;
+
+  CheckFrozen;
   FECHConfigList:=lValue;
   ResetIdentity;
 end;
 
-procedure TTaurusTLSSslClientCtx.SetECHFlags(
-  const AValue: TTaurusTLSECHCliFlags);
+function TTaurusTLSSslClientCtx.SetECHFlags(
+  const AValue: TTaurusTLSECHCliFlags): TTaurusTLSSslClientCtx;
 begin
+  Result:=Self;
   if FECHFlags.Value = AValue.Value then
     Exit;
+
+  CheckFrozen;
   FECHFlags:=AValue;
   ResetIdentity;
 end;
 
-procedure TTaurusTLSSslClientCtx.SetSessionToResume(
-  const ASSL: PSSL);
+function TTaurusTLSSslClientCtx.SetSessionToResume(
+  const ASSL: PSSL): TTaurusTLSSslClientCtx;
 begin
-  if Assigned(ASSL) then
-    FSessionToResume:= SSL_get1_session(ASSL);
+  Result:=Self;
+  if not Assigned(ASSL) then
+    Exit;
+
+  CheckFrozen;
+  FSessionToResume:= SSL_get1_session(ASSL);
 end;
 
-procedure TTaurusTLSSslClientCtx.SetSNIKind(
-  const AValue: TTaurusTLSSNICliKind);
+function TTaurusTLSSslClientCtx.SetSNIKind(
+  const AValue: TTaurusTLSSNICliKind): TTaurusTLSSslClientCtx;
 begin
+  Result:=Self;
   if FSNIKind = AValue then
     Exit;
+
+  CheckFrozen;
   FSNIKind:=AValue;
   ResetIdentity;
 end;
@@ -2451,8 +2626,7 @@ begin
     finally
       GStack.WSSetLastError(lErr);
     end;
-  except
-    //PALOFF "Empty except-block"
+  except //PALOFF "Empty except-block"
     // We must not raise the exception to the OpenSSL stack
   end;
 end;
@@ -2517,7 +2691,7 @@ begin
     FOnSslSessionRemove(Sender, ACtx, ASession);
 end;
 
-procedure TTaurusTLSSslPeerCtx.InitCtxCallbacks;
+procedure TTaurusTLSSslPeerCtx.InitCtx;
 begin
   inherited;
 
@@ -2535,7 +2709,7 @@ begin
     SSL_CTX_sess_set_remove_cb(SSLCtx, CbPeerSslSessionRemove);
 end;
 
-procedure TTaurusTLSSslPeerCtx.ReleaseCtxCallbacks;
+procedure TTaurusTLSSslPeerCtx.ReleaseCtx;
 begin
   // Remove callbacks
   try
@@ -2603,9 +2777,8 @@ begin
   try
     try
       ReleaseSSLCallbacks;
-    except
-      //PALOFF "Empty except-block"
-      // Suppress callback unbinding errors locally to ensure we proceed to freeing memory
+    except //PALOFF "Empty except-block"
+      // We must not raise the exception to the OpenSSL stack
     end;
   finally
     SSL_set_app_data(FSSL, nil);
@@ -3094,8 +3267,7 @@ begin
     finally
       GStack.WSSetLastError(lErr);
     end;
-  except
-    //PALOFF "Empty except-block"
+  except //PALOFF "Empty except-block"
     // We must not raise the exception to the OpenSSL stack
   end;
 end;
