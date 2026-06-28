@@ -328,9 +328,9 @@ type
     procedure SetAsInt(AValue: TIdC_UINT64); overload;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
   public
-    class function ToInt(AValue: TTaurusTLSSSLOptionFlags): TIdC_UINT64;
+    class function ToInt(const AValue: TTaurusTLSSSLOptionFlags): TIdC_UINT64;
       overload; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
-    class function FromInt(AValue: TIdC_UINT64): TTaurusTLSSSLOptionFlags;
+    class function FromInt(const AValue: TIdC_UINT64): TTaurusTLSSSLOptionFlags;
       overload; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     property AsInt: TIdC_UINT64 read GetAsInt write SetAsInt;
@@ -379,8 +379,8 @@ type
     FFlags: TTaurusTLSVerifyModes;
 
     function GetAsInt: TIdC_INT; {$IFDEF USE_INLINE} inline;{$ENDIF}
-    procedure SetAsInt(AValue: TIdC_INT); {$IFDEF USE_INLINE} inline;{$ENDIF}
-    procedure SetFlags(AFlags: TTaurusTLSVerifyModes);
+    procedure SetAsInt(const AValue: TIdC_INT); {$IFDEF USE_INLINE} inline;{$ENDIF}
+    procedure SetFlags(const AFlags: TTaurusTLSVerifyModes);
       {$IFDEF USE_INLINE} inline;{$ENDIF}
   public
     constructor Create(const AFlags: TTaurusTLSVerifyModes); overload;
@@ -445,25 +445,25 @@ type
   TTaurusTLSX509VerifyFlagHelper = record helper for TTaurusTLSX509VerifyFlag
   private
     function GetAsInt: TIdC_ULONG; {$IFDEF USE_INLINE}inline;{$ENDIF}
-    procedure SetAsInt(Value: TIdC_ULONG); {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure SetAsInt(AValue: TIdC_ULONG); {$IFDEF USE_INLINE}inline;{$ENDIF}
 
   public
     ///  <summary>
     ///  Converts a single TTaurusTLSX509VerifyFlag enumeration member into its
     ///  corresponding OpenSSL integer flag value.
     ///  </summary>
-    ///  <param name="Value">The enumeration member to convert.</param>
+    ///  <param name="AValue">The enumeration member to convert.</param>
     ///  <returns>
     ///  The OpenSSL TIdC_ULONG (unsigned long) flag value.
     ///  </returns>
-    class function ToInt(Value: TTaurusTLSX509VerifyFlag): TIdC_ULONG; static;
+    class function ToInt(AValue: TTaurusTLSX509VerifyFlag): TIdC_ULONG; static;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Converts an OpenSSL integer flag value into its corresponding
     ///  TTaurusTLSX509VerifyFlag enumeration member.
     ///  </summary>
-    ///  <param name="Value">
+    ///  <param name="AValue">
     ///  The OpenSSL TIdC_ULONG value (must be an exact power of 2).
     ///  </param>
     ///  <returns>
@@ -474,20 +474,20 @@ type
     ///  valid flag defined in TTaurusTLSX509VerifyFlag. If the value does not represent
     ///  exactly one valid flag bit, an EInvalidCast exception is raised.
     ///  </remarks>
-    class function FromInt(Value: TIdC_ULONG): TTaurusTLSX509VerifyFlag; static;
+    class function FromInt(AValue: TIdC_ULONG): TTaurusTLSX509VerifyFlag; static;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Checks if the current TTaurusTLSX509VerifyFlag instance's integer value matches
     ///  the provided OpenSSL flag value.
     ///  </summary>
-    ///  <param name="Value">
+    ///  <param name="AValue">
     ///  The OpenSSL TIdC_ULONG value to compare against.
     ///  </param>
     ///  <returns>
     ///  True if the values are equal.
     ///  </returns>
-    function IsEqualTo(Value: TIdC_ULONG): boolean;
+    function IsEqualTo(AValue: TIdC_ULONG): boolean;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
@@ -514,8 +514,8 @@ type
   TTaurusTLSX509VerifyFlagsHelper = record helper for TTaurusTLSX509VerifyFlags
   private
     function GetAsInt: TIdC_ULONG; {$IFDEF USE_INLINE}inline;{$ENDIF}
-    procedure SetAsInt(Value: TIdC_ULONG); {$IFDEF USE_INLINE}inline;{$ENDIF}
-    procedure SetSafeAsInt(Value: TIdC_ULONG); {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure SetAsInt(const AValue: TIdC_ULONG); {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure SetSafeAsInt(const AValue: TIdC_ULONG); {$IFDEF USE_INLINE}inline;{$ENDIF}
 
   public
     ///  <summary>
@@ -526,14 +526,14 @@ type
     ///  <returns>
     ///  The combined TIdC_ULONG bitmask value ready for OpenSSL functions.
     ///  </returns>
-    class function ToInt(Value: TTaurusTLSX509VerifyFlags): TIdC_ULONG; static;
+    class function ToInt(const AValue: TTaurusTLSX509VerifyFlags): TIdC_ULONG; static;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Converts an OpenSSL TIdC_ULONG integer bitmask into a
     ///  TTaurusTLSX509VerifyFlags set.
     ///  </summary>
-    ///  <param name="Value">
+    ///  <param name="AValue">
     ///  The OpenSSL TIdC_ULONG bitmask containing flags.
     ///  </param>
     ///  <returns>
@@ -545,14 +545,14 @@ type
     ///  contains any bits corresponding to undefined flags (internal OpenSSL
     ///  constants), an <see cref="EInvalidCast" /> exception is raised.
     ///  </remarks>
-    class function FromInt(Value: TIdC_ULONG): TTaurusTLSX509VerifyFlags; static;
+    class function FromInt(const AValue: TIdC_ULONG): TTaurusTLSX509VerifyFlags; static;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Converts an OpenSSL TIdC_ULONG integer bitmask into a
     ///  TTaurusTLSX509VerifyFlags set without strict validation.
     ///  </summary>
-    ///  <param name="Value">
+    ///  <param name="AValue">
     ///  The OpenSSL TIdC_ULONG bitmask containing flags.
     ///  </param>
     ///  <returns>
@@ -563,20 +563,20 @@ type
     ///  which may contain internal, undocumented, or non-public flags.
     ///  Any undefined bit is simply masked out and suppressed.
     ///  </remarks>
-    class function SafeFromInt(Value: TIdC_ULONG): TTaurusTLSX509VerifyFlags; static;
+    class function SafeFromInt(const AValue: TIdC_ULONG): TTaurusTLSX509VerifyFlags; static;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Checks if the current TTaurusTLSX509VerifyFlags set, when converted to an
     ///  integer mask, exactly matches the provided OpenSSL flag value.
     ///  </summary>
-    ///  <param name="Value">
+    ///  <param name="AValue">
     ///  The OpenSSL TIdC_ULONG value to compare against.
     ///  </param>
     ///  <returns>
     ///  True if the integer bitmasks are identical.
     ///  </returns>
-    function IsEqualTo(Value: TIdC_ULONG): boolean;
+    function IsEqualTo(AValue: TIdC_ULONG): boolean;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
@@ -629,24 +629,24 @@ type
   TTaurusTLSX509InheritanceFlagHelper = record helper for TTaurusTLSX509InheritanceFlag
   private
     function GetAsInt: TIdC_UINT32; {$IFDEF USE_INLINE}inline;{$ENDIF}
-    procedure SetAsInt(Value: TIdC_UINT32); {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure SetAsInt(AValue: TIdC_UINT32); {$IFDEF USE_INLINE}inline;{$ENDIF}
   public
     ///  <summary>
     ///  Converts a single TTaurusTLSX509InheritanceFlag member into its corresponding
     ///  OpenSSL integer flag value (1 &lt;&lt; Ordinal).
     ///  </summary>
-    ///  <param name="Value">The enumeration member to convert.</param>
+    ///  <param name="AValue">The enumeration member to convert.</param>
     ///  <returns>
     ///  The OpenSSL TIdC_UINT32 (unsigned 32-bit integer) flag value.
     ///  </returns>
-    class function ToInt(Value: TTaurusTLSX509InheritanceFlag): TIdC_UINT32; static;
+    class function ToInt(AValue: TTaurusTLSX509InheritanceFlag): TIdC_UINT32; static;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Converts an OpenSSL integer flag value into its corresponding
     ///  TTaurusTLSX509InheritanceFlag enumeration member.
     ///  </summary>
-    ///  <param name="Value">
+    ///  <param name="AValue">
     ///  The OpenSSL TIdC_UINT32 value (must be an exact power of 2).
     ///  </param>
     ///  <returns>
@@ -658,20 +658,20 @@ type
     ///  represent exactly one valid flag bit, an <see cref="EInvalidCast" />
     ///  exception is raised.
     ///  </remarks>
-    class function FromInt(Value: TIdC_UINT32): TTaurusTLSX509InheritanceFlag; static;
+    class function FromInt(AValue: TIdC_UINT32): TTaurusTLSX509InheritanceFlag; static;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Checks if the current TTaurusTLSX509InheritanceFlag instance's integer value
     ///  matches the provided OpenSSL flag value.
     ///  </summary>
-    ///  <param name="Value">
+    ///  <param name="AValue">
     ///  The OpenSSL TIdC_UINT32 value to compare against.
     ///  </param>
     ///  <returns>
     ///  True if the values are equal.
     ///  </returns>
-    function IsEqualTo(Value: TIdC_UINT32): boolean;
+    function IsEqualTo(AValue: TIdC_UINT32): boolean;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
@@ -698,24 +698,24 @@ type
   TTaurusTLSX509InheritanceFlagsHelper = record helper for TTaurusTLSX509InheritanceFlags
   private
     function GetAsInt: TIdC_UINT32; {$IFDEF USE_INLINE}inline;{$ENDIF}
-    procedure SetAsInt(Value: TIdC_UINT32); {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure SetAsInt(AValue: TIdC_UINT32); {$IFDEF USE_INLINE}inline;{$ENDIF}
   public
     ///  <summary>
     ///  Converts the TTaurusTLSX509InheritanceFlags set into a single OpenSSL
     ///  TIdC_UINT32 integer bitmask.
     ///  </summary>
-    ///  <param name="Value">The set of flags to convert.</param>
+    ///  <param name="AValue">The set of flags to convert.</param>
     ///  <returns>
     ///  The combined TIdC_UINT32 bitmask value ready for OpenSSL functions.
     ///  </returns>
-    class function ToInt(Value: TTaurusTLSX509InheritanceFlags): TIdC_UINT32; static;
+    class function ToInt(AValue: TTaurusTLSX509InheritanceFlags): TIdC_UINT32; static;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Converts an OpenSSL TIdC_UINT32 integer bitmask into a
     ///  TTaurusTLSX509InheritanceFlags set.
     ///  </summary>
-    ///  <param name="Value">
+    ///  <param name="AValue">
     ///  The OpenSSL TIdC_UINT32 bitmask containing flags.
     ///  </param>
     ///  <returns>
@@ -728,20 +728,20 @@ type
     ///  enumeration range. If the value contains any extraneous bits, an
     ///  <see cref="EInvalidCast" /> exception is raised.
     ///  </remarks>
-    class function FromInt(Value: TIdC_UINT32): TTaurusTLSX509InheritanceFlags; static;
+    class function FromInt(AValue: TIdC_UINT32): TTaurusTLSX509InheritanceFlags; static;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Checks if the current TTaurusTLSX509InheritanceFlags set, when converted to an
     ///  integer mask, exactly matches the provided OpenSSL flag value.
     ///  </summary>
-    ///  <param name="Value">
+    ///  <param name="AValue">
     ///  The OpenSSL TIdC_UINT32 value to compare against.
     ///  </param>
     ///  <returns>
     ///  True if the integer bitmasks are identical.
     ///  </returns>
-    function IsEqualTo(Value: TIdC_UINT32): boolean;
+    function IsEqualTo(AValue: TIdC_UINT32): boolean;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     property AsInt: TIdC_UINT32 read GetAsInt write SetAsInt;
@@ -775,24 +775,24 @@ type
   TTaurusTLSX509TrustHelper = record helper for TTaurusTLSX509Trust
   private
     function GetAsInt: TIdC_Int; {$IFDEF USE_INLINE}inline;{$ENDIF}
-    procedure SetAsInt(Value: TIdC_Int); {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure SetAsInt(AValue: TIdC_Int); {$IFDEF USE_INLINE}inline;{$ENDIF}
   public
     ///  <summary>
     ///  Converts a TTaurusTLSX509Trust member into its corresponding OpenSSL integer
     ///  constant value.
     ///  </summary>
-    ///  <param name="Value">The enumeration member to convert.</param>
+    ///  <param name="AValue">The enumeration member to convert.</param>
     ///  <returns>
     ///  The OpenSSL TIdC_Int value.
     ///  </returns>
-    class function ToInt(Value: TTaurusTLSX509Trust): TIdC_Int; static;
+    class function ToInt(AValue: TTaurusTLSX509Trust): TIdC_Int; static;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Converts an OpenSSL integer value into its corresponding TTaurusTLSX509Trust
     ///  enumeration member.
     ///  </summary>
-    ///  <param name="Value">
+    ///  <param name="AValue">
     ///  The OpenSSL TIdC_Int value.
     ///  </param>
     ///  <returns>
@@ -805,20 +805,20 @@ type
     ///  corresponding constant is found, an <see cref="EInvalidCast" />
     ///  exception is raised.
     ///  </remarks>
-    class function FromInt(Value: TIdC_Int): TTaurusTLSX509Trust; static;
+    class function FromInt(AValue: TIdC_Int): TTaurusTLSX509Trust; static;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Checks if the current TTaurusTLSX509Trust instance's integer value matches
     ///  the provided OpenSSL integer value.
     ///  </summary>
-    ///  <param name="Value">
+    ///  <param name="AValue">
     ///  The OpenSSL TIdC_Int value to compare against.
     ///  </param>
     ///  <returns>
     ///  True if the values are equal.
     ///  </returns>
-    function IsEqualTo(Value: TIdC_Int): boolean;
+    function IsEqualTo(AValue: TIdC_Int): boolean;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
@@ -864,24 +864,24 @@ type
   TTaurusTLSX509PurposeHelper = record helper for TTaurusTLSX509Purpose
   private
     function GetAsInt: TIdC_Int; {$IFDEF USE_INLINE}inline;{$ENDIF}
-    procedure SetAsInt(Value: TIdC_Int); {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure SetAsInt(AValue: TIdC_Int); {$IFDEF USE_INLINE}inline;{$ENDIF}
   public
     ///  <summary>
     ///  Converts a TTaurusTLSX509Purpose member into its corresponding OpenSSL integer
     ///  constant value.
     ///  </summary>
-    ///  <param name="Value">The enumeration member to convert.</param>
+    ///  <param name="AValue">The enumeration member to convert.</param>
     ///  <returns>
     ///  The OpenSSL TIdC_Int value.
     ///  </returns>
-    class function ToInt(Value: TTaurusTLSX509Purpose): TIdC_Int; static;
+    class function ToInt(AValue: TTaurusTLSX509Purpose): TIdC_Int; static;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Converts an OpenSSL integer value into its corresponding TTaurusTLSX509Purpose
     ///  enumeration member.
     ///  </summary>
-    ///  <param name="Value">
+    ///  <param name="AValue">
     ///  The OpenSSL TIdC_Int value.
     ///  </param>
     ///  <returns>
@@ -894,20 +894,20 @@ type
     ///  corresponding constant is found, an <see cref="EInvalidCast" />
     ///  exception is raised.
     ///  </remarks>
-    class function FromInt(Value: TIdC_Int): TTaurusTLSX509Purpose; static;
+    class function FromInt(AValue: TIdC_Int): TTaurusTLSX509Purpose; static;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Checks if the current TTaurusTLSX509Purpose instance's integer value matches
     ///  the provided OpenSSL integer value.
     ///  </summary>
-    ///  <param name="Value">
+    ///  <param name="AValue">
     ///  The OpenSSL TIdC_Int value to compare against.
     ///  </param>
     ///  <returns>
     ///  True if the values are equal.
     ///  </returns>
-    function IsEqualTo(Value: TIdC_Int): boolean;
+    function IsEqualTo(AValue: TIdC_Int): boolean;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
@@ -949,24 +949,24 @@ type
   TTaurusTLSX509HostCheckFlagHelper = record helper for TTaurusTLSX509HostCheckFlag
   private
     function GetAsInt: TIdC_UINT; {$IFDEF USE_INLINE}inline;{$ENDIF}
-    procedure SetAsInt(Value: TIdC_UINT); {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure SetAsInt(AValue: TIdC_UINT); {$IFDEF USE_INLINE}inline;{$ENDIF}
   public
     ///  <summary>
     ///  Converts a single TTaurusTLSX509HostCheckFlag member into its corresponding
     ///  OpenSSL integer flag value (1 &lt;&lt; Ordinal).
     ///  </summary>
-    ///  <param name="Value">The enumeration member to convert.</param>
+    ///  <param name="AValue">The enumeration member to convert.</param>
     ///  <returns>
     ///  The OpenSSL TIdC_UINT (unsigned integer) flag value.
     ///  </returns>
-    class function ToInt(Value: TTaurusTLSX509HostCheckFlag): TIdC_UINT; static;
+    class function ToInt(AValue: TTaurusTLSX509HostCheckFlag): TIdC_UINT; static;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Converts an OpenSSL integer flag value into its corresponding
     ///  TTaurusTLSX509HostCheckFlag enumeration member.
     ///  </summary>
-    ///  <param name="Value">
+    ///  <param name="AValue">
     ///  The OpenSSL TIdC_UINT value (must be an exact power of 2).
     ///  </param>
     ///  <returns>
@@ -978,20 +978,20 @@ type
     ///  exactly one valid flag bit, an <see cref="EInvalidCast" />
     ///  exception is raised.
     ///  </remarks>
-    class function FromInt(Value: TIdC_UINT): TTaurusTLSX509HostCheckFlag; static;
+    class function FromInt(AValue: TIdC_UINT): TTaurusTLSX509HostCheckFlag; static;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Checks if the current TTaurusTLSX509HostCheckFlag instance's integer value
     ///  matches the provided OpenSSL flag value.
     ///  </summary>
-    ///  <param name="Value">
+    ///  <param name="AValue">
     ///  The OpenSSL TIdC_UINT value to compare against.
     ///  </param>
     ///  <returns>
     ///  True if the values are equal.
     ///  </returns>
-    function IsEqualTo(Value: TIdC_UINT): boolean;
+    function IsEqualTo(AValue: TIdC_UINT): boolean;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
@@ -1019,24 +1019,24 @@ type
  TTaurusTLSX509HostCheckFlagsHelper = record helper for TTaurusTLSX509HostCheckFlags
   private
     function GetAsInt: TIdC_UINT; {$IFDEF USE_INLINE}inline;{$ENDIF}
-    procedure SetAsInt(Value: TIdC_UINT); {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure SetAsInt(AValue: TIdC_UINT); {$IFDEF USE_INLINE}inline;{$ENDIF}
   public
     ///  <summary>
     ///  Converts the TTaurusTLSX509HostCheckFlags set into a single OpenSSL
     ///  TIdC_UINT integer bitmask.
     ///  </summary>
-    ///  <param name="Value">The set of flags to convert.</param>
+    ///  <param name="AValue">The set of flags to convert.</param>
     ///  <returns>
     ///  The combined TIdC_UINT bitmask value ready for OpenSSL functions.
     ///  </returns>
-    class function ToInt(Value: TTaurusTLSX509HostCheckFlags): TIdC_UINT; static;
+    class function ToInt(AValue: TTaurusTLSX509HostCheckFlags): TIdC_UINT; static;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Converts an OpenSSL TIdC_UINT integer bitmask into a
     ///  TTaurusTLSX509HostCheckFlags set.
     ///  </summary>
-    ///  <param name="Value">
+    ///  <param name="AValue">
     ///  The OpenSSL TIdC_UINT bitmask containing flags.
     ///  </param>
     ///  <returns>
@@ -1049,20 +1049,20 @@ type
     ///  range. If the value contains any extraneous bits, an
     ///  <see cref="EInvalidCast" /> exception is raised.
     ///  </remarks>
-    class function FromInt(Value: TIdC_UINT): TTaurusTLSX509HostCheckFlags; static;
+    class function FromInt(AValue: TIdC_UINT): TTaurusTLSX509HostCheckFlags; static;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Checks if the current TTaurusTLSX509HostCheckFlags set, when converted to an
     ///  integer mask, exactly matches the provided OpenSSL flag value.
     ///  </summary>
-    ///  <param name="Value">
+    ///  <param name="AValue">
     ///  The OpenSSL TIdC_UINT value to compare against.
     ///  </param>
     ///  <returns>
     ///  True if the integer bitmasks are identical.
     ///  </returns>
-    function IsEqualTo(Value: TIdC_UINT): boolean;
+    function IsEqualTo(AValue: TIdC_UINT): boolean;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
@@ -1302,26 +1302,29 @@ begin
 end;
 
 class function TTaurusTLSSSLOptionFlagsHelper.FromInt(
-  AValue: TIdC_UINT64): TTaurusTLSSSLOptionFlags;
+  const AValue: TIdC_UINT64): TTaurusTLSSSLOptionFlags;
+var
+  lValue: TIdC_UINT64;
+
 begin
-  AValue:=AValue and cMask; // clean-up possible garbage
-  Result:=TTaurusTLSSSLOptionFlags((@AValue)^); // PALOFF Possible bad pointer usage
+  lValue:=AValue and cMask; // clean-up possible garbage
+  Result:=TTaurusTLSSSLOptionFlags((@lValue)^); // PALOFF Possible bad pointer usage
 end;
 
 class function TTaurusTLSSSLOptionFlagsHelper.ToInt(
-  AValue: TTaurusTLSSSLOptionFlags): TIdC_UINT64;
+  const AValue: TTaurusTLSSSLOptionFlags): TIdC_UINT64;
 begin
   Result:=PIdC_UINT64(@Avalue)^;
 end;
 
 { TTaurusTLSVerifyModeFlags }
 
-procedure TTaurusTLSVerifyModeFlags.SetFlags(
-  AFlags: TTaurusTLSVerifyModes);
+procedure TTaurusTLSVerifyModeFlags.SetFlags(const AFlags: TTaurusTLSVerifyModes);
 begin
   if (AFlags - [sslvrfPeer]) <> [] then
-    System.Include(AFlags, sslvrfPeer);
-  Self.FFlags:=AFlags;
+    Self.FFlags:=AFlags+[sslvrfPeer]
+  else
+    Self.FFlags:=AFlags;
 end;
 
 function TTaurusTLSVerifyModeFlags.GetAsInt: TIdC_INT;
@@ -1333,22 +1336,23 @@ begin
   {$ELSEIF SizeOf(TTaurusTLSVerifyModeFlags) >= 4}
   Result:=Integer(Self);
   {$IFEND}
-  Result:=Result and cMask;
+  Result:=Result and cMask; // PALOFF 'Local variables that are referenced before they are set'
 end;
 
-procedure TTaurusTLSVerifyModeFlags.SetAsInt(AValue: TIdC_INT);
+procedure TTaurusTLSVerifyModeFlags.SetAsInt(const AValue: TIdC_INT);
 var
   lHighFlags, lFlags: TTaurusTLSVerifyModes; // PALOFF Variables that are referenced, but never set
+  lValue: TIdC_INT;
 
 begin
-  AValue:=AValue and cMask;
+  lValue:=AValue and cMask;
   lHighFlags:=FFlags-cOsslFlags;
   {$IF SizeOf(TTaurusTLSVerifyModeFlags) = 1}
-  Byte(lFlags):=Byte(AValue);
+  Byte(lFlags):=Byte(lValue);
   {$ELSEIF SizeOf(TTaurusTLSVerifyModeFlags) = 2}
-  Word(lFlags):=Word(AValue);
+  Word(lFlags):=Word(lValue);
   {$ELSEIF SizeOf(TTaurusTLSVerifyModeFlags) >= 4}
-  Integer(lFlags):=Integer(AValue);
+  Integer(lFlags):=Integer(lValue);
   {$IFEND}
   SetFlags(lFlags+lHighFlags);
 end;
@@ -1410,38 +1414,38 @@ begin
 end;
 
 procedure TTaurusTLSX509VerifyFlagHelper.SetAsInt(
-  Value: TIdC_ULONG);
+  AValue: TIdC_ULONG);
 begin
-  Self:=FromInt(Value);
+  Self:=FromInt(AValue);
 end;
 
 class function TTaurusTLSX509VerifyFlagHelper.ToInt(
-  Value: TTaurusTLSX509VerifyFlag): TIdC_ULONG;
+  AValue: TTaurusTLSX509VerifyFlag): TIdC_ULONG;
 begin
-  Result:=TIdC_ULONG(1 shl Ord(Value)) and cX509vfMask;
+  Result:=TIdC_ULONG(1 shl Ord(AValue)) and cX509vfMask;
 end;
 
 class function TTaurusTLSX509VerifyFlagHelper.FromInt(
-  Value: TIdC_ULONG): TTaurusTLSX509VerifyFlag;
+  AValue: TIdC_ULONG): TTaurusTLSX509VerifyFlag;
 var
   i: TIdC_ULONG;
 
 begin
   // check if AVal in range of OpenSSL X509_V_FLAG_* constants
   // and a single bit is set.
-  if (Value = 0) or ((Value and (Value-1)) <> 0)
-    or ((Value or cX509vfMask) <> cX509vfMask) then
+  if (AValue = 0) or ((AValue and (AValue-1)) <> 0)
+    or ((AValue or cX509vfMask) <> cX509vfMask) then
     raise EInvalidCast.Create('Invalid X509 Verify Flag.');
   i:=Ord(Low(TTaurusTLSX509VerifyFlag));
-  while (1 shl i) < Value do
+  while (1 shl i) < AValue do
     Inc(i);
   Result:=TTaurusTLSX509VerifyFlag(i);
 end;
 
 function TTaurusTLSX509VerifyFlagHelper.IsEqualTo(
-  Value: TIdC_ULONG): boolean;
+  AValue: TIdC_ULONG): boolean;
 begin
-  Result:=Value = AsInt;
+  Result:=AValue = AsInt;
 end;
 
 { TTaurusTLSX509VerifyParam.TTaurusTLSX509VerifyFlagsHelper }
@@ -1452,46 +1456,49 @@ begin
 end;
 
 procedure TTaurusTLSX509VerifyFlagsHelper.SetAsInt(
-  Value: TIdC_ULONG);
+  const AValue: TIdC_ULONG);
 begin
-  Self:=FromInt(Value);
+  Self:=FromInt(AValue);
 end;
 
 procedure TTaurusTLSX509VerifyFlagsHelper.SetSafeAsInt(
-  Value: TIdC_ULONG);
+  const AValue: TIdC_ULONG);
 begin
-  Self:=SafeFromInt(Value);
+  Self:=SafeFromInt(AValue);
 end;
 
 class function TTaurusTLSX509VerifyFlagsHelper.ToInt(
-  Value: TTaurusTLSX509VerifyFlags): TIdC_ULONG;
+  const AValue: TTaurusTLSX509VerifyFlags): TIdC_ULONG;
 begin
-  Result:=(TIdC_ULONG((@Value)^) and cX509vfMask); // PALOFF Possible bad pointer usage
+  Result:=(TIdC_ULONG((@AValue)^) and cX509vfMask); // PALOFF Possible bad pointer usage
 end;
 
 class function TTaurusTLSX509VerifyFlagsHelper.FromInt(
-  Value: TIdC_ULONG): TTaurusTLSX509VerifyFlags;
+  const AValue: TIdC_ULONG): TTaurusTLSX509VerifyFlags;
 begin
-  if (Value or cX509vfMask) <> cX509vfMask then
+  if (AValue or cX509vfMask) <> cX509vfMask then
     raise EInvalidCast.Create('Invalid X509 Verify Flags.');
 //{$I RangeCheck-OFF.inc}
-  Result:=TTaurusTLSX509VerifyFlags((@Value)^); // PALOFF Possible bad pointer usage
+  Result:=TTaurusTLSX509VerifyFlags((@AValue)^); // PALOFF Possible bad pointer usage
 //{$I RangeCheck-ON.inc}
 end;
 
 class function TTaurusTLSX509VerifyFlagsHelper.SafeFromInt(
-  Value: TIdC_ULONG): TTaurusTLSX509VerifyFlags;
+  const AValue: TIdC_ULONG): TTaurusTLSX509VerifyFlags;
+var
+  lValue: TIdC_ULONG;
+
 begin
-  Value:=Value and cX509vfMask;
+  lValue:=AValue and cX509vfMask;
 //{$I RangeCheck-OFF.inc}
-  Result:=TTaurusTLSX509VerifyFlags((@Value)^); // PALOFF Possible bad pointer usage
+  Result:=TTaurusTLSX509VerifyFlags((@lValue)^); // PALOFF Possible bad pointer usage
 //{$I RangeCheck-ON.inc}
 end;
 
 function TTaurusTLSX509VerifyFlagsHelper.IsEqualTo(
-  Value: TIdC_ULONG): boolean;
+  AValue: TIdC_ULONG): boolean;
 begin
-  Result:=Value = AsInt;
+  Result:=AValue = AsInt;
 end;
 
 { TTaurusTLSX509InheritanceFlagHelper }
@@ -1502,30 +1509,30 @@ begin
 end;
 
 procedure TTaurusTLSX509InheritanceFlagHelper.SetAsInt(
-  Value: TIdC_UINT32);
+  AValue: TIdC_UINT32);
 begin
-  Self:=FromInt(Value);
+  Self:=FromInt(AValue);
 end;
 
 class function TTaurusTLSX509InheritanceFlagHelper.ToInt(
-  Value: TTaurusTLSX509InheritanceFlag): TIdC_UINT32;
+  AValue: TTaurusTLSX509InheritanceFlag): TIdC_UINT32;
 begin
-  Result:=TIdC_UINT32(1 shl Ord(Value)) and cX509ihfMask;
+  Result:=TIdC_UINT32(1 shl Ord(AValue)) and cX509ihfMask;
 end;
 
 class function TTaurusTLSX509InheritanceFlagHelper.FromInt(
-  Value: TIdC_UINT32): TTaurusTLSX509InheritanceFlag;
+  AValue: TIdC_UINT32): TTaurusTLSX509InheritanceFlag;
 var
   i: TIdC_UINT32;
 
 begin
   // check if AVal in range of OpenSSL X509_VP_FLAG_* constants
   // and a single bit is set.
-  if (Value = 0) or ((Value and (Value-1)) <> 0)
-    or ((Value or cX509ihfMask) <> cX509ihfMask) then
+  if (AValue = 0) or ((AValue and (AValue-1)) <> 0)
+    or ((AValue or cX509ihfMask) <> cX509ihfMask) then
     raise EInvalidCast.Create('Invalid X509 Inheritance Flag.');
   i:=Ord(Low(TTaurusTLSX509InheritanceFlag));
-  while (1 shl i) < Value do
+  while (1 shl i) < AValue do
     Inc(i);
 //{$I RangeCheck-OFF.inc}
   Result:=TTaurusTLSX509InheritanceFlag(i);
@@ -1533,9 +1540,9 @@ begin
 end;
 
 function TTaurusTLSX509InheritanceFlagHelper.IsEqualTo(
-  Value: TIdC_UINT32): boolean;
+  AValue: TIdC_UINT32): boolean;
 begin
-  Result:=Value = AsInt;
+  Result:=AValue = AsInt;
 end;
 
 { TTaurusTLSX509InheritanceFlagsHelper }
@@ -1546,31 +1553,31 @@ begin
 end;
 
 procedure TTaurusTLSX509InheritanceFlagsHelper.SetAsInt(
-  Value: TIdC_UINT32);
+  AValue: TIdC_UINT32);
 begin
-  Self:=FromInt(Value);
+  Self:=FromInt(AValue);
 end;
 
 class function TTaurusTLSX509InheritanceFlagsHelper.ToInt(
-  Value: TTaurusTLSX509InheritanceFlags): TIdC_UINT32;
+  AValue: TTaurusTLSX509InheritanceFlags): TIdC_UINT32;
 begin
-  Result:=(TIdC_UINT32((@Value)^) and cX509ihfMask); // PALOFF Possible bad pointer usage
+  Result:=(TIdC_UINT32((@AValue)^) and cX509ihfMask); // PALOFF Possible bad pointer usage
 end;
 
 class function TTaurusTLSX509InheritanceFlagsHelper.FromInt(
-  Value: TIdC_UINT32): TTaurusTLSX509InheritanceFlags;
+  AValue: TIdC_UINT32): TTaurusTLSX509InheritanceFlags;
 begin
-  if (Value or cX509ihfMask) <> cX509ihfMask then
+  if (AValue or cX509ihfMask) <> cX509ihfMask then
     raise EInvalidCast.Create('Invalid X509 Inheritance Flags.');
 //{$I RangeCheck-OFF.inc}
-  Result:=TTaurusTLSX509InheritanceFlags((@Value)^); // PALOFF Possible bad pointer usage
+  Result:=TTaurusTLSX509InheritanceFlags((@AValue)^); // PALOFF Possible bad pointer usage
 //{$I RangeCheck-ON.inc}
 end;
 
 function TTaurusTLSX509InheritanceFlagsHelper.IsEqualTo(
-  Value: TIdC_UINT32): boolean;
+  AValue: TIdC_UINT32): boolean;
 begin
-  Result:=Value = AsInt;
+  Result:=AValue = AsInt;
 end;
 
 { TTaurusTLSX509Helper }
@@ -1581,31 +1588,31 @@ begin
 end;
 
 procedure TTaurusTLSX509TrustHelper.SetAsInt(
-  Value: TIdC_Int);
+  AValue: TIdC_Int);
 begin
-  Self:=FromInt(Value);
+  Self:=FromInt(AValue);
 end;
 
 class function TTaurusTLSX509TrustHelper.FromInt(
-  Value: TIdC_Int): TTaurusTLSX509Trust;
+  AValue: TIdC_Int): TTaurusTLSX509Trust;
 begin
-  if (Value < Ord(Low(TTaurusTLSX509Trust))) or (Value > Ord(High(TTaurusTLSX509Trust))) then
+  if (AValue < Ord(Low(TTaurusTLSX509Trust))) or (AValue > Ord(High(TTaurusTLSX509Trust))) then
     raise EInvalidCast.Create('Invalid X509 Trust Flag.');
 //{$I RangeCheck-OFF.inc}
-  Result:=TTaurusTLSX509Trust(Value);
+  Result:=TTaurusTLSX509Trust(AValue);
 //{$I RangeCheck-ON.inc}
 end;
 
 class function TTaurusTLSX509TrustHelper.ToInt(
-  Value: TTaurusTLSX509Trust): TIdC_Int;
+  AValue: TTaurusTLSX509Trust): TIdC_Int;
 begin
-  Result:=Ord(Value);
+  Result:=Ord(AValue);
 end;
 
 function TTaurusTLSX509TrustHelper.IsEqualTo(
-  Value: TIdC_Int): boolean;
+  AValue: TIdC_Int): boolean;
 begin
-  Result:=Value = AsInt;
+  Result:=AValue = AsInt;
 end;
 
 { TTaurusTLSX509PurposeHelper }
@@ -1616,31 +1623,31 @@ begin
 end;
 
 procedure TTaurusTLSX509PurposeHelper.SetAsInt(
-  Value: TIdC_Int);
+  AValue: TIdC_Int);
 begin
-  Self:=FromInt(Value);
+  Self:=FromInt(AValue);
 end;
 
 class function TTaurusTLSX509PurposeHelper.FromInt(
-  Value: TIdC_Int): TTaurusTLSX509Purpose;
+  AValue: TIdC_Int): TTaurusTLSX509Purpose;
 begin
-  if (Value < Ord(Low(TTaurusTLSX509Purpose))) or (Value > Ord(High(TTaurusTLSX509Purpose))) then
+  if (AValue < Ord(Low(TTaurusTLSX509Purpose))) or (AValue > Ord(High(TTaurusTLSX509Purpose))) then
     raise EInvalidCast.Create('Invalid X509 Trust Flag.');
 //{$I RangeCheck-OFF.inc}
-  Result:=TTaurusTLSX509Purpose(Value);
+  Result:=TTaurusTLSX509Purpose(AValue);
 //{$I RangeCheck-ON.inc}
 end;
 
 class function TTaurusTLSX509PurposeHelper.ToInt(
-  Value: TTaurusTLSX509Purpose): TIdC_Int;
+  AValue: TTaurusTLSX509Purpose): TIdC_Int;
 begin
-  Result:=Ord(Value);
+  Result:=Ord(AValue);
 end;
 
 function TTaurusTLSX509PurposeHelper.IsEqualTo(
-  Value: TIdC_Int): boolean;
+  AValue: TIdC_Int): boolean;
 begin
-  Result:=Value = AsInt;
+  Result:=AValue = AsInt;
 end;
 
 { TTaurusTLSX509HostCheckFlagHelper }
@@ -1651,24 +1658,24 @@ begin
 end;
 
 procedure TTaurusTLSX509HostCheckFlagHelper.SetAsInt(
-  Value: TIdC_UINT);
+  AValue: TIdC_UINT);
 begin
-  Self:=FromInt(Value);
+  Self:=FromInt(AValue);
 end;
 
 class function TTaurusTLSX509HostCheckFlagHelper.FromInt(
-  Value: TIdC_UINT): TTaurusTLSX509HostCheckFlag;
+  AValue: TIdC_UINT): TTaurusTLSX509HostCheckFlag;
 var
   i: TIdC_UINT;
 
 begin
   // check if AVal in range of OpenSSL X509_CHECK_FLAG_* constants
   // and a single bit is set.
-  if (Value = 0) or ((Value and (Value-1)) <> 0)
-    or ((Value or cX509hckMask) <> cX509hckMask) then
+  if (AValue = 0) or ((AValue and (AValue-1)) <> 0)
+    or ((AValue or cX509hckMask) <> cX509hckMask) then
     raise EInvalidCast.Create('Invalid X509 Host Check Verify Flag.');
   i:=Ord(Low(TTaurusTLSX509HostCheckFlag));
-  while (1 shl i) < Value do
+  while (1 shl i) < AValue do
     Inc(i);
 //{$I RangeCheck-OFF.inc}
   Result:=TTaurusTLSX509HostCheckFlag(i);
@@ -1676,15 +1683,15 @@ begin
 end;
 
 class function TTaurusTLSX509HostCheckFlagHelper.ToInt(
-  Value: TTaurusTLSX509HostCheckFlag): TIdC_UINT;
+  AValue: TTaurusTLSX509HostCheckFlag): TIdC_UINT;
 begin
-  Result:=TIdC_UINT(1 shl Ord(Value));
+  Result:=TIdC_UINT(1 shl Ord(AValue));
 end;
 
 function TTaurusTLSX509HostCheckFlagHelper.IsEqualTo(
-  Value: TIdC_UINT): boolean;
+  AValue: TIdC_UINT): boolean;
 begin
-  Result:=Value = AsInt;
+  Result:=AValue = AsInt;
 end;
 
 { TTaurusTLSX509HostCheckFlagsHelper }
@@ -1695,33 +1702,33 @@ begin
 end;
 
 procedure TTaurusTLSX509HostCheckFlagsHelper.SetAsInt(
-  Value: TIdC_UINT);
+  AValue: TIdC_UINT);
 begin
-  Self:=FromInt(Value);
+  Self:=FromInt(AValue);
 end;
 
 class function TTaurusTLSX509HostCheckFlagsHelper.FromInt(
-  Value: TIdC_UINT): TTaurusTLSX509HostCheckFlags;
+  AValue: TIdC_UINT): TTaurusTLSX509HostCheckFlags;
 begin
   // check if AVal in range of OpenSSL X509_CHECK_FLAG_* constants
   // and a single bit is set.
-  if ((Value or cX509hckMask) <> cX509hckMask) then
+  if ((AValue or cX509hckMask) <> cX509hckMask) then
     raise EInvalidCast.Create('Invalid X509 Host Check Verify Flags.');
 //{$I RangeCheck-OFF.inc}
-  Result:=TTaurusTLSX509HostCheckFlags((@Value)^); // PALOFF Possible bad pointer usage
+  Result:=TTaurusTLSX509HostCheckFlags((@AValue)^); // PALOFF Possible bad pointer usage
 //{$I RangeCheck-ON.inc}
 end;
 
 class function TTaurusTLSX509HostCheckFlagsHelper.ToInt(
-  Value: TTaurusTLSX509HostCheckFlags): TIdC_UINT;
+  AValue: TTaurusTLSX509HostCheckFlags): TIdC_UINT;
 begin
-  Result:=(TIdC_UINT((@Value)^) and cX509hckMask);  // PALOFF Possible bad pointer usage
+  Result:=(TIdC_UINT((@AValue)^) and cX509hckMask);  // PALOFF Possible bad pointer usage
 end;
 
 function TTaurusTLSX509HostCheckFlagsHelper.IsEqualTo(
-  Value: TIdC_UINT): boolean;
+  AValue: TIdC_UINT): boolean;
 begin
-  Result:=Value = AsInt;
+  Result:=AValue = AsInt;
 end;
 
 end.

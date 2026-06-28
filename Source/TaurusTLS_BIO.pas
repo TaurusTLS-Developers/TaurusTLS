@@ -289,7 +289,7 @@ type
     ///   specified memory address.
     /// </summary>
     constructor Create(const AData: Pointer; ASize: TIdC_SIZET;
-      AFlags: TTaurusTLSCustomBIO.TFlags = [bfReadable, bfResetable]); overload;
+      const AFlags: TTaurusTLSCustomBIO.TFlags = [bfReadable, bfResetable]); overload;
   public
     /// <summary>
     ///   Ensures cleanup of the Delphi wrapper and calls DoFreeMem.
@@ -608,13 +608,12 @@ end;
 { TTaurusTLSCustomRawMemBio }
 
 constructor TTaurusTLSCustomRawMemBio.Create(const AData: Pointer;
-  ASize: TIdC_SIZET; AFlags: TTaurusTLSCustomBIO.TFlags);
+  ASize: TIdC_SIZET; const AFlags: TTaurusTLSCustomBIO.TFlags);
 begin
   if not Assigned(AData) and (ASize = 0) then
     ETaurusTLSBioCreateError.RaiseWithMessage(RSMsg_Bio_EmptyMemPtr_err);
 
-  Include(AFlags, bfAppManaged);
-  inherited Create(BIO_new_mem_buf(AData^, ASize), AFlags);
+  inherited Create(BIO_new_mem_buf(AData^, ASize), Flags+[bfAppManaged]);
   FMemPtr := AData;
   FMemSize := ASize;
 end;

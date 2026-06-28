@@ -90,7 +90,7 @@ type
   {$IFDEF FPC}
     {$WARN 3018 off : Constructor should be public}
   {$ENDIF}
-    constructor Create(AParam: PX509_VERIFY_PARAM);
+    constructor Create(const AParam: PX509_VERIFY_PARAM);
   {$IFDEF FPC}
     {$WARN 3018 on : Constructor should be public}
   {$ENDIF}
@@ -106,28 +106,28 @@ type
     ///  </summary>
     ///  <param name="ANumber">Index of the hostname to retrieve.</param>
     ///  <returns>A PIdAnsiChar pointer to the string data.</returns>
-    function GetHostRaw(ANumber: TIdC_Int): PIdAnsiChar;
+    function GetHostRaw(const ANumber: TIdC_Int): PIdAnsiChar;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Retrieves a hostname stored for verification as an AnsiString.
     ///  </summary>
     ///  <param name="ANumber">Index of the hostname to retrieve.</param>
-    function GetHostA(ANumber: TIdC_Int): RawByteString;
+    function GetHostA(const ANumber: TIdC_Int): RawByteString;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Retrieves a hostname stored for verification as a Unicode string.
     ///  </summary>
     ///  <param name="ANumber">Index of the hostname to retrieve.</param>
-    function GetHostW(ANumber: TIdC_Int): UnicodeString;
+    function GetHostW(const ANumber: TIdC_Int): UnicodeString;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Retrieves a hostname stored for verification.
     ///  </summary>
     ///  <param name="ANumber">Index of the hostname to retrieve.</param>
-    function GetHost(ANumber: TIdC_Int): string;
+    function GetHost(const ANumber: TIdC_Int): string;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
@@ -138,7 +138,7 @@ type
     ///  Method value clears hostnames list before setting new one.
     ///  Emtpy value <c>Value</c> keeps it empty.
     ///  </remarks>
-    procedure SetHostRaw(Value: PIdAnsiChar);
+    procedure SetHostRaw(const Value: PIdAnsiChar);
       {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
@@ -253,7 +253,7 @@ type
     ///   All previously set or added email addresses are replaced with new
     ///   eamail address.
     /// </remarks>
-    procedure SetEMailRaw(Value: PIdAnsiChar); {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure SetEMailRaw(const Value: PIdAnsiChar); {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     ///  <summary>
     ///  Sets the expected email address (Ansi or UTF8 String) for identity
@@ -498,7 +498,7 @@ type
     ///  <summary>
     ///  Retrieves a hostname by index.
     ///  </summary>
-    property Host[i: TIdC_Int]: UnicodeString read GetHostW;
+    property Host[const i: TIdC_Int]: UnicodeString read GetHostW;
 
     ///  <summary>
     ///  Retrieves the email address identity.
@@ -527,7 +527,6 @@ type
   ///  lifecycle as <c>SSL</c> or <c>SSL_CTX</c> instances does it do.
   ///  </remarks>
   TTaurusTLSX509VerifyParamSSL = class(TTaurusTLSCustomX509VerifyParam)
-    constructor Create(AParam: PX509_VERIFY_PARAM); overload;
     constructor Create(ASSL: PSSL); overload;
     constructor Create(ASSLCtx: PSSL_CTX); overload;
   end;
@@ -635,7 +634,7 @@ type
       ///  <returns>
       ///  The object type as <see cref="TTaurusTLSOSSLStore.TStoreInfoType" />.
       ///  </returns>
-      class function GetType(AInfo: POSSL_STORE_INFO): TStoreInfoType;
+      class function GetType(const AInfo: POSSL_STORE_INFO): TStoreInfoType;
         overload; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
       function GetType: TStoreInfoType; overload;{$IFDEF USE_INLINE}inline;{$ENDIF}
 
@@ -666,7 +665,7 @@ type
       ///  <param name="AInfo">The native OSSL_STORE_INFO instance.</param>
       ///  <returns>A C-style string pointer to the name/URI.</returns>
       ///  <remarks>The returned pointer is internally managed and must not be freed.</remarks>
-      class function GetName(AInfo: POSSL_STORE_INFO): PIdAnsiChar;
+      class function GetName(const AInfo: POSSL_STORE_INFO): PIdAnsiChar;
         overload; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
       function GetName: PIdAnsiChar; overload;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
@@ -678,7 +677,7 @@ type
       ///  <param name="AInfo">The native OSSL_STORE_INFO instance.</param>
       ///  <returns>A pointer to the parameter set.</returns>
       ///  <remarks>No ownership is transferred. Do not free this pointer.</remarks>
-      class function GetParams(AInfo: POSSL_STORE_INFO): PEVP_PKEY; overload;
+      class function GetParams(const AInfo: POSSL_STORE_INFO): PEVP_PKEY; overload;
         static; {$IFDEF USE_INLINE}inline;{$ENDIF}
       function GetParams: PEVP_PKEY; overload;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
@@ -698,7 +697,7 @@ type
       ///  </summary>
       ///  <returns>A pointer to the private key component.</returns>
       ///  <remarks>No ownership is transferred. Do not free this pointer.</remarks>
-      class function GetPrivKey(AInfo: POSSL_STORE_INFO): PEVP_PKEY; overload;
+      class function GetPrivKey(const AInfo: POSSL_STORE_INFO): PEVP_PKEY; overload;
         static; {$IFDEF USE_INLINE}inline;{$ENDIF}
       function GetPrivKey: PEVP_PKEY; overload;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
@@ -709,7 +708,7 @@ type
       ///  <param name="AInfo">The native OSSL_STORE_INFO instance.</param>
       ///  <returns>A pointer to the certificate.</returns>
       ///  <remarks>No ownership is transferred. Do not free this pointer.</remarks>
-      class function GetCert(AInfo: POSSL_STORE_INFO): PX509; overload; static;
+      class function GetCert(const AInfo: POSSL_STORE_INFO): PX509; overload; static;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
       function GetCert: PX509; overload; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
@@ -719,7 +718,7 @@ type
       ///  <param name="AInfo">The native OSSL_STORE_INFO instance.</param>
       ///  <returns>A pointer to the CRL.</returns>
       ///  <remarks>No ownership is transferred. Do not free this pointer.</remarks>
-      class function GetCrl(AInfo: POSSL_STORE_INFO): PX509_CRL;
+      class function GetCrl(const AInfo: POSSL_STORE_INFO): PX509_CRL;
         overload; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
       function GetCrl: PX509_CRL; overload;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
@@ -730,7 +729,7 @@ type
       ///  <param name="AInfo">The native OSSL_STORE_INFO instance.</param>
       ///  <returns>The name/URI string.</returns>
       ///  <remarks>The memory for the resulting string is internally managed.</remarks>
-      class function CloneNameA(AInfo: POSSL_STORE_INFO): RawByteString;
+      class function CloneNameA(const AInfo: POSSL_STORE_INFO): RawByteString;
         overload; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
       function CloneNameA: RawByteString; overload;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
@@ -797,7 +796,7 @@ type
       ///  <returns>A new pointer to the CRL.</returns>
       ///  <remarks>Ownership is transferred. The caller must free the pointer
       ///  using X509_CRL_free or equivalent routine.</remarks>
-      class function CloneCrl(AInfo: POSSL_STORE_INFO): PX509_CRL; overload; static;
+      class function CloneCrl(const AInfo: POSSL_STORE_INFO): PX509_CRL; overload; static;
         {$IFDEF USE_INLINE}inline;{$ENDIF}
       function CloneCrl: PX509_CRL; overload;  {$IFDEF USE_INLINE}inline;{$ENDIF}
 
@@ -1343,7 +1342,7 @@ type
     ///  Items are added cumulatively, preserving all previously existing
     ///  certificates and CRLs in the store.
     ///  </remarks>
-    procedure AppendFromOsslStore(const AStore: TTaurusTLSOSSLStore; AFilter: TX509Elements);
+    procedure AppendFromOsslStore(const AStore: TTaurusTLSOSSLStore; const AFilter: TX509Elements);
       overload; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     /// <summary>
@@ -1402,7 +1401,7 @@ uses
 
 { TTaurusTLSCustomX509VerifyParam }
 
-constructor TTaurusTLSCustomX509VerifyParam.Create(AParam: PX509_VERIFY_PARAM);
+constructor TTaurusTLSCustomX509VerifyParam.Create(const AParam: PX509_VERIFY_PARAM);
 begin
   if not Assigned(AParam) then
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyParamNull_err);
@@ -1493,12 +1492,12 @@ begin
 end;
 
 function TTaurusTLSCustomX509VerifyParam.GetHostRaw(
-  ANumber: TIdC_Int): PIdAnsiChar;
+  const ANumber: TIdC_Int): PIdAnsiChar;
 begin
   Result:=X509_VERIFY_PARAM_get0_host(FParam, ANumber);
 end;
 
-function TTaurusTLSCustomX509VerifyParam.GetHost(ANumber: TIdC_Int): string;
+function TTaurusTLSCustomX509VerifyParam.GetHost(const ANumber: TIdC_Int): string;
 begin
 {$IFDEF STRING_IS_UNICODE}
   Result:=GetHostW(ANumber);
@@ -1508,18 +1507,18 @@ begin
 end;
 
 function TTaurusTLSCustomX509VerifyParam.GetHostA(
-  ANumber: TIdC_Int): RawByteString;
+  const ANumber: TIdC_Int): RawByteString;
 begin
   Result:=RawByteString(GetHostRaw(ANumber));
 end;
 
 function TTaurusTLSCustomX509VerifyParam.GetHostW(
-  ANumber: TIdC_Int): UnicodeString;
+  const ANumber: TIdC_Int): UnicodeString;
 begin
   Result:=UnicodeString(GetHostRaw(ANumber));
 end;
 
-procedure TTaurusTLSCustomX509VerifyParam.SetHostRaw(Value: PIdAnsiChar);
+procedure TTaurusTLSCustomX509VerifyParam.SetHostRaw(const Value: PIdAnsiChar);
 begin
   if X509_VERIFY_PARAM_set1_host(FParam, PIdAnsiChar(Value), 0) <= 0 then // PALOFF Possible bad typecast
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyHost_err);
@@ -1621,7 +1620,7 @@ begin
   Result:=UnicodeString(GetEmailRaw);
 end;
 
-procedure TTaurusTLSCustomX509VerifyParam.SetEMailRaw(Value: PIdAnsiChar);
+procedure TTaurusTLSCustomX509VerifyParam.SetEMailRaw(const Value: PIdAnsiChar);
 begin
   if X509_VERIFY_PARAM_set1_email(FParam, Value, Length(Value)) <= 0 then
     ETaurusTLSX509StoreError.RaiseWithMessage(RMSG_X509VfyEMail_set_err);
@@ -1847,19 +1846,14 @@ end;
 
 { TTaurusTLSX509VerifyParamWrap }
 
-constructor TTaurusTLSX509VerifyParamSSL.Create(AParam: PX509_VERIFY_PARAM);
-begin
-  inherited;
-end;
-
 constructor TTaurusTLSX509VerifyParamSSL.Create(ASSL: PSSL);
 begin
-  Create(SSL_get0_param(ASSL));
+  inherited Create(SSL_get0_param(ASSL));
 end;
 
 constructor TTaurusTLSX509VerifyParamSSL.Create(ASSLCtx: PSSL_CTX);
 begin
-  Create(SSL_CTX_get0_param(ASSLCtx));
+  inherited Create(SSL_CTX_get0_param(ASSLCtx));
 end;
 
 { TTaurusTLSOSSLStore.TStoreItem }
@@ -2139,15 +2133,16 @@ begin
 end;
 
 procedure TaurusTLS_X509Store.AppendFromOsslStore(const AStore: TTaurusTLSOSSLStore;
-  AFilter: TX509Elements);
+  const AFilter: TX509Elements);
 var
   lElement: TTaurusTLSOSSLStore.TStoreItem;
+  lFilter: TX509Elements;
 
 begin
   if not Assigned(AStore) then
     Exit;
-  AFilter:=AFilter*cX509ElementsAll; //Only Certificates and CRLs can be added
-  for lElement in AStore.GetEnumerator(AFilter) do
+  lFilter:=AFilter*cX509ElementsAll; //Only Certificates and CRLs can be added
+  for lElement in AStore.GetEnumerator(lFilter) do
   begin
     case lElement.&Type of
     sitCert: AppendCert(lElement.Cert);
@@ -2213,7 +2208,7 @@ begin
 end;
 
 class function TTaurusTLSOSSLStore.TStoreInfo.CloneNameA(
-  AInfo: POSSL_STORE_INFO): RawByteString;
+  const AInfo: POSSL_STORE_INFO): RawByteString;
 begin
   Result:=AnsiString(GetName(AInfo));
 end;
@@ -2233,7 +2228,7 @@ begin
 end;
 
 class function TTaurusTLSOSSLStore.TStoreInfo.CloneCrl(
-  AInfo: POSSL_STORE_INFO): PX509_CRL;
+  const AInfo: POSSL_STORE_INFO): PX509_CRL;
 begin
   if IsExist(AInfo) then
     Result:=OSSL_STORE_INFO_get1_CRL(AInfo)
@@ -2305,13 +2300,13 @@ begin
 end;
 
 class function TTaurusTLSOSSLStore.TStoreInfo.GetType(
-  AInfo: POSSL_STORE_INFO): TStoreInfoType;
+  const AInfo: POSSL_STORE_INFO): TStoreInfoType;
 begin
   Result:=TStoreInfoType(OSSL_STORE_INFO_get_type(AInfo));
 end;
 
 class function TTaurusTLSOSSLStore.TStoreInfo.GetName(
-  AInfo: POSSL_STORE_INFO): PIdAnsiChar;
+  const AInfo: POSSL_STORE_INFO): PIdAnsiChar;
 begin
   if IsExist(AInfo) then
     Result:=OSSL_STORE_INFO_get0_NAME(AInfo)
@@ -2320,7 +2315,7 @@ begin
 end;
 
 class function TTaurusTLSOSSLStore.TStoreInfo.GetCert(
-  AInfo: POSSL_STORE_INFO): PX509;
+  const AInfo: POSSL_STORE_INFO): PX509;
 begin
   if IsExist(AInfo) then
     Result:=OSSL_STORE_INFO_get0_CERT(AInfo)
@@ -2334,7 +2329,7 @@ begin
 end;
 
 class function TTaurusTLSOSSLStore.TStoreInfo.GetCrl(
-  AInfo: POSSL_STORE_INFO): PX509_CRL;
+  const AInfo: POSSL_STORE_INFO): PX509_CRL;
 begin
   if IsExist(AInfo) then
     Result:=OSSL_STORE_INFO_get0_CRL(AInfo)
@@ -2353,7 +2348,7 @@ begin
 end;
 
 class function TTaurusTLSOSSLStore.TStoreInfo.GetParams(
-  AInfo: POSSL_STORE_INFO): PEVP_PKEY;
+  const AInfo: POSSL_STORE_INFO): PEVP_PKEY;
 begin
   if IsExist(AInfo) then
     Result:=OSSL_STORE_INFO_get0_PARAMS(AInfo)
@@ -2367,7 +2362,7 @@ begin
 end;
 
 class function TTaurusTLSOSSLStore.TStoreInfo.GetPrivKey(
-  AInfo: POSSL_STORE_INFO): PEVP_PKEY;
+  const AInfo: POSSL_STORE_INFO): PEVP_PKEY;
 begin
   if IsExist(AInfo) then
     Result:=OSSL_STORE_INFO_get0_PKEY(AInfo)
@@ -2440,10 +2435,7 @@ begin
   if Assigned(AUi) then
     lMeth:=AUi.UiMethod
   else
-  begin
-    AUi:=nil;
     lMeth:=nil;
-  end;
 
   Create(OSSL_STORE_open(PIdAnsiChar(AUri), lMeth, AUi, nil, nil)); // PALOFF Possible bad typecast
 end;
@@ -2460,10 +2452,7 @@ begin
   if Assigned(AUi) then
     lMeth:=AUi.UiMethod
   else
-  begin
-    AUi:=nil;
     lMeth:=nil;
-  end;
 
   Create(OSSL_STORE_attach(ABio.BIO, nil, nil, nil, lMeth, AUi,
     nil, nil, nil));
