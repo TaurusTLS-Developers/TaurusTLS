@@ -668,9 +668,8 @@ begin
     Result:=Pred(Ord(FHandler.DoPrepare(ui)));
     if Result < 0 then
       Result:=0;
-  except
-    // Do nothing for now
-    // Need to think about custom OpenSSL Error codes and messages
+  except //PALOFF "Empty except-block"
+    // We must not raise the exception to the OpenSSL stack
   end;
 end;
 
@@ -692,9 +691,8 @@ begin
     finally
       lStr.Free;
     end;
-  except
-    // Do nothing for now
-    // Need to think about custom OpenSSL Error codes and messages
+  except //PALOFF "Empty except-block"
+    // We must not raise the exception to the OpenSSL stack
   end;
 end;
 
@@ -705,9 +703,8 @@ begin
     Exit;
   try
     Result:=Pred(Ord(FHandler.DoPrepare(ui)));
-  except
-    // Do nothing for now
-    // Need to think about custom OpenSSL Error codes and messages
+  except //PALOFF "Empty except-block"
+    // We must not raise the exception to the OpenSSL stack
   end;
 end;
 
@@ -727,9 +724,8 @@ begin
     finally
       lStr.Free;
     end;
-  except
-    // Do nothing for now
-    // Need to think about custom OpenSSL Error codes and messages
+  except //PALOFF "Empty except-block"
+    // We must not raise the exception to the OpenSSL stack
   end;
 end;
 
@@ -742,9 +738,8 @@ begin
     Result:=Pred(Ord(FHandler.DoPrepare(ui)));
     if Result < 0 then
       Result:=0;
-  except
-    // Do nothing for now
-    // Need to think about custom OpenSSL Error codes and messages
+  except //PALOFF "Empty except-block"
+    // We must not raise the exception to the OpenSSL stack
   end;
 end;
 
@@ -833,9 +828,8 @@ begin
       if Result < 0 then
         Result:=0;
     end;
-  except
-    // Do nothing for now
-    // Need to think about custom OpenSSL Error codes and messages
+  except //PALOFF "Empty except-block"
+    // We must not raise the exception to the OpenSSL stack
   end;
 end;
 
@@ -859,9 +853,8 @@ begin
         if Result < 0 then
           Result:=0;
       end;
-    except
-      // Do nothing for now
-      // Need to think about custom OpenSSL Error codes and messages
+    except //PALOFF "Empty except-block"
+      // We must not raise the exception to the OpenSSL stack
     end;
   finally
     lStr.Free;
@@ -882,9 +875,8 @@ begin
       if Result < 0 then
         Result:=0;
     end;
-  except
-    // Do nothing for now
-    // Need to think about custom OpenSSL Error codes and messages
+  except //PALOFF "Empty except-block"
+    // We must not raise the exception to the OpenSSL stack
   end;
 end;
 
@@ -906,9 +898,8 @@ begin
         if Assigned(lUi) then
           Result:=Pred(Ord(lUi.DoCheckString(lStr)));
       end;
-    except
-      // Do nothing for now
-      // Need to think about custom OpenSSL Error codes and messages
+    except //PALOFF "Empty except-block"
+      // We must not raise the exception to the OpenSSL stack
     end;
   finally
     lStr.Free;
@@ -935,9 +926,8 @@ begin
       if Assigned(lUi) then
         lUi.SetUi(nil);
     end;
-  except
-    // Do nothing for now
-    // Need to think about custom OpenSSL Error codes and messages
+  except //PALOFF "Empty except-block"
+    // We must not raise the exception to the OpenSSL stack
   end;
 end;
 
