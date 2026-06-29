@@ -124,18 +124,23 @@ type
     function SetPassword(const APass: RawByteString): boolean;
       overload;
 
-    /// <summary> Wrapper for <c>UI_set_result_ex</c> routine. Sets the <b>password</b>
-    /// value for the UI_STRING.
-    /// <remarks> The <b>password</b> value can be set only for the string type
-    /// <c>UIT_PROMPT</c> or <c>UIT_VERIFY</c>.
-    /// <see href="https://docs.openssl.org/master/man3/UI_STRING/#synopsis" />
-    /// </remarks>
+    /// <summary>
+    ///   <para>
+    ///     Wrapper for <c>UI_set_result_ex</c> routine. Sets the <b>password
+    ///     </b> value for the UI_STRING.
+    ///   </para>
+    ///   <para>
+    ///     The <b>password</b> value can be set only for the string type <c>
+    ///     UIT_PROMPT</c> or <c>UIT_VERIFY</c>. <see
+    ///     href="https://docs.openssl.org/master/man3/UI_STRING/#synopsis" />
+    ///   </para>
     /// </summary>
-    /// <param name="APass"> A <see cref="TBytes" /> array containing a <b>password</b>
-    /// value.
+    /// <param name="APass">
+    ///   A <see cref="System.SysUtils.TBytes" /> array containing a <b>password
+    ///   </b> value.
     /// </param>
     /// <returns>
-    /// <c>True</c> if operation succeed, <c>False</c> otherwise.
+    ///   <c>True</c> if operation succeed, <c>False</c> otherwise.
     /// </returns>
     function SetPassword(const APass: TBytes): boolean; overload;
 
@@ -223,61 +228,56 @@ type
   TTaurusTLS_DefaultUI = class
   public type
 
-    /// <summary> A base <b>abstract</b> class Instance to handle OpenSSL requests for
-    /// <b>password</b> or <b>passphrase</b>.
+    /// <summary>
+    ///   A base <b>abstract</b> class Instance to handle OpenSSL requests for
+    ///   <b>password</b> or <b>passphrase</b>.
     /// </summary>
     /// <remarks>
-    /// <see cref="TTaurusTLS_DefaultUI" /> calls the <see cref="TCustomUiHandler" />
-    /// descendant's methods in  the order:
-    /// <list type="number">
-    /// <item>
-    /// <term>DoPrepare</term>
-    /// <description> Method needs to initialize resources required for request the
-    /// <b>password</b> or <b>passphrase</b>, and associate it with the <c>ui</c>
-    /// parameter value. For example to create password request dialog instance in GUI
-    /// application.
-    /// </description>
-    /// </item>
-    /// <item>
-    /// <term>DoSetString</term>
-    /// <description>This method called to provide string information needs to be
-    /// displayed for the end-user. It usually <b>password</b> prompt. However, it
-    /// could be a <b>confirmation</c>,
-    /// <b>error</b> or <b>informational</b> message(s).
-    /// <see href="https://docs.openssl.
-    /// org/master/man3/UI_create_method/#description">See</see> for more details.
-    /// <b>Note:</b> this method can be called multiple times per one UI call.
-    /// </description>
-    /// </item>
-    /// <item>
-    /// <term>DoDisplay</term>
-    /// <description>This method is called to display a <b>password</b> or
-    /// <b>passphrase</b> prompt, <b>error</b> message, etc.
-    /// </description>
-    /// </item>
-    /// <item>
-    /// <term>DoCheckString</term>
-    /// <description>The application should provide <b>password</b> or
-    /// <b>passphrase</b> for string with type
-    /// <c>UIT_PROMPT</c> or <c>UIT_VERIFY</c> using <see cref="TTaurusTLS_UiString.
-    /// SetPassword" /> method.
-    /// <b>Note:</b> this method can be called multiple times per one UI call.
-    /// </description>
-    /// </item>
-    /// <item>
-    /// <term>DoRelease</term>
-    /// <description> Method called to deinitialize the resources prepared by the
-    /// <see cref="TTaurusTLS_DefaultUI.DoPrepare" /> method associated with the
-    /// <c>ui</c> parameter value.
-    /// </description>
-    /// </item>
-    /// </list>
-    /// </remarks>
-    /// <remarks> Please note: the instance can be activated from any thread. A
-    /// descendant(s) implementing interactive request handling must serialize its
-    /// activation from different threads. For example, using
-    /// <see cref="TThread.Synchronize" /> for GUI application(s), or using
-    /// synchronization primitives in console application(s).
+    ///   <para>
+    ///     <see cref="TaurusTLS_SSLUI|TTaurusTLSCustomOsslUi" /> calls the <see
+    ///     cref="TCustomUiHandler" /> descendant's methods in the order:
+    ///   </para>
+    ///   <list type="number">
+    ///     <item>
+    ///       DoPrepare Method needs to initialize resources required for
+    ///       request the <b>password</b> or <b>passphrase</b>, and associate it
+    ///       with the <c>ui</c> parameter value. For example to create password
+    ///       request dialog instance in GUI application.
+    ///     </item>
+    ///     <item>
+    ///       DoSetStringThis method called to provide string information needs
+    ///       to be displayed for the end-user. It usually <b>password</b>
+    ///       prompt. However, it could be a <b>confirmation</b>, <b>error</b>
+    ///       or <b>informational</b> message(s). <see
+    ///       href="https://docs.openssl.%20org/master/man3/UI_create_method/#description">
+    ///       See</see> for more details. <b>Note:</b> this method can be called
+    ///       multiple times per one UI call.
+    ///     </item>
+    ///     <item>
+    ///       DoDisplayThis method is called to display a <b>password</b> or <b>
+    ///       passphrase</b> prompt, <b>error</b> message, etc.
+    ///     </item>
+    ///     <item>
+    ///       DoCheckStringThe application should provide <b>password</b> or <b>
+    ///       passphrase</b> for string with type <c>UIT_PROMPT</c> or <c>
+    ///       UIT_VERIFY</c> using <see cref="TTaurusTLS_UiString. SetPassword" />
+    ///       method. <b>Note:</b> this method can be called multiple times per
+    ///       one UI call.
+    ///     </item>
+    ///     <item>
+    ///       DoRelease Method called to deinitialize the resources prepared by
+    ///       the <see cref="TaurusTLS_SSLUI|TTaurusTLSCustomOsslUi" /> method
+    ///       associated with the <c>ui</c> parameter value.
+    ///     </item>
+    ///   </list>
+    ///   <para>
+    ///     Please note: the instance can be activated from any thread. A
+    ///     descendant(s) implementing interactive request handling must
+    ///     serialize its activation from different threads. For example, using
+    ///     <see cref="System.Classes|TThread.Synchronize" /> for GUI
+    ///     application(s), or using synchronization primitives in console
+    ///     application(s).
+    ///   </para>
     /// </remarks>
     TCustomUiHandler = class abstract
     protected

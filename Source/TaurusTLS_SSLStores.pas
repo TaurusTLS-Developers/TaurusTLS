@@ -921,7 +921,7 @@ type
       ///  </returns>
       ///  <remarks>
       ///  The returned object is temporary. Use methods from
-      ///  <see cref="TTaurusTLSOSSLStore.TStoreInfoHelper" /> (e.g., CloneCert) to take ownership
+      ///  <see cref="TTaurusTLSOSSLStore.TStoreInfo" /> (e.g., CloneCert) to take ownership
       ///  of the payload.
       ///  </remarks>
       class function Load(ACtx: POSSL_STORE_CTX): POSSL_STORE_INFO; overload;
