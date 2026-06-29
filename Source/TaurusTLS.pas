@@ -2938,8 +2938,8 @@ begin
   end;
 end;
 
-procedure g_MsgCallback(write_p, Version, content_type: TIdC_INT; const buf;
-  len: TIdC_SIZET; SSL: PSSL; arg: Pointer)cdecl;
+procedure g_MsgCallback(write_p, Version, content_type: TIdC_INT;
+  const buf: pointer; len: TIdC_SIZET; SSL: PSSL; arg: Pointer) cdecl;
 var
   LErr: Integer;   //PALOFF
   LHelper: ITaurusTLSCallbackHelper;
@@ -2971,7 +2971,10 @@ begin
         var
           LBytes: TIdBytes;
 {$ENDIF}
-        LBytes := TaurusTLSRawToBytes(buf, len);
+        if buf <> nil then
+          LBytes := TaurusTLSRawToBytes(buf^, len)
+        else
+          lBytes := [];
         case Version of
           SSL3_VERSION:
             LVer := verSSL3Header;
