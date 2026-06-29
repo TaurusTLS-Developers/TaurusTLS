@@ -1259,7 +1259,8 @@ type
 
   TSSL_CTX_set_verify_callback = function (ok : TIdC_INT; ctx : PX509_STORE_CTX) : TIdC_INT; cdecl;
 
-  Tmsg_callback = procedure(write_p, version, content_type : TIdC_INT; const buf; len : TIdC_SIZET; ssl : PSSL; arg : Pointer); cdecl;
+  Tmsg_callback = procedure(write_p, version, content_type : TIdC_INT;
+    const buf: Pointer; len : TIdC_SIZET; ssl : PSSL; arg : Pointer); cdecl;
 
     { The EXTERNALSYM directive is ignored by FPC, however, it is used by Delphi as follows:
 		
