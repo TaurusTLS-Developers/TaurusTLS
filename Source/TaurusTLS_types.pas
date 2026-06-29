@@ -244,37 +244,70 @@ type
     property AsInt: TIdC_INT read GetAsInt write SetAsInt;
   end;
 
-  TTaurusTLSSSLVersion = (
-    /// <summary>SSL 2.0</summary>
-    SSLv2,
-    /// <summary>SSL 2.0 or 3.0</summary>
-    SSLv23,
-    /// <summary>SSL 3.0</summary>
-    SSLv3,
+  TTaurusTLS2SslVersion = (
+    svUnsupported,
+    svSSLv3,
     /// <summary>TLS 1.0</summary>
-    TLSv1,
+    svTLSv1,
     /// <summary>TLS 1.1</summary>
-    TLSv1_1,
+    svTLSv1_1,
     /// <summary>TLS 1.2</summary>
-    TLSv1_2,
+    svTLSv1_2,
     /// <summary>TLS 1.3</summary>
-    TLSv1_3);
+    svTLSv1_3,
+    svDTLSv1_BAD,
+    svDTLSv1,
+    svDTLSv1_2,
+    svQUICv1
+  );
 
-  TTaurusTLSSSLVersionHelper = record helper for TTaurusTLSSSLVersion
+  TTaurusTLS2TlsVersion = svSSLv3..svTLSv1_3;
+
+  TTaurusTLS2DTlsVersion = svDTLSv1_BAD..svDTLSv1_2;
+
+  TTaurusTLS2QuicVersion = svQUICv1..svQUICv1;
+
+  TTaurusTLS2SslVersionHelper = record helper for TTaurusTLS2SslVersion
   public const
-    cMapping: array[TTaurusTLSSSLVersion] of TIdC_LONG = (
-      0, 0, SSL3_VERSION, TLS1_VERSION, TLS1_1_VERSION, TLS1_2_VERSION,
-      TLS1_3_VERSION
+    cMapping: array[TTaurusTLS2SslVersion] of TIdC_LONG = (
+      0, SSL3_VERSION, TLS1_VERSION, TLS1_1_VERSION, TLS1_2_VERSION,
+      TLS1_3_VERSION, DTLS1_BAD_VER, DTLS1_VERSION, DTLS1_2_VERSION,
+      OSSL_QUIC1_VERSION
     );
 
   private
-    function GetAsInt: TIdC_LONG; {$IFDEF USE_INLINE} inline;{$ENDIF}
-    procedure SetAsInt(AValue: TIdC_LONG); {$IFDEF USE_INLINE} inline;{$ENDIF}
+    class function GetAsInt(const ASrc: TTaurusTLS2SslVersion): TIdC_LONG;
+      overload; static;{$IFDEF USE_INLINE} inline;{$ENDIF}
+    class procedure SetAsInt(var ADest: TTaurusTLS2SslVersion; AValue: TIdC_LONG);
+      overload; static;{$IFDEF USE_INLINE} inline;{$ENDIF}
+    function GetAsInt: TIdC_LONG; overload;{$IFDEF USE_INLINE} inline;{$ENDIF}
+    procedure SetAsInt(AValue: TIdC_LONG); overload;{$IFDEF USE_INLINE} inline;{$ENDIF}
   public
     property AsInt: TIdC_LONG read GetAsInt write SetAsInt;
   end;
 
-  ETaurusTLSSSLVersion = class(ETaurusTLSError);
+  TTaurusTLS2TlsVersionHelper = record helper for TTaurusTLS2TlsVersion
+  private
+    function GetAsInt: TIdC_LONG; overload;{$IFDEF USE_INLINE} inline;{$ENDIF}
+  public
+    property AsInt: TIdC_LONG read GetAsInt;
+  end;
+
+  TTaurusTLSTDlsVersionHelper = record helper for TTaurusTLS2DTlsVersion
+  private
+    function GetAsInt: TIdC_LONG; overload;{$IFDEF USE_INLINE} inline;{$ENDIF}
+  public
+    property AsInt: TIdC_LONG read GetAsInt;
+  end;
+
+  TTaurusTLSTQuicVersionHelper = record helper for TTaurusTLS2QuicVersion
+  private
+    function GetAsInt: TIdC_LONG; overload;{$IFDEF USE_INLINE} inline;{$ENDIF}
+  public
+    property AsInt: TIdC_LONG read GetAsInt;
+  end;
+
+  ETaurusTLSSslVersion = class(ETaurusTLSError);
 
   TTaurusTLSSSLOptionFlag = (
     sslOpNoExtendedMasterSecret          = 0,  // (1 shl 0)  = SSL_OP_NO_EXTENDED_MASTER_SECRET
@@ -1256,25 +1289,58 @@ begin
       [AValue]);
 end;
 
-{ TTaurusTLSSSLVersionHelper }
+{ TTaurusTLS2SslVersionHelperTTaurusTLS2SslVersionHelper }
 
-function TTaurusTLSSSLVersionHelper.GetAsInt: TIdC_LONG;
+class function TTaurusTLS2SslVersionHelper.GetAsInt(
+  const ASrc: TTaurusTLS2SslVersion): TIdC_LONG;
 begin
-  Result:=cMapping[Self];
+  Result:=cMapping[ASrc];
 end;
 
-procedure TTaurusTLSSSLVersionHelper.SetAsInt(AValue: TIdC_LONG);
+class procedure TTaurusTLS2SslVersionHelper.SetAsInt(
+  var ADest: TTaurusTLS2SslVersion; AValue: TIdC_LONG);
 var
-  i: TTaurusTLSSSLVersion;
+  i: TTaurusTLS2SslVersion;
 
 begin
-  for i:=Low(TTaurusTLSSSLVersion) to High(TTaurusTLSSSLVersion) do
+  for i:=Low(TTaurusTLS2SslVersion) to High(TTaurusTLS2SslVersion) do
     if AValue = cMapping[i] then
     begin
-      Self:=i;
+      ADest:=i;
       Exit;
     end;
   ETaurusTLSSSLVersion.RaiseWithMessageFmt(RMSG_SSLVersion_Convert_err, [AValue]);
+end;
+
+function TTaurusTLS2SslVersionHelper.GetAsInt: TIdC_LONG;
+begin
+  Result:=GetAsInt(Self);
+end;
+
+procedure TTaurusTLS2SslVersionHelper.SetAsInt(AValue: TIdC_LONG);
+begin
+  SetAsInt(Self, AValue);
+end;
+
+{ TTaurusTLS2TlsVersionHelper }
+
+function TTaurusTLS2TlsVersionHelper.GetAsInt: TIdC_LONG;
+begin
+  Result:=TTaurusTLS2SslVersion(Self).AsInt;
+end;
+
+{ TTaurusTLSTDlsVersionHelper }
+
+function TTaurusTLSTDlsVersionHelper.GetAsInt: TIdC_LONG;
+begin
+  Result:=TTaurusTLS2SslVersion(Self).AsInt;
+end;
+
+{ TTaurusTLSTQuicVersionHelper }
+
+function TTaurusTLSTQuicVersionHelper.GetAsInt: TIdC_LONG;
+begin
+  Result:=TTaurusTLS2SslVersion(Self).AsInt;
 end;
 
 { TTaurusTLSSSLOptionFlagsHelper }

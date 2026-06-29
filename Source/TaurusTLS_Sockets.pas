@@ -345,12 +345,38 @@ type
     ASocket: TTaurusTLSSslSocket; var ACert: PX509; APKey: PEVP_PKEY
   );
 
-  TTaurusTLSSSLOp = (sslOpRead, sslOpWrite);
+  TTaurusTLSSSLOp = (sslOpRecvd, sslOpSent);
 
-  TTaurusTLSOnSSLMessageCallback = procedure(
-    ASender: TObject; ASocket: TTaurusTLSSslSocket;
-    AOp: TTaurusTLSSSLOp; AVersion: Integer; AContentType: Integer;
-    ABuf: Pointer; ALen: NativeUInt) of object;
+  TTaurusTLSSslMessage = record
+  private
+    FOp: TTaurusTLSSSLOp;
+    FVersion: TIdC_INT;
+    FContentType: TIdC_INT;
+    FBuf: PByte;
+    FLen: TIdC_SIZET;
+    function GetContentTypeStr: string;
+    function GetIsPseudoType: Boolean;
+    function GetVersion: TTaurusTLS2SslVersion;
+    function GetMsgDescription: string;
+
+  public
+    constructor Create(AWriteP, AVersion, AContentType: TIdC_INT;
+      ABuf: pointer; ALen: TIdC_SIZET);
+    function ToBytes: TIdBytes;
+
+    property Op: TTaurusTLSSSLOp read FOp;
+    property Version: TTaurusTLS2SslVersion read GetVersion;
+    property VersionRaw: TIdC_INT read FVersion;
+    property ContentType: TIdC_INT read FContentType;
+    property ContentTypeStr: string read GetContentTypeStr;
+    property Description: string read GetMsgDescription;
+    property IsPseudoType: Boolean read GetIsPseudoType;
+    property Buffer: PByte read FBuf;
+    property Length: TIdC_SIZET read FLen;
+  end;
+
+  TTaurusTLSOnSSLMessageCallback = procedure(ASender: TObject;
+    ASocket: TTaurusTLSSslSocket; const lMsg: TTaurusTLSSslMessage) of object;
 
   { TODO : This declararion is a subject to change due to security reason. }
   TTaurusTLSOnKeyLog = procedure(ASender: TObject; ASocket: TTaurusTLSSslSocket;
@@ -472,6 +498,7 @@ type
     FOnVerifyCertificate: TTaurusTLSOnVerifyCallback;
     FOnSecurityCheck: TTaurusTLSOnSecurityCheck;
     FOnStatusInfo: TTaurusTLSOnSSLStatusInfo;
+    FOnMessage: TTaurusTLSOnSSLMessageCallback;
     FOnKeyLog: TTaurusTLSOnKeyLog;
 
     // SSL_CTX callback method(s)
@@ -487,7 +514,10 @@ type
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetHasOnVerifyCertificate: boolean;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetHasOnMessage: boolean;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetHasOnKeyLog: boolean;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
   protected
     // IITaurusTLSSocketCtx method(s)
     function GetCtx: TTaurusTLSSslSocketCtx; {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -516,14 +546,17 @@ type
       op, bits, nid: TIdC_INT; other: pointer; var AAccept: boolean);
     procedure DoOnStatusInfo(ASocket: TTaurusTLSSslSocket;
       AWhere, ARet: TIdC_INT); {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure DoOnMessage(ASocket: TTaurusTLSSslSocket;
+      AWriteP, AVersion, AContentType: TIdC_INT;
+      const ABuf: Pointer; ALen: TIdC_SIZET);
     { TODO : This declararion is a subject to change due to security reason. }
     procedure DoOnKeyLog(ASocket: TTaurusTLSSslSocket; ALine: PIdAnsiChar);
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     // OpenSSL Callback status checkers
     property HasOnVerifyCertificate: boolean read GetHasOnVerifyCertificate;
     property HasOnSecurityCheck: boolean read GetHasOnSecurityCheck;
     property HasOnStatusInfo: boolean read GetHasOnStatusInfo;
+    property HasOnMessage: boolean read GetHasOnMessage;
     property HasOnKeylog: boolean read GetHasOnKeyLog;
 
     // protected setters
@@ -538,9 +571,9 @@ type
     // Corrected spelling from 'signiture' in your log message to match declaration order
     function SetSigAlgorithms(const AValue: string): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function SetMinTLSVersion(const AValue: TTaurusTLSSSLVersion): TTaurusTLSSslSocketCtx;
+    function SetMinTLSVersion(const AValue: TTaurusTLS2TlsVersion): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function SetMaxTLSVersion(const AValue: TTaurusTLSSSLVersion): TTaurusTLSSslSocketCtx;
+    function SetMaxTLSVersion(const AValue: TTaurusTLS2TlsVersion): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function SetVerifyModes(const AValue: TTaurusTLSVerifyModes): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -746,8 +779,8 @@ type
     FDirty: boolean;
 
     // standalone SSL_CTX fields
-    FMinTLSVersion: TTaurusTLSSSLVersion;
-    FMaxTLSVersion: TTaurusTLSSSLVersion;
+    FMinTLSVersion: TTaurusTLS2TlsVersion;
+    FMaxTLSVersion: TTaurusTLS2TlsVersion;
     FCipherList: string;
     FCipherSuites: string;
     FKeyExchangeGroups: string;
@@ -821,7 +854,7 @@ type
     class procedure CbSslInfo(const ASSL: PSSL;
       AWhere, ARet: TIdC_INT); static; cdecl;
     class procedure CbSslMessage(AWriteP, AVersion,
-      AContentType: TIdC_INT; const ABuf: Pointer; ALen: TIdC_SIZET; ASSL: PSSL;
+      AContentType: TIdC_INT; const ABuf: pointer; ALen: TIdC_SIZET; ASSL: PSSL;
       AArg: Pointer); static; cdecl;
     class function CbSslVerify(const APreVerify: TIdC_INT;
       ACtx: PX509_STORE_CTX): TIdC_INT; static; cdecl;
@@ -1141,85 +1174,85 @@ var
   lStatusMessage, lAlertMessage: string;
 
 begin
-  FStatusMessage := '';
-  FAlertMessage := '';
-  lStatusMessage := AnsiStringToString(SSL_state_string_long(FSSL));
-  lAlertMessage := AnsiStringToString(SSL_alert_type_string_long(FCode));
+  FStatusMessage:='';
+  FAlertMessage:='';
+  lStatusMessage:=AnsiStringToString(SSL_state_string_long(FSSL));
+  lAlertMessage:=AnsiStringToString(SSL_alert_type_string_long(FCode));
 
   case FStates of
     SSL_CB_ALERT:
       begin
-        FStatusMessage := IndyFormat(RSOSSLAlert, [SSL_alert_type_string_long(FCode)]);
-        FAlertMessage := lAlertMessage;
+        FStatusMessage:=IndyFormat(RSOSSLAlert, [SSL_alert_type_string_long(FCode)]);
+        FAlertMessage:=lAlertMessage;
       end;
     SSL_CB_READ_ALERT:
       begin
-        FStatusMessage := IndyFormat(RSOSSLReadAlert,
+        FStatusMessage:=IndyFormat(RSOSSLReadAlert,
           [SSL_alert_type_string_long(FCode)]);
-        FAlertMessage := lAlertMessage;
+        FAlertMessage:=lAlertMessage;
       end;
     SSL_CB_WRITE_ALERT:
       begin
-        FStatusMessage := IndyFormat(RSOSSLWriteAlert, [lAlertMessage]);
-        FAlertMessage := AnsiStringToString(SSL_alert_desc_string_long(FCode));
+        FStatusMessage:=IndyFormat(RSOSSLWriteAlert, [lAlertMessage]);
+        FAlertMessage:=AnsiStringToString(SSL_alert_desc_string_long(FCode));
       end;
     SSL_CB_ACCEPT_LOOP:
       begin
-        FStatusMessage := RSOSSLAcceptLoop;
-        FAlertMessage := lStatusMessage;
+        FStatusMessage:=RSOSSLAcceptLoop;
+        FAlertMessage:=lStatusMessage;
       end;
     SSL_CB_ACCEPT_EXIT:
       begin
         if FCode < 0 then
         begin
-          FStatusMessage := RSOSSLAcceptError;
+          FStatusMessage:=RSOSSLAcceptError;
         end
         else
         begin
           if FCode = 0 then
           begin
-            FStatusMessage := RSOSSLAcceptFailed;
+            FStatusMessage:=RSOSSLAcceptFailed;
           end
           else
           begin
-            FStatusMessage := RSOSSLAcceptExit;
+            FStatusMessage:=RSOSSLAcceptExit;
           end;
         end;
-        FAlertMessage := lStatusMessage;
+        FAlertMessage:=lStatusMessage;
       end;
     SSL_CB_CONNECT_LOOP:
       begin
-        FStatusMessage := RSOSSLConnectLoop;
-        FAlertMessage := lStatusMessage;
+        FStatusMessage:=RSOSSLConnectLoop;
+        FAlertMessage:=lStatusMessage;
       end;
     SSL_CB_CONNECT_EXIT:
       begin
         if FCode < 0 then
         begin
-          FStatusMessage := RSOSSLConnectError;
+          FStatusMessage:=RSOSSLConnectError;
         end
         else
         begin
           if FCode = 0 then
           begin
-            FStatusMessage := RSOSSLConnectFailed
+            FStatusMessage:=RSOSSLConnectFailed
           end
           else
           begin
-            FStatusMessage := RSOSSLConnectExit;
+            FStatusMessage:=RSOSSLConnectExit;
           end;
         end;
-        FAlertMessage := lStatusMessage;
+        FAlertMessage:=lStatusMessage;
       end;
     SSL_CB_HANDSHAKE_START:
       begin
-        FStatusMessage := RSOSSLHandshakeStart;
-        FAlertMessage := lStatusMessage;
+        FStatusMessage:=RSOSSLHandshakeStart;
+        FAlertMessage:=lStatusMessage;
       end;
     SSL_CB_HANDSHAKE_DONE:
       begin
-        FStatusMessage := RSOSSLHandshakeDone;
-        FAlertMessage := lStatusMessage;
+        FStatusMessage:=RSOSSLHandshakeDone;
+        FAlertMessage:=lStatusMessage;
       end;
   end;
 end;
@@ -1238,67 +1271,67 @@ end;
 
 function TTaurusTLSSslState.GetIsConnect: boolean;
 begin
-  Result := stfConnect in StateFlags;
+  Result:=stfConnect in StateFlags;
 end;
 
 function TTaurusTLSSslState.GetIsAccept: boolean;
 begin
-  Result := stfAccept in StateFlags;
+  Result:=stfAccept in StateFlags;
 end;
 
 function TTaurusTLSSslState.GetIsInLoop: boolean;
 begin
-  Result := stfLoop in StateFlags;
+  Result:=stfLoop in StateFlags;
 end;
 
 function TTaurusTLSSslState.GetIsAlert: boolean;
 begin
-  Result := stfAlert in StateFlags;
+  Result:=stfAlert in StateFlags;
 end;
 
 function TTaurusTLSSslState.GetIsRead: boolean;
 begin
-  Result := stfRead in StateFlags;
+  Result:=stfRead in StateFlags;
 end;
 
 function TTaurusTLSSslState.GetIsWrite: boolean;
 begin
-  Result := stfWrite in StateFlags;
+  Result:=stfWrite in StateFlags;
 end;
 
 function TTaurusTLSSslState.GetIsHandshakeStarts: boolean;
 begin
-  Result := stfHandShakeStart in StateFlags;
+  Result:=stfHandShakeStart in StateFlags;
 end;
 
 function TTaurusTLSSslState.GetIsHandshakeDone: boolean;
 begin
-  Result := stfHandShakeDone in StateFlags;
+  Result:=stfHandShakeDone in StateFlags;
 end;
 
 function TTaurusTLSSslState.GetIsReadAlert: boolean;
 begin
-  Result := IsAlert and IsRead;
+  Result:=IsAlert and IsRead;
 end;
 
 function TTaurusTLSSslState.GetIsWriteAlert: boolean;
 begin
-  Result := IsAlert and IsWrite;
+  Result:=IsAlert and IsWrite;
 end;
 
 function TTaurusTLSSslState.GetIsAcceptLoop: boolean;
 begin
-  Result := IsAccept and IsInLoop;
+  Result:=IsAccept and IsInLoop;
 end;
 
 function TTaurusTLSSslState.GetIsAcceptExit: boolean;
 begin
-  Result := IsAccept and IsExit;
+  Result:=IsAccept and IsExit;
 end;
 
 function TTaurusTLSSslState.GetIsConnectLoop: boolean;
 begin
-  Result := IsConnect and IsInLoop;
+  Result:=IsConnect and IsInLoop;
 end;
 
 function TTaurusTLSSslState.GetIsExit: boolean;
@@ -1308,7 +1341,7 @@ end;
 
 function TTaurusTLSSslState.GetIsConnectExit: boolean;
 begin
-  Result := IsConnect and IsExit;
+  Result:=IsConnect and IsExit;
 end;
 
 function TTaurusTLSSslState.GetStateFlags: TTaurusTLSSslStateFlags;
@@ -1356,49 +1389,49 @@ end;
 
 function TTaurusTLSSecurityCheckState.GetIsPeer: Boolean;
 begin
-  Result := (FOp and SSL_SECOP_PEER) <> 0;
+  Result:=(FOp and SSL_SECOP_PEER) <> 0;
 end;
 
 function TTaurusTLSSecurityCheckState.GetIsCipher: Boolean;
 begin
-  Result := (FOp and SSL_SECOP_OTHER_TYPE) = SSL_SECOP_OTHER_CIPHER;
+  Result:=(FOp and SSL_SECOP_OTHER_TYPE) = SSL_SECOP_OTHER_CIPHER;
 end;
 
 function TTaurusTLSSecurityCheckState.GetIsCurve: Boolean;
 begin
-  Result := (FOp and SSL_SECOP_OTHER_TYPE) = SSL_SECOP_OTHER_CURVE;
+  Result:=(FOp and SSL_SECOP_OTHER_TYPE) = SSL_SECOP_OTHER_CURVE;
 end;
 
 function TTaurusTLSSecurityCheckState.GetIsDH: Boolean;
 begin
-  Result := (FOp and SSL_SECOP_OTHER_TYPE) = SSL_SECOP_OTHER_DH;
+  Result:=(FOp and SSL_SECOP_OTHER_TYPE) = SSL_SECOP_OTHER_DH;
 end;
 
 function TTaurusTLSSecurityCheckState.GetIsPKey: Boolean;
 begin
-  Result := (FOp and SSL_SECOP_OTHER_TYPE) = SSL_SECOP_OTHER_PKEY;
+  Result:=(FOp and SSL_SECOP_OTHER_TYPE) = SSL_SECOP_OTHER_PKEY;
 end;
 
 function TTaurusTLSSecurityCheckState.GetIsSigAlg: Boolean;
 begin
-  Result := (FOp and SSL_SECOP_OTHER_TYPE) = SSL_SECOP_OTHER_SIGALG;
+  Result:=(FOp and SSL_SECOP_OTHER_TYPE) = SSL_SECOP_OTHER_SIGALG;
 end;
 
 function TTaurusTLSSecurityCheckState.GetIsCert: Boolean;
 begin
-  Result := (FOp and SSL_SECOP_OTHER_TYPE) = SSL_SECOP_OTHER_CERT;
+  Result:=(FOp and SSL_SECOP_OTHER_TYPE) = SSL_SECOP_OTHER_CERT;
 end;
 
 function TTaurusTLSSecurityCheckState.GetNidShortName: string;
 var
   lName: PIdAnsiChar;
 begin
-  Result := '';
+  Result:='';
   if FNid <> 0 then
   begin
-    lName := OBJ_nid2sn(FNid);
+    lName:=OBJ_nid2sn(FNid);
     if Assigned(lName) then
-      Result := AnsiStringToString(lName);
+      Result:=AnsiStringToString(lName);
   end;
 end;
 
@@ -1406,12 +1439,12 @@ function TTaurusTLSSecurityCheckState.GetNidLongName: string;
 var
   lName: PIdAnsiChar;
 begin
-  Result := '';
+  Result:='';
   if FNid <> 0 then
   begin
-    lName := OBJ_nid2ln(FNid);
+    lName:=OBJ_nid2ln(FNid);
     if Assigned(lName) then
-      Result := AnsiStringToString(lName);
+      Result:=AnsiStringToString(lName);
   end;
 end;
 
@@ -1419,13 +1452,13 @@ function TTaurusTLSSecurityCheckState.GetCipherName: string;
 var
   lName: PIdAnsiChar;
 begin
-  Result := '';
+  Result:='';
   // Verify that the payload is actually a cipher, and that the pointer is valid
   if IsCipher and Assigned(FOther) then
   begin
-    lName := SSL_CIPHER_get_name(FOther);
+    lName:=SSL_CIPHER_get_name(FOther);
     if Assigned(lName) then
-      Result := AnsiStringToString(lName);
+      Result:=AnsiStringToString(lName);
   end;
 end;
 
@@ -1434,13 +1467,13 @@ begin
   if Assigned(FCert) then
     Exit(FCert);
 
-  Result := nil;
+  Result:=nil;
   // Verify that the payload is actually a certificate, and that the pointer is valid
   if IsCert and Assigned(FOther) then
     // Instantiates a non-owning wrapper around the unmanaged X509 pointer.
     // The record instance takes takes ownership of this wrapper.
     // The OnSecurityLevel Event handler MUST NOT FREE the certificate instance.
-    Result := TTaurusTLSX509.Create(FOther, False);
+    Result:=TTaurusTLSX509.Create(FOther, False);
   FCert:=Result;
 end;
 
@@ -1525,6 +1558,121 @@ function TTaurusTLSTrustStores.TryAdd(
 begin
   CheckStore(AValue);
   Result:=inherited TryAdd(AValue.Name, AValue);
+end;
+
+{ TTaurusTLSSslMessage }
+
+constructor TTaurusTLSSslMessage.Create(AWriteP, AVersion,
+  AContentType: TIdC_INT; ABuf: pointer; ALen: TIdC_SIZET);
+begin
+  FVersion:=AVersion;
+  FCOntentType:=AContentType;
+  FBuf:=ABuf;
+  FLen:=ALen;
+  if AWriteP = 0 then
+    FOp:=sslOpRecvd
+  else
+    FOp:=sslOpSent;
+end;
+
+function TTaurusTLSSslMessage.GetContentTypeStr: string;
+begin
+  // Do not localize below
+  case FContentType of
+    // Standard TLS Record Types
+    SSL3_RT_CHANGE_CIPHER_SPEC:    Result:='Change Cipher Spec';
+    SSL3_RT_ALERT:                 Result:='Alert';
+    SSL3_RT_HANDSHAKE:             Result:='Handshake';
+    SSL3_RT_APPLICATION_DATA:      Result:='Application Data';
+
+    // Record Header & Inner Decoys
+    SSL3_RT_HEADER:                Result:='Record Header';
+    SSL3_RT_INNER_CONTENT_TYPE:    Result:='Decrypted Inner Content Type';
+
+    // QUIC Frame Tracing
+    SSL3_RT_QUIC_DATAGRAM:         Result:='QUIC Datagram';
+    SSL3_RT_QUIC_PACKET:           Result:='QUIC Packet';
+    SSL3_RT_QUIC_FRAME_FULL:       Result:='QUIC Frame (Full)';
+    SSL3_RT_QUIC_FRAME_HEADER:     Result:='QUIC Frame (Header)';
+    SSL3_RT_QUIC_FRAME_PADDING:    Result:='QUIC Frame (Padding)';
+
+    // Cryptographic Keys & Secrets Tracing
+    TLS1_RT_CRYPTO_PREMASTER:      Result:='Crypto: Premaster Secret';
+    TLS1_RT_CRYPTO_CLIENT_RANDOM:  Result:='Crypto: Client Random';
+    TLS1_RT_CRYPTO_SERVER_RANDOM:  Result:='Crypto: Server Random';
+    TLS1_RT_CRYPTO_MASTER:         Result:='Crypto: Master Secret';
+    TLS1_RT_CRYPTO_MAC:            Result:='Crypto: MAC Key';
+    TLS1_RT_CRYPTO_KEY:            Result:='Crypto: Encryption Key';
+    TLS1_RT_CRYPTO_IV:             Result:='Crypto: Initialization Vector (IV)';
+    TLS1_RT_CRYPTO_FIXED_IV:       Result:='Crypto: Fixed IV';
+  else
+    Result:='Unknown (0x' + IntToHex(FContentType, 2) + ')';
+  end;end;
+
+function TTaurusTLSSslMessage.GetIsPseudoType: Boolean;
+begin
+  Result:=FContentType >= SSL3_RT_HEADER;
+end;
+
+function TTaurusTLSSslMessage.GetMsgDescription: string;
+var
+  LAlertLevel: Byte;
+  LAlertDesc: Byte;
+  LLevelStr: string;
+  LDescStr: string;
+begin
+  Result:='';
+
+  if (FContentType = SSL3_RT_ALERT) and Assigned(FBuf) and (FLen >= 2) then
+  begin
+    LAlertLevel:=PByte(FBuf)^;
+    LAlertDesc:=PByte(NativeUInt(FBuf) + 1)^;
+
+    // 1. Resolve Alert Level using standard constants
+    case LAlertLevel of
+      SSL3_AL_WARNING: LLevelStr:='Warning';
+      SSL3_AL_FATAL:   LLevelStr:='Fatal';
+    else
+      LLevelStr:=Format('Unknown Level (%d)', [LAlertLevel]);
+    end;
+
+    // 2. Resolve Alert Description natively from OpenSSL
+    LDescStr:=AnsiStringToString(SSL_alert_desc_string_long(LAlertDesc));
+
+    Result:=Format('Alert [Level: %s, Desc: %d (%s)]',
+      [LLevelStr, LAlertDesc, LDescStr]);
+  end
+  else if (FContentType = SSL3_RT_INNER_CONTENT_TYPE) and (FLen >= 1) and Assigned(FBuf) then
+  begin
+    // TLS 1.3 Decrypted Inner Content Type indicator
+    Result:=Format('Decrypted Inner Type: %d', [PByte(FBuf)^]);
+  end
+  else if (FContentType = DTLS1_RT_HEARTBEAT) and (FLen >= 1) and Assigned(FBuf) then
+  begin
+    // Heartbeat Protocol frame type (RFC 6520)
+    case PByte(FBuf)^ of
+      TLS1_HB_REQUEST:  Result:='Heartbeat Request';
+      TLS1_HB_RESPONSE: Result:='Heartbeat Response';
+    else
+      Result:='Heartbeat Unknown';
+    end;
+  end;
+end;
+
+function TTaurusTLSSslMessage.GetVersion: TTaurusTLS2SslVersion;
+begin
+  Result.AsInt:=FVersion;
+end;
+
+function TTaurusTLSSslMessage.ToBytes: TIdBytes;
+begin
+  if Assigned(FBuf) and (FLen > 0) then
+  begin
+    SetLength(Result, FLen);
+    Move(FBuf^, Result[0], FLen);
+  end
+  else
+    Result:=[];
 end;
 
 { TTaurusTLSAlpnResultHelper }
@@ -1617,7 +1765,7 @@ end;
 
 function TTaurusTLSAlpnSelector.GetCount: TIdC_INT;
 begin
-  Result := Length(FPairs);
+  Result:=Length(FPairs);
 end;
 
 function TTaurusTLSAlpnSelector.GetValues(AItem: TIdC_INT): string;
@@ -1920,6 +2068,18 @@ begin
     FOnKeyLog(FSender, ASocket, ALine);
 end;
 
+procedure TTaurusTLSSslSocketCtx.DoOnMessage(ASocket: TTaurusTLSSslSocket;
+  AWriteP, AVersion, AContentType: TIdC_INT; const ABuf: Pointer; ALen: TIdC_SIZET);
+var
+  lMsg: TTaurusTLSSslMessage; // PALOFF 'Created and freed objects'
+
+begin
+  if not Assigned(FOnMessage) then
+    Exit;
+  lMsg:=TTaurusTLSSslMessage.Create(AWriteP, AVersion, AContentType, ABuf, ALen);
+  FOnMessage(FSender, ASocket, lMsg);
+end;
+
 procedure TTaurusTLSSslSocketCtx.DoOnPeerCertError(ASocket: TTaurusTLSSslSocket;
   ACertificate: TTaurusTLSX509; const AError: TTaurusTLSX509Error;
   out ASuccess: boolean);
@@ -1995,6 +2155,11 @@ end;
 function TTaurusTLSSslSocketCtx.GetHasOnKeyLog: boolean;
 begin
   Result:=Assigned(FOnKeyLog);
+end;
+
+function TTaurusTLSSslSocketCtx.GetHasOnMessage: boolean;
+begin
+  Result:=Assigned(FOnMessage);
 end;
 
 function TTaurusTLSSslSocketCtx.GetHasOnSecurityCheck: boolean;
@@ -2109,7 +2274,7 @@ begin
 end;
 
 function TTaurusTLSSslSocketCtx.SetMinTLSVersion(
-  const AValue: TTaurusTLSSSLVersion): TTaurusTLSSslSocketCtx;
+  const AValue: TTaurusTLS2TlsVersion): TTaurusTLSSslSocketCtx;
 begin
   Result:=Self;
   CheckFrozen;
@@ -2118,7 +2283,7 @@ begin
 end;
 
 function TTaurusTLSSslSocketCtx.SetMaxTLSVersion(
-  const AValue: TTaurusTLSSSLVersion): TTaurusTLSSslSocketCtx;
+  const AValue: TTaurusTLS2TlsVersion): TTaurusTLSSslSocketCtx;
 begin
   Result:=Self;
   CheckFrozen;
@@ -3177,6 +3342,10 @@ begin
   if FCtx.HasOnSecurityCheck then
     SSL_set_security_callback(FSSL,
       TTaurusTLSSslSocket.CbSslSecurityCheck);
+
+  if Ctx.HasOnMessage then
+    SSL_set_msg_callback(FSSL,
+      TTaurusTLSSslSocket.CbSslMessage);
 end;
 
 procedure TTaurusTLSSslSocket.ReleaseSSLCallbacks;
@@ -3277,7 +3446,7 @@ begin
 end;
 
 class procedure TTaurusTLSSslSocket.CbSslMessage(AWriteP, AVersion,
-  AContentType: TIdC_INT; const ABuf: Pointer; ALen: TIdC_SIZET; ASSL: PSSL;
+  AContentType: TIdC_INT; const ABuf: pointer; ALen: TIdC_SIZET; ASSL: PSSL;
   AArg: Pointer);
 var
   lErr: TIdC_INT;
@@ -3288,7 +3457,7 @@ begin
   if not Assigned(ASSL) then
     Exit;
 
-  LErr := GStack.WSGetLastError;
+  LErr:=GStack.WSGetLastError;
   try
     LInstance:=GetInstanceFromSSL(ASSL);
     if not Assigned(lInstance) then
@@ -3296,7 +3465,7 @@ begin
 
     lContext:=lInstance.FCtx;
     if Assigned(lContext) then
-      { TODO : To make ResourseString }
+      lContext.DoOnMessage(lInstance, AWriteP, AVersion, AContentType, ABuf, ALen);
 
   finally
     GStack.WSSetLastError(LErr);
@@ -3318,7 +3487,7 @@ begin
           // SSL object is allocated.
 
   try
-    LErr := GStack.WSGetLastError;
+    LErr:=GStack.WSGetLastError;
     try
       lInstance:=TTaurusTLSSslSocket(AEx);
         if not Assigned(lInstance) then
@@ -3420,14 +3589,14 @@ begin
     Exit;
 
   // 3. Retrieve pre-computed logical identity
-  lIdentity := lContext.Identity;
+  lIdentity:=lContext.Identity;
 
   if (lIdentity <> '') and (not lContext.IsIdentityIP) then
   begin
     if lContext.UseECH then
     begin
       // Real ECH Path
-      lECHStore := TTaurusTLSECHStore.Create;
+      lECHStore:=TTaurusTLSECHStore.Create;
       try
         lECHStore.SetConfigList(lContext.ECHConfigListRaw);
         lECHStore.Attach(FSSL);
@@ -3436,7 +3605,7 @@ begin
       end;
 
       // Configure ECH Server Names using pre-computed parameters
-      lRetCode := SSL_ech_set1_server_names(
+      lRetCode:=SSL_ech_set1_server_names(
         FSSL,
         PIdAnsiChar(lIdentity),  // PALOFF Possible bad typecast
         PIdAnsiChar(lContext.ECHOuterSNIRaw),  // PALOFF Possible bad typecast
@@ -3452,7 +3621,7 @@ begin
       if lContext.UseGREASE then
         SSL_set_options(FSSL, SSL_OP_ECH_GREASE);
 
-      lRetCode := SSL_set_tlsext_host_name(FSSL, PIdAnsiChar(lIdentity));  // PALOFF Possible bad typecast
+      lRetCode:=SSL_set_tlsext_host_name(FSSL, PIdAnsiChar(lIdentity));  // PALOFF Possible bad typecast
       if lRetCode <= 0 then
         ETaurusTLSSettingTLSHostNameError.RaiseException(FSSL, lRetCode, RSSSLSettingTLSHostNameError_2);
     end;
@@ -3467,19 +3636,19 @@ var
   lIsIP: Boolean;
 
 begin
-  lContext := ClientCtx;
+  lContext:=ClientCtx;
   if not lContext.VerifyHostname then
     Exit;
 
   // 1. Get the connection-specific verification parameters (cloned from SSL_CTX)
-  lParams := TTaurusTLSX509VerifyParamSSL.Create(FSSL);
+  lParams:=TTaurusTLSX509VerifyParamSSL.Create(FSSL);
   try
     // 2. Determine the logical identity and IP flag [1.2]
-    lTargetName := lContext.Identity;
+    lTargetName:=lContext.Identity;
     if lTargetName = '' then
       Exit;
 
-    lIsIP := lContext.IsIdentityIP; // Use the pre-computed, cached property
+    lIsIP:=lContext.IsIdentityIP; // Use the pre-computed, cached property
 
     // 3. Bind the primary identity directly to the connection's parameter block.
     // This preserves all other inherited parameters (CRL flags, depth, etc.)
