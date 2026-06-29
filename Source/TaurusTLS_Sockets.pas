@@ -122,7 +122,7 @@ type
     property Methods: TTaurusTLSECHCliMeths read GetMethods;
     property Enabled: boolean read GetEnabled;
     property Enforced: boolean read GetEnforced;
-    property IsMehtodSet: boolean read GetIsMethSet;
+    property IsMethodSet: boolean read GetIsMethSet;
     property UseConfigList: boolean read GetUseConfigList;
     property UseGrease: boolean read GetUseGrease;
     property UseGreaseFallback: boolean read GetUseFallback;
@@ -177,7 +177,7 @@ type
     function GetIsConnectLoop: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetIsExit: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetIsHandshakeDone: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetIsHandshakeStars: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetIsHandshakeStarts: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetIsInLoop: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetIsRead: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetIsReadAlert: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -206,7 +206,7 @@ type
     property IsAlert: boolean read GetIsAlert;
     property IsRead: boolean read GetIsRead;
     property IsWrite: boolean read GetIsWrite;
-    property IsHandshakeStarts: boolean read GetIsHandshakeStars;
+    property IsHandshakeStarts: boolean read GetIsHandshakeStarts;
     property IsHandshakeDone: boolean read GetIsHandshakeDone;
     property IsReadAlert: boolean read GetIsReadAlert;
     property IsWriteAlert: boolean read GetIsWriteAlert;
@@ -995,7 +995,7 @@ end;
 
 function IsX509StoreMultiEmailSupported: boolean;
 begin
-  Result:=IsOpenSSLVersion(cVerMIp);
+  Result:=IsOpenSSLVersion(cVerMEmail);
 end;
 
 
@@ -1232,7 +1232,7 @@ begin
 {$ELSEIF SizeOf(TTaurusTLSSslStateFlags) = 2}
   Result:=PIdC_INT16(@AValue)^ and cStateFlagsMask;
 {$ELSEIF SizeOf(TTaurusTLSSslStateFlags) = 4}
-  Result:=PIdC_INT(@AValue)^ and cStateFlagsMask;;
+  Result:=PIdC_INT(@AValue)^ and cStateFlagsMask;
 {$IFEND}
 end;
 
@@ -1266,7 +1266,7 @@ begin
   Result := stfWrite in StateFlags;
 end;
 
-function TTaurusTLSSslState.GetIsHandshakeStars: boolean;
+function TTaurusTLSSslState.GetIsHandshakeStarts: boolean;
 begin
   Result := stfHandShakeStart in StateFlags;
 end;
@@ -1439,7 +1439,7 @@ begin
   if IsCert and Assigned(FOther) then
     // Instantiates a non-owning wrapper around the unmanaged X509 pointer.
     // The record instance takes takes ownership of this wrapper.
-    // The OnSecurityLevel Event handler MAT NOT FREE the certificate instance.
+    // The OnSecurityLevel Event handler MUST NOT FREE the certificate instance.
     Result := TTaurusTLSX509.Create(FOther, False);
   FCert:=Result;
 end;
@@ -1581,7 +1581,7 @@ begin
     if lLen = 0 then
       ETaurusTLSAlpnResultError.RaiseWithMessage(
         { TODO : To make ResourseString }
-        'ALPN Input list corrupted. Unexpected Zero Lenght element found.');
+        'ALPN Input list corrupted. Unexpected Zero Length element found.');
 
     Inc(lPos);
     lPair.FOffset:=lPos;
@@ -1751,11 +1751,11 @@ begin
       if Assigned(FVfyParamEmail) then
       begin
         lHigh:=FVfyParamEmail.Count;
-        if not (IsX509StoreMultiIPSupported and (lHigh > 0)) then
+        if not (IsX509StoreMultiEmailSupported and (lHigh > 0)) then
           SetEMail(FVfyParamEmail[0])
         else
           for i:=0 to FVfyParamEmail.Count-1 do
-            AddIPAddress(FVfyParamEmail[i]);
+            AddEmail(FVfyParamEmail[i]);
       end;
 
     end;
@@ -1827,7 +1827,8 @@ begin
       CheckRequirements;
       lSocketCtx:=DoNewSocketCtx(ASender);
       DoBuild(ASender, lSocketCtx);
-      Result:=FSocketCtx;
+      FSocketCtx:=lSocketCtx;
+      Result:=lSocketCtx;
     except
       lSocketCtx.Free;
       raise;
@@ -2104,7 +2105,7 @@ begin
   if SSL_CTX_set1_sigalgs_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then // PALOFF Possible bad typecast
     ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
     { TODO : To make ResourseString }
-      'Error setting signiture algorithms ''%s'' to the SSL Context.', [AValue]);
+      'Error setting signature algorithms ''%s'' to the SSL Context.', [AValue]);
 end;
 
 function TTaurusTLSSslSocketCtx.SetMinTLSVersion(
@@ -2859,12 +2860,15 @@ begin
       end;
 
       if lRet = 0 then
+      begin
         // Sent close_notify successfully.
         // In blocking mode, calling it a second time will block synchronously
         // until the peer's close_notify is read or a socket timeout/error occurs.
         SSL_shutdown(FSSL);
-        // Even if the second call fails (returns < 0) due to a late TCP RST,
-        // the next line will still transition to seClosed cleanly.
+      end;
+
+      // Even if the second call fails (returns < 0) due to a late TCP RST,
+      // the next line will still transition to seClosed cleanly.
       TransitionTo(seClosed);
     except
       on E: Exception do
@@ -2949,7 +2953,7 @@ begin
   // 2. Validate Transition Feasibility
   if not IsValidTransition(lCurrentState, ATarget) then
     ETaurusTLSSocketStateError.RaiseWithMessageFmt(
-      'Unable to transit Socket ''%s''''s state from ''%s'' to ''%s''.',
+      'Unable to transition Socket ''%s''''s state from ''%s'' to ''%s''.',
       [ClassName, lCurrentState.AsString, ATarget.AsString]);
 
   // 3. Execute Transition-Specific Initialization or Cleanup
@@ -3014,7 +3018,7 @@ var
 begin
   lCert:=nil;
   lErr:=TTaurusTLSX509Error.Create(SSL_get_verify_result(FSSL));
-  lSuccess:=lErr.ErrorCode <> X509_V_OK;
+  lSuccess:=lErr.ErrorCode = X509_V_OK;
   if not lSuccess then
   try
     lCert:=GetPerCertificate;
@@ -3292,7 +3296,7 @@ begin
 
     lContext:=lInstance.FCtx;
     if Assigned(lContext) then
-      { TODO : Call event handler here. }
+      { TODO : To make ResourseString }
 
   finally
     GStack.WSSetLastError(LErr);
