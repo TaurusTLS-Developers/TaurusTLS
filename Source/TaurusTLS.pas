@@ -4492,7 +4492,7 @@ begin
   for i := Low(SystemStores) to High(SystemStores) do
   begin
 {$IFDEF STRING_IS_ANSI}
-    LWinCertStore := CertOpenSystemStoreA(nil, SystemStores[i]);
+    LWinCertStore := CertOpenSystemStoreA(nil, PIdAnsiChar(SystemStores[i]));
 {$ELSE}
     LWinCertStore := CertOpenSystemStoreW(nil, PCHar(SystemStores[i]));
 {$ENDIF}
