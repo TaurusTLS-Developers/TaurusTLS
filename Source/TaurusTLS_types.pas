@@ -339,10 +339,13 @@ type
     sslOpNoTlsv12                        = 27, // (1 shl 27) = SSL_OP_NO_TLSv1_2
     sslOpNoTlsv11                        = 28, // (1 shl 28) = SSL_OP_NO_TLSv1_1
     sslOpNoTlsv13                        = 29, // (1 shl 29) = SSL_OP_NO_TLSv1_3
-    sslOpNoDtlsv1                        = 32, // (1 shl 26 duplicated value shifted to free sequence bit)
-    sslOpNoDtlsv12                       = 33, // (1 shl 27 duplicated value shifted to free sequence bit)
     sslOpNoRenegotiation                 = 30, // (1 shl 30) = SSL_OP_NO_RENEGOTIATION
     sslOpCryptoproTlsextBug              = 31, // (1 shl 31) = SSL_OP_CRYPTOPRO_TLSEXT_BUG
+    sslOpNoTXCertComp                    = 32, // (1 shl 32) = SSL_OP_NO_TX_CERTIFICATE_COMPRESSION
+    sslOpNoRXCertComp                    = 33, // (1 shl 33) = SSL_OP_NO_RX_CERTIFICATE_COMPRESSION
+    sslOpEnKTlsTXZeroCopySendFile        = 34, // (1 shl 34) = SSL_OP_ENABLE_KTLS_TX_ZEROCOPY_SENDFILE
+    sslOpPrefNoDHEKex                    = 35, // (1 shl 35) = SSL_OP_PREFER_NO_DHE_KEX
+    sslOpLegacyECPointFmts               = 36, // (1 shl 36) = SSL_OP_LEGACY_EC_POINT_FORMATS
     sslOpEchGrease                       = 37, // (1 shl 37) = SSL_OP_ECH_GREASE
     sslOpEchTrialdecrypt                 = 38, // (1 shl 38) = SSL_OP_ECH_TRIALDECRYPT
     sslOpEchIgnoreCid                    = 39, // (1 shl 39) = SSL_OP_ECH_IGNORE_CID
@@ -372,7 +375,7 @@ type
 const
   cSSLOptFlagsNoSSL = [sslOpNoSslv3, sslOpNoTlsv1,sslOpNoTlsv11,
     sslOpNoTlsv12, sslOpNoTlsv13];
-  cSSLOptFlagsNoDTLS = [sslOpNoDtlsv1, sslOpNoDtlsv12];
+//  cSSLOptFlagsNoDTLS = [sslOpNoDtlsv1, sslOpNoDtlsv12];
   cSSLOptALL = [sslOpCryptoproTlsextBug, sslOpDontInsertEmptyFragments,
     sslOpLegacyServerConnect, sslOpTlsextPadding, sslOpSafariEcdheEcdsaBug];
 
