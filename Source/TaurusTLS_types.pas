@@ -246,33 +246,36 @@ type
 
   TTaurusTLS2SslVersion = (
     svUnsupported,
+    svSSL_Default,
     svSSLv3,
     /// <summary>TLS 1.0</summary>
-    svTLSv1,
+    svTLSv1_0,
     /// <summary>TLS 1.1</summary>
     svTLSv1_1,
     /// <summary>TLS 1.2</summary>
     svTLSv1_2,
     /// <summary>TLS 1.3</summary>
     svTLSv1_3,
+    svDTLS_Default,
     svDTLSv1_BAD,
-    svDTLSv1,
+    svDTLSv1_0,
     svDTLSv1_2,
-    svQUICv1
+    svQuickDefault,
+    svQUICv1_0
   );
 
-  TTaurusTLS2TlsVersion = svSSLv3..svTLSv1_3;
+  TTaurusTLS2TlsVersion = svSSL_Default..svTLSv1_3;
 
-  TTaurusTLS2DTlsVersion = svDTLSv1_BAD..svDTLSv1_2;
+  TTaurusTLS2DTlsVersion = svDTLS_Default..svDTLSv1_2;
 
-  TTaurusTLS2QuicVersion = svQUICv1..svQUICv1;
+  TTaurusTLS2QuicVersion = svQuickDefault..svQUICv1_0;
 
   TTaurusTLS2SslVersionHelper = record helper for TTaurusTLS2SslVersion
   public const
     cMapping: array[TTaurusTLS2SslVersion] of TIdC_LONG = (
-      0, SSL3_VERSION, TLS1_VERSION, TLS1_1_VERSION, TLS1_2_VERSION,
-      TLS1_3_VERSION, DTLS1_BAD_VER, DTLS1_VERSION, DTLS1_2_VERSION,
-      OSSL_QUIC1_VERSION
+      0, -1, SSL3_VERSION, TLS1_VERSION, TLS1_1_VERSION, TLS1_2_VERSION,
+      TLS1_3_VERSION, -1, DTLS1_BAD_VER, DTLS1_VERSION, DTLS1_2_VERSION,
+      -1, OSSL_QUIC1_VERSION
     );
 
   private
