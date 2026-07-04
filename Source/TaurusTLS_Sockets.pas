@@ -335,12 +335,12 @@ type
 
   TTaurusTLSOnPeerCertError = procedure(ASender: TObject;
     ASocket: TTaurusTLSSslSocket; ACertificate: TTaurusTLSX509;
-    const AError: TTaurusTLSX509Error; out ASuccess: boolean) of object;
+    const AError: TTaurusTLSX509Error; var ASuccess: boolean) of object;
 
   TTaurusTLSOnVerifyCallback = procedure(
     ASender: TObject; ASocket: TTaurusTLSSslSocket;
     ACertValidator: TTaurusTLSX509CertValidator;
-    out ASuccess, AContinue: Boolean
+    var ASuccess, AContinue: Boolean
   ) of object;
 
   TTaurusTLSOnClientCertCallback = procedure(ASender: TObject;
@@ -358,7 +358,7 @@ type
     FLen: TIdC_SIZET;
     function GetContentTypeStr: string;
     function GetIsPseudoType: Boolean;
-    function GetVersion: TTaurusTLS2SslVersion;
+    function GetVersion: TTaurusTLS2SslVersion; // PALOFF 'Function result not set'
     function GetMsgDescription: string;
 
   public
@@ -539,11 +539,11 @@ type
       AOldState, ANewState: TTaurusTLSSslSocketState); {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure DoOnPeerCertError(ASocket: TTaurusTLSSslSocket;
       ACertificate: TTaurusTLSX509; const AError: TTaurusTLSX509Error;
-      out ASuccess: boolean); {$IFDEF USE_INLINE}inline; {$ENDIF}
+      var ASuccess: boolean); {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     // OpenSSL Callback to Event bridges
     procedure DoOnVerifyCertificate(ASocket: TTaurusTLSSslSocket;
-      ACtx: PX509_STORE_CTX; out ASuccess, AContinue: boolean);
+      ACtx: PX509_STORE_CTX; var ASuccess, AContinue: boolean);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure DoOnSecurityCheck(ASocket: TTaurusTLSSslSocket;
       op, bits, nid: TIdC_INT; other: pointer; var AAccept: boolean);
@@ -584,13 +584,9 @@ type
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function SetVerifyModes(const AValue: TTaurusTLSVerifyModes): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function SetVerifyParam(const AValue: TTaurusTLSMetaX509VerifyParam): TTaurusTLSSslSocketCtx;
-      overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function SetVerifyParam(const AValue: TTaurusTLSCustomX509VerifyParam): TTaurusTLSSslSocketCtx;
       overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function SetTrustStore(const AValue: TaurusTLS_X509Store): TTaurusTLSSslSocketCtx;
-      overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function SetTrustStore(const AValue: TTaurusTLSTrustStores): TTaurusTLSSslSocketCtx;
       overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function SetOnPeerCertError(const AValue: TTaurusTLSOnPeerCertError): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -798,7 +794,7 @@ type
   end;
 
   TTaurusTLSMetaX509VerifyParam = class(TTaurusTLSBuilderCustomMetaField)
-  private type
+  protected type
     TProperty = (vfDefSecurityBits, vfDefDepth, vfDefPurpose, vfDefTime,
       vfDefFlVerify, vfDefFlInheritance, vfDefFlHostCheck,
       vfDefHosts, vfDefIPAddresses, vfDefEmails);
@@ -824,6 +820,7 @@ type
     FIPAddresses: TIPAddresses;
     FEMails: TEmails;
 
+  protected
     function IsPropSet(const AProp: TProperty): boolean;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure SetDirty(const AProp: TProperty); reintroduce;
@@ -844,6 +841,7 @@ type
     procedure SetHostCheckFlags(const AValue: TTaurusTLSX509HostCheckFlags);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+    procedure AddHost(AValue: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure SetHost(const Item: TIdC_INT; AValue: string);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetHost(const Item: TIdC_INT): string;
@@ -852,6 +850,7 @@ type
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetHostCount: TIdC_INT;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure AddEMail(AValue: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure SetEmail(const Item: TIdC_INT; AValue: string);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetEmail(const Item: TIdC_INT): string;
@@ -860,6 +859,7 @@ type
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetEmailCount: TIdC_INT;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure AddIpAddress(AValue: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure SetIpAddress(const Item: TIdC_INT; AValue: string);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetIpAddress(const Item: TIdC_INT): string;
@@ -869,7 +869,6 @@ type
     function GetIpAddressCount: TIdC_INT;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
-  protected
     procedure ResetSecurityBits; {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure ResetDepth; {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure ResetPurspose; {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -883,6 +882,7 @@ type
   public
     constructor Create(AParent: TTaurusTLSSslSocketCtxBuilder); reintroduce;
     destructor Destroy; override;
+    function BuildParam: TTaurusTLSX509VerifyParam;
 
     property IsSecurityBitsSet: boolean index vfDefSecurityBits read IsPropSet;
     property IsDepthSet: boolean index vfDefDepth read IsPropSet;
@@ -895,23 +895,19 @@ type
     property IsIPAddressesSet: boolean index vfDefIPAddresses read IsPropSet;
     property IsEmailsSet: boolean index vfDefEmails read IsPropSet;
 
-    property VerifyFlags: TTaurusTLSX509VerifyFlags read FVerifyFlags
-      write SetVerifyFlags;
-    property InheritanceFlags: TTaurusTLSX509InheritanceFlags read FInheritanceFlags
-      write SetInheritanceFlags;
-    property Depth: TIdC_INT read FDepth write SetDepth;
-    property SecurityBits: TTaurusTLSSecurityBits read FSecurityBits
-      write SetSecurityBits;
-    property Time: TDateTime read FTime write SetTime;
+    property VerifyFlags: TTaurusTLSX509VerifyFlags read FVerifyFlags;
+    property InheritanceFlags: TTaurusTLSX509InheritanceFlags read FInheritanceFlags;
+    property Depth: TIdC_INT read FDepth;
+    property SecurityBits: TTaurusTLSSecurityBits read FSecurityBits;
+    property Time: TDateTime read FTime;
     property HostCheckFlags: TTaurusTLSX509HostCheckFlags read FHostCheckFlags
       write SetHostCheckFlags;
-    property Purpose: TTaurusTLSX509Purpose read FPurpose write SetPurpose;
-    property Hosts[const Item: TIdC_INT]: string read GetHost write SetHost;
+    property Purpose: TTaurusTLSX509Purpose read FPurpose;
+    property Hosts[const Item: TIdC_INT]: string read GetHost;
     property HostCount: TIdC_INT read GetHostCount;
-    property Emails[const Item: TIdC_INT]: string read GetEmail write SetEmail;
+    property Emails[const Item: TIdC_INT]: string read GetEmail;
     property EmailCount: TIdC_INT read GetEmailCount;
-    property IpAddresses[const Item: TIdC_INT]: string read GetIpAddress
-      write SetIpAddress;
+    property IpAddresses[const Item: TIdC_INT]: string read GetIpAddress;
     property IpAddressCount: TIdC_INT read GetIpAddressCount;
   end;
 
@@ -1005,8 +1001,6 @@ type
 
     procedure CheckRequirements; virtual;
     function DoNewSocketCtx(ASender: TObject): TTaurusTLSSslSocketCtx; virtual; abstract;
-    procedure DoBuildCtxTrustStore(ACtx: PSSL_CTX);
-    procedure DoBuildCtxVerifyParam(ACtx: PSSL_CTX);
     procedure DoBuild(ASender: TObject; ASocketCtx: TTaurusTLSSslSocketCtx); virtual;
 
     property TLSMeth: PSSL_METHOD read FTLSMeth;
@@ -1220,6 +1214,7 @@ uses
 {$IFDEF DCC}
   System.AnsiStrings,
 {$ENDIF}
+  DateUtils,
   TaurusTLSHeaders_err,
   TaurusTLSHeaders_sslerr,
   TaurusTLSHeaders_objects,
@@ -1806,7 +1801,7 @@ begin
     for lStorePair in Self do
       Result.AppendFromOsslStore(lStorePair.Value, [sitCert, sitCRL]);
   except
-    Result.Free;
+    FreeAndNil(Result);
     raise;
   end;
 end;
@@ -1912,7 +1907,7 @@ end;
 
 function TTaurusTLSSslMessage.GetVersion: TTaurusTLS2SslVersion;
 begin
-  Result.AsInt:=FVersion;
+  Result.AsInt:=FVersion;  // PALOFF 'Function result not set'
 end;
 
 function TTaurusTLSSslMessage.ToBytes: TIdBytes;
@@ -2453,112 +2448,53 @@ begin
   end;
 end;
 
-procedure TTaurusTLSSslSocketCtxBuilder.DoBuildCtxTrustStore(
-  ACtx: PSSL_CTX);
-var
-  lTrustStores: TTaurusTLSTrustStores;
-  lX509Store: TaurusTLS_X509Store; // PALOFF 'Created and freed objects'
-  lStorePair: TPair<string, TTaurusTLSTrustStore>;
-
-begin
-  lTrustStores:=FTrustStores;
-  if not (Assigned(lTrustStores) and (lTrustStores.Count > 0)) then
-    Exit;
-
-  lX509Store:=TaurusTLS_X509Store.Create;
-  try
-    for lStorePair in FTrustStores do
-      lX509Store.AppendFromOsslStore(lStorePair.Value, [sitCert, sitCRL]);
-    lX509Store.AttachToSSLCtx(ACtx);
-  finally
-    lX509Store.Free;
-  end;
-end;
-
-procedure TTaurusTLSSslSocketCtxBuilder.DoBuildCtxVerifyParam(
-  ACtx: PSSL_CTX);
-var
-  lVfyParam: TTaurusTLSX509VerifyParam; // PALOFF 'Created and freed objects'
-  i, lHigh: integer;
-
-begin
-  lVfyParam:=TTaurusTLSX509VerifyParam.Create;
-  try
-    with lVfyParam do
-    begin
-      VerifyFlags:=FX509VerifyParam.VerifyFlags;
-      InheritanceFlags:=FX509VerifyParam.InheritanceFlags;
-      HostCheckFlags:=FX509VerifyParam.HostCheckFlags;
-      Purpose:=FX509VerifyParam.Purpose;
-      Depth:=FX509VerifyParam.Depth;
-      SecurityBits:=FX509VerifyParam.SecurityBits;
-   Time:=FX509VerifyParam.Time;
-
-      for i:=0 to FX509VerifyParam.HostCount-1 do
-          AddHost(FX509VerifyParam.Hosts[i]);
-
-      begin
-        lHigh:=FX509VerifyParam.IpAddressCount;
-        if IsX509StoreMultiIPSupported then
-        begin
-          for i:=0 to FX509VerifyParam.IpAddressCount-1 do
-            AddIPAddress(FX509VerifyParam.IpAddresses[i]);
-        end
-        else if lHigh > 0 then
-          SetIpAddress(FX509VerifyParam.IpAddresses[0])
-      end;
-
-      begin
-        lHigh:=FX509VerifyParam.EmailCount;
-        if IsX509StoreMultiEmailSupported  then
-        begin
-          for i:=0 to FX509VerifyParam.EmailCount-1 do
-            AddEmail(FX509VerifyParam.Emails[i]);
-        end
-        else if lHigh > 0 then
-          SetEMail(FX509VerifyParam.Emails[0])
-      end;
-
-    end;
-    lVfyParam.AttachToSSLCtx(ACtx);
-  finally
-    lVfyParam.Free;
-  end;
-end;
-
 procedure TTaurusTLSSslSocketCtxBuilder.CheckRequirements;
 begin
-
-end;
+// Do nothing. Descendant may implement own requirement check.
+end; // PALOFF 'Empty begin/end-blocks'
 
 procedure TTaurusTLSSslSocketCtxBuilder.DoBuild(ASender: TObject;
   ASocketCtx: TTaurusTLSSslSocketCtx);
+var
+  lVerifyParam: TTaurusTLSX509VerifyParam; // PALOFF 'Created and freed objects'
+  lTrustStore: TaurusTLS_X509Store; // PALOFF 'Created and freed objects'
+
 begin
   Assert(Assigned(ASender), '''ASender'' parameter must not be ''nil'' value.'); // Do not localize
   Assert(Assigned(ASocketCtx),
     '''ASocketCtx'' parameter must not be ''nil'' value.'); // Do not localize
 
-  ASocketCtx
-  // Set Context Parameters
-    .SetFlags(FFlags)
-    .SetCertVerifyFlags(FCertVerifyFlags)
-    .SetSSLCtxOptions(FSSLContextOptions)
-    .SetMinTLSVersion(FMinTLSVersion)
-    .SetMaxTLSVersion(FMaxTLSVersion)
-    .SetCipherList(FCipherList)
-    .SetCipherSuites(FCipherSuites)
-    .SetKeXGroups(FKeyExchangeGroups)
-    .SetSigAlgorithms(FSigAlgorithms)
-    .SetVerifyParam(FX509VerifyParam)
-    .SetVerifyModes(FVerifyModes)
-  // Set Context Events
-    .SetOnStateChange(FOnStateChange)
-    .SetOnPeerCertError(FOnPeerCertError)
-    .SetOnVerifyCertificate(FOnVerifyCertificate)
-    .SetOnSecurityCheck(FOnSecurityCheck)
-    .SetOnStatusInfo(FOnStatusInfo)
-    .SetOnMessage(FOnMessage)
-    .SetOnKeyLog(FOnKeyLog);
+  lVerifyParam:=nil;
+  lTrustStore:=nil;
+  try
+    lVerifyParam:=FX509VerifyParam.BuildParam;
+    lTrustStore:=FTrustStores.BuildStore;
+    ASocketCtx
+    // Set Context Parameters
+      .SetFlags(FFlags)
+      .SetCertVerifyFlags(FCertVerifyFlags)
+      .SetSSLCtxOptions(FSSLContextOptions)
+      .SetMinTLSVersion(FMinTLSVersion)
+      .SetMaxTLSVersion(FMaxTLSVersion)
+      .SetCipherList(FCipherList)
+      .SetCipherSuites(FCipherSuites)
+      .SetKeXGroups(FKeyExchangeGroups)
+      .SetSigAlgorithms(FSigAlgorithms)
+      .SetVerifyParam(lVerifyParam)
+      .SetVerifyModes(FVerifyModes)
+      .SetTrustStore(lTrustStore)
+    // Set Context Events
+      .SetOnStateChange(FOnStateChange)
+      .SetOnPeerCertError(FOnPeerCertError)
+      .SetOnVerifyCertificate(FOnVerifyCertificate)
+      .SetOnSecurityCheck(FOnSecurityCheck)
+      .SetOnStatusInfo(FOnStatusInfo)
+      .SetOnMessage(FOnMessage)
+      .SetOnKeyLog(FOnKeyLog); // PALOFF 'Functions called as procedures'
+  finally
+    lTrustStore.Free;
+    lVerifyParam.Free;
+  end;
 end;
 
 function TTaurusTLSSslSocketCtxBuilder.Build(ASender: TObject): ITaurusTLSSslSocketCtx;
@@ -2576,8 +2512,8 @@ begin
       CheckRequirements;
       lSocketCtx:=DoNewSocketCtx(ASender);
       DoBuild(ASender, lSocketCtx);
-      FSocketCtx:=lSocketCtx;
-      Result:=lSocketCtx;
+      FSocketCtx:=lSocketCtx as ITaurusTLSSslSocketCtx; // PALOFF 'Mixing interface variables and objects'
+      Result:=FSocketCtx;
     except
       lSocketCtx.Free;
       raise;
@@ -2593,7 +2529,7 @@ constructor TTaurusTLSSslSocketCtx.Create(ASender: TObject; ATLSMeth: PSSL_METHO
 begin
   FSender:=ASender;
   FSSLCtx:=SSL_CTX_new(ATLSMeth);
-  SetVerifyModes(cVerifyModesDef);
+  SetVerifyModes(cVerifyModesDef);   // PALOFF 'Functions called as procedures'
 end;
 
 destructor TTaurusTLSSslSocketCtx.Destroy;
@@ -2653,8 +2589,8 @@ end;
 
 procedure TTaurusTLSSslSocketCtx.CloneSession(ASSL: PSSL);
 begin
-
-end;
+{ TODO :  }
+end; // PALOFF 'Empty begin/end-blocks'
 
 procedure TTaurusTLSSslSocketCtx.DoOnKeyLog(ASocket: TTaurusTLSSslSocket;
   ALine: PIdAnsiChar);
@@ -2677,7 +2613,7 @@ end;
 
 procedure TTaurusTLSSslSocketCtx.DoOnPeerCertError(ASocket: TTaurusTLSSslSocket;
   ACertificate: TTaurusTLSX509; const AError: TTaurusTLSX509Error;
-  out ASuccess: boolean);
+  var ASuccess: boolean);
 begin
   if Assigned(FOnPeerCertError) and Assigned(ASocket) then
     FOnPeerCertError(FSender, ASocket, ACertificate, AError, ASuccess);
@@ -2704,7 +2640,7 @@ begin
 end;
 
 procedure TTaurusTLSSslSocketCtx.DoOnVerifyCertificate(ASocket: TTaurusTLSSslSocket;
-  ACtx: PX509_STORE_CTX; out ASuccess, AContinue: boolean);
+  ACtx: PX509_STORE_CTX; var ASuccess, AContinue: boolean);
 var
   lValidator: TTaurusTLSX509CertValidator; // PALOFF 'Created and freed objects'
 
@@ -2937,77 +2873,6 @@ begin
 end;
 
 function TTaurusTLSSslSocketCtx.SetVerifyParam(
-  const AValue: TTaurusTLSMetaX509VerifyParam): TTaurusTLSSslSocketCtx;
-var
-  lValue: TTaurusTLSCustomX509VerifyParam;  // PALOFF 'Created and freed objects'
-  lHigh, i: integer;
-
-begin
-  Result:=Self;
-  if not Assigned(AValue) then
-    Exit;
-
-  CheckFrozen;
-  lValue := TTaurusTLSX509VerifyParam.Create;
-  try
-    if AValue.IsSecurityBitsSet then
-      lValue.SecurityBits:=AValue.SecurityBits;
-
-    if AValue.IsDepthSet then
-      lValue.Depth:=AValue.Depth;
-
-    if AValue.IsPurposeSet then
-      lValue.Purpose:=AValue.Purpose;
-
-    if AValue.IsTimeSet then
-      lValue.Time:=AValue.Time;
-
-    if AValue.IsVerifyFlagsSet then
-      lValue.VerifyFlags:=AValue.VerifyFlags;
-
-    if AValue.IsInheritanceFlagsSet then
-      lValue.InheritanceFlags:=AValue.InheritanceFlags;
-
-    if AValue.IsHostCheckFlagsSet then
-      lValue.HostCheckFlags:=AValue.HostCheckFlags;
-
-    // Add hosts
-    if AValue.IsHostsSet then
-      for i:=0 to AValue.HostCount-1 do
-        lValue.AddHost(AValue.Hosts[i]);
-
-    // Add IP Address(es)
-    if AValue.IsIPAddressesSet then
-    begin
-      lHigh:=AValue.IpAddressCount;
-      if IsX509StoreMultiIPSupported then
-      begin
-        for i:=0 to AValue.IpAddressCount-1 do
-          lValue.AddIPAddress(AValue.IpAddresses[i]);
-        end
-        else if lHigh > 0 then
-          lValue.SetIpAddress(AValue.IpAddresses[0]);
-    end;
-
-    if AValue.IsEmailsSet then
-    begin
-      lHigh:=AValue.EmailCount;
-      if IsX509StoreMultiEmailSupported  then
-      begin
-        for i:=0 to AValue.EmailCount-1 do
-          lValue.AddEmail(AValue.Emails[i]);
-      end
-      else if lHigh > 0 then
-        lValue.SetEMail(AValue.Emails[0])
-    end;
-
-    SetVerifyParam(lValue);
-  finally
-    lValue.Free;
-  end;
-end;
-
-function TTaurusTLSSslSocketCtx.SetVerifyParam(
   const AValue: TTaurusTLSCustomX509VerifyParam): TTaurusTLSSslSocketCtx;
 begin
   Result:=Self;
@@ -3024,23 +2889,6 @@ begin
 
   CheckFrozen;
   AValue.AttachToSSLCtx(FSSLCtx);
-end;
-
-function TTaurusTLSSslSocketCtx.SetTrustStore(
-  const AValue: TTaurusTLSTrustStores): TTaurusTLSSslSocketCtx;
-var
-  lStore: TaurusTLS_X509Store;  // PALOFF 'Created and freed objects'
-
-begin
-  Result:=Self;
-  if not Assigned(AValue) then
-    Exit;
-  lStore:=AValue.BuildStore;
-  try
-    Result:=SetTrustStore(lStore);
-  finally
-    lStore.Free;
-  end;
 end;
 
 function TTaurusTLSSslSocketCtx.SetOnKeyLog(
@@ -3643,7 +3491,7 @@ begin
   inherited Create;
   FSocketHandle:=Id_INVALID_SOCKET;
   FContextIntf:=AConfigIntf;
-  FCtx:=AConfigIntf.Ctx;
+  FCtx:=AConfigIntf.Ctx; // PALOFF 'Mixing interface variables and objects' (Not sure why)
 end;
 
 destructor TTaurusTLSSslSocket.Destroy;
@@ -3859,7 +3707,7 @@ begin
       [ClassName, lCurrentState.AsString, ATarget.AsString]);
 
   // 3. Execute Transition-Specific Initialization or Cleanup
-  case ATarget of
+  case ATarget of  // PALOFF 'Enumerated constant missing in case structure'
   seInitialized:
     // Transitioning from seIdle to seInitialized: Allocate session and arm callbacks
     InitSSL;
@@ -4036,7 +3884,7 @@ begin
       TransitionTo(seClosed); // Force-close immediate teardown
 
       // Let Indy's GStack query LastError/errno and raise EIdSocketError
-      CheckForError(lRet);
+      CheckForError(lRet); // PALOFF 'Functions called as procedures'
       ETaurusTLSConnectionReset.RaiseWithMessage('Connection reset by peer during write.');
     end
     else
@@ -4539,7 +4387,7 @@ begin
         raise ETaurusTLSConnectionReset.Create('Handshake reset by peer.');
       end;
 
-    SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE:
+    SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE: // PALOFF 'Empty case labels'
       // Waiting for data
       ;
 
@@ -4589,7 +4437,7 @@ end;
 constructor TTaurusTLSMetaX509VerifyParam.Create(
   AParent: TTaurusTLSSslSocketCtxBuilder);
 begin
-  inherited;
+  inherited Create(AParent);
   FHosts:=THosts.Create;
   FIpAddresses:=TIPAddresses.Create;
   FEmails:=TEmails.Create;
@@ -4729,7 +4577,7 @@ end;
 procedure TTaurusTLSMetaX509VerifyParam.SetTime(
   const AValue: TDateTime);
 begin
-  if FTime = AValue then
+  if SameDateTime(FTime, AValue) then
     Exit;
   Lock;
   try
@@ -4782,52 +4630,29 @@ begin
   end;
 end;
 
-procedure TTaurusTLSMetaX509VerifyParam.SetHost(
-  const Item: TIdC_INT; AValue: string);
+procedure TTaurusTLSMetaX509VerifyParam.AddHost(AValue: string);
 begin
   Lock;
   try
-    if AValue = '' then
-      DeleteHost(Item)
-    else if Item > HostCount then
-      FHosts.Add(AValue)
-    else
-      FHosts[Item]:=AValue;
+    FHosts.Add(AValue);
     SetDirty(vfDefHosts);
   finally
     Unlock;
   end;
 end;
 
-procedure TTaurusTLSMetaX509VerifyParam.SetEmail(
+procedure TTaurusTLSMetaX509VerifyParam.SetHost(
   const Item: TIdC_INT; AValue: string);
 begin
   Lock;
   try
     if AValue = '' then
-      DeleteEmail(Item)
+      FHosts.Delete(Item)
     else if Item > HostCount then
-      FEMails.Add(AValue)
+      FHosts.Add(AValue)
     else
-      FEMails[Item]:=AValue;
-    SetDirty(vfDefEmails);
-  finally
-    Unlock;
-  end;
-end;
-
-procedure TTaurusTLSMetaX509VerifyParam.SetIpAddress(
-  const Item: TIdC_INT; AValue: string);
-begin
-  Lock;
-  try
-    if AValue = '' then
-      DeleteIpAddress(Item)
-    else if Item > HostCount then
-      FIPAddresses.Add(AValue)
-    else
-      FIPAddresses[Item]:=AValue;
-    SetDirty(vfDefIPAddresses);
+      FHosts[Item]:=AValue;
+    SetDirty(vfDefHosts);
   finally
     Unlock;
   end;
@@ -4845,6 +4670,34 @@ begin
   end;
 end;
 
+procedure TTaurusTLSMetaX509VerifyParam.AddEMail(AValue: string);
+begin
+  Lock;
+  try
+    FEMails.Add(AValue);
+    SetDirty(vfDefEmails);
+  finally
+    Unlock;
+  end;
+end;
+
+procedure TTaurusTLSMetaX509VerifyParam.SetEmail(
+  const Item: TIdC_INT; AValue: string);
+begin
+  Lock;
+  try
+    if AValue = '' then
+      FEmails.Delete(Item)
+    else if Item > HostCount then
+      FEMails.Add(AValue)
+    else
+      FEMails[Item]:=AValue;
+    SetDirty(vfDefEmails);
+  finally
+    Unlock;
+  end;
+end;
+
 procedure TTaurusTLSMetaX509VerifyParam.DeleteEmail(
   const Item: TIdC_INT);
 begin
@@ -4852,6 +4705,99 @@ begin
   try
     FEmails.Delete(Item);
     SetDirty(vfDefEmails);
+  finally
+    Unlock;
+  end;
+end;
+
+procedure TTaurusTLSMetaX509VerifyParam.AddIpAddress(AValue: string);
+begin
+  Lock;
+  try
+    FIPAddresses.Add(AValue);
+    SetDirty(vfDefIPAddresses);
+  finally
+    Unlock;
+  end;
+end;
+
+function TTaurusTLSMetaX509VerifyParam.BuildParam: TTaurusTLSX509VerifyParam;
+var
+  i, lHigh: integer;
+
+begin
+  Result:=TTaurusTLSX509VerifyParam.Create;
+  try
+    if IsSecurityBitsSet then
+      Result.SecurityBits:=SecurityBits;
+
+    if IsDepthSet then
+      Result.Depth:=Depth;
+
+    if IsPurposeSet then
+      Result.Purpose:=Purpose;
+
+    if IsTimeSet then
+      Result.Time:=Time;
+
+    if IsVerifyFlagsSet then
+      Result.VerifyFlags:=VerifyFlags;
+
+    if IsInheritanceFlagsSet then
+      Result.InheritanceFlags:=InheritanceFlags;
+
+    if IsHostCheckFlagsSet then
+      Result.HostCheckFlags:=HostCheckFlags;
+
+    // Add hosts
+    if IsHostsSet then
+      for i:=0 to HostCount-1 do
+        Result.AddHost(Hosts[i]);
+
+    // Add IP Address(es)
+    if IsIPAddressesSet then
+    begin
+      lHigh:=IpAddressCount;
+      if IsX509StoreMultiIPSupported then
+      begin
+        for i:=0 to IpAddressCount-1 do
+          Result.AddIPAddress(IpAddresses[i]);
+        end
+        else if lHigh > 0 then
+          Result.SetIpAddress(IpAddresses[0]);
+    end;
+
+    if IsEmailsSet then
+    begin
+      lHigh:=EmailCount;
+      if IsX509StoreMultiEmailSupported  then
+      begin
+        for i:=0 to EmailCount-1 do
+          Result.AddEmail(Emails[i]);
+      end
+      else if lHigh > 0 then
+        Result.SetEMail(Emails[0])
+    end;
+
+  except
+    FreeAndNil(Result);
+    raise;
+  end;
+
+end;
+
+procedure TTaurusTLSMetaX509VerifyParam.SetIpAddress(
+  const Item: TIdC_INT; AValue: string);
+begin
+  Lock;
+  try
+    if AValue = '' then
+      FIPAddresses.Delete(Item)
+    else if Item > HostCount then
+      FIPAddresses.Add(AValue)
+    else
+      FIPAddresses[Item]:=AValue;
+    SetDirty(vfDefIPAddresses);
   finally
     Unlock;
   end;
