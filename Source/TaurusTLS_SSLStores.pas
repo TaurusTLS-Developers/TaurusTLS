@@ -66,7 +66,7 @@ type
       {$IFDEF USE_INLINE}inline;{$ENDIF}
     function GetDepht: TIdC_Int; {$IFDEF USE_INLINE}inline;{$ENDIF}
     procedure SetDepth(const Value: TIdC_Int); {$IFDEF USE_INLINE}inline;{$ENDIF}
-    function GetSecurityBits: TTaurusTLSSecurityBits;
+    function GetSecurityBits: TTaurusTLSSecurityBits; // PALOFF 'Function result not set'
       {$IFDEF USE_INLINE}inline;{$ENDIF}
     procedure SetSecurityBits(const Value: TTaurusTLSSecurityBits);
       {$IFDEF USE_INLINE}inline;{$ENDIF}
@@ -90,7 +90,7 @@ type
   {$IFDEF FPC}
     {$WARN 3018 off : Constructor should be public}
   {$ENDIF}
-    constructor Create(const AParam: PX509_VERIFY_PARAM);
+    constructor Create(const AParam: PX509_VERIFY_PARAM);  // PALOFF 'Non-public constructors/destructors'
   {$IFDEF FPC}
     {$WARN 3018 on : Constructor should be public}
   {$ENDIF}
@@ -828,7 +828,7 @@ type
     {$IFDEF FPC}
       {$WARN 3018 off : Constructor should be public}
     {$ENDIF}
-      constructor Create(ACtx: POSSL_STORE_CTX); overload;
+      constructor Create(ACtx: POSSL_STORE_CTX); overload;  // PALOFF 'Non-public constructors/destructors'
     {$IFDEF FPC}
       {$WARN 3018 on : Constructor should be public}
     {$ENDIF}
@@ -1095,7 +1095,7 @@ type
     {$WARN 3018 off : Constructor should be public}
   {$ENDIF}
     constructor Create(const ACtx: TStoreCtx;
-        ALoadFilter: TStoreItemTypes = cStoreAElementsAll); overload;
+        ALoadFilter: TStoreItemTypes = cStoreAElementsAll); overload;   // PALOFF 'Non-public constructors/destructors'
   {$IFDEF FPC}
     {$WARN 3018 off : Constructor should be public}
   {$ENDIF}
@@ -1457,7 +1457,7 @@ end;
 {$ENDIF}
 function TTaurusTLSCustomX509VerifyParam.GetSecurityBits: TTaurusTLSSecurityBits;
 begin
-  Result.AsInt:=X509_VERIFY_PARAM_get_auth_level(FParam);
+  Result.AsInt:=X509_VERIFY_PARAM_get_auth_level(FParam); // PALOFF 'Function result not set'
 end;
 {$IFDEF FPC}
 {$WARN 5059 on : Function result variable does not seem to be initialized}
@@ -1863,7 +1863,7 @@ begin
   inherited Create;
   if not AInfo.IsExist then
     FData.FType:=AInfo.GetType;
-  case FData.FType of
+  case FData.FType of // PALOFF 'Enumerated constant missing in case structure'
     sitName:
       FData.FName:=AInfo.CloneNameA;
     sitParams:
@@ -1881,7 +1881,7 @@ end;
 
 destructor TTaurusTLSOSSLStore.TStoreItem.Destroy;
 begin
-  case FData.FType of
+  case FData.FType of // PALOFF 'Enumerated constant missing in case structure'
     sitParams, sitPubKey, sitPrivKey:
       EVP_PKEY_free(FData.FPKey);
     sitCert:
@@ -2144,7 +2144,7 @@ begin
   lFilter:=AFilter*cX509ElementsAll; //Only Certificates and CRLs can be added
   for lElement in AStore.GetEnumerator(lFilter) do
   begin
-    case lElement.&Type of
+    case lElement.&Type of // PALOFF 'Enumerated constant missing in case structure'
     sitCert: AppendCert(lElement.Cert);
     sitCrl:  AppendCrl(lElement.GetCrl);
     end;

@@ -626,8 +626,9 @@ end;
 
 procedure TTaurusTLSCustomRawMemBio.DoFreeMem;
 begin
-  // Do Nothing by default;     PALOFF - Empty begin/end-blocks
-end;
+  // Do Nothing by default;
+end; // PALOFF 'Empty begin/end-blocks'
+
 
 { TTaurusTLSBytesBio }
 

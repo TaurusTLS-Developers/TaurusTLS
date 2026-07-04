@@ -568,7 +568,7 @@ begin
     lPass:=PAnsiChar(@APass[0])
   else
     lPass:=nil;
-  SetPassword(lPass, lLen);
+  SetPassword(lPass, lLen); // PALOFF 'Functions called as procedures'
 end;
 
 function TTaurusTLS_UiString.SetPassword(const APass: PIdAnsiChar): boolean;
@@ -760,7 +760,7 @@ begin
     if not Assigned(AHandler) then
       UnregisterMethod
     else if not Registered then
-      RegisterMethod;
+      RegisterMethod;  // PALOFF 'Functions called as procedures'
     lHandler.Free;
     FHandler:=AHandler;
   finally
@@ -1004,7 +1004,7 @@ function TTaurusTLSCustomOsslUi.DoCheckString(
   AString: TTaurusTLS_UiString): TTaurusTLS_UiResult;
 begin
   if AString.&Type = UIT_PROMPT then
-    AString.SetPassword(PAnsiChar(''));
+    AString.SetPassword(PAnsiChar(''));  // PALOFF 'Functions called as procedures'
   Result:=uirSuccess;
 end;
 
