@@ -113,6 +113,8 @@ templates:
       - src: ./DifferencesBetweenIndyOpenSSLAndTaurusTLS.md
       - src: ./What_needs_to_be_done.MD
       - src: ./Source/**.*
+        exclude:
+          - '*.dcu'
       - src: ./Packages/$packageSource$/*.dpk
       - src: ./Packages/$packageSource$/*.dproj
       - src: ./Help/chm/TaurusForIndy290All.chm
