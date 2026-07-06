@@ -51,6 +51,29 @@ type
   { IOpenSSLLoader }
 
   /// <summary>
+  ///   Indicates OpenSSL library load action
+  /// </summary>
+  TOpenSSLLoadAction = (
+    /// <summary>
+    ///   OpenSSL Library loaded
+    /// </summary>
+    osaLoad,
+    /// <summary>
+    ///   OpenSSL Library is being unloaded
+    /// </summary>
+    osaUnload);
+  /// <summary>
+  ///   Definitiion for the class instance event called by loader in OpenSSL
+  ///   library loading or unloading.
+  /// </summary>
+  /// <remarks>
+  ///   The registered callbacks executed after OpenSSL library is loaded and
+  ///   the OpenSSL routines registered or right before the OpenSSL routines
+  ///   unregistered and the OpenSSL library is unloaded.
+  /// </remarks>
+  TOpenSSLOnLoadAction = procedure(AAction: TOpenSSLLoadAction) of object;
+
+  /// <summary>
   ///   Library Loader for TaurusTLS.
   /// </summary>
   IOpenSSLLoader = interface
@@ -92,6 +115,17 @@ type
     ///   True if the OpenSSL library is loaded or False if it is not loaded.
     /// </summary>
     function IsLoaded: Boolean;
+
+    /// <summary>
+    ///   Registers the class instance method that will be called on OpenSSL
+    ///   library loading and unloading.
+    /// </summary>
+    procedure RegisterLoaderMethod(AProc: TOpenSSLOnLoadAction);
+    /// <summary>
+    ///   Deregisters the class instance method that will be called on OpenSSL
+    ///   library loading and unloading.
+    /// </summary>
+    procedure UnRegisterLoaderMethod(AProc: TOpenSSLOnLoadAction);
 
     /// <summary>
     ///   The version numbers for the OpenSSL library separated by ";"
@@ -143,7 +177,6 @@ type
   ///   address of the functions in the header back to nil.
   /// </summary>
   TOpenSSLUnloadProc = procedure;
-
   /// <summary>
   ///   Creates the library loader interface if it was not already created.
   /// </summary>
@@ -169,7 +202,7 @@ function GetOpenSSLLoader: IOpenSSLLoader;
 procedure Register_SSLLoader(LoadProc: TOpenSSLLoadProc;
   const module_name: string);
 /// <summary>
-///   Regosters an unloader procedure that sets the function pointers to nil.
+///   Registers an unloader procedure that sets the function pointers to nil.
 /// </summary>
 /// <remarks>
 ///   Developers should not directly call this procedure. The TaurusTLS OpenSSL
@@ -191,9 +224,7 @@ function LoadLibFunction(const ALibHandle: TIdLibHandle; const AProcName: TIdLib
 implementation
 
 uses
-{$IFDEF HAS_UNIT_Generics_Collections}
-  System.Generics.Collections,
-{$ENDIF}
+  Generics.Collections,
   TaurusTLSExceptionHandlers,
   {$IFDEF FPC}
   IdGlobalProtocols,
@@ -218,15 +249,9 @@ const
 
 var
   GOpenSSLLoader: IOpenSSLLoader = nil;
-{$IFDEF HAS_UNIT_Generics_Collections}
   GLibCryptoLoadList: TList<TOpenSSLLoadProc> = nil;
   GLibSSLLoadList: TList<TOpenSSLLoadProc> = nil;
   GUnLoadList: TList<TOpenSSLUnloadProc> = nil;
-{$ELSE}
-  GLibCryptoLoadList: TList = nil;  //PALOFF - Created and freed objects
-  GLibSSLLoadList: TList = nil;  //PALOFF - Created and freed objects
-  GUnLoadList: TList = nil;  //PALOFF - Created and freed objects
-{$ENDIF}
 
 function GetOpenSSLLoader: IOpenSSLLoader;
 begin
@@ -237,22 +262,14 @@ procedure Register_SSLLoader(LoadProc: TOpenSSLLoadProc;
   const module_name: string);
 begin
   if GLibCryptoLoadList = nil then
-{$IFDEF HAS_UNIT_Generics_Collections}
     GLibCryptoLoadList := TList<TOpenSSLLoadProc>.Create;
-{$ELSE}
-    GLibCryptoLoadList := TList.Create;
-{$ENDIF}
   if GLibSSLLoadList = nil then
-{$IFDEF HAS_UNIT_Generics_Collections}
     GLibSSLLoadList := TList<TOpenSSLLoadProc>.Create;
-{$ELSE}
-    GLibSSLLoadList := TList.Create;
-{$ENDIF}
 
   if module_name = 'LibCrypto' then
-    GLibCryptoLoadList.Add(@LoadProc)
+    GLibCryptoLoadList.Add(LoadProc)
   else if module_name = 'LibSSL' then
-    GLibSSLLoadList.Add(@LoadProc)
+    GLibSSLLoadList.Add(LoadProc)
   else
     raise ETaurusTLSError.CreateFmt(ROSUnrecognisedLibName, [module_name]);
 end;
@@ -260,12 +277,8 @@ end;
 procedure Register_SSLUnloader(UnloadProc: TOpenSSLUnloadProc);
 begin
   if GUnLoadList = nil then
-{$IFDEF HAS_UNIT_Generics_Collections}
     GUnLoadList := TList<TOpenSSLUnloadProc>.Create;
-{$ELSE}
-    GUnLoadList := TList.Create;
-{$ENDIF}
-  GUnLoadList.Add(@UnloadProc);
+  GUnLoadList.Add(UnloadProc);
 end;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
@@ -283,6 +296,8 @@ type
   { TOpenSSLLoader }
 
   TOpenSSLLoader = class(TInterfacedObject, IOpenSSLLoader)
+{$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private type
+    TCallbacks = TList<TOpenSSLOnLoadAction>;
 {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FLibCrypto: TIdLibHandle;
     FLibSSL: TIdLibHandle;
@@ -291,6 +306,7 @@ type
     FSSLLibVersions: string;
     FLibraryLoaded: TIdThreadSafeBoolean;  //PALOFF - Created and freed objects
     FFailedToLoad: Boolean;
+    FCallbacks: TCallbacks;
     function FindLibrary(const LibName, LibVersions: string): TIdLibHandle;
     function GetSSLLibVersions: string;
     procedure SetSSLLibVersions(const AValue: string);
@@ -305,6 +321,8 @@ type
     function Load: Boolean;
     procedure Unload;
     function IsLoaded : Boolean;
+    procedure RegisterLoaderMethod(AProc: TOpenSSLOnLoadAction);
+    procedure UnRegisterLoaderMethod(AProc: TOpenSSLOnLoadAction);
     property OpenSSLPath: string read GetOpenSSLPath write SetOpenSSLPath;
     property FailedToLoad: TStringList read GetFailedToLoad;
   end;
@@ -317,15 +335,15 @@ begin
   FFailed := TStringList.Create();
   FLibraryLoaded := TIdThreadSafeBoolean.Create;
   FSSLLibVersions := DefaultLibVersions;
-  OpenSSLPath := GetEnvironmentVariable(TaurusTLSLibraryPath)
+  OpenSSLPath := GetEnvironmentVariable(TaurusTLSLibraryPath);
+  FCallbacks:=TCallbacks.Create;
 end;
 
 destructor TOpenSSLLoader.Destroy;
 begin
-  if FLibraryLoaded <> nil then
-    FLibraryLoaded.Free;
-  if FFailed <> nil then
-    FFailed.Free;
+  FreeAndNil(FCallbacks);
+  FreeAndNil(FLibraryLoaded);
+  FreeAndNil(FFailed);
   inherited;
 end;
 
@@ -471,16 +489,40 @@ begin
       LSSLVersionNo := LSSLVersionNo shr 12;
 
       for i := 0 to GLibCryptoLoadList.Count - 1 do
-        TOpenSSLLoadProc(GLibCryptoLoadList[i])
-          (FLibCrypto, LSSLVersionNo, FFailed);
+        GLibCryptoLoadList[i](FLibCrypto, LSSLVersionNo, FFailed);
 
       for i := 0 to GLibSSLLoadList.Count - 1 do
-        TOpenSSLLoadProc(GLibSSLLoadList[i])(FLibSSL, LSSLVersionNo, FFailed);
+        GLibSSLLoadList[i](FLibSSL, LSSLVersionNo, FFailed);
+
+      for i := 0 to FCallbacks.Count-1 do
+        FCallbacks[i](osaLoad);
 
     end;
     FLibraryLoaded.Value := true;
   finally
     FLibraryLoaded.Unlock();
+  end;
+end;
+
+procedure TOpenSSLLoader.RegisterLoaderMethod(AProc: TOpenSSLOnLoadAction);
+begin
+  FLibraryLoaded.Lock();
+  try
+    FCallbacks.Add(AProc);
+    if FLibraryLoaded.Value then
+      AProc(osaLoad); // Library is loaded and callback should be called immediately.
+  finally
+    FLibraryLoaded.UnLock();
+  end;
+end;
+
+procedure TOpenSSLLoader.UnRegisterLoaderMethod(AProc: TOpenSSLOnLoadAction);
+begin
+  FLibraryLoaded.Lock();
+  try
+    FCallbacks.Remove(AProc);
+  finally
+    FLibraryLoaded.UnLock();
   end;
 end;
 
@@ -525,6 +567,9 @@ begin
   try
     if FLibraryLoaded.Value then
     begin
+      for i := 0 to FCallbacks.Count-1 do
+        FCallbacks[i](osaUnLoad);
+
       for i := 0 to GUnLoadList.Count - 1 do
         TOpenSSLUnloadProc(GUnLoadList[i]);
 
@@ -555,16 +600,7 @@ initialization
 finalization
   //IMPORTANT!!! Pointers should be set to nil just in case
   //the TaurusTLS library is being reloaded.
-  if GLibCryptoLoadList <> nil then
-  begin
-    FreeAndNil(GLibCryptoLoadList);
-  end;
-  if GLibSSLLoadList <> nil then
-  begin
-    FreeAndNil(GLibSSLLoadList);
-  end;
-  if GUnLoadList <> nil then
-  begin
-    FreeAndNil(GUnLoadList);
-  end;
+  FreeAndNil(GLibCryptoLoadList);
+  FreeAndNil(GLibSSLLoadList);
+  FreeAndNil(GUnLoadList);
 end.
