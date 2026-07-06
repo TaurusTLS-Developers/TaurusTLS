@@ -933,7 +933,7 @@ end;
 
 class function TTaurusTLSCustomOsslUi.RegisterMethods: PUI_METHOD;
 begin
-  Result:=UI_create_method(PAnsiChar(cUiMethodName));
+  Result:=UI_create_method(PIdAnsiChar(cUiMethodName));
   if Assigned(Result) then
   try
     CheckOSSLMethError(UI_method_set_opener(Result, Opener), 0, 'Opener'); // Do not localize
@@ -1004,7 +1004,7 @@ function TTaurusTLSCustomOsslUi.DoCheckString(
   AString: TTaurusTLS_UiString): TTaurusTLS_UiResult;
 begin
   if AString.&Type = UIT_PROMPT then
-    AString.SetPassword(PAnsiChar(''));  // PALOFF 'Functions called as procedures'
+    AString.SetPassword(PIdAnsiChar(''));  // PALOFF 'Functions called as procedures'
   Result:=uirSuccess;
 end;
 
