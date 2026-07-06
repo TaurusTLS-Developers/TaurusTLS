@@ -2318,14 +2318,10 @@ end;
 procedure TTaurusTLSSslSocketCtxBuilder.SetOnKeyLog(
   const AValue: TTaurusTLSOnKeyLog);
 begin
-  if @FOnKeyLog = @AValue then
-    Exit;
-
   Lock;
   try
-    // Check it again it can be changed by other thread
-    // between previous check and actual lock accurision
-    if @FOnKeyLog = @AValue then
+    if (TMethod(FOnKeyLog).Code = TMethod(AValue).Code) and
+      (TMethod(FOnKeyLog).Data = TMethod(AValue).Data) then
       Exit;
     FOnKeyLog:=AValue;
     SetDirty;
@@ -2337,14 +2333,10 @@ end;
 procedure TTaurusTLSSslSocketCtxBuilder.SetOnMessage(
   const AValue: TTaurusTLSOnSSLMessageCallback);
 begin
-  if @FOnMessage = @AValue then
-    Exit;
-
   Lock;
   try
-    // Check it again it can be changed by other thread
-    // between previous check and actual lock accurision
-    if @FOnMessage = @AValue then
+    if (TMethod(FOnMessage).Code = TMethod(AValue).Code) and
+      (TMethod(FOnMessage).Data = TMethod(AValue).Data) then
       Exit;
     FOnMessage:=AValue;
     SetDirty;
@@ -2356,14 +2348,10 @@ end;
 procedure TTaurusTLSSslSocketCtxBuilder.SetOnPeerCertError(
   const AValue: TTaurusTLSOnPeerCertError);
 begin
-  if @FOnPeerCertError = @AValue then
-    Exit;
-
   Lock;
   try
-    // Check it again it can be changed by other thread
-    // between previous check and actual lock accurision
-    if @FOnPeerCertError = @AValue then
+    if (TMethod(FOnPeerCertError).Code = TMethod(AValue).Code) and
+      (TMethod(FOnPeerCertError).Data = TMethod(AValue).Data) then
       Exit;
     FOnPeerCertError:=AValue;
     SetDirty;
@@ -2375,14 +2363,10 @@ end;
 procedure TTaurusTLSSslSocketCtxBuilder.SetOnSecurityCheck(
   const AValue: TTaurusTLSOnSecurityCheck);
 begin
-  if @FOnSecurityCheck = @AValue then
-    Exit;
-
   Lock;
   try
-    // Check it again it can be changed by other thread
-    // between previous check and actual lock accurision
-    if @FOnSecurityCheck = @AValue then
+    if (TMethod(FOnSecurityCheck).Code = TMethod(AValue).Code) and
+      (TMethod(FOnSecurityCheck).Data = TMethod(AValue).Data) then
       Exit;
     FOnSecurityCheck:=AValue;
     SetDirty;
@@ -2394,14 +2378,10 @@ end;
 procedure TTaurusTLSSslSocketCtxBuilder.SetOnStateChange(
   const AValue: TTaurusTLSOnStateChange);
 begin
-  if @FOnStateChange = @AValue then
-    Exit;
-
   Lock;
   try
-    // Check it again it can be changed by other thread
-    // between previous check and actual lock accurision
-    if @FOnStateChange = @AValue then
+    if (TMethod(FOnStateChange).Code = TMethod(AValue).Code) and
+      (TMethod(FOnStateChange).Data = TMethod(AValue).Data) then
       Exit;
     FOnStateChange:=AValue;
     SetDirty;
@@ -2413,14 +2393,10 @@ end;
 procedure TTaurusTLSSslSocketCtxBuilder.SetOnStatusInfo(
   const AValue: TTaurusTLSOnSSLStatusInfo);
 begin
-  if @FOnStatusInfo = @AValue then
-    Exit;
-
   Lock;
   try
-    // Check it again it can be changed by other thread
-    // between previous check and actual lock accurision
-    if @FOnStatusInfo = @AValue then
+    if (TMethod(FOnStatusInfo).Code = TMethod(AValue).Code) and
+      (TMethod(FOnStatusInfo).Data = TMethod(AValue).Data) then
       Exit;
     FOnStatusInfo:=AValue;
     SetDirty;
@@ -2432,14 +2408,10 @@ end;
 procedure TTaurusTLSSslSocketCtxBuilder.SetOnVerifyCertificate(
   const AValue: TTaurusTLSOnVerifyCallback);
 begin
-  if @FOnVerifyCertificate = @AValue then
-    Exit;
-
   Lock;
   try
-    // Check it again it can be changed by other thread
-    // between previous check and actual lock accurision
-    if @FOnVerifyCertificate = @AValue then
+    if (TMethod(FOnVerifyCertificate).Code = TMethod(AValue).Code) and
+      (TMethod(FOnVerifyCertificate).Data = TMethod(AValue).Data) then
       Exit;
     FOnVerifyCertificate:=AValue;
     SetDirty;
