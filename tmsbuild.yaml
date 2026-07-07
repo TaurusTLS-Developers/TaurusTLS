@@ -4,7 +4,7 @@ application:
   id: taurustls_developers.taurustls
   name: TaurusTLS
   description: TaurusTLS provides OpenSSL 3.x and 4.x support for Indy - Internet Direct
-  url: https://github.com/TaurusTLS-Developers/TaurusTLS
+  url: https://taurustls.org/
 
   version file: version.txt
 
