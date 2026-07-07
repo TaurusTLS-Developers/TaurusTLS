@@ -112,12 +112,20 @@ templates:
       - src: ./Modified_BSD_LICENSE.md
       - src: ./DifferencesBetweenIndyOpenSSLAndTaurusTLS.md
       - src: ./What_needs_to_be_done.MD
-      - src: ./Source/*.*
+      - src: ./Source/*.inc
+      - src: ./Source/*.pas
         exclude:
           - '*.dcu'
+      - src: ./Source/*.dcr
       - src: ./Packages/$packageSource$/*.dpk
       - src: ./Packages/$packageSource$/*.dproj
       - src: ./Help/chm/TaurusForIndy290All.chm
+      - src: /demos/**.*
+        exclude:
+          - '*.dcu'
+          - '*.obj'
+          - '*.exe'
+          - ''
     build:
       - project: ./Packages/$packageSource$/TaurusTLS_RT.dproj
     design:
