@@ -112,7 +112,7 @@ templates:
       - src: ./Modified_BSD_LICENSE.md
       - src: ./DifferencesBetweenIndyOpenSSLAndTaurusTLS.md
       - src: ./What_needs_to_be_done.MD
-      - src: ./Source/**.*
+      - src: ./Source/*.*
         exclude:
           - '*.dcu'
       - src: ./Packages/$packageSource$/*.dpk
