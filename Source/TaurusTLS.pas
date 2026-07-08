@@ -4868,6 +4868,7 @@ begin
   {$IFDEF FPC}
   FpsigEmptySet(LSigSet);
   FpSigAddSet(LSigSet, SIGPIPE);
+  pthread_sigmask(SIG_BLOCK, @LSigSet, nil);
 
   {$ELSE}
   sigemptyset(LSigSet);
