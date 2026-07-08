@@ -1,0 +1,135 @@
+# DPM package spec file
+min dpm client version: 1.0.0
+metadata:
+  id: TaurusTLS_Developers.TaurusTLS
+  version: 1.0.9
+  description: TaurusTLS provides OpenSSL 3.x and 4.x support for Indy - Internet Direct
+  icon: logo\bullhead.png
+  authors:
+    - TaurusTLS Developers
+  projectUrl: https://taurustls.org/
+  repositoryUrl: https://github.com/TaurusTLS-Developers/TaurusTLS
+  license: Mozilla Public License 1.1
+  copyright: TaurusTLS Developers
+  tags:
+    - indy
+    - TLS
+    - OpenSSL
+  readme: README.md
+variables:
+  packagesource: d$compilerCodeName$
+targetPlatforms:
+  - compiler: delphi10.0
+    platforms:
+      - win32
+      - win64
+      - macos32
+      - android
+      - ios32
+      - ios64
+      - iossimulator
+  - compiler: delphi10.1
+    platforms:
+      - win32
+      - win64
+      - android
+      - ios32
+      - ios64
+      - iossimulator
+  - compiler: delphi10.2
+    platforms:
+      - win32
+      - win64
+      - macos32
+      - android
+      - ios32
+      - ios64
+      - iossimulator
+      - linux64
+  - compiler: delphi10.3
+    platforms:
+      - win32
+      - win64
+      - macos32
+      - macos64
+      - android
+      - android64
+      - ios32
+      - ios64
+      - iossimulator
+      - linux64
+  - compiler: delphi10.4
+    platforms:
+      - win32
+      - win64
+      - macos64
+      - android
+      - android64
+      - ios64
+      - iossimulator
+      - linux64
+  - compiler: delphi11.0
+    platforms:
+      - win32
+      - win64
+      - macos64
+      - macosarm64
+      - android
+      - android64
+      - ios64
+      - linux64
+    variables:
+      packagesource: d11
+  - compiler: delphi12.0
+    platforms:
+      - win32
+      - win64
+      - macos64
+      - macosarm64
+      - android
+      - android64
+      - ios64
+      - linux64
+    variables:
+      packagesource: d12
+  - compiler: delphi13.0
+    platforms:
+      - win32
+      - win64
+      - winarm64ec
+      - macos64
+      - macosarm64
+      - android
+      - android64
+      - linux64
+    variables:
+      packagesource: d13
+templates:
+  - name: default
+    source:
+      - src: ./LICENSE.md
+      - src: ./LICENSE_MPL_1_1.txt
+      - src: ./Modified_BSD_LICENSE.md
+      - src: ./DifferencesBetweenIndyOpenSSLAndTaurusTLS.md
+      - src: ./What_needs_to_be_done.MD
+      - src: ./Source/*.inc
+      - src: ./Source/*.pas
+        exclude:
+          - '*.dcu'
+      - src: ./Source/*.dcr
+      - src: ./Packages/$packageSource$/*.dpk
+      - src: ./Packages/$packageSource$/*.dproj
+      - src: ./Help/chm/TaurusForIndy290All.chm
+      - src: /demos/**.*
+        exclude:
+          - '*.dcu'
+          - '*.obj'
+          - '*.exe'
+          - ''
+    build:
+      - project: ./Packages/$packageSource$/TaurusTLS_RT.dproj
+    design:
+      - project: ./Packages/$packageSource$/TaurusTLS_DT.dproj
+        platforms:
+          - win32
+          - win64

@@ -1662,6 +1662,8 @@ begin
   FIO := TTaurusTLSIOHandlerSocket.Create(nil);
   FIO.OnSSLNegotiated := OnSSLNegotiated;
   FIO.OnVerifyError := DoOnVerifyError;
+  //prevent the peer from misinterpretting unidirectional studown as an ABORT.
+  FIO.SSLOptions.UseBidirectionalShutdown := True;
   FFTP.IOHandler := FIO;
   FFTP.Passive := True;
   FLog := TTaurusTLSUnicodeLog.Create(nil);

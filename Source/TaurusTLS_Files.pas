@@ -418,7 +418,7 @@ function TaurusTLS_unicode_X509_load_cert_file(ctx: PX509_LOOKUP;
 }
 
 function by_TaurusTLS_unicode_file_ctrl(ctx: PX509_LOOKUP; cmd: TIdC_INT;
-  const argc: PAnsiChar; argl: TIdC_LONG; var ret: PAnsiChar): TIdC_INT; cdecl; //FI:O804 - method parameter is declared but never used.
+  const argc: PAnsiChar; argl: TIdC_LONG; var ret: PIdAnsiChar): TIdC_INT; cdecl; //FI:O804 - method parameter is declared but never used.
 {$IFNDEF USE_INLINE_VAR}
 var
   LFileName: String;
@@ -939,7 +939,7 @@ begin
     // we are using Unicode strings here.  So casting the UnicodeString to a
     // raw Pointer and then passing that to X509_LOOKUP_load_file() as PAnsiChar.
     // TaurusTLS_unicode_X509_LOOKUP_file will cast it back to PWideChar for processing...
-    if X509_LOOKUP_load_file(lookup, PAnsiChar(Pointer(AFileName)),
+    if X509_LOOKUP_load_file(lookup, PIdAnsiChar(Pointer(AFileName)),
       X509_FILETYPE_PEM) <> 1 then
     begin
       Exit;
@@ -948,7 +948,7 @@ begin
   if APathName <> '' then
   begin
     { TODO: Figure out how to do the hash dir lookup with a Unicode path. }
-    if X509_STORE_load_locations(ctx, nil, PAnsiChar(AnsiString(APathName))) <> 1
+    if X509_STORE_load_locations(ctx, nil, PIdAnsiChar(AnsiString(APathName))) <> 1
     then
     begin
       Exit;
@@ -1123,8 +1123,8 @@ begin
 {$IFDEF USE_MARSHALLED_PTRS}
     AsUtf8OrNil(M, AFileName), AsUtf8OrNil(M, APathName)
 {$ELSE}
-    PAnsiChar(Pointer(UTF8String(AFileName))), //PALOFF - Possible bad typecast - [AFileName : UnicodeString cast to PAnsiChar]
-    PAnsiChar(Pointer(UTF8String(APathName)))  //PALOFF - Possible bad typecast - [APathName : UnicodeString cast to PAnsiChar]
+    PIdAnsiChar(Pointer(UTF8String(AFileName))), //PALOFF - Possible bad typecast - [AFileName : UnicodeString cast to PAnsiChar]
+    PIdAnsiChar(Pointer(UTF8String(APathName)))  //PALOFF - Possible bad typecast - [APathName : UnicodeString cast to PAnsiChar]
 {$ENDIF}
     );
 end;
@@ -1166,7 +1166,7 @@ begin
 {$IFDEF USE_MARSHALLED_PTRS}
     M.AsUtf8(AFileName).ToPointer
 {$ELSE}
-    PAnsiChar(UTF8String(AFileName))  //PALOFF - Possible bad typecast -  [AFileName : UnicodeString cast to PAnsiChar]
+    PIdAnsiChar(UTF8String(AFileName))  //PALOFF - Possible bad typecast -  [AFileName : UnicodeString cast to PAnsiChar]
 {$ENDIF}
     , 'r');
   if Assigned(b) then
@@ -1214,21 +1214,21 @@ function TaurusTLS_SSL_load_client_CA_file(const AFileName: String)
   : PSTACK_OF_X509_NAME;
 {$IFDEF USE_INLINE} inline; {$ENDIF}
 begin
-  Result := SSL_load_client_CA_file(PAnsiChar(AFileName));
+  Result := SSL_load_client_CA_file(PIdAnsiChar(AFileName));
 end;
 
 function TaurusTLS_SSL_CTX_use_PrivateKey_file(ctx: PSSL_CTX; const AFileName: String;
   AType: Integer): TIdC_INT;
 {$IFDEF USE_INLINE} inline; {$ENDIF}
 begin
-  Result := SSL_CTX_use_PrivateKey_file(ctx, PAnsiChar(AFileName), AType);
+  Result := SSL_CTX_use_PrivateKey_file(ctx, PIdAnsiChar(AFileName), AType);
 end;
 
 function TaurusTLS_SSL_CTX_use_certificate_chain_file(ctx: PSSL_CTX;
   const AFileName: String): TIdC_INT;
 {$IFDEF USE_INLINE} inline; {$ENDIF}
 begin
-  Result := SSL_CTX_use_certificate_chain_file(ctx, PAnsiChar(AFileName));
+  Result := SSL_CTX_use_certificate_chain_file(ctx, PIdAnsiChar(AFileName));
 end;
 
 function TaurusTLS_X509_STORE_load_locations(ctx: PX509_STORE;
@@ -1241,8 +1241,8 @@ begin
   // to fail. Need to cast the string to an intermediate Pointer so the
   // PAnsiChar cast is applied to the raw data and thus can be nil...
   //
-  Result := X509_STORE_load_locations(ctx, PAnsiChar(Pointer(AFileName)),
-    PAnsiChar(Pointer(APathName)));
+  Result := X509_STORE_load_locations(ctx, PIdAnsiChar(Pointer(AFileName)),
+    PIdAnsiChar(Pointer(APathName)));
 end;
 
 function TaurusTLS_SSL_CTX_load_verify_locations(ctx: PSSL_CTX;
@@ -1254,8 +1254,8 @@ begin
   // to fail. Need to cast the string to an intermediate Pointer so the
   // PAnsiChar cast is applied to the raw data and thus can be nil...
   //
-  Result := SSL_CTX_load_verify_locations(ctx, PAnsiChar(Pointer(ACAFile)),
-    PAnsiChar(Pointer(ACAPath)));
+  Result := SSL_CTX_load_verify_locations(ctx, PIdAnsiChar(Pointer(ACAFile)),
+    PIdAnsiChar(Pointer(ACAPath)));
 end;
 
 function TaurusTLS_SSL_CTX_use_DHparams_file(ctx: PSSL_CTX; const AFileName: String;
@@ -1266,7 +1266,7 @@ var
   j: Integer;
 begin
   Result := 0;
-  b := BIO_new_file(PAnsiChar(AFileName), 'r');
+  b := BIO_new_file(PIdAnsiChar(AFileName), 'r');
   if Assigned(b) then
   begin
     try

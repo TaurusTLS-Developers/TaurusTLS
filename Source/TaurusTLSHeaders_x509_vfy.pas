@@ -449,8 +449,12 @@ type
   {$EXTERNALSYM X509_VERIFY_PARAM_move_peername} {introduced 1.1.0}
   {$EXTERNALSYM X509_VERIFY_PARAM_get0_email}
   {$EXTERNALSYM X509_VERIFY_PARAM_set1_email}
+  {$EXTERNALSYM X509_VERIFY_PARAM_add1_rfc822}
+  {$EXTERNALSYM X509_VERIFY_PARAM_add1_smtputf8}
   {$EXTERNALSYM X509_VERIFY_PARAM_set1_ip}
+  {$EXTERNALSYM X509_VERIFY_PARAM_add1_ip}
   {$EXTERNALSYM X509_VERIFY_PARAM_set1_ip_asc}
+  {$EXTERNALSYM X509_VERIFY_PARAM_add1_ip_asc}
   {$EXTERNALSYM X509_VERIFY_PARAM_get1_ip_asc}
   {$EXTERNALSYM X509_VERIFY_PARAM_get0_name}
   {$EXTERNALSYM X509_VERIFY_PARAM_add0_table}
@@ -711,14 +715,22 @@ var
   X509_VERIFY_PARAM_get0_host: function (param: PX509_VERIFY_PARAM; num: TIdC_INT): PIdAnsiChar; cdecl = nil; {introduced 3.0.0}
   X509_VERIFY_PARAM_set1_host: function (param: PX509_VERIFY_PARAM; const name: PIdAnsiChar; namelen: TIdC_SIZET): TIdC_INT; cdecl = nil;
   X509_VERIFY_PARAM_add1_host: function (param: PX509_VERIFY_PARAM; const name: PIdAnsiChar; namelen: TIdC_SIZET): TIdC_INT; cdecl = nil;
+
   X509_VERIFY_PARAM_set_hostflags: procedure (param: PX509_VERIFY_PARAM; flags: TIdC_UINT); cdecl = nil;
   X509_VERIFY_PARAM_get_hostflags: function (const param: PX509_VERIFY_PARAM): TIdC_UINT; cdecl = nil; {introduced 1.1.0}
+
   X509_VERIFY_PARAM_get0_peername: function (v1: PX509_VERIFY_PARAM): PIdAnsiChar; cdecl = nil;
   X509_VERIFY_PARAM_move_peername: procedure (v1: PX509_VERIFY_PARAM; v2: PX509_VERIFY_PARAM); cdecl = nil; {introduced 1.1.0}
+
   X509_VERIFY_PARAM_set1_email: function (param: PX509_VERIFY_PARAM; const email: PIdAnsiChar; emaillen: TIdC_SIZET): TIdC_INT; cdecl = nil;
+  X509_VERIFY_PARAM_add1_rfc822: function (param: PX509_VERIFY_PARAM; const email: PIdAnsiChar; emaillen: TIdC_SIZET): TIdC_INT; cdecl = nil;
+  X509_VERIFY_PARAM_add1_smtputf8: function (param: PX509_VERIFY_PARAM; const email: PIdAnsiChar; emaillen: TIdC_SIZET): TIdC_INT; cdecl = nil;
   X509_VERIFY_PARAM_get0_email: function(param: PX509_VERIFY_PARAM): PIdAnsiChar; cdecl = nil; {introduced 3.0.0}
+
   X509_VERIFY_PARAM_set1_ip: function (param: PX509_VERIFY_PARAM; const ip: PByte; iplen: TIdC_SIZET): TIdC_INT; cdecl = nil;
+  X509_VERIFY_PARAM_add1_ip: function (param: PX509_VERIFY_PARAM; const ip: PByte; iplen: TIdC_SIZET): TIdC_INT; cdecl = nil;
   X509_VERIFY_PARAM_set1_ip_asc: function (param: PX509_VERIFY_PARAM; const ipasc: PIdAnsiChar): TIdC_INT; cdecl = nil;
+  X509_VERIFY_PARAM_add1_ip_asc: function (param: PX509_VERIFY_PARAM; const ipasc: PIdAnsiChar): TIdC_INT; cdecl = nil;
   X509_VERIFY_PARAM_get1_ip_asc: function(param: PX509_VERIFY_PARAM): PIdAnsiChar; cdecl = nil; {introduced 3.0.0}
 
   X509_VERIFY_PARAM_get0_name: function (const param: PX509_VERIFY_PARAM): PIdAnsiChar; cdecl = nil;
@@ -994,14 +1006,22 @@ var
   function X509_VERIFY_PARAM_get0_host(param: PX509_VERIFY_PARAM; num: TIdC_INT): PIdAnsiChar; cdecl; external CLibCrypto; {introduced 3.0.0.}
   function X509_VERIFY_PARAM_set1_host(param: PX509_VERIFY_PARAM; const name: PIdAnsiChar; namelen: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
   function X509_VERIFY_PARAM_add1_host(param: PX509_VERIFY_PARAM; const name: PIdAnsiChar; namelen: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
+
   procedure X509_VERIFY_PARAM_set_hostflags(param: PX509_VERIFY_PARAM; flags: TIdC_UINT) cdecl; external CLibCrypto;
   function X509_VERIFY_PARAM_get_hostflags(const param: PX509_VERIFY_PARAM): TIdC_UINT cdecl; external CLibCrypto; {introduced 1.1.0}
+
   function X509_VERIFY_PARAM_get0_peername(v1: PX509_VERIFY_PARAM): PIdAnsiChar cdecl; external CLibCrypto;
   procedure X509_VERIFY_PARAM_move_peername(v1: PX509_VERIFY_PARAM; v2: PX509_VERIFY_PARAM) cdecl; external CLibCrypto; {introduced 1.1.0}
+
   function X509_VERIFY_PARAM_set1_email(param: PX509_VERIFY_PARAM; const email: PIdAnsiChar; emaillen: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
+  function X509_VERIFY_PARAM_add1_rfc822(param: PX509_VERIFY_PARAM; const email: PIdAnsiChar; emaillen: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
+  function X509_VERIFY_PARAM_add1_smtputf8(param: PX509_VERIFY_PARAM; const email: PIdAnsiChar; emaillen: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
   function X509_VERIFY_PARAM_get0_email(param: PX509_VERIFY_PARAM): PIdAnsiChar; cdecl; external CLibCrypto;
+
   function X509_VERIFY_PARAM_set1_ip(param: PX509_VERIFY_PARAM; const ip: PByte; iplen: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
+  function X509_VERIFY_PARAM_add1_ip(param: PX509_VERIFY_PARAM; const ip: PByte; iplen: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
   function X509_VERIFY_PARAM_set1_ip_asc(param: PX509_VERIFY_PARAM; const ipasc: PIdAnsiChar): TIdC_INT cdecl; external CLibCrypto;
+  function X509_VERIFY_PARAM_add1_ip_asc(param: PX509_VERIFY_PARAM; const ipasc: PIdAnsiChar): TIdC_INT cdecl; external CLibCrypto;
   function X509_VERIFY_PARAM_get1_ip_asc(param: PX509_VERIFY_PARAM): PIdAnsiChar cdecl; external CLibCrypto;
 
   function X509_VERIFY_PARAM_get_depth(const param: PX509_VERIFY_PARAM): TIdC_INT cdecl; external CLibCrypto;
@@ -1269,6 +1289,11 @@ const
   X509_load_cert_crl_file_ex_introduced = (byte(3) shl 8 or byte(0)) shl 8 or byte(0);
   X509_LOOKUP_store_introduced = (byte(3) shl 8 or byte(0)) shl 8 or byte(0);
 
+  X509_VERIFY_PARAM_add1_rfc822_introduced = (byte(4) shl 8 or byte(0)) shl 8 or byte(0);
+  X509_VERIFY_PARAM_add1_smtputf8_introduced = (byte(4) shl 8 or byte(0)) shl 8 or byte(0);
+  X509_VERIFY_PARAM_add1_ip_introduced = (byte(4) shl 8 or byte(0)) shl 8 or byte(0);
+  X509_VERIFY_PARAM_add1_ip_asc_introduced = (byte(4) shl 8 or byte(0)) shl 8 or byte(0);
+
 {helper_functions}
 function X509_LOOKUP_load_file(ctx: PX509_LOOKUP; name: PIdAnsiChar; type_: TIdC_LONG): TIdC_INT;
 begin
@@ -1512,14 +1537,22 @@ const
   X509_VERIFY_PARAM_get0_host_procname = 'X509_VERIFY_PARAM_get0_host'; {introduced 3.0.0.}
   X509_VERIFY_PARAM_set1_host_procname = 'X509_VERIFY_PARAM_set1_host';
   X509_VERIFY_PARAM_add1_host_procname = 'X509_VERIFY_PARAM_add1_host';
+
   X509_VERIFY_PARAM_set_hostflags_procname = 'X509_VERIFY_PARAM_set_hostflags';
   X509_VERIFY_PARAM_get_hostflags_procname = 'X509_VERIFY_PARAM_get_hostflags'; {introduced 1.1.0}
+
   X509_VERIFY_PARAM_get0_peername_procname = 'X509_VERIFY_PARAM_get0_peername';
   X509_VERIFY_PARAM_move_peername_procname = 'X509_VERIFY_PARAM_move_peername'; {introduced 1.1.0}
-  X509_VERIFY_PARAM_set1_email_procname = 'X509_VERIFY_PARAM_set1_email';
+
+  X509_VERIFY_PARAM_set1_email_procname = 'X509_VERIFY_PARAM_set1_email'; {introduced 4.0.0.}
+  X509_VERIFY_PARAM_add1_rfc822_procname = 'X509_VERIFY_PARAM_add1_rfc822'; {introduced 4.0.0.}
+  X509_VERIFY_PARAM_add1_smtputf8_procname = 'X509_VERIFY_PARAM_add1_smtputf8'; {introduced 4.0.0.}
   X509_VERIFY_PARAM_get0_email_procname = 'X509_VERIFY_PARAM_get0_email'; {introduced 3.0.0.}
+
   X509_VERIFY_PARAM_set1_ip_procname = 'X509_VERIFY_PARAM_set1_ip';
+  X509_VERIFY_PARAM_add1_ip_procname = 'X509_VERIFY_PARAM_add1_ip'; {introduced 4.0.0.}
   X509_VERIFY_PARAM_set1_ip_asc_procname = 'X509_VERIFY_PARAM_set1_ip_asc';
+  X509_VERIFY_PARAM_add1_ip_asc_procname = 'X509_VERIFY_PARAM_add1_ip_asc'; {introduced 4.0.0.}
   X509_VERIFY_PARAM_get1_ip_asc_procname = 'X509_VERIFY_PARAM_get1_ip_asc';  {introduced 3.5.0.}
 
   X509_VERIFY_PARAM_get_depth_procname = 'X509_VERIFY_PARAM_get_depth';
@@ -1653,6 +1686,27 @@ function FC_X509_load_cert_crl_file_ex(ctx: PX509_LOOKUP; const file_: PIdAnsiCh
 begin
   Result := X509_load_cert_crl_file(ctx,file_,type_);
 end;
+
+function FC_X509_VERIFY_PARAM_add1_rfc822(param: PX509_VERIFY_PARAM; const email: PIdAnsiChar; emaillen: TIdC_SIZET): TIdC_INT cdecl;
+begin
+  Result:=X509_VERIFY_PARAM_set1_email(param, email, emaillen);
+end;
+
+function FC_X509_VERIFY_PARAM_add1_smtputf8(param: PX509_VERIFY_PARAM; const email: PIdAnsiChar; emaillen: TIdC_SIZET): TIdC_INT cdecl;
+begin
+  Result:=X509_VERIFY_PARAM_set1_email(param, email, emaillen);
+end;
+
+function FC_X509_VERIFY_PARAM_add1_ip(param: PX509_VERIFY_PARAM; const ip: PByte; iplen: TIdC_SIZET): TIdC_INT cdecl;
+begin
+  Result:=X509_VERIFY_PARAM_set1_ip(param, ip, iplen);
+end;
+
+function FC_X509_VERIFY_PARAM_add1_ip_asc(param: PX509_VERIFY_PARAM; const ipasc: PIdAnsiChar): TIdC_INT cdecl;
+begin
+  Result:=X509_VERIFY_PARAM_set1_ip_asc(param, ipasc);
+end;
+
 {$I TaurusTLSUnusedParamOn.inc}
 {/forward_compatibility}
   {$I TaurusTLSNoRetValOff.inc} 
@@ -2750,10 +2804,19 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_VERIFY_PARAM_set1_email_procname);
 end;
 
+function  ERR_X509_VERIFY_PARAM_add1_rfc822(param: PX509_VERIFY_PARAM; const email: PIdAnsiChar; emaillen: TIdC_SIZET): TIdC_INT;  cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_VERIFY_PARAM_add1_rfc822_procname);
+end;
+
+function  ERR_X509_VERIFY_PARAM_add1_smtputf8(param: PX509_VERIFY_PARAM; const email: PIdAnsiChar; emaillen: TIdC_SIZET): TIdC_INT;  cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_VERIFY_PARAM_add1_smtputf8_procname);
+end;
 
 function ERR_X509_VERIFY_PARAM_get0_email(param: PX509_VERIFY_PARAM): PIdAnsiChar; cdecl;
 begin
-  ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_VERIFY_PARAM_set1_email_procname);
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_VERIFY_PARAM_get0_email_procname);
 end;
 
 function  ERR_X509_VERIFY_PARAM_set1_ip(param: PX509_VERIFY_PARAM; const ip: PByte; iplen: TIdC_SIZET): TIdC_INT; cdecl;
@@ -2761,10 +2824,19 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_VERIFY_PARAM_set1_ip_procname);
 end;
 
+function  ERR_X509_VERIFY_PARAM_add1_ip(param: PX509_VERIFY_PARAM; const ip: PByte; iplen: TIdC_SIZET): TIdC_INT; cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_VERIFY_PARAM_add1_ip_procname);
+end;
 
 function  ERR_X509_VERIFY_PARAM_set1_ip_asc(param: PX509_VERIFY_PARAM; const ipasc: PIdAnsiChar): TIdC_INT; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_VERIFY_PARAM_set1_ip_asc_procname);
+end;
+
+function  ERR_X509_VERIFY_PARAM_add1_ip_asc(param: PX509_VERIFY_PARAM; const ipasc: PIdAnsiChar): TIdC_INT; cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_VERIFY_PARAM_add1_ip_asc_procname);
 end;
 
 {introduced 3.0.0}
@@ -8552,6 +8624,69 @@ begin
     {$ifend}
   end;
 
+ {introduced 4.0.0}
+  X509_VERIFY_PARAM_add1_rfc822 := LoadLibFunction(ADllHandle, X509_VERIFY_PARAM_add1_rfc822_procname);
+  FuncLoadError := not assigned(X509_VERIFY_PARAM_add1_rfc822);
+  if FuncLoadError then
+  begin
+    {$if not defined(X509_VERIFY_PARAM_add1_rfc822_allownil)}
+    X509_VERIFY_PARAM_add1_rfc822 := ERR_X509_VERIFY_PARAM_add1_rfc822;
+    {$ifend}
+    {$if declared(X509_VERIFY_PARAM_add1_rfc822_introduced)}
+    if LibVersion < X509_VERIFY_PARAM_add1_rfc822_introduced then
+    begin
+      {$if declared(FC_X509_VERIFY_PARAM_add1_rfc822)}
+      X509_VERIFY_PARAM_add1_rfc822 := FC_X509_VERIFY_PARAM_add1_rfc822;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(X509_VERIFY_PARAM_add1_rfc822_removed)}
+    if X509_VERIFY_PARAM_add1_rfc822_removed <= LibVersion then
+    begin
+      {$if declared(_X509_VERIFY_PARAM_add1_rfc822)}
+      X509_VERIFY_PARAM_add1_rfc822 := _X509_VERIFY_PARAM_add1_rfc822;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(X509_VERIFY_PARAM_add1_rfc822_allownil)}
+    if FuncLoadError then
+      AFailed.Add('X509_VERIFY_PARAM_add1_rfc822');
+    {$ifend}
+  end;
+
+ {introduced 4.0.0}
+  X509_VERIFY_PARAM_add1_smtputf8 := LoadLibFunction(ADllHandle, X509_VERIFY_PARAM_add1_smtputf8_procname);
+  FuncLoadError := not assigned(X509_VERIFY_PARAM_add1_smtputf8);
+  if FuncLoadError then
+  begin
+    {$if not defined(X509_VERIFY_PARAM_add1_smtputf8_allownil)}
+    X509_VERIFY_PARAM_add1_smtputf8 := ERR_X509_VERIFY_PARAM_add1_smtputf8;
+    {$ifend}
+    {$if declared(X509_VERIFY_PARAM_add1_smtputf8_introduced)}
+    if LibVersion < X509_VERIFY_PARAM_add1_smtputf8_introduced then
+    begin
+      {$if declared(FC_X509_VERIFY_PARAM_add1_smtputf8)}
+      X509_VERIFY_PARAM_add1_smtputf8 := FC_X509_VERIFY_PARAM_add1_smtputf8;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(X509_VERIFY_PARAM_add1_smtputf8_removed)}
+    if X509_VERIFY_PARAM_add1_smtputf8_removed <= LibVersion then
+    begin
+      {$if declared(_X509_VERIFY_PARAM_add1_smtputf8)}
+      X509_VERIFY_PARAM_add1_smtputf8 := _X509_VERIFY_PARAM_add1_smtputf8;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(X509_VERIFY_PARAM_add1_smtputf8_allownil)}
+    if FuncLoadError then
+      AFailed.Add('X509_VERIFY_PARAM_add1_smtputf8');
+    {$ifend}
+  end;
 
  {introduced 3.0.0}
   X509_VERIFY_PARAM_get0_email := LoadLibFunction(ADllHandle, X509_VERIFY_PARAM_get0_email_procname);
@@ -8617,6 +8752,37 @@ begin
     {$ifend}
   end;
 
+ {introduced 4.0.0}
+  X509_VERIFY_PARAM_add1_ip := LoadLibFunction(ADllHandle, X509_VERIFY_PARAM_add1_ip_procname);
+  FuncLoadError := not assigned(X509_VERIFY_PARAM_add1_ip);
+  if FuncLoadError then
+  begin
+    {$if not defined(X509_VERIFY_PARAM_add1_ip_allownil)}
+    X509_VERIFY_PARAM_add1_ip := ERR_X509_VERIFY_PARAM_add1_ip;
+    {$ifend}
+    {$if declared(X509_VERIFY_PARAM_add1_ip_introduced)}
+    if LibVersion < X509_VERIFY_PARAM_add1_ip_introduced then
+    begin
+      {$if declared(FC_X509_VERIFY_PARAM_add1_ip)}
+      X509_VERIFY_PARAM_add1_ip := FC_X509_VERIFY_PARAM_add1_ip;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(X509_VERIFY_PARAM_add1_ip_removed)}
+    if X509_VERIFY_PARAM_add1_ip_removed <= LibVersion then
+    begin
+      {$if declared(_X509_VERIFY_PARAM_add1_ip)}
+      X509_VERIFY_PARAM_add1_ip := _X509_VERIFY_PARAM_add1_ip;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(X509_VERIFY_PARAM_add1_ip_allownil)}
+    if FuncLoadError then
+      AFailed.Add('X509_VERIFY_PARAM_add1_ip');
+    {$ifend}
+  end;
 
   X509_VERIFY_PARAM_set1_ip_asc := LoadLibFunction(ADllHandle, X509_VERIFY_PARAM_set1_ip_asc_procname);
   FuncLoadError := not assigned(X509_VERIFY_PARAM_set1_ip_asc);
@@ -8646,6 +8812,38 @@ begin
     {$if not defined(X509_VERIFY_PARAM_set1_ip_asc_allownil)}
     if FuncLoadError then
       AFailed.Add('X509_VERIFY_PARAM_set1_ip_asc');
+    {$ifend}
+  end;
+
+ {introduced 4.0.0}
+  X509_VERIFY_PARAM_add1_ip_asc := LoadLibFunction(ADllHandle, X509_VERIFY_PARAM_add1_ip_asc_procname);
+  FuncLoadError := not assigned(X509_VERIFY_PARAM_add1_ip_asc);
+  if FuncLoadError then
+  begin
+    {$if not defined(X509_VERIFY_PARAM_add1_ip_asc_allownil)}
+    X509_VERIFY_PARAM_add1_ip_asc := ERR_X509_VERIFY_PARAM_add1_ip_asc;
+    {$ifend}
+    {$if declared(X509_VERIFY_PARAM_add1_ip_asc_introduced)}
+    if LibVersion < X509_VERIFY_PARAM_add1_ip_asc_introduced then
+    begin
+      {$if declared(FC_X509_VERIFY_PARAM_add1_ip_asc)}
+      X509_VERIFY_PARAM_add1_ip_asc := FC_X509_VERIFY_PARAM_add1_ip_asc;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(X509_VERIFY_PARAM_add1_ip_asc_removed)}
+    if X509_VERIFY_PARAM_add1_ip_asc_removed <= LibVersion then
+    begin
+      {$if declared(_X509_VERIFY_PARAM_add1_ip_asc)}
+      X509_VERIFY_PARAM_add1_ip_asc := _X509_VERIFY_PARAM_add1_ip_asc;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(X509_VERIFY_PARAM_add1_ip_asc_allownil)}
+    if FuncLoadError then
+      AFailed.Add('X509_VERIFY_PARAM_add1_ip_asc');
     {$ifend}
   end;
 
@@ -9423,8 +9621,12 @@ begin
   X509_VERIFY_PARAM_get0_peername := nil;
   X509_VERIFY_PARAM_move_peername := nil; {introduced 1.1.0}
   X509_VERIFY_PARAM_set1_email := nil;
+  X509_VERIFY_PARAM_add1_rfc822 := nil;
+  X509_VERIFY_PARAM_add1_smtputf8 := nil;
   X509_VERIFY_PARAM_set1_ip := nil;
+  X509_VERIFY_PARAM_add1_ip := nil;
   X509_VERIFY_PARAM_set1_ip_asc := nil;
+  X509_VERIFY_PARAM_add1_ip_asc := nil;
   X509_VERIFY_PARAM_get_depth := nil;
   X509_VERIFY_PARAM_get_auth_level := nil; {introduced 1.1.0}
   X509_VERIFY_PARAM_get0_name := nil;
