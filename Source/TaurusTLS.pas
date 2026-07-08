@@ -4895,27 +4895,6 @@ begin
   Result.VerifyHostname := VerifyHostname;
 end;
 
-// SIGPIPE crash mitigation in Linux
-procedure SetSigpipeMask; {$IFDEF USE_INLINE}inline; {$ENDIF}
-{$IFDEF SIGPIPE_MASK}
-var
-  LSigSet: sigset_t;
-{$ENDIF}
-begin
-{$IFDEF SIGPIPE_MASK}
-  {$IFDEF FPC}
-  FpsigEmptySet(LSigSet);
-  FpSigAddSet(LSigSet, SIGPIPE);
-  pthread_sigmask(SIG_BLOCK, @LSigSet, nil);
-
-  {$ELSE}
-  sigemptyset(LSigSet);
-  sigaddset(LSigSet, SIGPIPE);
-  pthread_sigmask(SIG_BLOCK, @LSigSet, nil);
-  {$ENDIF}
-{$ENDIF}
-end;    //PALOFF - surpress empty begin/end block
-
 { TTaurusTLSSocket }
 
 constructor TTaurusTLSSocket.Create(AParent: TObject);
