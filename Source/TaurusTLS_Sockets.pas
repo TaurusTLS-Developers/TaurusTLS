@@ -17,6 +17,14 @@ interface
 uses
   Classes,
   SysUtils,
+{$IFDEF SIGPIPE_MASK}
+  {$IFDEF FPC}
+  BaseUnix,
+  pthreads,
+  {$ELSE}
+  Posix.Signal,
+  {$ENDIF}
+{$ENDIF}
   Generics.Collections,
   IdCTypes,
   IdGlobal,
@@ -1060,6 +1068,18 @@ type
     echCliRetryConfig, echCliNotConfigured);
 
   TTaurusTLSSslSocket = class
+{$IFDEF SIGPIPE_MASK}
+{ BUGFIX: Fixes issue #217 and #240 }
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict {$ENDIF}private class var
+    /// <summary>
+    /// This variable needs to mitigate SIGPIPE crash in Linux environment
+    /// This variable is initialized in the <c>class constructor Create</c>
+    /// once and used in the methods <c>Accpet</c> and <c>Connect</c> to setup
+    /// POSIX thread.
+    /// </summary>
+    FSigSet: sigset_t;
+{$ENDIF}
+
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
   {$IFDEF DCC}
     [Volatile]
@@ -1086,6 +1106,14 @@ type
       var AOutLen: TIdC_UINT8; const AInProtos: PIdAnsiChar;
       AInLen: TIdC_UINT; AArg: Pointer): TIdC_INT; static; cdecl;
 
+{$IFDEF SIGPIPE_MASK}
+{ BUGFIX: Fixes issue #217 and #240 }
+    /// <summary>
+    /// The <c>MaskSigPipe</c> excludes the POSIX SIGPIPE signal
+    /// for the running thread.
+    /// </summary>
+    class procedure MaskSigPipe;  static; {$IFDEF USE_INLINE}inline; {$ENDIF}
+{$ENDIF}
 
   protected
     FSSL: PSSL;
@@ -1119,6 +1147,13 @@ type
     property SocketHandle: TIdStackSocketHandle read FSocketHandle write FSocketHandle;
     property PeerCertificate: TTaurusTLSX509 read GetPerCertificate;
   public
+{$IFDEF SIGPIPE_MASK}
+{ BUGFIX: Fixes issue #217 and #240 }
+    /// <summary>
+    /// Initialized the <c>FSigSet</c> variable once on application starts.
+    /// </summary?
+    class constructor Create;
+{$ENDIF}
     // Accepts the interface rather than raw class
     constructor Create(const AConfigIntf: ITaurusTLSSslSocketCtx); virtual;
     destructor Destroy; override;
@@ -3457,6 +3492,21 @@ end;
 
 { TTaurusTLSSslSocket }
 
+{$IFDEF SIGPIPE_MASK}
+{ BUGFIX: Fixes issue #217 and #240 }
+class constructor TTaurusTLSSslSocket.Create;
+begin
+  // We initialize the FSigSet once to eliminate the variable setup in each thread.
+{$IFDEF DCC}
+  sigemptyset(FSigSet);
+  sigaddset(FSigSet, SIGPIPE);
+{$ELSE}
+  FpsigEmptySet(FSigSet);
+  FpSigAddSet(FSigSet, SIGPIPE);
+{$ENDIF}
+end;
+{$ENDIF}
+
 constructor TTaurusTLSSslSocket.Create(const AConfigIntf: ITaurusTLSSslSocketCtx);
 begin
   Assert(Assigned(AConfigIntf), '''AConfigIntf'' should not be ''nil''.'); //Do not localize
@@ -3472,13 +3522,21 @@ begin
   inherited;
 end;
 
+{$IFDEF SIGPIPE_MASK}
+{ BUGFIX: Fixes issue #217 and #240 }
+class procedure TTaurusTLSSslSocket.MaskSigPipe;
+begin
+  pthread_sigmask(SIG_BLOCK, @FSigSet, nil);
+end;
+{$ENDIF}
+
 procedure TTaurusTLSSslSocket.InitSSL;
 var
   lErr: TIdC_INT;
-  
+
 begin
   try
-    // 1. Allocate the SSL session structure using the pinned context [3]
+    // 1. Allocate the SSL session structure using the pinned context
     FSSL:=SSL_new(FCtx.SSLCtx);
     if not Assigned(FSSL) then
       ETaurusTLSCreatingSessionError.RaiseWithMessage(RSSSLCreatingSessionError);
@@ -3489,11 +3547,16 @@ begin
       ETaurusTLSDataBindingError.RaiseException(FSSL, lErr,
         RMSG_SslSocketSetAppData_err);
 
-    // 3. Do Socket/Connection specific configuration (Virtual polymorphic hook) [2.2]
+    // 3. Do Socket/Connection specific configuration (Virtual polymorphic hook)
     SetupConnection;
 
     // 4. Register the callback bridges
     InitSSLCallbacks;
+
+    // 5. For Linux only: mask SIGPIPE signal for the current thread.
+{$IFDEF SIGPIPE_MASK}
+    MaskSigPipe;
+{$ENDIF}
   except
     on E: Exception do
     begin
