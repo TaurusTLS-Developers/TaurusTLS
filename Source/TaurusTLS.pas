@@ -1318,7 +1318,15 @@ type
     fHostName: String;
     fVerifyHostname: Boolean;
 {$IFDEF SIGPIPE_MASK}
-     FSigSet: sigset_t;
+{ BUGFIX: Fixes issue #217 and #240 }
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict {$ENDIF}private class var
+    /// <summary>
+    /// This variable needs to mitigate SIGPIPE crash in Linux environment
+    /// This variable is initialized in the <c>class constructor Create</c>
+    /// once and used in the methods <c>Accpet</c> and <c>Connect</c> to setup
+    /// POSIX thread.
+    /// </summary>
+    FSigSet: sigset_t;
 {$ENDIF}
     function GetSSLProtocolVersion: TTaurusTLSSSLVersion;
     function GetSSLProtocolVersionStr: string;
@@ -1328,9 +1336,21 @@ type
     function GetVerifyHostname: Boolean;
     procedure SetVerifyHostName(const Value: Boolean);
 {$IFDEF SIGPIPE_MASK}
-    procedure DisableSigPipe;
+{ BUGFIX: Fixes issue #217 and #240 }
+    /// <summary>
+    /// The <c>MaskSigPipe</c> excludes the POSIX SIGPIPE signal
+    /// for the running thread.
+    /// </summary>
+    class procedure MaskSigPipe;  {$IFDEF USE_INLINE}inline; {$ENDIF}
 {$ENDIF}
   public
+{$IFDEF SIGPIPE_MASK}
+{ BUGFIX: Fixes issue #217 and #240 }
+    /// <summary>
+    /// Initialized the <c>FSigSet</c> variable once on application starts.
+    /// </summary?
+    class constructor Create;
+{$ENDIF}
     /// <summary>
     /// Creates a new instance of TTaurusTLSSocket.
     /// </summary>
@@ -4897,6 +4917,21 @@ end;
 
 { TTaurusTLSSocket }
 
+{$IFDEF SIGPIPE_MASK}
+{ BUGFIX: Fixes issue #217 and #240 }
+class constructor TTaurusTLSSocket.Create;
+begin
+  // We initialize the FSigSet once to eliminate the variable setup in each thread.
+{$IFDEF DCC}
+  sigemptyset(FSigSet);
+  sigaddset(FSigSet, SIGPIPE);
+{$ELSE}
+  FpsigEmptySet(FSigSet);
+  FpSigAddSet(FSigSet, SIGPIPE);
+{$ENDIF}
+end;
+{$ENDIF}
+
 constructor TTaurusTLSSocket.Create(AParent: TObject);
 begin
   inherited Create;
@@ -4954,7 +4989,8 @@ begin
   Assert(fSSL = nil);
   Assert(fSSLContext <> nil);
 {$IFDEF SIGPIPE_MASK}
-  DisableSigPipe;
+{ BUGFIX: Fixes issue #217 and #240 }
+  MaskSigPipe;
 {$ENDIF}
   fSSL := SSL_new(fSSLContext.Context);
   if fSSL = nil then
@@ -5026,7 +5062,8 @@ begin
   Assert(fSSL = nil);
   Assert(fSSLContext <> nil);
 {$IFDEF SIGPIPE_MASK}
-  DisableSigPipe;
+{ BUGFIX: Fixes issue #217 and #240 }
+  MaskSigPipe;
 {$ENDIF}
   if Supports(FParent, ITaurusTLSCallbackHelper, IInterface(LHelper)) then
   begin
@@ -5287,10 +5324,9 @@ begin
 end;
 
 {$IFDEF SIGPIPE_MASK}
-procedure TTaurusTLSSocket.DisableSigPipe;
+{ BUGFIX: Fixes issue #217 and #240 }
+class procedure TTaurusTLSSocket.MaskSigPipe;
 begin
-  sigemptyset(FSigSet);
-  sigaddset(FSigSet, SIGPIPE);
   pthread_sigmask(SIG_BLOCK, @FSigSet, nil);
 end;
 {$ENDIF}
