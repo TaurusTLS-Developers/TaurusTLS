@@ -849,8 +849,8 @@ type
     procedure SetHostCheckFlags(const AValue: TTaurusTLSX509HostCheckFlags);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
-    procedure AddHost(AValue: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure SetHost(const Item: TIdC_INT; AValue: string);
+    procedure AddHost(const AValue: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetHost(const Item: TIdC_INT; const AValue: string);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetHost(const Item: TIdC_INT): string;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -858,8 +858,8 @@ type
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetHostCount: TIdC_INT;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure AddEMail(AValue: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure SetEmail(const Item: TIdC_INT; AValue: string);
+    procedure AddEMail(const AValue: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetEmail(const Item: TIdC_INT; const AValue: string);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetEmail(const Item: TIdC_INT): string;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -867,8 +867,8 @@ type
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetEmailCount: TIdC_INT;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure AddIpAddress(AValue: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure SetIpAddress(const Item: TIdC_INT; AValue: string);
+    procedure AddIpAddress(const AValue: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetIpAddress(const Item: TIdC_INT; const AValue: string);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetIpAddress(const Item: TIdC_INT): string;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -911,11 +911,11 @@ type
     property HostCheckFlags: TTaurusTLSX509HostCheckFlags read FHostCheckFlags
       write SetHostCheckFlags;
     property Purpose: TTaurusTLSX509Purpose read FPurpose;
-    property Hosts[const Item: TIdC_INT]: string read GetHost;
+    property Hosts[const Item: TIdC_INT]: string read GetHost; // PALOFF 'Array properties that are referenced/set within methods'
     property HostCount: TIdC_INT read GetHostCount;
-    property Emails[const Item: TIdC_INT]: string read GetEmail;
+    property Emails[const Item: TIdC_INT]: string read GetEmail; // PALOFF 'Array properties that are referenced/set within methods'
     property EmailCount: TIdC_INT read GetEmailCount;
-    property IpAddresses[const Item: TIdC_INT]: string read GetIpAddress;
+    property IpAddresses[const Item: TIdC_INT]: string read GetIpAddress; // PALOFF 'Array properties that are referenced/set within methods'
     property IpAddressCount: TIdC_INT read GetIpAddressCount;
   end;
 
@@ -4665,7 +4665,7 @@ begin
   end;
 end;
 
-procedure TTaurusTLSMetaX509VerifyParam.AddHost(AValue: string);
+procedure TTaurusTLSMetaX509VerifyParam.AddHost(const AValue: string);
 begin
   Lock;
   try
@@ -4677,7 +4677,7 @@ begin
 end;
 
 procedure TTaurusTLSMetaX509VerifyParam.SetHost(
-  const Item: TIdC_INT; AValue: string);
+  const Item: TIdC_INT; const AValue: string);
 begin
   Lock;
   try
@@ -4705,7 +4705,7 @@ begin
   end;
 end;
 
-procedure TTaurusTLSMetaX509VerifyParam.AddEMail(AValue: string);
+procedure TTaurusTLSMetaX509VerifyParam.AddEMail(const AValue: string);
 begin
   Lock;
   try
@@ -4717,7 +4717,7 @@ begin
 end;
 
 procedure TTaurusTLSMetaX509VerifyParam.SetEmail(
-  const Item: TIdC_INT; AValue: string);
+  const Item: TIdC_INT; const AValue: string);
 begin
   Lock;
   try
@@ -4745,7 +4745,7 @@ begin
   end;
 end;
 
-procedure TTaurusTLSMetaX509VerifyParam.AddIpAddress(AValue: string);
+procedure TTaurusTLSMetaX509VerifyParam.AddIpAddress(const AValue: string);
 begin
   Lock;
   try
@@ -4822,7 +4822,7 @@ begin
 end;
 
 procedure TTaurusTLSMetaX509VerifyParam.SetIpAddress(
-  const Item: TIdC_INT; AValue: string);
+  const Item: TIdC_INT; const AValue: string);
 begin
   Lock;
   try

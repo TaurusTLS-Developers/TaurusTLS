@@ -1094,8 +1094,8 @@ type
   {$IFDEF FPC}
     {$WARN 3018 off : Constructor should be public}
   {$ENDIF}
-    constructor Create(const ACtx: TStoreCtx;
-        ALoadFilter: TStoreItemTypes = cStoreAElementsAll); overload;   // PALOFF 'Non-public constructors/destructors'
+    constructor Create(const ACtx: TStoreCtx;  // PALOFF 'Non-public constructors/destructors'
+        ALoadFilter: TStoreItemTypes = cStoreAElementsAll); overload;
   {$IFDEF FPC}
     {$WARN 3018 off : Constructor should be public}
   {$ENDIF}

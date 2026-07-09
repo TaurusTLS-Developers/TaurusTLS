@@ -355,7 +355,7 @@ begin
 end;
 
 {$IF NOT DECLARED(rpos)}
-function RPos(Substr: string; S: string): Integer;
+function RPos(const Substr: string; const S: string): Integer;
 var
   i: Integer;
 begin
