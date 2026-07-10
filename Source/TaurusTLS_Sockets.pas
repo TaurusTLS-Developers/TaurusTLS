@@ -467,22 +467,24 @@ type
     slfFrozen,
     slfClient,
     slfServer,
-    slfVerifyHostname
+    slfVerifyHostname,
+    slfUniDirectShutdown,
+    slfQuietShutdown
   );
 
   TaurusTLSSslSocketCtxFlags = set of TaurusTLSSslSocketCtxFlag;
 
   TaurusTLSSslSocketCtxFlagsHelper = record helper for TaurusTLSSslSocketCtxFlags
   private
-    function GetIsFrozen: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetIsClientSocket: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetIsServerSocket: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetVerifyHostName: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetFlag(const AFlag: TaurusTLSSslSocketCtxFlag): boolean;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
   public
-    property IsFrozen: boolean read GetIsFrozen;
-    property IsClientSocket: boolean read GetIsClientSocket;
-    property IsServerSocket: Boolean read GetIsServerSocket;
-    property VerifyHostName: boolean read GetVerifyHostName;
+    property IsFrozen: boolean index slfFrozen read GetFlag;
+    property IsClientSocket: boolean index slfClient read GetFlag;
+    property IsServerSocket: boolean index slfServer read GetFlag;
+    property VerifyHostName: boolean index slfVerifyHostname read GetFlag;
+    property UniDirectShutdown: boolean index slfUniDirectShutdown read GetFlag;
+    property QuietShutdown: boolean index slfQuietShutdown read GetFlag;
   end;
 
   TTaurusTLSMetaX509VerifyParam = class;
@@ -958,6 +960,17 @@ type
     FOnKeyLog: TTaurusTLSOnKeyLog;
 
     // Property Setters
+    function GetFlag(const AFlag: TaurusTLSSslSocketCtxFlag): boolean;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetVerifyHostName: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetUniDirectShutdown: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetQuietShutdown: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetVerifyHostName(const AValue: boolean);
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetUniDirectShutdown(const AValue: boolean);
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetQuietShutdown(const AValue: boolean);
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure SetCertVerifyFlags(const AValue: TTaurusTLSVerifyModes);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure SetSSLContextOptions(const AValue: TTaurusTLSSSLOptionFlags);
@@ -994,10 +1007,6 @@ type
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure SetOnVerifyCertificate(const AValue: TTaurusTLSOnVerifyCallback);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure SetVerifyHostName(const AValue: boolean);
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetVerifyHostName: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
-
 
   protected
     procedure Lock; {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -1042,6 +1051,10 @@ type
     property CertVerifyFlags: TTaurusTLSVerifyModes read FCertVerifyFlags
       write SetCertVerifyFlags;
     property VerifyHostName: boolean read GetVerifyHostName write SetVerifyHostName;
+    property UniDirectShutdown: boolean read GetUniDirectShutdown
+      write SetUniDirectShutdown;
+    property QuietShutdown: boolean read GetQuietShutdown
+      write SetQuietShutdown;
     property Flags: TaurusTLSSslSocketCtxFlags read FFlags;
 
     // Events
@@ -2075,24 +2088,10 @@ end;
 
 { TaurusTLSSslSocketCtxFlagsHelper }
 
-function TaurusTLSSslSocketCtxFlagsHelper.GetIsClientSocket: boolean;
+function TaurusTLSSslSocketCtxFlagsHelper.GetFlag(
+  const AFlag: TaurusTLSSslSocketCtxFlag): boolean;
 begin
-  Result:=slfClient in Self;
-end;
-
-function TaurusTLSSslSocketCtxFlagsHelper.GetIsFrozen: boolean;
-begin
-  Result:=slfFrozen in Self;
-end;
-
-function TaurusTLSSslSocketCtxFlagsHelper.GetIsServerSocket: boolean;
-begin
-  Result:=slfServer in Self;
-end;
-
-function TaurusTLSSslSocketCtxFlagsHelper.GetVerifyHostName: boolean;
-begin
-  Result:=slfVerifyHostname in Self;
+  Result:=AFlag in Self;
 end;
 
 { TTaurusTLSSslSocketCtxBuilder }
@@ -2326,9 +2325,48 @@ begin
     Exclude(FFlags, slfVerifyHostname);
 end;
 
+procedure TTaurusTLSSslSocketCtxBuilder.SetUniDirectShutdown(
+  const AValue: boolean);
+begin
+  if AValue then
+  begin
+    Include(FFlags, slfUniDirectShutdown);
+    Exclude(FFlags, slfQuietShutdown);
+  end
+  else
+    Exclude(FFlags, slfUniDirectShutdown);
+end;
+
+procedure TTaurusTLSSslSocketCtxBuilder.SetQuietShutdown(const AValue: boolean);
+begin
+  if AValue then
+  begin
+    Include(FFlags, slfQuietShutdown);
+    Exclude(FFlags, slfUniDirectShutdown);
+  end
+  else
+    Exclude(FFlags, slfQuietShutdown);
+end;
+
+function TTaurusTLSSslSocketCtxBuilder.GetFlag(
+  const AFlag: TaurusTLSSslSocketCtxFlag): boolean;
+begin
+  Result:=AFlag in FFlags;
+end;
+
+function TTaurusTLSSslSocketCtxBuilder.GetQuietShutdown: boolean;
+begin
+  Result:=GetFlag(slfQuietShutdown);
+end;
+
+function TTaurusTLSSslSocketCtxBuilder.GetUniDirectShutdown: boolean;
+begin
+  Result:=GetFlag(slfUniDirectShutdown);
+end;
+
 function TTaurusTLSSslSocketCtxBuilder.GetVerifyHostName: boolean;
 begin
-  Result:=slfVerifyHostname in FFlags;
+  Result:=GetFlag(slfVerifyHostname);
 end;
 
 procedure TTaurusTLSSslSocketCtxBuilder.SetVerifyModes(
@@ -2739,6 +2777,8 @@ begin
     ETaurusTLSDataBindingError.RaiseWithMessage(
       { TODO : To make ResourseString }
       'Unable to link TTaurusTLSSslSocketCtx instance with SSL_CTX object');
+  if Flags.QuietShutdown then
+    SSL_CTX_set_quiet_shutdown(SSLCtx, 1);
 
   if HasOnKeylog then
     SSL_CTX_set_keylog_callback(SSLCtx, CbCtxKeyLog);
@@ -3628,43 +3668,27 @@ end;
 procedure TTaurusTLSSslSocket.DoShutdown;
 var
   lRet: Integer;
-
 begin
   try
-    try
-      ERR_clear_error;
-      lRet:=SSL_shutdown(FSSL);
+    ERR_clear_error;
+    lRet := SSL_shutdown(FSSL);
 
-      // 1. Handle C-Style OpenSSL Failures
-      if lRet < 0 then
-      begin
-        // If the first call fails (e.g. session was already broken or uninitialized),
-        // transition to closed immediately to safely deallocate the SSL handle and exit.
-        TransitionTo(seClosed);
-        Exit;
-      end;
+    // 1. Handle C-Style OpenSSL Failures
+    if lRet < 0 then
+      Exit; // Triggers the finally block to transition to seClosed cleanly.
 
-      if lRet = 0 then
-      begin
-        // Sent close_notify successfully.
-        // In blocking mode, calling it a second time will block synchronously
-        // until the peer's close_notify is read or a socket timeout/error occurs.
-        SSL_shutdown(FSSL);
-      end;
-
-      // Even if the second call fails (returns < 0) due to a late TCP RST,
-      // the next line will still transition to seClosed cleanly.
-      TransitionTo(seClosed);
-    except
-      on E: Exception do
-      begin
-        // 2. Handle Physical Transport Exceptions
-        // If Indy's transport layer raises a physical Delphi exception (e.g. timeout)
-        // during the second blocking call, catch it and force safe teardown.
-        TransitionTo(seClosed);
-      end;
+    if (lRet = 0) and (not Ctx.Flags.UniDirectShutdown) then
+    begin
+      // Sent close_notify successfully.
+      // In blocking mode, calling it a second time will block synchronously
+      // until the peer's close_notify is read or a socket timeout/error occurs.
+      SSL_shutdown(FSSL);
     end;
+
   finally
+    // Guarantees that the socket transitions to seClosed on every path,
+    // and clears the unmanaged thread-local error queue safely.
+    TransitionTo(seClosed);
     ERR_clear_error;
   end;
 end;
