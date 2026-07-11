@@ -1176,14 +1176,14 @@ var
   function BIO_get_shutdown(a: PBIO): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
   procedure BIO_vfree(a: PBIO) cdecl; external CLibCrypto;
   function BIO_up_ref(a: PBIO): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
-  function BIO_read(b: PBIO; data: Pointer; dlen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
-  function BIO_read_ex(b: PBIO; data: Pointer; dlen: TIdC_SIZET; var readbytes: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  function BIO_read(b: PBIO; var data; dlen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  function BIO_read_ex(b: PBIO; var data; dlen: TIdC_SIZET; var readbytes: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
   function BIO_recvmmsg(b : PBIO; msg : PBIO_MSG;
     stride, num_msg : TIdC_SIZET; flags : TIdC_UINT64;
     msgs_processed : PIdC_SIZET): TIdC_INT;  cdecl; external CLibCrypto; {introduced 3.2.0}
   function BIO_gets( bp: PBIO; buf: PIdAnsiChar; size: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
-  function BIO_write(b: PBIO; const data: Pointer; dlen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
-  function BIO_write_ex(b: PBIO; const data: Pointer; dlen: TIdC_SIZET; var written: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  function BIO_write(b: PBIO; const data; dlen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  function BIO_write_ex(b: PBIO; const data; dlen: TIdC_SIZET; var written: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
 
   function BIO_sendmmsg(b0 : PBIO; msg : PBIO_MSG;
     stride, num_msg : TIdC_SIZET; flags : TIdC_UINT64;
@@ -1378,8 +1378,15 @@ function BIO_set_mem_eof_return(b: PBIO; v: TIdC_INT): TIdC_INT; {removed 1.0.0}
 {$ENDIF}
 
 function BIO_dgram_get_local_addr_enable(b : PBIO; out penable : TIdC_INT) : TIdC_INT;
+  {$IFDEF USE_INLINE}inline; {$ENDIF}
 function BIO_dgram_set_local_addr_enable(b : PBIO; enable : TIdC_INT) : TIdC_INT;
+  {$IFDEF USE_INLINE}inline; {$ENDIF}
 function BIO_dgram_get_local_addr_cap(b : PBIO) : TIdC_INT;
+  {$IFDEF USE_INLINE}inline; {$ENDIF}
+function BIO_reset(b: PBIO): TIdC_INT; {$IFDEF USE_INLINE}inline;{$ENDIF}
+function BIO_eof(b: PBIO): TIdC_INT; {$IFDEF USE_INLINE}inline;{$ENDIF}
+function BIO_get_close(b: PBIO): TIdC_INT; {$IFDEF USE_INLINE}inline;{$ENDIF}
+function BIO_set_close(b: PBIO; c: TIdC_INT): TIdC_INT; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
 implementation
 
@@ -1390,22 +1397,41 @@ implementation
     ,TaurusTLSLoader
   {$ENDIF};
 
+{ OpenSSL macro wrappers }
+
 function BIO_dgram_get_local_addr_enable(b : PBIO; out penable : TIdC_INT) : TIdC_INT;
-{$IFDEF USE_INLINE}inline; {$ENDIF}
 begin
   Result := BIO_ctrl(b, BIO_CTRL_DGRAM_GET_LOCAL_ADDR_ENABLE, 0, @penable);
 end;
 
 function BIO_dgram_set_local_addr_enable(b : PBIO; enable : TIdC_INT) : TIdC_INT;
-{$IFDEF USE_INLINE}inline; {$ENDIF}
 begin
   Result := BIO_ctrl(b, BIO_CTRL_DGRAM_SET_LOCAL_ADDR_ENABLE, TIdC_ULONG(enable), nil);  //PALOFF - Mismatch parameter value
 end;
 
 function BIO_dgram_get_local_addr_cap(b : PBIO) : TIdC_INT;
-{$IFDEF USE_INLINE}inline; {$ENDIF}
 begin
   Result := BIO_ctrl(b, BIO_CTRL_DGRAM_GET_LOCAL_ADDR_CAP, 0, nil);
+end;
+
+function BIO_reset(b: PBIO): TIdC_INT;
+begin
+  Result:=BIO_ctrl(b, BIO_CTRL_RESET, 0, Nil);
+end;
+
+function BIO_eof(b: PBIO): TIdC_INT;
+begin
+  Result:=BIO_ctrl(b, BIO_CTRL_EOF, 0, Nil);
+end;
+
+function BIO_get_close(b: PBIO): TIdC_INT; {$IFDEF USE_INLINE}inline;{$ENDIF}
+begin
+  Result:=BIO_ctrl(b, BIO_CTRL_SET_CLOSE, 0, nil);
+end;
+
+function BIO_set_close(b: PBIO; c: TIdC_INT): TIdC_INT; {$IFDEF USE_INLINE}inline;{$ENDIF}
+begin
+  Result:=BIO_ctrl(b, BIO_CTRL_SET_CLOSE, c, nil);
 end;
 
 const

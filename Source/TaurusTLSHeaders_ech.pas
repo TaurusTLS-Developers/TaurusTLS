@@ -92,7 +92,7 @@ var
   OSSL_ECHSTORE_set1_key_and_read_pem : function(es : POSSL_ECHSTORE; priv : PEVP_PKEY;
     _in : PBIO; for_retry : TIdC_INT) : TIdC_INT ; cdecl = nil;
   OSSL_ECHSTORE_read_pem : function(es : POSSL_ECHSTORE; _in : PBIO; for_retry : TIdC_INT) : TIdC_INT ; cdecl = nil;
-  OSSL_ECHSTORE_num_entries : function(const es : POSSL_ECHSTORE; numentries : TIdC_INT) : TIdC_INT ; cdecl = nil;
+  OSSL_ECHSTORE_num_entries : function(const es : POSSL_ECHSTORE; numentries : PIdC_INT) : TIdC_INT ; cdecl = nil;
   OSSL_ECHSTORE_num_keys : function(es : POSSL_ECHSTORE; numkeys : PIdC_INT) : TIdC_INT ; cdecl = nil;
   OSSL_ECHSTORE_flush_keys : function(es : POSSL_ECHSTORE; age : TIdC_TIMET) : TIdC_INT ; cdecl = nil;
 
@@ -147,7 +147,7 @@ var
   function OSSL_ECHSTORE_set1_key_and_read_pem(es : POSSL_ECHSTORE; priv : PEVP_PKEY;
     _in : PBIO; for_retry : TIdC_INT) : TIdC_INT cdecl; external CLibSSL;
   function OSSL_ECHSTORE_read_pem(es : POSSL_ECHSTORE; _in : PBIO; for_retry : TIdC_INT) : TIdC_INT  cdecl; external CLibSSL;
-  function OSSL_ECHSTORE_num_entries(const es : POSSL_ECHSTORE; numentries : TIdC_INT) : TIdC_INT  cdecl; external CLibSSL;
+  function OSSL_ECHSTORE_num_entries(const es : POSSL_ECHSTORE; numentries : PIdC_INT) : TIdC_INT  cdecl; external CLibSSL;
   function OSSL_ECHSTORE_num_keys(es : POSSL_ECHSTORE; numkeys : PIdC_INT) : TIdC_INT cdecl; external CLibSSL;
   function OSSL_ECHSTORE_flush_keys(es : POSSL_ECHSTORE; age : TIdC_TIMET) : TIdC_INT  cdecl; external CLibSSL;
 
@@ -308,7 +308,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ECHSTORE_read_pem_procname);
 end;
 
-function ERR_OSSL_ECHSTORE_num_entries(const es : POSSL_ECHSTORE; numentries : TIdC_INT) : TIdC_INT  cdecl;
+function ERR_OSSL_ECHSTORE_num_entries(const es : POSSL_ECHSTORE; numentries : PIdC_INT) : TIdC_INT  cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ECHSTORE_num_entries_procname);
 end;
@@ -333,7 +333,6 @@ end;
 function ERR_SSL_set1_echstore(s : PSSL; es : POSSL_ECHSTORE) : TIdC_INT  cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SSL_set1_echstore_procname);
-
 end;
 
 function ERR_SSL_CTX_get1_echstore(const ctx : PSSL_CTX) : POSSL_ECHSTORE  cdecl;
@@ -390,7 +389,6 @@ end;
 function ERR_SSL_ech_get1_retry_config(s : PSSL; ec : PPByte;  eclen : PIdC_SIZET) : TIdC_INT  cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SSL_ech_get1_retry_config_procname);
-
 end;
 {*
  * Note that this function returns 1 for success and 0 for error. This
@@ -819,6 +817,37 @@ begin
     {$if not defined(SSL_CTX_set1_echstore_allownil)}
     if FuncLoadError then
       AFailed.Add('SSL_CTX_set1_echstore');
+    {$ifend}
+  end;
+
+  SSL_set1_echstore := LoadLibFunction(ADllHandle, SSL_set1_echstore_procname);
+  FuncLoadError := not assigned(SSL_set1_echstore);
+  if FuncLoadError then
+  begin
+    {$if not defined(SSL_set1_echstore_allownil)}
+    SSL_set1_echstore := ERR_SSL_set1_echstore;
+    {$ifend}
+    {$if declared(SSL_set1_echstore_introduced)}
+    if LibVersion < SSL_set1_echstore_introduced then
+    begin
+      {$if declared(FC_SSL_set1_echstore)}
+      SSL_set1_echstore := FC_SSL_set1_echstore;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(SSL_set1_echstore_removed)}
+    if SSL_set1_echstore_removed <= LibVersion then
+    begin
+      {$if declared(_SSL_set1_echstore)}
+      SSL_set1_echstore := _SSL_set1_echstore;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(SSL_set1_echstore_allownil)}
+    if FuncLoadError then
+      AFailed.Add('SSL_set1_echstore');
     {$ifend}
   end;
 
