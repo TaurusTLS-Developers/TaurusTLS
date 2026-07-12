@@ -43,53 +43,93 @@ uses
 {$MINENUMSIZE 4}
 
 const
+  {$EXTERNALSYM CRYPTO_MEM_CHECK_OFF}
   CRYPTO_MEM_CHECK_OFF = $0;   //* Control only */
+  {$EXTERNALSYM CRYPTO_MEM_CHECK_ON}
   CRYPTO_MEM_CHECK_ON = $1;   //* Control and mode bit */
+  {$EXTERNALSYM CRYPTO_MEM_CHECK_ENABLE}
   CRYPTO_MEM_CHECK_ENABLE = $2;   //* Control and mode bit */
+  {$EXTERNALSYM CRYPTO_MEM_CHECK_DISABLE}
   CRYPTO_MEM_CHECK_DISABLE = $3;   //* Control only */
 
+  {$EXTERNALSYM CRYPTO_EX_INDEX_SSL}
   CRYPTO_EX_INDEX_SSL = 0;
+  {$EXTERNALSYM CRYPTO_EX_INDEX_SSL_CTX}
   CRYPTO_EX_INDEX_SSL_CTX = 1;
+  {$EXTERNALSYM CRYPTO_EX_INDEX_SSL_SESSION}
   CRYPTO_EX_INDEX_SSL_SESSION = 2;
+  {$EXTERNALSYM CRYPTO_EX_INDEX_X509}
   CRYPTO_EX_INDEX_X509 = 3;
+  {$EXTERNALSYM CRYPTO_EX_INDEX_X509_STORE}
   CRYPTO_EX_INDEX_X509_STORE = 4;
+  {$EXTERNALSYM CRYPTO_EX_INDEX_X509_STORE_CTX}
   CRYPTO_EX_INDEX_X509_STORE_CTX = 5;
+  {$EXTERNALSYM CRYPTO_EX_INDEX_DH}
   CRYPTO_EX_INDEX_DH = 6;
+  {$EXTERNALSYM CRYPTO_EX_INDEX_DSA}
   CRYPTO_EX_INDEX_DSA = 7;
+  {$EXTERNALSYM CRYPTO_EX_INDEX_EC_KEY}
   CRYPTO_EX_INDEX_EC_KEY = 8;
+  {$EXTERNALSYM CRYPTO_EX_INDEX_RSA}
   CRYPTO_EX_INDEX_RSA = 9;
+  {$EXTERNALSYM CRYPTO_EX_INDEX_ENGINE}
   CRYPTO_EX_INDEX_ENGINE = 10;
+  {$EXTERNALSYM CRYPTO_EX_INDEX_UI}
   CRYPTO_EX_INDEX_UI = 11;
+  {$EXTERNALSYM CRYPTO_EX_INDEX_BIO}
   CRYPTO_EX_INDEX_BIO = 12;
+  {$EXTERNALSYM CRYPTO_EX_INDEX_APP}
   CRYPTO_EX_INDEX_APP = 13;
+  {$EXTERNALSYM CRYPTO_EX_INDEX_UI_METHOD}
   CRYPTO_EX_INDEX_UI_METHOD = 14;
+  {$EXTERNALSYM CRYPTO_EX_INDEX_DRBG}
   CRYPTO_EX_INDEX_DRBG = 15;
+  {$EXTERNALSYM CRYPTO_EX_INDEX__COUNT}
   CRYPTO_EX_INDEX__COUNT = 16;
 
   // Added _CONST to prevent nameclashes
+  {$EXTERNALSYM OPENSSL_VERSION_CONST}
   OPENSSL_VERSION_CONST = 0;
+  {$EXTERNALSYM OPENSSL_CFLAGS}
   OPENSSL_CFLAGS = 1;
+  {$EXTERNALSYM OPENSSL_BUILT_ON}
   OPENSSL_BUILT_ON = 2;
+  {$EXTERNALSYM OPENSSL_PLATFORM}
   OPENSSL_PLATFORM = 3;
+  {$EXTERNALSYM OPENSSL_DIR}
   OPENSSL_DIR = 4;
+  {$EXTERNALSYM OPENSSL_ENGINES_DIR}
   OPENSSL_ENGINES_DIR = 5;
+  {$EXTERNALSYM SSLEAY_VERSION_CONST}
   SSLEAY_VERSION_CONST = OPENSSL_VERSION_CONST;
+  {$EXTERNALSYM OPENSSL_VERSION_STRING}
   OPENSSL_VERSION_STRING = 6;
+  {$EXTERNALSYM OPENSSL_FULL_VERSION_STRING}
   OPENSSL_FULL_VERSION_STRING = 7;
+  {$EXTERNALSYM OPENSSL_MODULES_DIR}
   OPENSSL_MODULES_DIR = 8;
+  {$EXTERNALSYM OPENSSL_CPU_INFO}
   OPENSSL_CPU_INFO = 9;
 
 ///*
 // * The series starts at 1001 to avoid confusion with the OpenSSL_version
 // * types.
 // */
+  {$EXTERNALSYM OPENSSL_INFO_CONFIG_DIR}
   OPENSSL_INFO_CONFIG_DIR               = 1001;
+  {$EXTERNALSYM OPENSSL_INFO_ENGINES_DIR}
   OPENSSL_INFO_ENGINES_DIR              = 1002;
+  {$EXTERNALSYM OPENSSL_INFO_MODULES_DIR}
   OPENSSL_INFO_MODULES_DIR              = 1003;
+  {$EXTERNALSYM OPENSSL_INFO_DSO_EXTENSION}
   OPENSSL_INFO_DSO_EXTENSION            = 1004;
+  {$EXTERNALSYM OPENSSL_INFO_DIR_FILENAME_SEPARATOR}
   OPENSSL_INFO_DIR_FILENAME_SEPARATOR   = 1005;
+  {$EXTERNALSYM OPENSSL_INFO_LIST_SEPARATOR}
   OPENSSL_INFO_LIST_SEPARATOR           = 1006;
+  {$EXTERNALSYM OPENSSL_INFO_SEED_SOURCE}
   OPENSSL_INFO_SEED_SOURCE              = 1007;
+  {$EXTERNALSYM OPENSSL_INFO_CPU_SETTINGS}
   OPENSSL_INFO_CPU_SETTINGS             = 1008;
 
   (*
@@ -97,55 +137,84 @@ const
    * they are not called anymore, but old code that's not called might still
    * use them.
    *)
+  {$EXTERNALSYM CRYPTO_LOCK}
   CRYPTO_LOCK = 1;
+  {$EXTERNALSYM CRYPTO_UNLOCK}
   CRYPTO_UNLOCK = 2;
+  {$EXTERNALSYM CRYPTO_READ}
   CRYPTO_READ = 4;
+  {$EXTERNALSYM CRYPTO_WRITE}
   CRYPTO_WRITE = 8;
 
   (* Standard initialisation options *)
+  {$EXTERNALSYM OPENSSL_INIT_NO_LOAD_CRYPTO_STRINGS}
   OPENSSL_INIT_NO_LOAD_CRYPTO_STRINGS = TIdC_Long($00000001);
+  {$EXTERNALSYM OPENSSL_INIT_LOAD_CRYPTO_STRINGS}
   OPENSSL_INIT_LOAD_CRYPTO_STRINGS = TIdC_Long($00000002);
+  {$EXTERNALSYM OPENSSL_INIT_ADD_ALL_CIPHERS}
   OPENSSL_INIT_ADD_ALL_CIPHERS = TIdC_Long($00000004);
+  {$EXTERNALSYM OPENSSL_INIT_ADD_ALL_DIGESTS}
   OPENSSL_INIT_ADD_ALL_DIGESTS = TIdC_Long($00000008);
+  {$EXTERNALSYM OPENSSL_INIT_NO_ADD_ALL_CIPHERS}
   OPENSSL_INIT_NO_ADD_ALL_CIPHERS = TIdC_Long($00000010);
+  {$EXTERNALSYM OPENSSL_INIT_NO_ADD_ALL_DIGESTS}
   OPENSSL_INIT_NO_ADD_ALL_DIGESTS = TIdC_Long($00000020);
+  {$EXTERNALSYM OPENSSL_INIT_LOAD_CONFIG}
   OPENSSL_INIT_LOAD_CONFIG = TIdC_Long($00000040);
+  {$EXTERNALSYM OPENSSL_INIT_NO_LOAD_CONFIG}
   OPENSSL_INIT_NO_LOAD_CONFIG = TIdC_Long($00000080);
+  {$EXTERNALSYM OPENSSL_INIT_ASYNC}
   OPENSSL_INIT_ASYNC = TIdC_Long($00000100);
+  {$EXTERNALSYM OPENSSL_INIT_ENGINE_RDRAND}
   OPENSSL_INIT_ENGINE_RDRAND = TIdC_Long($00000200);
+  {$EXTERNALSYM OPENSSL_INIT_ENGINE_DYNAMIC}
   OPENSSL_INIT_ENGINE_DYNAMIC = TIdC_Long($00000400);
+  {$EXTERNALSYM OPENSSL_INIT_ENGINE_OPENSSL}
   OPENSSL_INIT_ENGINE_OPENSSL = TIdC_Long($00000800);
+  {$EXTERNALSYM OPENSSL_INIT_ENGINE_CRYPTODEV}
   OPENSSL_INIT_ENGINE_CRYPTODEV = TIdC_Long($00001000);
+  {$EXTERNALSYM OPENSSL_INIT_ENGINE_CAPI}
   OPENSSL_INIT_ENGINE_CAPI = TIdC_Long($00002000);
+  {$EXTERNALSYM OPENSSL_INIT_ENGINE_PADLOCK}
   OPENSSL_INIT_ENGINE_PADLOCK = TIdC_Long($00004000);
+  {$EXTERNALSYM OPENSSL_INIT_ENGINE_AFALG}
   OPENSSL_INIT_ENGINE_AFALG = TIdC_Long($00008000);
   (* OPENSSL_INIT_ZLIB = TIdC_Long($00010000); *)
+  {$EXTERNALSYM OPENSSL_INIT_ATFORK}
   OPENSSL_INIT_ATFORK = TIdC_Long(00020000);
   (* OPENSSL_INIT_BASE_ONLY = TIdC_Long(00040000); *)
+  {$EXTERNALSYM OPENSSL_INIT_NO_ATEXIT}
   OPENSSL_INIT_NO_ATEXIT = TIdC_Long(00080000);
   (* OPENSSL_INIT flag range 0xfff00000 reserved for OPENSSL_init_ssl() *)
   (* Max OPENSSL_INIT flag value is 0x80000000 *)
 
   (* openssl and dasync not counted as builtin *)
+  {$EXTERNALSYM OPENSSL_INIT_ENGINE_ALL_BUILTIN}
   OPENSSL_INIT_ENGINE_ALL_BUILTIN = OPENSSL_INIT_ENGINE_RDRAND
     or OPENSSL_INIT_ENGINE_DYNAMIC or OPENSSL_INIT_ENGINE_CRYPTODEV
     or OPENSSL_INIT_ENGINE_CAPI or OPENSSL_INIT_ENGINE_PADLOCK;
 
+  {$EXTERNALSYM CRYPTO_ONCE_STATIC_INIT}
   CRYPTO_ONCE_STATIC_INIT = 0;
 
 type
+  {$EXTERNALSYM CRYPTO_THREADID}
   CRYPTO_THREADID = record {1.0.x only}
     _ptr : Pointer;
     _val : TIdC_ULONG;
   end;
+  {$EXTERNALSYM PCRYPTO_THREADID}
   PCRYPTO_THREADID = ^CRYPTO_THREADID;
+  {$EXTERNALSYM CRYPTO_RWLOCK}
   CRYPTO_RWLOCK = record end;
+  {$EXTERNALSYM PCRYPTO_RWLOCK}
   PCRYPTO_RWLOCK = ^CRYPTO_RWLOCK;
   //crypto_ex_data_st = record
   //  sk: PStackOfVoid;
   //end;
   //DEFINE_STACK_OF(void)
 
+  {$EXTERNALSYM Tthreadid_func}
   Tthreadid_func = procedure (id : PCRYPTO_THREADID) cdecl;
 
 
@@ -157,26 +226,41 @@ type
   //__owur int CRYPTO_get_ex_new_index(int class_index, long argl, void *argp,
   //                            CRYPTO_EX_new *new_func, CRYPTO_EX_dup *dup_func,
   //                            CRYPTO_EX_free *free_func);
+  {$EXTERNALSYM CRYPTO_EX_new}
   CRYPTO_EX_new = procedure(parent, _ptr: Pointer; ad : PCRYPTO_EX_DATA;
                             idx: TIdC_INT; argl: TIdC_LONG; argp: Pointer); cdecl;
+  {$EXTERNALSYM CRYPTO_EX_free}
   CRYPTO_EX_free = procedure(parent, _ptr: Pointer; ad : PCRYPTO_EX_DATA;
                              idx : TIdC_INT; argl : TIdC_LONG; argp : Pointer); cdecl;
+  {$EXTERNALSYM CRYPTO_EX_dup}
   CRYPTO_EX_dup = function(_to : PCRYPTO_EX_DATA; const from : PCRYPTO_EX_DATA;
                            from_d : Pointer; idx : TIdC_INT; argl : TIdC_LONG; argo : Pointer) : TIdC_INT; cdecl;
 
+  {$EXTERNALSYM CRYPTO_mem_leaks_cb_cb}
   CRYPTO_mem_leaks_cb_cb = function(const _str: PIdAnsiChar; len: TIdC_SIZET; u: Pointer): TIdC_INT; cdecl;
+  {$EXTERNALSYM CRYPTO_THREAD_run_once_init}
   CRYPTO_THREAD_run_once_init = procedure; cdecl;
 
+  {$EXTERNALSYM CRYPTO_THREAD_LOCAL}
   CRYPTO_THREAD_LOCAL = type DWORD;
+  {$EXTERNALSYM PCRYPTO_THREAD_LOCAL}
   PCRYPTO_THREAD_LOCAL = ^CRYPTO_THREAD_LOCAL;
+  {$EXTERNALSYM CRYPTO_THREAD_ID}
   CRYPTO_THREAD_ID = type DWORD;
+  {$EXTERNALSYM CRYPTO_ONCE}
   CRYPTO_ONCE = type TIdC_LONG;
+  {$EXTERNALSYM PCRYPTO_ONCE}
   PCRYPTO_ONCE = ^CRYPTO_ONCE;
 
+  {$EXTERNALSYM CRYPTO_set_mem_functions_m}
   CRYPTO_set_mem_functions_m = function(size: TIdC_SIZET; const filename: PIdAnsiChar; linenumber: TIdC_INT): Pointer; cdecl;
+  {$EXTERNALSYM CRYPTO_set_mem_functions_r}
   CRYPTO_set_mem_functions_r = function(buffer: Pointer; size: TIdC_SIZET; const filename: PIdAnsiChar; linenumber: TIdC_INT): Pointer; cdecl;
+  {$EXTERNALSYM CRYPTO_set_mem_functions_f}
   CRYPTO_set_mem_functions_f = procedure(buffer: Pointer; const filename: PIdAnsiChar; const linenumber: TIdC_INT); cdecl;
+  {$EXTERNALSYM TIdSslIdCallback}
   TIdSslIdCallback = function: TIdC_ULONG; cdecl;
+  {$EXTERNALSYM TIdSslLockingCallback}
   TIdSslLockingCallback = procedure (mode, n : TIdC_INT; Afile : PIdAnsiChar; line : TIdC_INT); cdecl;
 
     { The EXTERNALSYM directive is ignored by FPC, however, it is used by Delphi as follows:
@@ -184,128 +268,79 @@ type
   	  The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header 
 	  files generated for C++. }
 	  
-  {$EXTERNALSYM CRYPTO_THREAD_lock_new} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_THREAD_read_lock} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_THREAD_write_lock} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_THREAD_unlock} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_THREAD_lock_free} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_atomic_add} {introduced 1.1.0}
-  {$EXTERNALSYM OPENSSL_strlcpy} {introduced 1.1.0}
-  {$EXTERNALSYM OPENSSL_strlcat} {introduced 1.1.0}
-  {$EXTERNALSYM OPENSSL_strnlen} {introduced 1.1.0}
-  {$EXTERNALSYM OPENSSL_buf2hexstr} {introduced 1.1.0}
-  {$EXTERNALSYM OPENSSL_hexstr2buf} {introduced 1.1.0}
-  {$EXTERNALSYM OPENSSL_hexchar2int} {introduced 1.1.0}
-  {$EXTERNALSYM OpenSSL_version_num} {introduced 1.1.0}
-  {$EXTERNALSYM OpenSSL_version} {introduced 1.1.0}
-  {$EXTERNALSYM OPENSSL_issetugid}
-  {$EXTERNALSYM CRYPTO_new_ex_data}
-  {$EXTERNALSYM CRYPTO_dup_ex_data}
-  {$EXTERNALSYM CRYPTO_free_ex_data}
-  {$EXTERNALSYM CRYPTO_set_ex_data}
-  {$EXTERNALSYM CRYPTO_get_ex_data}
-  {$EXTERNALSYM CRYPTO_set_mem_functions}
-  {$EXTERNALSYM CRYPTO_malloc}
-  {$EXTERNALSYM CRYPTO_zalloc} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_memdup} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_strdup}
-  {$EXTERNALSYM CRYPTO_strndup} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_free}
-  {$EXTERNALSYM CRYPTO_clear_free} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_realloc}
-  {$EXTERNALSYM CRYPTO_clear_realloc} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_secure_malloc_init} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_secure_malloc_done} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_secure_malloc} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_secure_zalloc} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_secure_free} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_secure_clear_free} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_secure_allocated} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_secure_malloc_initialized} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_secure_actual_size} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_secure_used} {introduced 1.1.0}
-  {$EXTERNALSYM OPENSSL_cleanse}
-  {$EXTERNALSYM OPENSSL_isservice}
-  {$EXTERNALSYM OPENSSL_init}
-  {$EXTERNALSYM CRYPTO_memcmp}
-  {$EXTERNALSYM OPENSSL_cleanup} {introduced 1.1.0}
-  {$EXTERNALSYM OPENSSL_init_crypto} {introduced 1.1.0}
-  {$EXTERNALSYM OPENSSL_thread_stop} {introduced 1.1.0}
-  {$EXTERNALSYM OPENSSL_INIT_new} {introduced 1.1.0}
-  {$EXTERNALSYM OPENSSL_INIT_free} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_THREAD_run_once} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_THREAD_get_local} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_THREAD_set_local} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_THREAD_cleanup_local} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_THREAD_get_current_id} {introduced 1.1.0}
-  {$EXTERNALSYM CRYPTO_THREAD_compare_id} {introduced 1.1.0}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
-  {$EXTERNALSYM OPENSSL_malloc} {removed 1.0.0}
-  {$EXTERNALSYM OPENSSL_zalloc} {removed 1.0.0}
-  {$EXTERNALSYM OPENSSL_realloc} {removed 1.0.0}
-  {$EXTERNALSYM OPENSSL_clear_realloc} {removed 1.0.0}
-  {$EXTERNALSYM OPENSSL_clear_free} {removed 1.0.0}
-  {$EXTERNALSYM OPENSSL_free} {removed 1.0.0}
-  {$EXTERNALSYM OPENSSL_memdup} {removed 1.0.0}
-  {$EXTERNALSYM OPENSSL_strdup} {removed 1.0.0}
-  {$EXTERNALSYM OPENSSL_strndup} {removed 1.0.0}
-  {$EXTERNALSYM OPENSSL_secure_malloc} {removed 1.0.0}
-  {$EXTERNALSYM OPENSSL_secure_zalloc} {removed 1.0.0}
-  {$EXTERNALSYM OPENSSL_secure_free} {removed 1.0.0}
-  {$EXTERNALSYM OPENSSL_secure_clear_free} {removed 1.0.0}
-  {$EXTERNALSYM OPENSSL_secure_actual_size} {removed 1.0.0}
-  {$EXTERNALSYM CRYPTO_mem_ctrl} {removed 3.0.0}
-  {$EXTERNALSYM CRYPTO_num_locks} {removed 1.1.0}
-  {$EXTERNALSYM CRYPTO_set_locking_callback} {removed 1.1.0}
-  {$EXTERNALSYM CRYPTO_THREADID_set_numeric} {removed 1.1.0}
-  {$EXTERNALSYM CRYPTO_THREADID_set_callback} {removed 1.1.0}
-  {$EXTERNALSYM CRYPTO_set_id_callback} {removed 1.1.0}
-  {$EXTERNALSYM CRYPTO_set_mem_debug} {introduced 1.1.0 removed 3.0.0}
-  {$EXTERNALSYM FIPS_mode} {removed 3.0.0}
-  {$EXTERNALSYM FIPS_mode_set} {removed 3.0.0}
-  {$EXTERNALSYM SSLeay_version} {removed 1.1.0}
-  {$EXTERNALSYM SSLeay} {removed 1.1.0}
+  {$EXTERNALSYM OPENSSL_malloc}
   OPENSSL_malloc: function (num: TIdC_SIZET): Pointer; cdecl = nil; {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_zalloc}
   OPENSSL_zalloc: function (num: TIdC_SIZET): Pointer; cdecl = nil; {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_realloc}
   OPENSSL_realloc: function (address: Pointer; num: TIdC_SIZET): Pointer; cdecl = nil; {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_clear_realloc}
   OPENSSL_clear_realloc: function (address: Pointer; old_num: TIdC_SIZET; num: TIdC_SIZET): Pointer; cdecl = nil; {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_clear_free}
   OPENSSL_clear_free: procedure (address: Pointer; num: TIdC_SIZET); cdecl = nil; {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_free}
   OPENSSL_free: procedure (address: Pointer); cdecl = nil; {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_memdup}
   OPENSSL_memdup: function (const _str: Pointer; s: TIdC_SIZET): Pointer; cdecl = nil; {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_strdup}
   OPENSSL_strdup: function (const _str: PIdAnsiChar): PIdAnsiChar; cdecl = nil; {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_strndup}
   OPENSSL_strndup: function (const _str: PIdAnsiChar; n: TIdC_SIZET): PIdAnsiChar; cdecl = nil; {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_secure_malloc}
   OPENSSL_secure_malloc: function (num: TIdC_SIZET): Pointer; cdecl = nil; {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_secure_zalloc}
   OPENSSL_secure_zalloc: function (num: TIdC_SIZET): Pointer; cdecl = nil; {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_secure_free}
   OPENSSL_secure_free: procedure (address: Pointer); cdecl = nil; {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_secure_clear_free}
   OPENSSL_secure_clear_free: procedure (address: Pointer; num: TIdC_SIZET); cdecl = nil; {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_secure_actual_size}
   OPENSSL_secure_actual_size: function (_ptr: Pointer): TIdC_SIZET; cdecl = nil; {removed 1.0.0}
 
+  {$EXTERNALSYM CRYPTO_THREAD_lock_new}
   CRYPTO_THREAD_lock_new: function : PCRYPTO_RWLOCK; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_THREAD_read_lock}
   CRYPTO_THREAD_read_lock: function (lock: PCRYPTO_RWLOCK): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_THREAD_write_lock}
   CRYPTO_THREAD_write_lock: function (lock: PCRYPTO_RWLOCK): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_THREAD_unlock}
   CRYPTO_THREAD_unlock: function (lock: PCRYPTO_RWLOCK): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_THREAD_lock_free}
   CRYPTO_THREAD_lock_free: procedure (lock: PCRYPTO_RWLOCK); cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM CRYPTO_atomic_add}
   CRYPTO_atomic_add: function (_val: PIdC_INT; amount: TIdC_INT; ret: PIdC_INT; lock: PCRYPTO_RWLOCK): TIdC_INT; cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM CRYPTO_mem_ctrl}
   CRYPTO_mem_ctrl: function (mode: TIdC_INT): TIdC_INT; cdecl = nil; {removed 3.0.0}
 
+  {$EXTERNALSYM OPENSSL_strlcpy}
   OPENSSL_strlcpy: function (dst: PIdAnsiChar; const src: PIdAnsiChar; siz: TIdC_SIZET): TIdC_SIZET; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM OPENSSL_strlcat}
   OPENSSL_strlcat: function (dst: PIdAnsiChar; const src: PIdAnsiChar; siz: TIdC_SIZET): TIdC_SIZET; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM OPENSSL_strnlen}
   OPENSSL_strnlen: function (const _str: PIdAnsiChar; maxlen: TIdC_SIZET): TIdC_SIZET; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM OPENSSL_buf2hexstr}
   OPENSSL_buf2hexstr: function (const buffer: PByte; len: TIdC_LONG): PIdAnsiChar; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM OPENSSL_hexstr2buf}
   OPENSSL_hexstr2buf: function (const _str: PIdAnsiChar; len: PIdC_LONG): PByte; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM OPENSSL_hexchar2int}
   OPENSSL_hexchar2int: function (c: Byte): TIdC_INT; cdecl = nil; {introduced 1.1.0}
 
   // # define OPENSSL_MALLOC_MAX_NELEMS(type)  (((1U<<(sizeof(int)*8-1))-1)/sizeof(type))
 
+  {$EXTERNALSYM OpenSSL_version_num}
   OpenSSL_version_num: function : TIdC_ULONG; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM OpenSSL_version}
   OpenSSL_version: function (type_: TIdC_INT): PIdAnsiChar; cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM OPENSSL_info}
   OPENSSL_info: function(type_: TIdC_INT): PIdAnsiChar; cdecl = nil; {introduced 3.0.0}
 
+  {$EXTERNALSYM OPENSSL_issetugid}
   OPENSSL_issetugid: function : TIdC_INT; cdecl = nil;
 
   (* No longer use an index. *)
@@ -315,16 +350,21 @@ var
    * Initialise/duplicate/free CRYPTO_EX_DATA variables corresponding to a
    * given class (invokes whatever per-class callbacks are applicable)
    *)
+  {$EXTERNALSYM CRYPTO_new_ex_data}
   CRYPTO_new_ex_data: function (class_index: TIdC_INT; obj: Pointer; ad: PCRYPTO_EX_DATA): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CRYPTO_dup_ex_data}
   CRYPTO_dup_ex_data: function (class_index: TIdC_INT; to_: PCRYPTO_EX_DATA; const from: PCRYPTO_EX_DATA): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM CRYPTO_free_ex_data}
   CRYPTO_free_ex_data: procedure (class_index: TIdC_INT; obj: Pointer; ad: PCRYPTO_EX_DATA); cdecl = nil;
 
   (*
    * Get/set data in a CRYPTO_EX_DATA variable corresponding to a particular
    * index (relative to the class type involved)
    *)
+  {$EXTERNALSYM CRYPTO_set_ex_data}
   CRYPTO_set_ex_data: function (ad: PCRYPTO_EX_DATA; idx: TIdC_INT; _val: Pointer): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CRYPTO_get_ex_data}
   CRYPTO_get_ex_data: function (const ad: PCRYPTO_EX_DATA; idx: TIdC_INT): Pointer; cdecl = nil;
 
   ///*
@@ -338,18 +378,22 @@ var
   // * the callback management functions can be safely replaced with no-op macros.
   // */
   //#  define CRYPTO_num_locks()            (1)
+  {$EXTERNALSYM CRYPTO_num_locks}
   CRYPTO_num_locks: function : TIdC_INT; cdecl = nil; {removed 1.1.0}
   //#  define CRYPTO_set_locking_callback(func)
   //#  define CRYPTO_get_locking_callback()         (NULL)
   //#  define CRYPTO_set_add_lock_callback(func)
   //#  define CRYPTO_get_add_lock_callback()        (NULL)
+  {$EXTERNALSYM CRYPTO_set_locking_callback}
   CRYPTO_set_locking_callback: procedure (func: TIdSslLockingCallback); cdecl = nil; {removed 1.1.0}
 
   ///* Only use CRYPTO_THREADID_set_[numeric|pointer]() within callbacks */
   //#  define CRYPTO_THREADID_set_numeric(id, val)
+  {$EXTERNALSYM CRYPTO_THREADID_set_numeric}
   CRYPTO_THREADID_set_numeric: procedure (id : PCRYPTO_THREADID; _val: TIdC_ULONG); cdecl = nil; {removed 1.1.0}
   //#  define CRYPTO_THREADID_set_pointer(id, ptr)
   //#  define CRYPTO_THREADID_set_callback(threadid_func)   (0)
+  {$EXTERNALSYM CRYPTO_THREADID_set_callback}
   CRYPTO_THREADID_set_callback: procedure (threadid_func: Tthreadid_func); cdecl = nil; {removed 1.1.0}
   //#  define CRYPTO_THREADID_get_callback()                (NULL)
   //#  define CRYPTO_THREADID_current(id)
@@ -357,6 +401,7 @@ var
   //#  define CRYPTO_THREADID_cpy(dest, src)
   //#  define CRYPTO_THREADID_hash(id)                      (0UL)
 
+  {$EXTERNALSYM CRYPTO_set_id_callback}
   CRYPTO_set_id_callback: procedure (func: TIdSslIdCallback); cdecl = nil; {removed 1.1.0}
   //
   //#  define CRYPTO_set_dynlock_create_callback(dyn_create_function)
@@ -367,38 +412,61 @@ var
   //#  define CRYPTO_get_dynlock_destroy_callback()         (NULL)
   //# endif /* OPENSSL_API_COMPAT < 0x10100000L */
 
+  {$EXTERNALSYM CRYPTO_set_mem_functions}
   CRYPTO_set_mem_functions: function (m: CRYPTO_set_mem_functions_m; r: CRYPTO_set_mem_functions_r; f: CRYPTO_set_mem_functions_f): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CRYPTO_set_mem_debug}
   CRYPTO_set_mem_debug: function (flag: TIdC_INT): TIdC_INT; cdecl = nil; {introduced 1.1.0 removed 3.0.0}
     //void CRYPTO_get_mem_functions(
   //        void *(**m) (TIdC_SIZET, const char *, int),
   //        void *(**r) (void *, TIdC_SIZET, const char *, int),
   //        void (**f) (void *, const char *, int));
 
+  {$EXTERNALSYM CRYPTO_malloc}
   CRYPTO_malloc: function (num: TIdC_SIZET; const file_: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl = nil;
+  {$EXTERNALSYM CRYPTO_zalloc}
   CRYPTO_zalloc: function (num: TIdC_SIZET; const file_: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_memdup}
   CRYPTO_memdup: function (const _str: Pointer; siz: TIdC_SIZET; const file_: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_strdup}
   CRYPTO_strdup: function (const _str: PIdAnsiChar; const file_: PIdAnsiChar; line: TIdC_INT): PIdAnsiChar; cdecl = nil;
+  {$EXTERNALSYM CRYPTO_strndup}
   CRYPTO_strndup: function (const _str: PIdAnsiChar; s: TIdC_SIZET; const file_: PIdAnsiChar; line: TIdC_INT): PIdAnsiChar; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_free}
   CRYPTO_free: procedure (_ptr: Pointer; const file_: PIdAnsiChar; line: TIdC_INT); cdecl = nil;
+  {$EXTERNALSYM CRYPTO_clear_free}
   CRYPTO_clear_free: procedure (_ptr: Pointer; num: TIdC_SIZET; const file_: PIdAnsiChar; line: TIdC_INT); cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_realloc}
   CRYPTO_realloc: function (address: Pointer; num: TIdC_SIZET; const file_: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl = nil;
+  {$EXTERNALSYM CRYPTO_clear_realloc}
   CRYPTO_clear_realloc: function (address: Pointer; old_num: TIdC_SIZET; num: TIdC_SIZET; const file_: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM CRYPTO_secure_malloc_init}
   CRYPTO_secure_malloc_init: function (sz: TIdC_SIZET; minsize: TIdC_INT): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_secure_malloc_done}
   CRYPTO_secure_malloc_done: function : TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_secure_malloc}
   CRYPTO_secure_malloc: function (num: TIdC_SIZET; const file_: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_secure_zalloc}
   CRYPTO_secure_zalloc: function (num: TIdC_SIZET; const file_: PIdAnsiChar; line: TIdC_INT): Pointer; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_secure_free}
   CRYPTO_secure_free: procedure (_ptr: Pointer; const file_: PIdAnsiChar; line: TIdC_INT); cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_secure_clear_free}
   CRYPTO_secure_clear_free: procedure (_ptr: Pointer; num: TIdC_SIZET; const file_: PIdAnsiChar; line: TIdC_INT); cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_secure_allocated}
   CRYPTO_secure_allocated: function (const _ptr: Pointer): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_secure_malloc_initialized}
   CRYPTO_secure_malloc_initialized: function : TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_secure_actual_size}
   CRYPTO_secure_actual_size: function (_ptr: Pointer): TIdC_SIZET; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_secure_used}
   CRYPTO_secure_used: function : TIdC_SIZET; cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM CRYPTO_get_ex_new_index}
   CRYPTO_get_ex_new_index : function(class_index : TIdC_INT; arg1 : TIdC_LONG; argp : Pointer;
                                      new_func : CRYPTO_EX_new; dup_func : CRYPTO_EX_dup;
                                      free_func : CRYPTO_EX_FREE) : TIdC_INT cdecl;
 
+  {$EXTERNALSYM OPENSSL_cleanse}
   OPENSSL_cleanse: procedure (_ptr: Pointer; len: TIdC_SIZET); cdecl = nil;
 
 
@@ -429,11 +497,15 @@ var
   //# define OPENSSL_assert(e) \
   //    (void)((e) ? 0 : (OPENSSL_die("assertion failed: " #e, OPENSSL_FILE, OPENSSL_LINE), 1))
 
+  {$EXTERNALSYM OPENSSL_isservice}
   OPENSSL_isservice: function : TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM FIPS_mode}
   FIPS_mode: function : TIdC_INT; cdecl = nil; {removed 3.0.0}
+  {$EXTERNALSYM FIPS_mode_set}
   FIPS_mode_set: function (r: TIdC_INT): TIdC_INT; cdecl = nil; {removed 3.0.0}
 
+  {$EXTERNALSYM OPENSSL_init}
   OPENSSL_init: procedure ; cdecl = nil;
 
   // struct tm *OPENSSL_gmtime(const TIdC_TIMET *timer, struct tm *result);
@@ -448,15 +520,20 @@ var
    * into a defined order as the return value when a != b is undefined, other
    * than to be non-zero.
    *)
+  {$EXTERNALSYM CRYPTO_memcmp}
   CRYPTO_memcmp: function (const in_a: Pointer; const in_b: Pointer; len: TIdC_SIZET): TIdC_INT; cdecl = nil;
 
   (* Library initialisation functions *)
+  {$EXTERNALSYM OPENSSL_cleanup}
   OPENSSL_cleanup: procedure ; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM OPENSSL_init_crypto}
   OPENSSL_init_crypto: function (opts: TIdC_UINT64; const settings: POPENSSL_INIT_SETTINGS): TIdC_INT; cdecl = nil; {introduced 1.1.0}
   // int OPENSSL_atexit(void (*handler)(void));
+  {$EXTERNALSYM OPENSSL_thread_stop}
   OPENSSL_thread_stop: procedure ; cdecl = nil; {introduced 1.1.0}
 
   (* Low-level control of initialization *)
+  {$EXTERNALSYM OPENSSL_INIT_new}
   OPENSSL_INIT_new: function : POPENSSL_INIT_SETTINGS; cdecl = nil; {introduced 1.1.0}
   //int OPENSSL_INIT_set_config_filename(OPENSSL_INIT_SETTINGS *settings,
   //                                     const char *config_filename);
@@ -464,56 +541,88 @@ var
   //                                        unsigned long flags);
   //int OPENSSL_INIT_set_config_appname(OPENSSL_INIT_SETTINGS *settings,
   //                                    const char *config_appname);
+  {$EXTERNALSYM OPENSSL_INIT_free}
   OPENSSL_INIT_free: procedure (settings: POPENSSL_INIT_SETTINGS); cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM CRYPTO_THREAD_run_once}
   CRYPTO_THREAD_run_once: function (once: PCRYPTO_ONCE; init: CRYPTO_THREAD_run_once_init): TIdC_INT; cdecl = nil; {introduced 1.1.0}
 
   //type
   //  CRYPTO_THREAD_init_local_cleanup = procedure(v1: Pointer);
   //
   //function CRYPTO_THREAD_init_local(key: PCRYPTO_THREAD_LOCAL; cleanup: CRYPTO_THREAD_init_local_cleanup): TIdC_INT;
+  {$EXTERNALSYM CRYPTO_THREAD_get_local}
   CRYPTO_THREAD_get_local: function (key: PCRYPTO_THREAD_LOCAL): Pointer; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_THREAD_set_local}
   CRYPTO_THREAD_set_local: function (key: PCRYPTO_THREAD_LOCAL; _val: Pointer): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_THREAD_cleanup_local}
   CRYPTO_THREAD_cleanup_local: function (key: PCRYPTO_THREAD_LOCAL): TidC_INT; cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM CRYPTO_THREAD_get_current_id}
   CRYPTO_THREAD_get_current_id: function : CRYPTO_THREAD_ID; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_THREAD_compare_id}
   CRYPTO_THREAD_compare_id: function (a: CRYPTO_THREAD_ID; b: CRYPTO_THREAD_ID): TIdC_INT; cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM SSLeay_version}
   SSLeay_version: function (type_ : TIdC_INT) : PIdAnsiChar; cdecl = nil; {removed 1.1.0}
+  {$EXTERNALSYM SSLeay}
   SSLeay: function : TIdC_ULONG; cdecl = nil; {removed 1.1.0}
 
+  {$EXTERNALSYM OSSL_LIB_CTX_new}
   OSSL_LIB_CTX_new : function : POSSL_LIB_CTX; cdecl = nil; {introduced 3.0.0}
+  {$EXTERNALSYM OSSL_LIB_CTX_new_from_dispatch}
   OSSL_LIB_CTX_new_from_dispatch : function(const handle : POSSL_CORE_HANDLE; const _in : POSSL_DISPATCH) : POSSL_LIB_CTX; cdecl = nil; {introduced 3.0.0}
+  {$EXTERNALSYM OSSL_LIB_CTX_new_child}
   OSSL_LIB_CTX_new_child : function(const handle : POSSL_CORE_HANDLE; const _in : POSSL_DISPATCH) : POSSL_LIB_CTX; cdecl = nil; {introduced 3.0.0}
+  {$EXTERNALSYM OSSL_LIB_CTX_load_config}
   OSSL_LIB_CTX_load_config : function(ctx : POSSL_LIB_CTX; const config_file : PIdAnsiChar) : TIdC_INT; cdecl = nil;  {introduced 3.0.0}
+  {$EXTERNALSYM OSSL_LIB_CTX_free}
   OSSL_LIB_CTX_free : procedure(ctx : POSSL_LIB_CTX);  cdecl = nil; {introduced 3.0.0}
+  {$EXTERNALSYM OSSL_LIB_CTX_get0_global_default}
   OSSL_LIB_CTX_get0_global_default : function : POSSL_LIB_CTX; cdecl = nil; {introduced 3.0.0}
+  {$EXTERNALSYM OSSL_LIB_CTX_set0_default}
   OSSL_LIB_CTX_set0_default : function(libctx : POSSL_LIB_CTX) : POSSL_LIB_CTX; cdecl = nil; {introduced 3.0.0}
 
 {$ELSE}
 
+  {$EXTERNALSYM CRYPTO_THREAD_lock_new}
   function CRYPTO_THREAD_lock_new: PCRYPTO_RWLOCK cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_THREAD_read_lock}
   function CRYPTO_THREAD_read_lock(lock: PCRYPTO_RWLOCK): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_THREAD_write_lock}
   function CRYPTO_THREAD_write_lock(lock: PCRYPTO_RWLOCK): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_THREAD_unlock}
   function CRYPTO_THREAD_unlock(lock: PCRYPTO_RWLOCK): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_THREAD_lock_free}
   procedure CRYPTO_THREAD_lock_free(lock: PCRYPTO_RWLOCK) cdecl; external CLibCrypto; {introduced 1.1.0}
 
+  {$EXTERNALSYM CRYPTO_atomic_add}
   function CRYPTO_atomic_add(_val: PIdC_INT; amount: TIdC_INT; ret: PIdC_INT; lock: PCRYPTO_RWLOCK): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
 
 
+  {$EXTERNALSYM OPENSSL_strlcpy}
   function OPENSSL_strlcpy(dst: PIdAnsiChar; const src: PIdAnsiChar; siz: TIdC_SIZET): TIdC_SIZET cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM OPENSSL_strlcat}
   function OPENSSL_strlcat(dst: PIdAnsiChar; const src: PIdAnsiChar; siz: TIdC_SIZET): TIdC_SIZET cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM OPENSSL_strnlen}
   function OPENSSL_strnlen(const _str: PIdAnsiChar; maxlen: TIdC_SIZET): TIdC_SIZET cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM OPENSSL_buf2hexstr}
   function OPENSSL_buf2hexstr(const buffer: PByte; len: TIdC_LONG): PIdAnsiChar cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM OPENSSL_hexstr2buf}
   function OPENSSL_hexstr2buf(const _str: PIdAnsiChar; len: PIdC_LONG): PByte cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM OPENSSL_hexchar2int}
   function OPENSSL_hexchar2int(c: Byte): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
 
   // # define OPENSSL_MALLOC_MAX_NELEMS(type)  (((1U<<(sizeof(int)*8-1))-1)/sizeof(type))
 
+  {$EXTERNALSYM OpenSSL_version_num}
   function OpenSSL_version_num: TIdC_ULONG cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM OpenSSL_version}
   function OpenSSL_version(type_: TIdC_INT): PIdAnsiChar cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM OPENSSL_info}
   function OPENSSL_info(type_: TIdC_INT): PIdAnsiChar  cdecl; external CLibCrypto;  {introduced 3.0.0}
 
+  {$EXTERNALSYM OPENSSL_issetugid}
   function OPENSSL_issetugid: TIdC_INT cdecl; external CLibCrypto;
 
   (* No longer use an index. *)
@@ -523,16 +632,21 @@ var
    * Initialise/duplicate/free CRYPTO_EX_DATA variables corresponding to a
    * given class (invokes whatever per-class callbacks are applicable)
    *)
+  {$EXTERNALSYM CRYPTO_new_ex_data}
   function CRYPTO_new_ex_data(class_index: TIdC_INT; obj: Pointer; ad: PCRYPTO_EX_DATA): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CRYPTO_dup_ex_data}
   function CRYPTO_dup_ex_data(class_index: TIdC_INT; to_: PCRYPTO_EX_DATA; const from: PCRYPTO_EX_DATA): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CRYPTO_free_ex_data}
   procedure CRYPTO_free_ex_data(class_index: TIdC_INT; obj: Pointer; ad: PCRYPTO_EX_DATA) cdecl; external CLibCrypto;
 
   (*
    * Get/set data in a CRYPTO_EX_DATA variable corresponding to a particular
    * index (relative to the class type involved)
    *)
+  {$EXTERNALSYM CRYPTO_set_ex_data}
   function CRYPTO_set_ex_data(ad: PCRYPTO_EX_DATA; idx: TIdC_INT; _val: Pointer): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CRYPTO_get_ex_data}
   function CRYPTO_get_ex_data(const ad: PCRYPTO_EX_DATA; idx: TIdC_INT): Pointer cdecl; external CLibCrypto;
 
   ///*
@@ -570,37 +684,59 @@ var
   //#  define CRYPTO_get_dynlock_destroy_callback()         (NULL)
   //# endif /* OPENSSL_API_COMPAT < 0x10100000L */
 
+  {$EXTERNALSYM CRYPTO_set_mem_functions}
   function CRYPTO_set_mem_functions(m: CRYPTO_set_mem_functions_m; r: CRYPTO_set_mem_functions_r; f: CRYPTO_set_mem_functions_f): TIdC_INT cdecl; external CLibCrypto;
     //void CRYPTO_get_mem_functions(
   //        void *(**m) (TIdC_SIZET, const char *, int),
   //        void *(**r) (void *, TIdC_SIZET, const char *, int),
   //        void (**f) (void *, const char *, int));
 
+  {$EXTERNALSYM CRYPTO_malloc}
   function CRYPTO_malloc(num: TIdC_SIZET; const file_: PIdAnsiChar; line: TIdC_INT): Pointer cdecl; external CLibCrypto;
+  {$EXTERNALSYM CRYPTO_zalloc}
   function CRYPTO_zalloc(num: TIdC_SIZET; const file_: PIdAnsiChar; line: TIdC_INT): Pointer cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_memdup}
   function CRYPTO_memdup(const _str: Pointer; siz: TIdC_SIZET; const file_: PIdAnsiChar; line: TIdC_INT): Pointer cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_strdup}
   function CRYPTO_strdup(const _str: PIdAnsiChar; const file_: PIdAnsiChar; line: TIdC_INT): PIdAnsiChar cdecl; external CLibCrypto;
+  {$EXTERNALSYM CRYPTO_strndup}
   function CRYPTO_strndup(const _str: PIdAnsiChar; s: TIdC_SIZET; const file_: PIdAnsiChar; line: TIdC_INT): PIdAnsiChar cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_free}
   procedure CRYPTO_free(_ptr: Pointer; const file_: PIdAnsiChar; line: TIdC_INT) cdecl; external CLibCrypto;
+  {$EXTERNALSYM CRYPTO_clear_free}
   procedure CRYPTO_clear_free(_ptr: Pointer; num: TIdC_SIZET; const file_: PIdAnsiChar; line: TIdC_INT) cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_realloc}
   function CRYPTO_realloc(address: Pointer; num: TIdC_SIZET; const file_: PIdAnsiChar; line: TIdC_INT): Pointer cdecl; external CLibCrypto;
+  {$EXTERNALSYM CRYPTO_clear_realloc}
   function CRYPTO_clear_realloc(address: Pointer; old_num: TIdC_SIZET; num: TIdC_SIZET; const file_: PIdAnsiChar; line: TIdC_INT): Pointer cdecl; external CLibCrypto; {introduced 1.1.0}
 
+  {$EXTERNALSYM CRYPTO_secure_malloc_init}
   function CRYPTO_secure_malloc_init(sz: TIdC_SIZET; minsize: TIdC_INT): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_secure_malloc_done}
   function CRYPTO_secure_malloc_done: TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_secure_malloc}
   function CRYPTO_secure_malloc(num: TIdC_SIZET; const file_: PIdAnsiChar; line: TIdC_INT): Pointer cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_secure_zalloc}
   function CRYPTO_secure_zalloc(num: TIdC_SIZET; const file_: PIdAnsiChar; line: TIdC_INT): Pointer cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_secure_free}
   procedure CRYPTO_secure_free(_ptr: Pointer; const file_: PIdAnsiChar; line: TIdC_INT) cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_secure_clear_free}
   procedure CRYPTO_secure_clear_free(_ptr: Pointer; num: TIdC_SIZET; const file_: PIdAnsiChar; line: TIdC_INT) cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_secure_allocated}
   function CRYPTO_secure_allocated(const _ptr: Pointer): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_secure_malloc_initialized}
   function CRYPTO_secure_malloc_initialized: TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_secure_actual_size}
   function CRYPTO_secure_actual_size(_ptr: Pointer): TIdC_SIZET cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_secure_used}
   function CRYPTO_secure_used: TIdC_SIZET cdecl; external CLibCrypto; {introduced 1.1.0}
 
+  {$EXTERNALSYM CRYPTO_get_ex_new_index}
   function CRYPTO_get_ex_new_index(class_index : TIdC_INT; arg1 : TIdC_LONG; argp : Pointer;
                                    new_func : CRYPTO_EX_new; dup_func : CRYPTO_EX_dup;
                                    free_func : CRYPTO_EX_FREE) : TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM OPENSSL_cleanse}
   procedure OPENSSL_cleanse(_ptr: Pointer; len: TIdC_SIZET) cdecl; external CLibCrypto;
 
   (* debug libraries only  *)
@@ -630,9 +766,11 @@ var
   //# define OPENSSL_assert(e) \
   //    (void)((e) ? 0 : (OPENSSL_die("assertion failed: " #e, OPENSSL_FILE, OPENSSL_LINE), 1))
 
+  {$EXTERNALSYM OPENSSL_isservice}
   function OPENSSL_isservice: TIdC_INT cdecl; external CLibCrypto;
 
 
+  {$EXTERNALSYM OPENSSL_init}
   procedure OPENSSL_init cdecl; external CLibCrypto;
 
   // struct tm *OPENSSL_gmtime(const TIdC_TIMET *timer, struct tm *result);
@@ -647,15 +785,20 @@ var
    * into a defined order as the return value when a != b is undefined, other
    * than to be non-zero.
    *)
+  {$EXTERNALSYM CRYPTO_memcmp}
   function CRYPTO_memcmp(const in_a: Pointer; const in_b: Pointer; len: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
 
   (* Library initialisation functions *)
+  {$EXTERNALSYM OPENSSL_cleanup}
   procedure OPENSSL_cleanup cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM OPENSSL_init_crypto}
   function OPENSSL_init_crypto(opts: TIdC_UINT64; const settings: POPENSSL_INIT_SETTINGS): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0} //PALOFF functions called only as procedures
   // int OPENSSL_atexit(void (*handler)(void));
+  {$EXTERNALSYM OPENSSL_thread_stop}
   procedure OPENSSL_thread_stop cdecl; external CLibCrypto; {introduced 1.1.0}
 
   (* Low-level control of initialization *)
+  {$EXTERNALSYM OPENSSL_INIT_new}
   function OPENSSL_INIT_new: POPENSSL_INIT_SETTINGS cdecl; external CLibCrypto; {introduced 1.1.0}
   //int OPENSSL_INIT_set_config_filename(OPENSSL_INIT_SETTINGS *settings,
   //                                     const char *config_filename);
@@ -663,54 +806,92 @@ var
   //                                        unsigned long flags);
   //int OPENSSL_INIT_set_config_appname(OPENSSL_INIT_SETTINGS *settings,
   //                                    const char *config_appname);
+  {$EXTERNALSYM OPENSSL_INIT_free}
   procedure OPENSSL_INIT_free(settings: POPENSSL_INIT_SETTINGS) cdecl; external CLibCrypto; {introduced 1.1.0}
 
+  {$EXTERNALSYM CRYPTO_THREAD_run_once}
   function CRYPTO_THREAD_run_once(once: PCRYPTO_ONCE; init: CRYPTO_THREAD_run_once_init): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
 
   //type
   //  CRYPTO_THREAD_init_local_cleanup = procedure(v1: Pointer);
   //
   //function CRYPTO_THREAD_init_local(key: PCRYPTO_THREAD_LOCAL; cleanup: CRYPTO_THREAD_init_local_cleanup): TIdC_INT;
+  {$EXTERNALSYM CRYPTO_THREAD_get_local}
   function CRYPTO_THREAD_get_local(key: PCRYPTO_THREAD_LOCAL): Pointer cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_THREAD_set_local}
   function CRYPTO_THREAD_set_local(key: PCRYPTO_THREAD_LOCAL; _val: Pointer): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_THREAD_cleanup_local}
   function CRYPTO_THREAD_cleanup_local(key: PCRYPTO_THREAD_LOCAL): TidC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
 
+  {$EXTERNALSYM CRYPTO_THREAD_get_current_id}
   function CRYPTO_THREAD_get_current_id: CRYPTO_THREAD_ID cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_THREAD_compare_id}
   function CRYPTO_THREAD_compare_id(a: CRYPTO_THREAD_ID; b: CRYPTO_THREAD_ID): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM OSSL_LIB_CTX_new}
   function OSSL_LIB_CTX_new : POSSL_LIB_CTX; cdecl; external CLibCrypto; {introduced 3.0.0}
+  {$EXTERNALSYM OSSL_LIB_CTX_new_from_dispatch}
   function OSSL_LIB_CTX_new_from_dispatch(const handle : POSSL_CORE_HANDLE; const _in : POSSL_DISPATCH) : POSSL_LIB_CTX cdecl; external CLibCrypto; {introduced 3.0.0}
+  {$EXTERNALSYM OSSL_LIB_CTX_new_child}
   function OSSL_LIB_CTX_new_child(const handle : POSSL_CORE_HANDLE; const _in : POSSL_DISPATCH) : POSSL_LIB_CTX cdecl; external CLibCrypto; {introduced 3.0.0}
+  {$EXTERNALSYM OSSL_LIB_CTX_load_config}
   function OSSL_LIB_CTX_load_config(ctx : POSSL_LIB_CTX; const config_file : PIdAnsiChar) : TIdC_INT cdecl; external CLibCrypto;  {introduced 3.0.0}
+  {$EXTERNALSYM OSSL_LIB_CTX_free}
   procedure OSSL_LIB_CTX_free(ctx : POSSL_LIB_CTX) cdecl; external CLibCrypto; {introduced 3.0.0}
+  {$EXTERNALSYM OSSL_LIB_CTX_get0_global_default}
   function OSSL_LIB_CTX_get0_global_default : POSSL_LIB_CTX cdecl; external CLibCrypto; {introduced 3.0.0}
+  {$EXTERNALSYM OSSL_LIB_CTX_set0_default}
   function OSSL_LIB_CTX_set0_default(libctx : POSSL_LIB_CTX) : POSSL_LIB_CTX cdecl; external CLibCrypto; {introduced 3.0.0}
 
+  {$EXTERNALSYM OPENSSL_malloc}
   function OPENSSL_malloc(num: TIdC_SIZET): Pointer; {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_zalloc}
 function OPENSSL_zalloc(num: TIdC_SIZET): Pointer; {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_realloc}
 function OPENSSL_realloc(address: Pointer; num: TIdC_SIZET): Pointer; {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_clear_realloc}
 function OPENSSL_clear_realloc(address: Pointer; old_num: TIdC_SIZET; num: TIdC_SIZET): Pointer; {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_clear_free}
 procedure OPENSSL_clear_free(address: Pointer; num: TIdC_SIZET); {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_free}
 procedure OPENSSL_free(address: Pointer); {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_memdup}
 function OPENSSL_memdup(const _str: Pointer; s: TIdC_SIZET): Pointer; {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_strdup}
 function OPENSSL_strdup(const _str: PIdAnsiChar): PIdAnsiChar; {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_strndup}
 function OPENSSL_strndup(const _str: PIdAnsiChar; n: TIdC_SIZET): PIdAnsiChar; {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_secure_malloc}
 function OPENSSL_secure_malloc(num: TIdC_SIZET): Pointer; {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_secure_zalloc}
 function OPENSSL_secure_zalloc(num: TIdC_SIZET): Pointer; {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_secure_free}
 procedure OPENSSL_secure_free(address: Pointer); {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_secure_clear_free}
 procedure OPENSSL_secure_clear_free(address: Pointer; num: TIdC_SIZET); {removed 1.0.0}
+  {$EXTERNALSYM OPENSSL_secure_actual_size}
 function OPENSSL_secure_actual_size(_ptr: Pointer): TIdC_SIZET; {removed 1.0.0}
+  {$EXTERNALSYM CRYPTO_num_locks}
   function CRYPTO_num_locks: TIdC_INT; {removed 1.1.0}
+  {$EXTERNALSYM CRYPTO_set_locking_callback}
   procedure CRYPTO_set_locking_callback(func: TIdSslLockingCallback); {removed 1.1.0}
+  {$EXTERNALSYM CRYPTO_THREADID_set_numeric}
   procedure CRYPTO_THREADID_set_numeric(id : PCRYPTO_THREADID; _val: TIdC_ULONG); {removed 1.1.0}
+  {$EXTERNALSYM CRYPTO_THREADID_set_callback}
   procedure CRYPTO_THREADID_set_callback(threadid_func: Tthreadid_func); {removed 1.1.0}
+  {$EXTERNALSYM CRYPTO_set_id_callback}
   procedure CRYPTO_set_id_callback(func: TIdSslIdCallback); {removed 1.1.0}
+  {$EXTERNALSYM FIPS_mode}
   function FIPS_mode: TIdC_INT; {removed 3.0.0}
+  {$EXTERNALSYM FIPS_mode_set}
   function FIPS_mode_set(r: TIdC_INT): TIdC_INT; {removed 3.0.0}
+  {$EXTERNALSYM SSLeay_version}
   function SSLeay_version(type_ : TIdC_INT) : PIdAnsiChar; {removed 1.1.0}
+  {$EXTERNALSYM SSLeay}
   function SSLeay: TIdC_ULONG; {removed 1.1.0}
 {$ENDIF}
 
 //Moved here to prevent circular unit depedency
+  {$EXTERNALSYM BIO_get_ex_new_index}
 function BIO_get_ex_new_index(l : TIdC_LONG; p : PBIO;
     newf : CRYPTO_EX_new; dupf : CRYPTO_EX_dup; freef : CRYPTO_EX_FREE) : TIdC_INT;
 

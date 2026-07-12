@@ -21,56 +21,83 @@ uses
   TaurusTLSHeaders_stack;
 
 type
+  {$EXTERNALSYM POPENSSL_STRING}
   POPENSSL_STRING = PIdAnsiChar;
 
+  {$EXTERNALSYM PSTACK_OF_OPENSSL_STRING}
   PSTACK_OF_OPENSSL_STRING = pointer;
+  {$EXTERNALSYM Tsk_OPENSSL_STRING_compfunc}
   Tsk_OPENSSL_STRING_compfunc = function(a: PPIdAnsiChar; b: PPIdAnsiChar): TIdC_INT cdecl;
+  {$EXTERNALSYM Tsk_OPENSSL_STRING_freefunc}
   Tsk_OPENSSL_STRING_freefunc = procedure(a: PIdAnsiChar) cdecl;
+  {$EXTERNALSYM Tsk_OPENSSL_STRING_copyfunc}
   Tsk_OPENSSL_STRING_copyfunc = function(a: PIdAnsiChar): PIdAnsiChar cdecl;
 
+  {$EXTERNALSYM sk_OPENSSL_STRING_num}
 function sk_OPENSSL_STRING_num(sk: PSTACK_OF_OPENSSL_STRING): TIdC_INT;
 {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$EXTERNALSYM sk_OPENSSL_STRING_value}
 function sk_OPENSSL_STRING_value(sk: PSTACK_OF_OPENSSL_STRING; idx: TIdC_INT)
   : PIdAnsiChar; {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$EXTERNALSYM sk_OPENSSL_STRING_new}
 function sk_OPENSSL_STRING_new(compare: Tsk_OPENSSL_STRING_compfunc)
   : PSTACK_OF_OPENSSL_STRING; {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$EXTERNALSYM sk_OPENSSL_STRING_new_null}
 function sk_OPENSSL_STRING_new_null: PSTACK_OF_OPENSSL_STRING;
 {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$EXTERNALSYM sk_OPENSSL_STRING_free}
 procedure sk_OPENSSL_STRING_free(sk: PSTACK_OF_OPENSSL_STRING);
 {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$EXTERNALSYM sk_OPENSSL_STRING_zero}
 procedure sk_OPENSSL_STRING_zero(sk: PSTACK_OF_OPENSSL_STRING);
 {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$EXTERNALSYM sk_OPENSSL_STRING_delete}
 function sk_OPENSSL_STRING_delete(sk: PSTACK_OF_OPENSSL_STRING; i: TIdC_INT)
   : PIdAnsiChar; {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$EXTERNALSYM sk_OPENSSL_STRING_delete_ptr}
 function sk_OPENSSL_STRING_delete_ptr(sk: PSTACK_OF_OPENSSL_STRING;
   _ptr: PIdAnsiChar): PIdAnsiChar; {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$EXTERNALSYM sk_OPENSSL_STRING_push}
 function sk_OPENSSL_STRING_push(sk: PSTACK_OF_OPENSSL_STRING; _ptr: PIdAnsiChar)
   : TIdC_INT; {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$EXTERNALSYM sk_OPENSSL_STRING_unshift}
 function sk_OPENSSL_STRING_unshift(sk: PSTACK_OF_OPENSSL_STRING; _ptr: PIdAnsiChar)
   : TIdC_INT; {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$EXTERNALSYM sk_OPENSSL_STRING_pop}
 function sk_OPENSSL_STRING_pop(sk: PSTACK_OF_OPENSSL_STRING): PIdAnsiChar;
 {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$EXTERNALSYM sk_OPENSSL_STRING_shift}
 function sk_OPENSSL_STRING_shift(sk: PSTACK_OF_OPENSSL_STRING): PIdAnsiChar;
 {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$EXTERNALSYM sk_OPENSSL_STRING_pop_free}
 procedure sk_OPENSSL_STRING_pop_free(sk: PSTACK_OF_OPENSSL_STRING;
   freefunc: Tsk_OPENSSL_STRING_freefunc); {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$EXTERNALSYM sk_OPENSSL_STRING_insert}
 function sk_OPENSSL_STRING_insert(sk: PSTACK_OF_OPENSSL_STRING; _ptr: PIdAnsiChar;
   idx: TIdC_INT): TIdC_INT; {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$EXTERNALSYM sk_OPENSSL_STRING_set}
 function sk_OPENSSL_STRING_set(sk: PSTACK_OF_OPENSSL_STRING; idx: TIdC_INT;
   _ptr: PIdAnsiChar): PIdAnsiChar; {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$EXTERNALSYM sk_OPENSSL_STRING_find}
 function sk_OPENSSL_STRING_find(sk: PSTACK_OF_OPENSSL_STRING; _ptr: PIdAnsiChar)
   : TIdC_INT; {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$EXTERNALSYM sk_OPENSSL_STRING_find_ex}
 function sk_OPENSSL_STRING_find_ex(sk: PSTACK_OF_OPENSSL_STRING; _ptr: PIdAnsiChar)
   : TIdC_INT; {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$EXTERNALSYM sk_OPENSSL_STRING_sort}
 procedure sk_OPENSSL_STRING_sort(sk: PSTACK_OF_OPENSSL_STRING);
 {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$EXTERNALSYM sk_OPENSSL_STRING_is_sorted}
 function sk_OPENSSL_STRING_is_sorted(sk: PSTACK_OF_OPENSSL_STRING): TIdC_INT;
 {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$EXTERNALSYM sk_OPENSSL_STRING_dup}
 function sk_OPENSSL_STRING_dup(sk: PSTACK_OF_OPENSSL_STRING)
   : PSTACK_OF_OPENSSL_STRING; {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$EXTERNALSYM sk_OPENSSL_STRING_deep_copy}
 function sk_OPENSSL_STRING_deep_copy(sk: PSTACK_OF_OPENSSL_STRING;
   copyfunc: Tsk_OPENSSL_STRING_copyfunc; freefunc: Tsk_OPENSSL_STRING_freefunc)
   : PSTACK_OF_OPENSSL_STRING;  {$IFDEF USE_INLINE}inline;{$ENDIF}
+  {$EXTERNALSYM sk_OPENSSL_STRING_set_cmp_func}
 function sk_OPENSSL_STRING_set_cmp_func(sk: PSTACK_OF_OPENSSL_STRING;
   compare: Tsk_OPENSSL_STRING_compfunc): Tsk_OPENSSL_STRING_compfunc;   {$IFDEF USE_INLINE}inline;{$ENDIF}
 

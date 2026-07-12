@@ -38,17 +38,25 @@ const
 ///*
 // * COMP function codes.
 // */
+  {$EXTERNALSYM COMP_F_BIO_ZLIB_FLUSH}
   COMP_F_BIO_ZLIB_FLUSH =      99;
+  {$EXTERNALSYM COMP_F_BIO_ZLIB_NEW}
   COMP_F_BIO_ZLIB_NEW =        100;
+  {$EXTERNALSYM COMP_F_BIO_ZLIB_READ}
   COMP_F_BIO_ZLIB_READ =       101;
+  {$EXTERNALSYM COMP_F_BIO_ZLIB_WRITE}
   COMP_F_BIO_ZLIB_WRITE =      102;
+  {$EXTERNALSYM COMP_F_COMP_CTX_NEW}
   COMP_F_COMP_CTX_NEW =        103;
 
 ///*
 // * COMP reason codes.
 // */
+  {$EXTERNALSYM COMP_R_ZLIB_DEFLATE_ERROR}
   COMP_R_ZLIB_DEFLATE_ERROR =  99;
+  {$EXTERNALSYM COMP_R_ZLIB_INFLATE_ERROR}
   COMP_R_ZLIB_INFLATE_ERROR =  100;
+  {$EXTERNALSYM COMP_R_ZLIB_NOT_SUPPORTED}
   COMP_R_ZLIB_NOT_SUPPORTED =  101;
 
     { The EXTERNALSYM directive is ignored by FPC, however, it is used by Delphi as follows:
@@ -56,13 +64,14 @@ const
   	  The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header 
 	  files generated for C++. }
 	  
-  {$EXTERNALSYM ERR_load_COMP_strings}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM ERR_load_COMP_strings}
   ERR_load_COMP_strings: function : TIdC_INT; cdecl = nil;
 
 {$ELSE}
+  {$EXTERNALSYM ERR_load_COMP_strings}
   function ERR_load_COMP_strings: TIdC_INT cdecl; external CLibCrypto;
 
 {$ENDIF}

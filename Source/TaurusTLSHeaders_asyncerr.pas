@@ -38,20 +38,31 @@ const
   //
   // ASYNC function codes.
   //
+  {$EXTERNALSYM ASYNC_F_ASYNC_CTX_NEW}
   ASYNC_F_ASYNC_CTX_NEW                            = 100;
+  {$EXTERNALSYM ASYNC_F_ASYNC_INIT_THREAD}
   ASYNC_F_ASYNC_INIT_THREAD                        = 101;
+  {$EXTERNALSYM ASYNC_F_ASYNC_JOB_NEW}
   ASYNC_F_ASYNC_JOB_NEW                            = 102;
+  {$EXTERNALSYM ASYNC_F_ASYNC_PAUSE_JOB}
   ASYNC_F_ASYNC_PAUSE_JOB                          = 103;
+  {$EXTERNALSYM ASYNC_F_ASYNC_START_FUNC}
   ASYNC_F_ASYNC_START_FUNC                         = 104;
+  {$EXTERNALSYM ASYNC_F_ASYNC_START_JOB}
   ASYNC_F_ASYNC_START_JOB                          = 105;
+  {$EXTERNALSYM ASYNC_F_ASYNC_WAIT_CTX_SET_WAIT_FD}
   ASYNC_F_ASYNC_WAIT_CTX_SET_WAIT_FD               = 106;
 
   //
   // ASYNC reason codes.
   //
+  {$EXTERNALSYM ASYNC_R_FAILED_TO_SET_POOL}
   ASYNC_R_FAILED_TO_SET_POOL                       = 101;
+  {$EXTERNALSYM ASYNC_R_FAILED_TO_SWAP_CONTEXT}
   ASYNC_R_FAILED_TO_SWAP_CONTEXT                   = 102;
+  {$EXTERNALSYM ASYNC_R_INIT_FAILED}
   ASYNC_R_INIT_FAILED                              = 105;
+  {$EXTERNALSYM ASYNC_R_INVALID_POOL_SIZE}
   ASYNC_R_INVALID_POOL_SIZE                        = 103;
 
     { The EXTERNALSYM directive is ignored by FPC, however, it is used by Delphi as follows:
@@ -59,13 +70,14 @@ const
   	  The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header 
 	  files generated for C++. }
 	  
-  {$EXTERNALSYM ERR_load_ASYNC_strings}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM ERR_load_ASYNC_strings}
   ERR_load_ASYNC_strings: function : TIdC_INT; cdecl = nil;
 
 {$ELSE}
+  {$EXTERNALSYM ERR_load_ASYNC_strings}
   function ERR_load_ASYNC_strings: TIdC_INT cdecl; external CLibCrypto;
 
 {$ENDIF}

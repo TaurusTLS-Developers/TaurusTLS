@@ -38,44 +38,75 @@ uses
   TaurusTLSHeaders_x509;
 
 type
+  {$EXTERNALSYM CMS_ContentInfo_st}
   CMS_ContentInfo_st = record end;
+  {$EXTERNALSYM CMS_ContentInfo}
   CMS_ContentInfo = CMS_ContentInfo_st;
+  {$EXTERNALSYM PCMS_ContentInfo}
   PCMS_ContentInfo = ^CMS_ContentInfo;
+  {$EXTERNALSYM PPCMS_ContentInfo}
   PPCMS_ContentInfo = ^PCMS_ContentInfo;
 
+  {$EXTERNALSYM CMS_SignerInfo_st}
   CMS_SignerInfo_st = record end;
+  {$EXTERNALSYM CMS_SignerInfo}
   CMS_SignerInfo = CMS_SignerInfo_st;
+  {$EXTERNALSYM PCMS_SignerInfo}
   PCMS_SignerInfo = ^CMS_SignerInfo;
 
+  {$EXTERNALSYM CMS_CertificateChoices_st}
   CMS_CertificateChoices_st = record end;
+  {$EXTERNALSYM CMS_CertificateChoices}
   CMS_CertificateChoices = CMS_CertificateChoices_st;
+  {$EXTERNALSYM PCMS_CertificateChoices}
   PCMS_CertificateChoices = ^CMS_CertificateChoices;
 
+  {$EXTERNALSYM CMS_RevocationInfoChoice_st}
   CMS_RevocationInfoChoice_st = record end;
+  {$EXTERNALSYM CMS_RevocationInfoChoice}
   CMS_RevocationInfoChoice = CMS_RevocationInfoChoice_st;
+  {$EXTERNALSYM PCMS_RevocationInfoChoice}
   PCMS_RevocationInfoChoice = ^CMS_RevocationInfoChoice;
 
+  {$EXTERNALSYM CMS_RecipientInfo_st}
   CMS_RecipientInfo_st = record end;
+  {$EXTERNALSYM CMS_RecipientInfo}
   CMS_RecipientInfo = CMS_RecipientInfo_st;
+  {$EXTERNALSYM PCMS_RecipientInfo}
   PCMS_RecipientInfo = ^CMS_RecipientInfo;
+  {$EXTERNALSYM PPCMS_RecipientInfo}
   PPCMS_RecipientInfo = ^PCMS_RecipientInfo;
 
+  {$EXTERNALSYM CMS_ReceiptRequest_st}
   CMS_ReceiptRequest_st = record end;
+  {$EXTERNALSYM CMS_ReceiptRequest}
   CMS_ReceiptRequest = CMS_ReceiptRequest_st;
+  {$EXTERNALSYM PCMS_ReceiptRequest}
   PCMS_ReceiptRequest = ^CMS_ReceiptRequest;
+  {$EXTERNALSYM PPCMS_ReceiptRequest}
   PPCMS_ReceiptRequest = ^PCMS_ReceiptRequest;
 
+  {$EXTERNALSYM CMS_Receipt_st}
   CMS_Receipt_st = record end;
+  {$EXTERNALSYM CMS_Receipt}
   CMS_Receipt = CMS_Receipt_st;
+  {$EXTERNALSYM PCMS_Receipt}
   PCMS_Receipt = ^CMS_Receipt;
 
+  {$EXTERNALSYM CMS_RecipientEncryptedKey_st}
   CMS_RecipientEncryptedKey_st = record end;
+  {$EXTERNALSYM CMS_RecipientEncryptedKey}
   CMS_RecipientEncryptedKey = CMS_RecipientEncryptedKey_st;
+  {$EXTERNALSYM PCMS_RecipientEncryptedKey}
   PCMS_RecipientEncryptedKey = ^CMS_RecipientEncryptedKey;
 
+  {$EXTERNALSYM CMS_OtherKeyAttribute_st}
   CMS_OtherKeyAttribute_st = record end;
+  {$EXTERNALSYM CMS_OtherKeyAttribute}
   CMS_OtherKeyAttribute = CMS_OtherKeyAttribute_st;
+  {$EXTERNALSYM PCMS_OtherKeyAttribute}
   PCMS_OtherKeyAttribute = ^CMS_OtherKeyAttribute;
+  {$EXTERNALSYM PPCMS_OtherKeyAttribute}
   PPCMS_OtherKeyAttribute = ^PCMS_OtherKeyAttribute;
 
 //DEFINE_STACK_OF(CMS_SignerInfo)
@@ -87,39 +118,69 @@ type
 //DECLARE_ASN1_PRINT_FUNCTION(CMS_ContentInfo)
 
 const
+  {$EXTERNALSYM CMS_SIGNERINFO_ISSUER_SERIAL}
   CMS_SIGNERINFO_ISSUER_SERIAL    = 0;
+  {$EXTERNALSYM CMS_SIGNERINFO_KEYIDENTIFIER}
   CMS_SIGNERINFO_KEYIDENTIFIER    = 1;
 
+  {$EXTERNALSYM CMS_RECIPINFO_NONE}
   CMS_RECIPINFO_NONE              = -1;
+  {$EXTERNALSYM CMS_RECIPINFO_TRANS}
   CMS_RECIPINFO_TRANS             = 0;
+  {$EXTERNALSYM CMS_RECIPINFO_AGREE}
   CMS_RECIPINFO_AGREE             = 1;
+  {$EXTERNALSYM CMS_RECIPINFO_KEK}
   CMS_RECIPINFO_KEK               = 2;
+  {$EXTERNALSYM CMS_RECIPINFO_PASS}
   CMS_RECIPINFO_PASS              = 3;
+  {$EXTERNALSYM CMS_RECIPINFO_OTHER}
   CMS_RECIPINFO_OTHER             = 4;
 
 // S/MIME related flags /
 
+  {$EXTERNALSYM CMS_TEXT}
   CMS_TEXT                        = $1;
+  {$EXTERNALSYM CMS_NOCERTS}
   CMS_NOCERTS                     = $2;
+  {$EXTERNALSYM CMS_NO_CONTENT_VERIFY}
   CMS_NO_CONTENT_VERIFY           = $4;
+  {$EXTERNALSYM CMS_NO_ATTR_VERIFY}
   CMS_NO_ATTR_VERIFY              = $8;
+  {$EXTERNALSYM CMS_NOSIGS}
   CMS_NOSIGS                      = (CMS_NO_CONTENT_VERIFY or CMS_NO_ATTR_VERIFY);
+  {$EXTERNALSYM CMS_NOINTERN}
   CMS_NOINTERN                    = $10;
+  {$EXTERNALSYM CMS_NO_SIGNER_CERT_VERIFY}
   CMS_NO_SIGNER_CERT_VERIFY       = $20;
+  {$EXTERNALSYM CMS_NOVERIFY}
   CMS_NOVERIFY                    = $20;
+  {$EXTERNALSYM CMS_DETACHED}
   CMS_DETACHED                    = $40;
+  {$EXTERNALSYM CMS_BINARY}
   CMS_BINARY                      = $80;
+  {$EXTERNALSYM CMS_NOATTR}
   CMS_NOATTR                      = $100;
+  {$EXTERNALSYM CMS_NOSMIMECAP}
   CMS_NOSMIMECAP                  = $200;
+  {$EXTERNALSYM CMS_NOOLDMIMETYPE}
   CMS_NOOLDMIMETYPE               = $400;
+  {$EXTERNALSYM CMS_CRLFEOL}
   CMS_CRLFEOL                     = $800;
+  {$EXTERNALSYM CMS_STREAM_CONST}
   CMS_STREAM_CONST                = $1000;
+  {$EXTERNALSYM CMS_NOCRL}
   CMS_NOCRL                       = $2000;
+  {$EXTERNALSYM CMS_PARTIAL}
   CMS_PARTIAL                     = $4000;
+  {$EXTERNALSYM CMS_REUSE_DIGEST}
   CMS_REUSE_DIGEST                = $8000;
+  {$EXTERNALSYM CMS_USE_KEYID}
   CMS_USE_KEYID                   = $10000;
+  {$EXTERNALSYM CMS_DEBUG_DECRYPT}
   CMS_DEBUG_DECRYPT               = $20000;
+  {$EXTERNALSYM CMS_KEY_PARAM}
   CMS_KEY_PARAM                   = $40000;
+  {$EXTERNALSYM CMS_ASCIICRLF}
   CMS_ASCIICRLF                   = $80000;
 
     { The EXTERNALSYM directive is ignored by FPC, however, it is used by Delphi as follows:
@@ -127,138 +188,66 @@ const
   	  The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header 
 	  files generated for C++. }
 	  
-  {$EXTERNALSYM CMS_get0_type}
-  {$EXTERNALSYM CMS_dataInit}
-  {$EXTERNALSYM CMS_dataFinal}
-  {$EXTERNALSYM CMS_get0_content}
-  {$EXTERNALSYM CMS_is_detached}
-  {$EXTERNALSYM CMS_set_detached}
-  {$EXTERNALSYM CMS_stream}
-  {$EXTERNALSYM d2i_CMS_bio}
-  {$EXTERNALSYM i2d_CMS_bio}
-  {$EXTERNALSYM BIO_new_CMS}
-  {$EXTERNALSYM i2d_CMS_bio_stream}
-  {$EXTERNALSYM PEM_write_bio_CMS_stream}
-  {$EXTERNALSYM SMIME_read_CMS}
-  {$EXTERNALSYM SMIME_write_CMS}
-  {$EXTERNALSYM CMS_final}
-  {$EXTERNALSYM CMS_data}
-  {$EXTERNALSYM CMS_data_create}
-  {$EXTERNALSYM CMS_digest_verify}
-  {$EXTERNALSYM CMS_digest_create}
-  {$EXTERNALSYM CMS_EncryptedData_decrypt}
-  {$EXTERNALSYM CMS_EncryptedData_encrypt}
-  {$EXTERNALSYM CMS_EncryptedData_set1_key}
-  {$EXTERNALSYM CMS_decrypt}
-  {$EXTERNALSYM CMS_decrypt_set1_pkey}
-  {$EXTERNALSYM CMS_decrypt_set1_key}
-  {$EXTERNALSYM CMS_decrypt_set1_password}
-  {$EXTERNALSYM CMS_RecipientInfo_type}
-  {$EXTERNALSYM CMS_RecipientInfo_get0_pkey_ctx}
-  {$EXTERNALSYM CMS_EnvelopedData_create}
-  {$EXTERNALSYM CMS_add1_recipient_cert}
-  {$EXTERNALSYM CMS_RecipientInfo_set0_pkey}
-  {$EXTERNALSYM CMS_RecipientInfo_ktri_cert_cmp}
-  {$EXTERNALSYM CMS_RecipientInfo_ktri_get0_algs}
-  {$EXTERNALSYM CMS_RecipientInfo_ktri_get0_signer_id}
-  {$EXTERNALSYM CMS_add0_recipient_key}
-  {$EXTERNALSYM CMS_RecipientInfo_kekri_get0_id}
-  {$EXTERNALSYM CMS_RecipientInfo_set0_key}
-  {$EXTERNALSYM CMS_RecipientInfo_kekri_id_cmp}
-  {$EXTERNALSYM CMS_RecipientInfo_set0_password}
-  {$EXTERNALSYM CMS_add0_recipient_password}
-  {$EXTERNALSYM CMS_RecipientInfo_decrypt}
-  {$EXTERNALSYM CMS_RecipientInfo_encrypt}
-  {$EXTERNALSYM CMS_uncompress}
-  {$EXTERNALSYM CMS_compress}
-  {$EXTERNALSYM CMS_set1_eContentType}
-  {$EXTERNALSYM CMS_get0_eContentType}
-  {$EXTERNALSYM CMS_add0_CertificateChoices}
-  {$EXTERNALSYM CMS_add0_cert}
-  {$EXTERNALSYM CMS_add1_cert}
-  {$EXTERNALSYM CMS_add0_RevocationInfoChoice}
-  {$EXTERNALSYM CMS_add0_crl}
-  {$EXTERNALSYM CMS_add1_crl}
-  {$EXTERNALSYM CMS_SignedData_init}
-  {$EXTERNALSYM CMS_add1_signer}
-  {$EXTERNALSYM CMS_SignerInfo_get0_pkey_ctx}
-  {$EXTERNALSYM CMS_SignerInfo_get0_md_ctx}
-  {$EXTERNALSYM CMS_SignerInfo_set1_signer_cert}
-  {$EXTERNALSYM CMS_SignerInfo_get0_signer_id}
-  {$EXTERNALSYM CMS_SignerInfo_cert_cmp}
-  {$EXTERNALSYM CMS_SignerInfo_get0_algs}
-  {$EXTERNALSYM CMS_SignerInfo_get0_signature}
-  {$EXTERNALSYM CMS_SignerInfo_sign}
-  {$EXTERNALSYM CMS_SignerInfo_verify}
-  {$EXTERNALSYM CMS_SignerInfo_verify_content}
-  {$EXTERNALSYM CMS_signed_get_attr_count}
-  {$EXTERNALSYM CMS_signed_get_attr_by_NID}
-  {$EXTERNALSYM CMS_signed_get_attr_by_OBJ}
-  {$EXTERNALSYM CMS_signed_get_attr}
-  {$EXTERNALSYM CMS_signed_delete_attr}
-  {$EXTERNALSYM CMS_signed_add1_attr}
-  {$EXTERNALSYM CMS_signed_add1_attr_by_OBJ}
-  {$EXTERNALSYM CMS_signed_add1_attr_by_NID}
-  {$EXTERNALSYM CMS_signed_add1_attr_by_txt}
-  {$EXTERNALSYM CMS_signed_get0_data_by_OBJ}
-  {$EXTERNALSYM CMS_unsigned_get_attr_count}
-  {$EXTERNALSYM CMS_unsigned_get_attr_by_NID}
-  {$EXTERNALSYM CMS_unsigned_get_attr_by_OBJ}
-  {$EXTERNALSYM CMS_unsigned_get_attr}
-  {$EXTERNALSYM CMS_unsigned_delete_attr}
-  {$EXTERNALSYM CMS_unsigned_add1_attr}
-  {$EXTERNALSYM CMS_unsigned_add1_attr_by_OBJ}
-  {$EXTERNALSYM CMS_unsigned_add1_attr_by_NID}
-  {$EXTERNALSYM CMS_unsigned_add1_attr_by_txt}
-  {$EXTERNALSYM CMS_unsigned_get0_data_by_OBJ}
-  {$EXTERNALSYM CMS_get1_ReceiptRequest}
-  {$EXTERNALSYM CMS_add1_ReceiptRequest}
-  {$EXTERNALSYM CMS_RecipientInfo_kari_get0_orig_id}
-  {$EXTERNALSYM CMS_RecipientInfo_kari_orig_id_cmp}
-  {$EXTERNALSYM CMS_RecipientEncryptedKey_get0_id}
-  {$EXTERNALSYM CMS_RecipientEncryptedKey_cert_cmp}
-  {$EXTERNALSYM CMS_RecipientInfo_kari_set0_pkey}
-  {$EXTERNALSYM CMS_RecipientInfo_kari_get0_ctx}
-  {$EXTERNALSYM CMS_RecipientInfo_kari_decrypt}
-  {$EXTERNALSYM CMS_SharedInfo_encode}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM CMS_get0_type}
   CMS_get0_type: function (const cms: PCMS_ContentInfo): PASN1_OBJECT; cdecl = nil;
 
+  {$EXTERNALSYM CMS_dataInit}
   CMS_dataInit: function (cms: PCMS_ContentInfo; icont: PBIO): PBIO; cdecl = nil;
+  {$EXTERNALSYM CMS_dataFinal}
   CMS_dataFinal: function (cms: PCMS_ContentInfo; bio: PBIO): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM CMS_get0_content}
   CMS_get0_content: function (cms: PCMS_ContentInfo): PPASN1_OCTET_STRING; cdecl = nil;
+  {$EXTERNALSYM CMS_is_detached}
   CMS_is_detached: function (cms: PCMS_ContentInfo): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_set_detached}
   CMS_set_detached: function (cms: PCMS_ContentInfo; detached: TIdC_INT): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM CMS_stream}
   CMS_stream: function (cms: PCMS_ContentInfo; boundary: PPPByte): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM d2i_CMS_bio}
   d2i_CMS_bio: function (bp: PBIO; cms: PPCMS_ContentInfo): PCMS_ContentInfo; cdecl = nil;
+  {$EXTERNALSYM i2d_CMS_bio}
   i2d_CMS_bio: function (bp: PBIO; cms: PCMS_ContentInfo): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM BIO_new_CMS}
   BIO_new_CMS: function (out_: PBIO; cms: PCMS_ContentInfo): PBIO; cdecl = nil;
+  {$EXTERNALSYM i2d_CMS_bio_stream}
   i2d_CMS_bio_stream: function (out_: PBIO; cms: PCMS_ContentInfo; in_: PBIO; flags: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PEM_write_bio_CMS_stream}
   PEM_write_bio_CMS_stream: function (out_: PBIO; cms: PCMS_ContentInfo; in_: PBIO; flags: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM SMIME_read_CMS}
   SMIME_read_CMS: function (bio: PBIO; bcont: PPBIO): PCMS_ContentInfo; cdecl = nil;
+  {$EXTERNALSYM SMIME_write_CMS}
   SMIME_write_CMS: function (bio: PBIO; cms: PCMS_ContentInfo; data: PBIO; flags: TIdC_INT): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM CMS_final}
   CMS_final: function (cms: PCMS_ContentInfo; data: PBIO; dcont: PBIO; flags: TIdC_UINT): TIdC_INT; cdecl = nil;
 
 //  function CMS_sign(signcert: PX509; pkey: PEVP_PKEY; {STACK_OF(x509) *certs;} data: PBIO; flags: TIdC_UINT): PCMS_ContentInfo;
 
 //  function CMS_sign_receipt(si: PCMS_SignerInfo; signcert: PX509; pkey: PEVP_PKEY; {STACK_OF(X509) *certs;} flags: TIdC_UINT): PCMS_ContentInfo;
 
+  {$EXTERNALSYM CMS_data}
   CMS_data: function (cms: PCMS_ContentInfo; out_: PBIO; flags: TIdC_UINT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_data_create}
   CMS_data_create: function (in_: PBIO; flags: TIdC_UINT): PCMS_ContentInfo; cdecl = nil;
 
+  {$EXTERNALSYM CMS_digest_verify}
   CMS_digest_verify: function (cms: PCMS_ContentInfo; dcont: PBIO; out_: PBIO; flags: TIdC_UINT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_digest_create}
   CMS_digest_create: function (in_: PBIO; const md: PEVP_MD; flags: TIdC_UINT): PCMS_ContentInfo; cdecl = nil;
 
+  {$EXTERNALSYM CMS_EncryptedData_decrypt}
   CMS_EncryptedData_decrypt: function (cms: PCMS_ContentInfo; const key: PByte; keylen: TIdC_SIZET; dcont: PBIO; out_: PBIO; flags: TIdC_UINT): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM CMS_EncryptedData_encrypt}
   CMS_EncryptedData_encrypt: function (in_: PBIO; const cipher: PEVP_CIPHER; const key: PByte; keylen: TIdC_SIZET; flags: TIdC_UINT): PCMS_ContentInfo; cdecl = nil;
 
+  {$EXTERNALSYM CMS_EncryptedData_set1_key}
   CMS_EncryptedData_set1_key: function (cms: PCMS_ContentInfo; const ciph: PEVP_CIPHER; const key: PByte; keylen: TIdC_SIZET): TIdC_INT; cdecl = nil;
 
 //  function CMS_verify(cms: PCMS_ContentInfo; {STACK_OF(X509) *certs;} store: PX509_STORE; dcont: PBIO; out_: PBIO; flags: TIdC_UINT): TIdC_INT;
@@ -269,98 +258,162 @@ var
 
 //  function CMS_encrypt({STACK_OF(x509) *certs;} in_: PBIO; const cipher: PEVP_CIPHER; flags: TIdC_UINT): PCMS_ContentInfo;
 
+  {$EXTERNALSYM CMS_decrypt}
   CMS_decrypt: function (cms: PCMS_ContentInfo; pkey: PEVP_PKEY; cert: PX509; dcont: PBIO; out_: PBIO; flags: TIdC_UINT): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM CMS_decrypt_set1_pkey}
   CMS_decrypt_set1_pkey: function (cms: PCMS_ContentInfo; pk: PEVP_PKEY; cert: PX509): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_decrypt_set1_key}
   CMS_decrypt_set1_key: function (cms: PCMS_ContentInfo; key: PByte; keylen: TIdC_SIZET; const id: PByte; idlen: TIdC_SIZET): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_decrypt_set1_password}
   CMS_decrypt_set1_password: function (cms: PCMS_ContentInfo; pass: PByte; passlen: ossl_ssize_t): TIdC_INT; cdecl = nil;
 
   //STACK_OF(CMS_RecipientInfo) *CMS_get0_RecipientInfos(CMS_ContentInfo *cms);
+  {$EXTERNALSYM CMS_RecipientInfo_type}
   CMS_RecipientInfo_type: function (ri: PCMS_RecipientInfo): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_RecipientInfo_get0_pkey_ctx}
   CMS_RecipientInfo_get0_pkey_ctx: function (ri: PCMS_RecipientInfo): PEVP_PKEY_CTX; cdecl = nil;
+  {$EXTERNALSYM CMS_EnvelopedData_create}
   CMS_EnvelopedData_create: function (const cipher: PEVP_CIPHER): PCMS_ContentInfo; cdecl = nil;
+  {$EXTERNALSYM CMS_add1_recipient_cert}
   CMS_add1_recipient_cert: function (cms: PCMS_ContentInfo; recip: PX509; flags: TIdC_UINT): PCMS_RecipientInfo; cdecl = nil;
+  {$EXTERNALSYM CMS_RecipientInfo_set0_pkey}
   CMS_RecipientInfo_set0_pkey: function (ri: PCMS_RecipientInfo; pkey: PEVP_PKEY): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_RecipientInfo_ktri_cert_cmp}
   CMS_RecipientInfo_ktri_cert_cmp: function (ri: PCMS_RecipientInfo; cert: PX509): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_RecipientInfo_ktri_get0_algs}
   CMS_RecipientInfo_ktri_get0_algs: function (ri: PCMS_RecipientInfo; pk: PPEVP_PKEY; recip: PPX509; palg: PPX509_ALGOR): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_RecipientInfo_ktri_get0_signer_id}
   CMS_RecipientInfo_ktri_get0_signer_id: function (ri: PPCMS_RecipientInfo; keyid: PPASN1_OCTET_STRING; issuer: PPX509_NAME; sno: PPASN1_INTEGER): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM CMS_add0_recipient_key}
   CMS_add0_recipient_key: function (cms: PCMS_ContentInfo; nid: TIdC_INT; key: PByte; keylen: TIdC_SIZET; id: PByte; idlen: TIdC_SIZET; date: PASN1_GENERALIZEDTIME; otherTypeId: PASN1_OBJECT; otherType: ASN1_TYPE): PCMS_RecipientInfo; cdecl = nil;
 
+  {$EXTERNALSYM CMS_RecipientInfo_kekri_get0_id}
   CMS_RecipientInfo_kekri_get0_id: function (ri: PCMS_RecipientInfo; palg: PPX509_ALGOR; pid: PPASN1_OCTET_STRING; _pdate: PPASN1_GENERALIZEDTIME; potherid: PPASN1_OBJECT; pothertype: PASN1_TYPE): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM CMS_RecipientInfo_set0_key}
   CMS_RecipientInfo_set0_key: function (ri: PCMS_RecipientInfo; key: PByte; keylen: TIdC_SIZET): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM CMS_RecipientInfo_kekri_id_cmp}
   CMS_RecipientInfo_kekri_id_cmp: function (ri: PCMS_RecipientInfo; const id: PByte; idlen: TIdC_SIZET): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM CMS_RecipientInfo_set0_password}
   CMS_RecipientInfo_set0_password: function (ri: PCMS_RecipientInfo; pass: PByte; passlen: ossl_ssize_t): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM CMS_add0_recipient_password}
   CMS_add0_recipient_password: function (cms: PCMS_ContentInfo; iter: TIdC_INT; wrap_nid: TIdC_INT; pbe_nid: TIdC_INT; pass: PByte; passlen: ossl_ssize_t; const kekciph: PEVP_CIPHER): PCMS_RecipientInfo; cdecl = nil;
 
+  {$EXTERNALSYM CMS_RecipientInfo_decrypt}
   CMS_RecipientInfo_decrypt: function (cms: PCMS_ContentInfo; ri: PCMS_RecipientInfo): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_RecipientInfo_encrypt}
   CMS_RecipientInfo_encrypt: function (cms: PCMS_ContentInfo; ri: PCMS_RecipientInfo): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM CMS_uncompress}
   CMS_uncompress: function (cms: PCMS_ContentInfo; dcont: PBIO; out_: PBIO; flags: TIdC_UINT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_compress}
   CMS_compress: function (in_: PBIO; comp_nid: TIdC_INT; flags: TIdC_UINT): PCMS_ContentInfo; cdecl = nil;
 
+  {$EXTERNALSYM CMS_set1_eContentType}
   CMS_set1_eContentType: function (cms: CMS_ContentInfo; const oit: PASN1_OBJECT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_get0_eContentType}
   CMS_get0_eContentType: function (cms: PCMS_ContentInfo): PASN1_OBJECT; cdecl = nil;
 
+  {$EXTERNALSYM CMS_add0_CertificateChoices}
   CMS_add0_CertificateChoices: function (cms: PCMS_ContentInfo): PCMS_CertificateChoices; cdecl = nil;
+  {$EXTERNALSYM CMS_add0_cert}
   CMS_add0_cert: function (cms: PCMS_ContentInfo; cert: PX509): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_add1_cert}
   CMS_add1_cert: function (cms: PCMS_ContentInfo; cert: PX509): TIdC_INT; cdecl = nil;
   // STACK_OF(X509) *CMS_get1_certs(CMS_ContentInfo *cms);
 
+  {$EXTERNALSYM CMS_add0_RevocationInfoChoice}
   CMS_add0_RevocationInfoChoice: function (cms: PCMS_ContentInfo): PCMS_RevocationInfoChoice; cdecl = nil;
+  {$EXTERNALSYM CMS_add0_crl}
   CMS_add0_crl: function (cms: PCMS_ContentInfo; crl: PX509_CRL): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_add1_crl}
   CMS_add1_crl: function (cms: PCMS_ContentInfo; crl: PX509_CRL): TIdC_INT; cdecl = nil;
   // STACK_OF(X509_CRL) *CMS_get1_crls(CMS_ContentInfo *cms);
 
+  {$EXTERNALSYM CMS_SignedData_init}
   CMS_SignedData_init: function (cms: PCMS_ContentInfo): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_add1_signer}
   CMS_add1_signer: function (cms: PCMS_ContentInfo; signer: PX509; pk: PEVP_PKEY; const md: PEVP_MD; flags: TIdC_UINT): PCMS_SignerInfo; cdecl = nil;
+  {$EXTERNALSYM CMS_SignerInfo_get0_pkey_ctx}
   CMS_SignerInfo_get0_pkey_ctx: function (si: PCMS_SignerInfo): PEVP_PKEY_CTX; cdecl = nil;
+  {$EXTERNALSYM CMS_SignerInfo_get0_md_ctx}
   CMS_SignerInfo_get0_md_ctx: function (si: PCMS_SignerInfo): PEVP_MD_CTX; cdecl = nil;
   // STACK_OF(CMS_SignerInfo) *CMS_get0_SignerInfos(CMS_ContentInfo *cms);
 
+  {$EXTERNALSYM CMS_SignerInfo_set1_signer_cert}
   CMS_SignerInfo_set1_signer_cert: procedure (si: PCMS_SignerInfo; signer: PX509); cdecl = nil;
+  {$EXTERNALSYM CMS_SignerInfo_get0_signer_id}
   CMS_SignerInfo_get0_signer_id: function (si: PCMS_SignerInfo; keyid: PPASN1_OCTET_STRING; issuer: PPX509_NAME; sno: PPASN1_INTEGER): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_SignerInfo_cert_cmp}
   CMS_SignerInfo_cert_cmp: function (si: PCMS_SignerInfo; cert: PX509): TIdC_INT; cdecl = nil;
 //  function CMS_set1_signers_certs(cms: PCMS_ContentInfo; {STACK_OF(X509) *certs;} flags: TIdC_UINT): TIdC_INT;
+  {$EXTERNALSYM CMS_SignerInfo_get0_algs}
   CMS_SignerInfo_get0_algs: procedure (si: PCMS_SignerInfo; pk: PPEVP_PKEY; signer: PPX509; pdig: PPX509_ALGOR; psig: PPX509_ALGOR); cdecl = nil;
+  {$EXTERNALSYM CMS_SignerInfo_get0_signature}
   CMS_SignerInfo_get0_signature: function (si: PCMS_SignerInfo): PASN1_OCTET_STRING; cdecl = nil;
+  {$EXTERNALSYM CMS_SignerInfo_sign}
   CMS_SignerInfo_sign: function (si: PCMS_SignerInfo): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_SignerInfo_verify}
   CMS_SignerInfo_verify: function (si: PCMS_SignerInfo): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_SignerInfo_verify_content}
   CMS_SignerInfo_verify_content: function (si: PCMS_SignerInfo; chain: PBIO): TIdC_INT; cdecl = nil;
 
 //  function CMS_add_smimecap(si: PCMS_SignerInfo{; STACK_OF(X509_ALGOR) *algs}): TIdC_INT;
 //  function CMS_add_simple_smimecap({STACK_OF(X509_ALGOR) **algs;} algnid: TIdC_INT; keysize: TIdC_INT): TIdC_INT;
 //  function CMS_add_standard_smimecap({STACK_OF(X509_ALGOR) **smcap}): TIdC_INT;
 
+  {$EXTERNALSYM CMS_signed_get_attr_count}
   CMS_signed_get_attr_count: function (const si: PCMS_SignerInfo): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_signed_get_attr_by_NID}
   CMS_signed_get_attr_by_NID: function (const si: PCMS_SignerInfo; nid: TIdC_INT; lastpos: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_signed_get_attr_by_OBJ}
   CMS_signed_get_attr_by_OBJ: function (const si: PCMS_SignerInfo; const obj: PASN1_OBJECT; lastpos: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_signed_get_attr}
   CMS_signed_get_attr: function (const si: PCMS_SignerInfo; loc: TIdC_INT): PX509_ATTRIBUTE; cdecl = nil;
+  {$EXTERNALSYM CMS_signed_delete_attr}
   CMS_signed_delete_attr: function (const si: PCMS_SignerInfo; loc: TIdC_INT): PX509_ATTRIBUTE; cdecl = nil;
+  {$EXTERNALSYM CMS_signed_add1_attr}
   CMS_signed_add1_attr: function (si: PCMS_SignerInfo; loc: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_signed_add1_attr_by_OBJ}
   CMS_signed_add1_attr_by_OBJ: function (si: PCMS_SignerInfo; const obj: PASN1_OBJECT; type_: TIdC_INT; const bytes: Pointer; len: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_signed_add1_attr_by_NID}
   CMS_signed_add1_attr_by_NID: function (si: PCMS_SignerInfo; nid: TIdC_INT; type_: TIdC_INT; const bytes: Pointer; len: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_signed_add1_attr_by_txt}
   CMS_signed_add1_attr_by_txt: function (si: PCMS_SignerInfo; const attrname: PIdAnsiChar; type_: TIdC_INT; const bytes: Pointer; len: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_signed_get0_data_by_OBJ}
   CMS_signed_get0_data_by_OBJ: function (si: PCMS_SignerInfo; const oid: PASN1_OBJECT; lastpos: TIdC_INT; type_: TIdC_INT): Pointer; cdecl = nil;
 
+  {$EXTERNALSYM CMS_unsigned_get_attr_count}
   CMS_unsigned_get_attr_count: function (const si: PCMS_SignerInfo): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_unsigned_get_attr_by_NID}
   CMS_unsigned_get_attr_by_NID: function (const si: PCMS_SignerInfo; nid: TIdC_INT; lastpos: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_unsigned_get_attr_by_OBJ}
   CMS_unsigned_get_attr_by_OBJ: function (const si: PCMS_SignerInfo; const obj: PASN1_OBJECT; lastpos: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_unsigned_get_attr}
   CMS_unsigned_get_attr: function (const si: PCMS_SignerInfo; loc: TIdC_INT): PX509_ATTRIBUTE; cdecl = nil;
+  {$EXTERNALSYM CMS_unsigned_delete_attr}
   CMS_unsigned_delete_attr: function (si: PCMS_SignerInfo; loc: TIdC_INT): PX509_ATTRIBUTE; cdecl = nil;
+  {$EXTERNALSYM CMS_unsigned_add1_attr}
   CMS_unsigned_add1_attr: function (si: PCMS_SignerInfo; attr: PX509_ATTRIBUTE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_unsigned_add1_attr_by_OBJ}
   CMS_unsigned_add1_attr_by_OBJ: function (si: PCMS_SignerInfo; const obj: PASN1_OBJECT; type_: TIdC_INT; const bytes: Pointer; len: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_unsigned_add1_attr_by_NID}
   CMS_unsigned_add1_attr_by_NID: function (si: PCMS_SignerInfo; nid: TIdC_INT; type_: TIdC_INT; const bytes: Pointer; len: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_unsigned_add1_attr_by_txt}
   CMS_unsigned_add1_attr_by_txt: function (si: PCMS_SignerInfo; const attrname: PIdAnsiChar; type_: TIdC_INT; const bytes: Pointer; len: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_unsigned_get0_data_by_OBJ}
   CMS_unsigned_get0_data_by_OBJ: function (si: PCMS_SignerInfo; oid: PASN1_OBJECT; lastpos: TIdC_INT; type_: TIdC_INT): Pointer; cdecl = nil;
 
+  {$EXTERNALSYM CMS_get1_ReceiptRequest}
   CMS_get1_ReceiptRequest: function (si: PCMS_SignerInfo; prr: PPCMS_ReceiptRequest): TIdC_INT; cdecl = nil;
 //  function CMS_ReceiptRequest_create0(id: PByte; idlen: TIdC_INT; allorfirst: TIdC_INT
 //    {;STACK_OF(GENERAL_NAMES) *receiptList;} {STACK_OF(GENERAL_NAMES) *receiptsTo}): PCMS_ReceiptRequest;
+  {$EXTERNALSYM CMS_add1_ReceiptRequest}
   CMS_add1_ReceiptRequest: function (si: PCMS_SignerInfo; rr: PCMS_ReceiptRequest): TIdC_INT; cdecl = nil;
 //  procedure CMS_ReceiptRequest_get0_values(rr: PCMS_ReceiptRequest; pcid: PPASN1_STRING;
 //    pallorfirst: PIdC_INT {;STACK_OF(GENERAL_NAMES) **plist;}
@@ -369,16 +422,24 @@ var
 //    pukm: PPASN1_OCTET_STRING): TIdC_INT;
 //  // STACK_OF(CMS_RecipientEncryptedKey) *CMS_RecipientInfo_kari_get0_reks(CMS_RecipientInfo *ri);
 
+  {$EXTERNALSYM CMS_RecipientInfo_kari_get0_orig_id}
   CMS_RecipientInfo_kari_get0_orig_id: function (ri: PCMS_RecipientInfo; pubalg: PPX509_ALGOR; pubkey: PASN1_BIT_STRING; keyid: PPASN1_OCTET_STRING; issuer: PPX509_NAME; sno: PPASN1_INTEGER): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM CMS_RecipientInfo_kari_orig_id_cmp}
   CMS_RecipientInfo_kari_orig_id_cmp: function (ri: PCMS_RecipientInfo; cert: PX509): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM CMS_RecipientEncryptedKey_get0_id}
   CMS_RecipientEncryptedKey_get0_id: function (rek: PCMS_RecipientEncryptedKey; keyid: PPASN1_OCTET_STRING; tm: PPASN1_GENERALIZEDTIME; other: PPCMS_OtherKeyAttribute; issuer: PPX509_NAME; sno: PPASN1_INTEGER): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_RecipientEncryptedKey_cert_cmp}
   CMS_RecipientEncryptedKey_cert_cmp: function (rek: PCMS_RecipientEncryptedKey; cert: PX509): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_RecipientInfo_kari_set0_pkey}
   CMS_RecipientInfo_kari_set0_pkey: function (ri: PCMS_RecipientInfo; pk: PEVP_PKEY): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_RecipientInfo_kari_get0_ctx}
   CMS_RecipientInfo_kari_get0_ctx: function (ri: PCMS_RecipientInfo): PEVP_CIPHER_CTX; cdecl = nil;
+  {$EXTERNALSYM CMS_RecipientInfo_kari_decrypt}
   CMS_RecipientInfo_kari_decrypt: function (cms: PCMS_ContentInfo; ri: PCMS_RecipientInfo; rek: PCMS_RecipientEncryptedKey): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM CMS_SharedInfo_encode}
   CMS_SharedInfo_encode: function (pder: PPByte; kekalg: PX509_ALGOR; ukm: PASN1_OCTET_STRING; keylen: TIdC_INT): TIdC_INT; cdecl = nil;
 
   ///* Backward compatibility for spelling errors. */
@@ -386,41 +447,63 @@ var
   //# define CMS_R_UNSUPPORTED_RECPIENTINFO_TYPE \ CMS_R_UNSUPPORTED_RECIPIENTINFO_TYPE
 
 {$ELSE}
+  {$EXTERNALSYM CMS_get0_type}
   function CMS_get0_type(const cms: PCMS_ContentInfo): PASN1_OBJECT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_dataInit}
   function CMS_dataInit(cms: PCMS_ContentInfo; icont: PBIO): PBIO cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_dataFinal}
   function CMS_dataFinal(cms: PCMS_ContentInfo; bio: PBIO): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_get0_content}
   function CMS_get0_content(cms: PCMS_ContentInfo): PPASN1_OCTET_STRING cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_is_detached}
   function CMS_is_detached(cms: PCMS_ContentInfo): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_set_detached}
   function CMS_set_detached(cms: PCMS_ContentInfo; detached: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_stream}
   function CMS_stream(cms: PCMS_ContentInfo; boundary: PPPByte): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM d2i_CMS_bio}
   function d2i_CMS_bio(bp: PBIO; cms: PPCMS_ContentInfo): PCMS_ContentInfo cdecl; external CLibCrypto;
+  {$EXTERNALSYM i2d_CMS_bio}
   function i2d_CMS_bio(bp: PBIO; cms: PCMS_ContentInfo): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM BIO_new_CMS}
   function BIO_new_CMS(out_: PBIO; cms: PCMS_ContentInfo): PBIO cdecl; external CLibCrypto;
+  {$EXTERNALSYM i2d_CMS_bio_stream}
   function i2d_CMS_bio_stream(out_: PBIO; cms: PCMS_ContentInfo; in_: PBIO; flags: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PEM_write_bio_CMS_stream}
   function PEM_write_bio_CMS_stream(out_: PBIO; cms: PCMS_ContentInfo; in_: PBIO; flags: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM SMIME_read_CMS}
   function SMIME_read_CMS(bio: PBIO; bcont: PPBIO): PCMS_ContentInfo cdecl; external CLibCrypto;
+  {$EXTERNALSYM SMIME_write_CMS}
   function SMIME_write_CMS(bio: PBIO; cms: PCMS_ContentInfo; data: PBIO; flags: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_final}
   function CMS_final(cms: PCMS_ContentInfo; data: PBIO; dcont: PBIO; flags: TIdC_UINT): TIdC_INT cdecl; external CLibCrypto;
 
 //  function CMS_sign(signcert: PX509; pkey: PEVP_PKEY; {STACK_OF(x509) *certs;} data: PBIO; flags: TIdC_UINT): PCMS_ContentInfo;
 
 //  function CMS_sign_receipt(si: PCMS_SignerInfo; signcert: PX509; pkey: PEVP_PKEY; {STACK_OF(X509) *certs;} flags: TIdC_UINT): PCMS_ContentInfo;
 
+  {$EXTERNALSYM CMS_data}
   function CMS_data(cms: PCMS_ContentInfo; out_: PBIO; flags: TIdC_UINT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_data_create}
   function CMS_data_create(in_: PBIO; flags: TIdC_UINT): PCMS_ContentInfo cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_digest_verify}
   function CMS_digest_verify(cms: PCMS_ContentInfo; dcont: PBIO; out_: PBIO; flags: TIdC_UINT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_digest_create}
   function CMS_digest_create(in_: PBIO; const md: PEVP_MD; flags: TIdC_UINT): PCMS_ContentInfo cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_EncryptedData_decrypt}
   function CMS_EncryptedData_decrypt(cms: PCMS_ContentInfo; const key: PByte; keylen: TIdC_SIZET; dcont: PBIO; out_: PBIO; flags: TIdC_UINT): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_EncryptedData_encrypt}
   function CMS_EncryptedData_encrypt(in_: PBIO; const cipher: PEVP_CIPHER; const key: PByte; keylen: TIdC_SIZET; flags: TIdC_UINT): PCMS_ContentInfo cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_EncryptedData_set1_key}
   function CMS_EncryptedData_set1_key(cms: PCMS_ContentInfo; const ciph: PEVP_CIPHER; const key: PByte; keylen: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
 
 //  function CMS_verify(cms: PCMS_ContentInfo; {STACK_OF(X509) *certs;} store: PX509_STORE; dcont: PBIO; out_: PBIO; flags: TIdC_UINT): TIdC_INT;
@@ -431,98 +514,162 @@ var
 
 //  function CMS_encrypt({STACK_OF(x509) *certs;} in_: PBIO; const cipher: PEVP_CIPHER; flags: TIdC_UINT): PCMS_ContentInfo;
 
+  {$EXTERNALSYM CMS_decrypt}
   function CMS_decrypt(cms: PCMS_ContentInfo; pkey: PEVP_PKEY; cert: PX509; dcont: PBIO; out_: PBIO; flags: TIdC_UINT): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_decrypt_set1_pkey}
   function CMS_decrypt_set1_pkey(cms: PCMS_ContentInfo; pk: PEVP_PKEY; cert: PX509): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_decrypt_set1_key}
   function CMS_decrypt_set1_key(cms: PCMS_ContentInfo; key: PByte; keylen: TIdC_SIZET; const id: PByte; idlen: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_decrypt_set1_password}
   function CMS_decrypt_set1_password(cms: PCMS_ContentInfo; pass: PByte; passlen: ossl_ssize_t): TIdC_INT cdecl; external CLibCrypto;
 
   //STACK_OF(CMS_RecipientInfo) *CMS_get0_RecipientInfos(CMS_ContentInfo *cms);
+  {$EXTERNALSYM CMS_RecipientInfo_type}
   function CMS_RecipientInfo_type(ri: PCMS_RecipientInfo): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_RecipientInfo_get0_pkey_ctx}
   function CMS_RecipientInfo_get0_pkey_ctx(ri: PCMS_RecipientInfo): PEVP_PKEY_CTX cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_EnvelopedData_create}
   function CMS_EnvelopedData_create(const cipher: PEVP_CIPHER): PCMS_ContentInfo cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_add1_recipient_cert}
   function CMS_add1_recipient_cert(cms: PCMS_ContentInfo; recip: PX509; flags: TIdC_UINT): PCMS_RecipientInfo cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_RecipientInfo_set0_pkey}
   function CMS_RecipientInfo_set0_pkey(ri: PCMS_RecipientInfo; pkey: PEVP_PKEY): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_RecipientInfo_ktri_cert_cmp}
   function CMS_RecipientInfo_ktri_cert_cmp(ri: PCMS_RecipientInfo; cert: PX509): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_RecipientInfo_ktri_get0_algs}
   function CMS_RecipientInfo_ktri_get0_algs(ri: PCMS_RecipientInfo; pk: PPEVP_PKEY; recip: PPX509; palg: PPX509_ALGOR): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_RecipientInfo_ktri_get0_signer_id}
   function CMS_RecipientInfo_ktri_get0_signer_id(ri: PPCMS_RecipientInfo; keyid: PPASN1_OCTET_STRING; issuer: PPX509_NAME; sno: PPASN1_INTEGER): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_add0_recipient_key}
   function CMS_add0_recipient_key(cms: PCMS_ContentInfo; nid: TIdC_INT; key: PByte; keylen: TIdC_SIZET; id: PByte; idlen: TIdC_SIZET; date: PASN1_GENERALIZEDTIME; otherTypeId: PASN1_OBJECT; otherType: ASN1_TYPE): PCMS_RecipientInfo cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_RecipientInfo_kekri_get0_id}
   function CMS_RecipientInfo_kekri_get0_id(ri: PCMS_RecipientInfo; palg: PPX509_ALGOR; pid: PPASN1_OCTET_STRING; _pdate: PPASN1_GENERALIZEDTIME; potherid: PPASN1_OBJECT; pothertype: PASN1_TYPE): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_RecipientInfo_set0_key}
   function CMS_RecipientInfo_set0_key(ri: PCMS_RecipientInfo; key: PByte; keylen: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_RecipientInfo_kekri_id_cmp}
   function CMS_RecipientInfo_kekri_id_cmp(ri: PCMS_RecipientInfo; const id: PByte; idlen: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_RecipientInfo_set0_password}
   function CMS_RecipientInfo_set0_password(ri: PCMS_RecipientInfo; pass: PByte; passlen: ossl_ssize_t): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_add0_recipient_password}
   function CMS_add0_recipient_password(cms: PCMS_ContentInfo; iter: TIdC_INT; wrap_nid: TIdC_INT; pbe_nid: TIdC_INT; pass: PByte; passlen: ossl_ssize_t; const kekciph: PEVP_CIPHER): PCMS_RecipientInfo cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_RecipientInfo_decrypt}
   function CMS_RecipientInfo_decrypt(cms: PCMS_ContentInfo; ri: PCMS_RecipientInfo): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_RecipientInfo_encrypt}
   function CMS_RecipientInfo_encrypt(cms: PCMS_ContentInfo; ri: PCMS_RecipientInfo): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_uncompress}
   function CMS_uncompress(cms: PCMS_ContentInfo; dcont: PBIO; out_: PBIO; flags: TIdC_UINT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_compress}
   function CMS_compress(in_: PBIO; comp_nid: TIdC_INT; flags: TIdC_UINT): PCMS_ContentInfo cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_set1_eContentType}
   function CMS_set1_eContentType(cms: CMS_ContentInfo; const oit: PASN1_OBJECT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_get0_eContentType}
   function CMS_get0_eContentType(cms: PCMS_ContentInfo): PASN1_OBJECT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_add0_CertificateChoices}
   function CMS_add0_CertificateChoices(cms: PCMS_ContentInfo): PCMS_CertificateChoices cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_add0_cert}
   function CMS_add0_cert(cms: PCMS_ContentInfo; cert: PX509): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_add1_cert}
   function CMS_add1_cert(cms: PCMS_ContentInfo; cert: PX509): TIdC_INT cdecl; external CLibCrypto;
   // STACK_OF(X509) *CMS_get1_certs(CMS_ContentInfo *cms);
 
+  {$EXTERNALSYM CMS_add0_RevocationInfoChoice}
   function CMS_add0_RevocationInfoChoice(cms: PCMS_ContentInfo): PCMS_RevocationInfoChoice cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_add0_crl}
   function CMS_add0_crl(cms: PCMS_ContentInfo; crl: PX509_CRL): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_add1_crl}
   function CMS_add1_crl(cms: PCMS_ContentInfo; crl: PX509_CRL): TIdC_INT cdecl; external CLibCrypto;
   // STACK_OF(X509_CRL) *CMS_get1_crls(CMS_ContentInfo *cms);
 
+  {$EXTERNALSYM CMS_SignedData_init}
   function CMS_SignedData_init(cms: PCMS_ContentInfo): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_add1_signer}
   function CMS_add1_signer(cms: PCMS_ContentInfo; signer: PX509; pk: PEVP_PKEY; const md: PEVP_MD; flags: TIdC_UINT): PCMS_SignerInfo cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_SignerInfo_get0_pkey_ctx}
   function CMS_SignerInfo_get0_pkey_ctx(si: PCMS_SignerInfo): PEVP_PKEY_CTX cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_SignerInfo_get0_md_ctx}
   function CMS_SignerInfo_get0_md_ctx(si: PCMS_SignerInfo): PEVP_MD_CTX cdecl; external CLibCrypto;
   // STACK_OF(CMS_SignerInfo) *CMS_get0_SignerInfos(CMS_ContentInfo *cms);
 
+  {$EXTERNALSYM CMS_SignerInfo_set1_signer_cert}
   procedure CMS_SignerInfo_set1_signer_cert(si: PCMS_SignerInfo; signer: PX509) cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_SignerInfo_get0_signer_id}
   function CMS_SignerInfo_get0_signer_id(si: PCMS_SignerInfo; keyid: PPASN1_OCTET_STRING; issuer: PPX509_NAME; sno: PPASN1_INTEGER): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_SignerInfo_cert_cmp}
   function CMS_SignerInfo_cert_cmp(si: PCMS_SignerInfo; cert: PX509): TIdC_INT cdecl; external CLibCrypto;
 //  function CMS_set1_signers_certs(cms: PCMS_ContentInfo; {STACK_OF(X509) *certs;} flags: TIdC_UINT): TIdC_INT;
+  {$EXTERNALSYM CMS_SignerInfo_get0_algs}
   procedure CMS_SignerInfo_get0_algs(si: PCMS_SignerInfo; pk: PPEVP_PKEY; signer: PPX509; pdig: PPX509_ALGOR; psig: PPX509_ALGOR) cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_SignerInfo_get0_signature}
   function CMS_SignerInfo_get0_signature(si: PCMS_SignerInfo): PASN1_OCTET_STRING cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_SignerInfo_sign}
   function CMS_SignerInfo_sign(si: PCMS_SignerInfo): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_SignerInfo_verify}
   function CMS_SignerInfo_verify(si: PCMS_SignerInfo): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_SignerInfo_verify_content}
   function CMS_SignerInfo_verify_content(si: PCMS_SignerInfo; chain: PBIO): TIdC_INT cdecl; external CLibCrypto;
 
 //  function CMS_add_smimecap(si: PCMS_SignerInfo{; STACK_OF(X509_ALGOR) *algs}): TIdC_INT;
 //  function CMS_add_simple_smimecap({STACK_OF(X509_ALGOR) **algs;} algnid: TIdC_INT; keysize: TIdC_INT): TIdC_INT;
 //  function CMS_add_standard_smimecap({STACK_OF(X509_ALGOR) **smcap}): TIdC_INT;
 
+  {$EXTERNALSYM CMS_signed_get_attr_count}
   function CMS_signed_get_attr_count(const si: PCMS_SignerInfo): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_signed_get_attr_by_NID}
   function CMS_signed_get_attr_by_NID(const si: PCMS_SignerInfo; nid: TIdC_INT; lastpos: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_signed_get_attr_by_OBJ}
   function CMS_signed_get_attr_by_OBJ(const si: PCMS_SignerInfo; const obj: PASN1_OBJECT; lastpos: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_signed_get_attr}
   function CMS_signed_get_attr(const si: PCMS_SignerInfo; loc: TIdC_INT): PX509_ATTRIBUTE cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_signed_delete_attr}
   function CMS_signed_delete_attr(const si: PCMS_SignerInfo; loc: TIdC_INT): PX509_ATTRIBUTE cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_signed_add1_attr}
   function CMS_signed_add1_attr(si: PCMS_SignerInfo; loc: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_signed_add1_attr_by_OBJ}
   function CMS_signed_add1_attr_by_OBJ(si: PCMS_SignerInfo; const obj: PASN1_OBJECT; type_: TIdC_INT; const bytes: Pointer; len: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_signed_add1_attr_by_NID}
   function CMS_signed_add1_attr_by_NID(si: PCMS_SignerInfo; nid: TIdC_INT; type_: TIdC_INT; const bytes: Pointer; len: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_signed_add1_attr_by_txt}
   function CMS_signed_add1_attr_by_txt(si: PCMS_SignerInfo; const attrname: PIdAnsiChar; type_: TIdC_INT; const bytes: Pointer; len: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_signed_get0_data_by_OBJ}
   function CMS_signed_get0_data_by_OBJ(si: PCMS_SignerInfo; const oid: PASN1_OBJECT; lastpos: TIdC_INT; type_: TIdC_INT): Pointer cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_unsigned_get_attr_count}
   function CMS_unsigned_get_attr_count(const si: PCMS_SignerInfo): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_unsigned_get_attr_by_NID}
   function CMS_unsigned_get_attr_by_NID(const si: PCMS_SignerInfo; nid: TIdC_INT; lastpos: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_unsigned_get_attr_by_OBJ}
   function CMS_unsigned_get_attr_by_OBJ(const si: PCMS_SignerInfo; const obj: PASN1_OBJECT; lastpos: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_unsigned_get_attr}
   function CMS_unsigned_get_attr(const si: PCMS_SignerInfo; loc: TIdC_INT): PX509_ATTRIBUTE cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_unsigned_delete_attr}
   function CMS_unsigned_delete_attr(si: PCMS_SignerInfo; loc: TIdC_INT): PX509_ATTRIBUTE cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_unsigned_add1_attr}
   function CMS_unsigned_add1_attr(si: PCMS_SignerInfo; attr: PX509_ATTRIBUTE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_unsigned_add1_attr_by_OBJ}
   function CMS_unsigned_add1_attr_by_OBJ(si: PCMS_SignerInfo; const obj: PASN1_OBJECT; type_: TIdC_INT; const bytes: Pointer; len: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_unsigned_add1_attr_by_NID}
   function CMS_unsigned_add1_attr_by_NID(si: PCMS_SignerInfo; nid: TIdC_INT; type_: TIdC_INT; const bytes: Pointer; len: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_unsigned_add1_attr_by_txt}
   function CMS_unsigned_add1_attr_by_txt(si: PCMS_SignerInfo; const attrname: PIdAnsiChar; type_: TIdC_INT; const bytes: Pointer; len: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_unsigned_get0_data_by_OBJ}
   function CMS_unsigned_get0_data_by_OBJ(si: PCMS_SignerInfo; oid: PASN1_OBJECT; lastpos: TIdC_INT; type_: TIdC_INT): Pointer cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_get1_ReceiptRequest}
   function CMS_get1_ReceiptRequest(si: PCMS_SignerInfo; prr: PPCMS_ReceiptRequest): TIdC_INT cdecl; external CLibCrypto;
 //  function CMS_ReceiptRequest_create0(id: PByte; idlen: TIdC_INT; allorfirst: TIdC_INT
 //    {;STACK_OF(GENERAL_NAMES) *receiptList;} {STACK_OF(GENERAL_NAMES) *receiptsTo}): PCMS_ReceiptRequest;
+  {$EXTERNALSYM CMS_add1_ReceiptRequest}
   function CMS_add1_ReceiptRequest(si: PCMS_SignerInfo; rr: PCMS_ReceiptRequest): TIdC_INT cdecl; external CLibCrypto;
 //  procedure CMS_ReceiptRequest_get0_values(rr: PCMS_ReceiptRequest; pcid: PPASN1_STRING;
 //    pallorfirst: PIdC_INT {;STACK_OF(GENERAL_NAMES) **plist;}
@@ -531,16 +678,24 @@ var
 //    pukm: PPASN1_OCTET_STRING): TIdC_INT;
 //  // STACK_OF(CMS_RecipientEncryptedKey) *CMS_RecipientInfo_kari_get0_reks(CMS_RecipientInfo *ri);
 
+  {$EXTERNALSYM CMS_RecipientInfo_kari_get0_orig_id}
   function CMS_RecipientInfo_kari_get0_orig_id(ri: PCMS_RecipientInfo; pubalg: PPX509_ALGOR; pubkey: PASN1_BIT_STRING; keyid: PPASN1_OCTET_STRING; issuer: PPX509_NAME; sno: PPASN1_INTEGER): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_RecipientInfo_kari_orig_id_cmp}
   function CMS_RecipientInfo_kari_orig_id_cmp(ri: PCMS_RecipientInfo; cert: PX509): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_RecipientEncryptedKey_get0_id}
   function CMS_RecipientEncryptedKey_get0_id(rek: PCMS_RecipientEncryptedKey; keyid: PPASN1_OCTET_STRING; tm: PPASN1_GENERALIZEDTIME; other: PPCMS_OtherKeyAttribute; issuer: PPX509_NAME; sno: PPASN1_INTEGER): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_RecipientEncryptedKey_cert_cmp}
   function CMS_RecipientEncryptedKey_cert_cmp(rek: PCMS_RecipientEncryptedKey; cert: PX509): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_RecipientInfo_kari_set0_pkey}
   function CMS_RecipientInfo_kari_set0_pkey(ri: PCMS_RecipientInfo; pk: PEVP_PKEY): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_RecipientInfo_kari_get0_ctx}
   function CMS_RecipientInfo_kari_get0_ctx(ri: PCMS_RecipientInfo): PEVP_CIPHER_CTX cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_RecipientInfo_kari_decrypt}
   function CMS_RecipientInfo_kari_decrypt(cms: PCMS_ContentInfo; ri: PCMS_RecipientInfo; rek: PCMS_RecipientEncryptedKey): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM CMS_SharedInfo_encode}
   function CMS_SharedInfo_encode(pder: PPByte; kekalg: PX509_ALGOR; ukm: PASN1_OCTET_STRING; keylen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
 
   ///* Backward compatibility for spelling errors. */

@@ -41,46 +41,56 @@ uses
   	  The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header 
 	  files generated for C++. }
 	  
-  {$EXTERNALSYM COMP_CTX_new}
-  {$EXTERNALSYM COMP_CTX_get_method}
-  {$EXTERNALSYM COMP_CTX_get_type}
-  {$EXTERNALSYM COMP_get_type}
-  {$EXTERNALSYM COMP_get_name}
-  {$EXTERNALSYM COMP_CTX_free}
-  {$EXTERNALSYM COMP_compress_block}
-  {$EXTERNALSYM COMP_expand_block}
-  {$EXTERNALSYM COMP_zlib}
-  {$EXTERNALSYM BIO_f_zlib}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM COMP_CTX_new}
   COMP_CTX_new: function (meth: PCOMP_METHOD): PCOMP_CTX; cdecl = nil;
+  {$EXTERNALSYM COMP_CTX_get_method}
   COMP_CTX_get_method: function (const ctx: PCOMP_CTX): PCOMP_METHOD; cdecl = nil;
+  {$EXTERNALSYM COMP_CTX_get_type}
   COMP_CTX_get_type: function (const _comp: PCOMP_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM COMP_get_type}
   COMP_get_type: function (const meth: PCOMP_METHOD): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM COMP_get_name}
   COMP_get_name: function (const meth: PCOMP_METHOD): PIdAnsiChar; cdecl = nil;
+  {$EXTERNALSYM COMP_CTX_free}
   COMP_CTX_free: procedure (ctx: PCOMP_CTX); cdecl = nil;
 
+  {$EXTERNALSYM COMP_compress_block}
   COMP_compress_block: function (ctx: PCOMP_CTX; out_: PByte; olen: TIdC_INT; in_: PByte; ilen: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM COMP_expand_block}
   COMP_expand_block: function (ctx: PCOMP_CTX; out_: PByte; olen: TIdC_INT; in_: PByte; ilen: TIdC_INT): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM COMP_zlib}
   COMP_zlib: function : PCOMP_METHOD; cdecl = nil;
 
+  {$EXTERNALSYM BIO_f_zlib}
   BIO_f_zlib: function : PBIO_METHOD; cdecl = nil;
 
 {$ELSE}
+  {$EXTERNALSYM COMP_CTX_new}
   function COMP_CTX_new(meth: PCOMP_METHOD): PCOMP_CTX cdecl; external CLibCrypto;
+  {$EXTERNALSYM COMP_CTX_get_method}
   function COMP_CTX_get_method(const ctx: PCOMP_CTX): PCOMP_METHOD cdecl; external CLibCrypto;
+  {$EXTERNALSYM COMP_CTX_get_type}
   function COMP_CTX_get_type(const _comp: PCOMP_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM COMP_get_type}
   function COMP_get_type(const meth: PCOMP_METHOD): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM COMP_get_name}
   function COMP_get_name(const meth: PCOMP_METHOD): PIdAnsiChar cdecl; external CLibCrypto;
+  {$EXTERNALSYM COMP_CTX_free}
   procedure COMP_CTX_free(ctx: PCOMP_CTX) cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM COMP_compress_block}
   function COMP_compress_block(ctx: PCOMP_CTX; out_: PByte; olen: TIdC_INT; in_: PByte; ilen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM COMP_expand_block}
   function COMP_expand_block(ctx: PCOMP_CTX; out_: PByte; olen: TIdC_INT; in_: PByte; ilen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM COMP_zlib}
   function COMP_zlib: PCOMP_METHOD cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM BIO_f_zlib}
   function BIO_f_zlib: PBIO_METHOD cdecl; external CLibCrypto;
 
 {$ENDIF}

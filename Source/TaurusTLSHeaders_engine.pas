@@ -42,17 +42,28 @@ const
    * These flags are used to control combinations of algorithm (methods) by
    * bitwise "OR"ing.
    *)
+  {$EXTERNALSYM ENGINE_METHOD_RSA}
   ENGINE_METHOD_RSA               = TIdC_UINT($0001);
+  {$EXTERNALSYM ENGINE_METHOD_DSA}
   ENGINE_METHOD_DSA               = TIdC_UINT($0002);
+  {$EXTERNALSYM ENGINE_METHOD_DH}
   ENGINE_METHOD_DH                = TIdC_UINT($0004);
+  {$EXTERNALSYM ENGINE_METHOD_RAND}
   ENGINE_METHOD_RAND              = TIdC_UINT($0008);
+  {$EXTERNALSYM ENGINE_METHOD_CIPHERS}
   ENGINE_METHOD_CIPHERS           = TIdC_UINT($0040);
+  {$EXTERNALSYM ENGINE_METHOD_DIGESTS}
   ENGINE_METHOD_DIGESTS           = TIdC_UINT($0080);
+  {$EXTERNALSYM ENGINE_METHOD_PKEY_METHS}
   ENGINE_METHOD_PKEY_METHS        = TIdC_UINT($0200);
+  {$EXTERNALSYM ENGINE_METHOD_PKEY_ASN1_METHS}
   ENGINE_METHOD_PKEY_ASN1_METHS   = TIdC_UINT($0400);
+  {$EXTERNALSYM ENGINE_METHOD_EC}
   ENGINE_METHOD_EC                = TIdC_UINT($0800);
   (* Obvious all-or-nothing cases. *)
+  {$EXTERNALSYM ENGINE_METHOD_ALL}
   ENGINE_METHOD_ALL               = TIdC_UINT($FFFF);
+  {$EXTERNALSYM ENGINE_METHOD_NONE}
   ENGINE_METHOD_NONE              = TIdC_UINT($0000);
 
   //
@@ -61,6 +72,7 @@ const
   // set by ENGINE_set_table_flags(). The "NOINIT" flag prevents attempts to
   // initialise registered ENGINEs if they are not already initialised.
   //
+  {$EXTERNALSYM ENGINE_TABLE_FLAG_NOINIT}
   ENGINE_TABLE_FLAG_NOINIT        = TIdC_UINT($0001);
 
   //
@@ -69,6 +81,7 @@ const
   // these control commands on behalf of the ENGINE using their "cmd_defns"
   // data.
   //
+  {$EXTERNALSYM ENGINE_FLAGS_MANUAL_CMD_CTRL}
   ENGINE_FLAGS_MANUAL_CMD_CTRL    = TIdC_INT($0002);
 
   //
@@ -81,6 +94,7 @@ const
   // ENGINE_by_id() just increments the existing ENGINE's structural reference
   // count.
   //
+  {$EXTERNALSYM ENGINE_FLAGS_BY_ID_COPY}
   ENGINE_FLAGS_BY_ID_COPY         = TIdC_INT($0004);
 
   //
@@ -89,6 +103,7 @@ const
   // usable as default methods.
   //
 
+  {$EXTERNALSYM ENGINE_FLAGS_NO_REGISTER_ALL}
   ENGINE_FLAGS_NO_REGISTER_ALL    = TIdC_INT($0008);
 
   //
@@ -104,22 +119,26 @@ const
   //
 
   // accepts a 'long' input value (3rd parameter to ENGINE_ctrl) */
+  {$EXTERNALSYM ENGINE_CMD_FLAG_NUMERIC}
   ENGINE_CMD_FLAG_NUMERIC         = TIdC_UINT($0001);
   //
   // accepts string input (cast from 'void*' to 'const char *', 4th parameter
   // to ENGINE_ctrl)
   //
+  {$EXTERNALSYM ENGINE_CMD_FLAG_STRING}
   ENGINE_CMD_FLAG_STRING          = TIdC_UINT($0002);
   //
   // Indicates that the control command takes *no* input. Ie. the control
   // command is unparameterised.
   //
+  {$EXTERNALSYM ENGINE_CMD_FLAG_NO_INPUT}
   ENGINE_CMD_FLAG_NO_INPUT        = TIdC_UINT($0004);
   //
   // Indicates that the control command is internal. This control command won't
   // be shown in any output, and is only usable through the ENGINE_ctrl_cmd()
   // function.
   //
+  {$EXTERNALSYM ENGINE_CMD_FLAG_INTERNAL}
   ENGINE_CMD_FLAG_INTERNAL        = TIdC_UINT($0008);
 
   //
@@ -139,20 +158,27 @@ const
   // sense to some engines.  In such a case, they do nothing but return the
   // error ENGINE_R_CTRL_COMMAND_NOT_IMPLEMENTED.
   //
+  {$EXTERNALSYM ENGINE_CTRL_SET_LOGSTREAM}
   ENGINE_CTRL_SET_LOGSTREAM              = 1;
+  {$EXTERNALSYM ENGINE_CTRL_SET_PASSWORD_CALLBACK}
   ENGINE_CTRL_SET_PASSWORD_CALLBACK      = 2;
+  {$EXTERNALSYM ENGINE_CTRL_HUP}
   ENGINE_CTRL_HUP                        = 3;// Close and reinitialise
                                              // any handles/connections
                                              // etc.
+  {$EXTERNALSYM ENGINE_CTRL_SET_USER_INTERFACE}
   ENGINE_CTRL_SET_USER_INTERFACE         = 4;// Alternative to callback
+  {$EXTERNALSYM ENGINE_CTRL_SET_CALLBACK_DATA}
   ENGINE_CTRL_SET_CALLBACK_DATA          = 5;// User-specific data, used
                                              // when calling the password
                                              // callback and the user
                                              // interface
+  {$EXTERNALSYM ENGINE_CTRL_LOAD_CONFIGURATION}
   ENGINE_CTRL_LOAD_CONFIGURATION         = 6;// Load a configuration,
                                              // given a string that
                                              // represents a file name
                                              // or so
+  {$EXTERNALSYM ENGINE_CTRL_LOAD_SECTION}
   ENGINE_CTRL_LOAD_SECTION               = 7;// Load data from a given
                                              // section in the already
                                              // loaded configuration
@@ -177,21 +203,25 @@ const
   // worth checking this first if the caller is trying to "discover" the
   // engine's capabilities and doesn't want errors generated unnecessarily.
   //
+  {$EXTERNALSYM ENGINE_CTRL_HAS_CTRL_FUNCTION}
   ENGINE_CTRL_HAS_CTRL_FUNCTION          = 10;
   //
   // Returns a positive command number for the first command supported by the
   // engine. Returns zero if no ctrl commands are supported.
   //
+  {$EXTERNALSYM ENGINE_CTRL_GET_FIRST_CMD_TYPE}
   ENGINE_CTRL_GET_FIRST_CMD_TYPE         = 11;
   //
   // The 'long' argument specifies a command implemented by the engine, and the
   // return value is the next command supported, or zero if there are no more.
   //
+  {$EXTERNALSYM ENGINE_CTRL_GET_NEXT_CMD_TYPE}
   ENGINE_CTRL_GET_NEXT_CMD_TYPE          = 12;
   //
   // The 'void*' argument is a command name (cast from 'const char *'), and the
   // return value is the command that corresponds to it.
   //
+  {$EXTERNALSYM ENGINE_CTRL_GET_CMD_FROM_NAME}
   ENGINE_CTRL_GET_CMD_FROM_NAME          = 13;
   //
   // The next two allow a command to be converted into its corresponding string
@@ -201,22 +231,28 @@ const
   // string buffer large enough, and it will be populated with the name of the
   // command (WITH a trailing EOL).
   //
+  {$EXTERNALSYM ENGINE_CTRL_GET_NAME_LEN_FROM_CMD}
   ENGINE_CTRL_GET_NAME_LEN_FROM_CMD      = 14;
+  {$EXTERNALSYM ENGINE_CTRL_GET_NAME_FROM_CMD}
   ENGINE_CTRL_GET_NAME_FROM_CMD          = 15;
   // The next two are similar but give a "short description" of a command. */
+  {$EXTERNALSYM ENGINE_CTRL_GET_DESC_LEN_FROM_CMD}
   ENGINE_CTRL_GET_DESC_LEN_FROM_CMD      = 16;
+  {$EXTERNALSYM ENGINE_CTRL_GET_DESC_FROM_CMD}
   ENGINE_CTRL_GET_DESC_FROM_CMD          = 17;
   //
   // With this command, the return value is the OR'd combination of
   // ENGINE_CMD_FLAG_*** values that indicate what kind of input a given
   // engine-specific ctrl command expects.
   //
+  {$EXTERNALSYM ENGINE_CTRL_GET_CMD_FLAGS}
   ENGINE_CTRL_GET_CMD_FLAGS              = 18;
 
   //
   // ENGINE implementations should start the numbering of their own control
   // commands from this value. (ie. ENGINE_CMD_BASE, ENGINE_CMD_BASE += 1, etc).
   //
+  {$EXTERNALSYM ENGINE_CMD_BASE}
   ENGINE_CMD_BASE                        = 200;
 
   //
@@ -228,12 +264,14 @@ const
   //
 
   // Flags specific to the nCipher "chil" engine */
+  {$EXTERNALSYM ENGINE_CTRL_CHIL_SET_FORKCHECK}
   ENGINE_CTRL_CHIL_SET_FORKCHECK         = 100;
   //
   // Depending on the value of the (long)i argument, this sets or
   // unsets the SimpleForkCheck flag in the CHIL API to enable or
   // disable checking and workarounds for applications that fork().
   //
+  {$EXTERNALSYM ENGINE_CTRL_CHIL_NO_LOCKING}
   ENGINE_CTRL_CHIL_NO_LOCKING            = 101;
   //
   // This prevents the initialisation function from providing mutex
@@ -251,23 +289,31 @@ type
   // of cmd_num. "null-terminated" means that the last ENGINE_CMD_DEFN element
   // has cmd_num set to zero and/or cmd_name set to NULL.
   //
+  {$EXTERNALSYM ENGINE_CMD_DEFN_st}
   ENGINE_CMD_DEFN_st = record
     cmd_num: TIdC_UINT;
     cmd_name: PIdAnsiChar;
     cmd_desc: PIdAnsiChar;
     cmd_flags: TIdC_UINT;
   end;
+  {$EXTERNALSYM ENGINE_CMD_DEFN}
   ENGINE_CMD_DEFN = ENGINE_CMD_DEFN_st;
+  {$EXTERNALSYM PENGINE_CMD_DEFN}
   PENGINE_CMD_DEFN = ^ENGINE_CMD_DEFN;
 
   // Generic function pointer */
+  {$EXTERNALSYM ENGINE_GEN_FUNC_PTR}
   ENGINE_GEN_FUNC_PTR = function: TIdC_INT; cdecl;
   // Generic function pointer taking no arguments */
+  {$EXTERNALSYM ENGINE_GEN_INT_FUNC_PTR}
   ENGINE_GEN_INT_FUNC_PTR = function(v1: PENGINE): TIdC_INT; cdecl;
   // Specific control function pointer */
+  {$EXTERNALSYM f}
   f = procedure; cdecl;
+  {$EXTERNALSYM ENGINE_CTRL_FUNC_PTR}
   ENGINE_CTRL_FUNC_PTR = function(v1: PENGINE; v2: TIdC_INT; v3: TIdC_LONG; v4: Pointer; v5: f): TIdC_INT; cdecl;
   // Generic load_key function pointer */
+  {$EXTERNALSYM ENGINE_LOAD_KEY_PTR}
   ENGINE_LOAD_KEY_PTR = function(v1: PENGINE; const v2: PIdAnsiChar;
     ui_method: PUI_METHOD; callback_data: Pointer): PEVP_PKEY; cdecl;
   //ENGINE_SSL_CLIENT_CERT_PTR = function(v1: PENGINE; ssl: PSSL;
@@ -289,24 +335,33 @@ type
   // Returns to a pointer to the array of supported cipher 'nid's. If the
   // second parameter is non-NULL it is set to the size of the returned array.
   //
+  {$EXTERNALSYM ENGINE_CIPHERS_PTR}
   ENGINE_CIPHERS_PTR = function(v1: PENGINE; const v2: PPEVP_CIPHER;
     const v3: PPIdC_INT; v4: TIdC_INT): TIdC_INT; cdecl;
+  {$EXTERNALSYM ENGINE_DIGESTS_PTR}
   ENGINE_DIGESTS_PTR = function(v1: PENGINE; const v2: PPEVP_MD;
     const v3: PPIdC_INT; v4: TIdC_INT): TIdC_INT; cdecl;
+  {$EXTERNALSYM ENGINE_PKEY_METHS_PTR}
   ENGINE_PKEY_METHS_PTR = function(v1: PENGINE; v2: PPEVP_PKEY_METHOD;
     const v3: PPIdC_INT; v4: TIdC_INT): TIdC_INT; cdecl;
+  {$EXTERNALSYM ENGINE_PKEY_ASN1_METHS_PTR}
   ENGINE_PKEY_ASN1_METHS_PTR = function(v1: PENGINE; v2: PPEVP_PKEY_ASN1_METHOD;
     const v3: PPIdC_INT; v4: TIdC_INT): TIdC_INT; cdecl;
 
+  {$EXTERNALSYM dyn_MEM_malloc_fn}
   dyn_MEM_malloc_fn = function(v1: TIdC_SIZET; const v2: PIdAnsiChar; v3: TIdC_INT): Pointer; cdecl;
+  {$EXTERNALSYM dyn_MEM_realloc_fn}
   dyn_MEM_realloc_fn = function(v1: Pointer; v2: TIdC_SIZET; const v3: PIdAnsiChar; v4: TIdC_INT): Pointer; cdecl;
+  {$EXTERNALSYM dyn_MEM_free_fn}
   dyn_MEM_free_fn = procedure(v1: Pointer; const v2: PIdAnsiChar; v3: TIdC_INT); cdecl;
 
+  {$EXTERNALSYM st_dynamic_MEM_fns}
   st_dynamic_MEM_fns = record
     malloc_fn: dyn_MEM_malloc_fn;
     realloc_fn: dyn_MEM_realloc_fn;
     free_fn: dyn_MEM_free_fn;
   end;
+  {$EXTERNALSYM dynamic_MEM_fns}
   dynamic_MEM_fns = st_dynamic_MEM_fns;
 
   //*
@@ -314,10 +369,12 @@ type
   // * use these types so we (and any other dependent code) can simplify a bit??
   // */
   //* The top-level structure */
+  {$EXTERNALSYM st_dynamic_fns}
   st_dynamic_fns = record
     static_state: Pointer;
     mem_fns: dynamic_MEM_fns;
   end;
+  {$EXTERNALSYM dynamic_fns}
   dynamic_fns = st_dynamic_fns;
 
   //*
@@ -332,6 +389,7 @@ type
   // * implementation can be fully instantiated with
   // * IMPLEMENT_DYNAMIC_CHECK_FN().
   // */
+  {$EXTERNALSYM dynamic_v_check_fn}
   dynamic_v_check_fn = function(ossl_version: TIdC_ULONG): TIdC_ULONG; cdecl;
   //# define IMPLEMENT_DYNAMIC_CHECK_FN() \
   //        OPENSSL_EXPORT unsigned long v_check(unsigned long v); \
@@ -357,6 +415,7 @@ type
   // * returns an int value (zero for failure). 'fn' should have prototype;
   // * [static] int fn(ENGINE *e, const char *id);
   // */
+  {$EXTERNALSYM dynamic_bind_engine}
   dynamic_bind_engine = function(e: PENGINE; const id: PIdAnsiChar;
     const fns: dynamic_fns): TIdC_INT; cdecl;
 
@@ -377,142 +436,34 @@ type
   	  The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header 
 	  files generated for C++. }
 	  
-  {$EXTERNALSYM ENGINE_get_first}
-  {$EXTERNALSYM ENGINE_get_last}
-  {$EXTERNALSYM ENGINE_get_next}
-  {$EXTERNALSYM ENGINE_get_prev}
-  {$EXTERNALSYM ENGINE_add}
-  {$EXTERNALSYM ENGINE_remove}
-  {$EXTERNALSYM ENGINE_by_id}
-  {$EXTERNALSYM ENGINE_load_builtin_engines}
-  {$EXTERNALSYM ENGINE_get_table_flags}
-  {$EXTERNALSYM ENGINE_set_table_flags}
-  {$EXTERNALSYM ENGINE_register_RSA}
-  {$EXTERNALSYM ENGINE_unregister_RSA}
-  {$EXTERNALSYM ENGINE_register_all_RSA}
-  {$EXTERNALSYM ENGINE_register_DSA}
-  {$EXTERNALSYM ENGINE_unregister_DSA}
-  {$EXTERNALSYM ENGINE_register_all_DSA}
-  {$EXTERNALSYM ENGINE_register_EC}
-  {$EXTERNALSYM ENGINE_unregister_EC}
-  {$EXTERNALSYM ENGINE_register_all_EC}
-  {$EXTERNALSYM ENGINE_register_DH}
-  {$EXTERNALSYM ENGINE_unregister_DH}
-  {$EXTERNALSYM ENGINE_register_all_DH}
-  {$EXTERNALSYM ENGINE_register_RAND}
-  {$EXTERNALSYM ENGINE_unregister_RAND}
-  {$EXTERNALSYM ENGINE_register_all_RAND}
-  {$EXTERNALSYM ENGINE_register_ciphers}
-  {$EXTERNALSYM ENGINE_unregister_ciphers}
-  {$EXTERNALSYM ENGINE_register_all_ciphers}
-  {$EXTERNALSYM ENGINE_register_digests}
-  {$EXTERNALSYM ENGINE_unregister_digests}
-  {$EXTERNALSYM ENGINE_register_all_digests}
-  {$EXTERNALSYM ENGINE_register_pkey_meths}
-  {$EXTERNALSYM ENGINE_unregister_pkey_meths}
-  {$EXTERNALSYM ENGINE_register_all_pkey_meths}
-  {$EXTERNALSYM ENGINE_register_pkey_asn1_meths}
-  {$EXTERNALSYM ENGINE_unregister_pkey_asn1_meths}
-  {$EXTERNALSYM ENGINE_register_all_pkey_asn1_meths}
-  {$EXTERNALSYM ENGINE_register_complete}
-  {$EXTERNALSYM ENGINE_register_all_complete}
-  {$EXTERNALSYM ENGINE_ctrl}
-  {$EXTERNALSYM ENGINE_cmd_is_executable}
-  {$EXTERNALSYM ENGINE_ctrl_cmd}
-  {$EXTERNALSYM ENGINE_ctrl_cmd_string}
-  {$EXTERNALSYM ENGINE_new}
-  {$EXTERNALSYM ENGINE_free}
-  {$EXTERNALSYM ENGINE_up_ref}
-  {$EXTERNALSYM ENGINE_set_id}
-  {$EXTERNALSYM ENGINE_set_name}
-  {$EXTERNALSYM ENGINE_set_RSA}
-  {$EXTERNALSYM ENGINE_set_DSA}
-  {$EXTERNALSYM ENGINE_set_EC}
-  {$EXTERNALSYM ENGINE_set_DH}
-  {$EXTERNALSYM ENGINE_set_RAND}
-  {$EXTERNALSYM ENGINE_set_destroy_function}
-  {$EXTERNALSYM ENGINE_set_init_function}
-  {$EXTERNALSYM ENGINE_set_finish_function}
-  {$EXTERNALSYM ENGINE_set_ctrl_function}
-  {$EXTERNALSYM ENGINE_set_load_privkey_function}
-  {$EXTERNALSYM ENGINE_set_load_pubkey_function}
-  {$EXTERNALSYM ENGINE_set_ciphers}
-  {$EXTERNALSYM ENGINE_set_digests}
-  {$EXTERNALSYM ENGINE_set_pkey_meths}
-  {$EXTERNALSYM ENGINE_set_pkey_asn1_meths}
-  {$EXTERNALSYM ENGINE_set_flags}
-  {$EXTERNALSYM ENGINE_set_cmd_defns}
-  {$EXTERNALSYM ENGINE_set_ex_data}
-  {$EXTERNALSYM ENGINE_get_ex_data}
-  {$EXTERNALSYM ENGINE_get_id}
-  {$EXTERNALSYM ENGINE_get_name}
-  {$EXTERNALSYM ENGINE_get_RSA}
-  {$EXTERNALSYM ENGINE_get_DSA}
-  {$EXTERNALSYM ENGINE_get_EC}
-  {$EXTERNALSYM ENGINE_get_DH}
-  {$EXTERNALSYM ENGINE_get_RAND}
-  {$EXTERNALSYM ENGINE_get_destroy_function}
-  {$EXTERNALSYM ENGINE_get_init_function}
-  {$EXTERNALSYM ENGINE_get_finish_function}
-  {$EXTERNALSYM ENGINE_get_ctrl_function}
-  {$EXTERNALSYM ENGINE_get_load_privkey_function}
-  {$EXTERNALSYM ENGINE_get_load_pubkey_function}
-  {$EXTERNALSYM ENGINE_get_ciphers}
-  {$EXTERNALSYM ENGINE_get_digests}
-  {$EXTERNALSYM ENGINE_get_pkey_meths}
-  {$EXTERNALSYM ENGINE_get_pkey_asn1_meths}
-  {$EXTERNALSYM ENGINE_get_cipher}
-  {$EXTERNALSYM ENGINE_get_digest}
-  {$EXTERNALSYM ENGINE_get_pkey_meth}
-  {$EXTERNALSYM ENGINE_get_pkey_asn1_meth}
-  {$EXTERNALSYM ENGINE_get_pkey_asn1_meth_str}
-  {$EXTERNALSYM ENGINE_pkey_asn1_find_str}
-  {$EXTERNALSYM ENGINE_get_cmd_defns}
-  {$EXTERNALSYM ENGINE_get_flags}
-  {$EXTERNALSYM ENGINE_init}
-  {$EXTERNALSYM ENGINE_finish}
-  {$EXTERNALSYM ENGINE_load_private_key}
-  {$EXTERNALSYM ENGINE_load_public_key}
-  {$EXTERNALSYM ENGINE_get_default_RSA}
-  {$EXTERNALSYM ENGINE_get_default_DSA}
-  {$EXTERNALSYM ENGINE_get_default_EC}
-  {$EXTERNALSYM ENGINE_get_default_DH}
-  {$EXTERNALSYM ENGINE_get_default_RAND}
-  {$EXTERNALSYM ENGINE_get_cipher_engine}
-  {$EXTERNALSYM ENGINE_get_digest_engine}
-  {$EXTERNALSYM ENGINE_get_pkey_meth_engine}
-  {$EXTERNALSYM ENGINE_get_pkey_asn1_meth_engine}
-  {$EXTERNALSYM ENGINE_set_default_RSA}
-  {$EXTERNALSYM ENGINE_set_default_string}
-  {$EXTERNALSYM ENGINE_set_default_DSA}
-  {$EXTERNALSYM ENGINE_set_default_EC}
-  {$EXTERNALSYM ENGINE_set_default_DH}
-  {$EXTERNALSYM ENGINE_set_default_RAND}
-  {$EXTERNALSYM ENGINE_set_default_ciphers}
-  {$EXTERNALSYM ENGINE_set_default_digests}
-  {$EXTERNALSYM ENGINE_set_default_pkey_meths}
-  {$EXTERNALSYM ENGINE_set_default_pkey_asn1_meths}
-  {$EXTERNALSYM ENGINE_set_default}
-  {$EXTERNALSYM ENGINE_add_conf_module}
-  {$EXTERNALSYM ENGINE_get_static_state}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM ENGINE_get_first}
   ENGINE_get_first: function : PENGINE; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_last}
   ENGINE_get_last: function : PENGINE; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_next}
   ENGINE_get_next: function (e: PENGINE): PENGINE; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_prev}
   ENGINE_get_prev: function (e: PENGINE): PENGINE; cdecl = nil;
+  {$EXTERNALSYM ENGINE_add}
   ENGINE_add: function (e: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_remove}
   ENGINE_remove: function (e: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_by_id}
   ENGINE_by_id: function (const id: PIdAnsiChar): PENGINE; cdecl = nil;
 
+  {$EXTERNALSYM ENGINE_load_builtin_engines}
   ENGINE_load_builtin_engines: procedure ; cdecl = nil;
 
   //
   // Get and set global flags (ENGINE_TABLE_FLAG_***) for the implementation
   // "registry" handling.
   //
+  {$EXTERNALSYM ENGINE_get_table_flags}
   ENGINE_get_table_flags: function : TIdC_UINT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_table_flags}
   ENGINE_set_table_flags: procedure (flags: TIdC_UINT); cdecl = nil;
 
   //- Manage registration of ENGINEs per "table". For each type, there are 3
@@ -523,40 +474,67 @@ var
   // Cleanup is automatically registered from each table when required.
   //
 
+  {$EXTERNALSYM ENGINE_register_RSA}
   ENGINE_register_RSA: function (e: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_unregister_RSA}
   ENGINE_unregister_RSA: procedure (e: PENGINE); cdecl = nil;
+  {$EXTERNALSYM ENGINE_register_all_RSA}
   ENGINE_register_all_RSA: procedure ; cdecl = nil;
 
+  {$EXTERNALSYM ENGINE_register_DSA}
   ENGINE_register_DSA: function (e: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_unregister_DSA}
   ENGINE_unregister_DSA: procedure (e: PENGINE); cdecl = nil;
+  {$EXTERNALSYM ENGINE_register_all_DSA}
   ENGINE_register_all_DSA: procedure ; cdecl = nil;
 
+  {$EXTERNALSYM ENGINE_register_EC}
   ENGINE_register_EC: function (e: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_unregister_EC}
   ENGINE_unregister_EC: procedure (e: PENGINE); cdecl = nil;
+  {$EXTERNALSYM ENGINE_register_all_EC}
   ENGINE_register_all_EC: procedure ; cdecl = nil;
 
+  {$EXTERNALSYM ENGINE_register_DH}
   ENGINE_register_DH: function (e: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_unregister_DH}
   ENGINE_unregister_DH: procedure (e: PENGINE); cdecl = nil;
+  {$EXTERNALSYM ENGINE_register_all_DH}
   ENGINE_register_all_DH: procedure ; cdecl = nil;
 
+  {$EXTERNALSYM ENGINE_register_RAND}
   ENGINE_register_RAND: function (e: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_unregister_RAND}
   ENGINE_unregister_RAND: procedure (e: PENGINE); cdecl = nil;
+  {$EXTERNALSYM ENGINE_register_all_RAND}
   ENGINE_register_all_RAND: procedure ; cdecl = nil;
 
+  {$EXTERNALSYM ENGINE_register_ciphers}
   ENGINE_register_ciphers: function (e: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_unregister_ciphers}
   ENGINE_unregister_ciphers: procedure (e: PENGINE); cdecl = nil;
+  {$EXTERNALSYM ENGINE_register_all_ciphers}
   ENGINE_register_all_ciphers: procedure ; cdecl = nil;
 
+  {$EXTERNALSYM ENGINE_register_digests}
   ENGINE_register_digests: function (e: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_unregister_digests}
   ENGINE_unregister_digests: procedure (e: PENGINE); cdecl = nil;
+  {$EXTERNALSYM ENGINE_register_all_digests}
   ENGINE_register_all_digests: procedure ; cdecl = nil;
 
+  {$EXTERNALSYM ENGINE_register_pkey_meths}
   ENGINE_register_pkey_meths: function (e: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_unregister_pkey_meths}
   ENGINE_unregister_pkey_meths: procedure (e: PENGINE); cdecl = nil;
+  {$EXTERNALSYM ENGINE_register_all_pkey_meths}
   ENGINE_register_all_pkey_meths: procedure ; cdecl = nil;
 
+  {$EXTERNALSYM ENGINE_register_pkey_asn1_meths}
   ENGINE_register_pkey_asn1_meths: function (e: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_unregister_pkey_asn1_meths}
   ENGINE_unregister_pkey_asn1_meths: procedure (e: PENGINE); cdecl = nil;
+  {$EXTERNALSYM ENGINE_register_all_pkey_asn1_meths}
   ENGINE_register_all_pkey_asn1_meths: procedure ; cdecl = nil;
 
   //
@@ -565,7 +543,9 @@ var
   // may not need. If you only need a subset of functionality, consider using
   // more selective initialisation.
   //
+  {$EXTERNALSYM ENGINE_register_complete}
   ENGINE_register_complete: function (e: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_register_all_complete}
   ENGINE_register_all_complete: function : TIdC_INT; cdecl = nil;
 
   //
@@ -578,6 +558,7 @@ var
   // commands that require an operational ENGINE, and only use functional
   // references in such situations.
   //
+  {$EXTERNALSYM ENGINE_ctrl}
   ENGINE_ctrl: function (e: PENGINE; cmd: TIdC_INT; i: TIdC_LONG; p: Pointer; v1: f): TIdC_INT; cdecl = nil;
 
   //
@@ -586,6 +567,7 @@ var
   // ENGINE_ctrl_cmd_string(). If this returns zero, it is not available to
   // ENGINE_ctrl_cmd_string(), only ENGINE_ctrl().
   //
+  {$EXTERNALSYM ENGINE_cmd_is_executable}
   ENGINE_cmd_is_executable: function (e: PENGINE; cmd: TIdC_INT): TIdC_INT; cdecl = nil;
 
   //
@@ -594,6 +576,7 @@ var
   // commands. See the comment on ENGINE_ctrl_cmd_string() for an explanation
   // on how to use the cmd_name and cmd_optional.
   //
+  {$EXTERNALSYM ENGINE_ctrl_cmd}
   ENGINE_ctrl_cmd: function (e: PENGINE; const cmd_name: PIdAnsiChar; i: TIdC_LONG; p: Pointer; v1: f; cmd_optional: TIdC_INT): TIdC_INT; cdecl = nil;
 
   //
@@ -618,6 +601,7 @@ var
   // applications can work consistently with the same configuration for the
   // same ENGINE-enabled devices, across applications.
   //
+  {$EXTERNALSYM ENGINE_ctrl_cmd_string}
   ENGINE_ctrl_cmd_string: function (e: PENGINE; const cmd_name: PIdAnsiChar; const arg: PIdAnsiChar; cmd_optional: TIdC_INT): TIdC_INT; cdecl = nil;
 
   //
@@ -628,32 +612,56 @@ var
   // These are also here so that the ENGINE structure doesn't have to be
   // exposed and break binary compatibility!
   //
+  {$EXTERNALSYM ENGINE_new}
   ENGINE_new: function : PENGINE; cdecl = nil;
+  {$EXTERNALSYM ENGINE_free}
   ENGINE_free: function (e: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_up_ref}
   ENGINE_up_ref: function (e: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_id}
   ENGINE_set_id: function (e: PENGINE; const id: PIdAnsiChar): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_name}
   ENGINE_set_name: function (e: PENGINE; const name: PIdAnsiChar): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_RSA}
   ENGINE_set_RSA: function (e: PENGINE; const rsa_meth: PRSA_METHOD): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_DSA}
   ENGINE_set_DSA: function (e: PENGINE; const dsa_meth: PDSA_METHOD): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_EC}
   ENGINE_set_EC: function (e: PENGINE; const ecdsa_meth: PEC_KEY_METHOD): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_DH}
   ENGINE_set_DH: function (e: PENGINE; const dh_meth: PDH_METHOD): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_RAND}
   ENGINE_set_RAND: function (e: PENGINE; const rand_meth: PRAND_METHOD): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_destroy_function}
   ENGINE_set_destroy_function: function (e: PENGINE; destroy_f: ENGINE_GEN_INT_FUNC_PTR): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_init_function}
   ENGINE_set_init_function: function (e: PENGINE; init_f: ENGINE_GEN_INT_FUNC_PTR): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_finish_function}
   ENGINE_set_finish_function: function (e: PENGINE; finish_f: ENGINE_GEN_INT_FUNC_PTR): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_ctrl_function}
   ENGINE_set_ctrl_function: function (e: PENGINE; ctrl_f: ENGINE_CTRL_FUNC_PTR): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_load_privkey_function}
   ENGINE_set_load_privkey_function: function (e: PENGINE; loadpriv_f: ENGINE_LOAD_KEY_PTR): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_load_pubkey_function}
   ENGINE_set_load_pubkey_function: function (e: PENGINE; loadpub_f: ENGINE_LOAD_KEY_PTR): TIdC_INT; cdecl = nil;
   //function ENGINE_set_load_ssl_client_cert_function(e: PENGINE; loadssl_f: ENGINE_SSL_CLIENT_CERT_PTR): TIdC_INT;
+  {$EXTERNALSYM ENGINE_set_ciphers}
   ENGINE_set_ciphers: function (e: PENGINE; f: ENGINE_CIPHERS_PTR): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_digests}
   ENGINE_set_digests: function (e: PENGINE; f: ENGINE_DIGESTS_PTR): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_pkey_meths}
   ENGINE_set_pkey_meths: function (e: PENGINE; f: ENGINE_PKEY_METHS_PTR): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_pkey_asn1_meths}
   ENGINE_set_pkey_asn1_meths: function (e: PENGINE; f: ENGINE_PKEY_ASN1_METHS_PTR): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_flags}
   ENGINE_set_flags: function (e: PENGINE; flags: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_cmd_defns}
   ENGINE_set_cmd_defns: function (e: PENGINE; const defns: PENGINE_CMD_DEFN): TIdC_INT; cdecl = nil;
   // These functions allow control over any per-structure ENGINE data. */
   //#define ENGINE_get_ex_new_index(l, p, newf, dupf, freef) CRYPTO_get_ex_new_index(CRYPTO_EX_INDEX_ENGINE, l, p, newf, dupf, freef)
+  {$EXTERNALSYM ENGINE_set_ex_data}
   ENGINE_set_ex_data: function (e: PENGINE; idx: TIdC_INT; arg: Pointer): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_ex_data}
   ENGINE_get_ex_data: function (const e: PENGINE; idx: TIdC_INT): Pointer; cdecl = nil;
 
   //
@@ -662,32 +670,57 @@ var
   // which you obtained. Using the result for functional purposes if you only
   // obtained a structural reference may be problematic!
   //
+  {$EXTERNALSYM ENGINE_get_id}
   ENGINE_get_id: function (const e: PENGINE): PIdAnsiChar; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_name}
   ENGINE_get_name: function (const e: PENGINE): PIdAnsiChar; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_RSA}
   ENGINE_get_RSA: function (const e: PENGINE): PRSA_METHOD; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_DSA}
   ENGINE_get_DSA: function (const e: PENGINE): PDSA_METHOD; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_EC}
   ENGINE_get_EC: function (const e: PENGINE): PEC_METHOD; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_DH}
   ENGINE_get_DH: function (const e: PENGINE): PDH_METHOD; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_RAND}
   ENGINE_get_RAND: function (const e: PENGINE): PRAND_METHOD; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_destroy_function}
   ENGINE_get_destroy_function: function (const e: PENGINE): ENGINE_GEN_INT_FUNC_PTR; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_init_function}
   ENGINE_get_init_function: function (const e: PENGINE): ENGINE_GEN_INT_FUNC_PTR; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_finish_function}
   ENGINE_get_finish_function: function (const e: PENGINE): ENGINE_GEN_INT_FUNC_PTR; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_ctrl_function}
   ENGINE_get_ctrl_function: function (const e: PENGINE): ENGINE_CTRL_FUNC_PTR; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_load_privkey_function}
   ENGINE_get_load_privkey_function: function (const e: PENGINE): ENGINE_LOAD_KEY_PTR; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_load_pubkey_function}
   ENGINE_get_load_pubkey_function: function (const e: PENGINE): ENGINE_LOAD_KEY_PTR; cdecl = nil;
   //function ENGINE_get_ssl_client_cert_function(const e: PENGINE): ENGINE_SSL_CLIENT_CERT_PTR;
   
+  {$EXTERNALSYM ENGINE_get_ciphers}
   ENGINE_get_ciphers: function (const e: PENGINE): ENGINE_CIPHERS_PTR; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_digests}
   ENGINE_get_digests: function (const e: PENGINE): ENGINE_DIGESTS_PTR; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_pkey_meths}
   ENGINE_get_pkey_meths: function (const e: PENGINE): ENGINE_PKEY_METHS_PTR; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_pkey_asn1_meths}
   ENGINE_get_pkey_asn1_meths: function (const e: PENGINE): ENGINE_PKEY_ASN1_METHS_PTR; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_cipher}
   ENGINE_get_cipher: function (e: PENGINE; nid: TIdC_INT): PEVP_CIPHER; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_digest}
   ENGINE_get_digest: function (e: PENGINE; nid: TIdC_INT): PEVP_MD; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_pkey_meth}
   ENGINE_get_pkey_meth: function (e: PENGINE; nid: TIdC_INT): PEVP_PKEY_METHOD; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_pkey_asn1_meth}
   ENGINE_get_pkey_asn1_meth: function (e: PENGINE; nid: TIdC_INT): PEVP_PKEY_ASN1_METHOD; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_pkey_asn1_meth_str}
   ENGINE_get_pkey_asn1_meth_str: function (e: PENGINE; const _str: PIdAnsiChar; len: TIdC_INT): PEVP_PKEY_ASN1_METHOD; cdecl = nil;
+  {$EXTERNALSYM ENGINE_pkey_asn1_find_str}
   ENGINE_pkey_asn1_find_str: function (pe: PPENGINE; const _str: PIdAnsiChar; len: TIdC_INT): PEVP_PKEY_ASN1_METHOD; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_cmd_defns}
   ENGINE_get_cmd_defns: function (const e: PENGINE): PENGINE_CMD_DEFN; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_flags}
   ENGINE_get_flags: function (const e: PENGINE): TIdC_INT; cdecl = nil;
 
   ///*
@@ -708,12 +741,14 @@ var
   // * already in use). This will fail if the engine is not currently operational
   // * and cannot initialise.
   // */
+  {$EXTERNALSYM ENGINE_init}
   ENGINE_init: function (e: PENGINE): TIdC_INT; cdecl = nil;
   ///*
   // * Free a functional reference to a engine type. This does not require a
   // * corresponding call to ENGINE_free as it also releases a structural
   // * reference.
   // */
+  {$EXTERNALSYM ENGINE_finish}
   ENGINE_finish: function (e: PENGINE): TIdC_INT; cdecl = nil;
 
   ///*
@@ -721,7 +756,9 @@ var
   // * location, handled by the engine.  The storage may be on a card or
   // * whatever.
   // */
+  {$EXTERNALSYM ENGINE_load_private_key}
   ENGINE_load_private_key: function (e: PENGINE; const key_id: PIdAnsiChar; ui_method: PUI_METHOD; callback_data: Pointer): PEVP_PKEY; cdecl = nil;
+  {$EXTERNALSYM ENGINE_load_public_key}
   ENGINE_load_public_key: function (e: PENGINE; const key_id: PIdAnsiChar; ui_method: PUI_METHOD; callback_data: Pointer): PEVP_PKEY; cdecl = nil;
   //function ENGINE_load_ssl_client_cert(e: PENGINE; s: PSSL;
   //  {STACK_OF(X509) *ca_dn;} {STACK_OF(X509) **pother;} ui_method: PUI_METHOD;
@@ -733,19 +770,28 @@ var
   // * incremented reference, so it should be free'd (ENGINE_finish) before it is
   // * discarded.
   // */
+  {$EXTERNALSYM ENGINE_get_default_RSA}
   ENGINE_get_default_RSA: function : PENGINE; cdecl = nil;
   //* Same for the other "methods" */
+  {$EXTERNALSYM ENGINE_get_default_DSA}
   ENGINE_get_default_DSA: function : PENGINE; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_default_EC}
   ENGINE_get_default_EC: function : PENGINE; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_default_DH}
   ENGINE_get_default_DH: function : PENGINE; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_default_RAND}
   ENGINE_get_default_RAND: function : PENGINE; cdecl = nil;
   ///*
   // * These functions can be used to get a functional reference to perform
   // * ciphering or digesting corresponding to "nid".
   // */
+  {$EXTERNALSYM ENGINE_get_cipher_engine}
   ENGINE_get_cipher_engine: function (nid: TIdC_INT): PENGINE; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_digest_engine}
   ENGINE_get_digest_engine: function (nid: TIdC_INT): PENGINE; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_pkey_meth_engine}
   ENGINE_get_pkey_meth_engine: function (nid: TIdC_INT): PENGINE; cdecl = nil;
+  {$EXTERNALSYM ENGINE_get_pkey_asn1_meth_engine}
   ENGINE_get_pkey_asn1_meth_engine: function (nid: TIdC_INT): PENGINE; cdecl = nil;
   ///*
   // * This sets a new default ENGINE structure for performing RSA operations. If
@@ -753,16 +799,26 @@ var
   // * its reference count up'd so the caller should still free their own
   // * reference 'e'.
   // */
+  {$EXTERNALSYM ENGINE_set_default_RSA}
   ENGINE_set_default_RSA: function (e: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_default_string}
   ENGINE_set_default_string: function (e: PENGINE; const def_list: PIdAnsiChar): TIdC_INT; cdecl = nil;
   // Same for the other "methods"
+  {$EXTERNALSYM ENGINE_set_default_DSA}
   ENGINE_set_default_DSA: function (e: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_default_EC}
   ENGINE_set_default_EC: function (e: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_default_DH}
   ENGINE_set_default_DH: function (e: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_default_RAND}
   ENGINE_set_default_RAND: function (e: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_default_ciphers}
   ENGINE_set_default_ciphers: function (e: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_default_digests}
   ENGINE_set_default_digests: function (e: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_default_pkey_meths}
   ENGINE_set_default_pkey_meths: function (e: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ENGINE_set_default_pkey_asn1_meths}
   ENGINE_set_default_pkey_asn1_meths: function (e: PENGINE): TIdC_INT; cdecl = nil;
 
   ///*
@@ -772,8 +828,10 @@ var
   // * application requires only specific functionality, consider using more
   // * selective functions.
   // */
+  {$EXTERNALSYM ENGINE_set_default}
   ENGINE_set_default: function (e: PENGINE; flags: TIdC_ULONG): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM ENGINE_add_conf_module}
   ENGINE_add_conf_module: procedure ; cdecl = nil;
 
   ///* Deprecated functions ... */
@@ -828,24 +886,35 @@ var
   // * static data and let the loading application and loaded ENGINE compare
   // * their respective values.
   // */
+  {$EXTERNALSYM ENGINE_get_static_state}
   ENGINE_get_static_state: function : Pointer; cdecl = nil;
 
 {$ELSE}
+  {$EXTERNALSYM ENGINE_get_first}
   function ENGINE_get_first: PENGINE cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_last}
   function ENGINE_get_last: PENGINE cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_next}
   function ENGINE_get_next(e: PENGINE): PENGINE cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_prev}
   function ENGINE_get_prev(e: PENGINE): PENGINE cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_add}
   function ENGINE_add(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_remove}
   function ENGINE_remove(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_by_id}
   function ENGINE_by_id(const id: PIdAnsiChar): PENGINE cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM ENGINE_load_builtin_engines}
   procedure ENGINE_load_builtin_engines cdecl; external CLibCrypto;
 
   //
   // Get and set global flags (ENGINE_TABLE_FLAG_***) for the implementation
   // "registry" handling.
   //
+  {$EXTERNALSYM ENGINE_get_table_flags}
   function ENGINE_get_table_flags: TIdC_UINT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_table_flags}
   procedure ENGINE_set_table_flags(flags: TIdC_UINT) cdecl; external CLibCrypto;
 
   //- Manage registration of ENGINEs per "table". For each type, there are 3
@@ -856,40 +925,67 @@ var
   // Cleanup is automatically registered from each table when required.
   //
 
+  {$EXTERNALSYM ENGINE_register_RSA}
   function ENGINE_register_RSA(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_unregister_RSA}
   procedure ENGINE_unregister_RSA(e: PENGINE) cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_register_all_RSA}
   procedure ENGINE_register_all_RSA cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM ENGINE_register_DSA}
   function ENGINE_register_DSA(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_unregister_DSA}
   procedure ENGINE_unregister_DSA(e: PENGINE) cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_register_all_DSA}
   procedure ENGINE_register_all_DSA cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM ENGINE_register_EC}
   function ENGINE_register_EC(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_unregister_EC}
   procedure ENGINE_unregister_EC(e: PENGINE) cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_register_all_EC}
   procedure ENGINE_register_all_EC cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM ENGINE_register_DH}
   function ENGINE_register_DH(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_unregister_DH}
   procedure ENGINE_unregister_DH(e: PENGINE) cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_register_all_DH}
   procedure ENGINE_register_all_DH cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM ENGINE_register_RAND}
   function ENGINE_register_RAND(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_unregister_RAND}
   procedure ENGINE_unregister_RAND(e: PENGINE) cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_register_all_RAND}
   procedure ENGINE_register_all_RAND cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM ENGINE_register_ciphers}
   function ENGINE_register_ciphers(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_unregister_ciphers}
   procedure ENGINE_unregister_ciphers(e: PENGINE) cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_register_all_ciphers}
   procedure ENGINE_register_all_ciphers cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM ENGINE_register_digests}
   function ENGINE_register_digests(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_unregister_digests}
   procedure ENGINE_unregister_digests(e: PENGINE) cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_register_all_digests}
   procedure ENGINE_register_all_digests cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM ENGINE_register_pkey_meths}
   function ENGINE_register_pkey_meths(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_unregister_pkey_meths}
   procedure ENGINE_unregister_pkey_meths(e: PENGINE) cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_register_all_pkey_meths}
   procedure ENGINE_register_all_pkey_meths cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM ENGINE_register_pkey_asn1_meths}
   function ENGINE_register_pkey_asn1_meths(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_unregister_pkey_asn1_meths}
   procedure ENGINE_unregister_pkey_asn1_meths(e: PENGINE) cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_register_all_pkey_asn1_meths}
   procedure ENGINE_register_all_pkey_asn1_meths cdecl; external CLibCrypto;
 
   //
@@ -898,7 +994,9 @@ var
   // may not need. If you only need a subset of functionality, consider using
   // more selective initialisation.
   //
+  {$EXTERNALSYM ENGINE_register_complete}
   function ENGINE_register_complete(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_register_all_complete}
   function ENGINE_register_all_complete: TIdC_INT cdecl; external CLibCrypto;
 
   //
@@ -911,6 +1009,7 @@ var
   // commands that require an operational ENGINE, and only use functional
   // references in such situations.
   //
+  {$EXTERNALSYM ENGINE_ctrl}
   function ENGINE_ctrl(e: PENGINE; cmd: TIdC_INT; i: TIdC_LONG; p: Pointer; v1: f): TIdC_INT cdecl; external CLibCrypto;
 
   //
@@ -919,6 +1018,7 @@ var
   // ENGINE_ctrl_cmd_string(). If this returns zero, it is not available to
   // ENGINE_ctrl_cmd_string(), only ENGINE_ctrl().
   //
+  {$EXTERNALSYM ENGINE_cmd_is_executable}
   function ENGINE_cmd_is_executable(e: PENGINE; cmd: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
 
   //
@@ -927,6 +1027,7 @@ var
   // commands. See the comment on ENGINE_ctrl_cmd_string() for an explanation
   // on how to use the cmd_name and cmd_optional.
   //
+  {$EXTERNALSYM ENGINE_ctrl_cmd}
   function ENGINE_ctrl_cmd(e: PENGINE; const cmd_name: PIdAnsiChar; i: TIdC_LONG; p: Pointer; v1: f; cmd_optional: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
 
   //
@@ -951,6 +1052,7 @@ var
   // applications can work consistently with the same configuration for the
   // same ENGINE-enabled devices, across applications.
   //
+  {$EXTERNALSYM ENGINE_ctrl_cmd_string}
   function ENGINE_ctrl_cmd_string(e: PENGINE; const cmd_name: PIdAnsiChar; const arg: PIdAnsiChar; cmd_optional: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
 
   //
@@ -961,32 +1063,56 @@ var
   // These are also here so that the ENGINE structure doesn't have to be
   // exposed and break binary compatibility!
   //
+  {$EXTERNALSYM ENGINE_new}
   function ENGINE_new: PENGINE cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_free}
   function ENGINE_free(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_up_ref}
   function ENGINE_up_ref(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_id}
   function ENGINE_set_id(e: PENGINE; const id: PIdAnsiChar): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_name}
   function ENGINE_set_name(e: PENGINE; const name: PIdAnsiChar): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_RSA}
   function ENGINE_set_RSA(e: PENGINE; const rsa_meth: PRSA_METHOD): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_DSA}
   function ENGINE_set_DSA(e: PENGINE; const dsa_meth: PDSA_METHOD): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_EC}
   function ENGINE_set_EC(e: PENGINE; const ecdsa_meth: PEC_KEY_METHOD): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_DH}
   function ENGINE_set_DH(e: PENGINE; const dh_meth: PDH_METHOD): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_RAND}
   function ENGINE_set_RAND(e: PENGINE; const rand_meth: PRAND_METHOD): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_destroy_function}
   function ENGINE_set_destroy_function(e: PENGINE; destroy_f: ENGINE_GEN_INT_FUNC_PTR): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_init_function}
   function ENGINE_set_init_function(e: PENGINE; init_f: ENGINE_GEN_INT_FUNC_PTR): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_finish_function}
   function ENGINE_set_finish_function(e: PENGINE; finish_f: ENGINE_GEN_INT_FUNC_PTR): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_ctrl_function}
   function ENGINE_set_ctrl_function(e: PENGINE; ctrl_f: ENGINE_CTRL_FUNC_PTR): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_load_privkey_function}
   function ENGINE_set_load_privkey_function(e: PENGINE; loadpriv_f: ENGINE_LOAD_KEY_PTR): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_load_pubkey_function}
   function ENGINE_set_load_pubkey_function(e: PENGINE; loadpub_f: ENGINE_LOAD_KEY_PTR): TIdC_INT cdecl; external CLibCrypto;
   //function ENGINE_set_load_ssl_client_cert_function(e: PENGINE; loadssl_f: ENGINE_SSL_CLIENT_CERT_PTR): TIdC_INT;
+  {$EXTERNALSYM ENGINE_set_ciphers}
   function ENGINE_set_ciphers(e: PENGINE; f: ENGINE_CIPHERS_PTR): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_digests}
   function ENGINE_set_digests(e: PENGINE; f: ENGINE_DIGESTS_PTR): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_pkey_meths}
   function ENGINE_set_pkey_meths(e: PENGINE; f: ENGINE_PKEY_METHS_PTR): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_pkey_asn1_meths}
   function ENGINE_set_pkey_asn1_meths(e: PENGINE; f: ENGINE_PKEY_ASN1_METHS_PTR): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_flags}
   function ENGINE_set_flags(e: PENGINE; flags: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_cmd_defns}
   function ENGINE_set_cmd_defns(e: PENGINE; const defns: PENGINE_CMD_DEFN): TIdC_INT cdecl; external CLibCrypto;
   // These functions allow control over any per-structure ENGINE data. */
   //#define ENGINE_get_ex_new_index(l, p, newf, dupf, freef) CRYPTO_get_ex_new_index(CRYPTO_EX_INDEX_ENGINE, l, p, newf, dupf, freef)
+  {$EXTERNALSYM ENGINE_set_ex_data}
   function ENGINE_set_ex_data(e: PENGINE; idx: TIdC_INT; arg: Pointer): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_ex_data}
   function ENGINE_get_ex_data(const e: PENGINE; idx: TIdC_INT): Pointer cdecl; external CLibCrypto;
 
   //
@@ -995,32 +1121,57 @@ var
   // which you obtained. Using the result for functional purposes if you only
   // obtained a structural reference may be problematic!
   //
+  {$EXTERNALSYM ENGINE_get_id}
   function ENGINE_get_id(const e: PENGINE): PIdAnsiChar cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_name}
   function ENGINE_get_name(const e: PENGINE): PIdAnsiChar cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_RSA}
   function ENGINE_get_RSA(const e: PENGINE): PRSA_METHOD cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_DSA}
   function ENGINE_get_DSA(const e: PENGINE): PDSA_METHOD cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_EC}
   function ENGINE_get_EC(const e: PENGINE): PEC_METHOD cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_DH}
   function ENGINE_get_DH(const e: PENGINE): PDH_METHOD cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_RAND}
   function ENGINE_get_RAND(const e: PENGINE): PRAND_METHOD cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_destroy_function}
   function ENGINE_get_destroy_function(const e: PENGINE): ENGINE_GEN_INT_FUNC_PTR cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_init_function}
   function ENGINE_get_init_function(const e: PENGINE): ENGINE_GEN_INT_FUNC_PTR cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_finish_function}
   function ENGINE_get_finish_function(const e: PENGINE): ENGINE_GEN_INT_FUNC_PTR cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_ctrl_function}
   function ENGINE_get_ctrl_function(const e: PENGINE): ENGINE_CTRL_FUNC_PTR cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_load_privkey_function}
   function ENGINE_get_load_privkey_function(const e: PENGINE): ENGINE_LOAD_KEY_PTR cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_load_pubkey_function}
   function ENGINE_get_load_pubkey_function(const e: PENGINE): ENGINE_LOAD_KEY_PTR cdecl; external CLibCrypto;
   //function ENGINE_get_ssl_client_cert_function(const e: PENGINE): ENGINE_SSL_CLIENT_CERT_PTR;
   
+  {$EXTERNALSYM ENGINE_get_ciphers}
   function ENGINE_get_ciphers(const e: PENGINE): ENGINE_CIPHERS_PTR cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_digests}
   function ENGINE_get_digests(const e: PENGINE): ENGINE_DIGESTS_PTR cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_pkey_meths}
   function ENGINE_get_pkey_meths(const e: PENGINE): ENGINE_PKEY_METHS_PTR cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_pkey_asn1_meths}
   function ENGINE_get_pkey_asn1_meths(const e: PENGINE): ENGINE_PKEY_ASN1_METHS_PTR cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_cipher}
   function ENGINE_get_cipher(e: PENGINE; nid: TIdC_INT): PEVP_CIPHER cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_digest}
   function ENGINE_get_digest(e: PENGINE; nid: TIdC_INT): PEVP_MD cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_pkey_meth}
   function ENGINE_get_pkey_meth(e: PENGINE; nid: TIdC_INT): PEVP_PKEY_METHOD cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_pkey_asn1_meth}
   function ENGINE_get_pkey_asn1_meth(e: PENGINE; nid: TIdC_INT): PEVP_PKEY_ASN1_METHOD cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_pkey_asn1_meth_str}
   function ENGINE_get_pkey_asn1_meth_str(e: PENGINE; const _str: PIdAnsiChar; len: TIdC_INT): PEVP_PKEY_ASN1_METHOD cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_pkey_asn1_find_str}
   function ENGINE_pkey_asn1_find_str(pe: PPENGINE; const _str: PIdAnsiChar; len: TIdC_INT): PEVP_PKEY_ASN1_METHOD cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_cmd_defns}
   function ENGINE_get_cmd_defns(const e: PENGINE): PENGINE_CMD_DEFN cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_flags}
   function ENGINE_get_flags(const e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
 
   ///*
@@ -1041,12 +1192,14 @@ var
   // * already in use). This will fail if the engine is not currently operational
   // * and cannot initialise.
   // */
+  {$EXTERNALSYM ENGINE_init}
   function ENGINE_init(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
   ///*
   // * Free a functional reference to a engine type. This does not require a
   // * corresponding call to ENGINE_free as it also releases a structural
   // * reference.
   // */
+  {$EXTERNALSYM ENGINE_finish}
   function ENGINE_finish(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
 
   ///*
@@ -1054,7 +1207,9 @@ var
   // * location, handled by the engine.  The storage may be on a card or
   // * whatever.
   // */
+  {$EXTERNALSYM ENGINE_load_private_key}
   function ENGINE_load_private_key(e: PENGINE; const key_id: PIdAnsiChar; ui_method: PUI_METHOD; callback_data: Pointer): PEVP_PKEY cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_load_public_key}
   function ENGINE_load_public_key(e: PENGINE; const key_id: PIdAnsiChar; ui_method: PUI_METHOD; callback_data: Pointer): PEVP_PKEY cdecl; external CLibCrypto;
   //function ENGINE_load_ssl_client_cert(e: PENGINE; s: PSSL;
   //  {STACK_OF(X509) *ca_dn;} {STACK_OF(X509) **pother;} ui_method: PUI_METHOD;
@@ -1066,19 +1221,28 @@ var
   // * incremented reference, so it should be free'd (ENGINE_finish) before it is
   // * discarded.
   // */
+  {$EXTERNALSYM ENGINE_get_default_RSA}
   function ENGINE_get_default_RSA: PENGINE cdecl; external CLibCrypto;
   //* Same for the other "methods" */
+  {$EXTERNALSYM ENGINE_get_default_DSA}
   function ENGINE_get_default_DSA: PENGINE cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_default_EC}
   function ENGINE_get_default_EC: PENGINE cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_default_DH}
   function ENGINE_get_default_DH: PENGINE cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_default_RAND}
   function ENGINE_get_default_RAND: PENGINE cdecl; external CLibCrypto;
   ///*
   // * These functions can be used to get a functional reference to perform
   // * ciphering or digesting corresponding to "nid".
   // */
+  {$EXTERNALSYM ENGINE_get_cipher_engine}
   function ENGINE_get_cipher_engine(nid: TIdC_INT): PENGINE cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_digest_engine}
   function ENGINE_get_digest_engine(nid: TIdC_INT): PENGINE cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_pkey_meth_engine}
   function ENGINE_get_pkey_meth_engine(nid: TIdC_INT): PENGINE cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_get_pkey_asn1_meth_engine}
   function ENGINE_get_pkey_asn1_meth_engine(nid: TIdC_INT): PENGINE cdecl; external CLibCrypto;
   ///*
   // * This sets a new default ENGINE structure for performing RSA operations. If
@@ -1086,16 +1250,26 @@ var
   // * its reference count up'd so the caller should still free their own
   // * reference 'e'.
   // */
+  {$EXTERNALSYM ENGINE_set_default_RSA}
   function ENGINE_set_default_RSA(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_default_string}
   function ENGINE_set_default_string(e: PENGINE; const def_list: PIdAnsiChar): TIdC_INT cdecl; external CLibCrypto;
   // Same for the other "methods"
+  {$EXTERNALSYM ENGINE_set_default_DSA}
   function ENGINE_set_default_DSA(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_default_EC}
   function ENGINE_set_default_EC(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_default_DH}
   function ENGINE_set_default_DH(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_default_RAND}
   function ENGINE_set_default_RAND(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_default_ciphers}
   function ENGINE_set_default_ciphers(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_default_digests}
   function ENGINE_set_default_digests(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_default_pkey_meths}
   function ENGINE_set_default_pkey_meths(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ENGINE_set_default_pkey_asn1_meths}
   function ENGINE_set_default_pkey_asn1_meths(e: PENGINE): TIdC_INT cdecl; external CLibCrypto;
 
   ///*
@@ -1105,8 +1279,10 @@ var
   // * application requires only specific functionality, consider using more
   // * selective functions.
   // */
+  {$EXTERNALSYM ENGINE_set_default}
   function ENGINE_set_default(e: PENGINE; flags: TIdC_ULONG): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM ENGINE_add_conf_module}
   procedure ENGINE_add_conf_module cdecl; external CLibCrypto;
 
   ///* Deprecated functions ... */
@@ -1161,9 +1337,11 @@ var
   // * static data and let the loading application and loaded ENGINE compare
   // * their respective values.
   // */
+  {$EXTERNALSYM ENGINE_get_static_state}
   function ENGINE_get_static_state: Pointer cdecl; external CLibCrypto;
 
 {$ENDIF}
+  {$EXTERNALSYM ENGINE_get_ex_new_index}
 function ENGINE_get_ex_new_index(l : TIdC_LONG; p : PENGINE;
     newf : CRYPTO_EX_new; dupf : CRYPTO_EX_dup; freef : CRYPTO_EX_FREE) : TIdC_INT;
 

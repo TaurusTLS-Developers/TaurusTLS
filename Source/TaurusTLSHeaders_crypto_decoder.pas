@@ -42,67 +42,95 @@ uses
   * (provider-object(7)).
   * }
 var
+  {$EXTERNALSYM ossl_decoder_from_algorithm}
   ossl_decoder_from_algorithm: function(id: TIdC_INT; algodef: POSSL_ALGORITHM;
     prov: POSSL_PROVIDER): Pointer; cdecl = nil;
 
+  {$EXTERNALSYM ossl_decoder_instance_new_forprov}
   ossl_decoder_instance_new_forprov: function(decoder: POSSL_DECODER;
     provctx: Pointer; input_structure: PIdAnsiChar) : POSSL_DECODER_INSTANCE;
     cdecl = nil;
 
+  {$EXTERNALSYM ossl_decoder_instance_new}
   ossl_decoder_instance_new: function(decoder: POSSL_DECODER;
     decoderctx: Pointer): POSSL_DECODER_INSTANCE; cdecl = nil;
+  {$EXTERNALSYM ossl_decoder_instance_free}
   ossl_decoder_instance_free: procedure(decoder_inst: POSSL_DECODER_INSTANCE);
     cdecl = nil;
+  {$EXTERNALSYM ossl_decoder_ctx_get_harderr}
   ossl_decoder_ctx_get_harderr: function(ctx: POSSL_DECODER_CTX): TIdC_INT;
     cdecl = nil;
+  {$EXTERNALSYM ossl_decoder_ctx_set_harderr}
   ossl_decoder_ctx_set_harderr: procedure(ctx: POSSL_DECODER_CTX); cdecl = nil;
+  {$EXTERNALSYM ossl_decoder_instance_dup}
   ossl_decoder_instance_dup: function(src: POSSL_DECODER_INSTANCE)
     : POSSL_DECODER_INSTANCE; cdecl = nil;
+  {$EXTERNALSYM ossl_decoder_ctx_add_decoder_inst}
   ossl_decoder_ctx_add_decoder_inst: function(ctx: POSSL_DECODER_CTX;
     di: POSSL_DECODER_INSTANCE): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM ossl_decoder_get_number}
   ossl_decoder_get_number: function(encoder: POSSL_DECODER): TIdC_INT;
     cdecl = nil;
+  {$EXTERNALSYM ossl_decoder_store_cache_flush}
   ossl_decoder_store_cache_flush: function(libctx: POSSL_LIB_CTX): TIdC_INT;
     cdecl = nil;
+  {$EXTERNALSYM ossl_decoder_store_remove_all_provided}
   ossl_decoder_store_remove_all_provided: function(prov: POSSL_PROVIDER)
     : TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM ossl_decoder_cache_new}
   ossl_decoder_cache_new: function(ctx: POSSL_LIB_CTX): Pointer;  cdecl = nil;
+  {$EXTERNALSYM ossl_decoder_cache_free}
   ossl_decoder_cache_free: procedure(vcache: Pointer); cdecl = nil;
+  {$EXTERNALSYM ossl_decoder_cache_flush}
   ossl_decoder_cache_flush: function(libctx: POSSL_LIB_CTX): TIdC_INT;
      cdecl = nil;
 {$ELSE}
+  {$EXTERNALSYM ossl_decoder_from_algorithm}
 function ossl_decoder_from_algorithm(id: TIdC_INT; algodef: POSSL_ALGORITHM;
   prov: POSSL_PROVIDER): Pointer; cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM ossl_decoder_instance_new_forprov}
 function ossl_decoder_instance_new_forprov(decoder: POSSL_DECODER;
   provctx: Pointer; input_structure: PIdAnsiChar): POSSL_DECODER_INSTANCE;
   cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM ossl_decoder_instance_new}
 function ossl_decoder_instance_new(decoder: POSSL_DECODER; decoderctx: Pointer)
   : POSSL_DECODER_INSTANCE; cdecl; external CLibCrypto;
+  {$EXTERNALSYM ossl_decoder_instance_free}
 procedure ossl_decoder_instance_free(decoder_inst: POSSL_DECODER_INSTANCE);
   cdecl; external CLibCrypto;
+  {$EXTERNALSYM ossl_decoder_ctx_get_harderr}
 function ossl_decoder_ctx_get_harderr(ctx: POSSL_DECODER_CTX): TIdC_INT cdecl;
   external CLibCrypto;
+  {$EXTERNALSYM ossl_decoder_ctx_set_harderr}
 procedure ossl_decoder_ctx_set_harderr(ctx: POSSL_DECODER_CTX)cdecl;
   external CLibCrypto;
+  {$EXTERNALSYM ossl_decoder_instance_dup}
 function ossl_decoder_instance_dup(src: POSSL_DECODER_INSTANCE)
   : POSSL_DECODER_INSTANCE cdecl; external CLibCrypto;
+  {$EXTERNALSYM ossl_decoder_ctx_add_decoder_inst}
 function ossl_decoder_ctx_add_decoder_inst(ctx: POSSL_DECODER_CTX;
   di: POSSL_DECODER_INSTANCE): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM ossl_decoder_get_number}
 function ossl_decoder_get_number(encoder: POSSL_DECODER): TIdC_INT cdecl;
   external CLibCrypto;
+  {$EXTERNALSYM ossl_decoder_store_cache_flush}
 function ossl_decoder_store_cache_flush(libctx: POSSL_LIB_CTX): TIdC_INT cdecl;
   external CLibCrypto;
+  {$EXTERNALSYM ossl_decoder_store_remove_all_provided}
 function ossl_decoder_store_remove_all_provided(prov: POSSL_PROVIDER)
   : TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM ossl_decoder_cache_new}
 function ossl_decoder_cache_new(ctx: POSSL_LIB_CTX): Pointer cdecl;
   external CLibCrypto;
+  {$EXTERNALSYM ossl_decoder_cache_free}
 procedure ossl_decoder_cache_free(vcache: Pointer)cdecl; external CLibCrypto;
+  {$EXTERNALSYM ossl_decoder_cache_flush}
 function ossl_decoder_cache_flush(libctx: POSSL_LIB_CTX): TIdC_INT cdecl;
   external CLibCrypto;
 {$ENDIF}

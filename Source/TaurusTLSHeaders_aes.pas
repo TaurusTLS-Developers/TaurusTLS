@@ -1,4 +1,4 @@
-ï»¿/// <exclude />
+/// <exclude />
 
 (* This unit was generated using the script genTaurusTLSHdrs.sh from the source file TaurusTLSHeaders_aes.h2pas
      It should not be modified directly. All changes should be made to TaurusTLSHeaders_aes.h2pas
@@ -16,8 +16,8 @@
 {*                                                                            *}
 {*  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              *}
 {*                                                                            *}
-{* Portions of this software are Copyright (c) 1993 â€“ 2018,                   *}
-{* Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  *}
+{* Portions of this software are Copyright (c) 1993 – 2018,                   *}
+{* Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  *}
 {******************************************************************************}
 
 unit TaurusTLSHeaders_aes;
@@ -39,15 +39,20 @@ uses
 
 const
 // Added '_CONST' to avoid name clashes
+  {$EXTERNALSYM AES_ENCRYPT_CONST}
   AES_ENCRYPT_CONST = 1;
 // Added '_CONST' to avoid name clashes
+  {$EXTERNALSYM AES_DECRYPT_CONST}
   AES_DECRYPT_CONST = 0;
+  {$EXTERNALSYM AES_MAXNR}
   AES_MAXNR = 14;
+  {$EXTERNALSYM AES_BLOCK_SIZE}
   AES_BLOCK_SIZE = 16;
 
 type
+  {$EXTERNALSYM aes_key_st}
   aes_key_st = record
-  // in old IdSSLTaurusTLSHeaders.pas it was also TIdC_UINT Â¯\_(ãƒ„)_/Â¯
+  // in old IdSSLTaurusTLSHeaders.pas it was also TIdC_UINT ¯\_(?)_/¯
 //    {$IFDEF AES_LONG}
 //    rd_key: array[0..(4 * (AES_MAXNR + 1))] of TIdC_ULONG;
 //    {$ELSE}
@@ -55,7 +60,9 @@ type
 //    {$ENDIF}
     rounds: TIdC_INT;
   end;
+  {$EXTERNALSYM AES_KEY}
   AES_KEY = aes_key_st;
+  {$EXTERNALSYM PAES_KEY}
   PAES_KEY = ^AES_KEY;
 
     { The EXTERNALSYM directive is ignored by FPC, however, it is used by Delphi as follows:
@@ -63,67 +70,82 @@ type
   	  The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header 
 	  files generated for C++. }
 	  
-  {$EXTERNALSYM AES_options}
-  {$EXTERNALSYM AES_set_encrypt_key}
-  {$EXTERNALSYM AES_set_decrypt_key}
-  {$EXTERNALSYM AES_encrypt}
-  {$EXTERNALSYM AES_decrypt}
-  {$EXTERNALSYM AES_ecb_encrypt}
-  {$EXTERNALSYM AES_cbc_encrypt}
-  {$EXTERNALSYM AES_cfb128_encrypt}
-  {$EXTERNALSYM AES_cfb1_encrypt}
-  {$EXTERNALSYM AES_cfb8_encrypt}
-  {$EXTERNALSYM AES_ofb128_encrypt}
-  {$EXTERNALSYM AES_ige_encrypt}
-  {$EXTERNALSYM AES_bi_ige_encrypt}
-  {$EXTERNALSYM AES_wrap_key}
-  {$EXTERNALSYM AES_unwrap_key}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM AES_options}
   AES_options: function : PIdAnsiChar; cdecl = nil;
 
+  {$EXTERNALSYM AES_set_encrypt_key}
   AES_set_encrypt_key: function (const userKey: PByte; const bits: TIdC_INT; const key: PAES_KEY): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM AES_set_decrypt_key}
   AES_set_decrypt_key: function (const userKey: PByte; const bits: TIdC_INT; const key: PAES_KEY): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM AES_encrypt}
   AES_encrypt: procedure (const in_: PByte; out_: PByte; const key: PAES_KEY); cdecl = nil;
+  {$EXTERNALSYM AES_decrypt}
   AES_decrypt: procedure (const in_: PByte; out_: PByte; const key: PAES_KEY); cdecl = nil;
 
+  {$EXTERNALSYM AES_ecb_encrypt}
   AES_ecb_encrypt: procedure (const in_: PByte; out_: PByte; const key: PAES_KEY; const enc: TIdC_INT); cdecl = nil;
+  {$EXTERNALSYM AES_cbc_encrypt}
   AES_cbc_encrypt: procedure (const in_: PByte; out_: PByte; _length: TIdC_SIZET; const key: PAES_KEY; ivec: PByte; const enc: TIdC_INT); cdecl = nil;
+  {$EXTERNALSYM AES_cfb128_encrypt}
   AES_cfb128_encrypt: procedure (const in_: PByte; out_: PByte; _length: TIdC_SIZET; const key: PAES_KEY; ivec: PByte; num: PIdC_INT; const enc: TIdC_INT); cdecl = nil;
+  {$EXTERNALSYM AES_cfb1_encrypt}
   AES_cfb1_encrypt: procedure (const in_: PByte; out_: PByte; _length: TIdC_SIZET; const key: PAES_KEY; ivec: PByte; num: PIdC_INT; const enc: TIdC_INT); cdecl = nil;
+  {$EXTERNALSYM AES_cfb8_encrypt}
   AES_cfb8_encrypt: procedure (const in_: PByte; out_: PByte; _length: TIdC_SIZET; const key: PAES_KEY; ivec: PByte; num: PIdC_INT; const enc: TIdC_INT); cdecl = nil;
+  {$EXTERNALSYM AES_ofb128_encrypt}
   AES_ofb128_encrypt: procedure (const in_: PByte; out_: PByte; _length: TIdC_SIZET; const key: PAES_KEY; ivec: PByte; num: PIdC_INT); cdecl = nil;
   (* NB: the IV is _two_ blocks long *)
+  {$EXTERNALSYM AES_ige_encrypt}
   AES_ige_encrypt: procedure (const in_: PByte; out_: PByte; _length: TIdC_SIZET; const key: PAES_KEY; ivec: PByte; const enc: TIdC_INT); cdecl = nil;
   (* NB: the IV is _four_ blocks long *)
+  {$EXTERNALSYM AES_bi_ige_encrypt}
   AES_bi_ige_encrypt: procedure (const in_: PByte; out_: PByte; _length: TIdC_SIZET; const key: PAES_KEY; const key2: PAES_KEY; ivec: PByte; const enc: TIdC_INT); cdecl = nil;
 
+  {$EXTERNALSYM AES_wrap_key}
   AES_wrap_key: function (key: PAES_KEY; const iv: PByte; out_: PByte; const in_: PByte; inlen: TIdC_UINT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM AES_unwrap_key}
   AES_unwrap_key: function (key: PAES_KEY; const iv: PByte; out_: PByte; const in_: PByte; inlen: TIdC_UINT): TIdC_INT; cdecl = nil;
 
 {$ELSE}
+  {$EXTERNALSYM AES_options}
   function AES_options: PIdAnsiChar cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM AES_set_encrypt_key}
   function AES_set_encrypt_key(const userKey: PByte; const bits: TIdC_INT; const key: PAES_KEY): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM AES_set_decrypt_key}
   function AES_set_decrypt_key(const userKey: PByte; const bits: TIdC_INT; const key: PAES_KEY): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM AES_encrypt}
   procedure AES_encrypt(const in_: PByte; out_: PByte; const key: PAES_KEY) cdecl; external CLibCrypto;
+  {$EXTERNALSYM AES_decrypt}
   procedure AES_decrypt(const in_: PByte; out_: PByte; const key: PAES_KEY) cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM AES_ecb_encrypt}
   procedure AES_ecb_encrypt(const in_: PByte; out_: PByte; const key: PAES_KEY; const enc: TIdC_INT) cdecl; external CLibCrypto;
+  {$EXTERNALSYM AES_cbc_encrypt}
   procedure AES_cbc_encrypt(const in_: PByte; out_: PByte; _length: TIdC_SIZET; const key: PAES_KEY; ivec: PByte; const enc: TIdC_INT) cdecl; external CLibCrypto;
+  {$EXTERNALSYM AES_cfb128_encrypt}
   procedure AES_cfb128_encrypt(const in_: PByte; out_: PByte; _length: TIdC_SIZET; const key: PAES_KEY; ivec: PByte; num: PIdC_INT; const enc: TIdC_INT) cdecl; external CLibCrypto;
+  {$EXTERNALSYM AES_cfb1_encrypt}
   procedure AES_cfb1_encrypt(const in_: PByte; out_: PByte; _length: TIdC_SIZET; const key: PAES_KEY; ivec: PByte; num: PIdC_INT; const enc: TIdC_INT) cdecl; external CLibCrypto;
+  {$EXTERNALSYM AES_cfb8_encrypt}
   procedure AES_cfb8_encrypt(const in_: PByte; out_: PByte; _length: TIdC_SIZET; const key: PAES_KEY; ivec: PByte; num: PIdC_INT; const enc: TIdC_INT) cdecl; external CLibCrypto;
+  {$EXTERNALSYM AES_ofb128_encrypt}
   procedure AES_ofb128_encrypt(const in_: PByte; out_: PByte; _length: TIdC_SIZET; const key: PAES_KEY; ivec: PByte; num: PIdC_INT) cdecl; external CLibCrypto;
   (* NB: the IV is _two_ blocks long *)
+  {$EXTERNALSYM AES_ige_encrypt}
   procedure AES_ige_encrypt(const in_: PByte; out_: PByte; _length: TIdC_SIZET; const key: PAES_KEY; ivec: PByte; const enc: TIdC_INT) cdecl; external CLibCrypto;
   (* NB: the IV is _four_ blocks long *)
+  {$EXTERNALSYM AES_bi_ige_encrypt}
   procedure AES_bi_ige_encrypt(const in_: PByte; out_: PByte; _length: TIdC_SIZET; const key: PAES_KEY; const key2: PAES_KEY; ivec: PByte; const enc: TIdC_INT) cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM AES_wrap_key}
   function AES_wrap_key(key: PAES_KEY; const iv: PByte; out_: PByte; const in_: PByte; inlen: TIdC_UINT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM AES_unwrap_key}
   function AES_unwrap_key(key: PAES_KEY; const iv: PByte; out_: PByte; const in_: PByte; inlen: TIdC_UINT): TIdC_INT cdecl; external CLibCrypto;
 
 {$ENDIF}

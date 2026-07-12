@@ -33,80 +33,123 @@ const
  * Some externally visible limits - most used for sanity checks that could be
  * bigger if needed, but that work for now
  *}
+  {$EXTERNALSYM OSSL_ECH_MAX_PAYLOAD_LEN}
   OSSL_ECH_MAX_PAYLOAD_LEN = 1500; //* max ECH ciphertext to en/decode */
+  {$EXTERNALSYM OSSL_ECH_MIN_ECHCONFIG_LEN}
   OSSL_ECH_MIN_ECHCONFIG_LEN = 32; //* min for all encodings */
+  {$EXTERNALSYM OSSL_ECH_MAX_ECHCONFIG_LEN}
   OSSL_ECH_MAX_ECHCONFIG_LEN = 1500; //* max for all encodings */
+  {$EXTERNALSYM OSSL_ECH_MAX_ECHCONFIGEXT_LEN}
   OSSL_ECH_MAX_ECHCONFIGEXT_LEN = 512; //* ECHConfig extension max */
+  {$EXTERNALSYM OSSL_ECH_MAX_MAXNAMELEN}
   OSSL_ECH_MAX_MAXNAMELEN = 255; //* ECHConfig max for max name length */
+  {$EXTERNALSYM OSSL_ECH_MAX_PUBLICNAME}
   OSSL_ECH_MAX_PUBLICNAME = 255; //* max ECHConfig public name length */
+  {$EXTERNALSYM OSSL_ECH_MAX_ALPNLEN}
   OSSL_ECH_MAX_ALPNLEN = 255; //* max alpn length */
+  {$EXTERNALSYM OSSL_ECH_OUTERS_MAX}
   OSSL_ECH_OUTERS_MAX = 20; //* max extensions we compress via outer-exts */
+  {$EXTERNALSYM OSSL_ECH_ALLEXTS_MAX}
   OSSL_ECH_ALLEXTS_MAX = 32; //* max total number of extension we allow */
 
 {*
  * ECH version. We only support RFC 9849 as of now.  As/if new ECHConfig
  * versions are added, those will be noted here.
  *}
+  {$EXTERNALSYM OSSL_ECH_RFC9849_VERSION}
   OSSL_ECH_RFC9849_VERSION = $fe0d; //* official ECHConfig version */
 //* latest version from an RFC */
+  {$EXTERNALSYM OSSL_ECH_CURRENT_VERSION}
   OSSL_ECH_CURRENT_VERSION = OSSL_ECH_RFC9849_VERSION;
 
 //* Return codes from SSL_ech_get1_status */
+  {$EXTERNALSYM SSL_ECH_STATUS_BACKEND}
   SSL_ECH_STATUS_BACKEND = 4; //* ECH backend: saw an ech_is_inner */
+  {$EXTERNALSYM SSL_ECH_STATUS_GREASE_ECH}
   SSL_ECH_STATUS_GREASE_ECH = 3; //* GREASEd and got an ECH in return */
+  {$EXTERNALSYM SSL_ECH_STATUS_GREASE}
   SSL_ECH_STATUS_GREASE = 2; //* ECH GREASE happened  */
+  {$EXTERNALSYM SSL_ECH_STATUS_SUCCESS}
   SSL_ECH_STATUS_SUCCESS = 1; //* Success */
+  {$EXTERNALSYM SSL_ECH_STATUS_FAILED}
   SSL_ECH_STATUS_FAILED = 0; //* Some internal or protocol error */
+  {$EXTERNALSYM SSL_ECH_STATUS_BAD_CALL}
   SSL_ECH_STATUS_BAD_CALL = -100; //* Some in/out arguments were NULL */
+  {$EXTERNALSYM SSL_ECH_STATUS_NOT_TRIED}
   SSL_ECH_STATUS_NOT_TRIED = -101; //* ECH wasn't attempted  */
+  {$EXTERNALSYM SSL_ECH_STATUS_BAD_NAME}
   SSL_ECH_STATUS_BAD_NAME = -102; //* ECH ok but server cert bad */
+  {$EXTERNALSYM SSL_ECH_STATUS_NOT_CONFIGURED}
   SSL_ECH_STATUS_NOT_CONFIGURED = -103; //* ECH wasn't configured */
+  {$EXTERNALSYM SSL_ECH_STATUS_FAILED_ECH}
   SSL_ECH_STATUS_FAILED_ECH = -105; //* Tried, failed, got an ECH, from a good name */
+  {$EXTERNALSYM SSL_ECH_STATUS_FAILED_ECH_BAD_NAME}
   SSL_ECH_STATUS_FAILED_ECH_BAD_NAME = -106; //* Tried, failed, got an ECH, from a bad name */
 
 //* if a caller wants to index the last entry in the store */
+  {$EXTERNALSYM OSSL_ECHSTORE_LAST}
   OSSL_ECHSTORE_LAST = -1;
 //* if a caller wants all entries in the store, e.g. to print public values */
+  {$EXTERNALSYM OSSL_ECHSTORE_ALL}
   OSSL_ECHSTORE_ALL = -2;
 
 //* Values for the for_retry inputs */
+  {$EXTERNALSYM OSSL_ECH_FOR_RETRY}
   OSSL_ECH_FOR_RETRY = 1;
+  {$EXTERNALSYM OSSL_ECH_NO_RETRY}
   OSSL_ECH_NO_RETRY = 0;
 
 type
+  {$EXTERNALSYM SSL_ech_cb_func}
   SSL_ech_cb_func = function(s : PSSL; const str_ : PIdAnsiChar) : TIdC_UINT; cdecl;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM OSSL_ECHSTORE_new}
   OSSL_ECHSTORE_new : function(libctx : POSSL_LIB_CTX; const propq : PIdAnsichar) : POSSL_ECHSTORE ; cdecl = nil;
+  {$EXTERNALSYM OSSL_ECHSTORE_free}
   OSSL_ECHSTORE_free : procedure(es : POSSL_ECHSTORE) ; cdecl = nil;
+  {$EXTERNALSYM OSSL_ECHSTORE_new_config}
   OSSL_ECHSTORE_new_config : function(es : POSSL_ECHSTORE;
     echversion : TIdC_UINT16; max_name_length : TIdC_UINT8;
     const public_name : PIdAnsiChar;  suite : OSSL_HPKE_SUITE) : TIdC_INT ; cdecl = nil;
+  {$EXTERNALSYM OSSL_ECHSTORE_write_pem}
   OSSL_ECHSTORE_write_pem : function(es : POSSL_ECHSTORE; index : TIdC_INT; _out : PBIO) : TIdC_INT ; cdecl = nil;
+  {$EXTERNALSYM OSSL_ECHSTORE_read_echconfiglist}
   OSSL_ECHSTORE_read_echconfiglist : function(es : POSSL_ECHSTORE; _in : PBIO) : TIdC_INT ; cdecl = nil;
   OSSL_ECHSTORE_get1_info : function(es : POSSL_ECHSTORE; index : TIdC_INT; loaded_secs : PIdC_TIMET;
     public_name, echconfig : PPIdAnsiChar;
     has_private, for_retry : PIdC_INT) : TIdC_INT ; cdecl = nil;
+  {$EXTERNALSYM OSSL_ECHSTORE_downselect}
   OSSL_ECHSTORE_downselect : function(es : POSSL_ECHSTORE; index : TIdC_INT) : TIdC_INT ; cdecl = nil;
+  {$EXTERNALSYM OSSL_ECHSTORE_set1_key_and_read_pem}
   OSSL_ECHSTORE_set1_key_and_read_pem : function(es : POSSL_ECHSTORE; priv : PEVP_PKEY;
     _in : PBIO; for_retry : TIdC_INT) : TIdC_INT ; cdecl = nil;
+  {$EXTERNALSYM OSSL_ECHSTORE_read_pem}
   OSSL_ECHSTORE_read_pem : function(es : POSSL_ECHSTORE; _in : PBIO; for_retry : TIdC_INT) : TIdC_INT ; cdecl = nil;
+  {$EXTERNALSYM OSSL_ECHSTORE_num_entries}
   OSSL_ECHSTORE_num_entries : function(const es : POSSL_ECHSTORE; numentries : PIdC_INT) : TIdC_INT ; cdecl = nil;
+  {$EXTERNALSYM OSSL_ECHSTORE_num_keys}
   OSSL_ECHSTORE_num_keys : function(es : POSSL_ECHSTORE; numkeys : PIdC_INT) : TIdC_INT ; cdecl = nil;
+  {$EXTERNALSYM OSSL_ECHSTORE_flush_keys}
   OSSL_ECHSTORE_flush_keys : function(es : POSSL_ECHSTORE; age : TIdC_TIMET) : TIdC_INT ; cdecl = nil;
 
 {*
  * APIs relating OSSL_ECHSTORE to SSL/SSL_CTX
  *}
+  {$EXTERNALSYM SSL_CTX_set1_echstore}
   SSL_CTX_set1_echstore : function(ctx : PSSL_CTX; es : POSSL_ECHSTORE) : TIdC_INT ; cdecl = nil;
+  {$EXTERNALSYM SSL_set1_echstore}
   SSL_set1_echstore : function(s : PSSL; es : POSSL_ECHSTORE) : TIdC_INT ; cdecl = nil;
 
+  {$EXTERNALSYM SSL_CTX_get1_echstore}
   SSL_CTX_get1_echstore : function(const ctx : PSSL_CTX) : POSSL_ECHSTORE ; cdecl = nil;
+  {$EXTERNALSYM SSL_get1_echstore}
   SSL_get1_echstore : function(const s : PSSL) : POSSL_ECHSTORE ; cdecl = nil;
-
+  {$EXTERNALSYM SSL_ech_set1_server_names}
   SSL_ech_set1_server_names : function(s : PSSL; const inner_name,
     outer_name : PIdAnsiChar; no_outer : TIdC_INT) : TIdC_INT ; cdecl = nil;
+  {$EXTERNALSYM SSL_ech_set1_outer_server_name}
   SSL_ech_set1_outer_server_name : function(s : PSSL; const outer_name : PIdAnsiChar; no_outer : TIdC_INT) : TIdC_INT ; cdecl = nil;
 {*
  * Note that this function returns 1 for success and 0 for error. This
@@ -116,10 +159,15 @@ var
   SSL_ech_set1_outer_alpn_protos : function(s : PSSL; const protos : PByte;
     const protos_len : TIdC_SIZET) : TIdC_INT ; cdecl = nil;
 
+  {$EXTERNALSYM SSL_ech_get1_status}
   SSL_ech_get1_status : function(s : PSSL; inner_sni, outer_sni : PPIdAnsiChar) : TIdC_INT ; cdecl = nil;
+  {$EXTERNALSYM SSL_ech_set1_grease_suite}
   SSL_ech_set1_grease_suite : function(s : PSSL; const suite : PIdAnsiChar) : TIdC_INT ; cdecl = nil;
+  {$EXTERNALSYM SSL_ech_set_grease_type}
   SSL_ech_set_grease_type : function(s : PSSL;  _type : TIdC_UINT16) : TIdC_INT ; cdecl = nil;
+  {$EXTERNALSYM SSL_ech_set_callback}
   SSL_ech_set_callback : procedure(s : PSSL;  f : SSL_ech_cb_func) ; cdecl = nil;
+  {$EXTERNALSYM SSL_ech_get1_retry_config}
   SSL_ech_get1_retry_config : function(s : PSSL; ec : PPByte;  eclen : PIdC_SIZET) : TIdC_INT ; cdecl = nil;
 
 {*
@@ -129,52 +177,78 @@ var
  *}
   SSL_CTX_ech_set1_outer_alpn_protos : function(s : PSSL_CTX; const protos : PByte;
     const protos_len : TIdC_SIZET) : TIdC_INT ; cdecl = nil;
+  {$EXTERNALSYM SSL_CTX_ech_set_callback}
   SSL_CTX_ech_set_callback : procedure(ctx : PSSL_CTX;  f : SSL_ech_cb_func) ; cdecl = nil;
+  {$EXTERNALSYM SSL_set1_ech_config_list}
   SSL_set1_ech_config_list : function(ssl : PSSL; const ecl : PIdC_UINT8; ecl_len : TIdC_SIZET) : TIdC_INT; cdecl = nil;
 
 {$ELSE}
+  {$EXTERNALSYM OSSL_ECHSTORE_new}
   function OSSL_ECHSTORE_new(libctx : POSSL_LIB_CTX; const propq : PIdAnsichar) : POSSL_ECHSTORE cdecl; external CLibSSL;
+  {$EXTERNALSYM OSSL_ECHSTORE_free}
   procedure OSSL_ECHSTORE_free(es : POSSL_ECHSTORE) cdecl; external CLibSSL;
+  {$EXTERNALSYM OSSL_ECHSTORE_new_config}
   function OSSL_ECHSTORE_new_config(es : POSSL_ECHSTORE;
     echversion : TIdC_UINT16; max_name_length : TIdC_UINT8;
     const public_name : PIdAnsiChar;  suite : OSSL_HPKE_SUITE) : TIdC_INT cdecl; external CLibSSL;
+  {$EXTERNALSYM OSSL_ECHSTORE_write_pem}
   function OSSL_ECHSTORE_write_pem(es : POSSL_ECHSTORE; index : TIdC_INT; _out : PBIO) : TIdC_INT  cdecl; external CLibSSL;
+  {$EXTERNALSYM OSSL_ECHSTORE_read_echconfiglist}
   function OSSL_ECHSTORE_read_echconfiglist(es : POSSL_ECHSTORE; _in : PBIO) : TIdC_INT cdecl; external CLibSSL;
+  {$EXTERNALSYM OSSL_ECHSTORE_get1_info}
   function OSSL_ECHSTORE_get1_info(es : POSSL_ECHSTORE; index : TIdC_INT; loaded_secs : PIdC_TIMET;
     public_name, echconfig : PPIdAnsiChar;
     has_private, for_retry : PIdC_INT) : TIdC_INT cdecl; external CLibSSL;
+  {$EXTERNALSYM OSSL_ECHSTORE_downselect}
   function OSSL_ECHSTORE_downselect(es : POSSL_ECHSTORE; index : TIdC_INT) : TIdC_INT cdecl; external CLibSSL;
+  {$EXTERNALSYM OSSL_ECHSTORE_set1_key_and_read_pem}
   function OSSL_ECHSTORE_set1_key_and_read_pem(es : POSSL_ECHSTORE; priv : PEVP_PKEY;
     _in : PBIO; for_retry : TIdC_INT) : TIdC_INT cdecl; external CLibSSL;
+  {$EXTERNALSYM OSSL_ECHSTORE_read_pem}
   function OSSL_ECHSTORE_read_pem(es : POSSL_ECHSTORE; _in : PBIO; for_retry : TIdC_INT) : TIdC_INT  cdecl; external CLibSSL;
+  {$EXTERNALSYM OSSL_ECHSTORE_num_entries}
   function OSSL_ECHSTORE_num_entries(const es : POSSL_ECHSTORE; numentries : PIdC_INT) : TIdC_INT  cdecl; external CLibSSL;
+  {$EXTERNALSYM OSSL_ECHSTORE_num_keys}
   function OSSL_ECHSTORE_num_keys(es : POSSL_ECHSTORE; numkeys : PIdC_INT) : TIdC_INT cdecl; external CLibSSL;
+  {$EXTERNALSYM OSSL_ECHSTORE_flush_keys}
   function OSSL_ECHSTORE_flush_keys(es : POSSL_ECHSTORE; age : TIdC_TIMET) : TIdC_INT  cdecl; external CLibSSL;
 
 {*
  * APIs relating OSSL_ECHSTORE to SSL/SSL_CTX
  *}
+  {$EXTERNALSYM SSL_CTX_set1_echstore}
   function SSL_CTX_set1_echstore(ctx : PSSL_CTX; es : POSSL_ECHSTORE) : TIdC_INT  cdecl; external CLibSSL;
+  {$EXTERNALSYM SSL_set1_echstore}
   function SSL_set1_echstore(s : PSSL; es : POSSL_ECHSTORE) : TIdC_INT  cdecl; external CLibSSL;
 
+  {$EXTERNALSYM SSL_CTX_get1_echstore}
   function SSL_CTX_get1_echstore(const ctx : PSSL_CTX) : POSSL_ECHSTORE  cdecl; external CLibSSL;
+  {$EXTERNALSYM SSL_get1_echstore}
   function SSL_get1_echstore(const s : PSSL) : POSSL_ECHSTORE  cdecl; external CLibSSL;
 
+  {$EXTERNALSYM SSL_ech_set1_server_names}
   function SSL_ech_set1_server_names(s : PSSL; const inner_name,
     outer_name : PIdAnsiChar; no_outer : TIdC_INT) : TIdC_INT  cdecl; external CLibSSL;
+  {$EXTERNALSYM SSL_ech_set1_outer_server_name}
   function SSL_ech_set1_outer_server_name(s : PSSL; const outer_name : PIdAnsiChar; no_outer : TIdC_INT) : TIdC_INT  cdecl; external CLibSSL;
 {*
  * Note that this function returns 1 for success and 0 for error. This
  * contrasts with SSL_set1_alpn_protos() which (unusually for OpenSSL)
  * returns 0 for success and 1 on error.
  *}
+  {$EXTERNALSYM SSL_ech_set1_outer_alpn_protos}
   function SSL_ech_set1_outer_alpn_protos(s : PSSL; const protos : PByte;
     const protos_len : TIdC_SIZET) : TIdC_INT  cdecl; external CLibSSL;
 
+  {$EXTERNALSYM SSL_ech_get1_status}
   function SSL_ech_get1_status(s : PSSL; inner_sni, outer_sni : PPIdAnsiChar) : TIdC_INT  cdecl; external CLibSSL;
+  {$EXTERNALSYM SSL_ech_set1_grease_suite}
   function SSL_ech_set1_grease_suite(s : PSSL; const suite : PIdAnsiChar) : TIdC_INT  cdecl; external CLibSSL;
+  {$EXTERNALSYM SSL_ech_set_grease_type}
   function SSL_ech_set_grease_type(s : PSSL;  _type : TIdC_UINT16) : TIdC_INT  cdecl; external CLibSSL;
+  {$EXTERNALSYM SSL_ech_set_callback}
   procedure SSL_ech_set_callback(s : PSSL;  f : SSL_ech_cb_func)  cdecl; external CLibSSL;
+  {$EXTERNALSYM SSL_ech_get1_retry_config}
   function SSL_ech_get1_retry_config(s : PSSL; ec : PPByte;  eclen : PIdC_SIZET) : TIdC_INT  cdecl; external CLibSSL;
 
 {*
@@ -182,9 +256,12 @@ var
  * contrasts with SSL_set1_alpn_protos() which (unusually for OpenSSL)
  * returns 0 for success and 1 on error.
  *}
+  {$EXTERNALSYM SSL_CTX_ech_set1_outer_alpn_protos}
   function SSL_CTX_ech_set1_outer_alpn_protos(s : PSSL_CTX; const protos : PByte;
     const protos_len : TIdC_SIZET) : TIdC_INT  cdecl; external CLibSSL;
+  {$EXTERNALSYM SSL_CTX_ech_set_callback}
   procedure SSL_CTX_ech_set_callback(ctx : PSSL_CTX;  f : SSL_ech_cb_func)  cdecl; external CLibSSL;
+  {$EXTERNALSYM SSL_set1_ech_config_list}
   function SSL_set1_ech_config_list(ssl : PSSL; const ecl : PIdC_UINT8; ecl_len : TIdC_SIZET) : TIdC_INT cdecl; external CLibSSL;
 
 {$ENDIF}

@@ -33,17 +33,23 @@ uses
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM ossl_encoder_get_number}
   ossl_encoder_get_number : function(encoder : POSSL_ENCODER) : TIdC_INT;
     cdecl = nil;
+  {$EXTERNALSYM ossl_encoder_store_cache_flush}
   ossl_encoder_store_cache_flush : function(libctx : POSSL_LIB_CTX) : TIdC_INT;
     cdecl = nil;
+  {$EXTERNALSYM ossl_encoder_store_remove_all_provided}
   ossl_encoder_store_remove_all_provided : function(prov : POSSL_PROVIDER) :
     TIdC_INT; cdecl = nil;
 {$ELSE}
+  {$EXTERNALSYM ossl_encoder_get_number}
   function ossl_encoder_get_number(encoder : POSSL_ENCODER) : TIdC_INT;
      cdecl external CLibCrypto;
+  {$EXTERNALSYM ossl_encoder_store_cache_flush}
   function ossl_encoder_store_cache_flush(libctx : POSSL_LIB_CTX) : TIdC_INT;
      cdecl external CLibCrypto;
+  {$EXTERNALSYM ossl_encoder_store_remove_all_provided}
   function ossl_encoder_store_remove_all_provided (prov : POSSL_PROVIDER) :
     TIdC_INT  cdecl; external CLibCrypto;
 {$ENDIF}

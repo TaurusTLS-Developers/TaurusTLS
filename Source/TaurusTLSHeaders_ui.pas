@@ -42,6 +42,7 @@ uses
 const
   (* These are the possible flags.  They can be or'ed together. *)
   (* Use to have echoing of input *)
+  {$EXTERNALSYM UI_INPUT_FLAG_ECHO}
   UI_INPUT_FLAG_ECHO = $01;
   (*
     * Use a default password.  Where that password is found is completely up to
@@ -50,6 +51,7 @@ const
     * each UI being marked with this flag, or the application might get
     * confused.
   *)
+  {$EXTERNALSYM UI_INPUT_FLAG_DEFAULT_PWD}
   UI_INPUT_FLAG_DEFAULT_PWD = $02;
 
   (*
@@ -62,6 +64,7 @@ const
     *    #define MY_UI_FLAG1       (0x01 << UI_INPUT_FLAG_USER_BASE)
     *
   *)
+  {$EXTERNALSYM UI_INPUT_FLAG_USER_BASE}
   UI_INPUT_FLAG_USER_BASE = 16;
 
   (* The commands *)
@@ -70,12 +73,14 @@ const
     * TaurusTLS error stack before printing any info or added error messages and
     * before any prompting.
   *)
+  {$EXTERNALSYM UI_CTRL_PRINT_ERRORS}
   UI_CTRL_PRINT_ERRORS = 1;
   (*
     * Check if a UI_process() is possible to do again with the same instance of
     * a user interface.  This makes UI_ctrl() return 1 if it is redoable, and 0
     * if not.
   *)
+  {$EXTERNALSYM UI_CTRL_IS_REDOABLE}
   UI_CTRL_IS_REDOABLE = 2;
 
 type
@@ -84,14 +89,18 @@ type
     * send down an integer, a data pointer or a function pointer, as well as be
     * used to get information from a UI.
   *)
+  {$EXTERNALSYM UI_ctrl_f}
   UI_ctrl_f = procedure; cdecl;
 
   (*
     * The UI_STRING type is the data structure that contains all the needed info
     * about a string or a prompt, including test data for a verification prompt.
   *)
+  {$EXTERNALSYM ui_string_st}
   ui_string_st = record end;
+  {$EXTERNALSYM UI_STRING}
   UI_STRING = ui_string_st;
+  {$EXTERNALSYM PUI_STRING}
   PUI_STRING = ^UI_STRING;
   // DEFINE_STACK_OF(UI_STRING)
 
@@ -99,6 +108,7 @@ type
     * The different types of strings that are currently supported. This is only
     * needed by method authors.
   *)
+  {$EXTERNALSYM UI_string_types}
   UI_string_types = (UIT_NONE = 0, UIT_PROMPT, (* Prompt for a string *)
     UIT_VERIFY, (* Prompt for a string and verify *)
     UIT_BOOLEAN, (* Prompt for a yes/no response *)
@@ -107,14 +117,22 @@ type
     );
 
   (* Create and manipulate methods *)
+  {$EXTERNALSYM UI_method_opener_cb}
   UI_method_opener_cb = function(ui: PUI): TIdC_INT; cdecl;
+  {$EXTERNALSYM UI_method_writer_cb}
   UI_method_writer_cb = function(ui: PUI; uis: PUI_STRING): TIdC_INT; cdecl;
+  {$EXTERNALSYM UI_method_flusher_cb}
   UI_method_flusher_cb = function(ui: PUI): TIdC_INT; cdecl;
+  {$EXTERNALSYM UI_method_reader_cb}
   UI_method_reader_cb = function(ui: PUI; uis: PUI_STRING): TIdC_INT; cdecl;
+  {$EXTERNALSYM UI_method_closer_cb}
   UI_method_closer_cb = function(ui: PUI): TIdC_INT; cdecl;
+  {$EXTERNALSYM UI_method_data_duplicator_cb}
   UI_method_data_duplicator_cb = function(ui: PUI; ui_data: Pointer): Pointer;
     cdecl;
+  {$EXTERNALSYM UI_method_data_destructor_cb}
   UI_method_data_destructor_cb = procedure(ui: PUI; ui_data: Pointer); cdecl;
+  {$EXTERNALSYM UI_method_prompt_constructor_cb}
   UI_method_prompt_constructor_cb = function(ui: PUI;
     const object_desc: PIdAnsiChar; const object_name: PIdAnsiChar)
     : PIdAnsiChar; cdecl;
@@ -132,76 +150,17 @@ type
     The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header
     files generated for C++. }
 
-{$EXTERNALSYM UI_new}
-{$EXTERNALSYM UI_new_method}
-{$EXTERNALSYM UI_free}
-{$EXTERNALSYM UI_add_input_string}
-{$EXTERNALSYM UI_dup_input_string}
-{$EXTERNALSYM UI_add_verify_string}
-{$EXTERNALSYM UI_dup_verify_string}
-{$EXTERNALSYM UI_add_input_boolean}
-{$EXTERNALSYM UI_dup_input_boolean}
-{$EXTERNALSYM UI_add_info_string}
-{$EXTERNALSYM UI_dup_info_string}
-{$EXTERNALSYM UI_add_error_string}
-{$EXTERNALSYM UI_dup_error_string}
-{$EXTERNALSYM UI_construct_prompt}
-{$EXTERNALSYM UI_add_user_data}
-{$EXTERNALSYM UI_dup_user_data}
-{$EXTERNALSYM UI_get0_user_data}
-{$EXTERNALSYM UI_get0_result}
-{$EXTERNALSYM UI_get_result_length}
-{$EXTERNALSYM UI_process}
-{$EXTERNALSYM UI_ctrl}
-{$EXTERNALSYM UI_set_ex_data}
-{$EXTERNALSYM UI_get_ex_data}
-{$EXTERNALSYM UI_set_default_method}
-{$EXTERNALSYM UI_get_default_method}
-{$EXTERNALSYM UI_get_method}
-{$EXTERNALSYM UI_set_method}
-{$EXTERNALSYM UI_TaurusTLS}
-{$EXTERNALSYM UI_null}
-{$EXTERNALSYM UI_create_method}
-{$EXTERNALSYM UI_destroy_method}
-{$EXTERNALSYM UI_method_set_opener}
-{$EXTERNALSYM UI_method_set_writer}
-{$EXTERNALSYM UI_method_set_flusher}
-{$EXTERNALSYM UI_method_set_reader}
-{$EXTERNALSYM UI_method_set_closer}
-{$EXTERNALSYM UI_method_set_data_duplicator}
-{$EXTERNALSYM UI_method_set_prompt_constructor}
-{$EXTERNALSYM UI_method_set_ex_data}
-{$EXTERNALSYM UI_method_get_opener}
-{$EXTERNALSYM UI_method_get_writer}
-{$EXTERNALSYM UI_method_get_flusher}
-{$EXTERNALSYM UI_method_get_reader}
-{$EXTERNALSYM UI_method_get_closer}
-{$EXTERNALSYM UI_method_get_prompt_constructor}
-{$EXTERNALSYM UI_method_get_data_duplicator}
-{$EXTERNALSYM UI_method_get_data_destructor}
-{$EXTERNALSYM UI_method_get_ex_data}
-{$EXTERNALSYM UI_get_string_type}
-{$EXTERNALSYM UI_get_input_flags}
-{$EXTERNALSYM UI_get0_output_string}
-{$EXTERNALSYM UI_get0_action_string}
-{$EXTERNALSYM UI_get0_result_string}
-{$EXTERNALSYM UI_get_result_string_length}
-{$EXTERNALSYM UI_get0_test_string}
-{$EXTERNALSYM UI_get_result_minsize}
-{$EXTERNALSYM UI_get_result_maxsize}
-{$EXTERNALSYM UI_set_result}
-{$EXTERNALSYM UI_set_result_ex}
-{$EXTERNALSYM UI_UTIL_read_pw_string}
-{$EXTERNALSYM UI_UTIL_read_pw}
-{$EXTERNALSYM UI_UTIL_wrap_read_pem_callback}
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 
 var
+  {$EXTERNALSYM UI_new}
   UI_new: function: PUI;
 cdecl = nil;
+  {$EXTERNALSYM UI_new_method}
 UI_new_method:
 function(const method: PUI_Method): PUI;
 cdecl = nil;
+  {$EXTERNALSYM UI_free}
 UI_free:
 procedure(ui: PUI);
 cdecl = nil;
@@ -250,46 +209,37 @@ cdecl = nil;
   * On success, the all return an index of the added information.  That index
   * is useful when retrieving results with UI_get0_result(). *)
 
+  {$EXTERNALSYM UI_add_input_string}
 UI_add_input_string:
 function(ui: PUI; const prompt: PIdAnsiChar; flags: TIdC_INT;
-  result_buf: PIdAnsiChar; minsize: TIdC_INT; maxsize: TIdC_INT): TIdC_INT;
-cdecl = nil;
-UI_dup_input_string:
-function(ui: PUI; const prompt: PIdAnsiChar; flags: TIdC_INT;
-  result_buf: PIdAnsiChar; minsize: TIdC_INT; maxsize: TIdC_INT): TIdC_INT;
-cdecl = nil;
-UI_add_verify_string:
-function(ui: PUI; const prompt: PIdAnsiChar; flags: TIdC_INT;
+  result_buf: PIdAnsiChar; minsize: TIdC_INT; maxsize: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM UI_dup_input_string}
+UI_dup_input_string: function(ui: PUI; const prompt: PIdAnsiChar; flags: TIdC_INT;
+  result_buf: PIdAnsiChar; minsize: TIdC_INT; maxsize: TIdC_INT): TIdC_INT;   cdecl = nil;
+  {$EXTERNALSYM UI_add_verify_string}
+UI_add_verify_string: function(ui: PUI; const prompt: PIdAnsiChar; flags: TIdC_INT;
   result_buf: PIdAnsiChar; minsize: TIdC_INT; maxsize: TIdC_INT;
-  const test_buf: PIdAnsiChar): TIdC_INT;
-cdecl = nil;
-UI_dup_verify_string:
-function(ui: PUI; const prompt: PIdAnsiChar; flags: TIdC_INT;
+  const test_buf: PIdAnsiChar): TIdC_INT; cdecl = nil;
+{$EXTERNALSYM UI_dup_verify_string}
+UI_dup_verify_string: function(ui: PUI; const prompt: PIdAnsiChar; flags: TIdC_INT;
   result_buf: PIdAnsiChar; minsize: TIdC_INT; maxsize: TIdC_INT;
-  const test_buf: PIdAnsiChar): TIdC_INT;
-cdecl = nil;
-UI_add_input_boolean:
-function(ui: PUI; const prompt: PIdAnsiChar; const action_desc: PIdAnsiChar;
+  const test_buf: PIdAnsiChar): TIdC_INT; cdecl = nil;
+{$EXTERNALSYM UI_add_input_boolean}
+UI_add_input_boolean: function(ui: PUI; const prompt: PIdAnsiChar; const action_desc: PIdAnsiChar;
   const ok_chars: PIdAnsiChar; const cancel_chars: PIdAnsiChar; flags: TIdC_INT;
-  result_buf: PIdAnsiChar): TIdC_INT;
-cdecl = nil;
-UI_dup_input_boolean:
-function(ui: PUI; const prompt: PIdAnsiChar; const action_desc: PIdAnsiChar;
+  result_buf: PIdAnsiChar): TIdC_INT; cdecl = nil;
+{$EXTERNALSYM  UI_dup_input_boolean}
+UI_dup_input_boolean: function(ui: PUI; const prompt: PIdAnsiChar; const action_desc: PIdAnsiChar;
   const ok_chars: PIdAnsiChar; const cancel_chars: PIdAnsiChar; flags: TIdC_INT;
-  result_buf: PIdAnsiChar): TIdC_INT;
-cdecl = nil;
-UI_add_info_string:
-function(ui: PUI; const _text: PIdAnsiChar): TIdC_INT;
-cdecl = nil;
-UI_dup_info_string:
-function(ui: PUI; const _text: PIdAnsiChar): TIdC_INT;
-cdecl = nil;
-UI_add_error_string:
-function(ui: PUI; const _text: PIdAnsiChar): TIdC_INT;
-cdecl = nil;
-UI_dup_error_string:
-function(ui: PUI; const _text: PIdAnsiChar): TIdC_INT;
-cdecl = nil;
+  result_buf: PIdAnsiChar): TIdC_INT; cdecl = nil;
+{$EXTERNALSYM  UI_add_info_string}
+UI_add_info_string: function(ui: PUI; const _text: PIdAnsiChar): TIdC_INT; cdecl = nil;
+{$EXTERNALSYM UI_dup_info_string}
+UI_dup_info_string: function(ui: PUI; const _text: PIdAnsiChar): TIdC_INT; cdecl = nil;
+{$EXTERNALSYM UI_add_error_string}
+UI_add_error_string:  function(ui: PUI; const _text: PIdAnsiChar): TIdC_INT; cdecl = nil;
+{$EXTERNALSYM UI_dup_error_string}
+UI_dup_error_string: function(ui: PUI; const _text: PIdAnsiChar): TIdC_INT;  cdecl = nil;
 
 (*
   * The following function helps construct a prompt.  object_desc is a
@@ -309,10 +259,8 @@ cdecl = nil;
   *
   *       "Enter pass phrase for foo.key:"
 *)
-UI_construct_prompt:
-function(ui_method: PUI; const object_desc: PIdAnsiChar;
-  const object_name: PIdAnsiChar): PIdAnsiChar;
-cdecl = nil;
+UI_construct_prompt: function(ui_method: PUI; const object_desc: PIdAnsiChar;
+  const object_name: PIdAnsiChar): PIdAnsiChar; cdecl = nil;
 
 (*
   * The following function is used to store a pointer to user-specific data.
@@ -325,44 +273,37 @@ cdecl = nil;
   * Note that the UI_TaurusTLS() method completely ignores the user data. Other
   * methods may not, however.
 *)
-UI_add_user_data:
-function(ui: PUI; user_data: Pointer): Pointer;
-cdecl = nil;
+  {$EXTERNALSYM UI_add_user_data}
+  UI_add_user_data: function(ui: PUI; user_data: Pointer): Pointer; cdecl = nil;
 (*
   * Alternatively, this function is used to duplicate the user data.
   * This uses the duplicator method function.  The destroy function will
   * be used to free the user data in this case.
 *)
-UI_dup_user_data:
-function(ui: PUI; user_data: Pointer): TIdC_INT;
-cdecl = nil;
+  {$EXTERNALSYM  UI_dup_user_data}
+UI_dup_user_data: function(ui: PUI; user_data: Pointer): TIdC_INT; cdecl = nil;
 (* We need a user data retrieving function as well. *)
-UI_get0_user_data:
-function(ui: PUI): Pointer;
-cdecl = nil;
+  {$EXTERNALSYM UI_get0_user_data}
+UI_get0_user_data: function(ui: PUI): Pointer; cdecl = nil;
 
 (* Return the result associated with a prompt given with the index i. *)
-UI_get0_result:
-function(ui: PUI; i: TIdC_INT): PIdAnsiChar;
-cdecl = nil;
-UI_get_result_length:
-function(ui: PUI; i: TIdC_INT): TIdC_INT;
-cdecl = nil;
+  {$EXTERNALSYM UI_get0_result}
+UI_get0_result: function(ui: PUI; i: TIdC_INT): PIdAnsiChar; cdecl = nil;
+  {$EXTERNALSYM UI_get_result_length}
+UI_get_result_length: function(ui: PUI; i: TIdC_INT): TIdC_INT; cdecl = nil;
 
 (* When all strings have been added, process the whole thing. *)
-UI_process:
-function(ui: PUI): TIdC_INT;
-cdecl = nil;
+  {$EXTERNALSYM  UI_process}
+UI_process:  function(ui: PUI): TIdC_INT; cdecl = nil;
 
 (*
   * Give a user interface parameterised control commands.  This can be used to
   * send down an integer, a data pointer or a function pointer, as well as be
   * used to get information from a UI.
 *)
-UI_ctrl:
-function(ui: PUI; cmd: TIdC_INT; i: TIdC_LONG; p: Pointer; f: UI_ctrl_f)
-  : TIdC_INT;
-cdecl = nil;
+  {$EXTERNALSYM UI_ctrl}
+UI_ctrl: function(ui: PUI; cmd: TIdC_INT; i: TIdC_LONG; p: Pointer; f: UI_ctrl_f)
+  : TIdC_INT; cdecl = nil;
 
 (* Some methods may use extra data *)
 // # define UI_set_app_data(s,arg)         UI_set_ex_data(s,0,arg)
@@ -370,39 +311,32 @@ cdecl = nil;
 
 // # define UI_get_ex_new_index(l, p, newf, dupf, freef) \
 // CRYPTO_get_ex_new_index(CRYPTO_EX_INDEX_UI, l, p, newf, dupf, freef)
-UI_set_ex_data:
-function(r: PUI; idx: TIdC_INT; arg: Pointer): TIdC_INT;
-cdecl = nil;
-UI_get_ex_data:
-function(r: PUI; idx: TIdC_INT): Pointer;
-cdecl = nil;
+{$EXTERNALSYM UI_set_ex_data}
+UI_set_ex_data: function(r: PUI; idx: TIdC_INT; arg: Pointer): TIdC_INT;  cdecl = nil;
+{$EXTERNALSYM UI_get_ex_data}
+UI_get_ex_data: function(r: PUI; idx: TIdC_INT): Pointer; cdecl = nil;
 
 (* Use specific methods instead of the built-in one *)
-UI_set_default_method:
-procedure(const meth: PUI_Method);
-cdecl = nil;
-UI_get_default_method:
-function: PUI_Method;
-cdecl = nil;
-UI_get_method:
-function(ui: PUI): PUI_Method;
-cdecl = nil;
-UI_set_method:
-function(ui: PUI; const meth: PUI_Method): PUI_Method;
+{$EXTERNALSYM  UI_set_default_method}
+UI_set_default_method: procedure(const meth: PUI_Method); cdecl = nil;
+{$EXTERNALSYM  UI_get_default_method}
+UI_get_default_method: function: PUI_Method; cdecl = nil;
+{$EXTERNALSYM  UI_get_method}
+UI_get_method: function(ui: PUI): PUI_Method; cdecl = nil;
+{$EXTERNALSYM UI_set_method}
+UI_set_method: function(ui: PUI; const meth: PUI_Method): PUI_Method;
 cdecl = nil;
 
 (* The method with all the built-in thingies *)
-UI_TaurusTLS:
-function: PUI_Method;
-cdecl = nil;
+{$EXTERNALSYM UI_TaurusTLS}
+UI_TaurusTLS: function: PUI_Method; cdecl = nil;
 
 (*
   * NULL method.  Literally does nothing, but may serve as a placeholder
   * to avoid internal default.
 *)
-UI_null:
-function: PUI_Method;
-cdecl = nil;
+  {$EXTERNALSYM UI_null}
+UI_null:  function: PUI_Method; cdecl = nil;
 
 (* ---------- For method writers ---------- *)
 (*
@@ -447,67 +381,48 @@ cdecl = nil;
   the reader take a UI_STRING.
 *)
 
-UI_create_method:
-function(const name: PIdAnsiChar): PUI_Method;
-cdecl = nil;
-UI_destroy_method:
-procedure(ui_method: PUI_Method);
-cdecl = nil;
+  {$EXTERNALSYM UI_create_method}
+UI_create_method: function(const name: PIdAnsiChar): PUI_Method;  cdecl = nil;
+  {$EXTERNALSYM UI_destroy_method}
+UI_destroy_method: procedure(ui_method: PUI_Method); cdecl = nil;
 
-UI_method_set_opener:
-function(method: PUI_Method; opener: UI_method_opener_cb): TIdC_INT;
-cdecl = nil;
-UI_method_set_writer:
-function(method: PUI_Method; writer: UI_method_writer_cb): TIdC_INT;
-cdecl = nil;
-UI_method_set_flusher:
-function(method: PUI_Method; flusher: UI_method_flusher_cb): TIdC_INT;
-cdecl = nil;
-UI_method_set_reader:
-function(method: PUI_Method; reader: UI_method_reader_cb): TIdC_INT;
-cdecl = nil;
-UI_method_set_closer:
-function(method: PUI_Method; closer: UI_method_closer_cb): TIdC_INT;
-cdecl = nil;
-UI_method_set_data_duplicator:
-function(method: PUI_Method; duplicator: UI_method_data_duplicator_cb;
-  destructor_: UI_method_data_destructor_cb): TIdC_INT;
-cdecl = nil;
-UI_method_set_prompt_constructor:
-function(method: PUI_Method;
-  prompt_constructor: UI_method_prompt_constructor_cb): TIdC_INT;
-cdecl = nil;
-UI_method_set_ex_data:
-function(method: PUI_Method; idx: TIdC_INT; data: Pointer): TIdC_INT;
-cdecl = nil;
+  {$EXTERNALSYM UI_method_set_opener}
+UI_method_set_opener: function(method: PUI_Method; opener: UI_method_opener_cb): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM UI_method_set_writer}
+UI_method_set_writer: function(method: PUI_Method; writer: UI_method_writer_cb): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM UI_method_set_flusher}
+UI_method_set_flusher: function(method: PUI_Method; flusher: UI_method_flusher_cb): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM UI_method_set_reader}
+UI_method_set_reader: function(method: PUI_Method; reader: UI_method_reader_cb): TIdC_INT;  cdecl = nil;
+  {$EXTERNALSYM UI_method_set_closer}
+UI_method_set_closer: function(method: PUI_Method; closer: UI_method_closer_cb): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM UI_method_set_data_duplicator}
+UI_method_set_data_duplicator: function(method: PUI_Method; duplicator: UI_method_data_duplicator_cb;
+  destructor_: UI_method_data_destructor_cb): TIdC_INT; cdecl = nil;
+{$EXTERNALSYM UI_method_set_prompt_constructor}
+UI_method_set_prompt_constructor: function(method: PUI_Method;
+  prompt_constructor: UI_method_prompt_constructor_cb): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM UI_method_set_ex_data}
+UI_method_set_ex_data: function(method: PUI_Method; idx: TIdC_INT; data: Pointer): TIdC_INT; cdecl = nil;
 
-UI_method_get_opener:
-function(const method: PUI_Method): UI_method_opener_cb;
-cdecl = nil;
-UI_method_get_writer:
-function(const method: PUI_Method): UI_method_writer_cb;
-cdecl = nil;
-UI_method_get_flusher:
-function(const method: PUI_Method): UI_method_flusher_cb;
-cdecl = nil;
-UI_method_get_reader:
-function(const method: PUI_Method): UI_method_reader_cb;
-cdecl = nil;
-UI_method_get_closer:
-function(const method: PUI_Method): UI_method_closer_cb;
-cdecl = nil;
-UI_method_get_prompt_constructor:
-function(const method: PUI_Method): UI_method_prompt_constructor_cb;
-cdecl = nil;
-UI_method_get_data_duplicator:
-function(const method: PUI_Method): UI_method_data_duplicator_cb;
-cdecl = nil;
-UI_method_get_data_destructor:
-function(const method: PUI_Method): UI_method_data_destructor_cb;
-cdecl = nil;
-UI_method_get_ex_data:
-function(const method: PUI_Method; idx: TIdC_INT): Pointer;
-cdecl = nil;
+  {$EXTERNALSYM UI_method_get_opener}
+UI_method_get_opener: function(const method: PUI_Method): UI_method_opener_cb; cdecl = nil;
+  {$EXTERNALSYM UI_method_get_writer}
+UI_method_get_writer: function(const method: PUI_Method): UI_method_writer_cb; cdecl = nil;
+  {$EXTERNALSYM UI_method_get_flusher}
+UI_method_get_flusher: function(const method: PUI_Method): UI_method_flusher_cb;  cdecl = nil;
+  {$EXTERNALSYM UI_method_get_reader}
+UI_method_get_reader:  function(const method: PUI_Method): UI_method_reader_cb; cdecl = nil;
+  {$EXTERNALSYM UI_method_get_closer}
+UI_method_get_closer:  function(const method: PUI_Method): UI_method_closer_cb; cdecl = nil;
+  {$EXTERNALSYM UI_method_get_prompt_constructor}
+UI_method_get_prompt_constructor: function(const method: PUI_Method): UI_method_prompt_constructor_cb; cdecl = nil;
+  {$EXTERNALSYM UI_method_get_data_duplicator}
+UI_method_get_data_duplicator: function(const method: PUI_Method): UI_method_data_duplicator_cb; cdecl = nil;
+  {$EXTERNALSYM UI_method_get_data_destructor}
+UI_method_get_data_destructor:  function(const method: PUI_Method): UI_method_data_destructor_cb; cdecl = nil;
+  {$EXTERNALSYM UI_method_get_ex_data}
+UI_method_get_ex_data:  function(const method: PUI_Method; idx: TIdC_INT): Pointer; cdecl = nil;
 
 (*
   * The following functions are helpers for method writers to access relevant
@@ -515,71 +430,61 @@ cdecl = nil;
 *)
 
 (* Return type of the UI_STRING *)
-UI_get_string_type:
-function(uis: PUI_STRING): UI_string_types;
-cdecl = nil;
+  {$EXTERNALSYM UI_get_string_type}
+UI_get_string_type: function(uis: PUI_STRING): UI_string_types; cdecl = nil;
 (* Return input flags of the UI_STRING *)
-UI_get_input_flags:
-function(uis: PUI_STRING): TIdC_INT;
-cdecl = nil;
+  {$EXTERNALSYM UI_get_input_flags}
+UI_get_input_flags: function(uis: PUI_STRING): TIdC_INT; cdecl = nil;
 (* Return the actual string to output (the prompt, info or error) *)
-UI_get0_output_string:
-function(uis: PUI_STRING): PIdAnsiChar;
-cdecl = nil;
+  {$EXTERNALSYM UI_get0_output_string}
+UI_get0_output_string: function(uis: PUI_STRING): PIdAnsiChar; cdecl = nil;
 (*
   * Return the optional action string to output (the boolean prompt
   * instruction)
 *)
-UI_get0_action_string:
-function(uis: PUI_STRING): PIdAnsiChar;
-cdecl = nil;
+  {$EXTERNALSYM UI_get0_action_string}
+UI_get0_action_string: function(uis: PUI_STRING): PIdAnsiChar; cdecl = nil;
 (* Return the result of a prompt *)
-UI_get0_result_string:
-function(uis: PUI_STRING): PIdAnsiChar;
-cdecl = nil;
-UI_get_result_string_length:
-function(uis: PUI_STRING): TIdC_INT;
-cdecl = nil;
+  {$EXTERNALSYM UI_get0_result_string}
+UI_get0_result_string: function(uis: PUI_STRING): PIdAnsiChar; cdecl = nil;
+  {$EXTERNALSYM UI_get_result_string_length}
+UI_get_result_string_length: function(uis: PUI_STRING): TIdC_INT; cdecl = nil;
 (*
   * Return the string to test the result against.  Only useful with verifies.
 *)
-UI_get0_test_string:
-function(uis: PUI_STRING): PIdAnsiChar;
-cdecl = nil;
+  {$EXTERNALSYM UI_get0_test_string}
+UI_get0_test_string: function(uis: PUI_STRING): PIdAnsiChar;  cdecl = nil;
 (* Return the required minimum size of the result *)
-UI_get_result_minsize:
-function(uis: PUI_STRING): TIdC_INT;
-cdecl = nil;
+  {$EXTERNALSYM UI_get_result_minsize}
+UI_get_result_minsize: function(uis: PUI_STRING): TIdC_INT; cdecl = nil;
 (* Return the required maximum size of the result *)
-UI_get_result_maxsize:
-function(uis: PUI_STRING): TIdC_INT;
-cdecl = nil;
+  {$EXTERNALSYM UI_get_result_maxsize}
+UI_get_result_maxsize: function(uis: PUI_STRING): TIdC_INT; cdecl = nil;
 (* Set the result of a UI_STRING. *)
-UI_set_result:
-function(ui: PUI; uis: PUI_STRING; const result: PIdAnsiChar): TIdC_INT;
-cdecl = nil;
-UI_set_result_ex:
-function(ui: PUI; uis: PUI_STRING; const result: PIdAnsiChar; len: TIdC_INT)
-  : TIdC_INT;
-cdecl = nil;
+  {$EXTERNALSYM UI_set_result}
+UI_set_result:  function(ui: PUI; uis: PUI_STRING; const result: PIdAnsiChar): TIdC_INT;  cdecl = nil;
+  {$EXTERNALSYM UI_set_result_ex}
+UI_set_result_ex: function(ui: PUI; uis: PUI_STRING; const result: PIdAnsiChar; len: TIdC_INT)  : TIdC_INT;  cdecl = nil;
 
 (* A couple of popular utility functions *)
-UI_UTIL_read_pw_string:
-function(buf: PIdAnsiChar; _length: TIdC_INT; const prompt: PIdAnsiChar;
-  verify: TIdC_INT): TIdC_INT;
-cdecl = nil;
-UI_UTIL_read_pw:
-function(buf: PIdAnsiChar; buff: PIdAnsiChar; size: TIdC_INT;
-  const prompt: PIdAnsiChar; verify: TIdC_INT): TIdC_INT;
-cdecl = nil;
-UI_UTIL_wrap_read_pem_callback:
-function(cb: pem_password_cb; rwflag: TIdC_INT): PUI_Method;
-cdecl = nil;
+  {$EXTERNALSYM UI_UTIL_read_pw_string}
+  UI_UTIL_read_pw_string: function(buf: PIdAnsiChar; _length: TIdC_INT; const prompt: PIdAnsiChar;
+    verify: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM UI_UTIL_read_pw}
+  UI_UTIL_read_pw:  function(buf: PIdAnsiChar; buff: PIdAnsiChar; size: TIdC_INT;
+    const prompt: PIdAnsiChar; verify: TIdC_INT): TIdC_INT;
+  cdecl = nil;
+  {$EXTERNALSYM UI_UTIL_wrap_read_pem_callback}
+UI_UTIL_wrap_read_pem_callback: function(cb: pem_password_cb; rwflag: TIdC_INT): PUI_Method;
+  cdecl = nil;
 
 {$ELSE}
+  {$EXTERNALSYM UI_new}
 function UI_new: PUI cdecl; external CLibCrypto;
+  {$EXTERNALSYM UI_new_method}
 function UI_new_method(const method: PUI_Method): PUI cdecl;
   external CLibCrypto;
+  {$EXTERNALSYM UI_free}
 procedure UI_free(ui: PUI)cdecl; external CLibCrypto;
 
 (*
@@ -626,34 +531,44 @@ procedure UI_free(ui: PUI)cdecl; external CLibCrypto;
   * On success, the all return an index of the added information.  That index
   * is useful when retrieving results with UI_get0_result(). *)
 
+  {$EXTERNALSYM UI_add_input_string}
 function UI_add_input_string(ui: PUI; const prompt: PIdAnsiChar;
   flags: TIdC_INT; result_buf: PIdAnsiChar; minsize: TIdC_INT;
   maxsize: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM UI_dup_input_string}
 function UI_dup_input_string(ui: PUI; const prompt: PIdAnsiChar;
   flags: TIdC_INT; result_buf: PIdAnsiChar; minsize: TIdC_INT;
   maxsize: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM UI_add_verify_string}
 function UI_add_verify_string(ui: PUI; const prompt: PIdAnsiChar;
   flags: TIdC_INT; result_buf: PIdAnsiChar; minsize: TIdC_INT;
   maxsize: TIdC_INT; const test_buf: PIdAnsiChar): TIdC_INT cdecl;
   external CLibCrypto;
+  {$EXTERNALSYM UI_dup_verify_string}
 function UI_dup_verify_string(ui: PUI; const prompt: PIdAnsiChar;
   flags: TIdC_INT; result_buf: PIdAnsiChar; minsize: TIdC_INT;
   maxsize: TIdC_INT; const test_buf: PIdAnsiChar): TIdC_INT cdecl;
   external CLibCrypto;
+  {$EXTERNALSYM UI_add_input_boolean}
 function UI_add_input_boolean(ui: PUI; const prompt: PIdAnsiChar;
   const action_desc: PIdAnsiChar; const ok_chars: PIdAnsiChar;
   const cancel_chars: PIdAnsiChar; flags: TIdC_INT; result_buf: PIdAnsiChar)
   : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM UI_dup_input_boolean}
 function UI_dup_input_boolean(ui: PUI; const prompt: PIdAnsiChar;
   const action_desc: PIdAnsiChar; const ok_chars: PIdAnsiChar;
   const cancel_chars: PIdAnsiChar; flags: TIdC_INT; result_buf: PIdAnsiChar)
   : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM UI_add_info_string}
 function UI_add_info_string(ui: PUI; const _text: PIdAnsiChar): TIdC_INT cdecl;
   external CLibCrypto;
+  {$EXTERNALSYM UI_dup_info_string}
 function UI_dup_info_string(ui: PUI; const _text: PIdAnsiChar): TIdC_INT cdecl;
   external CLibCrypto;
+  {$EXTERNALSYM UI_add_error_string}
 function UI_add_error_string(ui: PUI; const _text: PIdAnsiChar): TIdC_INT cdecl;
   external CLibCrypto;
+  {$EXTERNALSYM UI_dup_error_string}
 function UI_dup_error_string(ui: PUI; const _text: PIdAnsiChar): TIdC_INT cdecl;
   external CLibCrypto;
 
@@ -675,6 +590,7 @@ function UI_dup_error_string(ui: PUI; const _text: PIdAnsiChar): TIdC_INT cdecl;
   *
   *       "Enter pass phrase for foo.key:"
 *)
+  {$EXTERNALSYM UI_construct_prompt}
 function UI_construct_prompt(ui_method: PUI; const object_desc: PIdAnsiChar;
   const object_name: PIdAnsiChar): PIdAnsiChar cdecl; external CLibCrypto;
 
@@ -689,6 +605,7 @@ function UI_construct_prompt(ui_method: PUI; const object_desc: PIdAnsiChar;
   * Note that the UI_TaurusTLS() method completely ignores the user data. Other
   * methods may not, however.
 *)
+  {$EXTERNALSYM UI_add_user_data}
 function UI_add_user_data(ui: PUI; user_data: Pointer): Pointer cdecl;
   external CLibCrypto;
 (*
@@ -696,18 +613,23 @@ function UI_add_user_data(ui: PUI; user_data: Pointer): Pointer cdecl;
   * This uses the duplicator method function.  The destroy function will
   * be used to free the user data in this case.
 *)
+  {$EXTERNALSYM UI_dup_user_data}
 function UI_dup_user_data(ui: PUI; user_data: Pointer): TIdC_INT cdecl;
   external CLibCrypto;
 (* We need a user data retrieving function as well. *)
+  {$EXTERNALSYM UI_get0_user_data}
 function UI_get0_user_data(ui: PUI): Pointer cdecl; external CLibCrypto;
 
 (* Return the result associated with a prompt given with the index i. *)
+  {$EXTERNALSYM UI_get0_result}
 function UI_get0_result(ui: PUI; i: TIdC_INT): PIdAnsiChar cdecl;
   external CLibCrypto;
+  {$EXTERNALSYM UI_get_result_length}
 function UI_get_result_length(ui: PUI; i: TIdC_INT): TIdC_INT cdecl;
   external CLibCrypto;
 
 (* When all strings have been added, process the whole thing. *)
+  {$EXTERNALSYM UI_process}
 function UI_process(ui: PUI): TIdC_INT cdecl; external CLibCrypto;
 
 (*
@@ -715,6 +637,7 @@ function UI_process(ui: PUI): TIdC_INT cdecl; external CLibCrypto;
   * send down an integer, a data pointer or a function pointer, as well as be
   * used to get information from a UI.
 *)
+  {$EXTERNALSYM UI_ctrl}
 function UI_ctrl(ui: PUI; cmd: TIdC_INT; i: TIdC_LONG; p: Pointer; f: UI_ctrl_f)
   : TIdC_INT cdecl; external CLibCrypto;
 
@@ -724,26 +647,34 @@ function UI_ctrl(ui: PUI; cmd: TIdC_INT; i: TIdC_LONG; p: Pointer; f: UI_ctrl_f)
 
 // # define UI_get_ex_new_index(l, p, newf, dupf, freef) \
 // CRYPTO_get_ex_new_index(CRYPTO_EX_INDEX_UI, l, p, newf, dupf, freef)
+  {$EXTERNALSYM UI_set_ex_data}
 function UI_set_ex_data(r: PUI; idx: TIdC_INT; arg: Pointer): TIdC_INT cdecl;
   external CLibCrypto;
+  {$EXTERNALSYM UI_get_ex_data}
 function UI_get_ex_data(r: PUI; idx: TIdC_INT): Pointer cdecl;
   external CLibCrypto;
 
 (* Use specific methods instead of the built-in one *)
+  {$EXTERNALSYM UI_set_default_method}
 procedure UI_set_default_method(const meth: PUI_Method)cdecl;
   external CLibCrypto;
+  {$EXTERNALSYM UI_get_default_method}
 function UI_get_default_method: PUI_Method cdecl; external CLibCrypto;
+  {$EXTERNALSYM UI_get_method}
 function UI_get_method(ui: PUI): PUI_Method cdecl; external CLibCrypto;
+  {$EXTERNALSYM UI_set_method}
 function UI_set_method(ui: PUI; const meth: PUI_Method): PUI_Method cdecl;
   external CLibCrypto;
 
 (* The method with all the built-in thingies *)
+  {$EXTERNALSYM UI_TaurusTLS}
 function UI_TaurusTLS: PUI_Method cdecl; external CLibCrypto;
 
 (*
   * NULL method.  Literally does nothing, but may serve as a placeholder
   * to avoid internal default.
 *)
+  {$EXTERNALSYM UI_null}
 function UI_null: PUI_Method cdecl; external CLibCrypto;
 
 (* ---------- For method writers ---------- *)
@@ -789,46 +720,65 @@ function UI_null: PUI_Method cdecl; external CLibCrypto;
   the reader take a UI_STRING.
 *)
 
+  {$EXTERNALSYM UI_create_method}
 function UI_create_method(const name: PIdAnsiChar): PUI_Method cdecl;
   external CLibCrypto;
+  {$EXTERNALSYM UI_destroy_method}
 procedure UI_destroy_method(ui_method: PUI_Method)cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM UI_method_set_opener}
 function UI_method_set_opener(method: PUI_Method; opener: UI_method_opener_cb)
   : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM UI_method_set_writer}
 function UI_method_set_writer(method: PUI_Method; writer: UI_method_writer_cb)
   : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM UI_method_set_flusher}
 function UI_method_set_flusher(method: PUI_Method;
   flusher: UI_method_flusher_cb): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM UI_method_set_reader}
 function UI_method_set_reader(method: PUI_Method; reader: UI_method_reader_cb)
   : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM UI_method_set_closer}
 function UI_method_set_closer(method: PUI_Method; closer: UI_method_closer_cb)
   : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM UI_method_set_data_duplicator}
 function UI_method_set_data_duplicator(method: PUI_Method;
   duplicator: UI_method_data_duplicator_cb;
   destructor_: UI_method_data_destructor_cb): TIdC_INT cdecl;
   external CLibCrypto;
+  {$EXTERNALSYM UI_method_set_prompt_constructor}
 function UI_method_set_prompt_constructor(method: PUI_Method;
   prompt_constructor: UI_method_prompt_constructor_cb): TIdC_INT cdecl;
   external CLibCrypto;
+  {$EXTERNALSYM UI_method_set_ex_data}
 function UI_method_set_ex_data(method: PUI_Method; idx: TIdC_INT; data: Pointer)
   : TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM UI_method_get_opener}
 function UI_method_get_opener(const method: PUI_Method)
   : UI_method_opener_cb cdecl; external CLibCrypto;
+  {$EXTERNALSYM UI_method_get_writer}
 function UI_method_get_writer(const method: PUI_Method)
   : UI_method_writer_cb cdecl; external CLibCrypto;
+  {$EXTERNALSYM UI_method_get_flusher}
 function UI_method_get_flusher(const method: PUI_Method)
   : UI_method_flusher_cb cdecl; external CLibCrypto;
+  {$EXTERNALSYM UI_method_get_reader}
 function UI_method_get_reader(const method: PUI_Method)
   : UI_method_reader_cb cdecl; external CLibCrypto;
+  {$EXTERNALSYM UI_method_get_closer}
 function UI_method_get_closer(const method: PUI_Method)
   : UI_method_closer_cb cdecl; external CLibCrypto;
+  {$EXTERNALSYM UI_method_get_prompt_constructor}
 function UI_method_get_prompt_constructor(const method: PUI_Method)
   : UI_method_prompt_constructor_cb cdecl; external CLibCrypto;
+  {$EXTERNALSYM UI_method_get_data_duplicator}
 function UI_method_get_data_duplicator(const method: PUI_Method)
   : UI_method_data_duplicator_cb cdecl; external CLibCrypto;
+  {$EXTERNALSYM UI_method_get_data_destructor}
 function UI_method_get_data_destructor(const method: PUI_Method)
   : UI_method_data_destructor_cb cdecl; external CLibCrypto;
+  {$EXTERNALSYM UI_method_get_ex_data}
 function UI_method_get_ex_data(const method: PUI_Method; idx: TIdC_INT)
   : Pointer cdecl; external CLibCrypto;
 
@@ -838,53 +788,68 @@ function UI_method_get_ex_data(const method: PUI_Method; idx: TIdC_INT)
 *)
 
 (* Return type of the UI_STRING *)
+  {$EXTERNALSYM UI_get_string_type}
 function UI_get_string_type(uis: PUI_STRING): UI_string_types cdecl;
   external CLibCrypto;
 (* Return input flags of the UI_STRING *)
+  {$EXTERNALSYM UI_get_input_flags}
 function UI_get_input_flags(uis: PUI_STRING): TIdC_INT cdecl;
   external CLibCrypto;
 (* Return the actual string to output (the prompt, info or error) *)
+  {$EXTERNALSYM UI_get0_output_string}
 function UI_get0_output_string(uis: PUI_STRING): PIdAnsiChar cdecl;
   external CLibCrypto;
 (*
   * Return the optional action string to output (the boolean prompt
   * instruction)
 *)
+  {$EXTERNALSYM UI_get0_action_string}
 function UI_get0_action_string(uis: PUI_STRING): PIdAnsiChar cdecl;
   external CLibCrypto;
 (* Return the result of a prompt *)
+  {$EXTERNALSYM UI_get0_result_string}
 function UI_get0_result_string(uis: PUI_STRING): PIdAnsiChar cdecl;
   external CLibCrypto;
+  {$EXTERNALSYM UI_get_result_string_length}
 function UI_get_result_string_length(uis: PUI_STRING): TIdC_INT cdecl;
   external CLibCrypto;
 (*
   * Return the string to test the result against.  Only useful with verifies.
 *)
+  {$EXTERNALSYM UI_get0_test_string}
 function UI_get0_test_string(uis: PUI_STRING): PIdAnsiChar cdecl;
   external CLibCrypto;
 (* Return the required minimum size of the result *)
+  {$EXTERNALSYM UI_get_result_minsize}
 function UI_get_result_minsize(uis: PUI_STRING): TIdC_INT cdecl;
   external CLibCrypto;
 (* Return the required maximum size of the result *)
+  {$EXTERNALSYM UI_get_result_maxsize}
 function UI_get_result_maxsize(uis: PUI_STRING): TIdC_INT cdecl;
   external CLibCrypto;
 (* Set the result of a UI_STRING. *)
+  {$EXTERNALSYM UI_set_result}
 function UI_set_result(ui: PUI; uis: PUI_STRING; const result: PIdAnsiChar)
   : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM UI_set_result_ex}
 function UI_set_result_ex(ui: PUI; uis: PUI_STRING; const result: PIdAnsiChar;
   len: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
 
 (* A couple of popular utility functions *)
+  {$EXTERNALSYM UI_UTIL_read_pw_string}
 function UI_UTIL_read_pw_string(buf: PIdAnsiChar; _length: TIdC_INT;
   const prompt: PIdAnsiChar; verify: TIdC_INT): TIdC_INT cdecl;
   external CLibCrypto;
+  {$EXTERNALSYM UI_UTIL_read_pw}
 function UI_UTIL_read_pw(buf: PIdAnsiChar; buff: PIdAnsiChar; size: TIdC_INT;
   const prompt: PIdAnsiChar; verify: TIdC_INT): TIdC_INT cdecl;
   external CLibCrypto;
+  {$EXTERNALSYM UI_UTIL_wrap_read_pem_callback}
 function UI_UTIL_wrap_read_pem_callback(cb: pem_password_cb; rwflag: TIdC_INT)
   : PUI_Method cdecl; external CLibCrypto;
 
 {$ENDIF}
+  {$EXTERNALSYM UI_get_ex_new_index}
 function UI_get_ex_new_index(l : TIdC_LONG; p : PUI;
     newf : CRYPTO_EX_new; dupf : CRYPTO_EX_dup; freef : CRYPTO_EX_FREE) : TIdC_INT;
 

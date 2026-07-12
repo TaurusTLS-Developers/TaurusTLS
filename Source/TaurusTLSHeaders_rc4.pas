@@ -103,13 +103,17 @@ uses
     }
 
   type
+  {$EXTERNALSYM PRC4_KEY}
     PRC4_KEY  = ^RC4_KEY;
+  {$EXTERNALSYM RC4_INT}
     RC4_INT = TIdC_UINT;
+  {$EXTERNALSYM rc4_key_st}
     rc4_key_st = record
         x : RC4_INT;
         y : RC4_INT;
         data : array[0..255] of RC4_INT;
       end;
+  {$EXTERNALSYM RC4_KEY}
     RC4_KEY = rc4_key_st;
 
     { The EXTERNALSYM directive is ignored by FPC, however, it is used by Delphi as follows:
@@ -117,24 +121,28 @@ uses
   	  The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header 
 	  files generated for C++. }
 	  
-  {$EXTERNALSYM RC4_options} {allow_nil}
-  {$EXTERNALSYM RC4_set_key} {allow_nil}
-  {$EXTERNALSYM private_RC4_set_key} {allow_nil}
-  {$EXTERNALSYM RC4} {allow_nil}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM RC4_options}
   RC4_options: function : PIdAnsiChar; cdecl = nil; {allow_nil}
+  {$EXTERNALSYM RC4_set_key}
   RC4_set_key: procedure (key:PRC4_KEY; len: TIdC_LONG; const data:Pbyte); cdecl = nil; {allow_nil}
+  {$EXTERNALSYM private_RC4_set_key}
   private_RC4_set_key: procedure (key:PRC4_KEY; len: TIdC_LONG; const data:Pbyte); cdecl = nil; {allow_nil}
+  {$EXTERNALSYM RC4}
   RC4: procedure (key:PRC4_KEY; len: TIdC_SIZET; const indata: Pbyte; outdata: Pbyte); cdecl = nil; {allow_nil}
 
 {$ELSE}
 {interface_body}
 {$IFNDEF OPENSSL_NO_RC4}
+  {$EXTERNALSYM RC4_options}
   function RC4_options: PIdAnsiChar cdecl; external CLibCrypto; 
+  {$EXTERNALSYM RC4_set_key}
   procedure RC4_set_key(key:PRC4_KEY; len: TIdC_LONG; const data:Pbyte) cdecl; external CLibCrypto; 
+  {$EXTERNALSYM private_RC4_set_key}
   procedure private_RC4_set_key(key:PRC4_KEY; len: TIdC_LONG; const data:Pbyte) cdecl; external CLibCrypto; 
+  {$EXTERNALSYM RC4}
   procedure RC4(key:PRC4_KEY; len: TIdC_SIZET; const indata: Pbyte; outdata: Pbyte) cdecl; external CLibCrypto; 
 {$ENDIF}
 

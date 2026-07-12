@@ -39,8 +39,11 @@ uses
 
 //* Opaque */
 type
+  {$EXTERNALSYM CMAC_CTX_st}
   CMAC_CTX_st = record end;
+  {$EXTERNALSYM CMAC_CTX}
   CMAC_CTX = CMAC_CTX_st;
+  {$EXTERNALSYM PCMAC_CTX}
   PCMAC_CTX = ^CMAC_CTX;
 
     { The EXTERNALSYM directive is ignored by FPC, however, it is used by Delphi as follows:
@@ -48,37 +51,46 @@ type
   	  The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header 
 	  files generated for C++. }
 	  
-  {$EXTERNALSYM CMAC_CTX_new}
-  {$EXTERNALSYM CMAC_CTX_cleanup}
-  {$EXTERNALSYM CMAC_CTX_free}
-  {$EXTERNALSYM CMAC_CTX_get0_cipher_ctx}
-  {$EXTERNALSYM CMAC_CTX_copy}
-  {$EXTERNALSYM CMAC_Init}
-  {$EXTERNALSYM CMAC_Update}
-  {$EXTERNALSYM CMAC_Final}
-  {$EXTERNALSYM CMAC_resume}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM CMAC_CTX_new}
   CMAC_CTX_new: function : PCMAC_CTX; cdecl = nil;
+  {$EXTERNALSYM CMAC_CTX_cleanup}
   CMAC_CTX_cleanup: procedure (ctx: PCMAC_CTX); cdecl = nil;
+  {$EXTERNALSYM CMAC_CTX_free}
   CMAC_CTX_free: procedure (ctx: PCMAC_CTX); cdecl = nil;
+  {$EXTERNALSYM CMAC_CTX_get0_cipher_ctx}
   CMAC_CTX_get0_cipher_ctx: function (ctx: PCMAC_CTX): PEVP_CIPHER_CTX; cdecl = nil;
+  {$EXTERNALSYM CMAC_CTX_copy}
   CMAC_CTX_copy: function (out_: PCMAC_CTX; const in_: PCMAC_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMAC_Init}
   CMAC_Init: function (ctx: PCMAC_CTX; const key: Pointer; keylen: TIdC_SIZET; const cipher: PEVP_Cipher; impl: PENGINe): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMAC_Update}
   CMAC_Update: function (ctx: PCMAC_CTX; const data: Pointer; dlen: TIdC_SIZET): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMAC_Final}
   CMAC_Final: function (ctx: PCMAC_CTX; out_: PByte; poutlen: PIdC_SIZET): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMAC_resume}
   CMAC_resume: function (ctx: PCMAC_CTX): TIdC_INT; cdecl = nil;
 
 {$ELSE}
+  {$EXTERNALSYM CMAC_CTX_new}
   function CMAC_CTX_new: PCMAC_CTX cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMAC_CTX_cleanup}
   procedure CMAC_CTX_cleanup(ctx: PCMAC_CTX) cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMAC_CTX_free}
   procedure CMAC_CTX_free(ctx: PCMAC_CTX) cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMAC_CTX_get0_cipher_ctx}
   function CMAC_CTX_get0_cipher_ctx(ctx: PCMAC_CTX): PEVP_CIPHER_CTX cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMAC_CTX_copy}
   function CMAC_CTX_copy(out_: PCMAC_CTX; const in_: PCMAC_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMAC_Init}
   function CMAC_Init(ctx: PCMAC_CTX; const key: Pointer; keylen: TIdC_SIZET; const cipher: PEVP_Cipher; impl: PENGINe): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMAC_Update}
   function CMAC_Update(ctx: PCMAC_CTX; const data: Pointer; dlen: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMAC_Final}
   function CMAC_Final(ctx: PCMAC_CTX; out_: PByte; poutlen: PIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMAC_resume}
   function CMAC_resume(ctx: PCMAC_CTX): TIdC_INT cdecl; external CLibCrypto;
 
 {$ENDIF}

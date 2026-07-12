@@ -42,44 +42,51 @@ uses
   	  The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header 
 	  files generated for C++. }
 	  
-  {$EXTERNALSYM _CONF_new_section}
-  {$EXTERNALSYM _CONF_get_section}
-  {$EXTERNALSYM _CONF_add_string}
-  {$EXTERNALSYM _CONF_get_string}
-  {$EXTERNALSYM _CONF_get_number}
-  {$EXTERNALSYM _CONF_new_data}
-  {$EXTERNALSYM _CONF_free_data}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM _CONF_new_section}
   _CONF_new_section: function (conf: PCONF; const section: PAnsiChar): PCONF_VALUE; cdecl = nil;
   //* Up until TaurusTLS 0.9.5a, this was get_section */
+  {$EXTERNALSYM _CONF_get_section}
   _CONF_get_section: function (const conf: PCONF; const section: PAnsiChar): PCONF_VALUE; cdecl = nil;
   //* Up until TaurusTLS 0.9.5a, this was CONF_get_section */
   //STACK_OF(CONF_VALUE) *_CONF_get_section_values(const CONF *conf,
   //                                               const char *section);
 
+  {$EXTERNALSYM _CONF_add_string}
   _CONF_add_string: function (conf: PCONF; section: PCONF_VALUE; value: PCONF_VALUE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM _CONF_get_string}
   _CONF_get_string: function (const conf: PCONF; const section: PAnsiChar; const name: PAnsiChar): PAnsiChar; cdecl = nil;
+  {$EXTERNALSYM _CONF_get_number}
   _CONF_get_number: function (const conf: PCONF; const section: PAnsiChar; const name: PAnsiChar): TIdC_LONG; cdecl = nil;
 
+  {$EXTERNALSYM _CONF_new_data}
   _CONF_new_data: function (conf: PCONF): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM _CONF_free_data}
   _CONF_free_data: procedure (conf: PCONF); cdecl = nil;
 
 
 {$ELSE}
+  {$EXTERNALSYM _CONF_new_section}
   function _CONF_new_section(conf: PCONF; const section: PIdAnsiChar): PCONF_VALUE cdecl; external CLibCrypto;
   //* Up until TaurusTLS 0.9.5a, this was get_section */
+  {$EXTERNALSYM _CONF_get_section}
   function _CONF_get_section(const conf: PCONF; const section: PIdAnsiChar): PCONF_VALUE cdecl; external CLibCrypto;
   //* Up until TaurusTLS 0.9.5a, this was CONF_get_section */
   //STACK_OF(CONF_VALUE) *_CONF_get_section_values(const CONF *conf,
   //                                               const char *section);
 
+  {$EXTERNALSYM _CONF_add_string}
   function _CONF_add_string(conf: PCONF; section: PCONF_VALUE; value: PCONF_VALUE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM _CONF_get_string}
   function _CONF_get_string(const conf: PCONF; const section: PIdAnsiChar; const name: PIdAnsiChar): PIdAnsiChar cdecl; external CLibCrypto;
+  {$EXTERNALSYM _CONF_get_number}
   function _CONF_get_number(const conf: PCONF; const section: PIdAnsiChar; const name: PIdAnsiChar): TIdC_LONG cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM _CONF_new_data}
   function _CONF_new_data(conf: PCONF): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM _CONF_free_data}
   procedure _CONF_free_data(conf: PCONF) cdecl; external CLibCrypto;
 
 

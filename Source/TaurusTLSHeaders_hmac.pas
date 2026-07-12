@@ -41,51 +41,62 @@ uses
   	  The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header 
 	  files generated for C++. }
 	  
-  {$EXTERNALSYM HMAC_size} {introduced 1.1.0}
-  {$EXTERNALSYM HMAC_CTX_new} {introduced 1.1.0}
-  {$EXTERNALSYM HMAC_CTX_reset} {introduced 1.1.0}
-  {$EXTERNALSYM HMAC_CTX_free} {introduced 1.1.0}
-  {$EXTERNALSYM HMAC_Init_ex}
-  {$EXTERNALSYM HMAC_Update}
-  {$EXTERNALSYM HMAC_Final}
-  {$EXTERNALSYM HMAC}
-  {$EXTERNALSYM HMAC_CTX_copy}
-  {$EXTERNALSYM HMAC_CTX_set_flags}
-  {$EXTERNALSYM HMAC_CTX_get_md} {introduced 1.1.0}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
-  {$EXTERNALSYM HMAC_CTX_init} {removed 1.1.0}
-  {$EXTERNALSYM HMAC_CTX_cleanup} {removed 1.1.0}
+  {$EXTERNALSYM HMAC_CTX_init}
   HMAC_CTX_init: procedure (ctx : PHMAC_CTX); cdecl = nil; {removed 1.1.0}
+  {$EXTERNALSYM HMAC_size}
   HMAC_size: function (const e: PHMAC_CTX): TIdC_SIZET; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM HMAC_CTX_new}
   HMAC_CTX_new: function : PHMAC_CTX; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM HMAC_CTX_reset}
   HMAC_CTX_reset: function (ctx: PHMAC_CTX): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM HMAC_CTX_cleanup}
   HMAC_CTX_cleanup: procedure (ctx : PHMAC_CTX); cdecl = nil; {removed 1.1.0}
+  {$EXTERNALSYM HMAC_CTX_free}
   HMAC_CTX_free: procedure (ctx: PHMAC_CTX); cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM HMAC_Init_ex}
   HMAC_Init_ex: function (ctx: PHMAC_CTX; const key: Pointer; len: TIdC_INT; const md: PEVP_MD; impl: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM HMAC_Update}
   HMAC_Update: function (ctx: PHMAC_CTX; const data: PByte; len: TIdC_SIZET): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM HMAC_Final}
   HMAC_Final: function (ctx: PHMAC_CTX; md: PByte; len: PByte): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM HMAC}
   HMAC: function (const evp_md: PEVP_MD; const key: Pointer; key_len: TIdC_INT; const d: PByte; n: TIdC_SIZET; md: PByte; md_len: PIdC_INT): PByte; cdecl = nil;
+  {$EXTERNALSYM HMAC_CTX_copy}
   HMAC_CTX_copy: function (dctx: PHMAC_CTX; sctx: PHMAC_CTX): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM HMAC_CTX_set_flags}
   HMAC_CTX_set_flags: procedure (ctx: PHMAC_CTX; flags: TIdC_ULONG); cdecl = nil;
+  {$EXTERNALSYM HMAC_CTX_get_md}
   HMAC_CTX_get_md: function (const ctx: PHMAC_CTX): PEVP_MD; cdecl = nil; {introduced 1.1.0}
 
 {$ELSE}
+  {$EXTERNALSYM HMAC_size}
   function HMAC_size(const e: PHMAC_CTX): TIdC_SIZET cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM HMAC_CTX_new}
   function HMAC_CTX_new: PHMAC_CTX cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM HMAC_CTX_reset}
   function HMAC_CTX_reset(ctx: PHMAC_CTX): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM HMAC_CTX_free}
   procedure HMAC_CTX_free(ctx: PHMAC_CTX) cdecl; external CLibCrypto; {introduced 1.1.0}
 
+  {$EXTERNALSYM HMAC_Init_ex}
   function HMAC_Init_ex(ctx: PHMAC_CTX; const key: Pointer; len: TIdC_INT; const md: PEVP_MD; impl: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM HMAC_Update}
   function HMAC_Update(ctx: PHMAC_CTX; const data: PByte; len: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM HMAC_Final}
   function HMAC_Final(ctx: PHMAC_CTX; md: PByte; len: PByte): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM HMAC}
   function HMAC(const evp_md: PEVP_MD; const key: Pointer; key_len: TIdC_INT; const d: PByte; n: TIdC_SIZET; md: PByte; md_len: PIdC_INT): PByte cdecl; external CLibCrypto;
+  {$EXTERNALSYM HMAC_CTX_copy}
   function HMAC_CTX_copy(dctx: PHMAC_CTX; sctx: PHMAC_CTX): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM HMAC_CTX_set_flags}
   procedure HMAC_CTX_set_flags(ctx: PHMAC_CTX; flags: TIdC_ULONG) cdecl; external CLibCrypto;
+  {$EXTERNALSYM HMAC_CTX_get_md}
   function HMAC_CTX_get_md(const ctx: PHMAC_CTX): PEVP_MD cdecl; external CLibCrypto; {introduced 1.1.0}
 
 {$ENDIF}

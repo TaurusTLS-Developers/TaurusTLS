@@ -29,9 +29,13 @@ uses
 
 const
 //* HPKE modes */
+  {$EXTERNALSYM OSSL_HPKE_MODE_BASE}
   OSSL_HPKE_MODE_BASE = 0; //* Base mode  */
+  {$EXTERNALSYM OSSL_HPKE_MODE_PSK}
   OSSL_HPKE_MODE_PSK = 1; //* Pre-shared key mode */
+  {$EXTERNALSYM OSSL_HPKE_MODE_AUTH}
   OSSL_HPKE_MODE_AUTH  = 2; //* Authenticated mode */
+  {$EXTERNALSYM OSSL_HPKE_MODE_PSKAUTH}
   OSSL_HPKE_MODE_PSKAUTH = 3; //* PSK+authenticated mode */
 
 {*
@@ -39,8 +43,11 @@ const
  * RFC9180, section 7.2.1 RECOMMENDS 64 octets but we have test vectors from
  * Appendix A.6.1 with a 66 octet IKM so we'll allow that.
  *}
+  {$EXTERNALSYM OSSL_HPKE_MAX_PARMLEN}
   OSSL_HPKE_MAX_PARMLEN = 66;
+  {$EXTERNALSYM OSSL_HPKE_MIN_PSKLEN}
   OSSL_HPKE_MIN_PSKLEN = 32;
+  {$EXTERNALSYM OSSL_HPKE_MAX_INFOLEN}
   OSSL_HPKE_MAX_INFOLEN = 1024;
 
 {*
@@ -48,66 +55,104 @@ const
  * If/when new IANA codepoints are added there are tables in
  * crypto/hpke/hpke_util.c that must also be updated.
  *}
+  {$EXTERNALSYM OSSL_HPKE_KEM_ID_RESERVED}
   OSSL_HPKE_KEM_ID_RESERVED = $0000; //* not used */
+  {$EXTERNALSYM OSSL_HPKE_KEM_ID_P256}
   OSSL_HPKE_KEM_ID_P256 = $0010; //* NIST P-256 */
+  {$EXTERNALSYM OSSL_HPKE_KEM_ID_P384}
   OSSL_HPKE_KEM_ID_P384 = $0011; //* NIST P-384 */
+  {$EXTERNALSYM OSSL_HPKE_KEM_ID_P521}
   OSSL_HPKE_KEM_ID_P521 = $0012; //* NIST P-521 */
+  {$EXTERNALSYM OSSL_HPKE_KEM_ID_X25519}
   OSSL_HPKE_KEM_ID_X25519 = $0020; //* Curve25519 */
+  {$EXTERNALSYM OSSL_HPKE_KEM_ID_X448}
   OSSL_HPKE_KEM_ID_X448 = $0021; //* Curve448 */
 
+  {$EXTERNALSYM OSSL_HPKE_KDF_ID_RESERVED}
   OSSL_HPKE_KDF_ID_RESERVED = $0000; //* not used */
+  {$EXTERNALSYM OSSL_HPKE_KDF_ID_HKDF_SHA256}
   OSSL_HPKE_KDF_ID_HKDF_SHA256 = $0001; //* HKDF-SHA256 */
+  {$EXTERNALSYM OSSL_HPKE_KDF_ID_HKDF_SHA384}
   OSSL_HPKE_KDF_ID_HKDF_SHA384 = $0002; //* HKDF-SHA384 */
+  {$EXTERNALSYM OSSL_HPKE_KDF_ID_HKDF_SHA512}
   OSSL_HPKE_KDF_ID_HKDF_SHA512 = $0003; //* HKDF-SHA512 */
 
+  {$EXTERNALSYM OSSL_HPKE_AEAD_ID_RESERVED}
   OSSL_HPKE_AEAD_ID_RESERVED = $0000; //* not used */
+  {$EXTERNALSYM OSSL_HPKE_AEAD_ID_AES_GCM_128}
   OSSL_HPKE_AEAD_ID_AES_GCM_128 = $0001; //* AES-GCM-128 */
+  {$EXTERNALSYM OSSL_HPKE_AEAD_ID_AES_GCM_256}
   OSSL_HPKE_AEAD_ID_AES_GCM_256 = $0002; //* AES-GCM-256 */
+  {$EXTERNALSYM OSSL_HPKE_AEAD_ID_CHACHA_POLY1305}
   OSSL_HPKE_AEAD_ID_CHACHA_POLY1305 = $0003; //* Chacha20-Poly1305 */
+  {$EXTERNALSYM OSSL_HPKE_AEAD_ID_EXPORTONLY}
   OSSL_HPKE_AEAD_ID_EXPORTONLY = $FFFF; //* export-only fake ID */
 
 //* strings for suite components */
+  {$EXTERNALSYM OSSL_HPKE_KEMSTR_P256}
   OSSL_HPKE_KEMSTR_P256 = 'P-256'; //* KEM id = $10 */
+  {$EXTERNALSYM OSSL_HPKE_KEMSTR_P384}
   OSSL_HPKE_KEMSTR_P384 = 'P-384'; //* KEM id = $11 */
+  {$EXTERNALSYM OSSL_HPKE_KEMSTR_P521}
   OSSL_HPKE_KEMSTR_P521 = 'P-521'; //* KEM id = $12 */
+  {$EXTERNALSYM OSSL_HPKE_KEMSTR_X25519}
   OSSL_HPKE_KEMSTR_X25519 = 'X25519'; //* KEM id = $20 */
+  {$EXTERNALSYM OSSL_HPKE_KEMSTR_X448}
   OSSL_HPKE_KEMSTR_X448 = 'X448'; //* KEM id = $21 */
+  {$EXTERNALSYM OSSL_HPKE_KDFSTR_256}
   OSSL_HPKE_KDFSTR_256 = 'hkdf-sha256'; //* KDF id 1 */
+  {$EXTERNALSYM OSSL_HPKE_KDFSTR_384}
   OSSL_HPKE_KDFSTR_384 = 'hkdf-sha384'; //* KDF id 2 */
+  {$EXTERNALSYM OSSL_HPKE_KDFSTR_512}
   OSSL_HPKE_KDFSTR_512 = 'hkdf-sha512'; //* KDF id 3 */
+  {$EXTERNALSYM OSSL_HPKE_AEADSTR_AES128GCM}
   OSSL_HPKE_AEADSTR_AES128GCM = 'aes-128-gcm'; //* AEAD id 1 */
+  {$EXTERNALSYM OSSL_HPKE_AEADSTR_AES256GCM}
   OSSL_HPKE_AEADSTR_AES256GCM = 'aes-256-gcm'; //* AEAD id 2 */
+  {$EXTERNALSYM OSSL_HPKE_AEADSTR_CP}
   OSSL_HPKE_AEADSTR_CP = 'chacha20-poly1305'; //* AEAD id 3 */
+  {$EXTERNALSYM OSSL_HPKE_AEADSTR_EXP}
   OSSL_HPKE_AEADSTR_EXP = 'exporter'; //* AEAD id = $ff */
 
 {*
  * Roles for use in creating an OSSL_HPKE_CTX, most
  * important use of this is to control nonce reuse.
  *}
+  {$EXTERNALSYM OSSL_HPKE_ROLE_SENDER}
   OSSL_HPKE_ROLE_SENDER = 0;
+  {$EXTERNALSYM OSSL_HPKE_ROLE_RECEIVER}
   OSSL_HPKE_ROLE_RECEIVER = 1;
 
 type
+  {$EXTERNALSYM OSSL_HPKE_SUITE}
   OSSL_HPKE_SUITE = record
     kem_id : TIdC_UINT16; //* Key Encapsulation Method id */
     kdf_id : TIdC_UINT16; //* Key Derivation Function id */
     aead_id : TIdC_UINT16; //* AEAD alg id */
   end;
+  {$EXTERNALSYM POSSL_HPKE_SUITE}
   POSSL_HPKE_SUITE = ^OSSL_HPKE_SUITE;
+  {$EXTERNALSYM PPOSSL_HPKE_SUITE}
   PPOSSL_HPKE_SUITE = ^POSSL_HPKE_SUITE;
+  {$EXTERNALSYM ossl_hpke_ctx_st}
   ossl_hpke_ctx_st = record end;
+  {$EXTERNALSYM OSSL_HPKE_CTX}
   OSSL_HPKE_CTX = ossl_hpke_ctx_st;
+  {$EXTERNALSYM POSSL_HPKE_CTX}
   POSSL_HPKE_CTX = ^OSSL_HPKE_CTX;
+  {$EXTERNALSYM PPOSSL_HPKE_CTX}
   PPOSSL_HPKE_CTX = ^POSSL_HPKE_CTX;
 
 const
 {$IFNDEF OPENSSL_NO_ECX}
+  {$EXTERNALSYM OSSL_HPKE_SUITE_DEFAULT}
   OSSL_HPKE_SUITE_DEFAULT: array[0..2] of Integer = (
     OSSL_HPKE_KEM_ID_X25519,
     OSSL_HPKE_KDF_ID_HKDF_SHA256,
     OSSL_HPKE_AEAD_ID_AES_GCM_128
   );
 {$ELSE}
+  {$EXTERNALSYM OSSL_HPKE_SUITE_DEFAULT}
   OSSL_HPKE_SUITE_DEFAULT: array[0..2] of Integer = (
     OSSL_HPKE_KEM_ID_X25519,
     OSSL_HPKE_KDF_ID_HKDF_SHA256,
@@ -117,117 +162,155 @@ const
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM OSSL_HPKE_CTX_new}
   OSSL_HPKE_CTX_new : function(mode : TIdC_INT; suite : OSSL_HPKE_SUITE; role : TIdC_INT;
     libctx : POSSL_LIB_CTX; const propq : PIdAnsiChar) : POSSL_HPKE_CTX; cdecl = nil;
+  {$EXTERNALSYM OSSL_HPKE_CTX_free}
   OSSL_HPKE_CTX_free : procedure(ctx : POSSL_HPKE_CTX); cdecl = nil;
 
+  {$EXTERNALSYM OSSL_HPKE_encap}
  OSSL_HPKE_encap : function(ctx : POSSL_HPKE_CTX;
     enc : PByte; enclen : TIdC_SIZET;
     const pub : PByte; publen : TIdC_SIZET;
     const info : PByte; infolen : TIdC_SIZET) : TIdC_INT; cdecl = nil;
+ {$EXTERNALSYM OSSL_HPKE_seal}
   OSSL_HPKE_seal : function(ctx : POSSL_HPKE_CTX;
     ct : PByte; ctlen : TIdC_SIZET;
     const aad : PByte; aadlen : TIdC_SIZET;
     const pt : PByte; ptlen : TIdC_SIZET) : TIdC_INT; cdecl = nil;
-
+  {$EXTERNALSYM  OSSL_HPKE_keygen}
   OSSL_HPKE_keygen : function( suite : OSSL_HPKE_SUITE;
     pub : PByte; publen : PIdC_SIZET; priv : PPEVP_PKEY;
     const ikm : PByte; ikmlen : TIdC_SIZET;
     libctx : POSSL_LIB_CTX; const propq : PByte) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_HPKE_decap}
   OSSL_HPKE_decap : function(ctx : POSSL_HPKE_CTX;
     const enc : PByte; enclen : TIdC_SIZET;
     recippriv : PEVP_PKEY;
     const info : PByte; infolen : TIdC_SIZET) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_HPKE_open}
   OSSL_HPKE_open : function(ctx : POSSL_HPKE_CTX;
     pt : PByte; ptlen : PIdC_SIZET;
     const aad : PByte; aadlen : TIdC_SIZET;
     const ct : PByte; ctlen : TIdC_SIZET) : TIdC_INT; cdecl = nil;
-
+  {$EXTERNALSYM  OSSL_HPKE_export}
   OSSL_HPKE_export : function(ctx : OSSL_HPKE_CTX;
     secret : PByte;
     secretlen : TIdC_SIZET;
     const _label : PByte;
     labellen : TIdC_SIZET) : TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM OSSL_HPKE_CTX_set1_authpriv}
   OSSL_HPKE_CTX_set1_authpriv : function(ctx : POSSL_HPKE_CTX; priv : PEVP_PKEY) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_HPKE_CTX_set1_authpub}
   OSSL_HPKE_CTX_set1_authpub : function(ctx : POSSL_HPKE_CTX;
     const pub : PByte;
     publen : TIdC_SIZET) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_HPKE_CTX_set1_psk}
   OSSL_HPKE_CTX_set1_psk : function(ctx : POSSL_HPKE_CTX;
     const pskid : PByte;
     const psk : PByte; psklen : TIdC_SIZET) : TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM OSSL_HPKE_CTX_set1_ikme}
   OSSL_HPKE_CTX_set1_ikme : function(ctx : POSSL_HPKE_CTX;
     const ikme : PByte; ikmelen : TIdC_SIZET) : TIdC_INT;  cdecl = nil;
 
+  {$EXTERNALSYM OSSL_HPKE_CTX_set_seq}
   OSSL_HPKE_CTX_set_seq : function (ctx : POSSL_HPKE_CTX; seq : TIdC_UINT64) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_HPKE_CTX_get_seq}
   OSSL_HPKE_CTX_get_seq : function (ctx : POSSL_HPKE_CTX; seq : TIdC_UINT64) : TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM OSSL_HPKE_suite_check}
   OSSL_HPKE_suite_check : function( suite : OSSL_HPKE_SUITE) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_HPKE_get_grease_value}
   OSSL_HPKE_get_grease_value : function(const suite_in : POSSL_HPKE_SUITE;
     suite : POSSL_HPKE_SUITE;
     enc : PByte; enclen : PIdC_SIZET;
     ct : PByte; ctlen : TIdC_SIZET;
     libctx : POSSL_LIB_CTX; const propq : PIdAnsiChar) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_HPKE_str2suite}
   OSSL_HPKE_str2suite : function(const str_ : PIdAnsiChar; suite : POSSL_HPKE_SUITE) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_HPKE_get_ciphertext_size}
   OSSL_HPKE_get_ciphertext_size : function(suite : OSSL_HPKE_SUITE; clearlen : TIdC_SIZET) : TIdC_SIZET; cdecl = nil;
+  {$EXTERNALSYM OSSL_HPKE_get_public_encap_size}
   OSSL_HPKE_get_public_encap_size : function(suite : OSSL_HPKE_SUITE) : TIdC_SIZET; cdecl = nil;
+  {$EXTERNALSYM OSSL_HPKE_get_recommended_ikmelen}
   OSSL_HPKE_get_recommended_ikmelen : function(suite : OSSL_HPKE_SUITE) : TIdC_SIZET; cdecl = nil;
 {$ELSE}
+  {$EXTERNALSYM OSSL_HPKE_CTX_new}
   function OSSL_HPKE_CTX_new(mode : TIdC_INT; suite : OSSL_HPKE_SUITE; role : TIdC_INT;
     libctx : POSSL_LIB_CTX; const propq : PIdAnsiChar) : POSSL_HPKE_CTX cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_HPKE_CTX_free}
   procedure OSSL_HPKE_CTX_free(ctx : POSSL_HPKE_CTX) cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_HPKE_encap}
   function OSSL_HPKE_encap(ctx : POSSL_HPKE_CTX;
     enc : PByte; enclen : TIdC_SIZET;
     const pub : PByte; publen : TIdC_SIZET;
     const info : PByte; infolen : TIdC_SIZET) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_HPKE_seal}
   function OSSL_HPKE_seal(ctx : POSSL_HPKE_CTX;
     ct : PByte; ctlen : TIdC_SIZET;
     const aad : PByte; aadlen : TIdC_SIZET;
     const pt : PByte; ptlen : TIdC_SIZET) : TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM OSSL_HPKE_keygen}
   function OSSL_HPKE_keygen( suite : OSSL_HPKE_SUITE;
     pub : PByte; publen : PIdC_SIZET; priv : PPEVP_PKEY;
     const ikm : PByte; ikmlen : TIdC_SIZET;
     libctx : POSSL_LIB_CTX; const propq : PByte) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_HPKE_decap}
   function OSSL_HPKE_decap(ctx : POSSL_HPKE_CTX;
     const enc : PByte; enclen : TIdC_SIZET;
     recippriv : PEVP_PKEY;
     const info : PByte; infolen : TIdC_SIZET) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_HPKE_open}
   function OSSL_HPKE_open(ctx : POSSL_HPKE_CTX;
     pt : PByte; ptlen : PIdC_SIZET;
     const aad : PByte; aadlen : TIdC_SIZET;
     const ct : PByte; ctlen : TIdC_SIZET) : TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM OSSL_HPKE_export}
   function OSSL_HPKE_export(ctx : OSSL_HPKE_CTX;
     secret : PByte;
     secretlen : TIdC_SIZET;
     const _label : PByte;
     labellen : TIdC_SIZET) : TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM OSSL_HPKE_CTX_set1_authpriv}
   function OSSL_HPKE_CTX_set1_authpriv(ctx : POSSL_HPKE_CTX; priv : PEVP_PKEY) : TIdC_INT  cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_HPKE_CTX_set1_authpub}
   function OSSL_HPKE_CTX_set1_authpub(ctx : POSSL_HPKE_CTX;
     const pub : PByte;
     publen : TIdC_SIZET) : TIdC_INT  cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_HPKE_CTX_set1_psk}
   function OSSL_HPKE_CTX_set1_psk(ctx : POSSL_HPKE_CTX;
     const pskid : PByte;
     const psk : PByte; psklen : TIdC_SIZET) : TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM OSSL_HPKE_CTX_set1_ikme}
   function OSSL_HPKE_CTX_set1_ikme(ctx : POSSL_HPKE_CTX;
     const ikme : PByte; ikmelen : TIdC_SIZET) : TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM OSSL_HPKE_CTX_set_seq}
   function OSSL_HPKE_CTX_set_seq(ctx : POSSL_HPKE_CTX; seq : TIdC_UINT64) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_HPKE_CTX_get_seq}
   function OSSL_HPKE_CTX_get_seq(ctx : POSSL_HPKE_CTX; seq : TIdC_UINT64) : TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM OSSL_HPKE_suite_check}
   function OSSL_HPKE_suite_check( suite : OSSL_HPKE_SUITE) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_HPKE_get_grease_value}
   function OSSL_HPKE_get_grease_value(const suite_in : POSSL_HPKE_SUITE;
     suite : POSSL_HPKE_SUITE;
     enc : PByte; enclen : PIdC_SIZET;
     ct : PByte; ctlen : TIdC_SIZET;
     libctx : POSSL_LIB_CTX; const propq : PIdAnsiChar) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_HPKE_str2suite}
   function OSSL_HPKE_str2suite(const str_ : PIdAnsiChar; suite : POSSL_HPKE_SUITE) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_HPKE_get_ciphertext_size}
   function OSSL_HPKE_get_ciphertext_size(suite : OSSL_HPKE_SUITE; clearlen : TIdC_SIZET) : TIdC_SIZET cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_HPKE_get_public_encap_size}
   function OSSL_HPKE_get_public_encap_size(suite : OSSL_HPKE_SUITE) : TIdC_SIZET cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_HPKE_get_recommended_ikmelen}
   function OSSL_HPKE_get_recommended_ikmelen(suite : OSSL_HPKE_SUITE) : TIdC_SIZET cdecl; external CLibCrypto;
 
 {$ENDIF}

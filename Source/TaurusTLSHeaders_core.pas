@@ -59,9 +59,12 @@ uses
 
 
     type
+  {$EXTERNALSYM POSSL_CORE_HANDLE}
       POSSL_CORE_HANDLE = Pointer;
 
+  {$EXTERNALSYM POPENSSL_CORE_CTX}
       POPENSSL_CORE_CTX = Pointer;
+  {$EXTERNALSYM POSSL_CORE_BIO}
       POSSL_CORE_BIO = Pointer;
     {
      * Dispatch table element.  function_id numbers and the functions are defined
@@ -69,12 +72,15 @@ uses
      *
      * An array of these is always terminated by function_id == 0
       }
+  {$EXTERNALSYM ossl_dispatch_st}
       ossl_dispatch_st = record
           function_id : TIdC_LONG;
           _function: procedure;cdecl;
         end;
 
+  {$EXTERNALSYM OSSL_DISPATCH}
      OSSL_DISPATCH = ossl_dispatch_st;
+  {$EXTERNALSYM POSSL_DISPATCH}
      POSSL_DISPATCH = ^OSSL_DISPATCH;
 
     {
@@ -90,6 +96,7 @@ uses
      *
      * An array of these is always terminated by id == 0 && ptr == NULL
       }
+  {$EXTERNALSYM ossl_item_st}
       ossl_item_st = record
           id : dword;
           _ptr : pointer;
@@ -101,6 +108,7 @@ uses
      *
      * An array of these is always terminated by algorithm_names == NULL
       }
+  {$EXTERNALSYM ossl_algorithm_st}
       ossl_algorithm_st = record
           algorithm_names : PIdAnsiChar;
           property_definition : PIdAnsiChar;

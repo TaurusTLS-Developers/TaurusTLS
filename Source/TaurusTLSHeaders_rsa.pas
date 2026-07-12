@@ -40,24 +40,38 @@ uses
 (* The types RSA and RSA_METHOD are defined in ossl_typ.h *)
 
 const
+  {$EXTERNALSYM OPENSSL_RSA_MAX_MODULUS_BITS}
   OPENSSL_RSA_MAX_MODULUS_BITS =  16384;
+  {$EXTERNALSYM OPENSSL_RSA_FIPS_MIN_MODULUS_BITS}
   OPENSSL_RSA_FIPS_MIN_MODULUS_BITS = 1024;
+  {$EXTERNALSYM OPENSSL_RSA_SMALL_MODULUS_BITS}
   OPENSSL_RSA_SMALL_MODULUS_BITS = 3072;
   (* exponent limit enforced for "large" modulus only *)
+  {$EXTERNALSYM OPENSSL_RSA_MAX_PUBEXP_BITS}
   OPENSSL_RSA_MAX_PUBEXP_BITS =  64;
 
+  {$EXTERNALSYM RSA_3}
   RSA_3 =  TIdC_Long($3);
+  {$EXTERNALSYM RSA_F4}
   RSA_F4 = TIdC_Long($10001);
 
   (* based on RFC 8017 appendix A.1.2 *)
+  {$EXTERNALSYM RSA_ASN1_VERSION_DEFAULT}
   RSA_ASN1_VERSION_DEFAULT = 0;
+  {$EXTERNALSYM RSA_ASN1_VERSION_MULTI}
   RSA_ASN1_VERSION_MULTI =   1;
+  {$EXTERNALSYM RSA_DEFAULT_PRIME_NUM}
   RSA_DEFAULT_PRIME_NUM =    2;
 
+  {$EXTERNALSYM RSA_METHOD_FLAG_NO_CHECK}
   RSA_METHOD_FLAG_NO_CHECK = $0001; (* don't check pub/private match *)
+  {$EXTERNALSYM RSA_FLAG_CACHE_PUBLIC}
   RSA_FLAG_CACHE_PUBLIC =    $0002;
+  {$EXTERNALSYM RSA_FLAG_CACHE_PRIVATE}
   RSA_FLAG_CACHE_PRIVATE =   $0004;
+  {$EXTERNALSYM RSA_FLAG_BLINDING}
   RSA_FLAG_BLINDING =        $0008;
+  {$EXTERNALSYM RSA_FLAG_THREAD_SAFE}
   RSA_FLAG_THREAD_SAFE =     $0010;
   (*
    * This flag means the private key operations will be handled by rsa_mod_exp
@@ -65,6 +79,7 @@ const
    * for example a key stored in external hardware. Without this flag
    * bn_mod_exp gets called when private key components are absent.
    *)
+  {$EXTERNALSYM RSA_FLAG_EXT_PKEY}
   RSA_FLAG_EXT_PKEY =        $0020;
   (*
    * new with 0.9.6j and 0.9.7b; the built-in
@@ -72,46 +87,72 @@ const
    * default (ignoring RSA_FLAG_BLINDING),
    * but other engines might not need it
    *)
+  {$EXTERNALSYM RSA_FLAG_NO_BLINDING}
   RSA_FLAG_NO_BLINDING =     $0080;
   (*
    * Does nothing. Previously this switched off constant time behaviour.
    *)
+  {$EXTERNALSYM RSA_FLAG_NO_CONSTTIME}
   RSA_FLAG_NO_CONSTTIME =    $0000;
 
   (* Salt length matches digest *)
+  {$EXTERNALSYM RSA_PSS_SALTLEN_DIGEST}
   RSA_PSS_SALTLEN_DIGEST = -1;
   (* Verify only: auto detect salt length *)
+  {$EXTERNALSYM RSA_PSS_SALTLEN_AUTO}
   RSA_PSS_SALTLEN_AUTO = -2;
   (* Set salt length to maximum possible *)
+  {$EXTERNALSYM RSA_PSS_SALTLEN_MAX}
   RSA_PSS_SALTLEN_MAX = -3;
   (* Old compatible max salt length for sign only *)
+  {$EXTERNALSYM RSA_PSS_SALTLEN_MAX_SIGN}
   RSA_PSS_SALTLEN_MAX_SIGN = -2;
 
+  {$EXTERNALSYM EVP_PKEY_CTRL_RSA_PADDING}
   EVP_PKEY_CTRL_RSA_PADDING = EVP_PKEY_ALG_CTRL + 1;
+  {$EXTERNALSYM EVP_PKEY_CTRL_RSA_PSS_SALTLEN}
   EVP_PKEY_CTRL_RSA_PSS_SALTLEN = EVP_PKEY_ALG_CTRL + 2;
 
+  {$EXTERNALSYM EVP_PKEY_CTRL_RSA_KEYGEN_BITS}
   EVP_PKEY_CTRL_RSA_KEYGEN_BITS = EVP_PKEY_ALG_CTRL + 3;
+  {$EXTERNALSYM EVP_PKEY_CTRL_RSA_KEYGEN_PUBEXP}
   EVP_PKEY_CTRL_RSA_KEYGEN_PUBEXP = EVP_PKEY_ALG_CTRL + 4;
+  {$EXTERNALSYM EVP_PKEY_CTRL_RSA_MGF1_MD}
   EVP_PKEY_CTRL_RSA_MGF1_MD = EVP_PKEY_ALG_CTRL + 5;
 
+  {$EXTERNALSYM EVP_PKEY_CTRL_GET_RSA_PADDING}
   EVP_PKEY_CTRL_GET_RSA_PADDING =  EVP_PKEY_ALG_CTRL + 6;
+  {$EXTERNALSYM EVP_PKEY_CTRL_GET_RSA_PSS_SALTLEN}
   EVP_PKEY_CTRL_GET_RSA_PSS_SALTLEN = EVP_PKEY_ALG_CTRL + 7;
+  {$EXTERNALSYM EVP_PKEY_CTRL_GET_RSA_MGF1_MD}
   EVP_PKEY_CTRL_GET_RSA_MGF1_MD =  EVP_PKEY_ALG_CTRL + 8;
 
+  {$EXTERNALSYM EVP_PKEY_CTRL_RSA_OAEP_MD}
   EVP_PKEY_CTRL_RSA_OAEP_MD = EVP_PKEY_ALG_CTRL + 9;
+  {$EXTERNALSYM EVP_PKEY_CTRL_RSA_OAEP_LABEL}
   EVP_PKEY_CTRL_RSA_OAEP_LABEL = EVP_PKEY_ALG_CTRL + 10;
 
+  {$EXTERNALSYM EVP_PKEY_CTRL_GET_RSA_OAEP_MD}
   EVP_PKEY_CTRL_GET_RSA_OAEP_MD = EVP_PKEY_ALG_CTRL + 11;
+  {$EXTERNALSYM EVP_PKEY_CTRL_GET_RSA_OAEP_LABEL}
   EVP_PKEY_CTRL_GET_RSA_OAEP_LABEL = EVP_PKEY_ALG_CTRL + 12;
 
+  {$EXTERNALSYM EVP_PKEY_CTRL_RSA_KEYGEN_PRIMES}
   EVP_PKEY_CTRL_RSA_KEYGEN_PRIMES = EVP_PKEY_ALG_CTRL + 13;
 
+  {$EXTERNALSYM RSA_PKCS1_PADDING}
   RSA_PKCS1_PADDING =   1;
+  {$EXTERNALSYM RSA_SSLV23_PADDING}
   RSA_SSLV23_PADDING =  2;
+  {$EXTERNALSYM RSA_NO_PADDING}
   RSA_NO_PADDING =   3;
+  {$EXTERNALSYM RSA_PKCS1_OAEP_PADDING}
   RSA_PKCS1_OAEP_PADDING = 4;
+  {$EXTERNALSYM RSA_X931_PADDING}
   RSA_X931_PADDING =   5;
+  {$EXTERNALSYM RSA_PKCS1_PSS_PADDING}
   RSA_PKCS1_PSS_PADDING =  6; (* EVP_PKEY_ only *)
+  {$EXTERNALSYM RSA_PKCS1_PADDING_SIZE}
   RSA_PKCS1_PADDING_SIZE = 11;
 
   (*
@@ -120,20 +161,24 @@ const
    * sets this flag in its own methods it is its responsibility to ensure the
    * result is compliant.
    *)
+  {$EXTERNALSYM RSA_FLAG_FIPS_METHOD}
   RSA_FLAG_FIPS_METHOD = $0400;
   (*
    * If this flag is set the operations normally disabled in FIPS mode are
    * permitted it is then the applications responsibility to ensure that the
    * usage is compliant.
    *)
+  {$EXTERNALSYM RSA_FLAG_NON_FIPS_ALLOW}
   RSA_FLAG_NON_FIPS_ALLOW = $0400;
   (*
    * Application has decided PRNG is good enough to generate a key: don't
    * check.
    *)
+  {$EXTERNALSYM RSA_FLAG_CHECKED}
   RSA_FLAG_CHECKED = $0800;
 
 type
+  {$EXTERNALSYM rsa_pss_params_st}
   rsa_pss_params_st = record
     hashAlgorithm: PX509_ALGOR;
     maskGenAlgorithm: PX509_ALGOR;
@@ -142,9 +187,11 @@ type
     (* Decoded hash algorithm from maskGenAlgorithm *)
     maskHash: PX509_ALGOR;
   end;
+  {$EXTERNALSYM RSA_PSS_PARAMS}
   RSA_PSS_PARAMS = rsa_pss_params_st;
   // DECLARE_ASN1_FUNCTIONS(RSA_PSS_PARAMS)
 
+  {$EXTERNALSYM rsa_oaep_params_st}
   rsa_oaep_params_st = record
     hashFunc: PX509_ALGOR;
     maskGenFunc: PX509_ALGOR;
@@ -152,33 +199,43 @@ type
     (* Decoded hash algorithm from maskGenFunc *)
     maskHash: PX509_ALGOR;
   end;
+  {$EXTERNALSYM RSA_OAEP_PARAMS}
   RSA_OAEP_PARAMS = rsa_oaep_params_st;
   //DECLARE_ASN1_FUNCTIONS(RSA_OAEP_PARAMS)
 
   //DECLARE_ASN1_ENCODE_FUNCTIONS_const(RSA, RSAPublicKey)
   //DECLARE_ASN1_ENCODE_FUNCTIONS_const(RSA, RSAPrivateKey)
 
+  {$EXTERNALSYM RSA_meth_set_priv_dec_priv_dec}
   RSA_meth_set_priv_dec_priv_dec = function(flen: TIdC_INT; const from: PByte;
     to_: PByte; rsa: PRSA; padding: TIdC_INT): TIdC_INT; cdecl;
 
+  {$EXTERNALSYM RSA_meth_set_mod_exp_mod_exp}
   RSA_meth_set_mod_exp_mod_exp = function(r0: PBIGNUM; const i: PBIGNUM;
     rsa: PRSA; ctx: PBN_CTX): TIdC_INT; cdecl;
 
+  {$EXTERNALSYM RSA_meth_set_bn_mod_exp_bn_mod_exp}
   RSA_meth_set_bn_mod_exp_bn_mod_exp = function(r: PBIGNUM; const a: PBIGNUM;
     const p: PBIGNUM; const m: PBIGNUM; ctx: PBN_CTx; m_ctx: PBN_MONT_CTx): TIdC_INT; cdecl;
 
+  {$EXTERNALSYM RSA_meth_set_init_init}
   RSA_meth_set_init_init = function(rsa: PRSA): TIdC_INT; cdecl;
 
+  {$EXTERNALSYM RSA_meth_set_finish_finish}
   RSA_meth_set_finish_finish = function(rsa: PRSA): TIdC_INT; cdecl;
 
+  {$EXTERNALSYM RSA_meth_set_sign_sign}
   RSA_meth_set_sign_sign = function(type_: TIdC_INT; const m: PByte;
     m_length: TIdC_UINT; sigret: PByte; siglen: PIdC_UINT; const rsa: PRSA): TIdC_INT; cdecl;
 
+  {$EXTERNALSYM RSA_meth_set_verify_verify}
   RSA_meth_set_verify_verify = function(dtype: TIdC_INT; const m: PByte;
     m_length: TIdC_UINT; const sigbuf: PByte; siglen: TIdC_UINT; const rsa: PRSA): TIdC_INT; cdecl;
 
+  {$EXTERNALSYM RSA_meth_set_keygen_keygen}
   RSA_meth_set_keygen_keygen = function(rsa: PRSA; bits: TIdC_INT; e: PBIGNUM; cb: PBN_GENCb): TIdC_INT; cdecl;
 
+  {$EXTERNALSYM RSA_meth_set_multi_prime_keygen_keygen}
   RSA_meth_set_multi_prime_keygen_keygen = function(rsa: PRSA; bits: TIdC_INT;
     primes: TIdC_INT; e: PBIGNUM; cb: PBN_GENCb): TIdC_INT; cdecl;
 
@@ -253,227 +310,218 @@ type
   	  The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header 
 	  files generated for C++. }
 	  
-  {$EXTERNALSYM RSA_new}
-  {$EXTERNALSYM RSA_new_method}
-  {$EXTERNALSYM RSA_bits}
-  {$EXTERNALSYM RSA_size}
-  {$EXTERNALSYM RSA_security_bits}
-  {$EXTERNALSYM RSA_set0_key}
-  {$EXTERNALSYM RSA_set0_factors}
-  {$EXTERNALSYM RSA_set0_crt_params}
-  {$EXTERNALSYM RSA_get0_key}
-  {$EXTERNALSYM RSA_get0_factors}
-  {$EXTERNALSYM RSA_get_multi_prime_extra_count}
-  {$EXTERNALSYM RSA_get0_crt_params}
-  {$EXTERNALSYM RSA_get0_n}
-  {$EXTERNALSYM RSA_get0_e}
-  {$EXTERNALSYM RSA_get0_d}
-  {$EXTERNALSYM RSA_get0_p}
-  {$EXTERNALSYM RSA_get0_q}
-  {$EXTERNALSYM RSA_get0_dmp1}
-  {$EXTERNALSYM RSA_get0_dmq1}
-  {$EXTERNALSYM RSA_get0_iqmp}
-  {$EXTERNALSYM RSA_clear_flags}
-  {$EXTERNALSYM RSA_test_flags}
-  {$EXTERNALSYM RSA_set_flags}
-  {$EXTERNALSYM RSA_get_version}
-  {$EXTERNALSYM RSA_get0_engine}
-  {$EXTERNALSYM RSA_generate_key_ex}
-  {$EXTERNALSYM RSA_generate_multi_prime_key}
-  {$EXTERNALSYM RSA_X931_derive_ex}
-  {$EXTERNALSYM RSA_X931_generate_key_ex}
-  {$EXTERNALSYM RSA_check_key}
-  {$EXTERNALSYM RSA_check_key_ex}
-  {$EXTERNALSYM RSA_public_encrypt}
-  {$EXTERNALSYM RSA_private_encrypt}
-  {$EXTERNALSYM RSA_public_decrypt}
-  {$EXTERNALSYM RSA_private_decrypt}
-  {$EXTERNALSYM RSA_free}
-  {$EXTERNALSYM RSA_up_ref}
-  {$EXTERNALSYM RSA_flags}
-  {$EXTERNALSYM RSA_set_default_method}
-  {$EXTERNALSYM RSA_get_default_method}
-  {$EXTERNALSYM RSA_null_method}
-  {$EXTERNALSYM RSA_get_method}
-  {$EXTERNALSYM RSA_set_method}
-  {$EXTERNALSYM RSA_PKCS1_OpenSSL}
-  {$EXTERNALSYM RSA_pkey_ctx_ctrl}
-  {$EXTERNALSYM RSA_print}
-  {$EXTERNALSYM RSA_sign}
-  {$EXTERNALSYM RSA_verify}
-  {$EXTERNALSYM RSA_sign_ASN1_OCTET_STRING}
-  {$EXTERNALSYM RSA_verify_ASN1_OCTET_STRING}
-  {$EXTERNALSYM RSA_blinding_on}
-  {$EXTERNALSYM RSA_blinding_off}
-  {$EXTERNALSYM RSA_setup_blinding}
-  {$EXTERNALSYM RSA_padding_add_PKCS1_type_1}
-  {$EXTERNALSYM RSA_padding_check_PKCS1_type_1}
-  {$EXTERNALSYM RSA_padding_add_PKCS1_type_2}
-  {$EXTERNALSYM RSA_padding_check_PKCS1_type_2}
-  {$EXTERNALSYM PKCS1_MGF1}
-  {$EXTERNALSYM RSA_padding_add_PKCS1_OAEP}
-  {$EXTERNALSYM RSA_padding_check_PKCS1_OAEP}
-  {$EXTERNALSYM RSA_padding_add_PKCS1_OAEP_mgf1}
-  {$EXTERNALSYM RSA_padding_check_PKCS1_OAEP_mgf1}
 //  {$EXTERNALSYM RSA_padding_add_SSLv23}
 //  {$EXTERNALSYM RSA_padding_check_SSLv23}
-  {$EXTERNALSYM RSA_padding_add_none}
-  {$EXTERNALSYM RSA_padding_check_none}
-  {$EXTERNALSYM RSA_padding_add_X931}
-  {$EXTERNALSYM RSA_padding_check_X931}
-  {$EXTERNALSYM RSA_X931_hash_id}
-  {$EXTERNALSYM RSA_verify_PKCS1_PSS}
-  {$EXTERNALSYM RSA_padding_add_PKCS1_PSS}
-  {$EXTERNALSYM RSA_verify_PKCS1_PSS_mgf1}
-  {$EXTERNALSYM RSA_padding_add_PKCS1_PSS_mgf1}
-  {$EXTERNALSYM RSA_set_ex_data}
-  {$EXTERNALSYM RSA_get_ex_data}
-  {$EXTERNALSYM RSAPublicKey_dup}
-  {$EXTERNALSYM RSAPrivateKey_dup}
-  {$EXTERNALSYM RSA_meth_new}
-  {$EXTERNALSYM RSA_meth_free}
-  {$EXTERNALSYM RSA_meth_dup}
-  {$EXTERNALSYM RSA_meth_get0_name}
-  {$EXTERNALSYM RSA_meth_set1_name}
-  {$EXTERNALSYM RSA_meth_get_flags}
-  {$EXTERNALSYM RSA_meth_set_flags}
-  {$EXTERNALSYM RSA_meth_get0_app_data}
-  {$EXTERNALSYM RSA_meth_set0_app_data}
-  {$EXTERNALSYM RSA_meth_set_priv_dec}
-  {$EXTERNALSYM RSA_meth_set_mod_exp}
-  {$EXTERNALSYM RSA_meth_set_bn_mod_exp}
-  {$EXTERNALSYM RSA_meth_set_init}
-  {$EXTERNALSYM RSA_meth_set_finish}
-  {$EXTERNALSYM RSA_meth_set_sign}
-  {$EXTERNALSYM RSA_meth_set_verify}
-  {$EXTERNALSYM RSA_meth_set_keygen}
-  {$EXTERNALSYM RSA_meth_set_multi_prime_keygen}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM RSA_new}
   RSA_new: function : PRSA; cdecl = nil;
+  {$EXTERNALSYM RSA_new_method}
   RSA_new_method: function (engine: PENGINE): PRSA; cdecl = nil;
+  {$EXTERNALSYM RSA_bits}
   RSA_bits: function (const rsa: PRSA): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_size}
   RSA_size: function (const rsa: PRSA): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_security_bits}
   RSA_security_bits: function (const rsa: PRSA): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM RSA_set0_key}
   RSA_set0_key: function (r: PRSA; n: PBIGNUM; e: PBIGNUM; d: PBIGNUM): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_set0_factors}
   RSA_set0_factors: function (r: PRSA; p: PBIGNUM; q: PBIGNUM): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_set0_crt_params}
   RSA_set0_crt_params: function (r: PRSA; dmp1: PBIGNUM; dmq1: PBIGNUM; iqmp: PBIGNUM): TIdC_INT; cdecl = nil;
   //function RSA_set0_multi_prime_params(r: PRSA; primes: array of PBIGNUM; exps: array of PBIGNUM; coeffs: array of PBIGNUM; pnum: TIdC_INT): TIdC_INT;
 
+  {$EXTERNALSYM RSA_get0_key}
   RSA_get0_key: procedure (const r: PRSA; const n: PPBIGNUM; const e: PPBIGNUM; const d: PPBIGNUM); cdecl = nil;
+  {$EXTERNALSYM RSA_get0_factors}
   RSA_get0_factors: procedure (const r: PRSA; const p: PPBIGNUM; const q: PPBIGNUM); cdecl = nil;
+  {$EXTERNALSYM RSA_get_multi_prime_extra_count}
   RSA_get_multi_prime_extra_count: function (const r: PRSA): TIdC_INT; cdecl = nil;
   //function RSA_get0_multi_prime_factors(const r: PRSA; const primes: array of PBIGNUM): TIdC_INT;
+  {$EXTERNALSYM RSA_get0_crt_params}
   RSA_get0_crt_params: procedure (const r: PRSA; const dmp1: PPBIGNUM; const dmq1: PPBIGNUM; const iqmp: PPBIGNUM); cdecl = nil;
 
   //function RSA_get0_multi_prime_crt_params(const r: PRSA; const exps: array of PBIGNUM; const coeffs: array of PBIGNUM): TIdC_INT;
 
+  {$EXTERNALSYM RSA_get0_n}
   RSA_get0_n: function (const d: PRSA): PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM RSA_get0_e}
   RSA_get0_e: function (const d: PRSA): PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM RSA_get0_d}
   RSA_get0_d: function (const d: PRSA): PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM RSA_get0_p}
   RSA_get0_p: function (const d: PRSA): PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM RSA_get0_q}
   RSA_get0_q: function (const d: PRSA): PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM RSA_get0_dmp1}
   RSA_get0_dmp1: function (const r: PRSA): PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM RSA_get0_dmq1}
   RSA_get0_dmq1: function (const r: PRSA): PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM RSA_get0_iqmp}
   RSA_get0_iqmp: function (const r: PRSA): PBIGNUM; cdecl = nil;
 
+  {$EXTERNALSYM RSA_clear_flags}
   RSA_clear_flags: procedure (r: PRSA; flags: TIdC_INT); cdecl = nil;
+  {$EXTERNALSYM RSA_test_flags}
   RSA_test_flags: function (const r: PRSA; flags: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_set_flags}
   RSA_set_flags: procedure (r: PRSA; flags: TIdC_INT); cdecl = nil;
+  {$EXTERNALSYM RSA_get_version}
   RSA_get_version: function (r: PRSA): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_get0_engine}
   RSA_get0_engine: function (const r: PRSA): PENGINE; cdecl = nil;
 
   (* New version *)
+  {$EXTERNALSYM RSA_generate_key_ex}
   RSA_generate_key_ex: function (rsa: PRSA; bits: TIdC_INT; e: PBIGNUM; cb: PBN_GENCB): TIdC_INT; cdecl = nil;
   (* Multi-prime version *)
+  {$EXTERNALSYM RSA_generate_multi_prime_key}
   RSA_generate_multi_prime_key: function (rsa: PRSA; bits: TIdC_INT; primes: TIdC_INT; e: PBIGNUM; cb: PBN_GENCB): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_X931_derive_ex}
   RSA_X931_derive_ex: function (rsa: PRSA; p1: PBIGNUM; p2: PBIGNUM; q1: PBIGNUM; q2: PBIGNUM; const Xp1: PBIGNUM; const Xp2: PBIGNUM; const Xp: PBIGNUM; const Xq1: PBIGNUM; const Xq2: PBIGNUM; const Xq: PBIGNUM; const e: PBIGNUM; cb: PBN_GENCB): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_X931_generate_key_ex}
   RSA_X931_generate_key_ex: function (rsa: PRSA; bits: TIdC_INT; const e: PBIGNUM; cb: PBN_GENCB): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM RSA_check_key}
   RSA_check_key: function (const v1: PRSA): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_check_key_ex}
   RSA_check_key_ex: function (const v1: PRSA; cb: PBN_GENCB): TIdC_INT; cdecl = nil;
   (* next 4 return -1 on error *)
+  {$EXTERNALSYM RSA_public_encrypt}
   RSA_public_encrypt: function (flen: TIdC_INT; const from: PByte; to_: PByte; rsa: PRSA; padding: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_private_encrypt}
   RSA_private_encrypt: function (flen: TIdC_INT; const from: PByte; to_: PByte; rsa: PRSA; padding: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_public_decrypt}
   RSA_public_decrypt: function (flen: TIdC_INT; const from: PByte; to_: PByte; rsa: PRSA; padding: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_private_decrypt}
   RSA_private_decrypt: function (flen: TIdC_INT; const from: PByte; to_: PByte; rsa: PRSA; padding: TIdC_INT): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM RSA_free}
   RSA_free: procedure (r: PRSA); cdecl = nil;
   (* "up" the RSA object's reference count *)
+  {$EXTERNALSYM RSA_up_ref}
   RSA_up_ref: function (r: PRSA): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM RSA_flags}
   RSA_flags: function (const r: PRSA): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM RSA_set_default_method}
   RSA_set_default_method: procedure (const meth: PRSA_METHOD); cdecl = nil;
+  {$EXTERNALSYM RSA_get_default_method}
   RSA_get_default_method: function : PRSA_METHOD; cdecl = nil;
+  {$EXTERNALSYM RSA_null_method}
   RSA_null_method: function : PRSA_METHOD; cdecl = nil;
+  {$EXTERNALSYM RSA_get_method}
   RSA_get_method: function (const rsa: PRSA): PRSA_METHOD; cdecl = nil;
+  {$EXTERNALSYM RSA_set_method}
   RSA_set_method: function (rsa: PRSA; const meth: PRSA_METHOD): TIdC_INT; cdecl = nil;
 
   (* these are the actual RSA functions *)
+  {$EXTERNALSYM RSA_PKCS1_OpenSSL}
   RSA_PKCS1_OpenSSL: function : PRSA_METHOD; cdecl = nil;
 
+  {$EXTERNALSYM RSA_pkey_ctx_ctrl}
   RSA_pkey_ctx_ctrl: function (ctx: PEVP_PKEY_CTX; optype: TIdC_INT; cmd: TIdC_INT; p1: TIdC_INT; p2: Pointer): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM RSA_print}
   RSA_print: function (bp: PBIO; const r: PRSA; offset: TIdC_INT): TIdC_INT; cdecl = nil;
 
   (*
    * The following 2 functions sign and verify a X509_SIG ASN1 object inside
    * PKCS#1 padded RSA encryption
    *)
+  {$EXTERNALSYM RSA_sign}
   RSA_sign: function (type_: TIdC_INT; const m: PByte; m_length: TIdC_UINT; sigret: PByte; siglen: PIdC_UINT; rsa: PRSA): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_verify}
   RSA_verify: function (type_: TIdC_INT; const m: PByte; m_length: TIdC_UINT; const sigbuf: PByte; siglen: TIdC_UINT; rsa: PRSA): TIdC_INT; cdecl = nil;
 
   (*
    * The following 2 function sign and verify a ASN1_OCTET_STRING object inside
    * PKCS#1 padded RSA encryption
    *)
+  {$EXTERNALSYM RSA_sign_ASN1_OCTET_STRING}
   RSA_sign_ASN1_OCTET_STRING: function (type_: TIdC_INT; const m: PByte; m_length: TIdC_UINT; sigret: PByte; siglen: PIdC_UINT; rsa: PRSA): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_verify_ASN1_OCTET_STRING}
   RSA_verify_ASN1_OCTET_STRING: function (type_: TIdC_INT; const m: PByte; m_length: TIdC_UINT; sigbuf: PByte; siglen: TIdC_UINT; rsa: PRSA): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM RSA_blinding_on}
   RSA_blinding_on: function (rsa: PRSA; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_blinding_off}
   RSA_blinding_off: procedure (rsa: PRSA); cdecl = nil;
+  {$EXTERNALSYM RSA_setup_blinding}
   RSA_setup_blinding: function (rsa: PRSA; ctx: PBN_CTX): PBN_BLINDING; cdecl = nil;
+  {$EXTERNALSYM RSA_padding_add_PKCS1_type_1}
   RSA_padding_add_PKCS1_type_1: function (to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_padding_check_PKCS1_type_1}
   RSA_padding_check_PKCS1_type_1: function (to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT; rsa_len: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_padding_add_PKCS1_type_2}
   RSA_padding_add_PKCS1_type_2: function (to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_padding_check_PKCS1_type_2}
   RSA_padding_check_PKCS1_type_2: function (to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT; rsa_len: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS1_MGF1}
   PKCS1_MGF1: function (mask: PByte; len: TIdC_LONG; const seed: PByte; seedlen: TIdC_LONG; const dgst: PEVP_MD): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_padding_add_PKCS1_OAEP}
   RSA_padding_add_PKCS1_OAEP: function (to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT; const p: PByte; pl: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_padding_check_PKCS1_OAEP}
   RSA_padding_check_PKCS1_OAEP: function (to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT; rsa_len: TIdC_INT; const p: PByte; pl: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_padding_add_PKCS1_OAEP_mgf1}
   RSA_padding_add_PKCS1_OAEP_mgf1: function (to_: PByte; tlen: TIdC_INT; const from: PByte; flen: TIdC_INT; const param: PByte; plen: TIdC_INT; const md: PEVP_MD; const mgf1md: PEVP_MD): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_padding_check_PKCS1_OAEP_mgf1}
   RSA_padding_check_PKCS1_OAEP_mgf1: function (to_: PByte; tlen: TIdC_INT; const from: PByte; flen: TIdC_INT; num: TIdC_INT; const param: PByte; plen: TIdC_INT; const md: PEVP_MD; const mgf1md: PEVP_MD): TIdC_INT; cdecl = nil;
 //  RSA_padding_add_SSLv23: function (to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT): TIdC_INT; cdecl = nil;  //Discontinued in TaurusTLS 3.x
 //  RSA_padding_check_SSLv23: function (to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT; rsa_len: TIdC_INT): TIdC_INT; cdecl = nil;  //Discontinued in TaurusTLS 3.x
+  {$EXTERNALSYM RSA_padding_add_none}
   RSA_padding_add_none: function (to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_padding_check_none}
   RSA_padding_check_none: function (to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT; rsa_len: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_padding_add_X931}
   RSA_padding_add_X931: function (to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_padding_check_X931}
   RSA_padding_check_X931: function (to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT; rsa_len: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_X931_hash_id}
   RSA_X931_hash_id: function (nid: TIdC_INT): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM RSA_verify_PKCS1_PSS}
   RSA_verify_PKCS1_PSS: function (rsa: PRSA; const mHash: PByte; const Hash: PEVP_MD; const EM: PByte; sLen: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_padding_add_PKCS1_PSS}
   RSA_padding_add_PKCS1_PSS: function (rsa: PRSA; EM: PByte; const mHash: PByte; const Hash: PEVP_MD; sLen: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_verify_PKCS1_PSS_mgf1}
   RSA_verify_PKCS1_PSS_mgf1: function (rsa: PRSA; const mHash: PByte; const Hash: PEVP_MD; const mgf1Hash: PEVP_MD; const EM: PByte; sLen: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_padding_add_PKCS1_PSS_mgf1}
   RSA_padding_add_PKCS1_PSS_mgf1: function (rsa: PRSA; EM: PByte; const mHash: PByte; const Hash: PEVP_MD; const mgf1Hash: PEVP_MD; sLen: TIdC_INT): TIdC_INT; cdecl = nil;
 
   //#define RSA_get_ex_new_index(l, p, newf, dupf, freef) \
   //    CRYPTO_get_ex_new_index(CRYPTO_EX_INDEX_RSA, l, p, newf, dupf, freef)
 
+  {$EXTERNALSYM RSA_set_ex_data}
   RSA_set_ex_data: function (r: PRSA; idx: TIdC_INT; arg: Pointer): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_get_ex_data}
   RSA_get_ex_data: function (const r: PRSA; idx: TIdC_INT): Pointer; cdecl = nil;
+  {$EXTERNALSYM RSAPublicKey_dup}
   RSAPublicKey_dup: function (rsa: PRSA): PRSA; cdecl = nil;
+  {$EXTERNALSYM RSAPrivateKey_dup}
   RSAPrivateKey_dup: function (rsa: PRSA): PRSA; cdecl = nil;
 
+  {$EXTERNALSYM RSA_meth_new}
   RSA_meth_new: function (const name: PIdAnsiChar; flags: TIdC_INT): PRSA_METHOD; cdecl = nil;
+  {$EXTERNALSYM RSA_meth_free}
   RSA_meth_free: procedure (meth: PRSA_METHOD); cdecl = nil;
+  {$EXTERNALSYM RSA_meth_dup}
   RSA_meth_dup: function (const meth: PRSA_METHOD): PRSA_METHOD; cdecl = nil;
+  {$EXTERNALSYM RSA_meth_get0_name}
   RSA_meth_get0_name: function (const meth: PRSA_METHOD): PIdAnsiChar; cdecl = nil;
+  {$EXTERNALSYM RSA_meth_set1_name}
   RSA_meth_set1_name: function (meth: PRSA_METHOD; const name: PIdAnsiChar): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_meth_get_flags}
   RSA_meth_get_flags: function (const meth: PRSA_METHOD): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_meth_set_flags}
   RSA_meth_set_flags: function (meth: PRSA_METHOD; flags: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RSA_meth_get0_app_data}
   RSA_meth_get0_app_data: function (const meth: PRSA_METHOD): Pointer; cdecl = nil;
+  {$EXTERNALSYM RSA_meth_set0_app_data}
   RSA_meth_set0_app_data: function (meth: PRSA_METHOD; app_data: Pointer): TIdC_INT; cdecl = nil;
 
   //int (*RSA_meth_get_pub_enc(const RSA_METHOD *meth))
@@ -500,161 +548,254 @@ var
   //int (*RSA_meth_get_priv_dec(const RSA_METHOD *meth))
   //    (int flen, const unsigned char *from,
   //     unsigned char *to_, RSA *rsa, int padding);
+  {$EXTERNALSYM RSA_meth_set_priv_dec}
   RSA_meth_set_priv_dec: function (rsa: PRSA_METHOD; priv_dec: RSA_meth_set_priv_dec_priv_dec): TIdC_INT; cdecl = nil;
 
   //int (*RSA_meth_get_mod_exp(const RSA_METHOD *meth))
   //    (BIGNUM *r0, const BIGNUM *i, RSA *rsa, BN_CTX *ctx);
+  {$EXTERNALSYM RSA_meth_set_mod_exp}
   RSA_meth_set_mod_exp: function (rsa: PRSA_METHOD; mod_exp: RSA_meth_set_mod_exp_mod_exp): TIdC_INT; cdecl = nil;
   //int (*RSA_meth_get_bn_mod_exp(const RSA_METHOD *meth))
   //    (BIGNUM *r, const BIGNUM *a, const BIGNUM *p,
   //     const BIGNUM *m, BN_CTX *ctx, BN_MONT_CTX *m_ctx);
+  {$EXTERNALSYM RSA_meth_set_bn_mod_exp}
   RSA_meth_set_bn_mod_exp: function (rsa: PRSA_METHOD; bn_mod_exp: RSA_meth_set_bn_mod_exp_bn_mod_exp): TIdC_INT; cdecl = nil;
   //int (*RSA_meth_get_init(const RSA_METHOD *meth)) (RSA *rsa);
+  {$EXTERNALSYM RSA_meth_set_init}
   RSA_meth_set_init: function (rsa: PRSA_METHOD; init: RSA_meth_set_init_init): TIdC_INT; cdecl = nil;
   //int (*RSA_meth_get_finish(const RSA_METHOD *meth)) (RSA *rsa);
+  {$EXTERNALSYM RSA_meth_set_finish}
   RSA_meth_set_finish: function (rsa: PRSA_METHOD; finish: RSA_meth_set_finish_finish): TIdC_INT; cdecl = nil;
   //int (*RSA_meth_get_sign(const RSA_METHOD *meth))
   //    (int type_,
   //     const unsigned char *m, unsigned int m_length,
   //     unsigned char *sigret, unsigned int *siglen,
   //     const RSA *rsa);
+  {$EXTERNALSYM RSA_meth_set_sign}
   RSA_meth_set_sign: function (rsa: PRSA_METHOD; sign: RSA_meth_set_sign_sign): TIdC_INT; cdecl = nil;
   //int (*RSA_meth_get_verify(const RSA_METHOD *meth))
   //    (int dtype, const unsigned char *m,
   //     unsigned int m_length, const unsigned char *sigbuf,
   //     unsigned int siglen, const RSA *rsa);
+  {$EXTERNALSYM RSA_meth_set_verify}
   RSA_meth_set_verify: function (rsa: PRSA_METHOD; verify: RSA_meth_set_verify_verify): TIdC_INT; cdecl = nil;
   //int (*RSA_meth_get_keygen(const RSA_METHOD *meth))
   //    (RSA *rsa, int bits, BIGNUM *e, BN_GENCB *cb);
+  {$EXTERNALSYM RSA_meth_set_keygen}
   RSA_meth_set_keygen: function (rsa: PRSA_METHOD; keygen: RSA_meth_set_keygen_keygen): TIdC_INT; cdecl = nil;
   //int (*RSA_meth_get_multi_prime_keygen(const RSA_METHOD *meth))
   //    (RSA *rsa, int bits, int primes, BIGNUM *e, BN_GENCB *cb);
+  {$EXTERNALSYM RSA_meth_set_multi_prime_keygen}
   RSA_meth_set_multi_prime_keygen: function (meth: PRSA_METHOD; keygen: RSA_meth_set_multi_prime_keygen_keygen): TIdC_INT; cdecl = nil;
 
 {$ELSE}
+  {$EXTERNALSYM RSA_new}
   function RSA_new: PRSA cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_new_method}
   function RSA_new_method(engine: PENGINE): PRSA cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_bits}
   function RSA_bits(const rsa: PRSA): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_size}
   function RSA_size(const rsa: PRSA): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_security_bits}
   function RSA_security_bits(const rsa: PRSA): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM RSA_set0_key}
   function RSA_set0_key(r: PRSA; n: PBIGNUM; e: PBIGNUM; d: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_set0_factors}
   function RSA_set0_factors(r: PRSA; p: PBIGNUM; q: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_set0_crt_params}
   function RSA_set0_crt_params(r: PRSA; dmp1: PBIGNUM; dmq1: PBIGNUM; iqmp: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
   //function RSA_set0_multi_prime_params(r: PRSA; primes: array of PBIGNUM; exps: array of PBIGNUM; coeffs: array of PBIGNUM; pnum: TIdC_INT): TIdC_INT;
 
+  {$EXTERNALSYM RSA_get0_key}
   procedure RSA_get0_key(const r: PRSA; const n: PPBIGNUM; const e: PPBIGNUM; const d: PPBIGNUM) cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_get0_factors}
   procedure RSA_get0_factors(const r: PRSA; const p: PPBIGNUM; const q: PPBIGNUM) cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_get_multi_prime_extra_count}
   function RSA_get_multi_prime_extra_count(const r: PRSA): TIdC_INT cdecl; external CLibCrypto;
   //function RSA_get0_multi_prime_factors(const r: PRSA; const primes: array of PBIGNUM): TIdC_INT;
+  {$EXTERNALSYM RSA_get0_crt_params}
   procedure RSA_get0_crt_params(const r: PRSA; const dmp1: PPBIGNUM; const dmq1: PPBIGNUM; const iqmp: PPBIGNUM) cdecl; external CLibCrypto;
 
   //function RSA_get0_multi_prime_crt_params(const r: PRSA; const exps: array of PBIGNUM; const coeffs: array of PBIGNUM): TIdC_INT;
 
+  {$EXTERNALSYM RSA_get0_n}
   function RSA_get0_n(const d: PRSA): PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_get0_e}
   function RSA_get0_e(const d: PRSA): PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_get0_d}
   function RSA_get0_d(const d: PRSA): PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_get0_p}
   function RSA_get0_p(const d: PRSA): PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_get0_q}
   function RSA_get0_q(const d: PRSA): PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_get0_dmp1}
   function RSA_get0_dmp1(const r: PRSA): PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_get0_dmq1}
   function RSA_get0_dmq1(const r: PRSA): PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_get0_iqmp}
   function RSA_get0_iqmp(const r: PRSA): PBIGNUM cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM RSA_clear_flags}
   procedure RSA_clear_flags(r: PRSA; flags: TIdC_INT) cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_test_flags}
   function RSA_test_flags(const r: PRSA; flags: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_set_flags}
   procedure RSA_set_flags(r: PRSA; flags: TIdC_INT) cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_get_version}
   function RSA_get_version(r: PRSA): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_get0_engine}
   function RSA_get0_engine(const r: PRSA): PENGINE cdecl; external CLibCrypto;
 
   (* New version *)
+  {$EXTERNALSYM RSA_generate_key_ex}
   function RSA_generate_key_ex(rsa: PRSA; bits: TIdC_INT; e: PBIGNUM; cb: PBN_GENCB): TIdC_INT cdecl; external CLibCrypto;
   (* Multi-prime version *)
+  {$EXTERNALSYM RSA_generate_multi_prime_key}
   function RSA_generate_multi_prime_key(rsa: PRSA; bits: TIdC_INT; primes: TIdC_INT; e: PBIGNUM; cb: PBN_GENCB): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_X931_derive_ex}
   function RSA_X931_derive_ex(rsa: PRSA; p1: PBIGNUM; p2: PBIGNUM; q1: PBIGNUM; q2: PBIGNUM; const Xp1: PBIGNUM; const Xp2: PBIGNUM; const Xp: PBIGNUM; const Xq1: PBIGNUM; const Xq2: PBIGNUM; const Xq: PBIGNUM; const e: PBIGNUM; cb: PBN_GENCB): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_X931_generate_key_ex}
   function RSA_X931_generate_key_ex(rsa: PRSA; bits: TIdC_INT; const e: PBIGNUM; cb: PBN_GENCB): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM RSA_check_key}
   function RSA_check_key(const v1: PRSA): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_check_key_ex}
   function RSA_check_key_ex(const v1: PRSA; cb: PBN_GENCB): TIdC_INT cdecl; external CLibCrypto;
   (* next 4 return -1 on error *)
+  {$EXTERNALSYM RSA_public_encrypt}
   function RSA_public_encrypt(flen: TIdC_INT; const from: PByte; to_: PByte; rsa: PRSA; padding: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_private_encrypt}
   function RSA_private_encrypt(flen: TIdC_INT; const from: PByte; to_: PByte; rsa: PRSA; padding: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_public_decrypt}
   function RSA_public_decrypt(flen: TIdC_INT; const from: PByte; to_: PByte; rsa: PRSA; padding: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_private_decrypt}
   function RSA_private_decrypt(flen: TIdC_INT; const from: PByte; to_: PByte; rsa: PRSA; padding: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM RSA_free}
   procedure RSA_free(r: PRSA) cdecl; external CLibCrypto;
   (* "up" the RSA object's reference count *)
+  {$EXTERNALSYM RSA_up_ref}
   function RSA_up_ref(r: PRSA): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM RSA_flags}
   function RSA_flags(const r: PRSA): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM RSA_set_default_method}
   procedure RSA_set_default_method(const meth: PRSA_METHOD) cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_get_default_method}
   function RSA_get_default_method: PRSA_METHOD cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_null_method}
   function RSA_null_method: PRSA_METHOD cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_get_method}
   function RSA_get_method(const rsa: PRSA): PRSA_METHOD cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_set_method}
   function RSA_set_method(rsa: PRSA; const meth: PRSA_METHOD): TIdC_INT cdecl; external CLibCrypto;
 
   (* these are the actual RSA functions *)
+  {$EXTERNALSYM RSA_PKCS1_OpenSSL}
   function RSA_PKCS1_OpenSSL: PRSA_METHOD cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM RSA_pkey_ctx_ctrl}
   function RSA_pkey_ctx_ctrl(ctx: PEVP_PKEY_CTX; optype: TIdC_INT; cmd: TIdC_INT; p1: TIdC_INT; p2: Pointer): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM RSA_print}
   function RSA_print(bp: PBIO; const r: PRSA; offset: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
 
   (*
    * The following 2 functions sign and verify a X509_SIG ASN1 object inside
    * PKCS#1 padded RSA encryption
    *)
+  {$EXTERNALSYM RSA_sign}
   function RSA_sign(type_: TIdC_INT; const m: PByte; m_length: TIdC_UINT; sigret: PByte; siglen: PIdC_UINT; rsa: PRSA): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_verify}
   function RSA_verify(type_: TIdC_INT; const m: PByte; m_length: TIdC_UINT; const sigbuf: PByte; siglen: TIdC_UINT; rsa: PRSA): TIdC_INT cdecl; external CLibCrypto;
 
   (*
    * The following 2 function sign and verify a ASN1_OCTET_STRING object inside
    * PKCS#1 padded RSA encryption
    *)
+  {$EXTERNALSYM RSA_sign_ASN1_OCTET_STRING}
   function RSA_sign_ASN1_OCTET_STRING(type_: TIdC_INT; const m: PByte; m_length: TIdC_UINT; sigret: PByte; siglen: PIdC_UINT; rsa: PRSA): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_verify_ASN1_OCTET_STRING}
   function RSA_verify_ASN1_OCTET_STRING(type_: TIdC_INT; const m: PByte; m_length: TIdC_UINT; sigbuf: PByte; siglen: TIdC_UINT; rsa: PRSA): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM RSA_blinding_on}
   function RSA_blinding_on(rsa: PRSA; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_blinding_off}
   procedure RSA_blinding_off(rsa: PRSA) cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_setup_blinding}
   function RSA_setup_blinding(rsa: PRSA; ctx: PBN_CTX): PBN_BLINDING cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_padding_add_PKCS1_type_1}
   function RSA_padding_add_PKCS1_type_1(to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_padding_check_PKCS1_type_1}
   function RSA_padding_check_PKCS1_type_1(to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT; rsa_len: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_padding_add_PKCS1_type_2}
   function RSA_padding_add_PKCS1_type_2(to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_padding_check_PKCS1_type_2}
   function RSA_padding_check_PKCS1_type_2(to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT; rsa_len: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS1_MGF1}
   function PKCS1_MGF1(mask: PByte; len: TIdC_LONG; const seed: PByte; seedlen: TIdC_LONG; const dgst: PEVP_MD): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_padding_add_PKCS1_OAEP}
   function RSA_padding_add_PKCS1_OAEP(to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT; const p: PByte; pl: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_padding_check_PKCS1_OAEP}
   function RSA_padding_check_PKCS1_OAEP(to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT; rsa_len: TIdC_INT; const p: PByte; pl: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_padding_add_PKCS1_OAEP_mgf1}
   function RSA_padding_add_PKCS1_OAEP_mgf1(to_: PByte; tlen: TIdC_INT; const from: PByte; flen: TIdC_INT; const param: PByte; plen: TIdC_INT; const md: PEVP_MD; const mgf1md: PEVP_MD): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_padding_check_PKCS1_OAEP_mgf1}
   function RSA_padding_check_PKCS1_OAEP_mgf1(to_: PByte; tlen: TIdC_INT; const from: PByte; flen: TIdC_INT; num: TIdC_INT; const param: PByte; plen: TIdC_INT; const md: PEVP_MD; const mgf1md: PEVP_MD): TIdC_INT cdecl; external CLibCrypto;
 //  function RSA_padding_add_SSLv23(to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
 //  function RSA_padding_check_SSLv23(to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT; rsa_len: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_padding_add_none}
   function RSA_padding_add_none(to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_padding_check_none}
   function RSA_padding_check_none(to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT; rsa_len: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_padding_add_X931}
   function RSA_padding_add_X931(to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_padding_check_X931}
   function RSA_padding_check_X931(to_: PByte; tlen: TIdC_INT; const f: PByte; fl: TIdC_INT; rsa_len: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_X931_hash_id}
   function RSA_X931_hash_id(nid: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM RSA_verify_PKCS1_PSS}
   function RSA_verify_PKCS1_PSS(rsa: PRSA; const mHash: PByte; const Hash: PEVP_MD; const EM: PByte; sLen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_padding_add_PKCS1_PSS}
   function RSA_padding_add_PKCS1_PSS(rsa: PRSA; EM: PByte; const mHash: PByte; const Hash: PEVP_MD; sLen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_verify_PKCS1_PSS_mgf1}
   function RSA_verify_PKCS1_PSS_mgf1(rsa: PRSA; const mHash: PByte; const Hash: PEVP_MD; const mgf1Hash: PEVP_MD; const EM: PByte; sLen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_padding_add_PKCS1_PSS_mgf1}
   function RSA_padding_add_PKCS1_PSS_mgf1(rsa: PRSA; EM: PByte; const mHash: PByte; const Hash: PEVP_MD; const mgf1Hash: PEVP_MD; sLen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
 
   //#define RSA_get_ex_new_index(l, p, newf, dupf, freef) \
   //    CRYPTO_get_ex_new_index(CRYPTO_EX_INDEX_RSA, l, p, newf, dupf, freef)
 
+  {$EXTERNALSYM RSA_set_ex_data}
   function RSA_set_ex_data(r: PRSA; idx: TIdC_INT; arg: Pointer): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_get_ex_data}
   function RSA_get_ex_data(const r: PRSA; idx: TIdC_INT): Pointer cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSAPublicKey_dup}
   function RSAPublicKey_dup(rsa: PRSA): PRSA cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSAPrivateKey_dup}
   function RSAPrivateKey_dup(rsa: PRSA): PRSA cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM RSA_meth_new}
   function RSA_meth_new(const name: PIdAnsiChar; flags: TIdC_INT): PRSA_METHOD cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_meth_free}
   procedure RSA_meth_free(meth: PRSA_METHOD) cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_meth_dup}
   function RSA_meth_dup(const meth: PRSA_METHOD): PRSA_METHOD cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_meth_get0_name}
   function RSA_meth_get0_name(const meth: PRSA_METHOD): PIdAnsiChar cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_meth_set1_name}
   function RSA_meth_set1_name(meth: PRSA_METHOD; const name: PIdAnsiChar): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_meth_get_flags}
   function RSA_meth_get_flags(const meth: PRSA_METHOD): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_meth_set_flags}
   function RSA_meth_set_flags(meth: PRSA_METHOD; flags: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_meth_get0_app_data}
   function RSA_meth_get0_app_data(const meth: PRSA_METHOD): Pointer cdecl; external CLibCrypto;
+  {$EXTERNALSYM RSA_meth_set0_app_data}
   function RSA_meth_set0_app_data(meth: PRSA_METHOD; app_data: Pointer): TIdC_INT cdecl; external CLibCrypto;
 
   //int (*RSA_meth_get_pub_enc(const RSA_METHOD *meth))
@@ -681,38 +822,48 @@ var
   //int (*RSA_meth_get_priv_dec(const RSA_METHOD *meth))
   //    (int flen, const unsigned char *from,
   //     unsigned char *to_, RSA *rsa, int padding);
+  {$EXTERNALSYM RSA_meth_set_priv_dec}
   function RSA_meth_set_priv_dec(rsa: PRSA_METHOD; priv_dec: RSA_meth_set_priv_dec_priv_dec): TIdC_INT cdecl; external CLibCrypto;
 
   //int (*RSA_meth_get_mod_exp(const RSA_METHOD *meth))
   //    (BIGNUM *r0, const BIGNUM *i, RSA *rsa, BN_CTX *ctx);
+  {$EXTERNALSYM RSA_meth_set_mod_exp}
   function RSA_meth_set_mod_exp(rsa: PRSA_METHOD; mod_exp: RSA_meth_set_mod_exp_mod_exp): TIdC_INT cdecl; external CLibCrypto;
   //int (*RSA_meth_get_bn_mod_exp(const RSA_METHOD *meth))
   //    (BIGNUM *r, const BIGNUM *a, const BIGNUM *p,
   //     const BIGNUM *m, BN_CTX *ctx, BN_MONT_CTX *m_ctx);
+  {$EXTERNALSYM RSA_meth_set_bn_mod_exp}
   function RSA_meth_set_bn_mod_exp(rsa: PRSA_METHOD; bn_mod_exp: RSA_meth_set_bn_mod_exp_bn_mod_exp): TIdC_INT cdecl; external CLibCrypto;
   //int (*RSA_meth_get_init(const RSA_METHOD *meth)) (RSA *rsa);
+  {$EXTERNALSYM RSA_meth_set_init}
   function RSA_meth_set_init(rsa: PRSA_METHOD; init: RSA_meth_set_init_init): TIdC_INT cdecl; external CLibCrypto;
   //int (*RSA_meth_get_finish(const RSA_METHOD *meth)) (RSA *rsa);
+  {$EXTERNALSYM RSA_meth_set_finish}
   function RSA_meth_set_finish(rsa: PRSA_METHOD; finish: RSA_meth_set_finish_finish): TIdC_INT cdecl; external CLibCrypto;
   //int (*RSA_meth_get_sign(const RSA_METHOD *meth))
   //    (int type_,
   //     const unsigned char *m, unsigned int m_length,
   //     unsigned char *sigret, unsigned int *siglen,
   //     const RSA *rsa);
+  {$EXTERNALSYM RSA_meth_set_sign}
   function RSA_meth_set_sign(rsa: PRSA_METHOD; sign: RSA_meth_set_sign_sign): TIdC_INT cdecl; external CLibCrypto;
   //int (*RSA_meth_get_verify(const RSA_METHOD *meth))
   //    (int dtype, const unsigned char *m,
   //     unsigned int m_length, const unsigned char *sigbuf,
   //     unsigned int siglen, const RSA *rsa);
+  {$EXTERNALSYM RSA_meth_set_verify}
   function RSA_meth_set_verify(rsa: PRSA_METHOD; verify: RSA_meth_set_verify_verify): TIdC_INT cdecl; external CLibCrypto;
   //int (*RSA_meth_get_keygen(const RSA_METHOD *meth))
   //    (RSA *rsa, int bits, BIGNUM *e, BN_GENCB *cb);
+  {$EXTERNALSYM RSA_meth_set_keygen}
   function RSA_meth_set_keygen(rsa: PRSA_METHOD; keygen: RSA_meth_set_keygen_keygen): TIdC_INT cdecl; external CLibCrypto;
   //int (*RSA_meth_get_multi_prime_keygen(const RSA_METHOD *meth))
   //    (RSA *rsa, int bits, int primes, BIGNUM *e, BN_GENCB *cb);
+  {$EXTERNALSYM RSA_meth_set_multi_prime_keygen}
   function RSA_meth_set_multi_prime_keygen(meth: PRSA_METHOD; keygen: RSA_meth_set_multi_prime_keygen_keygen): TIdC_INT cdecl; external CLibCrypto;
 
 {$ENDIF}
+  {$EXTERNALSYM RSA_get_ex_new_index}
 function RSA_get_ex_new_index(l : TIdC_LONG; p : PRSA;
     newf : CRYPTO_EX_new; dupf : CRYPTO_EX_dup; freef : CRYPTO_EX_FREE) : TIdC_INT;
 

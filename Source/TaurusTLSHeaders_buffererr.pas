@@ -37,8 +37,11 @@ uses
 
 const
 // BUF function codes.
+  {$EXTERNALSYM BUF_F_BUF_MEM_GROW}
   BUF_F_BUF_MEM_GROW = 100;
+  {$EXTERNALSYM BUF_F_BUF_MEM_GROW_CLEAN}
   BUF_F_BUF_MEM_GROW_CLEAN = 105;
+  {$EXTERNALSYM BUF_F_BUF_MEM_NEW}
   BUF_F_BUF_MEM_NEW = 101;
 
 // BUF reason codes.
@@ -48,13 +51,14 @@ const
   	  The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header 
 	  files generated for C++. }
 	  
-  {$EXTERNALSYM ERR_load_BUF_strings}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM ERR_load_BUF_strings}
   ERR_load_BUF_strings: function : TIdC_INT; cdecl = nil;
 
 {$ELSE}
+  {$EXTERNALSYM ERR_load_BUF_strings}
   function ERR_load_BUF_strings: TIdC_INT cdecl; external CLibCrypto;
 
 {$ENDIF}

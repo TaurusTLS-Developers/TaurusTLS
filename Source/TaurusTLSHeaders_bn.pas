@@ -36,7 +36,9 @@ uses
   TaurusTLSHeaders_types;
 
 const
+  {$EXTERNALSYM BN_FLG_MALLOCED}
   BN_FLG_MALLOCED = $01;
+  {$EXTERNALSYM BN_FLG_STATIC_DATA}
   BN_FLG_STATIC_DATA = $02;
 
   (*
@@ -45,26 +47,38 @@ const
    * BN_div() will call BN_div_no_branch,
    * BN_mod_inverse() will call BN_mod_inverse_no_branch.
    *)
+  {$EXTERNALSYM BN_FLG_CONSTTIME}
   BN_FLG_CONSTTIME = $04;
+  {$EXTERNALSYM BN_FLG_SECURE}
   BN_FLG_SECURE = $08;
 
   (* Values for |top| in BN_rand() *)
+  {$EXTERNALSYM BN_RAND_TOP_ANY}
   BN_RAND_TOP_ANY = -1;
+  {$EXTERNALSYM BN_RAND_TOP_ONE}
   BN_RAND_TOP_ONE = 0;
+  {$EXTERNALSYM BN_RAND_TOP_TWO}
   BN_RAND_TOP_TWO = 1;
 
   (* Values for |bottom| in BN_rand() *)
+  {$EXTERNALSYM BN_RAND_BOTTOM_ANY}
   BN_RAND_BOTTOM_ANY = 0;
+  {$EXTERNALSYM BN_RAND_BOTTOM_ODD}
   BN_RAND_BOTTOM_ODD = 1;
 
   (* BN_BLINDING flags *)
+  {$EXTERNALSYM BN_BLINDING_NO_UPDATE}
   BN_BLINDING_NO_UPDATE = $00000001;
+  {$EXTERNALSYM BN_BLINDING_NO_RECREATE}
   BN_BLINDING_NO_RECREATE = $00000002;
 
 type
+  {$EXTERNALSYM BN_ULONG}
   BN_ULONG = TIdC_ULONG;
 
+  {$EXTERNALSYM BN_GENCB_set_old_cb}
   BN_GENCB_set_old_cb = procedure (a: TIdC_INT; b: TIdC_INT; c: Pointer); cdecl;
+  {$EXTERNALSYM BN_GENCB_set_cb}
   BN_GENCB_set_cb = function (a: TIdC_INT; b: TIdC_INT; c: PBN_GENCB): TIdC_INT; cdecl;
 
     { The EXTERNALSYM directive is ignored by FPC, however, it is used by Delphi as follows:
@@ -72,173 +86,12 @@ type
   	  The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header 
 	  files generated for C++. }
 	  
-  {$EXTERNALSYM BN_set_flags}
-  {$EXTERNALSYM BN_get_flags}
-  {$EXTERNALSYM BN_with_flags}
-  {$EXTERNALSYM BN_GENCB_call}
-  {$EXTERNALSYM BN_GENCB_new}
-  {$EXTERNALSYM BN_GENCB_free}
-  {$EXTERNALSYM BN_GENCB_set_old}
-  {$EXTERNALSYM BN_GENCB_set}
-  {$EXTERNALSYM BN_GENCB_get_arg}
-  {$EXTERNALSYM BN_abs_is_word}
-  {$EXTERNALSYM BN_is_zero}
-  {$EXTERNALSYM BN_is_one}
-  {$EXTERNALSYM BN_is_word}
-  {$EXTERNALSYM BN_is_odd}
-  {$EXTERNALSYM BN_zero_ex}
-  {$EXTERNALSYM BN_value_one}
-  {$EXTERNALSYM BN_options}
-  {$EXTERNALSYM BN_CTX_new}
-  {$EXTERNALSYM BN_CTX_secure_new}
-  {$EXTERNALSYM BN_CTX_free}
-  {$EXTERNALSYM BN_CTX_start}
-  {$EXTERNALSYM BN_CTX_get}
-  {$EXTERNALSYM BN_CTX_end}
-  {$EXTERNALSYM BN_rand}
-  {$EXTERNALSYM BN_priv_rand}
-  {$EXTERNALSYM BN_rand_range}
-  {$EXTERNALSYM BN_priv_rand_range}
-  {$EXTERNALSYM BN_pseudo_rand}
-  {$EXTERNALSYM BN_pseudo_rand_range}
-  {$EXTERNALSYM BN_num_bits}
-  {$EXTERNALSYM BN_num_bits_word}
-  {$EXTERNALSYM BN_security_bits}
-  {$EXTERNALSYM BN_new}
-  {$EXTERNALSYM BN_secure_new}
-  {$EXTERNALSYM BN_clear_free}
-  {$EXTERNALSYM BN_copy}
-  {$EXTERNALSYM BN_swap}
-  {$EXTERNALSYM BN_bin2bn}
-  {$EXTERNALSYM BN_bn2bin}
-  {$EXTERNALSYM BN_bn2binpad}
-  {$EXTERNALSYM BN_lebin2bn}
-  {$EXTERNALSYM BN_bn2lebinpad}
-  {$EXTERNALSYM BN_mpi2bn}
-  {$EXTERNALSYM BN_bn2mpi}
-  {$EXTERNALSYM BN_sub}
-  {$EXTERNALSYM BN_usub}
-  {$EXTERNALSYM BN_uadd}
-  {$EXTERNALSYM BN_add}
-  {$EXTERNALSYM BN_mul}
-  {$EXTERNALSYM BN_sqr}
-  {$EXTERNALSYM BN_set_negative}
-  {$EXTERNALSYM BN_is_negative}
-  {$EXTERNALSYM BN_div}
-  {$EXTERNALSYM BN_nnmod}
-  {$EXTERNALSYM BN_mod_add}
-  {$EXTERNALSYM BN_mod_add_quick}
-  {$EXTERNALSYM BN_mod_sub}
-  {$EXTERNALSYM BN_mod_sub_quick}
-  {$EXTERNALSYM BN_mod_mul}
-  {$EXTERNALSYM BN_mod_sqr}
-  {$EXTERNALSYM BN_mod_lshift1}
-  {$EXTERNALSYM BN_mod_lshift1_quick}
-  {$EXTERNALSYM BN_mod_lshift}
-  {$EXTERNALSYM BN_mod_lshift_quick}
-  {$EXTERNALSYM BN_mod_word}
-  {$EXTERNALSYM BN_div_word}
-  {$EXTERNALSYM BN_mul_word}
-  {$EXTERNALSYM BN_add_word}
-  {$EXTERNALSYM BN_sub_word}
-  {$EXTERNALSYM BN_set_word}
-  {$EXTERNALSYM BN_get_word}
-  {$EXTERNALSYM BN_cmp}
-  {$EXTERNALSYM BN_free}
-  {$EXTERNALSYM BN_is_bit_set}
-  {$EXTERNALSYM BN_lshift}
-  {$EXTERNALSYM BN_lshift1}
-  {$EXTERNALSYM BN_exp}
-  {$EXTERNALSYM BN_mod_exp}
-  {$EXTERNALSYM BN_mod_exp_mont}
-  {$EXTERNALSYM BN_mod_exp_mont_consttime}
-  {$EXTERNALSYM BN_mod_exp_mont_word}
-  {$EXTERNALSYM BN_mod_exp2_mont}
-  {$EXTERNALSYM BN_mod_exp_simple}
-  {$EXTERNALSYM BN_mask_bits}
-  {$EXTERNALSYM BN_print}
-  {$EXTERNALSYM BN_reciprocal}
-  {$EXTERNALSYM BN_rshift}
-  {$EXTERNALSYM BN_rshift1}
-  {$EXTERNALSYM BN_clear}
-  {$EXTERNALSYM BN_dup}
-  {$EXTERNALSYM BN_ucmp}
-  {$EXTERNALSYM BN_set_bit}
-  {$EXTERNALSYM BN_clear_bit}
-  {$EXTERNALSYM BN_bn2hex}
-  {$EXTERNALSYM BN_bn2dec}
-  {$EXTERNALSYM BN_hex2bn}
-  {$EXTERNALSYM BN_dec2bn}
-  {$EXTERNALSYM BN_asc2bn}
-  {$EXTERNALSYM BN_gcd}
-  {$EXTERNALSYM BN_kronecker}
-  {$EXTERNALSYM BN_mod_inverse}
-  {$EXTERNALSYM BN_mod_sqrt}
-  {$EXTERNALSYM BN_consttime_swap}
-  {$EXTERNALSYM BN_generate_prime_ex}
-  {$EXTERNALSYM BN_is_prime_ex}
-  {$EXTERNALSYM BN_is_prime_fasttest_ex}
-  {$EXTERNALSYM BN_X931_generate_Xpq}
-  {$EXTERNALSYM BN_X931_derive_prime_ex}
-  {$EXTERNALSYM BN_X931_generate_prime_ex}
-  {$EXTERNALSYM BN_MONT_CTX_new}
-  {$EXTERNALSYM BN_mod_mul_montgomery}
-  {$EXTERNALSYM BN_to_montgomery}
-  {$EXTERNALSYM BN_from_montgomery}
-  {$EXTERNALSYM BN_MONT_CTX_free}
-  {$EXTERNALSYM BN_MONT_CTX_set}
-  {$EXTERNALSYM BN_MONT_CTX_copy}
-  {$EXTERNALSYM BN_BLINDING_new}
-  {$EXTERNALSYM BN_BLINDING_free}
-  {$EXTERNALSYM BN_BLINDING_update}
-  {$EXTERNALSYM BN_BLINDING_convert}
-  {$EXTERNALSYM BN_BLINDING_invert}
-  {$EXTERNALSYM BN_BLINDING_convert_ex}
-  {$EXTERNALSYM BN_BLINDING_invert_ex}
-  {$EXTERNALSYM BN_BLINDING_is_current_thread}
-  {$EXTERNALSYM BN_BLINDING_set_current_thread}
-  {$EXTERNALSYM BN_BLINDING_lock}
-  {$EXTERNALSYM BN_BLINDING_unlock}
-  {$EXTERNALSYM BN_BLINDING_get_flags}
-  {$EXTERNALSYM BN_BLINDING_set_flags}
-  {$EXTERNALSYM BN_RECP_CTX_free}
-  {$EXTERNALSYM BN_RECP_CTX_set}
-  {$EXTERNALSYM BN_mod_mul_reciprocal}
-  {$EXTERNALSYM BN_mod_exp_recp}
-  {$EXTERNALSYM BN_div_recp}
-  {$EXTERNALSYM BN_GF2m_add}
-  {$EXTERNALSYM BN_GF2m_mod}
-  {$EXTERNALSYM BN_GF2m_mod_mul}
-  {$EXTERNALSYM BN_GF2m_mod_sqr}
-  {$EXTERNALSYM BN_GF2m_mod_inv}
-  {$EXTERNALSYM BN_GF2m_mod_div}
-  {$EXTERNALSYM BN_GF2m_mod_exp}
-  {$EXTERNALSYM BN_GF2m_mod_sqrt}
-  {$EXTERNALSYM BN_GF2m_mod_solve_quad}
-  {$EXTERNALSYM BN_nist_mod_192}
-  {$EXTERNALSYM BN_nist_mod_224}
-  {$EXTERNALSYM BN_nist_mod_256}
-  {$EXTERNALSYM BN_nist_mod_384}
-  {$EXTERNALSYM BN_nist_mod_521}
-  {$EXTERNALSYM BN_get0_nist_prime_192}
-  {$EXTERNALSYM BN_get0_nist_prime_224}
-  {$EXTERNALSYM BN_get0_nist_prime_256}
-  {$EXTERNALSYM BN_get0_nist_prime_384}
-  {$EXTERNALSYM BN_get0_nist_prime_521}
-  {$EXTERNALSYM BN_generate_dsa_nonce}
-  {$EXTERNALSYM BN_get_rfc2409_prime_768}
-  {$EXTERNALSYM BN_get_rfc2409_prime_1024}
-  {$EXTERNALSYM BN_get_rfc3526_prime_1536}
-  {$EXTERNALSYM BN_get_rfc3526_prime_2048}
-  {$EXTERNALSYM BN_get_rfc3526_prime_3072}
-  {$EXTERNALSYM BN_get_rfc3526_prime_4096}
-  {$EXTERNALSYM BN_get_rfc3526_prime_6144}
-  {$EXTERNALSYM BN_get_rfc3526_prime_8192}
-  {$EXTERNALSYM BN_bntest_rand}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM BN_set_flags}
   BN_set_flags: procedure (b: PBIGNUM; n: TIdC_INT); cdecl = nil;
+  {$EXTERNALSYM BN_get_flags}
   BN_get_flags: function (b: PBIGNUM; n: TIdC_INT): TIdC_INT; cdecl = nil;
 
   (*
@@ -247,19 +100,26 @@ var
    * value |dest| should be a newly allocated BIGNUM obtained via BN_new() that
    * has not been otherwise initialised or used.
    *)
+  {$EXTERNALSYM BN_with_flags}
   BN_with_flags: procedure (dest: PBIGNUM; b: PBIGNUM; flags: TIdC_INT); cdecl = nil;
   (* Wrapper function to make using BN_GENCB easier *)
+  {$EXTERNALSYM BN_GENCB_call}
   BN_GENCB_call: function (cb: PBN_GENCB; a: TIdC_INT; b: TIdC_INT): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM BN_GENCB_new}
   BN_GENCB_new: function : PBN_GENCB; cdecl = nil;
+  {$EXTERNALSYM BN_GENCB_free}
   BN_GENCB_free: procedure (cb: PBN_GENCB); cdecl = nil;
 
   (* Populate a PBN_GENCB structure with an "old"-style callback *)
+  {$EXTERNALSYM BN_GENCB_set_old}
   BN_GENCB_set_old: procedure (gencb: PBN_GENCB; callback: BN_GENCB_set_old_cb; cb_arg: Pointer); cdecl = nil;
 
   (* Populate a PBN_GENCB structure with a "new"-style callback *)
+  {$EXTERNALSYM BN_GENCB_set}
   BN_GENCB_set: procedure (gencb: PBN_GENCB; callback: BN_GENCB_set_cb; cb_arg: Pointer); cdecl = nil;
 
+  {$EXTERNALSYM BN_GENCB_get_arg}
   BN_GENCB_get_arg: function (cb: PBN_GENCB): Pointer; cdecl = nil;
   
   (*
@@ -336,151 +196,271 @@ var
 //
 //  # define BN_num_bytes(a) ((BN_num_bits(a)+7)/8)
 
+  {$EXTERNALSYM BN_abs_is_word}
   BN_abs_is_word: function (a: PBIGNUM; w: BN_ULONG): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_is_zero}
   BN_is_zero: function (a: PBIGNUM): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_is_one}
   BN_is_one: function (a: PBIGNUM): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_is_word}
   BN_is_word: function (a: PBIGNUM; w: BN_ULONG): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_is_odd}
   BN_is_odd: function (a: PBIGNUM): TIdC_INT; cdecl = nil;
 
 //  # define BN_one(a)       (BN_set_word((a),1))
 
+  {$EXTERNALSYM BN_zero_ex}
   BN_zero_ex: procedure (a: PBIGNUM); cdecl = nil;
 
+  {$EXTERNALSYM BN_value_one}
   BN_value_one: function : PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM BN_options}
   BN_options: function : PIdAnsiChar; cdecl = nil;
+  {$EXTERNALSYM BN_CTX_new}
   BN_CTX_new: function : PBN_CTX; cdecl = nil;
+  {$EXTERNALSYM BN_CTX_secure_new}
   BN_CTX_secure_new: function : PBN_CTX; cdecl = nil;
+  {$EXTERNALSYM BN_CTX_free}
   BN_CTX_free: procedure (c: PBN_CTX); cdecl = nil;
+  {$EXTERNALSYM BN_CTX_start}
   BN_CTX_start: procedure (ctx: PBN_CTX); cdecl = nil;
+  {$EXTERNALSYM BN_CTX_get}
   BN_CTX_get: function (ctx: PBN_CTX): PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM BN_CTX_end}
   BN_CTX_end: procedure (ctx: PBN_CTX); cdecl = nil;
+  {$EXTERNALSYM BN_rand}
   BN_rand: function (rnd: PBIGNUM; bits: TIdC_INT; top: TIdC_INT; bottom: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_priv_rand}
   BN_priv_rand: function (rnd: PBIGNUM; bits: TIdC_INT; top: TIdC_INT; bottom: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_rand_range}
   BN_rand_range: function (rnd: PBIGNUM; range: PBIGNUM): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_priv_rand_range}
   BN_priv_rand_range: function (rnd: PBIGNUM; range: PBIGNUM): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_pseudo_rand}
   BN_pseudo_rand: function (rnd: PBIGNUM; bits: TIdC_INT; top: TIdC_INT; bottom: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_pseudo_rand_range}
   BN_pseudo_rand_range: function (rnd: PBIGNUM; range: PBIGNUM): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_num_bits}
   BN_num_bits: function (a: PBIGNUM): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_num_bits_word}
   BN_num_bits_word: function (l: BN_ULONG): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_security_bits}
   BN_security_bits: function (L: TIdC_INT; N: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_new}
   BN_new: function : PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM BN_secure_new}
   BN_secure_new: function : PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM BN_clear_free}
   BN_clear_free: procedure (a: PBIGNUM); cdecl = nil;
+  {$EXTERNALSYM BN_copy}
   BN_copy: function (a: PBIGNUM; b: PBIGNUM): PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM BN_swap}
   BN_swap: procedure (a: PBIGNUM; b: PBIGNUM); cdecl = nil;
+  {$EXTERNALSYM BN_bin2bn}
   BN_bin2bn: function (const s: PByte; len: TIdC_INT; ret: PBIGNUM): PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM BN_bn2bin}
   BN_bn2bin: function (const a: PBIGNUM; to_: PByte): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_bn2binpad}
   BN_bn2binpad: function (const a: PBIGNUM; to_: PByte; tolen: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_lebin2bn}
   BN_lebin2bn: function (const s: PByte; len: TIdC_INT; ret: PBIGNUM): PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM BN_bn2lebinpad}
   BN_bn2lebinpad: function (a: PBIGNUM; to_: PByte; tolen: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_mpi2bn}
   BN_mpi2bn: function (const s: PByte; len: TIdC_INT; ret: PBIGNUM): PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM BN_bn2mpi}
   BN_bn2mpi: function (a: PBIGNUM; to_: PByte): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_sub}
   BN_sub: function (r: PBIGNUM; const a: PBIGNUM; const b: PBIGNUM): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_usub}
   BN_usub: function (r: PBIGNUM; const a: PBIGNUM; const b: PBIGNUM): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_uadd}
   BN_uadd: function (r: PBIGNUM; const a: PBIGNUM; const b: PBIGNUM): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_add}
   BN_add: function (r: PBIGNUM; const a: PBIGNUM; const b: PBIGNUM): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_mul}
   BN_mul: function (r: PBIGNUM; const a: PBIGNUM; const b: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_sqr}
   BN_sqr: function (r: PBIGNUM; const a: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
 
   (** BN_set_negative sets sign of a BIGNUM
    * \param  b  pointer to the BIGNUM object
    * \param  n  0 if the BIGNUM b should be positive and a value != 0 otherwise
    *)
+  {$EXTERNALSYM BN_set_negative}
   BN_set_negative: procedure (b: PBIGNUM; n: TIdC_INT); cdecl = nil;
   (** BN_is_negative returns 1 if the BIGNUM is negative
    * \param  b  pointer to the BIGNUM object
    * \return 1 if a < 0 and 0 otherwise
    *)
+  {$EXTERNALSYM BN_is_negative}
   BN_is_negative: function (b: PBIGNUM): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM BN_div}
   BN_div: function (dv: PBIGNUM; rem: PBIGNUM; const m: PBIGNUM; const d: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
 //  # define BN_mod(rem,m,d,ctx) BN_div(NULL,(rem),(m),(d),(ctx))
+  {$EXTERNALSYM BN_nnmod}
   BN_nnmod: function (r: PBIGNUM; const m: PBIGNUM; const d: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_mod_add}
   BN_mod_add: function (r: PBIGNUM; const a: PBIGNUM; const b: PBIGNUM; const m: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_mod_add_quick}
   BN_mod_add_quick: function (r: PBIGNUM; const a: PBIGNUM; const b: PBIGNUM; const m: PBIGNUM): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_mod_sub}
   BN_mod_sub: function (r: PBIGNUM; const a: PBIGNUM; const b: PBIGNUM; const m: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_mod_sub_quick}
   BN_mod_sub_quick: function (r: PBIGNUM; const a: PBIGNUM; const b: PBIGNUM; const m: PBIGNUM): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_mod_mul}
   BN_mod_mul: function (r: PBIGNUM; const a: PBIGNUM; const b: PBIGNUM; const m: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_mod_sqr}
   BN_mod_sqr: function (r: PBIGNUM; const a: PBIGNUM; const m: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_mod_lshift1}
   BN_mod_lshift1: function (r: PBIGNUM; const a: PBIGNUM; const m: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_mod_lshift1_quick}
   BN_mod_lshift1_quick: function (r: PBIGNUM; const a: PBIGNUM; const m: PBIGNUM): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_mod_lshift}
   BN_mod_lshift: function (r: PBIGNUM; const a: PBIGNUM; n: TIdC_INT; const m: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_mod_lshift_quick}
   BN_mod_lshift_quick: function (r: PBIGNUM; const a: PBIGNUM; n: TIdC_INT; const m: PBIGNUM): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM BN_mod_word}
   BN_mod_word: function (const a: PBIGNUM; w: BN_ULONG): BN_ULONG; cdecl = nil;
+  {$EXTERNALSYM BN_div_word}
   BN_div_word: function (a: PBIGNUM; w: BN_ULONG): BN_ULONG; cdecl = nil;
+  {$EXTERNALSYM BN_mul_word}
   BN_mul_word: function (a: PBIGNUM; w: BN_ULONG): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_add_word}
   BN_add_word: function (a: PBIGNUM; w: BN_ULONG): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_sub_word}
   BN_sub_word: function (a: PBIGNUM; w: BN_ULONG): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_set_word}
   BN_set_word: function (a: PBIGNUM; w: BN_ULONG): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_get_word}
   BN_get_word: function (const a: PBIGNUM): BN_ULONG; cdecl = nil;
 
+  {$EXTERNALSYM BN_cmp}
   BN_cmp: function (const a: PBIGNUM; const b: PBIGNUM): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_free}
   BN_free: procedure (a: PBIGNUM); cdecl = nil;
+  {$EXTERNALSYM BN_is_bit_set}
   BN_is_bit_set: function (const a: PBIGNUM; n: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_lshift}
   BN_lshift: function (r: PBIGNUM; const a: PBIGNUM; n: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_lshift1}
   BN_lshift1: function (r: PBIGNUM; const a: PBIGNUM): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_exp}
   BN_exp: function (r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM BN_mod_exp}
   BN_mod_exp: function (r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; const m: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_mod_exp_mont}
   BN_mod_exp_mont: function (r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; m: PBIGNUM; ctx: PBN_CTX; m_ctx: PBN_MONT_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_mod_exp_mont_consttime}
   BN_mod_exp_mont_consttime: function (rr: PBIGNUM; a: PBIGNUM; p: PBIGNUM; m: PBIGNUM; ctx: PBN_CTX; in_mont: PBN_MONT_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_mod_exp_mont_word}
   BN_mod_exp_mont_word: function (r: PBIGNUM; a: BN_ULONG; p: PBIGNUM; m: PBIGNUM; ctx: PBN_CTX; m_ctx: PBN_MONT_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_mod_exp2_mont}
   BN_mod_exp2_mont: function (r: PBIGNUM; const a1: PBIGNUM; const p1: PBIGNUM; const a2: PBIGNUM; const p2: PBIGNUM; const m: PBIGNUM; ctx: PBN_CTX; m_ctx: PBN_MONT_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_mod_exp_simple}
   BN_mod_exp_simple: function (r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; m: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM BN_mask_bits}
   BN_mask_bits: function (a: PBIGNUM; n: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_print}
   BN_print: function (bio: PBIO; a: PBIGNUM): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_reciprocal}
   BN_reciprocal: function (r: PBIGNUM; m: PBIGNUM; len: TIdC_INT; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_rshift}
   BN_rshift: function (r: PBIGNUM; a: PBIGNUM; n: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_rshift1}
   BN_rshift1: function (r: PBIGNUM; a: PBIGNUM): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_clear}
   BN_clear: procedure (a: PBIGNUM); cdecl = nil;
+  {$EXTERNALSYM BN_dup}
   BN_dup: function (const a: PBIGNUM): PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM BN_ucmp}
   BN_ucmp: function (a: PBIGNUM; b: PBIGNUM): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_set_bit}
   BN_set_bit: function (a: PBIGNUM; n: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_clear_bit}
   BN_clear_bit: function (a: PBIGNUM; n: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_bn2hex}
   BN_bn2hex: function (a: PBIGNUM): PIdAnsiChar; cdecl = nil;
+  {$EXTERNALSYM BN_bn2dec}
   BN_bn2dec: function (a: PBIGNUM): PIdAnsiChar; cdecl = nil;
+  {$EXTERNALSYM BN_hex2bn}
   BN_hex2bn: function (a: PPBIGNUM; _str: PIdAnsiChar): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_dec2bn}
   BN_dec2bn: function (a: PPBIGNUM; _str: PIdAnsiChar): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_asc2bn}
   BN_asc2bn: function (a: PPBIGNUM; _str: PIdAnsiChar): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_gcd}
   BN_gcd: function (r: PBIGNUM; a: PBIGNUM; b: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_kronecker}
   BN_kronecker: function (a: PBIGNUM; b: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM BN_mod_inverse}
   BN_mod_inverse: function (ret: PBIGNUM; a: PBIGNUM; const n: PBIGNUM; ctx: PBN_CTX): PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM BN_mod_sqrt}
   BN_mod_sqrt: function (ret: PBIGNUM; a: PBIGNUM; const n: PBIGNUM; ctx: PBN_CTX): PBIGNUM; cdecl = nil;
 
+  {$EXTERNALSYM BN_consttime_swap}
   BN_consttime_swap: procedure (_swap: BN_ULONG; a: PBIGNUM; b: PBIGNUM; nwords: TIdC_INT); cdecl = nil;
 
+  {$EXTERNALSYM BN_generate_prime_ex}
   BN_generate_prime_ex: function (ret: PBIGNUM; bits: TIdC_INT; safe: TIdC_INT; const add: PBIGNUM; const rem: PBIGNUM; cb: PBN_GENCB): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_is_prime_ex}
   BN_is_prime_ex: function (const p: PBIGNUM; nchecks: TIdC_INT; ctx: PBN_CTX; cb: PBN_GENCB): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_is_prime_fasttest_ex}
   BN_is_prime_fasttest_ex: function (const p: PBIGNUM; nchecks: TIdC_INT; ctx: PBN_CTX; do_trial_division: TIdC_INT; cb: PBN_GENCB): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_X931_generate_Xpq}
   BN_X931_generate_Xpq: function (Xp: PBIGNUM; Xq: PBIGNUM; nbits: TIdC_INT; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_X931_derive_prime_ex}
   BN_X931_derive_prime_ex: function (p: PBIGNUM; p1: PBIGNUM; p2: PBIGNUM; const Xp: PBIGNUM; const Xp1: PBIGNUM; const Xp2: PBIGNUM; const e: PBIGNUM; ctx: PBN_CTX; cb: PBN_GENCB): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_X931_generate_prime_ex}
   BN_X931_generate_prime_ex: function (p: PBIGNUM; p1: PBIGNUM; p2: PBIGNUM; Xp1: PBIGNUM; Xp2: PBIGNUM; Xp: PBIGNUM; const e: PBIGNUM; ctx: PBN_CTX; cb: PBN_GENCB): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_MONT_CTX_new}
   BN_MONT_CTX_new: function : PBN_MONT_CTX; cdecl = nil;
+  {$EXTERNALSYM BN_mod_mul_montgomery}
   BN_mod_mul_montgomery: function (r: PBIGNUM; const a: PBIGNUM; const b: PBIGNUM; mont: PBN_MONT_CTX; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_to_montgomery}
   BN_to_montgomery: function (r: PBIGNUM; a: PBIGNUM; mont: PBN_MONT_CTX; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_from_montgomery}
   BN_from_montgomery: function (r: PBIGNUM; a: PBIGNUM; mont: PBN_MONT_CTX; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_MONT_CTX_free}
   BN_MONT_CTX_free: procedure (mont: PBN_MONT_CTX); cdecl = nil;
+  {$EXTERNALSYM BN_MONT_CTX_set}
   BN_MONT_CTX_set: function (mont: PBN_MONT_CTX; mod_: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_MONT_CTX_copy}
   BN_MONT_CTX_copy: function (to_: PBN_MONT_CTX; from: PBN_MONT_CTX): PBN_MONT_CTX; cdecl = nil;
 //  function BN_MONT_CTX_set_locked(pmont: ^PBN_MONT_CTX; lock: CRYPTO_RWLOCK; mod_: PBIGNUM; ctx: PBN_CTX): PBN_MONT_CTX;
 
+  {$EXTERNALSYM BN_BLINDING_new}
   BN_BLINDING_new: function (const A: PBIGNUM; const Ai: PBIGNUM; mod_: PBIGNUM): PBN_BLINDING; cdecl = nil;
+  {$EXTERNALSYM BN_BLINDING_free}
   BN_BLINDING_free: procedure (b: PBN_BLINDING); cdecl = nil;
+  {$EXTERNALSYM BN_BLINDING_update}
   BN_BLINDING_update: function (b: PBN_BLINDING; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_BLINDING_convert}
   BN_BLINDING_convert: function (n: PBIGNUM; b: PBN_BLINDING; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_BLINDING_invert}
   BN_BLINDING_invert: function (n: PBIGNUM; b: PBN_BLINDING; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_BLINDING_convert_ex}
   BN_BLINDING_convert_ex: function (n: PBIGNUM; r: PBIGNUM; b: PBN_BLINDING; v4: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_BLINDING_invert_ex}
   BN_BLINDING_invert_ex: function (n: PBIGNUM; r: PBIGNUM; b: PBN_BLINDING; v2: PBN_CTX): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM BN_BLINDING_is_current_thread}
   BN_BLINDING_is_current_thread: function (b: PBN_BLINDING): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_BLINDING_set_current_thread}
   BN_BLINDING_set_current_thread: procedure (b: PBN_BLINDING); cdecl = nil;
+  {$EXTERNALSYM BN_BLINDING_lock}
   BN_BLINDING_lock: function (b: PBN_BLINDING): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_BLINDING_unlock}
   BN_BLINDING_unlock: function (b: PBN_BLINDING): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM BN_BLINDING_get_flags}
   BN_BLINDING_get_flags: function (v1: PBN_BLINDING): TIdC_ULONG; cdecl = nil;
+  {$EXTERNALSYM BN_BLINDING_set_flags}
   BN_BLINDING_set_flags: procedure (v1: PBN_BLINDING; v2: TIdC_ULONG); cdecl = nil;
 //  function BN_BLINDING_create_param(PBN_BLINDING *b,
 //                                         PBIGNUM *e, PBIGNUM *m, PBN_CTX *ctx,
@@ -493,10 +473,15 @@ var
 //    m_ctx: PBN_MONT_CTX): TIdC_INT,
 //                                        PBN_MONT_CTX *m_ctx): PBN_BLINDING;
 
+  {$EXTERNALSYM BN_RECP_CTX_free}
   BN_RECP_CTX_free: procedure (recp: PBN_RECP_CTX); cdecl = nil;
+  {$EXTERNALSYM BN_RECP_CTX_set}
   BN_RECP_CTX_set: function (recp: PBN_RECP_CTX; rdiv: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_mod_mul_reciprocal}
   BN_mod_mul_reciprocal: function (r: PBIGNUM; x: PBIGNUM; y: PBIGNUM; recp: PBN_RECP_CTX; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_mod_exp_recp}
   BN_mod_exp_recp: function (r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; m: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_div_recp}
   BN_div_recp: function (dv: PBIGNUM; rem: PBIGNUM; m: PBIGNUM; recp: PBN_RECP_CTX; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
 
   (*
@@ -509,25 +494,34 @@ var
   (*
    * r = a + b
    *)
+  {$EXTERNALSYM BN_GF2m_add}
   BN_GF2m_add: function (r: PBIGNUM; a: PBIGNUM; b: PBIGNUM): TIdC_INT; cdecl = nil;
 //  #  define BN_GF2m_sub(r, a, b) BN_GF2m_add(r, a, b)
   (*
    * r=a mod p
    *)
+  {$EXTERNALSYM BN_GF2m_mod}
   BN_GF2m_mod: function (r: PBIGNUM; a: PBIGNUM; p: PBIGNUM): TIdC_INT; cdecl = nil;
   (* r = (a * b) mod p *)
+  {$EXTERNALSYM BN_GF2m_mod_mul}
   BN_GF2m_mod_mul: function (r: PBIGNUM; a: PBIGNUM; b: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
   (* r = (a * a) mod p *)
+  {$EXTERNALSYM BN_GF2m_mod_sqr}
   BN_GF2m_mod_sqr: function (r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
   (* r = (1 / b) mod p *)
+  {$EXTERNALSYM BN_GF2m_mod_inv}
   BN_GF2m_mod_inv: function (r: PBIGNUM; b: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
   (* r = (a / b) mod p *)
+  {$EXTERNALSYM BN_GF2m_mod_div}
   BN_GF2m_mod_div: function (r: PBIGNUM; a: PBIGNUM; b: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
   (* r = (a ^ b) mod p *)
+  {$EXTERNALSYM BN_GF2m_mod_exp}
   BN_GF2m_mod_exp: function (r: PBIGNUM; a: PBIGNUM; b: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
   (* r = sqrt(a) mod p *)
+  {$EXTERNALSYM BN_GF2m_mod_sqrt}
   BN_GF2m_mod_sqrt: function (r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
   (* r^2 + r = a mod p *)
+  {$EXTERNALSYM BN_GF2m_mod_solve_quad}
   BN_GF2m_mod_solve_quad: function (r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
 //  #  define BN_GF2m_cmp(a, b) BN_ucmp((a), (b))
   (*-
@@ -558,39 +552,61 @@ var
   (*
    * faster mod functions for the 'NIST primes' 0 <= a < p^2
    *)
+  {$EXTERNALSYM BN_nist_mod_192}
   BN_nist_mod_192: function (r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_nist_mod_224}
   BN_nist_mod_224: function (r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_nist_mod_256}
   BN_nist_mod_256: function (r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_nist_mod_384}
   BN_nist_mod_384: function (r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BN_nist_mod_521}
   BN_nist_mod_521: function (r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM BN_get0_nist_prime_192}
   BN_get0_nist_prime_192: function : PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM BN_get0_nist_prime_224}
   BN_get0_nist_prime_224: function : PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM BN_get0_nist_prime_256}
   BN_get0_nist_prime_256: function : PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM BN_get0_nist_prime_384}
   BN_get0_nist_prime_384: function : PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM BN_get0_nist_prime_521}
   BN_get0_nist_prime_521: function : PBIGNUM; cdecl = nil;
 
 //int (*BN_nist_mod_func(const BIGNUM *p)) (BIGNUM *r, const BIGNUM *a,
 //                                          const BIGNUM *field, BN_CTX *ctx);
 
+  {$EXTERNALSYM BN_generate_dsa_nonce}
   BN_generate_dsa_nonce: function (out_: PBIGNUM; range: PBIGNUM; priv: PBIGNUM; const message_: PByte; message_len: TIdC_SIZET; ctx: PBN_CTX): TIdC_INT; cdecl = nil;
 
   (* Primes from RFC 2409 *)
+  {$EXTERNALSYM BN_get_rfc2409_prime_768}
   BN_get_rfc2409_prime_768: function (bn: PBIGNUM ): PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM BN_get_rfc2409_prime_1024}
   BN_get_rfc2409_prime_1024: function (bn: PBIGNUM): PBIGNUM; cdecl = nil;
 
   (* Primes from RFC 3526 *)
+  {$EXTERNALSYM BN_get_rfc3526_prime_1536}
   BN_get_rfc3526_prime_1536: function (bn: PBIGNUM): PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM BN_get_rfc3526_prime_2048}
   BN_get_rfc3526_prime_2048: function (bn: PBIGNUM): PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM BN_get_rfc3526_prime_3072}
   BN_get_rfc3526_prime_3072: function (bn: PBIGNUM): PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM BN_get_rfc3526_prime_4096}
   BN_get_rfc3526_prime_4096: function (bn: PBIGNUM): PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM BN_get_rfc3526_prime_6144}
   BN_get_rfc3526_prime_6144: function (bn: PBIGNUM): PBIGNUM; cdecl = nil;
+  {$EXTERNALSYM BN_get_rfc3526_prime_8192}
   BN_get_rfc3526_prime_8192: function (bn: PBIGNUM): PBIGNUM; cdecl = nil;
 
+  {$EXTERNALSYM BN_bntest_rand}
   BN_bntest_rand: function (rnd: PBIGNUM; bits: TIdC_INT; top: TIdC_INT; bottom: TIdC_INT): TIdC_INT; cdecl = nil;
 
 {$ELSE}
+  {$EXTERNALSYM BN_set_flags}
   procedure BN_set_flags(b: PBIGNUM; n: TIdC_INT) cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_get_flags}
   function BN_get_flags(b: PBIGNUM; n: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
 
   (*
@@ -599,19 +615,26 @@ var
    * value |dest| should be a newly allocated BIGNUM obtained via BN_new() that
    * has not been otherwise initialised or used.
    *)
+  {$EXTERNALSYM BN_with_flags}
   procedure BN_with_flags(dest: PBIGNUM; b: PBIGNUM; flags: TIdC_INT) cdecl; external CLibCrypto;
   (* Wrapper function to make using BN_GENCB easier *)
+  {$EXTERNALSYM BN_GENCB_call}
   function BN_GENCB_call(cb: PBN_GENCB; a: TIdC_INT; b: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM BN_GENCB_new}
   function BN_GENCB_new: PBN_GENCB cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_GENCB_free}
   procedure BN_GENCB_free(cb: PBN_GENCB) cdecl; external CLibCrypto;
 
   (* Populate a PBN_GENCB structure with an "old"-style callback *)
+  {$EXTERNALSYM BN_GENCB_set_old}
   procedure BN_GENCB_set_old(gencb: PBN_GENCB; callback: BN_GENCB_set_old_cb; cb_arg: Pointer) cdecl; external CLibCrypto;
 
   (* Populate a PBN_GENCB structure with a "new"-style callback *)
+  {$EXTERNALSYM BN_GENCB_set}
   procedure BN_GENCB_set(gencb: PBN_GENCB; callback: BN_GENCB_set_cb; cb_arg: Pointer) cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM BN_GENCB_get_arg}
   function BN_GENCB_get_arg(cb: PBN_GENCB): Pointer cdecl; external CLibCrypto;
   
   (*
@@ -688,151 +711,271 @@ var
 //
 //  # define BN_num_bytes(a) ((BN_num_bits(a)+7)/8)
 
+  {$EXTERNALSYM BN_abs_is_word}
   function BN_abs_is_word(a: PBIGNUM; w: BN_ULONG): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_is_zero}
   function BN_is_zero(a: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_is_one}
   function BN_is_one(a: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_is_word}
   function BN_is_word(a: PBIGNUM; w: BN_ULONG): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_is_odd}
   function BN_is_odd(a: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
 
 //  # define BN_one(a)       (BN_set_word((a),1))
 
+  {$EXTERNALSYM BN_zero_ex}
   procedure BN_zero_ex(a: PBIGNUM) cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM BN_value_one}
   function BN_value_one: PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_options}
   function BN_options: PIdAnsiChar cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_CTX_new}
   function BN_CTX_new: PBN_CTX cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_CTX_secure_new}
   function BN_CTX_secure_new: PBN_CTX cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_CTX_free}
   procedure BN_CTX_free(c: PBN_CTX) cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_CTX_start}
   procedure BN_CTX_start(ctx: PBN_CTX) cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_CTX_get}
   function BN_CTX_get(ctx: PBN_CTX): PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_CTX_end}
   procedure BN_CTX_end(ctx: PBN_CTX) cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_rand}
   function BN_rand(rnd: PBIGNUM; bits: TIdC_INT; top: TIdC_INT; bottom: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_priv_rand}
   function BN_priv_rand(rnd: PBIGNUM; bits: TIdC_INT; top: TIdC_INT; bottom: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_rand_range}
   function BN_rand_range(rnd: PBIGNUM; range: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_priv_rand_range}
   function BN_priv_rand_range(rnd: PBIGNUM; range: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_pseudo_rand}
   function BN_pseudo_rand(rnd: PBIGNUM; bits: TIdC_INT; top: TIdC_INT; bottom: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_pseudo_rand_range}
   function BN_pseudo_rand_range(rnd: PBIGNUM; range: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_num_bits}
   function BN_num_bits(a: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_num_bits_word}
   function BN_num_bits_word(l: BN_ULONG): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_security_bits}
   function BN_security_bits(L: TIdC_INT; N: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_new}
   function BN_new: PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_secure_new}
   function BN_secure_new: PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_clear_free}
   procedure BN_clear_free(a: PBIGNUM) cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_copy}
   function BN_copy(a: PBIGNUM; b: PBIGNUM): PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_swap}
   procedure BN_swap(a: PBIGNUM; b: PBIGNUM) cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_bin2bn}
   function BN_bin2bn(const s: PByte; len: TIdC_INT; ret: PBIGNUM): PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_bn2bin}
   function BN_bn2bin(const a: PBIGNUM; to_: PByte): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_bn2binpad}
   function BN_bn2binpad(const a: PBIGNUM; to_: PByte; tolen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_lebin2bn}
   function BN_lebin2bn(const s: PByte; len: TIdC_INT; ret: PBIGNUM): PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_bn2lebinpad}
   function BN_bn2lebinpad(a: PBIGNUM; to_: PByte; tolen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_mpi2bn}
   function BN_mpi2bn(const s: PByte; len: TIdC_INT; ret: PBIGNUM): PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_bn2mpi}
   function BN_bn2mpi(a: PBIGNUM; to_: PByte): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_sub}
   function BN_sub(r: PBIGNUM; const a: PBIGNUM; const b: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_usub}
   function BN_usub(r: PBIGNUM; const a: PBIGNUM; const b: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_uadd}
   function BN_uadd(r: PBIGNUM; const a: PBIGNUM; const b: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_add}
   function BN_add(r: PBIGNUM; const a: PBIGNUM; const b: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_mul}
   function BN_mul(r: PBIGNUM; const a: PBIGNUM; const b: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_sqr}
   function BN_sqr(r: PBIGNUM; const a: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
 
   (** BN_set_negative sets sign of a BIGNUM
    * \param  b  pointer to the BIGNUM object
    * \param  n  0 if the BIGNUM b should be positive and a value != 0 otherwise
    *)
+  {$EXTERNALSYM BN_set_negative}
   procedure BN_set_negative(b: PBIGNUM; n: TIdC_INT) cdecl; external CLibCrypto;
   (** BN_is_negative returns 1 if the BIGNUM is negative
    * \param  b  pointer to the BIGNUM object
    * \return 1 if a < 0 and 0 otherwise
    *)
+  {$EXTERNALSYM BN_is_negative}
   function BN_is_negative(b: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM BN_div}
   function BN_div(dv: PBIGNUM; rem: PBIGNUM; const m: PBIGNUM; const d: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
 //  # define BN_mod(rem,m,d,ctx) BN_div(NULL,(rem),(m),(d),(ctx))
+  {$EXTERNALSYM BN_nnmod}
   function BN_nnmod(r: PBIGNUM; const m: PBIGNUM; const d: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_mod_add}
   function BN_mod_add(r: PBIGNUM; const a: PBIGNUM; const b: PBIGNUM; const m: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_mod_add_quick}
   function BN_mod_add_quick(r: PBIGNUM; const a: PBIGNUM; const b: PBIGNUM; const m: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_mod_sub}
   function BN_mod_sub(r: PBIGNUM; const a: PBIGNUM; const b: PBIGNUM; const m: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_mod_sub_quick}
   function BN_mod_sub_quick(r: PBIGNUM; const a: PBIGNUM; const b: PBIGNUM; const m: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_mod_mul}
   function BN_mod_mul(r: PBIGNUM; const a: PBIGNUM; const b: PBIGNUM; const m: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_mod_sqr}
   function BN_mod_sqr(r: PBIGNUM; const a: PBIGNUM; const m: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_mod_lshift1}
   function BN_mod_lshift1(r: PBIGNUM; const a: PBIGNUM; const m: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_mod_lshift1_quick}
   function BN_mod_lshift1_quick(r: PBIGNUM; const a: PBIGNUM; const m: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_mod_lshift}
   function BN_mod_lshift(r: PBIGNUM; const a: PBIGNUM; n: TIdC_INT; const m: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_mod_lshift_quick}
   function BN_mod_lshift_quick(r: PBIGNUM; const a: PBIGNUM; n: TIdC_INT; const m: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM BN_mod_word}
   function BN_mod_word(const a: PBIGNUM; w: BN_ULONG): BN_ULONG cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_div_word}
   function BN_div_word(a: PBIGNUM; w: BN_ULONG): BN_ULONG cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_mul_word}
   function BN_mul_word(a: PBIGNUM; w: BN_ULONG): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_add_word}
   function BN_add_word(a: PBIGNUM; w: BN_ULONG): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_sub_word}
   function BN_sub_word(a: PBIGNUM; w: BN_ULONG): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_set_word}
   function BN_set_word(a: PBIGNUM; w: BN_ULONG): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_get_word}
   function BN_get_word(const a: PBIGNUM): BN_ULONG cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM BN_cmp}
   function BN_cmp(const a: PBIGNUM; const b: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_free}
   procedure BN_free(a: PBIGNUM) cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_is_bit_set}
   function BN_is_bit_set(const a: PBIGNUM; n: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_lshift}
   function BN_lshift(r: PBIGNUM; const a: PBIGNUM; n: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_lshift1}
   function BN_lshift1(r: PBIGNUM; const a: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_exp}
   function BN_exp(r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM BN_mod_exp}
   function BN_mod_exp(r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; const m: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_mod_exp_mont}
   function BN_mod_exp_mont(r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; m: PBIGNUM; ctx: PBN_CTX; m_ctx: PBN_MONT_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_mod_exp_mont_consttime}
   function BN_mod_exp_mont_consttime(rr: PBIGNUM; a: PBIGNUM; p: PBIGNUM; m: PBIGNUM; ctx: PBN_CTX; in_mont: PBN_MONT_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_mod_exp_mont_word}
   function BN_mod_exp_mont_word(r: PBIGNUM; a: BN_ULONG; p: PBIGNUM; m: PBIGNUM; ctx: PBN_CTX; m_ctx: PBN_MONT_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_mod_exp2_mont}
   function BN_mod_exp2_mont(r: PBIGNUM; const a1: PBIGNUM; const p1: PBIGNUM; const a2: PBIGNUM; const p2: PBIGNUM; const m: PBIGNUM; ctx: PBN_CTX; m_ctx: PBN_MONT_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_mod_exp_simple}
   function BN_mod_exp_simple(r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; m: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM BN_mask_bits}
   function BN_mask_bits(a: PBIGNUM; n: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_print}
   function BN_print(bio: PBIO; a: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_reciprocal}
   function BN_reciprocal(r: PBIGNUM; m: PBIGNUM; len: TIdC_INT; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_rshift}
   function BN_rshift(r: PBIGNUM; a: PBIGNUM; n: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_rshift1}
   function BN_rshift1(r: PBIGNUM; a: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_clear}
   procedure BN_clear(a: PBIGNUM) cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_dup}
   function BN_dup(const a: PBIGNUM): PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_ucmp}
   function BN_ucmp(a: PBIGNUM; b: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_set_bit}
   function BN_set_bit(a: PBIGNUM; n: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_clear_bit}
   function BN_clear_bit(a: PBIGNUM; n: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_bn2hex}
   function BN_bn2hex(a: PBIGNUM): PIdAnsiChar cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_bn2dec}
   function BN_bn2dec(a: PBIGNUM): PIdAnsiChar cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_hex2bn}
   function BN_hex2bn(a: PPBIGNUM; _str: PIdAnsiChar): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_dec2bn}
   function BN_dec2bn(a: PPBIGNUM; _str: PIdAnsiChar): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_asc2bn}
   function BN_asc2bn(a: PPBIGNUM; _str: PIdAnsiChar): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_gcd}
   function BN_gcd(r: PBIGNUM; a: PBIGNUM; b: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_kronecker}
   function BN_kronecker(a: PBIGNUM; b: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM BN_mod_inverse}
   function BN_mod_inverse(ret: PBIGNUM; a: PBIGNUM; const n: PBIGNUM; ctx: PBN_CTX): PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_mod_sqrt}
   function BN_mod_sqrt(ret: PBIGNUM; a: PBIGNUM; const n: PBIGNUM; ctx: PBN_CTX): PBIGNUM cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM BN_consttime_swap}
   procedure BN_consttime_swap(_swap: BN_ULONG; a: PBIGNUM; b: PBIGNUM; nwords: TIdC_INT) cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM BN_generate_prime_ex}
   function BN_generate_prime_ex(ret: PBIGNUM; bits: TIdC_INT; safe: TIdC_INT; const add: PBIGNUM; const rem: PBIGNUM; cb: PBN_GENCB): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_is_prime_ex}
   function BN_is_prime_ex(const p: PBIGNUM; nchecks: TIdC_INT; ctx: PBN_CTX; cb: PBN_GENCB): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_is_prime_fasttest_ex}
   function BN_is_prime_fasttest_ex(const p: PBIGNUM; nchecks: TIdC_INT; ctx: PBN_CTX; do_trial_division: TIdC_INT; cb: PBN_GENCB): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_X931_generate_Xpq}
   function BN_X931_generate_Xpq(Xp: PBIGNUM; Xq: PBIGNUM; nbits: TIdC_INT; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_X931_derive_prime_ex}
   function BN_X931_derive_prime_ex(p: PBIGNUM; p1: PBIGNUM; p2: PBIGNUM; const Xp: PBIGNUM; const Xp1: PBIGNUM; const Xp2: PBIGNUM; const e: PBIGNUM; ctx: PBN_CTX; cb: PBN_GENCB): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_X931_generate_prime_ex}
   function BN_X931_generate_prime_ex(p: PBIGNUM; p1: PBIGNUM; p2: PBIGNUM; Xp1: PBIGNUM; Xp2: PBIGNUM; Xp: PBIGNUM; const e: PBIGNUM; ctx: PBN_CTX; cb: PBN_GENCB): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_MONT_CTX_new}
   function BN_MONT_CTX_new: PBN_MONT_CTX cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_mod_mul_montgomery}
   function BN_mod_mul_montgomery(r: PBIGNUM; const a: PBIGNUM; const b: PBIGNUM; mont: PBN_MONT_CTX; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_to_montgomery}
   function BN_to_montgomery(r: PBIGNUM; a: PBIGNUM; mont: PBN_MONT_CTX; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_from_montgomery}
   function BN_from_montgomery(r: PBIGNUM; a: PBIGNUM; mont: PBN_MONT_CTX; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_MONT_CTX_free}
   procedure BN_MONT_CTX_free(mont: PBN_MONT_CTX) cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_MONT_CTX_set}
   function BN_MONT_CTX_set(mont: PBN_MONT_CTX; mod_: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_MONT_CTX_copy}
   function BN_MONT_CTX_copy(to_: PBN_MONT_CTX; from: PBN_MONT_CTX): PBN_MONT_CTX cdecl; external CLibCrypto;
 //  function BN_MONT_CTX_set_locked(pmont: ^PBN_MONT_CTX; lock: CRYPTO_RWLOCK; mod_: PBIGNUM; ctx: PBN_CTX): PBN_MONT_CTX;
 
+  {$EXTERNALSYM BN_BLINDING_new}
   function BN_BLINDING_new(const A: PBIGNUM; const Ai: PBIGNUM; mod_: PBIGNUM): PBN_BLINDING cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_BLINDING_free}
   procedure BN_BLINDING_free(b: PBN_BLINDING) cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_BLINDING_update}
   function BN_BLINDING_update(b: PBN_BLINDING; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_BLINDING_convert}
   function BN_BLINDING_convert(n: PBIGNUM; b: PBN_BLINDING; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_BLINDING_invert}
   function BN_BLINDING_invert(n: PBIGNUM; b: PBN_BLINDING; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_BLINDING_convert_ex}
   function BN_BLINDING_convert_ex(n: PBIGNUM; r: PBIGNUM; b: PBN_BLINDING; v4: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_BLINDING_invert_ex}
   function BN_BLINDING_invert_ex(n: PBIGNUM; r: PBIGNUM; b: PBN_BLINDING; v2: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM BN_BLINDING_is_current_thread}
   function BN_BLINDING_is_current_thread(b: PBN_BLINDING): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_BLINDING_set_current_thread}
   procedure BN_BLINDING_set_current_thread(b: PBN_BLINDING) cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_BLINDING_lock}
   function BN_BLINDING_lock(b: PBN_BLINDING): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_BLINDING_unlock}
   function BN_BLINDING_unlock(b: PBN_BLINDING): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM BN_BLINDING_get_flags}
   function BN_BLINDING_get_flags(v1: PBN_BLINDING): TIdC_ULONG cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_BLINDING_set_flags}
   procedure BN_BLINDING_set_flags(v1: PBN_BLINDING; v2: TIdC_ULONG) cdecl; external CLibCrypto;
 //  function BN_BLINDING_create_param(PBN_BLINDING *b,
 //                                         PBIGNUM *e, PBIGNUM *m, PBN_CTX *ctx,
@@ -845,10 +988,15 @@ var
 //    m_ctx: PBN_MONT_CTX): TIdC_INT,
 //                                        PBN_MONT_CTX *m_ctx): PBN_BLINDING;
 
+  {$EXTERNALSYM BN_RECP_CTX_free}
   procedure BN_RECP_CTX_free(recp: PBN_RECP_CTX) cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_RECP_CTX_set}
   function BN_RECP_CTX_set(recp: PBN_RECP_CTX; rdiv: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_mod_mul_reciprocal}
   function BN_mod_mul_reciprocal(r: PBIGNUM; x: PBIGNUM; y: PBIGNUM; recp: PBN_RECP_CTX; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_mod_exp_recp}
   function BN_mod_exp_recp(r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; m: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_div_recp}
   function BN_div_recp(dv: PBIGNUM; rem: PBIGNUM; m: PBIGNUM; recp: PBN_RECP_CTX; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
 
   (*
@@ -861,25 +1009,34 @@ var
   (*
    * r = a + b
    *)
+  {$EXTERNALSYM BN_GF2m_add}
   function BN_GF2m_add(r: PBIGNUM; a: PBIGNUM; b: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
 //  #  define BN_GF2m_sub(r, a, b) BN_GF2m_add(r, a, b)
   (*
    * r=a mod p
    *)
+  {$EXTERNALSYM BN_GF2m_mod}
   function BN_GF2m_mod(r: PBIGNUM; a: PBIGNUM; p: PBIGNUM): TIdC_INT cdecl; external CLibCrypto;
   (* r = (a * b) mod p *)
+  {$EXTERNALSYM BN_GF2m_mod_mul}
   function BN_GF2m_mod_mul(r: PBIGNUM; a: PBIGNUM; b: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
   (* r = (a * a) mod p *)
+  {$EXTERNALSYM BN_GF2m_mod_sqr}
   function BN_GF2m_mod_sqr(r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
   (* r = (1 / b) mod p *)
+  {$EXTERNALSYM BN_GF2m_mod_inv}
   function BN_GF2m_mod_inv(r: PBIGNUM; b: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
   (* r = (a / b) mod p *)
+  {$EXTERNALSYM BN_GF2m_mod_div}
   function BN_GF2m_mod_div(r: PBIGNUM; a: PBIGNUM; b: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
   (* r = (a ^ b) mod p *)
+  {$EXTERNALSYM BN_GF2m_mod_exp}
   function BN_GF2m_mod_exp(r: PBIGNUM; a: PBIGNUM; b: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
   (* r = sqrt(a) mod p *)
+  {$EXTERNALSYM BN_GF2m_mod_sqrt}
   function BN_GF2m_mod_sqrt(r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
   (* r^2 + r = a mod p *)
+  {$EXTERNALSYM BN_GF2m_mod_solve_quad}
   function BN_GF2m_mod_solve_quad(r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
 //  #  define BN_GF2m_cmp(a, b) BN_ucmp((a), (b))
   (*-
@@ -910,35 +1067,55 @@ var
   (*
    * faster mod functions for the 'NIST primes' 0 <= a < p^2
    *)
+  {$EXTERNALSYM BN_nist_mod_192}
   function BN_nist_mod_192(r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_nist_mod_224}
   function BN_nist_mod_224(r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_nist_mod_256}
   function BN_nist_mod_256(r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_nist_mod_384}
   function BN_nist_mod_384(r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_nist_mod_521}
   function BN_nist_mod_521(r: PBIGNUM; a: PBIGNUM; p: PBIGNUM; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM BN_get0_nist_prime_192}
   function BN_get0_nist_prime_192: PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_get0_nist_prime_224}
   function BN_get0_nist_prime_224: PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_get0_nist_prime_256}
   function BN_get0_nist_prime_256: PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_get0_nist_prime_384}
   function BN_get0_nist_prime_384: PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_get0_nist_prime_521}
   function BN_get0_nist_prime_521: PBIGNUM cdecl; external CLibCrypto;
 
 //int (*BN_nist_mod_func(const BIGNUM *p)) (BIGNUM *r, const BIGNUM *a,
 //                                          const BIGNUM *field, BN_CTX *ctx);
 
+  {$EXTERNALSYM BN_generate_dsa_nonce}
   function BN_generate_dsa_nonce(out_: PBIGNUM; range: PBIGNUM; priv: PBIGNUM; const message_: PByte; message_len: TIdC_SIZET; ctx: PBN_CTX): TIdC_INT cdecl; external CLibCrypto;
 
   (* Primes from RFC 2409 *)
+  {$EXTERNALSYM BN_get_rfc2409_prime_768}
   function BN_get_rfc2409_prime_768(bn: PBIGNUM ): PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_get_rfc2409_prime_1024}
   function BN_get_rfc2409_prime_1024(bn: PBIGNUM): PBIGNUM cdecl; external CLibCrypto;
 
   (* Primes from RFC 3526 *)
+  {$EXTERNALSYM BN_get_rfc3526_prime_1536}
   function BN_get_rfc3526_prime_1536(bn: PBIGNUM): PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_get_rfc3526_prime_2048}
   function BN_get_rfc3526_prime_2048(bn: PBIGNUM): PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_get_rfc3526_prime_3072}
   function BN_get_rfc3526_prime_3072(bn: PBIGNUM): PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_get_rfc3526_prime_4096}
   function BN_get_rfc3526_prime_4096(bn: PBIGNUM): PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_get_rfc3526_prime_6144}
   function BN_get_rfc3526_prime_6144(bn: PBIGNUM): PBIGNUM cdecl; external CLibCrypto;
+  {$EXTERNALSYM BN_get_rfc3526_prime_8192}
   function BN_get_rfc3526_prime_8192(bn: PBIGNUM): PBIGNUM cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM BN_bntest_rand}
   function BN_bntest_rand(rnd: PBIGNUM; bits: TIdC_INT; top: TIdC_INT; bottom: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
 
 {$ENDIF}

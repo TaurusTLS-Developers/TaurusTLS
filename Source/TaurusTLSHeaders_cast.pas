@@ -36,21 +36,30 @@ uses
   {$ENDIF};
 
 const
+  {$EXTERNALSYM CAST_ENCRYPT_CONST}
   CAST_ENCRYPT_CONST =  1;
+  {$EXTERNALSYM CAST_DECRYPT_CONST}
   CAST_DECRYPT_CONST =  0;
+  {$EXTERNALSYM CAST_BLOCK}
   CAST_BLOCK =  8;
+  {$EXTERNALSYM CAST_KEY_LENGTH}
   CAST_KEY_LENGTH = 16;
 
 type
+  {$EXTERNALSYM CAST_LONG}
   CAST_LONG = type TIdC_UINT;
+  {$EXTERNALSYM PCAST_LONG}
   PCAST_LONG = ^CAST_LONG;
 
+  {$EXTERNALSYM cast_key_st}
   cast_key_st = record
     data: array of CAST_LONG;
     short_key: TIdC_INT;              //* Use reduced rounds for short key */
   end;
 
+  {$EXTERNALSYM CAST_KEY}
   CAST_KEY = cast_key_st;
+  {$EXTERNALSYM PCAST_KEY}
   PCAST_KEY = ^CAST_KEY;
 
     { The EXTERNALSYM directive is ignored by FPC, however, it is used by Delphi as follows:
@@ -58,31 +67,38 @@ type
   	  The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header 
 	  files generated for C++. }
 	  
-  {$EXTERNALSYM CAST_set_key}
-  {$EXTERNALSYM CAST_ecb_encrypt}
-  {$EXTERNALSYM CAST_encrypt}
-  {$EXTERNALSYM CAST_decrypt}
-  {$EXTERNALSYM CAST_cbc_encrypt}
-  {$EXTERNALSYM CAST_cfb64_encrypt}
-  {$EXTERNALSYM CAST_ofb64_encrypt}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM CAST_set_key}
   CAST_set_key: procedure (key: PCast_Key; len: TIdC_INT; const data: PByte); cdecl = nil;
+  {$EXTERNALSYM CAST_ecb_encrypt}
   CAST_ecb_encrypt: procedure (const in_: PByte; out_: PByte; const key: PCast_Key; enc: TIdC_INT); cdecl = nil;
+  {$EXTERNALSYM CAST_encrypt}
   CAST_encrypt: procedure (data: PCAST_LONG; const key: PCast_Key); cdecl = nil;
+  {$EXTERNALSYM CAST_decrypt}
   CAST_decrypt: procedure (data: PCAST_LONG; const key: PCast_Key); cdecl = nil;
+  {$EXTERNALSYM CAST_cbc_encrypt}
   CAST_cbc_encrypt: procedure (const in_: PByte; out_: PByte; _length: TIdC_LONG; const ks: PCast_Key; iv: PByte; enc: TIdC_INT); cdecl = nil;
+  {$EXTERNALSYM CAST_cfb64_encrypt}
   CAST_cfb64_encrypt: procedure (const in_: PByte; out_: PByte; _length: TIdC_LONG; const schedule: PCast_Key; ivec: PByte; num: PIdC_INT; enc: TIdC_INT); cdecl = nil;
+  {$EXTERNALSYM CAST_ofb64_encrypt}
   CAST_ofb64_encrypt: procedure (const in_: PByte; out_: PByte; _length: TIdC_LONG; const schedule: PCast_Key; ivec: PByte; num: PIdC_INT); cdecl = nil;
 
 {$ELSE}
+  {$EXTERNALSYM CAST_set_key}
   procedure CAST_set_key(key: PCast_Key; len: TIdC_INT; const data: PByte) cdecl; external CLibCrypto;
+  {$EXTERNALSYM CAST_ecb_encrypt}
   procedure CAST_ecb_encrypt(const in_: PByte; out_: PByte; const key: PCast_Key; enc: TIdC_INT) cdecl; external CLibCrypto;
+  {$EXTERNALSYM CAST_encrypt}
   procedure CAST_encrypt(data: PCAST_LONG; const key: PCast_Key) cdecl; external CLibCrypto;
+  {$EXTERNALSYM CAST_decrypt}
   procedure CAST_decrypt(data: PCAST_LONG; const key: PCast_Key) cdecl; external CLibCrypto;
+  {$EXTERNALSYM CAST_cbc_encrypt}
   procedure CAST_cbc_encrypt(const in_: PByte; out_: PByte; _length: TIdC_LONG; const ks: PCast_Key; iv: PByte; enc: TIdC_INT) cdecl; external CLibCrypto;
+  {$EXTERNALSYM CAST_cfb64_encrypt}
   procedure CAST_cfb64_encrypt(const in_: PByte; out_: PByte; _length: TIdC_LONG; const schedule: PCast_Key; ivec: PByte; num: PIdC_INT; enc: TIdC_INT) cdecl; external CLibCrypto;
+  {$EXTERNALSYM CAST_ofb64_encrypt}
   procedure CAST_ofb64_encrypt(const in_: PByte; out_: PByte; _length: TIdC_LONG; const schedule: PCast_Key; ivec: PByte; num: PIdC_INT) cdecl; external CLibCrypto;
 
 {$ENDIF}

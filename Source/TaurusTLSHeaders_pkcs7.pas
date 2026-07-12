@@ -39,67 +39,112 @@ uses
   TaurusTLSHeaders_x509;
 
 const
+  {$EXTERNALSYM PKCS7_S_HEADER}
   PKCS7_S_HEADER = 0;
+  {$EXTERNALSYM PKCS7_S_BODY}
   PKCS7_S_BODY   = 1;
+  {$EXTERNALSYM PKCS7_S_TAIL}
   PKCS7_S_TAIL   = 2;
 
+  {$EXTERNALSYM PKCS7_OP_SET_DETACHED_SIGNATURE}
   PKCS7_OP_SET_DETACHED_SIGNATURE = 1;
+  {$EXTERNALSYM PKCS7_OP_GET_DETACHED_SIGNATURE}
   PKCS7_OP_GET_DETACHED_SIGNATURE = 2;
 
   (* S/MIME related flags *)
+  {$EXTERNALSYM PKCS7_TEXT}
   PKCS7_TEXT            =     $1;
+  {$EXTERNALSYM PKCS7_NOCERTS}
   PKCS7_NOCERTS         =     $2;
+  {$EXTERNALSYM PKCS7_NOSIGS}
   PKCS7_NOSIGS          =     $4;
+  {$EXTERNALSYM PKCS7_NOCHAIN}
   PKCS7_NOCHAIN         =     $8;
+  {$EXTERNALSYM PKCS7_NOINTERN}
   PKCS7_NOINTERN        =    $10;
+  {$EXTERNALSYM PKCS7_NOVERIFY}
   PKCS7_NOVERIFY        =    $20;
+  {$EXTERNALSYM PKCS7_DETACHED}
   PKCS7_DETACHED        =    $40;
+  {$EXTERNALSYM PKCS7_BINARY}
   PKCS7_BINARY          =    $80;
+  {$EXTERNALSYM PKCS7_NOATTR}
   PKCS7_NOATTR          =   $100;
+  {$EXTERNALSYM PKCS7_NOSMIMECAP}
   PKCS7_NOSMIMECAP      =   $200;
+  {$EXTERNALSYM PKCS7_NOOLDMIMETYPE}
   PKCS7_NOOLDMIMETYPE   =   $400;
+  {$EXTERNALSYM PKCS7_CRLFEOL}
   PKCS7_CRLFEOL         =   $800;
   // Added '_CONST' to avoid name clashes
+  {$EXTERNALSYM PKCS7_STREAM_CONST}
   PKCS7_STREAM_CONST    =  $1000;
+  {$EXTERNALSYM PKCS7_NOCRL}
   PKCS7_NOCRL           =  $2000;
+  {$EXTERNALSYM PKCS7_PARTIAL}
   PKCS7_PARTIAL         =  $4000;
+  {$EXTERNALSYM PKCS7_REUSE_DIGEST}
   PKCS7_REUSE_DIGEST    =  $8000;
+  {$EXTERNALSYM PKCS7_NO_DUAL_CONTENT}
   PKCS7_NO_DUAL_CONTENT = $10000;
 
   (* Flags: for compatibility with older code *)
+  {$EXTERNALSYM SMIME_TEXT}
   SMIME_TEXT      = PKCS7_TEXT;
+  {$EXTERNALSYM SMIME_NOCERTS}
   SMIME_NOCERTS   = PKCS7_NOCERTS;
+  {$EXTERNALSYM SMIME_NOSIGS}
   SMIME_NOSIGS    = PKCS7_NOSIGS;
+  {$EXTERNALSYM SMIME_NOCHAIN}
   SMIME_NOCHAIN   = PKCS7_NOCHAIN;
+  {$EXTERNALSYM SMIME_NOINTERN}
   SMIME_NOINTERN  = PKCS7_NOINTERN;
+  {$EXTERNALSYM SMIME_NOVERIFY}
   SMIME_NOVERIFY  = PKCS7_NOVERIFY;
+  {$EXTERNALSYM SMIME_DETACHED}
   SMIME_DETACHED  = PKCS7_DETACHED;
+  {$EXTERNALSYM SMIME_BINARY}
   SMIME_BINARY    = PKCS7_BINARY;
+  {$EXTERNALSYM SMIME_NOATTR}
   SMIME_NOATTR    = PKCS7_NOATTR;
 
   (* CRLF ASCII canonicalisation *)
+  {$EXTERNALSYM SMIME_ASCIICRLF}
   SMIME_ASCIICRLF = $80000;
 
 type
+  {$EXTERNALSYM PPKCS7}
   PPKCS7 = ^PKCS7;
+  {$EXTERNALSYM PPPKCS7}
   PPPKCS7 = ^PPKCS7;
 
+  {$EXTERNALSYM STACK_OF_PKCS7_SIGNER_INFO}
   STACK_OF_PKCS7_SIGNER_INFO = record end;
+  {$EXTERNALSYM PSTACK_OF_PKCS7_SIGNER_INFO}
   PSTACK_OF_PKCS7_SIGNER_INFO = ^STACK_OF_PKCS7_SIGNER_INFO;
+  {$EXTERNALSYM STACK_OF_PKCS7_RECIP_INFO}
   STACK_OF_PKCS7_RECIP_INFO = record end;
+  {$EXTERNALSYM PSTACK_OF_PKCS7_RECIP_INFO}
   PSTACK_OF_PKCS7_RECIP_INFO = ^STACK_OF_PKCS7_RECIP_INFO;
 
+  {$EXTERNALSYM PPKCS7_DIGEST}
   PPKCS7_DIGEST = ^PKCS7_DIGEST;
+  {$EXTERNALSYM PPPKCS7_DIGEST}
   PPPKCS7_DIGEST = ^PPKCS7_DIGEST;
 
+  {$EXTERNALSYM pkcs7_issuer_and_serial_st}
   pkcs7_issuer_and_serial_st = record
     issue: PX509_NAME;
     serial: PASN1_INTEGER;
   end;
+  {$EXTERNALSYM PKCS7_ISSUER_AND_SERIAL}
   PKCS7_ISSUER_AND_SERIAL = pkcs7_issuer_and_serial_st;
+  {$EXTERNALSYM PPKCS7_ISSUER_AND_SERIAL}
   PPKCS7_ISSUER_AND_SERIAL = ^PKCS7_ISSUER_AND_SERIAL;
+  {$EXTERNALSYM PPPKCS7_ISSUER_AND_SERIAL}
   PPPKCS7_ISSUER_AND_SERIAL = ^PPKCS7_ISSUER_AND_SERIAL;
 
+  {$EXTERNALSYM pkcs7_signer_info_st}
   pkcs7_signer_info_st = record
     version: PASN1_INTEGER;
     issuer_and_serial: PPKCS7_ISSUER_AND_SERIAL;
@@ -110,10 +155,14 @@ type
     unauth_attr: PSTACK_OF_X509_ATTRIBUTE;
     pkey: PEVP_PKEY;
   end;
+  {$EXTERNALSYM PKCS7_SIGNER_INFO}
   PKCS7_SIGNER_INFO = pkcs7_issuer_and_serial_st;
+  {$EXTERNALSYM PPKCS7_SIGNER_INFO}
   PPKCS7_SIGNER_INFO = ^PKCS7_SIGNER_INFO;
+  {$EXTERNALSYM PPPKCS7_SIGNER_INFO}
   PPPKCS7_SIGNER_INFO = ^PPKCS7_SIGNER_INFO;
 
+  {$EXTERNALSYM pkcs7_recip_info_st}
   pkcs7_recip_info_st = record
     version: PASN1_INTEGER;
     issuer_and_serial: PPKCS7_ISSUER_AND_SERIAL;
@@ -121,10 +170,14 @@ type
     enc_key: PASN1_OCTET_STRING;
     cert: PX509;
   end;
+  {$EXTERNALSYM PKCS7_RECIP_INFO}
   PKCS7_RECIP_INFO = pkcs7_recip_info_st;
+  {$EXTERNALSYM PPKCS7_RECIP_INFO}
   PPKCS7_RECIP_INFO = ^PKCS7_RECIP_INFO;
+  {$EXTERNALSYM PPPKCS7_RECIP_INFO}
   PPPKCS7_RECIP_INFO = ^PPKCS7_RECIP_INFO;
 
+  {$EXTERNALSYM pkcs7_signed_st}
   pkcs7_signed_st = record
     version: PASN1_INTEGER;
     md_algs: PSTACK_OF_X509_ALGOR;
@@ -133,29 +186,41 @@ type
     signer_info: PSTACK_OF_PKCS7_SIGNER_INFO;
     contents: PPKCS7;
   end;
+  {$EXTERNALSYM PKCS7_SIGNED}
   PKCS7_SIGNED = pkcs7_signed_st;
+  {$EXTERNALSYM PPKCS7_SIGNED}
   PPKCS7_SIGNED = ^PKCS7_SIGNED;
+  {$EXTERNALSYM PPPKCS7_SIGNED}
   PPPKCS7_SIGNED = ^PPKCS7_SIGNED;
 
+  {$EXTERNALSYM pkcs7_enc_content_st}
   pkcs7_enc_content_st = record
     content_type: PASN1_OBJECT;
     algorithm: PX509_ALGOR;
     enc_data: PASN1_OCTET_STRING;
     cipher: PEVP_CIPHER;
   end;
+  {$EXTERNALSYM PKCS7_ENC_CONTENT}
   PKCS7_ENC_CONTENT = pkcs7_enc_content_st;
+  {$EXTERNALSYM PPKCS7_ENC_CONTENT}
   PPKCS7_ENC_CONTENT = ^PKCS7_ENC_CONTENT;
+  {$EXTERNALSYM PPPKCS7_ENC_CONTENT}
   PPPKCS7_ENC_CONTENT = ^PPKCS7_ENC_CONTENT;
 
+  {$EXTERNALSYM pkcs7_enveloped_st}
   pkcs7_enveloped_st = record
     version: PASN1_INTEGER;
     recipientinfo: PSTACK_OF_PKCS7_RECIP_INFO;
     enc_data: PPKCS7_ENC_CONTENT;
   end;
+  {$EXTERNALSYM PKCS7_ENVELOPE}
   PKCS7_ENVELOPE = pkcs7_enveloped_st;
+  {$EXTERNALSYM PPKCS7_ENVELOPE}
   PPKCS7_ENVELOPE = ^PKCS7_ENVELOPE;
+  {$EXTERNALSYM PPPKCS7_ENVELOPE}
   PPPKCS7_ENVELOPE = ^PPKCS7_ENVELOPE;
 
+  {$EXTERNALSYM pkcs7_signedandenveloped_st}
   pkcs7_signedandenveloped_st = record
     version: PASN1_INTEGER;
     md_algs: PSTACK_OF_X509_ALGOR;
@@ -165,19 +230,27 @@ type
     enc_data: PPKCS7_ENC_CONTENT;
     recipientinfo: PSTACK_OF_PKCS7_RECIP_INFO;
   end;
+  {$EXTERNALSYM PKCS7_SIGN_ENVELOPE}
   PKCS7_SIGN_ENVELOPE = pkcs7_signedandenveloped_st;
+  {$EXTERNALSYM PPKCS7_SIGN_ENVELOPE}
   PPKCS7_SIGN_ENVELOPE = ^PKCS7_SIGN_ENVELOPE;
+  {$EXTERNALSYM PPPKCS7_SIGN_ENVELOPE}
   PPPKCS7_SIGN_ENVELOPE = ^PPKCS7_SIGN_ENVELOPE;
 
+  {$EXTERNALSYM pkcs7_encrypted_st}
   pkcs7_encrypted_st = record
     version: PASN1_INTEGER;
     enc_data: PPKCS7_ENC_CONTENT;
   end;
   // Added '_STRUCT' to avoid name clashes
+  {$EXTERNALSYM PKCS7_ENCRYPT_STRUCT}
   PKCS7_ENCRYPT_STRUCT = pkcs7_encrypted_st;
+  {$EXTERNALSYM PPKCS7_ENCRYPT_STRUCT}
   PPKCS7_ENCRYPT_STRUCT = ^PKCS7_ENCRYPT_STRUCT;
+  {$EXTERNALSYM PPPKCS7_ENCRYPT_STRUCT}
   PPPKCS7_ENCRYPT_STRUCT = ^PPKCS7_ENCRYPT_STRUCT;
 
+  {$EXTERNALSYM pkcs7_st_d}
   pkcs7_st_d = record
     case Integer of
     0: (_ptr: PIdAnsiChar);
@@ -189,6 +262,7 @@ type
     6: (encrypted: PPKCS7_ENCRYPT_STRUCT);
     7: (other: PASN1_TYPE);
   end;
+  {$EXTERNALSYM pkcs7_st}
   pkcs7_st = record
     asn1: PByte;
     _length: TIdC_LONG;
@@ -197,14 +271,17 @@ type
     type_: PASN1_OBJECT;
     d: pkcs7_st_d;
   end;
+  {$EXTERNALSYM PKCS7}
   PKCS7 = pkcs7_st;
 
+  {$EXTERNALSYM pkcs7_digest_st}
   pkcs7_digest_st = record
     version: PASN1_INTEGER;
     md: PX509_ALGOR;
     contents: PPKCS7;
     digest: PASN1_OCTET_STRING;
   end;
+  {$EXTERNALSYM PKCS7_DIGEST}
   PKCS7_DIGEST = pkcs7_digest_st;
 
   //function PKCS7_ISSUER_AND_SERIAL_new: PPKCS7_ISSUER_AND_SERIAL;
@@ -218,387 +295,606 @@ type
   	  The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header 
 	  files generated for C++. }
 	  
-  {$EXTERNALSYM PKCS7_ISSUER_AND_SERIAL_digest}
-  {$EXTERNALSYM PKCS7_dup}
-  {$EXTERNALSYM d2i_PKCS7_bio}
-  {$EXTERNALSYM i2d_PKCS7_bio}
-  {$EXTERNALSYM i2d_PKCS7_bio_stream}
-  {$EXTERNALSYM PEM_write_bio_PKCS7_stream}
-  {$EXTERNALSYM PKCS7_ctrl}
-  {$EXTERNALSYM PKCS7_type_is_other}
-  {$EXTERNALSYM PKCS7_set_type}
-  {$EXTERNALSYM PKCS7_set0_type_other}
-  {$EXTERNALSYM PKCS7_set_content}
-  {$EXTERNALSYM PKCS7_SIGNER_INFO_set}
-  {$EXTERNALSYM PKCS7_SIGNER_INFO_sign}
-  {$EXTERNALSYM PKCS7_add_signer}
-  {$EXTERNALSYM PKCS7_add_certificate}
-  {$EXTERNALSYM PKCS7_add_crl}
-  {$EXTERNALSYM PKCS7_content_new}
-  {$EXTERNALSYM PKCS7_dataVerify}
-  {$EXTERNALSYM PKCS7_signatureVerify}
-  {$EXTERNALSYM PKCS7_dataInit}
-  {$EXTERNALSYM PKCS7_dataFinal}
-  {$EXTERNALSYM PKCS7_dataDecode}
-  {$EXTERNALSYM PKCS7_add_signature}
-  {$EXTERNALSYM PKCS7_cert_from_signer_info}
-  {$EXTERNALSYM PKCS7_set_digest}
-  {$EXTERNALSYM PKCS7_get_signer_info}
-  {$EXTERNALSYM PKCS7_add_recipient}
-  {$EXTERNALSYM PKCS7_SIGNER_INFO_get0_algs}
-  {$EXTERNALSYM PKCS7_RECIP_INFO_get0_alg}
-  {$EXTERNALSYM PKCS7_add_recipient_info}
-  {$EXTERNALSYM PKCS7_RECIP_INFO_set}
-  {$EXTERNALSYM PKCS7_set_cipher}
-  {$EXTERNALSYM PKCS7_stream}
-  {$EXTERNALSYM PKCS7_get_issuer_and_serial}
-  {$EXTERNALSYM PKCS7_get_octet_string}
-  {$EXTERNALSYM PKCS7_digest_from_attributes}
-  {$EXTERNALSYM PKCS7_add_signed_attribute}
-  {$EXTERNALSYM PKCS7_add_attribute}
-  {$EXTERNALSYM PKCS7_get_attribute}
-  {$EXTERNALSYM PKCS7_get_signed_attribute}
-  {$EXTERNALSYM PKCS7_sign_add_signer}
-  {$EXTERNALSYM PKCS7_final}
-  {$EXTERNALSYM PKCS7_decrypt}
-  {$EXTERNALSYM PKCS7_add_attrib_content_type}
-  {$EXTERNALSYM PKCS7_add0_attrib_signing_time}
-  {$EXTERNALSYM PKCS7_add1_attrib_digest}
-  {$EXTERNALSYM SMIME_write_PKCS7}
-  {$EXTERNALSYM SMIME_read_PKCS7}
-  {$EXTERNALSYM BIO_new_PKCS7}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM PKCS7_ISSUER_AND_SERIAL_digest}
   PKCS7_ISSUER_AND_SERIAL_digest: function (data: PPKCS7_ISSUER_AND_SERIAL; const type_: PEVP_MD; md: PByte; len: PIdC_UINT): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM PKCS7_dup}
   PKCS7_dup: function (p7: PPKCS7): PPKCS7; cdecl = nil;
+  {$EXTERNALSYM d2i_PKCS7_bio}
   d2i_PKCS7_bio: function (bp: PBIO; p7: PPPKCS7): PPKCS7; cdecl = nil;
+  {$EXTERNALSYM i2d_PKCS7_bio}
   i2d_PKCS7_bio: function (bp: PBIO; p7: PPKCS7): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM i2d_PKCS7_bio_stream}
   i2d_PKCS7_bio_stream: function (out_: PBIO; p7: PPKCS7; in_: PBIO; flags: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PEM_write_bio_PKCS7_stream}
   PEM_write_bio_PKCS7_stream: function (out_: PBIO; p7: PPKCS7; in_: PBIO; flags: TIdC_INT): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM PKCS7_SIGNER_INFO_new}
   PKCS7_SIGNER_INFO_new : function : PPKCS7_SIGNER_INFO; cdecl = nil;
+  {$EXTERNALSYM PKCS7_SIGNER_INFO_free}
   PKCS7_SIGNER_INFO_free : procedure(a: PPKCS7_SIGNER_INFO); cdecl = nil;
+  {$EXTERNALSYM d2i_PKCS7_SIGNER_INFO}
   d2i_PKCS7_SIGNER_INFO : function(a: PPPKCS7_SIGNER_INFO; const in_: PByte; len: TIdC_LONG): PPKCS7_SIGNER_INFO; cdecl = nil;
+  {$EXTERNALSYM i2d_PKCS7_SIGNER_INFO}
   i2d_PKCS7_SIGNER_INFO : function(const a: PPKCS7_SIGNER_INFO; out_: PByte): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_SIGNER_INFO_it}
   PKCS7_SIGNER_INFO_it : function : PASN1_ITEM; cdecl = nil;
 
+  {$EXTERNALSYM PKCS7_RECIP_INFO_new}
   PKCS7_RECIP_INFO_new : function : PPKCS7_RECIP_INFO; cdecl = nil;
+  {$EXTERNALSYM PKCS7_RECIP_INFO_free}
   PKCS7_RECIP_INFO_free : procedure(a: PPKCS7_RECIP_INFO); cdecl = nil;
+  {$EXTERNALSYM d2i_PKCS7_RECIP_INFO}
   d2i_PKCS7_RECIP_INFO : function(a: PPPKCS7_RECIP_INFO; const in_: PByte; len: TIdC_LONG): PPKCS7_RECIP_INFO; cdecl = nil;
+  {$EXTERNALSYM i2d_PKCS7_RECIP_INFO}
   i2d_PKCS7_RECIP_INFO : function(const a: PPKCS7_RECIP_INFO; out_: PByte): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_RECIP_INFO_it}
   PKCS7_RECIP_INFO_it : function : PASN1_ITEM; cdecl = nil;
 
+  {$EXTERNALSYM PKCS7_SIGNED_new}
   PKCS7_SIGNED_new : function: PPKCS7_SIGNED; cdecl = nil;
+  {$EXTERNALSYM PKCS7_SIGNED_free}
   PKCS7_SIGNED_free : procedure(a: PPKCS7_SIGNED); cdecl = nil;
+  {$EXTERNALSYM d2i_PKCS7_SIGNED}
   d2i_PKCS7_SIGNED : function(a: PPPKCS7_SIGNED; const in_: PByte; len: TIdC_LONG): PPKCS7_SIGNED; cdecl = nil;
+  {$EXTERNALSYM i2d_PKCS7_SIGNED}
   i2d_PKCS7_SIGNED : function(const a: PPKCS7_SIGNED; out_: PByte): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_SIGNED_it}
   PKCS7_SIGNED_it : function: PASN1_ITEM; cdecl = nil;
 
+  {$EXTERNALSYM PKCS7_ENC_CONTENT_new}
   PKCS7_ENC_CONTENT_new : function : PPKCS7_ENC_CONTENT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_ENC_CONTENT_free}
   PKCS7_ENC_CONTENT_free : procedure (a: PPKCS7_ENC_CONTENT); cdecl = nil;
+  {$EXTERNALSYM d2i_PKCS7_ENC_CONTENT}
   d2i_PKCS7_ENC_CONTENT : function(a: PPPKCS7_ENC_CONTENT; const in_: PByte; len: TIdC_LONG): PPKCS7_ENC_CONTENT; cdecl = nil;
+  {$EXTERNALSYM i2d_PKCS7_ENC_CONTENT}
   i2d_PKCS7_ENC_CONTENT : function(const a: PPKCS7_ENC_CONTENT; out_: PByte): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_ENC_CONTENT_it}
   PKCS7_ENC_CONTENT_it : function : PASN1_ITEM; cdecl = nil;
 
+  {$EXTERNALSYM PKCS7_ENVELOPE_new}
   PKCS7_ENVELOPE_new : function : PPKCS7_ENVELOPE; cdecl = nil;
+  {$EXTERNALSYM PKCS7_ENVELOPE_free}
   PKCS7_ENVELOPE_free : procedure(a: PPKCS7_ENVELOPE); cdecl = nil;
+  {$EXTERNALSYM d2i_PKCS7_ENVELOPE}
   d2i_PKCS7_ENVELOPE : function(a: PPPKCS7_ENVELOPE; const in_: PByte; len: TIdC_LONG): PPKCS7_ENVELOPE; cdecl = nil;
+  {$EXTERNALSYM i2d_PKCS7_ENVELOPE}
   i2d_PKCS7_ENVELOPE : function(const a: PPKCS7_ENVELOPE; out_: PByte): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_ENVELOPE_it}
   PKCS7_ENVELOPE_it : function : PASN1_ITEM; cdecl = nil;
 
+  {$EXTERNALSYM PKCS7_SIGN_ENVELOPE_new}
   PKCS7_SIGN_ENVELOPE_new : function : PPKCS7_SIGN_ENVELOPE; cdecl = nil;
+  {$EXTERNALSYM PKCS7_SIGN_ENVELOPE_free}
   PKCS7_SIGN_ENVELOPE_free : procedure (a: PPKCS7_SIGN_ENVELOPE); cdecl = nil;
+  {$EXTERNALSYM d2i_PKCS7_SIGN_ENVELOPE}
   d2i_PKCS7_SIGN_ENVELOPE : function(a: PPPKCS7_SIGN_ENVELOPE; const in_: PByte; len: TIdC_LONG): PPKCS7_SIGN_ENVELOPE; cdecl = nil;
+  {$EXTERNALSYM i2d_PKCS7_SIGN_ENVELOPE}
   i2d_PKCS7_SIGN_ENVELOPE : function(const a: PPKCS7_SIGN_ENVELOPE; out_: PByte): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_SIGN_ENVELOPE_it}
   PKCS7_SIGN_ENVELOPE_it : function : PASN1_ITEM; cdecl = nil;
 
+  {$EXTERNALSYM PKCS7_DIGEST_new}
   PKCS7_DIGEST_new : function: PPKCS7_DIGEST; cdecl = nil;
+  {$EXTERNALSYM PKCS7_DIGEST_free}
   PKCS7_DIGEST_free : procedure(a: PPKCS7_DIGEST); cdecl = nil;
+  {$EXTERNALSYM d2i_PKCS7_DIGEST}
   d2i_PKCS7_DIGEST : function(a: PPPKCS7_DIGEST; const in_: PByte; len: TIdC_LONG): PPKCS7_DIGEST; cdecl = nil;
+  {$EXTERNALSYM i2d_PKCS7_DIGEST}
   i2d_PKCS7_DIGEST : function(const a: PPKCS7_DIGEST; out_: PByte): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_DIGEST_it}
   PKCS7_DIGEST_it : function : PASN1_ITEM; cdecl = nil;
 
+  {$EXTERNALSYM PKCS7_ENCRYPT_new}
   PKCS7_ENCRYPT_new : function : PPKCS7_ENCRYPT_STRUCT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_ENCRYPT_free}
   PKCS7_ENCRYPT_free : procedure(a: PPKCS7_ENCRYPT_STRUCT); cdecl = nil;
+  {$EXTERNALSYM d2i_PKCS7_ENCRYPT}
   d2i_PKCS7_ENCRYPT : function(a: PPPKCS7_ENCRYPT_STRUCT; const in_: PByte; len: TIdC_LONG): PPKCS7_ENCRYPT_STRUCT; cdecl = nil;
+  {$EXTERNALSYM i2d_PKCS7_ENCRYPT}
   i2d_PKCS7_ENCRYPT : function(const a: PPKCS7_ENCRYPT_STRUCT; out_: PByte): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_ENCRYPT_it}
   PKCS7_ENCRYPT_it : function: PASN1_ITEM; cdecl = nil;
 
+  {$EXTERNALSYM PKCS7_new}
   PKCS7_new : function : PPKCS7; cdecl = nil;
+  {$EXTERNALSYM PKCS7_free}
   PKCS7_free : procedure(a: PPKCS7); cdecl = nil;
+  {$EXTERNALSYM d2i_PKCS7}
   d2i_PKCS7 : function(a: PPPKCS7; const in_: PByte; len: TIdC_LONG): PPKCS7; cdecl = nil;
+  {$EXTERNALSYM i2d_PKCS7}
   i2d_PKCS7 : function(const a: PPKCS7; out_: PByte): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_it}
   PKCS7_it : function: PASN1_ITEM; cdecl = nil;
 
+  {$EXTERNALSYM PKCS7_ATTR_SIGN_it}
   PKCS7_ATTR_SIGN_it : function : PASN1_ITEM; cdecl = nil;
 
+  {$EXTERNALSYM PKCS7_ATTR_VERIFY_it}
   PKCS7_ATTR_VERIFY_it : function : PASN1_ITEM; cdecl = nil;
 
+  {$EXTERNALSYM i2d_PKCS7_NDEF}
   i2d_PKCS7_NDEF : function(const a: PPKCS7; out_: PPByte): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_print_ctx}
   PKCS7_print_ctx : function(out_: PBIO; const x: PPKCS7; indent: TIdC_INT; const pctx: PASN1_PCTX): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM PKCS7_ctrl}
   PKCS7_ctrl: function (p7: PPKCS7; cmd: TIdC_INT; larg: TIdC_LONG; parg: PIdAnsiChar): TIdC_LONG; cdecl = nil;
 
+  {$EXTERNALSYM PKCS7_type_is_other}
   PKCS7_type_is_other: function (p7 : PPKCS7): TIdC_INT cdecl = nil;
+  {$EXTERNALSYM PKCS7_set_type}
   PKCS7_set_type: function (p7: PPKCS7; type_: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_set0_type_other}
   PKCS7_set0_type_other: function (p7: PPKCS7; type_: TIdC_INT; other: PASN1_TYPE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_set_content}
   PKCS7_set_content: function (p7: PPKCS7; p7_data: PPKCS7): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_SIGNER_INFO_set}
   PKCS7_SIGNER_INFO_set: function (p7i: PPKCS7_SIGNER_INFO; x509: PX509; pkey: PEVP_PKEY; const dgst: PEVP_MD): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_SIGNER_INFO_sign}
   PKCS7_SIGNER_INFO_sign: function (si: PPKCS7_SIGNER_INFO): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_add_signer}
   PKCS7_add_signer: function (p7: PPKCS7; p7i: PPKCS7_SIGNER_INFO): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_add_certificate}
   PKCS7_add_certificate: function (p7: PPKCS7; x509: PX509): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_add_crl}
   PKCS7_add_crl: function (p7: PPKCS7; x509: PX509_CRL): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_content_new}
   PKCS7_content_new: function (p7: PPKCS7; nid: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_dataVerify}
   PKCS7_dataVerify: function (cert_store: PX509_STORE; ctx: PX509_STORE_CTX; bio: PBIO; p7: PPKCS7; si: PPKCS7_SIGNER_INFO): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_signatureVerify}
   PKCS7_signatureVerify: function (bio: PBIO; p7: PPKCS7; si: PPKCS7_SIGNER_INFO; x509: PX509): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM PKCS7_dataInit}
   PKCS7_dataInit: function (p7: PPKCS7; bio: PBIO): PBIO; cdecl = nil;
+  {$EXTERNALSYM PKCS7_dataFinal}
   PKCS7_dataFinal: function (p7: PPKCS7; bio: PBIO): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_dataDecode}
   PKCS7_dataDecode: function (p7: PPKCS7; pkey: PEVP_PKEY; in_bio: PBIO; pcert: PX509): PBIO; cdecl = nil;
 
+  {$EXTERNALSYM PKCS7_add_signature}
   PKCS7_add_signature: function (p7: PPKCS7; x509: PX509; pkey: PEVP_PKEY; const dgst: PEVP_MD): PPKCS7_SIGNER_INFO; cdecl = nil;
+  {$EXTERNALSYM PKCS7_cert_from_signer_info}
   PKCS7_cert_from_signer_info: function (p7: PPKCS7; si: PPKCS7_SIGNER_INFO): PX509; cdecl = nil;
+  {$EXTERNALSYM PKCS7_set_digest}
   PKCS7_set_digest: function (p7: PPKCS7; const md: PEVP_MD): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_get_signer_info}
   PKCS7_get_signer_info : function (p7: PPKCS7): PSTACK_OF_PKCS7_SIGNER_INFO; cdecl = nil;
 
+  {$EXTERNALSYM PKCS7_add_recipient}
   PKCS7_add_recipient: function (p7: PPKCS7; x509: PX509): PPKCS7_RECIP_INFO; cdecl = nil;
+  {$EXTERNALSYM PKCS7_SIGNER_INFO_get0_algs}
   PKCS7_SIGNER_INFO_get0_algs: procedure (si: PPKCS7_SIGNER_INFO; pk: PPEVP_PKEY; pdig: PPX509_ALGOR; psig: PPX509_ALGOR); cdecl = nil;
+  {$EXTERNALSYM PKCS7_RECIP_INFO_get0_alg}
   PKCS7_RECIP_INFO_get0_alg: procedure (ri: PPKCS7_RECIP_INFO; penc: PPX509_ALGOR); cdecl = nil;
+  {$EXTERNALSYM PKCS7_add_recipient_info}
   PKCS7_add_recipient_info: function (p7: PPKCS7; ri: PPKCS7_RECIP_INFO): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_RECIP_INFO_set}
   PKCS7_RECIP_INFO_set: function (p7i: PPKCS7_RECIP_INFO; x509: PX509): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_set_cipher}
   PKCS7_set_cipher: function (p7: PPKCS7; const cipher: PEVP_CIPHER): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_stream}
   PKCS7_stream: function (boundary: PPPByte; p7: PPKCS7): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM PKCS7_get_issuer_and_serial}
   PKCS7_get_issuer_and_serial: function (p7: PPKCS7; idx: TIdC_INT): PPKCS7_ISSUER_AND_SERIAL; cdecl = nil;
+  {$EXTERNALSYM PKCS7_get_octet_string}
   PKCS7_get_octet_string : function(p7 : PPKCS7) : PASN1_OCTET_STRING; cdecl = nil;
+  {$EXTERNALSYM PKCS7_digest_from_attributes}
   PKCS7_digest_from_attributes : function(sk: PSTACK_OF_X509_ATTRIBUTE): PASN1_OCTET_STRING; cdecl = nil;
+  {$EXTERNALSYM PKCS7_add_signed_attribute}
   PKCS7_add_signed_attribute: function (p7si: PPKCS7_SIGNER_INFO; nid: TIdC_INT; type_: TIdC_INT; data: Pointer): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_add_attribute}
   PKCS7_add_attribute: function (p7si: PPKCS7_SIGNER_INFO; nid: TIdC_INT; atrtype: TIdC_INT; value: Pointer): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_get_attribute}
   PKCS7_get_attribute: function (si: PPKCS7_SIGNER_INFO; nid: TIdC_INT): PASN1_TYPE; cdecl = nil;
+  {$EXTERNALSYM PKCS7_get_signed_attribute}
   PKCS7_get_signed_attribute: function (si: PPKCS7_SIGNER_INFO; nid: TIdC_INT): PASN1_TYPE; cdecl = nil;
+  {$EXTERNALSYM PKCS7_set_signed_attributes}
   PKCS7_set_signed_attributes : function(p7si: PPKCS7_SIGNER_INFO; sk: PSTACK_OF_X509): TIdC_INT;  cdecl = nil;
+  {$EXTERNALSYM PKCS7_set_attributes}
   PKCS7_set_attributes : function(p7si: PPKCS7_SIGNER_INFO; sk: PSTACK_OF_X509_ATTRIBUTE): TIdC_INT;  cdecl = nil;
 
+  {$EXTERNALSYM PKCS7_sign}
   PKCS7_sign : function(signcert: PX509; pkey: PEVP_PKEY; certs: PSTACK_OF_X509; data: PBIO; flags: TIdC_INT): PPKCS7;  cdecl = nil;
 
+  {$EXTERNALSYM PKCS7_sign_add_signer}
   PKCS7_sign_add_signer: function (p7: PPKCS7; signcert: PX509; pkey: PEVP_PKEY; const md: PEVP_MD; flags: TIdC_INT): PPKCS7_SIGNER_INFO; cdecl = nil;
 
+  {$EXTERNALSYM PKCS7_final}
   PKCS7_final: function (p7: PPKCS7; data: PBIO; flags: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_verify}
   PKCS7_verify : function (p7: PPKCS7; certs: PSTACK_OF_X509; store: PX509_STORE; indata: PBIO; out_: PBIO; flags: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_get0_signers}
   PKCS7_get0_signers : function(p7: PPKCS7; certs: PSTACK_OF_X509; flags: TIdC_INT): PSTACK_OF_X509; cdecl = nil;
+  {$EXTERNALSYM PKCS7_encrypt}
   PKCS7_encrypt : function(certs: PSTACK_OF_X509; in_: PBIO; const cipher: PEVP_CIPHER; flags: TIdC_INT): PPKCS7; cdecl = nil;
+  {$EXTERNALSYM PKCS7_decrypt}
   PKCS7_decrypt: function (p7: PPKCS7; pkey: PEVP_PKEY; cert: PX509; data: PBIO; flags: TIdC_INT): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM PKCS7_add_attrib_smimecap}
   PKCS7_add_attrib_smimecap : function(si: PPKCS7_SIGNER_INFO; cap: PSTACK_OF_X509_ALGOR): TIdC_INT;   cdecl = nil;
+  {$EXTERNALSYM PKCS7_get_smimecap}
   PKCS7_get_smimecap : function(si: PPKCS7_SIGNER_INFO): PSTACK_OF_X509_ALGOR;  cdecl = nil;
+  {$EXTERNALSYM PKCS7_simple_smimecap}
   PKCS7_simple_smimecap : function(sk: PSTACK_OF_X509_ALGOR; nid: TIdC_INT; arg: TIdC_INT): TIdC_INT;   cdecl = nil;
 
+  {$EXTERNALSYM PKCS7_add_attrib_content_type}
   PKCS7_add_attrib_content_type: function (si: PPKCS7_SIGNER_INFO; coid: PASN1_OBJECT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_add0_attrib_signing_time}
   PKCS7_add0_attrib_signing_time: function (si: PPKCS7_SIGNER_INFO; t: PASN1_TIME): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS7_add1_attrib_digest}
   PKCS7_add1_attrib_digest: function (si: PPKCS7_SIGNER_INFO; const md: PByte; mdlen: TIdC_INT): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM SMIME_write_PKCS7}
   SMIME_write_PKCS7: function (bio: PBIO; p7: PPKCS7; data: PBIO; flags: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM SMIME_read_PKCS7}
   SMIME_read_PKCS7: function (bio: PBIO; bcont: PPBIO): PPKCS7; cdecl = nil;
 
+  {$EXTERNALSYM BIO_new_PKCS7}
   BIO_new_PKCS7: function (out_: PBIO; p7: PPKCS7): PBIO; cdecl = nil;
 
 {$ELSE}
+  {$EXTERNALSYM PKCS7_ISSUER_AND_SERIAL_digest}
   function PKCS7_ISSUER_AND_SERIAL_digest(data: PPKCS7_ISSUER_AND_SERIAL; const type_: PEVP_MD; md: PByte; len: PIdC_UINT): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS7_dup}
   function PKCS7_dup(p7: PPKCS7): PPKCS7 cdecl; external CLibCrypto;
+  {$EXTERNALSYM d2i_PKCS7_bio}
   function d2i_PKCS7_bio(bp: PBIO; p7: PPPKCS7): PPKCS7 cdecl; external CLibCrypto;
+  {$EXTERNALSYM i2d_PKCS7_bio}
   function i2d_PKCS7_bio(bp: PBIO; p7: PPKCS7): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM i2d_PKCS7_bio_stream}
   function i2d_PKCS7_bio_stream(out_: PBIO; p7: PPKCS7; in_: PBIO; flags: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PEM_write_bio_PKCS7_stream}
   function PEM_write_bio_PKCS7_stream(out_: PBIO; p7: PPKCS7; in_: PBIO; flags: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS7_SIGNER_INFO_new}
   function PKCS7_SIGNER_INFO_new: PPKCS7_SIGNER_INFO cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_SIGNER_INFO_free}
   procedure PKCS7_SIGNER_INFO_free(a: PPKCS7_SIGNER_INFO) cdecl; external CLibCrypto;
+  {$EXTERNALSYM d2i_PKCS7_SIGNER_INFO}
   function d2i_PKCS7_SIGNER_INFO(a: PPPKCS7_SIGNER_INFO; const in_: PByte; len: TIdC_LONG): PPKCS7_SIGNER_INFO cdecl; external CLibCrypto;
+  {$EXTERNALSYM i2d_PKCS7_SIGNER_INFO}
   function i2d_PKCS7_SIGNER_INFO(const a: PPKCS7_SIGNER_INFO; out_: PByte): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_SIGNER_INFO_it}
   function PKCS7_SIGNER_INFO_it: PASN1_ITEM cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS7_RECIP_INFO_new}
   function PKCS7_RECIP_INFO_new: PPKCS7_RECIP_INFO cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_RECIP_INFO_free}
   procedure PKCS7_RECIP_INFO_free(a: PPKCS7_RECIP_INFO) cdecl; external CLibCrypto;
+  {$EXTERNALSYM d2i_PKCS7_RECIP_INFO}
   function d2i_PKCS7_RECIP_INFO(a: PPPKCS7_RECIP_INFO; const in_: PByte; len: TIdC_LONG): PPKCS7_RECIP_INFO cdecl; external CLibCrypto;
+  {$EXTERNALSYM i2d_PKCS7_RECIP_INFO}
   function i2d_PKCS7_RECIP_INFO(const a: PPKCS7_RECIP_INFO; out_: PByte): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_RECIP_INFO_it}
   function PKCS7_RECIP_INFO_it: PASN1_ITEM cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS7_SIGNED_new}
   function PKCS7_SIGNED_new: PPKCS7_SIGNED; cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_SIGNED_free}
   procedure PKCS7_SIGNED_free(a: PPKCS7_SIGNED); cdecl; external CLibCrypto;
+  {$EXTERNALSYM d2i_PKCS7_SIGNED}
   function d2i_PKCS7_SIGNED(a: PPPKCS7_SIGNED; const in_: PByte; len: TIdC_LONG): PPKCS7_SIGNED; cdecl; external CLibCrypto;
+  {$EXTERNALSYM i2d_PKCS7_SIGNED}
   function i2d_PKCS7_SIGNED(const a: PPKCS7_SIGNED; out_: PByte): TIdC_INT; cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_SIGNED_it}
   function PKCS7_SIGNED_it: PASN1_ITEM; cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS7_ENC_CONTENT_new}
   function PKCS7_ENC_CONTENT_new: PPKCS7_ENC_CONTENT; cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_ENC_CONTENT_free}
   procedure PKCS7_ENC_CONTENT_free(a: PPKCS7_ENC_CONTENT); cdecl; external CLibCrypto;
+  {$EXTERNALSYM d2i_PKCS7_ENC_CONTENT}
   function d2i_PKCS7_ENC_CONTENT(a: PPPKCS7_ENC_CONTENT; const in_: PByte; len: TIdC_LONG): PPKCS7_ENC_CONTENT; cdecl; external CLibCrypto;
+  {$EXTERNALSYM i2d_PKCS7_ENC_CONTENT}
   function i2d_PKCS7_ENC_CONTENT(const a: PPKCS7_ENC_CONTENT; out_: PByte): TIdC_INT; cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_ENC_CONTENT_it}
   function PKCS7_ENC_CONTENT_it: PASN1_ITEM; cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS7_ENVELOPE_new}
   function PKCS7_ENVELOPE_new: PPKCS7_ENVELOPE; cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_ENVELOPE_free}
   procedure PKCS7_ENVELOPE_free(a: PPKCS7_ENVELOPE); cdecl; external CLibCrypto;
+  {$EXTERNALSYM d2i_PKCS7_ENVELOPE}
   function d2i_PKCS7_ENVELOPE(a: PPPKCS7_ENVELOPE; const in_: PByte; len: TIdC_LONG): PPKCS7_ENVELOPE; cdecl; external CLibCrypto;
+  {$EXTERNALSYM i2d_PKCS7_ENVELOPE}
   function i2d_PKCS7_ENVELOPE(const a: PPKCS7_ENVELOPE; out_: PByte): TIdC_INT; cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_ENVELOPE_it}
   function PKCS7_ENVELOPE_it: PASN1_ITEM; cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS7_SIGN_ENVELOPE_new}
   function PKCS7_SIGN_ENVELOPE_new: PPKCS7_SIGN_ENVELOPE; cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_SIGN_ENVELOPE_free}
   procedure PKCS7_SIGN_ENVELOPE_free(a: PPKCS7_SIGN_ENVELOPE); cdecl; external CLibCrypto;
+  {$EXTERNALSYM d2i_PKCS7_SIGN_ENVELOPE}
   function d2i_PKCS7_SIGN_ENVELOPE(a: PPPKCS7_SIGN_ENVELOPE; const in_: PByte; len: TIdC_LONG): PPKCS7_SIGN_ENVELOPE; cdecl; external CLibCrypto;
+  {$EXTERNALSYM i2d_PKCS7_SIGN_ENVELOPE}
   function i2d_PKCS7_SIGN_ENVELOPE(const a: PPKCS7_SIGN_ENVELOPE; out_: PByte): TIdC_INT; cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_SIGN_ENVELOPE_it}
   function PKCS7_SIGN_ENVELOPE_it: PASN1_ITEM; cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS7_DIGEST_new}
   function PKCS7_DIGEST_new: PPKCS7_DIGEST; cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_DIGEST_free}
   procedure PKCS7_DIGEST_free(a: PPKCS7_DIGEST); cdecl; external CLibCrypto;
+  {$EXTERNALSYM d2i_PKCS7_DIGEST}
   function d2i_PKCS7_DIGEST(a: PPPKCS7_DIGEST; const in_: PByte; len: TIdC_LONG): PPKCS7_DIGEST; cdecl; external CLibCrypto;
+  {$EXTERNALSYM i2d_PKCS7_DIGEST}
   function i2d_PKCS7_DIGEST(const a: PPKCS7_DIGEST; out_: PByte): TIdC_INT; cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_DIGEST_it}
   function PKCS7_DIGEST_it: PASN1_ITEM; cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS7_ENCRYPT_new}
   function PKCS7_ENCRYPT_new: PPKCS7_ENCRYPT_STRUCT; cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_ENCRYPT_free}
   procedure PKCS7_ENCRYPT_free(a: PPKCS7_ENCRYPT_STRUCT); cdecl; external CLibCrypto;
+  {$EXTERNALSYM d2i_PKCS7_ENCRYPT}
   function d2i_PKCS7_ENCRYPT(a: PPPKCS7_ENCRYPT_STRUCT; const in_: PByte; len: TIdC_LONG): PPKCS7_ENCRYPT_STRUCT; cdecl; external CLibCrypto;
+  {$EXTERNALSYM i2d_PKCS7_ENCRYPT}
   function i2d_PKCS7_ENCRYPT(const a: PPKCS7_ENCRYPT_STRUCT; out_: PByte): TIdC_INT; cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_ENCRYPT_it}
   function PKCS7_ENCRYPT_it: PASN1_ITEM; cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS7_new}
   function PKCS7_new: PPKCS7; cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_free}
   procedure PKCS7_free(a: PPKCS7); cdecl; external CLibCrypto;
+  {$EXTERNALSYM d2i_PKCS7}
   function d2i_PKCS7(a: PPPKCS7; const in_: PByte; len: TIdC_LONG): PPKCS7; cdecl; external CLibCrypto;
+  {$EXTERNALSYM i2d_PKCS7}
   function i2d_PKCS7(const a: PPKCS7; out_: PByte): TIdC_INT; cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_it}
   function PKCS7_it: PASN1_ITEM; cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS7_ATTR_SIGN_it}
   function PKCS7_ATTR_SIGN_it: PASN1_ITEM; cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS7_ATTR_VERIFY_it}
   function PKCS7_ATTR_VERIFY_it: PASN1_ITEM; cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM i2d_PKCS7_NDEF}
   function i2d_PKCS7_NDEF(const a: PPKCS7; out_: PPByte): TIdC_INT; cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_print_ctx}
   function PKCS7_print_ctx(out_: PBIO; const x: PPKCS7; indent: TIdC_INT; const pctx: PASN1_PCTX): TIdC_INT; cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS7_ctrl}
   function PKCS7_ctrl(p7: PPKCS7; cmd: TIdC_INT; larg: TIdC_LONG; parg: PIdAnsiChar): TIdC_LONG cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS7_type_is_other}
   function PKCS7_type_is_other(p7 : PPKCS7): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_set_type}
   function PKCS7_set_type(p7: PPKCS7; type_: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_set0_type_other}
   function PKCS7_set0_type_other(p7: PPKCS7; type_: TIdC_INT; other: PASN1_TYPE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_set_content}
   function PKCS7_set_content(p7: PPKCS7; p7_data: PPKCS7): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_SIGNER_INFO_set}
   function PKCS7_SIGNER_INFO_set(p7i: PPKCS7_SIGNER_INFO; x509: PX509; pkey: PEVP_PKEY; const dgst: PEVP_MD): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_SIGNER_INFO_sign}
   function PKCS7_SIGNER_INFO_sign(si: PPKCS7_SIGNER_INFO): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_add_signer}
   function PKCS7_add_signer(p7: PPKCS7; p7i: PPKCS7_SIGNER_INFO): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_add_certificate}
   function PKCS7_add_certificate(p7: PPKCS7; x509: PX509): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_add_crl}
   function PKCS7_add_crl(p7: PPKCS7; x509: PX509_CRL): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_content_new}
   function PKCS7_content_new(p7: PPKCS7; nid: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_dataVerify}
   function PKCS7_dataVerify(cert_store: PX509_STORE; ctx: PX509_STORE_CTX; bio: PBIO; p7: PPKCS7; si: PPKCS7_SIGNER_INFO): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_signatureVerify}
   function PKCS7_signatureVerify(bio: PBIO; p7: PPKCS7; si: PPKCS7_SIGNER_INFO; x509: PX509): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS7_dataInit}
   function PKCS7_dataInit(p7: PPKCS7; bio: PBIO): PBIO cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_dataFinal}
   function PKCS7_dataFinal(p7: PPKCS7; bio: PBIO): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_dataDecode}
   function PKCS7_dataDecode(p7: PPKCS7; pkey: PEVP_PKEY; in_bio: PBIO; pcert: PX509): PBIO cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS7_add_signature}
   function PKCS7_add_signature(p7: PPKCS7; x509: PX509; pkey: PEVP_PKEY; const dgst: PEVP_MD): PPKCS7_SIGNER_INFO cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_cert_from_signer_info}
   function PKCS7_cert_from_signer_info(p7: PPKCS7; si: PPKCS7_SIGNER_INFO): PX509 cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_set_digest}
   function PKCS7_set_digest(p7: PPKCS7; const md: PEVP_MD): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_get_signer_info}
   function PKCS7_get_signer_info(p7: PPKCS7): PSTACK_OF_PKCS7_SIGNER_INFO cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS7_add_recipient}
   function PKCS7_add_recipient(p7: PPKCS7; x509: PX509): PPKCS7_RECIP_INFO cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_SIGNER_INFO_get0_algs}
   procedure PKCS7_SIGNER_INFO_get0_algs(si: PPKCS7_SIGNER_INFO; pk: PPEVP_PKEY; pdig: PPX509_ALGOR; psig: PPX509_ALGOR) cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_RECIP_INFO_get0_alg}
   procedure PKCS7_RECIP_INFO_get0_alg(ri: PPKCS7_RECIP_INFO; penc: PPX509_ALGOR) cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_add_recipient_info}
   function PKCS7_add_recipient_info(p7: PPKCS7; ri: PPKCS7_RECIP_INFO): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_RECIP_INFO_set}
   function PKCS7_RECIP_INFO_set(p7i: PPKCS7_RECIP_INFO; x509: PX509): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_set_cipher}
   function PKCS7_set_cipher(p7: PPKCS7; const cipher: PEVP_CIPHER): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_stream}
   function PKCS7_stream(boundary: PPPByte; p7: PPKCS7): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS7_get_issuer_and_serial}
   function PKCS7_get_issuer_and_serial(p7: PPKCS7; idx: TIdC_INT): PPKCS7_ISSUER_AND_SERIAL cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_get_octet_string}
   function PKCS7_get_octet_string(p7 : PPKCS7) : PASN1_OCTET_STRING; cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_digest_from_attributes}
   function PKCS7_digest_from_attributes(sk: PSTACK_OF_X509_ATTRIBUTE): PASN1_OCTET_STRING; cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_add_signed_attribute}
   function PKCS7_add_signed_attribute(p7si: PPKCS7_SIGNER_INFO; nid: TIdC_INT; type_: TIdC_INT; data: Pointer): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_add_attribute}
   function PKCS7_add_attribute(p7si: PPKCS7_SIGNER_INFO; nid: TIdC_INT; atrtype: TIdC_INT; value: Pointer): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_get_attribute}
   function PKCS7_get_attribute(si: PPKCS7_SIGNER_INFO; nid: TIdC_INT): PASN1_TYPE cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_get_signed_attribute}
   function PKCS7_get_signed_attribute(si: PPKCS7_SIGNER_INFO; nid: TIdC_INT): PASN1_TYPE cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_set_signed_attributes}
   function PKCS7_set_signed_attributes(p7si: PPKCS7_SIGNER_INFO; sk: PSTACK_OF_X509): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_set_attributes}
   function PKCS7_set_attributes(p7si: PPKCS7_SIGNER_INFO; sk: PSTACK_OF_X509_ATTRIBUTE): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS7_sign}
   function PKCS7_sign(signcert: PX509; pkey: PEVP_PKEY; certs: PSTACK_OF_X509; data: PBIO; flags: TIdC_INT): PPKCS7 cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS7_sign_add_signer}
   function PKCS7_sign_add_signer(p7: PPKCS7; signcert: PX509; pkey: PEVP_PKEY; const md: PEVP_MD; flags: TIdC_INT): PPKCS7_SIGNER_INFO cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS7_final}
   function PKCS7_final(p7: PPKCS7; data: PBIO; flags: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_verify}
   function PKCS7_verify(p7: PPKCS7; certs: PSTACK_OF_X509; store: PX509_STORE; indata: PBIO; out_: PBIO; flags: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_get0_signers}
   function PKCS7_get0_signers(p7: PPKCS7; certs: PSTACK_OF_X509; flags: TIdC_INT): PSTACK_OF_X509 cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_encrypt}
   function PKCS7_encrypt(certs: PSTACK_OF_X509; in_: PBIO; const cipher: PEVP_CIPHER; flags: TIdC_INT): PPKCS7 cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_decrypt}
   function PKCS7_decrypt(p7: PPKCS7; pkey: PEVP_PKEY; cert: PX509; data: PBIO; flags: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS7_add_attrib_smimecap}
   function PKCS7_add_attrib_smimecap(si: PPKCS7_SIGNER_INFO; cap: PSTACK_OF_X509_ALGOR): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_get_smimecap}
   function PKCS7_get_smimecap(si: PPKCS7_SIGNER_INFO): PSTACK_OF_X509_ALGOR cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_simple_smimecap}
   function PKCS7_simple_smimecap(sk: PSTACK_OF_X509_ALGOR; nid: TIdC_INT; arg: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS7_add_attrib_content_type}
   function PKCS7_add_attrib_content_type(si: PPKCS7_SIGNER_INFO; coid: PASN1_OBJECT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_add0_attrib_signing_time}
   function PKCS7_add0_attrib_signing_time(si: PPKCS7_SIGNER_INFO; t: PASN1_TIME): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS7_add1_attrib_digest}
   function PKCS7_add1_attrib_digest(si: PPKCS7_SIGNER_INFO; const md: PByte; mdlen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM SMIME_write_PKCS7}
   function SMIME_write_PKCS7(bio: PBIO; p7: PPKCS7; data: PBIO; flags: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM SMIME_read_PKCS7}
   function SMIME_read_PKCS7(bio: PBIO; bcont: PPBIO): PPKCS7 cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM BIO_new_PKCS7}
   function BIO_new_PKCS7(out_: PBIO; p7: PPKCS7): PBIO cdecl; external CLibCrypto;
 
 {$ENDIF}
  {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 type
+  {$EXTERNALSYM Tsk_PKCS7_RECIP_INFO_new}
   Tsk_PKCS7_RECIP_INFO_new = function(cmp : TOPENSSL_sk_compfunc) : PSTACK_OF_PKCS7_RECIP_INFO cdecl;
+  {$EXTERNALSYM Tsk_PKCS7_RECIP_INFO_new_null}
   Tsk_PKCS7_RECIP_INFO_new_null = function : PSTACK_OF_PKCS7_RECIP_INFO cdecl;
+  {$EXTERNALSYM Tsk_PKCS7_RECIP_INFO_free}
   Tsk_PKCS7_RECIP_INFO_free = procedure(st : PSTACK_OF_PKCS7_RECIP_INFO) cdecl;
+  {$EXTERNALSYM Tsk_PKCS7_RECIP_INFO_num}
   Tsk_PKCS7_RECIP_INFO_num = function (const sk : PSTACK_OF_PKCS7_RECIP_INFO) : TIdC_INT cdecl;
+  {$EXTERNALSYM Tsk_PKCS7_RECIP_INFO_value}
   Tsk_PKCS7_RECIP_INFO_value = function (const sk : PSTACK_OF_PKCS7_RECIP_INFO; i : TIdC_INT) : PX509_CRL cdecl;
+  {$EXTERNALSYM Tsk_PKCS7_RECIP_INFO_push}
   Tsk_PKCS7_RECIP_INFO_push = function (sk : PSTACK_OF_PKCS7_RECIP_INFO; st : PPKCS7_RECIP_INFO) : TIdC_INT cdecl;
+  {$EXTERNALSYM Tsk_PKCS7_RECIP_INFO_dup}
   Tsk_PKCS7_RECIP_INFO_dup = function (sk : PSTACK_OF_PKCS7_RECIP_INFO) : PSTACK_OF_PKCS7_RECIP_INFO cdecl;
+  {$EXTERNALSYM Tsk_PKCS7_RECIP_INFO_find}
   Tsk_PKCS7_RECIP_INFO_find = function (sk : PSTACK_OF_PKCS7_RECIP_INFO; _val : PPKCS7_RECIP_INFO) : TIdC_INT cdecl;
+  {$EXTERNALSYM Tsk_PKCS7_RECIP_INFO_pop_free}
   Tsk_PKCS7_RECIP_INFO_pop_free = procedure (sk : PSTACK_OF_PKCS7_RECIP_INFO; func: TOPENSSL_sk_freefunc) cdecl;
+  {$EXTERNALSYM Tsk_PKCS7_SIGNER_INFO_new}
   Tsk_PKCS7_SIGNER_INFO_new = function(cmp : TOPENSSL_sk_compfunc) : PSTACK_OF_PKCS7_SIGNER_INFO cdecl;
+  {$EXTERNALSYM Tsk_PKCS7_SIGNER_INFO_new_null}
   Tsk_PKCS7_SIGNER_INFO_new_null = function : PSTACK_OF_PKCS7_SIGNER_INFO cdecl;
+  {$EXTERNALSYM Tsk_PKCS7_SIGNER_INFO_free}
   Tsk_PKCS7_SIGNER_INFO_free = procedure(st : PSTACK_OF_PKCS7_SIGNER_INFO) cdecl;
+  {$EXTERNALSYM Tsk_PKCS7_SIGNER_INFO_num}
   Tsk_PKCS7_SIGNER_INFO_num = function (const sk : PSTACK_OF_PKCS7_SIGNER_INFO) : TIdC_INT cdecl;
+  {$EXTERNALSYM Tsk_PKCS7_SIGNER_INFO_value}
   Tsk_PKCS7_SIGNER_INFO_value = function (const sk : PSTACK_OF_PKCS7_SIGNER_INFO; i : TIdC_INT) : PPKCS7_SIGNER_INFO cdecl;
+  {$EXTERNALSYM Tsk_PKCS7_SIGNER_INFO_push}
   Tsk_PKCS7_SIGNER_INFO_push = function (sk : PSTACK_OF_PKCS7_SIGNER_INFO; st : PX509_CRL) : TIdC_INT cdecl;
+  {$EXTERNALSYM Tsk_PKCS7_SIGNER_INFO_dup}
   Tsk_PKCS7_SIGNER_INFO_dup = function (sk : PSTACK_OF_PKCS7_SIGNER_INFO) : PSTACK_OF_PKCS7_SIGNER_INFO cdecl;
+  {$EXTERNALSYM Tsk_PKCS7_SIGNER_INFO_find}
   Tsk_PKCS7_SIGNER_INFO_find = function (sk : PSTACK_OF_PKCS7_SIGNER_INFO; _val : PX509_CRL) : TIdC_INT cdecl;
+  {$EXTERNALSYM Tsk_PKCS7_SIGNER_INFO_pop_free}
   Tsk_PKCS7_SIGNER_INFO_pop_free = procedure (sk : PSTACK_OF_PKCS7_SIGNER_INFO; func: TOPENSSL_sk_freefunc) cdecl;
 
 var
+  {$EXTERNALSYM sk_PKCS7_RECIP_INFO_new}
   sk_PKCS7_RECIP_INFO_new: Tsk_PKCS7_RECIP_INFO_new = nil;
+  {$EXTERNALSYM sk_PKCS7_RECIP_INFO_new_null}
   sk_PKCS7_RECIP_INFO_new_null : Tsk_PKCS7_RECIP_INFO_new_null = nil;
+  {$EXTERNALSYM sk_PKCS7_RECIP_INFO_free}
   sk_PKCS7_RECIP_INFO_free : Tsk_PKCS7_RECIP_INFO_free = nil;
+  {$EXTERNALSYM sk_PKCS7_RECIP_INFO_num}
   sk_PKCS7_RECIP_INFO_num : Tsk_PKCS7_RECIP_INFO_num = nil;
+  {$EXTERNALSYM sk_PKCS7_RECIP_INFO_value}
   sk_PKCS7_RECIP_INFO_value : Tsk_PKCS7_RECIP_INFO_value = nil;
+  {$EXTERNALSYM sk_PKCS7_RECIP_INFO_push}
   sk_PKCS7_RECIP_INFO_push : Tsk_PKCS7_RECIP_INFO_push = nil;
+  {$EXTERNALSYM sk_PKCS7_RECIP_INFO_dup}
   sk_PKCS7_RECIP_INFO_dup : Tsk_PKCS7_RECIP_INFO_dup = nil;
+  {$EXTERNALSYM sk_PKCS7_RECIP_INFO_find}
   sk_PKCS7_RECIP_INFO_find : Tsk_PKCS7_RECIP_INFO_find = nil;
+  {$EXTERNALSYM sk_PKCS7_RECIP_INFO_pop_free}
   sk_PKCS7_RECIP_INFO_pop_free : Tsk_PKCS7_RECIP_INFO_pop_free = nil;
 
+  {$EXTERNALSYM sk_PKCS7_SIGNER_INFO_new}
   sk_PKCS7_SIGNER_INFO_new: Tsk_PKCS7_SIGNER_INFO_new = nil;
+  {$EXTERNALSYM sk_PKCS7_SIGNER_INFO_new_null}
   sk_PKCS7_SIGNER_INFO_new_null : Tsk_PKCS7_SIGNER_INFO_new_null = nil;
+  {$EXTERNALSYM sk_PKCS7_SIGNER_INFO_free}
   sk_PKCS7_SIGNER_INFO_free : Tsk_PKCS7_SIGNER_INFO_free = nil;
+  {$EXTERNALSYM sk_PKCS7_SIGNER_INFO_num}
   sk_PKCS7_SIGNER_INFO_num : Tsk_PKCS7_SIGNER_INFO_num = nil;
+  {$EXTERNALSYM sk_PKCS7_SIGNER_INFO_value}
   sk_PKCS7_SIGNER_INFO_value : Tsk_PKCS7_SIGNER_INFO_value = nil;
+  {$EXTERNALSYM sk_PKCS7_SIGNER_INFO_push}
   sk_PKCS7_SIGNER_INFO_push : Tsk_PKCS7_SIGNER_INFO_push = nil;
+  {$EXTERNALSYM sk_PKCS7_SIGNER_INFO_dup}
   sk_PKCS7_SIGNER_INFO_dup : Tsk_PKCS7_SIGNER_INFO_dup = nil;
+  {$EXTERNALSYM sk_PKCS7_SIGNER_INFO_find}
   sk_PKCS7_SIGNER_INFO_find : Tsk_PKCS7_SIGNER_INFO_find = nil;
+  {$EXTERNALSYM sk_PKCS7_SIGNER_INFO_pop_free}
   sk_PKCS7_SIGNER_INFO_pop_free : Tsk_PKCS7_SIGNER_INFO_pop_free = nil;
 {$ELSE}
+  {$EXTERNALSYM sk_PKCS7_RECIP_INFO_new}
   function sk_PKCS7_RECIP_INFO_new(cmp : TOPENSSL_sk_compfunc) : PSTACK_OF_PKCS7_RECIP_INFO cdecl; external CLibCrypto name 'OPENSSL_sk_new';
+  {$EXTERNALSYM sk_PKCS7_RECIP_INFO_new_null}
   function sk_PKCS7_RECIP_INFO_new_null : PSTACK_OF_PKCS7_RECIP_INFO cdecl; external CLibCrypto name 'OPENSSL_sk_new_null';
+  {$EXTERNALSYM sk_PKCS7_RECIP_INFO_free}
   procedure sk_PKCS7_RECIP_INFO_free(st : PSTACK_OF_PKCS7_RECIP_INFO) cdecl; external CLibCrypto name 'OPENSSL_sk_free';
+  {$EXTERNALSYM sk_PKCS7_RECIP_INFO_num}
   function sk_PKCS7_RECIP_INFO_num (const sk : PSTACK_OF_PKCS7_RECIP_INFO) : TIdC_INT; external CLibCrypto name 'OPENSSL_sk_num';
+  {$EXTERNALSYM sk_PKCS7_RECIP_INFO_value}
   function sk_PKCS7_RECIP_INFO_value (const sk : PSTACK_OF_PKCS7_RECIP_INFO; i : TIdC_INT) : PPKCS7_RECIP_INFO cdecl; external CLibCrypto name 'OPENSSL_sk_value';
+  {$EXTERNALSYM sk_PKCS7_RECIP_INFO_push}
   function sk_PKCS7_RECIP_INFO_push (sk : PSTACK_OF_PKCS7_RECIP_INFO; st : PX509_CRL) : TIdC_INT cdecl; external CLibCrypto  name 'OPENSSL_sk_push';
+  {$EXTERNALSYM sk_PKCS7_RECIP_INFO_dup}
   function sk_PKCS7_RECIP_INFO_dup (sk : PSTACK_OF_PKCS7_RECIP_INFO) : PSTACK_OF_PKCS7_RECIP_INFO cdecl; external CLibCrypto name 'OPENSSL_sk_dup';
+  {$EXTERNALSYM sk_PKCS7_RECIP_INFO_find}
   function sk_PKCS7_RECIP_INFO_find (sk : PSTACK_OF_PKCS7_RECIP_INFO; _val : PX509_CRL) : TIdC_INT cdecl; external CLibCrypto name 'OPENSSL_sk_find';
+  {$EXTERNALSYM sk_PKCS7_RECIP_INFO_pop_free}
   procedure sk_PKCS7_RECIP_INFO_pop_free (sk : PSTACK_OF_PKCS7_RECIP_INFO; func: TOPENSSL_sk_freefunc) cdecl; external CLibCrypto name 'OPENSSL_sk_pop_free';
+  {$EXTERNALSYM sk_PKCS7_SIGNER_INFO_new}
   function sk_PKCS7_SIGNER_INFO_new(cmp : TOPENSSL_sk_compfunc) : PSTACK_OF_PKCS7_SIGNER_INFO cdecl; external CLibCrypto name 'OPENSSL_sk_new';
+  {$EXTERNALSYM sk_PKCS7_SIGNER_INFO_new_null}
   function sk_PKCS7_SIGNER_INFO_new_null : PSTACK_OF_PKCS7_SIGNER_INFO cdecl; external CLibCrypto name 'OPENSSL_sk_new_null';
+  {$EXTERNALSYM sk_PKCS7_SIGNER_INFO_free}
   procedure sk_PKCS7_SIGNER_INFO_free(st : PSTACK_OF_PKCS7_SIGNER_INFO) cdecl; external CLibCrypto name 'OPENSSL_sk_free';
+  {$EXTERNALSYM sk_PKCS7_SIGNER_INFO_num}
   function sk_PKCS7_SIGNER_INFO_num (const sk : PSTACK_OF_PKCS7_SIGNER_INFO) : TIdC_INT; external CLibCrypto name 'OPENSSL_sk_num';
+  {$EXTERNALSYM sk_PKCS7_SIGNER_INFO_value}
   function sk_PKCS7_SIGNER_INFO_value (const sk : PSTACK_OF_PKCS7_SIGNER_INFO; i : TIdC_INT) : PPKCS7_SIGNER_INFO cdecl; external CLibCrypto name 'OPENSSL_sk_value';
+  {$EXTERNALSYM sk_PKCS7_SIGNER_INFO_push}
   function sk_PKCS7_SIGNER_INFO_push (sk : PSTACK_OF_PKCS7_SIGNER_INFO; st : PX509_CRL) : TIdC_INT cdecl; external CLibCrypto  name 'OPENSSL_sk_push';
+  {$EXTERNALSYM sk_PKCS7_SIGNER_INFO_dup}
   function sk_PKCS7_SIGNER_INFO_dup (sk : PSTACK_OF_PKCS7_SIGNER_INFO) : PSTACK_OF_PKCS7_SIGNER_INFO cdecl; external CLibCrypto name 'OPENSSL_sk_dup';
+  {$EXTERNALSYM sk_PKCS7_SIGNER_INFO_find}
   function sk_PKCS7_SIGNER_INFO_find (sk : PSTACK_OF_PKCS7_SIGNER_INFO; _val : PX509_CRL) : TIdC_INT cdecl; external CLibCrypto name 'OPENSSL_sk_find';
+  {$EXTERNALSYM sk_PKCS7_SIGNER_INFO_pop_free}
   procedure sk_PKCS7_SIGNER_INFO_pop_free (sk : PSTACK_OF_PKCS7_SIGNER_INFO; func: TOPENSSL_sk_freefunc) cdecl; external CLibCrypto name 'OPENSSL_sk_pop_free';
 {$ENDIF}
 

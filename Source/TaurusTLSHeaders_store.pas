@@ -33,11 +33,17 @@ uses
   TaurusTLSHeaders_core;
 
 type
+  {$EXTERNALSYM OSSL_STORE_CTX}
   OSSL_STORE_CTX  = record end;
+  {$EXTERNALSYM POSSL_STORE_CTX}
   POSSL_STORE_CTX  = ^OSSL_STORE_CTX;
+  {$EXTERNALSYM PPOSSL_STORE_CTX}
   PPOSSL_STORE_CTX = ^POSSL_STORE_CTX;
+  {$EXTERNALSYM OSSL_STORE_LOADER}
   OSSL_STORE_LOADER = record end;
+  {$EXTERNALSYM POSSL_STORE_LOADER}
   POSSL_STORE_LOADER = ^OSSL_STORE_LOADER;
+  {$EXTERNALSYM PPOSSL_STORE_LOADER}
   PPOSSL_STORE_LOADER = ^POSSL_STORE_LOADER;
 
 {*
@@ -45,9 +51,12 @@ type
  * to massage the given OSSL_STORE_INFO, or to drop it entirely (by returning
  * NULL).
  *}
+  {$EXTERNALSYM OSSL_STORE_post_process_info_fn}
   OSSL_STORE_post_process_info_fn = function(arg1 : POSSL_STORE_INFO;
       arg2 : Pointer): POSSL_STORE_INFO cdecl;
+  {$EXTERNALSYM OSSL_STORE_LOADER_do_all_provided_fn}
   OSSL_STORE_LOADER_do_all_provided_fn = procedure(loader: POSSL_STORE_LOADER; arg: Pointer); cdecl;
+  {$EXTERNALSYM OSSL_STORE_LOADER_names_do_all_fn}
   OSSL_STORE_LOADER_names_do_all_fn = procedure(const name: PIdAnsiChar; data: Pointer); cdecl;
 
 const
@@ -57,17 +66,27 @@ const
  * OSSL_STORE_INFO_NAME is typically found when getting a listing of
  * available "files" / "tokens" / what have you.
  *}
+  {$EXTERNALSYM OSSL_STORE_INFO_NAME}
   OSSL_STORE_INFO_NAME          = 1;   //* char * */
+  {$EXTERNALSYM OSSL_STORE_INFO_PARAMS}
   OSSL_STORE_INFO_PARAMS        = 2;   //* EVP_PKEY * */
+  {$EXTERNALSYM OSSL_STORE_INFO_PUBKEY}
   OSSL_STORE_INFO_PUBKEY        = 3;   //* EVP_PKEY * */
+  {$EXTERNALSYM OSSL_STORE_INFO_PKEY}
   OSSL_STORE_INFO_PKEY          = 4;   //* EVP_PKEY * */
+  {$EXTERNALSYM OSSL_STORE_INFO_CERT}
   OSSL_STORE_INFO_CERT          = 5;   //* X509 * */
+  {$EXTERNALSYM OSSL_STORE_INFO_CRL}
   OSSL_STORE_INFO_CRL           = 6;   //* X509_CRL * */
 
 //* OSSL_STORE search types */
+  {$EXTERNALSYM d_OSSL_STORE_SEARCH_BY_NAME}
   d_OSSL_STORE_SEARCH_BY_NAME             = 1; //* subject in certs, issuer in CRLs */
+  {$EXTERNALSYM d_OSSL_STORE_SEARCH_BY_ISSUER_SERIAL}
   d_OSSL_STORE_SEARCH_BY_ISSUER_SERIAL    = 2;
+  {$EXTERNALSYM d_OSSL_STORE_SEARCH_BY_KEY_FINGERPRINT}
   d_OSSL_STORE_SEARCH_BY_KEY_FINGERPRINT  = 3;
+  {$EXTERNALSYM d_OSSL_STORE_SEARCH_BY_ALIAS}
   d_OSSL_STORE_SEARCH_BY_ALIAS            = 4;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
@@ -80,24 +99,31 @@ var
  * Returns a context reference which represents the channel to communicate
  * through.
  *}
+  {$EXTERNALSYM OSSL_STORE_open}
  OSSL_STORE_open : function (const uri : PIdAnsiChar; const ui_method : PUI_METHOD;
                 ui_data : Pointer;
                 post_process : OSSL_STORE_post_process_info_fn;
                 post_process_data : Pointer) : POSSL_STORE_CTX cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM OSSL_STORE_open_ex}
   OSSL_STORE_open_ex : function(const uri : PIdAnsiChar; libctx : POSSL_LIB_CTX; const propq : PIdAnsiChar;
                    const ui_method : PUI_METHOD; ui_data : Pointer;
                    const params : POSSL_PARAM_ARRAY;
                    post_process : OSSL_STORE_post_process_info_fn;
                    post_process_data : Pointer) : POSSL_STORE_CTX cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_load}
   OSSL_STORE_load : function(ctx : POSSL_STORE_CTX) : POSSL_STORE_INFO cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_delete}
   OSSL_STORE_delete : function(const uri : PIdAnsiChar; libctx : POSSL_LIB_CTX; const propq : PIdAnsiChar;
                       const ui_method : PUI_METHOD; ui_data : Pointer;
                       const  params : POSSL_PARAM_ARRAY) : TIdC_INT cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_eof}
   OSSL_STORE_eof : function(ctx : POSSL_STORE_CTX) : TIdC_INT cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_error}
   OSSL_STORE_error: function(ctx : POSSL_STORE_CTX) : TIdC_INT cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_close}
   OSSL_STORE_close : function(ctx : POSSL_STORE_CTX) : TIdC_INT cdecl = nil;
-
+  {$EXTERNALSYM OSSL_STORE_attach}
   OSSL_STORE_attach : function(bio : PBIO; const scheme : PIdAnsiChar;
                              libctx : POSSL_LIB_CTX; const propq : PIdAnsiChar;
                              const ui_method : PUI_METHOD; ui_data : Pointer;
@@ -112,35 +138,62 @@ var
  * In all cases, ownership of the object is transferred to the OSSL_STORE_INFO
  * and will therefore be freed when the OSSL_STORE_INFO is freed.
  *}
+  {$EXTERNALSYM OSSL_STORE_INFO_new}
   OSSL_STORE_INFO_new : function(type_ : TIdC_INT; data : Pointer) : POSSL_STORE_INFO cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_new_NAME}
   OSSL_STORE_INFO_new_NAME : function(name : PIdAnsiChar) : POSSL_STORE_INFO cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_set0_NAME_description}
   OSSL_STORE_INFO_set0_NAME_description : function(info : POSSL_STORE_INFO; desc : PIdAnsiChar) : TIdC_INT cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_new_PARAMS}
   OSSL_STORE_INFO_new_PARAMS : function(params : PEVP_PKEY) : POSSL_STORE_INFO cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_new_PUBKEY}
   OSSL_STORE_INFO_new_PUBKEY : function(pubkey : PEVP_PKEY) : POSSL_STORE_INFO cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_new_PKEY}
   OSSL_STORE_INFO_new_PKEY : function(pkey : PEVP_PKEY) : POSSL_STORE_INFO cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_new_CERT}
   OSSL_STORE_INFO_new_CERT : function(x509 : PX509) : POSSL_STORE_INFO cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_new_CRL}
   OSSL_STORE_INFO_new_CRL : function(crl : PX509_CRL) : POSSL_STORE_INFO cdecl = nil;
 
+  {$EXTERNALSYM OSSL_STORE_INFO_get_type}
   OSSL_STORE_INFO_get_type : function(const info : POSSL_STORE_INFO) : TIdC_INT  cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_get0_data}
   OSSL_STORE_INFO_get0_data : function(type_ : TIdC_INT; const info : POSSL_STORE_INFO) : Pointer cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_get0_NAME}
   OSSL_STORE_INFO_get0_NAME : function(const info : POSSL_STORE_INFO) : PIdAnsiChar cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_get1_NAME}
   OSSL_STORE_INFO_get1_NAME : function(const info : POSSL_STORE_INFO) : PIdAnsiChar cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_get0_NAME_description}
   OSSL_STORE_INFO_get0_NAME_description : function(const info : POSSL_STORE_INFO) : PIdAnsiChar cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_get1_NAME_description}
   OSSL_STORE_INFO_get1_NAME_description : function(const info : POSSL_STORE_INFO) : PIdAnsiChar cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_get0_PARAMS}
   OSSL_STORE_INFO_get0_PARAMS : function(const info : POSSL_STORE_INFO) : PEVP_PKEY cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_get1_PARAMS}
   OSSL_STORE_INFO_get1_PARAMS : function(const info  : POSSL_STORE_INFO) : PEVP_PKEY  cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_get0_PUBKEY}
   OSSL_STORE_INFO_get0_PUBKEY : function(const info : POSSL_STORE_INFO) : PEVP_PKEY  cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_get1_PUBKEY}
   OSSL_STORE_INFO_get1_PUBKEY : function(const info  : POSSL_STORE_INFO) : PEVP_PKEY  cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_get0_PKEY}
   OSSL_STORE_INFO_get0_PKEY : function(const info  : POSSL_STORE_INFO) : PEVP_PKEY cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_get1_PKEY}
   OSSL_STORE_INFO_get1_PKEY : function(const info  : POSSL_STORE_INFO) : PEVP_PKEY  cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_get0_CERT}
   OSSL_STORE_INFO_get0_CERT : function(const info : POSSL_STORE_INFO) : PX509  cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_get1_CERT}
   OSSL_STORE_INFO_get1_CERT : function(const info : POSSL_STORE_INFO) : PX509  cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_get0_CRL}
   OSSL_STORE_INFO_get0_CRL : function(const info : POSSL_STORE_INFO) : PX509_CRL  cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_get1_CRL}
   OSSL_STORE_INFO_get1_CRL : function(const info : POSSL_STORE_INFO) : PX509_CRL  cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_type_string}
   OSSL_STORE_INFO_type_string : function(type_ : TIdC_INT) : PIdAnsiChar cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_INFO_free}
   OSSL_STORE_INFO_free : procedure(info : POSSL_STORE_INFO) cdecl = nil;
 
 //* To check what search types the scheme handler supports */
+  {$EXTERNALSYM OSSL_STORE_supports_search}
   OSSL_STORE_supports_search : function(ctx : POSSL_STORE_CTX; search_type : TIdC_INT) : TIdC_INT cdecl = nil;
 
 
@@ -149,47 +202,67 @@ var
  * The input is considered to be owned by the caller, and must therefore
  * remain present throughout the lifetime of the returned OSSL_STORE_SEARCH
  *}
+  {$EXTERNALSYM OSSL_STORE_SEARCH_by_name}
   OSSL_STORE_SEARCH_by_name : function(name : PX509_NAME) : POSSL_STORE_SEARCH; cdecl = nil;
   OSSL_STORE_SEARCH_by_issuer_serial : function(name : PX509_NAME;
     const serial : PASN1_INTEGER) : POSSL_STORE_SEARCH  cdecl = nil;
   OSSL_STORE_SEARCH_by_key_fingerprint : function(const digest : PEVP_MD;
     const bytes : PIdAnsiChar; len : TIdC_SIZET) : POSSL_STORE_SEARCH  cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_SEARCH_by_alias}
   OSSL_STORE_SEARCH_by_alias : function(const alias : PIdAnsiChar) : POSSL_STORE_SEARCH  cdecl = nil;
 
 //* Search term destructor */
+  {$EXTERNALSYM OSSL_STORE_SEARCH_free}
   OSSL_STORE_SEARCH_free : procedure(search : POSSL_STORE_SEARCH) cdecl = nil;
 
 //* Search term accessors */
+  {$EXTERNALSYM OSSL_STORE_SEARCH_get_type}
   OSSL_STORE_SEARCH_get_type : function(const criterion : POSSL_STORE_SEARCH) : TIdC_INT  cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_SEARCH_get0_name}
   OSSL_STORE_SEARCH_get0_name : function(const criterion : POSSL_STORE_SEARCH) : PX509_NAME  cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_SEARCH_get0_serial}
   OSSL_STORE_SEARCH_get0_serial : function(const criterion : POSSL_STORE_SEARCH) : PASN1_INTEGER  cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_SEARCH_get0_bytes}
   OSSL_STORE_SEARCH_get0_bytes : function(const criterion : POSSL_STORE_SEARCH; var length_ : TIdC_SIZET) : PByte  cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_SEARCH_get0_string}
   OSSL_STORE_SEARCH_get0_string : function(const  criterion : POSSL_STORE_SEARCH) : PIdAnsiChar  cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_SEARCH_get0_digest}
   OSSL_STORE_SEARCH_get0_digest : function(const  criterion : POSSL_STORE_SEARCH) : PEVP_MD  cdecl = nil;
 
 {*
  * Add search criterion and expected return type (which can be unspecified)
  * to the loading channel.  This MUST happen before the first OSSL_STORE_load().
  *}
+  {$EXTERNALSYM OSSL_STORE_expect}
  OSSL_STORE_expect : function(ctx : POSSL_STORE_CTX; expected_type : TIdC_INT) : TIdC_INT cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_find}
  OSSL_STORE_find : function(ctx : POSSL_STORE_CTX; const  search : POSSL_STORE_SEARCH) : TIdC_INT cdecl = nil;
 
 {*-
  *  Function to fetch a loader and extract data from it
  *  ---------------------------------------------------
  *}
+ {$EXTERNALSYM OSSL_STORE_LOADER_fetch}
  OSSL_STORE_LOADER_fetch : function(libctx : POSSL_LIB_CTX;
     const scheme, properties : PIdAnsiChar) : POSSL_STORE_LOADER cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_LOADER_up_ref}
  OSSL_STORE_LOADER_up_ref : function(loader : POSSL_STORE_LOADER) : TIdC_INT cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_LOADER_free}
  OSSL_STORE_LOADER_free : procedure(loader : POSSL_STORE_LOADER) cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_LOADER_get0_provider}
   OSSL_STORE_LOADER_get0_provider : function(const loader : POSSL_STORE_LOADER) : POSSL_PROVIDER cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_LOADER_get0_properties}
  OSSL_STORE_LOADER_get0_properties : function(const loader : POSSL_STORE_LOADER) : PIdAnsiChar cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_LOADER_get0_description}
  OSSL_STORE_LOADER_get0_description : function(const loader : POSSL_STORE_LOADER) : PIdAnsiChar  cdecl = nil;
+ {$EXTERNALSYM OSSL_STORE_LOADER_is_a}
  OSSL_STORE_LOADER_is_a : function(const loader : POSSL_STORE_LOADER;
                            const scheme : PIdAnsiChar) : TIdC_INT  cdecl = nil;
+ {$EXTERNALSYM OSSL_STORE_LOADER_do_all_provided}
  OSSL_STORE_LOADER_do_all_provided : procedure(libctx : POSSL_LIB_CTX;
                                        fn : OSSL_STORE_LOADER_do_all_provided_fn;
                                        arg : Pointer)  cdecl = nil;
+ {$EXTERNALSYM OSSL_STORE_LOADER_names_do_all}
  OSSL_STORE_LOADER_names_do_all : function(const loader : POSSL_STORE_LOADER;
                                    fn : OSSL_STORE_LOADER_names_do_all_fn;
                                    data : Pointer) : TIdC_INT  cdecl = nil;
@@ -203,25 +276,33 @@ var
  * through.
  *}
 
+  {$EXTERNALSYM OSSL_STORE_open}
  function OSSL_STORE_open(const uri : PIdAnsiChar; const ui_method : PUI_METHOD;
                 ui_data : Pointer;
                 post_process : OSSL_STORE_post_process_info_fn;
                 post_process_data : Pointer) : POSSL_STORE_CTX cdecl; external CLibCrypto; {introduced 1.1.0}
 
+  {$EXTERNALSYM OSSL_STORE_open_ex}
   function OSSL_STORE_open_ex(const uri : PIdAnsiChar; libctx : POSSL_LIB_CTX; const propq : PIdAnsiChar;
                    const ui_method : PUI_METHOD; ui_data : Pointer;
                    const params : POSSL_PARAM_ARRAY;
                    post_process : OSSL_STORE_post_process_info_fn;
                    post_process_data : Pointer) : POSSL_STORE_CTX cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_load}
   function OSSL_STORE_load(ctx : POSSL_STORE_CTX) : POSSL_STORE_INFO cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM OSSL_STORE_delete}
   function OSSL_STORE_delete(const uri : PIdAnsiChar; libctx : POSSL_LIB_CTX; const propq : PIdAnsiChar;
                       const ui_method : PUI_METHOD; ui_data : Pointer;
                       const  params : POSSL_PARAM_ARRAY) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_eof}
   function OSSL_STORE_eof(ctx : POSSL_STORE_CTX) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_error}
   function OSSL_STORE_error(ctx : POSSL_STORE_CTX) : TIdC_INT  cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_close}
   function OSSL_STORE_close(ctx : POSSL_STORE_CTX) : TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM OSSL_STORE_attach}
   function OSSL_STORE_attach(bio : PBIO; const scheme : PIdAnsiChar;
                              libctx : POSSL_LIB_CTX; const propq : PIdAnsiChar;
                              const ui_method : PUI_METHOD; ui_data : Pointer;
@@ -236,38 +317,65 @@ var
  * In all cases, ownership of the object is transferred to the OSSL_STORE_INFO
  * and will therefore be freed when the OSSL_STORE_INFO is freed.
  *}
+  {$EXTERNALSYM OSSL_STORE_INFO_new}
   function OSSL_STORE_INFO_new(type_ : TIdC_INT; data : Pointer) : POSSL_STORE_INFO cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_INFO_new_NAME}
   function OSSL_STORE_INFO_new_NAME(name : PIdAnsiChar) : POSSL_STORE_INFO cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_INFO_set0_NAME_description}
   function OSSL_STORE_INFO_set0_NAME_description(info : POSSL_STORE_INFO; desc : PIdAnsiChar) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_INFO_new_PARAMS}
   function OSSL_STORE_INFO_new_PARAMS(params : PEVP_PKEY) : POSSL_STORE_INFO cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_INFO_new_PUBKEY}
   function OSSL_STORE_INFO_new_PUBKEY(pubkey : PEVP_PKEY) : POSSL_STORE_INFO cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_INFO_new_PKEY}
   function OSSL_STORE_INFO_new_PKEY(pkey : PEVP_PKEY) : POSSL_STORE_INFO cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_INFO_new_CERT}
   function OSSL_STORE_INFO_new_CERT(x509 : PX509) : POSSL_STORE_INFO cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_INFO_new_CRL}
   function OSSL_STORE_INFO_new_CRL(crl : PX509_CRL) : POSSL_STORE_INFO cdecl; external CLibCrypto;
 {*
  * Functions to try to extract data from a OSSL_STORE_INFO.
  *}
+  {$EXTERNALSYM OSSL_STORE_INFO_get_type}
   function OSSL_STORE_INFO_get_type(const info : POSSL_STORE_INFO) : TIdC_INT  cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_INFO_get0_data}
   function OSSL_STORE_INFO_get0_data(type_ : TIdC_INT; const info : POSSL_STORE_INFO) : Pointer cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_INFO_get0_NAME}
   function OSSL_STORE_INFO_get0_NAME(const info : POSSL_STORE_INFO) : PIdAnsiChar cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_INFO_get1_NAME}
   function OSSL_STORE_INFO_get1_NAME(const info : POSSL_STORE_INFO) : PIdAnsiChar cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_INFO_get0_NAME_description}
   function OSSL_STORE_INFO_get0_NAME_description(const info : POSSL_STORE_INFO) : PIdAnsiChar cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_INFO_get1_NAME_description}
   function OSSL_STORE_INFO_get1_NAME_description(const info : POSSL_STORE_INFO) : PIdAnsiChar cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_INFO_get0_PARAMS}
   function OSSL_STORE_INFO_get0_PARAMS(const info : POSSL_STORE_INFO) : PEVP_PKEY cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_INFO_get1_PARAMS}
   function OSSL_STORE_INFO_get1_PARAMS(const info  : POSSL_STORE_INFO) : PEVP_PKEY cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_INFO_get0_PUBKEY}
   function OSSL_STORE_INFO_get0_PUBKEY(const info : POSSL_STORE_INFO) : PEVP_PKEY cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_INFO_get1_PUBKEY}
   function OSSL_STORE_INFO_get1_PUBKEY(const info  : POSSL_STORE_INFO) : PEVP_PKEY cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_INFO_get0_PKEY}
   function OSSL_STORE_INFO_get0_PKEY(const info  : POSSL_STORE_INFO) : PEVP_PKEY cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_INFO_get1_PKEY}
   function OSSL_STORE_INFO_get1_PKEY(const info  : POSSL_STORE_INFO) : PEVP_PKEY cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_INFO_get0_CERT}
   function OSSL_STORE_INFO_get0_CERT(const info : POSSL_STORE_INFO) : PX509 cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_INFO_get1_CERT}
   function OSSL_STORE_INFO_get1_CERT(const info : POSSL_STORE_INFO) : PX509 cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_INFO_get0_CRL}
   function OSSL_STORE_INFO_get0_CRL(const info : POSSL_STORE_INFO) : PX509_CRL cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_INFO_get1_CRL}
   function OSSL_STORE_INFO_get1_CRL(const info : POSSL_STORE_INFO) : PX509_CRL cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM OSSL_STORE_INFO_type_string}
   function OSSL_STORE_INFO_type_string(type_ : TIdC_INT) : PIdAnsiChar cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_INFO_free}
   procedure OSSL_STORE_INFO_free(info : POSSL_STORE_INFO) cdecl; external CLibCrypto;
 
 //* To check what search types the scheme handler supports */
+  {$EXTERNALSYM OSSL_STORE_supports_search}
   function OSSL_STORE_supports_search(ctx : POSSL_STORE_CTX; search_type : TIdC_INT) : TIdC_INT cdecl; external CLibCrypto;
 
 
@@ -276,46 +384,68 @@ var
  * The input is considered to be owned by the caller, and must therefore
  * remain present throughout the lifetime of the returned OSSL_STORE_SEARCH
  *}
+  {$EXTERNALSYM OSSL_STORE_SEARCH_by_name}
   function OSSL_STORE_SEARCH_by_name(name : PX509_NAME) : POSSL_STORE_SEARCH; cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_SEARCH_by_issuer_serial}
   function OSSL_STORE_SEARCH_by_issuer_serial(name : PX509_NAME;
     const serial : PASN1_INTEGER) : POSSL_STORE_SEARCH cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_SEARCH_by_key_fingerprint}
   function OSSL_STORE_SEARCH_by_key_fingerprint(const digest : PEVP_MD;
     const bytes : PIdAnsiChar; len : TIdC_SIZET) : POSSL_STORE_SEARCH cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_SEARCH_by_alias}
   function OSSL_STORE_SEARCH_by_alias(const alias : PIdAnsiChar) : POSSL_STORE_SEARCH cdecl; external CLibCrypto;
 
 //* Search term destructor */
+  {$EXTERNALSYM OSSL_STORE_SEARCH_free}
   procedure OSSL_STORE_SEARCH_free(search : POSSL_STORE_SEARCH)  cdecl; external CLibCrypto;
 
 //* Search term accessors */
+  {$EXTERNALSYM OSSL_STORE_SEARCH_get_type}
   function OSSL_STORE_SEARCH_get_type(const criterion : POSSL_STORE_SEARCH) : TIdC_INT   cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_SEARCH_get0_name}
   function OSSL_STORE_SEARCH_get0_name(const criterion : POSSL_STORE_SEARCH) : PX509_NAME   cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_SEARCH_get0_serial}
   function OSSL_STORE_SEARCH_get0_serial(const criterion : POSSL_STORE_SEARCH) : PASN1_INTEGER  cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_SEARCH_get0_bytes}
   function OSSL_STORE_SEARCH_get0_bytes(const criterion : POSSL_STORE_SEARCH; var length_ : TIdC_SIZET) : PByte   cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_SEARCH_get0_string}
   function OSSL_STORE_SEARCH_get0_string(const  criterion : POSSL_STORE_SEARCH) : PIdAnsiChar  cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_SEARCH_get0_digest}
   function OSSL_STORE_SEARCH_get0_digest(const  criterion : POSSL_STORE_SEARCH) : PEVP_MD   cdecl; external CLibCrypto;
 
 {*
  * Add search criterion and expected return type (which can be unspecified)
  * to the loading channel.  This MUST happen before the first OSSL_STORE_load().
  *}
+  {$EXTERNALSYM OSSL_STORE_expect}
  function OSSL_STORE_expect(ctx : POSSL_STORE_CTX; expected_type : TIdC_INT) : TIdC_INT  cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_find}
  function OSSL_STORE_find(ctx : POSSL_STORE_CTX; const  search : POSSL_STORE_SEARCH) : TIdC_INT  cdecl; external CLibCrypto;
 {*-
  *  Function to fetch a loader and extract data from it
  *  ---------------------------------------------------
  *}
+  {$EXTERNALSYM OSSL_STORE_LOADER_fetch}
  function OSSL_STORE_LOADER_fetch(libctx : POSSL_LIB_CTX;
     const scheme, properties : PIdAnsiChar) : POSSL_STORE_LOADER   cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_LOADER_up_ref}
  function OSSL_STORE_LOADER_up_ref(loader : POSSL_STORE_LOADER) : TIdC_INT  cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_LOADER_free}
  procedure OSSL_STORE_LOADER_free(loader : POSSL_STORE_LOADER)  cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_LOADER_get0_provider}
  function OSSL_STORE_LOADER_get0_provider(const loader : POSSL_STORE_LOADER) : POSSL_PROVIDER  cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_LOADER_get0_properties}
  function OSSL_STORE_LOADER_get0_properties(const loader : POSSL_STORE_LOADER) : PIdAnsiChar  cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_LOADER_get0_description}
  function OSSL_STORE_LOADER_get0_description(const loader : POSSL_STORE_LOADER) : PIdAnsiChar  cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_LOADER_is_a}
  function OSSL_STORE_LOADER_is_a(const loader : POSSL_STORE_LOADER;
                            const scheme : PIdAnsiChar) : TIdC_INT  cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_LOADER_do_all_provided}
 procedure OSSL_STORE_LOADER_do_all_provided(libctx : POSSL_LIB_CTX;
                                        fn : OSSL_STORE_LOADER_do_all_provided_fn;
                                        arg : Pointer)  cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_STORE_LOADER_names_do_all}
 function OSSL_STORE_LOADER_names_do_all(const loader : POSSL_STORE_LOADER;
                                    fn : OSSL_STORE_LOADER_names_do_all_fn;
                                    data : Pointer) : TIdC_INT  cdecl; external CLibCrypto;
