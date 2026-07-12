@@ -38,6 +38,7 @@ requires
 
 contains
   TaurusTLS in '..\..\Source\TaurusTLS.pas',
+  TaurusTLS2 in '..\..\Source\TaurusTLS2.pas',
   TaurusTLSConsts in '..\..\Source\TaurusTLSConsts.pas',
   TaurusTLSExceptionHandlers in '..\..\Source\TaurusTLSExceptionHandlers.pas',
   TaurusTLSFIPS in '..\..\Source\TaurusTLSFIPS.pas',
@@ -135,9 +136,16 @@ contains
   TaurusTLSHeaders_x509v3 in '..\..\Source\TaurusTLSHeaders_x509v3.pas',
   TaurusTLSHeaders_x509_vfy in '..\..\Source\TaurusTLSHeaders_x509_vfy.pas',
   TaurusTLSLoader in '..\..\Source\TaurusTLSLoader.pas',
+  TaurusTLS_BIO in '..\..\Source\TaurusTLS_BIO.pas',
+  TaurusTLS_ECH in '..\..\Source\TaurusTLS_ECH.pas',
+  TaurusTLS_ECHStore in '..\..\Source\TaurusTLS_ECHStore.pas',
   TaurusTLS_Files in '..\..\Source\TaurusTLS_Files.pas',
   TaurusTLS_NTLM in '..\..\Source\TaurusTLS_NTLM.pas',
   TaurusTLS_ResourceStrings in '..\..\Source\TaurusTLS_ResourceStrings.pas',
+  TaurusTLS_Sockets in '..\..\Source\TaurusTLS_Sockets.pas',
+  TaurusTLS_SSLStores in '..\..\Source\TaurusTLS_SSLStores.pas',
+  TaurusTLS_SSLUI in '..\..\Source\TaurusTLS_SSLUI.pas',
+  TaurusTLS_types in '..\..\Source\TaurusTLS_types.pas',
   TaurusTLS_Unicode_Log in '..\..\Source\TaurusTLS_Unicode_Log.pas',
   TaurusTLS_Utils in '..\..\Source\TaurusTLS_Utils.pas',
   TaurusTLS_X509 in '..\..\Source\TaurusTLS_X509.pas';

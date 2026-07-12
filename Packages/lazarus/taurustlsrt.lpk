@@ -36,6 +36,10 @@
 				<UnitName Value="TaurusTLS"/>
 			</Item>
 			<Item>
+				<Filename Value="..\..\Source\TaurusTLS2.pas"/>
+				<UnitName Value="TaurusTLS2"/>
+			</Item>
+			<Item>
 				<Filename Value="..\..\Source\TaurusTLSConsts.pas"/>
 				<UnitName Value="TaurusTLSConsts"/>
 			</Item>
@@ -424,6 +428,18 @@
 				<UnitName Value="TaurusTLSLoader"/>
 			</Item>
 			<Item>
+				<Filename Value="..\..\Source\TaurusTLS_BIO.pas"/>
+				<UnitName Value="TaurusTLS_BIO"/>
+			</Item>
+			<Item>
+				<Filename Value="..\..\Source\TaurusTLS_ECH.pas"/>
+				<UnitName Value="TaurusTLS_ECH"/>
+			</Item>
+			<Item>
+				<Filename Value="..\..\Source\TaurusTLS_ECHStore.pas"/>
+				<UnitName Value="TaurusTLS_ECHStore"/>
+			</Item>
+			<Item>
 				<Filename Value="..\..\Source\TaurusTLS_Files.pas"/>
 				<UnitName Value="TaurusTLS_Files"/>
 			</Item>
@@ -434,6 +450,22 @@
 			<Item>
 				<Filename Value="..\..\Source\TaurusTLS_ResourceStrings.pas"/>
 				<UnitName Value="TaurusTLS_ResourceStrings"/>
+			</Item>
+			<Item>
+				<Filename Value="..\..\Source\TaurusTLS_Sockets.pas"/>
+				<UnitName Value="TaurusTLS_Sockets"/>
+			</Item>
+			<Item>
+				<Filename Value="..\..\Source\TaurusTLS_SSLStores.pas"/>
+				<UnitName Value="TaurusTLS_SSLStores"/>
+			</Item>
+			<Item>
+				<Filename Value="..\..\Source\TaurusTLS_SSLUI.pas"/>
+				<UnitName Value="TaurusTLS_SSLUI"/>
+			</Item>
+			<Item>
+				<Filename Value="..\..\Source\TaurusTLS_types.pas"/>
+				<UnitName Value="TaurusTLS_types"/>
 			</Item>
 			<Item>
 				<Filename Value="..\..\Source\TaurusTLS_Unicode_Log.pas"/>
@@ -463,5 +495,5 @@
 			<Version Value="2"/>
 			<UseFileFilters Value="True"/>
 		</PublishOptions>
-		<Version Major="1" Release="8" Build="49"/></Package>
+		<Version Major="1" Release="9" Build="50"/></Package>
 </CONFIG>
