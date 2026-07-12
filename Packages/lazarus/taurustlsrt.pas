@@ -9,7 +9,6 @@ interface
 
 uses
   TaurusTLS,
-  TaurusTLS2,
   TaurusTLSConsts,
   TaurusTLSExceptionHandlers,
   TaurusTLSFIPS,
@@ -107,16 +106,9 @@ uses
   TaurusTLSHeaders_x509v3,
   TaurusTLSHeaders_x509_vfy,
   TaurusTLSLoader,
-  TaurusTLS_BIO,
-  TaurusTLS_ECH,
-  TaurusTLS_ECHStore,
   TaurusTLS_Files,
   TaurusTLS_NTLM,
   TaurusTLS_ResourceStrings,
-  TaurusTLS_Sockets,
-  TaurusTLS_SSLStores,
-  TaurusTLS_SSLUI,
-  TaurusTLS_types,
   TaurusTLS_Unicode_Log,
   TaurusTLS_Utils,
   TaurusTLS_X509;

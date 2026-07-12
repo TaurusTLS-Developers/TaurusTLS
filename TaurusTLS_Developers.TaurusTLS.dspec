@@ -125,7 +125,7 @@ templates:
           - '*.dcu'
           - '*.obj'
           - '*.exe'
-          - ''
+          - '*.bat'
     build:
       - project: ./Packages/$packageSource$/TaurusTLS_RT.dproj
     design:
