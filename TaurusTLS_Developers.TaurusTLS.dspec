@@ -106,6 +106,9 @@ targetPlatforms:
       packagesource: d13
 templates:
   - name: default
+    dependencies:
+      - id: Indy.Core
+        version: 999.999.999
     source:
       - src: ./LICENSE.md
       - src: ./LICENSE_MPL_1_1.txt
@@ -114,18 +117,16 @@ templates:
       - src: ./What_needs_to_be_done.MD
       - src: ./Source/*.inc
       - src: ./Source/*.pas
-        exclude:
-          - '*.dcu'
       - src: ./Source/*.dcr
       - src: ./Packages/$packageSource$/*.dpk
       - src: ./Packages/$packageSource$/*.dproj
       - src: ./Help/chm/TaurusForIndy290All.chm
       - src: /demos/**.*
         exclude:
-          - '*.dcu'
-          - '*.obj'
-          - '*.exe'
-          - '*.bat'
+          - '**.dcu'
+          - '**.obj'
+          - '**.exe'
+          - '**.bat'
     build:
       - project: ./Packages/$packageSource$/TaurusTLS_RT.dproj
     design:
