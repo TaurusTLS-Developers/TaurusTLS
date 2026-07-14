@@ -469,7 +469,8 @@ type
     slfServer,
     slfVerifyHostname,
     slfUniDirectShutdown,
-    slfQuietShutdown
+    slfQuietShutdown,
+    slfReadAheadBuffering
   );
 
   TaurusTLSSslSocketCtxFlags = set of TaurusTLSSslSocketCtxFlag;
@@ -485,9 +486,12 @@ type
     property VerifyHostName: boolean index slfVerifyHostname read GetFlag;
     property UniDirectShutdown: boolean index slfUniDirectShutdown read GetFlag;
     property QuietShutdown: boolean index slfQuietShutdown read GetFlag;
+    property ReadAheadBuffering: boolean index slfReadAheadBuffering read GetFlag;
   end;
 
   TTaurusTLSMetaX509VerifyParam = class;
+
+  TTaurusTLSSslMaxSendFragment = 512.. SSL3_RT_MAX_PLAIN_LENGTH;
 
   TTaurusTLSSslSocketCtx = class abstract(TInterfacedObject, ITaurusTLSSslSocketCtx)
   public const
@@ -500,9 +504,9 @@ type
     FSSLCtx: PSSL_CTX;
 
     // Common fields
+    FSession: PSSL_SESSION;
     FFlags: TaurusTLSSslSocketCtxFlags;
     FCertVerifyFlags: TTaurusTLSVerifyModeFlags;
-    FSession: PSSL_SESSION;
 
     // Common Events Events (via SSL_CTX)
     FOnStateChange: TTaurusTLSOnStateChange;
@@ -520,8 +524,6 @@ type
       const ALine: PIdAnsiChar); cdecl; static;
 
     // callback event assignment status flags
-    function GetVerifyHostname: boolean;
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetHasOnStatusInfo: boolean;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetHasOnSecurityCheck: boolean;
@@ -543,6 +545,9 @@ type
       static; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     procedure CheckFrozen; {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    function GetFlag(const AFlag: TaurusTLSSslSocketCtxFlag): boolean;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     // Event handlers
     procedure DoOnStateChange(ASocket: TTaurusTLSSslSocket;
@@ -589,7 +594,6 @@ type
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function SetKeXGroups(const AValue: string): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    // Corrected spelling from 'signiture' in your log message to match declaration order
     function SetSigAlgorithms(const AValue: string): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function SetVerifyModes(const AValue: TTaurusTLSVerifyModes): TTaurusTLSSslSocketCtx;
@@ -598,6 +602,9 @@ type
       overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function SetTrustStore(const AValue: TaurusTLS_X509Store): TTaurusTLSSslSocketCtx;
       overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function SetMaxSendFragment(const AValue: TTaurusTLSSslMaxSendFragment): TTaurusTLSSslSocketCtx;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+
     function SetOnPeerCertError(const AValue: TTaurusTLSOnPeerCertError): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function SetOnStateChange(const AValue: TTaurusTLSOnStateChange): TTaurusTLSSslSocketCtx;
@@ -620,9 +627,13 @@ type
     procedure ReleaseCtx; virtual;
     procedure DoFreeze;
 
+    property Session: PSSL_SESSION read FSession write FSession;
     property Flags: TaurusTLSSslSocketCtxFlags read FFlags;
     property CertVerifyFlags: TTaurusTLSVerifyModeFlags read FCertVerifyFlags;
-    property Session: PSSL_SESSION read FSession write FSession;
+    property VerifyHostname: boolean index slfVerifyHostname read GetFlag;
+    property UniDirectShutdown: boolean index slfUniDirectShutdown read GetFlag;
+    property QuietShutdown: boolean index slfQuietShutdown read GetFlag;
+    property ReadAheadBuffering: boolean index slfReadAheadBuffering read GetFlag;
 
     property OnStateChange: TTaurusTLSOnStateChange read FOnStateChange;
     property OnPeerCertError: TTaurusTLSOnPeerCertError read FOnPeerCertError;
@@ -639,7 +650,6 @@ type
 
     property Sender: TObject read FSender;
     property SSLCtx: PSSL_CTX read FSSLCtx;
-    property VerifyHostname: boolean read GetVerifyHostname;
   end;
 
   ETaurusTLSSslSocketCtxError = class(ETaurusTLSError);
@@ -948,6 +958,9 @@ type
     // Trust Stores collection
     FTrustStores: TTaurusTLSTrustStores;
 
+    // FineTuning
+    FMaxSendFragment: TTaurusTLSSslMaxSendFragment;
+
     // Common Events Events (via SSL_CTX)
     FOnStateChange: TTaurusTLSOnStateChange;
     FOnPeerCertError: TTaurusTLSOnPeerCertError;
@@ -965,11 +978,14 @@ type
     function GetVerifyHostName: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetUniDirectShutdown: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetQuietShutdown: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetReadAheadBuffering: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure SetVerifyHostName(const AValue: boolean);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure SetUniDirectShutdown(const AValue: boolean);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure SetQuietShutdown(const AValue: boolean);
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetReadAheadBuffering(const AValue: boolean);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure SetCertVerifyFlags(const AValue: TTaurusTLSVerifyModes);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -1015,6 +1031,10 @@ type
 
     procedure SetFlags(const AValue: TaurusTLSSslSocketCtxFlags);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function IncludeFlags(const AValue: TaurusTLSSslSocketCtxFlags): TaurusTLSSslSocketCtxFlags;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function ExcludeFlags(const AValue: TaurusTLSSslSocketCtxFlags): TaurusTLSSslSocketCtxFlags;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     procedure CheckRequirements; virtual;
     function DoNewSocketCtx(ASender: TObject): TTaurusTLSSslSocketCtx; virtual; abstract;
@@ -1055,7 +1075,11 @@ type
       write SetUniDirectShutdown;
     property QuietShutdown: boolean read GetQuietShutdown
       write SetQuietShutdown;
+    property ReadAheadBuffering: boolean read GetReadAheadBuffering
+      write SetReadAheadBuffering;
     property Flags: TaurusTLSSslSocketCtxFlags read FFlags;
+    property MaxSendFragment: TTaurusTLSSslMaxSendFragment read FMaxSendFragment
+      write FMaxSendFragment default SSL3_RT_MAX_PLAIN_LENGTH;
 
     // Events
     property OnStateChange: TTaurusTLSOnStateChange read FOnStateChange
@@ -1071,7 +1095,6 @@ type
     property OnMessage: TTaurusTLSOnSSLMessageCallback read FOnMessage
       write SetOnMessage;
     property OnKeyLog: TTaurusTLSOnKeyLog read FOnKeyLog write SetOnKeyLog;
-
 
   end;
 
@@ -1259,6 +1282,7 @@ function IsX509StoreMultiEmailSupported: boolean;  {$IFDEF USE_INLINE} inline;{$
 implementation
 
 uses
+  SyncObjs,
 {$IFDEF DCC}
   System.AnsiStrings,
 {$ENDIF}
@@ -2150,6 +2174,46 @@ begin
   end;
 end;
 
+function TTaurusTLSSslSocketCtxBuilder.IncludeFlags(
+  const AValue: TaurusTLSSslSocketCtxFlags): TaurusTLSSslSocketCtxFlags;
+begin
+  if (FFlags * AValue) = AValue then
+    Exit;
+
+  Lock;
+  try
+    // Check it again it can be changed by other thread
+    // between previous check and actual lock accurision
+    if (FFlags * AValue) = AValue then
+      Exit(FFlags);
+    Result:=FFlags+AValue;
+    FFlags:=Result;
+    SetDirty;
+  finally
+    Unlock;
+  end;
+end;
+
+function TTaurusTLSSslSocketCtxBuilder.ExcludeFlags(
+  const AValue: TaurusTLSSslSocketCtxFlags): TaurusTLSSslSocketCtxFlags;
+begin
+  if (FFlags * AValue) = [] then
+    Exit;
+
+  Lock;
+  try
+    // Check it again it can be changed by other thread
+    // between previous check and actual lock accurision
+    if (FFlags * AValue) = [] then
+      Exit(FFlags);
+    Result:=FFlags-AValue;
+    FFlags:=Result;
+    SetDirty;
+  finally
+    Unlock;
+  end;
+end;
+
 procedure TTaurusTLSSslSocketCtxBuilder.SetCertVerifyFlags(
   const AValue: TTaurusTLSVerifyModes);
 begin
@@ -2320,38 +2384,62 @@ end;
 procedure TTaurusTLSSslSocketCtxBuilder.SetVerifyHostName(const AValue: boolean);
 begin
   if AValue then
-    Include(FFlags, slfVerifyHostname)
+    IncludeFlags([slfVerifyHostname])
   else
-    Exclude(FFlags, slfVerifyHostname);
+    ExcludeFlags([slfVerifyHostname]);
 end;
 
 procedure TTaurusTLSSslSocketCtxBuilder.SetUniDirectShutdown(
   const AValue: boolean);
 begin
-  if AValue then
-  begin
-    Include(FFlags, slfUniDirectShutdown);
-    Exclude(FFlags, slfQuietShutdown);
-  end
-  else
-    Exclude(FFlags, slfUniDirectShutdown);
+  Lock;
+  try
+    if AValue then
+    begin
+      Include(FFlags, slfUniDirectShutdown);
+      Exclude(FFlags, slfQuietShutdown);
+    end
+    else
+      Exclude(FFlags, slfUniDirectShutdown);
+  finally
+    Unlock;
+  end;
 end;
 
 procedure TTaurusTLSSslSocketCtxBuilder.SetQuietShutdown(const AValue: boolean);
 begin
+  Lock;
+  try
+    if AValue then
+    begin
+      Include(FFlags, slfQuietShutdown);
+      Exclude(FFlags, slfUniDirectShutdown);
+    end
+    else
+      Exclude(FFlags, slfQuietShutdown);
+  finally
+    Unlock;
+  end;
+end;
+
+procedure TTaurusTLSSslSocketCtxBuilder.SetReadAheadBuffering(
+  const AValue: boolean);
+begin
   if AValue then
-  begin
-    Include(FFlags, slfQuietShutdown);
-    Exclude(FFlags, slfUniDirectShutdown);
-  end
+    IncludeFlags([slfReadAheadBuffering])
   else
-    Exclude(FFlags, slfQuietShutdown);
+    ExcludeFlags([slfReadAheadBuffering]);
 end;
 
 function TTaurusTLSSslSocketCtxBuilder.GetFlag(
   const AFlag: TaurusTLSSslSocketCtxFlag): boolean;
 begin
-  Result:=AFlag in FFlags;
+  Lock;
+  try
+    Result:=FFlags.GetFlag(AFlag);
+  finally
+    Unlock;
+  end;
 end;
 
 function TTaurusTLSSslSocketCtxBuilder.GetQuietShutdown: boolean;
@@ -2367,6 +2455,11 @@ end;
 function TTaurusTLSSslSocketCtxBuilder.GetVerifyHostName: boolean;
 begin
   Result:=GetFlag(slfVerifyHostname);
+end;
+
+function TTaurusTLSSslSocketCtxBuilder.GetReadAheadBuffering: boolean;
+begin
+  Result:=GetFlag(slfReadAheadBuffering);
 end;
 
 procedure TTaurusTLSSslSocketCtxBuilder.SetVerifyModes(
@@ -2517,16 +2610,17 @@ begin
     ASocketCtx
     // Set Context Parameters
       .SetFlags(FFlags)
-      .SetCertVerifyFlags(FCertVerifyFlags)
-      .SetSSLCtxOptions(FSSLContextOptions)
       .SetMinTLSVersion(FMinTLSVersion)
       .SetMaxTLSVersion(FMaxTLSVersion)
       .SetCipherList(FCipherList)
       .SetCipherSuites(FCipherSuites)
       .SetKeXGroups(FKeyExchangeGroups)
       .SetSigAlgorithms(FSigAlgorithms)
-      .SetVerifyParam(lVerifyParam)
       .SetVerifyModes(FVerifyModes)
+      .SetMaxSendFragment(FMaxSendFragment)
+      .SetCertVerifyFlags(FCertVerifyFlags)
+      .SetSSLCtxOptions(FSSLContextOptions)
+      .SetVerifyParam(lVerifyParam)
       .SetTrustStore(lTrustStore)
     // Set Context Events
       .SetOnStateChange(FOnStateChange)
@@ -2552,17 +2646,14 @@ begin
     if (not IsDirty) and Assigned(FSocketCtx) then
       Exit(FSocketCtx);
 
-    lSocketCtx:=nil;
-    try
-      CheckRequirements;
-      lSocketCtx:=DoNewSocketCtx(ASender);
-      DoBuild(ASender, lSocketCtx);
-      FSocketCtx:=lSocketCtx as ITaurusTLSSslSocketCtx; // PALOFF 'Mixing interface variables and objects'
-      Result:=FSocketCtx;
-    except
-      lSocketCtx.Free;
-      raise;
-    end;
+    CheckRequirements;
+    lSocketCtx:=DoNewSocketCtx(ASender);
+    Result:=lSocketCtx as ITaurusTLSSslSocketCtx; // PALOFF 'Mixing interface variables and objects'
+    DoBuild(ASender, lSocketCtx);
+
+      // The final SocketCTX configuration lock.
+    lSocketCtx.FreezeCtx;
+    FSocketCtx:=Result;
   finally
     Unlock;
   end;
@@ -2728,6 +2819,12 @@ begin
   Result:=Self;
 end;
 
+function TTaurusTLSSslSocketCtx.GetFlag(
+  const AFlag: TaurusTLSSslSocketCtxFlag): boolean;
+begin
+  Result:=FFlags.GetFlag(AFlag);
+end;
+
 function TTaurusTLSSslSocketCtx.GetHasOnKeyLog: boolean;
 begin
   Result:=Assigned(FOnKeyLog);
@@ -2765,12 +2862,10 @@ begin
       [ACtx]);
 end;
 
-function TTaurusTLSSslSocketCtx.GetVerifyHostname: boolean;
-begin
-  Result:=slfVerifyHostname in FFlags;
-end;
-
 procedure TTaurusTLSSslSocketCtx.InitCtx;
+var
+  lBool: TIdC_INT;
+
 begin
   // Attach Self to the SSL_CTX
   if SSL_CTX_set_app_data(SSLCtx, Self) <= 0 then
@@ -2779,6 +2874,12 @@ begin
       'Unable to link TTaurusTLSSslSocketCtx instance with SSL_CTX object');
   if Flags.QuietShutdown then
     SSL_CTX_set_quiet_shutdown(SSLCtx, 1);
+
+  if Flags.ReadAheadBuffering then
+    lBool:=1
+  else
+    lBool:=0;
+  SSL_CTX_set_read_ahead(SSLCtx, lBool);
 
   if HasOnKeylog then
     SSL_CTX_set_keylog_callback(SSLCtx, CbCtxKeyLog);
@@ -2894,6 +2995,18 @@ begin
   CheckFrozen;
   if SSL_CTX_set_min_proto_version(FSSLCtx, AValue.AsInt) <= 0 then
     ETaurusTLSSslSocketCtxError.RaiseWithMessage(RSOSSLMinProtocolError);
+end;
+
+function TTaurusTLSSslSocketCtx.SetMaxSendFragment(
+  const AValue: TTaurusTLSSslMaxSendFragment): TTaurusTLSSslSocketCtx;
+begin
+  Result:=Self;
+  CheckFrozen;
+  if SSL_CTX_set_max_send_fragment(FSSLCtx, AValue) <= 0 then
+    ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
+      { TODO : To make ResourseString }
+      'Error setting max send fragment size %d to the SSL Context.', [AValue]
+    );
 end;
 
 function TTaurusTLSSslSocketCtx.SetMaxTLSVersion(
