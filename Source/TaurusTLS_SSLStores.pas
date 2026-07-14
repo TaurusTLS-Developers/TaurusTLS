@@ -822,9 +822,11 @@ type
     ///  The OSSL Store Context (<see cref="POSSL_STORE_CTX" />) manages the
     ///  process of reading cryptographic objects from a URI or BIO.
     ///  </remarks>
-    TStoreCtx = record
+    TStoreCtx = class
     private
       FCtx: POSSL_STORE_CTX;
+      FUiCtx: TTaurusTLS_UICtx;
+    protected
     {$IFDEF FPC}
       {$WARN 3018 off : Constructor should be public}
     {$ENDIF}
@@ -864,18 +866,7 @@ type
       ///  <summary>
       ///  Closes and frees the native OSSL Store Context instance.
       ///  </summary>
-      ///  <param name="ACtx">The <see cref="POSSL_STORE_CTX" /> instance to close.</param>
-      ///  <remarks>
-      ///  This method releases all internal resources associated with the
-      ///  context.
-      ///  </remarks>
-      class procedure Close(var ACtx: POSSL_STORE_CTX); overload; static;
-        {$IFDEF USE_INLINE}inline;{$ENDIF}
-
-      ///  <summary>
-      ///  Closes and frees the native OSSL Store Context instance.
-      ///  </summary>
-      procedure Close; overload; {$IFDEF USE_INLINE}inline;{$ENDIF}
+      destructor Destroy; override;
 
       ///  <summary>
       ///  Checks if the store has reached the end-of-stream (EOF).
@@ -1954,7 +1945,7 @@ begin
     FList:=TListInfo.Create;
     DoLoad(ACtx, ALoadFilter);
   finally
-    ACtx.Close;
+    ACtx.Free;
   end;
 end;
 
@@ -2433,11 +2424,17 @@ var
 
 begin
   if Assigned(AUi) then
-    lMeth:=AUi.UiMethod
+  begin
+    lMeth:=AUi.UiMethod;
+    FUiCtx:=AUi.NewUICtx;
+  end
   else
+  begin
     lMeth:=nil;
+    FUiCtx:=nil;
+  end;
 
-  Create(OSSL_STORE_open(PIdAnsiChar(AUri), lMeth, AUi, nil, nil)); // PALOFF Possible bad typecast
+  Create(OSSL_STORE_open(PIdAnsiChar(AUri), lMeth, FUiCtx, nil, nil)); // PALOFF Possible bad typecast
 end;
 
 constructor TTaurusTLSOSSLStore.TStoreCtx.Create(ABio: TTaurusTLSCustomBIO;
@@ -2450,25 +2447,29 @@ begin
     Exit;
 
   if Assigned(AUi) then
-    lMeth:=AUi.UiMethod
+  begin
+    lMeth:=AUi.UiMethod;
+    FUiCtx:=AUi.NewUICtx;
+  end
   else
+  begin
     lMeth:=nil;
+    FUiCtx:=nil;
+  end;
 
-  Create(OSSL_STORE_attach(ABio.BIO, nil, nil, nil, lMeth, AUi,
+  Create(OSSL_STORE_attach(ABio.BIO, nil, nil, nil, lMeth, FUiCtx,
     nil, nil, nil));
 end;
 
-class procedure TTaurusTLSOSSLStore.TStoreCtx.Close(var ACtx: POSSL_STORE_CTX);
+destructor TTaurusTLSOSSLStore.TStoreCtx.Destroy;
 begin
-  if not Assigned(Actx) then
-    Exit;
-  OSSL_STORE_close(ACtx);
-  ACtx:=nil;
-end;
-
-procedure TTaurusTLSOSSLStore.TStoreCtx.Close;
-begin
-  Close(FCtx);
+  if Assigned(FCtx) then
+  begin
+    OSSL_STORE_close(FCtx);
+    FCtx:=nil;
+    FreeAndNil(FUICtx);
+  end;
+  inherited;
 end;
 
 class function TTaurusTLSOSSLStore.TStoreCtx.Eof(

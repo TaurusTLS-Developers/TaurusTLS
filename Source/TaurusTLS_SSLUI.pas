@@ -1,11 +1,11 @@
-{ ****************************************************************************** }
+ï»¿{ ****************************************************************************** }
 { *  TaurusTLS                                                                 * }
 { *           https://github.com/JPeterMugaas/TaurusTLS                        * }
 { *                                                                            * }
 { *  Copyright (c) 2026 TaurusTLS Developers, All Rights Reserved              * }
 { *                                                                            * }
-{ * Portions of this software are Copyright (c) 1993 – 2018,                   * }
-{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  * }
+{ * Portions of this software are Copyright (c) 1993 ï¿½ 2018,                   * }
+{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew ï¿½ http://www.IndyProject.org/  * }
 { ****************************************************************************** }
 
 {$I TaurusTLSCompilerDefines.inc}
@@ -33,6 +33,9 @@ uses
   Generics.Defaults,
   IdCTypes,
   IdGlobal,
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  TaurusTLSLoader,
+{$ENDIF}
   TaurusTLSHeaders_types,
   TaurusTLSExceptionHandlers,
   TaurusTLSHeaders_ui;
@@ -61,7 +64,8 @@ type
     function GetIsPrompt: boolean;
     function GetResultMaxSize: TIdC_Int;
     function GetResultMinSize: TIdC_Int;
-    function GetValue: PIdAnsiChar;
+    function GetPrompt: PIdAnsiChar;
+    function GetAction: PIdAnsiChar;
   public
     /// <summary> Creates <see cref="TTaurusTLS_UiString" /> instance.
     /// <param name="AString"> An value of type <see cref="PUI_STRING" /> passed by
@@ -155,7 +159,15 @@ type
     /// <see cref="UI_STRING" /> value as a pointer to nill-terminated array of Ansi
     /// characters.
     /// </returns>
-    property Value: PIdAnsiChar read GetValue;
+    property Prompt: PIdAnsiChar read GetPrompt;
+
+    /// <summary> Wrapper for the <c>UI_get0_action_string</c>.
+    /// </summary>
+    /// <returns>
+    /// <see cref="UI_STRING" /> value as a pointer to nill-terminated array of Ansi
+    /// characters.
+    /// </returns>
+    property Action: PIdAnsiChar read GetAction;
 
     /// <summary>
     /// Returns <see cref="PUI">value</see> associated with a OpenSSL callback.
@@ -215,234 +227,61 @@ type
     property ResultMaxSize: TIdC_Int read GetResultMaxSize;
   end;
 
-  /// <summary> The <c>TTaurusTLS_DefaultUI</c> class implements OpenSSL
-  /// <see href="https://docs.openssl.org/master/man3/UI_create_method/">UI_METHOD</see> callbacks.
-  /// It register itself as a <b>Default</b> <see cref="UI_METHOD" />  and intercepts
-  ///  all OpenSSL requests for <b>password</b> or <b>passphrases</b> and requests
-  /// the instance assigned to <see cref="UiHandler" /> to handle them.
+  TTaurusTLSCustomOsslUi = class;
+
+  /// <summary>
+  /// Manages the state of a single OpenSSL prompt session, tracking associated UI strings.
   /// </summary>
-  /// <remarks> To handle <b>password</b> or <b>passphrases</b> requests application
-  /// must implement
-  /// <see cref="TTaurusTLS_DefaultUI.TCustomUiHandler" /> class descendant(s).
-  /// </remarks>
-  TTaurusTLS_DefaultUI = class
-  public type
-
-    /// <summary>
-    ///   A base <b>abstract</b> class Instance to handle OpenSSL requests for
-    ///   <b>password</b> or <b>passphrase</b>.
-    /// </summary>
-    /// <remarks>
-    ///   <para>
-    ///     <see cref="TaurusTLS_SSLUI|TTaurusTLSCustomOsslUi" /> calls the <see
-    ///     cref="TCustomUiHandler" /> descendant's methods in the order:
-    ///   </para>
-    ///   <list type="number">
-    ///     <item>
-    ///       DoPrepare Method needs to initialize resources required for
-    ///       request the <b>password</b> or <b>passphrase</b>, and associate it
-    ///       with the <c>ui</c> parameter value. For example to create password
-    ///       request dialog instance in GUI application.
-    ///     </item>
-    ///     <item>
-    ///       DoSetStringThis method called to provide string information needs
-    ///       to be displayed for the end-user. It usually <b>password</b>
-    ///       prompt. However, it could be a <b>confirmation</b>, <b>error</b>
-    ///       or <b>informational</b> message(s). <see
-    ///       href="https://docs.openssl.%20org/master/man3/UI_create_method/#description">
-    ///       See</see> for more details. <b>Note:</b> this method can be called
-    ///       multiple times per one UI call.
-    ///     </item>
-    ///     <item>
-    ///       DoDisplayThis method is called to display a <b>password</b> or <b>
-    ///       passphrase</b> prompt, <b>error</b> message, etc.
-    ///     </item>
-    ///     <item>
-    ///       DoCheckStringThe application should provide <b>password</b> or <b>
-    ///       passphrase</b> for string with type <c>UIT_PROMPT</c> or <c>
-    ///       UIT_VERIFY</c> using <see cref="TTaurusTLS_UiString. SetPassword" />
-    ///       method. <b>Note:</b> this method can be called multiple times per
-    ///       one UI call.
-    ///     </item>
-    ///     <item>
-    ///       DoRelease Method called to deinitialize the resources prepared by
-    ///       the <see cref="TaurusTLS_SSLUI|TTaurusTLSCustomOsslUi" /> method
-    ///       associated with the <c>ui</c> parameter value.
-    ///     </item>
-    ///   </list>
-    ///   <para>
-    ///     Please note: the instance can be activated from any thread. A
-    ///     descendant(s) implementing interactive request handling must
-    ///     serialize its activation from different threads. For example, using
-    ///     <see cref="System.Classes|TThread.Synchronize" /> for GUI
-    ///     application(s), or using synchronization primitives in console
-    ///     application(s).
-    ///   </para>
-    /// </remarks>
-    TCustomUiHandler = class abstract
-    protected
-
-      /// <summary>
-      /// <see cref="TTaurusTLS_DefaultUI" /> calls this method to request application to
-      /// initialize resources needed for requesting <b>password</b> or <b>passphrase</b>
-      /// and associate them with the <c>ui</c> parameter value.
-      /// </summary>
-      /// <param name="ui"><see href="https://docs.openssl.org/master/man3/UI_new/" />
-      /// </param>
-      function DoPrepare(ui: PUI): TTaurusTLS_UiResult; virtual;
-
-      /// <summary>
-      /// <see cref="TTaurusTLS_DefaultUI" /> calls this method to request application to
-      /// add specific type of <c>UI_STRING</c> to the user interface.
-      /// <see href="https://docs.openssl.org/master/man3/UI_STRING/" />
-      /// </summary>
-      /// <remarks> This method can be called multiple times.
-      /// </remarks>
-      /// <param name="ui"><see href="https://docs.openssl.org/master/man3/UI_new/" />
-      /// </param>
-      /// <param name="AString"> <see cref="TTaurusTLS_UiString" />
-      /// </param>
-      function DoSetString(ui: PUI; AString: TTaurusTLS_UiString): TTaurusTLS_UiResult;
-        virtual;
-
-      /// <summary>
-      /// <see cref="TTaurusTLS_DefaultUI" /> calls this method to request application to
-      /// request
-      /// a <b>password</b> or <b>passphrase</b> request user interface.
-      /// </summary>
-      /// <param name="ui"><see href="https://docs.openssl.org/master/man3/UI_new/" />
-      /// </param>
-      function DoDisplay(ui: PUI): TTaurusTLS_UiResult; virtual;
-
-      /// <summary>
-      /// <see cref="TTaurusTLS_DefaultUI" /> calls this method to provide
-      /// <b>password</b> or
-      /// <b>passphrase</b> for string with type <c>UIT_PROMPT</c> or <c>UIT_VERIFY</c>
-      /// using <see cref="TTaurusTLS_UiString. SetPassword" /> method.
-      /// <see href="https://docs.openssl.org/master/man3/UI_STRING/" />
-      /// </summary>
-      /// <remarks> This method can be called multiple times.
-      /// </remarks>
-      /// <param name="ui"><see href="https://docs.openssl.org/master/man3/UI_new/" />
-      /// </param>
-      /// <param name="AString"> <see cref="TTaurusTLS_UiString" />
-      /// </param>
-      function DoCheckString(ui: PUI; AString: TTaurusTLS_UiString): TTaurusTLS_UiResult;
-        virtual;
-
-      /// <summary>
-      /// <see cref="TTaurusTLS_DefaultUI" /> calls this method to request application
-      /// releasing resources allocated in
-      /// <see cref="DoPrepare" /> method and associated with the <c>ui</c> parameter
-      /// value.
-      /// </summary>
-      /// <param name="ui"><see href="https://docs.openssl.org/master/man3/UI_new/" />
-      /// </param>
-      function DoRelease(ui: PUI): TTaurusTLS_UiResult; virtual;
-    end;
-
-    /// <inherited />
-    /// <summary>
-    /// This class implements serialization using <c>Critical Section</c> locking
-    /// primitive.
-    /// All callbacks are serialized per one <c>ui</c> parameter value.
-    /// </summary>
-    TSyncHandler = class abstract(TCustomUiHandler)
-    strict private
-      FLock: TIdCriticalSection;
-    protected
-
-      /// <inherited />
-      /// <summary> This method overrides
-      /// <see cref="TTaurusTLS_DefaultUI.TCustomUiHandler.DoPrepare" />. It enters to the
-      /// <c>Critical Section</c> to propect other threads to interrupt OpenSSL <c>UI</c>
-      /// processing.
-      /// </summary>
-      function DoPrepare(ui: PUI): TTaurusTLS_UiResult; override;
-      /// <inherited />
-      /// <summary> This method overrides
-      /// <see cref="TTaurusTLS_DefaultUI.TCustomUiHandler.DoRelease" />.
-      /// It exit from the <c>Critical Section</c> and allow other thread(s) to process
-      /// OpenSSL <c>UI</c>.
-      /// </summary>
-      function DoRelease(ui: PUI): TTaurusTLS_UiResult; override;
-
-      procedure Lock; {$IFDEF USE_INLINE}inline;{$ENDIF}
-      procedure Unlock; {$IFDEF USE_INLINE}inline;{$ENDIF}
-    public
-      constructor Create;
-      destructor Destroy; override;
-    end;
-
-  private const
-    cUiMethodName: AnsiString = 'TaurusTLS Default UI Method';
-
-  private class var
-    FUiMethod: PUI_METHOD;
-    FPrevUiMethod: PUI_METHOD;
-    FHandler: TCustomUiHandler;
-    FLock: TIdCriticalSection;
-    FRegistered: boolean;
-
-  private
-    class function Opener(ui: PUI): TIdC_INT; static; cdecl;
-    class function Writer(ui: PUI; uis: PUI_STRING): TIdC_INT; static; cdecl;
-    class function Flusher(ui: PUI): TIdC_INT; static; cdecl;
-    class function Reader(ui: PUI; uis: PUI_STRING): TIdC_INT; static; cdecl;
-    class function Closer(ui: PUI): TIdC_INT; static; cdecl;
-    class function RegisterMethod: PUI_METHOD; static;
-    class procedure UnregisterMethod; static;
-    class procedure SetHandler(AHandler: TCustomUIHandler); static;
-      {$IFDEF USE_INLINE}inline;{$ENDIF}
+  TTaurusTLS_UICtx = class
+  protected type
+    TUIStrings = TObjectList<TTaurusTLS_UIString>;
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} private
+    FUi: TTaurusTLSCustomOsslUi;
+    FUIStrings: TUIStrings;
   protected
-    class procedure Lock; {$IFDEF USE_INLINE}inline;{$ENDIF}
-    class procedure Unlock; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    /// <summary>
+    /// Adds a <see cref="TTaurusTLS_UIString" /> to the context tracking list.
+    /// </summary>
+    /// <param name="AString"> The UI string to add. </param>
+    procedure AddUIString(AString: TTaurusTLS_UIString);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+    /// <summary>
+    /// Clears the list of tracked UI strings.
+    /// </summary>
+    procedure Clear; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     /// <summary>
-    /// Returns a <see cref="AnsiString" /> to be used in
-    /// <see cref="UI_create_method" /> routine.
-    /// <see href="https://docs.openssl.org/master/man3/UI_create_method/#synopsis" />
-    /// for more details.
+    /// Gets the UI handler associated with this context.
     /// </summary>
-    class function GetUiMethodName: AnsiString; virtual;
+    property Ui: TTaurusTLSCustomOsslUi read FUi;
   public
-    /// <inherited />
-    class constructor Create;
-
-    /// <inherited />
-    class destructor Destroy;
-
-    /// <summary> Sets or gets <see cref="TTaurusTLS_DefaultUI.TCustomUiHandler" />
-    /// instance that proceses
-    /// <c>OpenSSL</c> <b>password</b> or <b>passphrase</b> requests.
+    /// <summary>
+    /// Creates a new <see cref="TTaurusTLS_UICtx" /> associated with the provided UI handler.
     /// </summary>
-    class property UiHandler: TCustomUiHandler read FHandler write SetHandler;
+    /// <param name="AUi"> The UI handler implementation. </param>
+    constructor Create(AUi: TTaurusTLSCustomOsslUi);
+    /// <summary>
+    /// Releases resources used by the <see cref="TTaurusTLS_UICtx" />.
+    /// </summary>
+    destructor Destroy; override;
 
     /// <summary>
-    /// Returns <c>True</c> when <see cref="TCustomUiHandler" /> registered as an
-    /// <c>OpenSSL</c> <c>Default UI_METHOD</c>, otherwise returns <c>False</c>.
+    /// Gets the list of UI strings currently associated with this context.
     /// </summary>
-    class property Registered: boolean read FRegistered;
+    property UIStrings: TUIStrings read FUIStrings;
   end;
 
   /// <summary> The TTaurusTLSCustomOsslUi class implements the OpenSSL
-  /// <c>UI_METHOD</c> callbacks.
+  /// <c>UI_METHOD</c> callbacks wrapper.
   /// The application can use this class's descendants in OpenSSL routines like
   /// <c>OSSL_STORE_open" </c>, <c>OSSL_STORE_open_ex" </c>, <c>OSSL_STORE_attach" </c>, etc.
-  /// <para>
-  ///
-  /// </para>
   /// </summary>
   TTaurusTLSCustomOsslUi = class abstract
   private const
-    cUiMethodName: AnsiString = 'TaurusTLS UI Method';
+    cMethStrFormat = '%s-%p';
 
-  private class var
+  private var
     FUiMeth: PUI_METHOD;
-
-  strict private
-    FUi: PUI;
-    procedure SetUi(ui: PUI); {$IFDEF USE_INLINE}inline;{$ENDIF}
 
   private
     class function Opener(ui: PUI): TIdC_INT; static; cdecl;
@@ -450,37 +289,126 @@ type
     class function Flusher(ui: PUI): TIdC_INT; static; cdecl;
     class function Reader(ui: PUI; uis: PUI_STRING): TIdC_INT; static; cdecl;
     class function Closer(ui: PUI): TIdC_INT; static; cdecl;
-    class function RegisterMethods: PUI_METHOD; static;
-      {$IFDEF USE_INLINE}inline;{$ENDIF}
-    class function GetUiMethod: PUI_METHOD; static;
-      {$IFDEF USE_INLINE}inline;{$ENDIF}
     class function NewUiString(uis: PUI_STRING; ui: PUI): TTaurusTLS_UiString;
       static; {$IFDEF USE_INLINE}inline;{$ENDIF}
-    class function GetUi(ui: PUI): TTaurusTLSCustomOsslUi;
+    function RegisterMethods: PUI_METHOD;
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure UnregisterMethods;
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+    function GetIsRegistered: boolean; {$IFDEF USE_INLINE}inline;{$ENDIF}
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+    procedure OnSSLLibEvent(AAction: TOpenSSLLoadAction);
+{$ENDIF}
+
   protected
+    /// <summary>
+    /// Retrieves the <see cref="TTaurusTLS_UICtx" /> associated with the OpenSSL UI pointer.
+    /// </summary>
+    /// <param name="AUi"> The OpenSSL UI pointer. </param>
+    /// <returns> The associated UI context. </returns>
+    class function GetUiCtx(AUi: PUI): TTaurusTLS_UICtx; static;
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+    /// <summary>
+    /// Called by OpenSSL to initialize a prompt session.
+    /// <para>
+    /// This method is called by the <c>Opener</c> OpenSSL callback.
+    /// </para>
+    /// <see href="https://docs.openssl.org/master/man3/UI_STRING/" />
+    /// </summary>
+    /// <param name="AUiCtx"> The current UI context. </param>
+    /// <returns> A <see cref="TTaurusTLS_UiResult" /> indicating the outcome. </returns>
+    function DoPromptInit(AUiCtx: TTaurusTLS_UICtx): TTaurusTLS_UiResult; virtual;
+    /// <summary>
+    /// Called by OpenSSL to set up a specific UI string (prompt).
+    /// <para>
+    /// This method is called by the <c>Writer</c> OpenSSL callback.
+    /// </para>
+    /// <see href="https://docs.openssl.org/master/man3/UI_STRING/" />
+    /// </summary>
+    /// <param name="AUiCtx"> The current UI context. </param>
+    /// <param name="AString"> The UI string being set up. </param>
+    /// <returns> A <see cref="TTaurusTLS_UiResult" /> indicating the outcome. </returns>
+    function DoPromptSetup(AUiCtx: TTaurusTLS_UICtx;
+      AString: TTaurusTLS_UiString): TTaurusTLS_UiResult; virtual;
+    /// <summary>
+    /// Called by OpenSSL to display the prompt to the user.
+    /// <para>
+    /// This method is called by the <c>Flusher</c> OpenSSL callback.
+    /// </para>
+    /// <see href="https://docs.openssl.org/master/man3/UI_STRING/" />
+    /// </summary>
+    /// <param name="AUiCtx"> The current UI context. </param>
+    /// <returns> A <see cref="TTaurusTLS_UiResult" /> indicating the outcome. </returns>
+    function DoPromptDisplay(AUiCtx: TTaurusTLS_UICtx): TTaurusTLS_UiResult; virtual;
+    /// <summary>
+    /// Called by OpenSSL to request the result (e.g., password) from the UI.
+    /// <para>
+    /// This method is called by the <c>Reader</c> OpenSSL callback.
+    /// </para>
+    /// <see href="https://docs.openssl.org/master/man3/UI_STRING/" />
+    /// </summary>
+    /// <param name="AUiCtx"> The current UI context. </param>
+    /// <param name="AString"> The UI string for which the result is requested. </param>
+    /// <returns> A <see cref="TTaurusTLS_UiResult" /> indicating the outcome. </returns>
+    function DoPromptSetResult(AUiCtx: TTaurusTLS_UICtx;
+      AString: TTaurusTLS_UiString): TTaurusTLS_UiResult; virtual;
+    /// <summary>
+    /// Called by OpenSSL to release the prompt session.
+    /// <para>
+    /// This method is called by the <c>Closer</c> OpenSSL callback.
+    /// </para>
+    /// <see href="https://docs.openssl.org/master/man3/UI_STRING/" />
+    /// </summary>
+    /// <param name="AUiCtx"> The current UI context. </param>
+    /// <returns> A <see cref="TTaurusTLS_UiResult" /> indicating the outcome. </returns>
+    function DoPromptRelease(AUiCtx: TTaurusTLS_UICtx): TTaurusTLS_UiResult; virtual;
+    /// <summary>
+    /// Indicates whether the UI methods are currently registered with the OpenSSL library.
+    /// </summary>
+    property IsRegistered: boolean read GetIsRegistered;
 
-    function DoPrepare: TTaurusTLS_UiResult; virtual;
-    function DoSetString(AString: TTaurusTLS_UiString): TTaurusTLS_UiResult;
-      virtual;
-    function DoDisplay: TTaurusTLS_UiResult; virtual;
-    function DoCheckString(AString: TTaurusTLS_UiString): TTaurusTLS_UiResult;
-      virtual;
-    function DoRelease: TTaurusTLS_UiResult; virtual;
-
-    property Ui: PUi read FUi;
   public
-    class destructor Destroy;
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TTaurusTLSCustomOsslUi" /> class.
+    /// </summary>
+    constructor Create;
+    /// <summary>
+    /// Releases resources used by the <see cref="TTaurusTLSCustomOsslUi" />.
+    /// </summary>
+    destructor Destroy; override;
+    /// <summary>
+    /// Creates a new <see cref="TTaurusTLS_UICtx" /> for a prompt session.
+    /// </summary>
+    /// <returns> A new UI context instance. </returns>
+    function NewUICtx: TTaurusTLS_UICtx;
 
-    class property UiMethod: PUI_METHOD read GetUiMethod;
+    property UiMethod: PUI_METHOD read FUIMeth;
   end;
 
+  /// <summary>
+  /// Provides a simple UI implementation that automatically supplies a pre-configured password.
+  /// </summary>
   TTaurusTLS_SimplePasswordUI = class(TTaurusTLSCustomOsslUi)
   strict private
     FPass: RawByteString;
   protected
-    function DoCheckString(AString: TTaurusTLS_UiString): TTaurusTLS_UiResult;
-      override;
+    /// <summary>
+    /// Provides the pre-configured password as the result for the prompt.
+    /// <para>
+    /// This method is called by the <c>Reader</c> OpenSSL callback.
+    /// </para>
+    /// <see href="https://docs.openssl.org/master/man3/UI_STRING/" />
+    /// </summary>
+    /// <param name="AUiCtx"> The current UI context. </param>
+    /// <param name="AString"> The UI string for which the result is requested. </param>
+    /// <returns> A <see cref="TTaurusTLS_UiResult" /> indicating whether the password was set successfully. </returns>
+    function DoPromptSetResult(AUiCtx: TTaurusTLS_UICtx;
+      AString: TTaurusTLS_UiString): TTaurusTLS_UiResult; override;
   public
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TTaurusTLS_SimplePasswordUI" /> class with a specific password.
+    /// </summary>
+    /// <param name="APass"> The password to be provided to OpenSSL prompts. </param>
     constructor Create(const APass: RawByteString);
   end;
 
@@ -538,9 +466,14 @@ begin
   Result:=FType = UIT_BOOLEAN;
 end;
 
-function TTaurusTLS_UiString.GetValue: PIdAnsiChar;
+function TTaurusTLS_UiString.GetPrompt: PIdAnsiChar;
 begin
   Result:=UI_get0_output_string(FString);
+end;
+
+function TTaurusTLS_UiString.GetAction: PIdAnsiChar;
+begin
+  Result:=UI_get0_action_string(FString);
 end;
 
 function TTaurusTLS_UiString.SetPassword(APass: PIdAnsiChar;
@@ -576,255 +509,83 @@ begin
   Result:=SetPassword(APass, Length(APass));
 end;
 
-{ TTaurusTLS_DefaultUI.TCustomUiHandler }
+{ TTaurusTLS_UICtx }
 
-function TTaurusTLS_DefaultUI.TCustomUiHandler.DoPrepare(
-  ui: PUI): TTaurusTLS_UiResult;
+constructor TTaurusTLS_UICtx.Create(AUi: TTaurusTLSCustomOsslUi);
 begin
-  Result:=uirSuccess;
+  Assert(Assigned(AUi), 'Parameter ''AUi'' must not be ''nil''.'); // Do not localize
+  FUi:=AUi;
+  FUIStrings:=TUIStrings.Create(True);
 end;
 
-function TTaurusTLS_DefaultUI.TCustomUiHandler.DoSetString(ui: PUI;
-  AString: TTaurusTLS_UiString): TTaurusTLS_UiResult;
+destructor TTaurusTLS_UICtx.Destroy;
 begin
-  Result:=uirSuccess;
-end;
-
-function TTaurusTLS_DefaultUI.TCustomUiHandler.DoDisplay(
-  ui: PUI): TTaurusTLS_UiResult;
-begin
-  Result:=uirSuccess;
-end;
-
-function TTaurusTLS_DefaultUI.TCustomUiHandler.DoCheckString(ui: PUI;
-  AString: TTaurusTLS_UiString): TTaurusTLS_UiResult;
-begin
-  Result:=uirSuccess;
-end;
-
-function TTaurusTLS_DefaultUI.TCustomUiHandler.DoRelease(
-  ui: PUI): TTaurusTLS_UiResult;
-begin
-  Result:=uirSuccess;
-end;
-
-{ TTaurusTLS_DefaultUI.TSyncHandler }
-
-constructor TTaurusTLS_DefaultUI.TSyncHandler.Create;
-begin
-  inherited;
-  FLock:=TIdCriticalSection.Create;
-end;
-
-destructor TTaurusTLS_DefaultUI.TSyncHandler.Destroy;
-begin
-  FreeAndNil(FLock);
+  FreeAndNil(FUIStrings);
   inherited;
 end;
 
-function TTaurusTLS_DefaultUI.TSyncHandler.DoPrepare(
-  ui: PUI): TTaurusTLS_UiResult;
+procedure TTaurusTLS_UICtx.AddUIString(AString: TTaurusTLS_UIString);
 begin
-  Lock;
-  Result:=uirSuccess;
+  if Assigned(AString) then
+    FUIStrings.Add(AString);
 end;
 
-function TTaurusTLS_DefaultUI.TSyncHandler.DoRelease(
-  ui: PUI): TTaurusTLS_UiResult;
+procedure TTaurusTLS_UICtx.Clear;
 begin
-  Unlock;
-  Result:=uirSuccess;
-end;
-
-procedure TTaurusTLS_DefaultUI.TSyncHandler.Lock;
-begin
-  FLock.Enter;
-end;
-
-procedure TTaurusTLS_DefaultUI.TSyncHandler.Unlock;
-begin
-  FLock.Release;
-end;
-
-{ TTaurusTLS_DefaultUI }
-
-class constructor TTaurusTLS_DefaultUI.Create;
-begin
-  FLock:=TIdCriticalSection.Create;
-end;
-
-class destructor TTaurusTLS_DefaultUI.Destroy;
-begin
-  UiHandler:=nil;
-  FreeAndNil(FLock);
-end;
-
-class function TTaurusTLS_DefaultUI.Opener(ui: PUI): TIdC_INT;
-begin
-  Result:=0;
-  if not Assigned(FHandler) then
-    Exit;
-  try
-    Result:=Pred(Ord(FHandler.DoPrepare(ui)));
-    if Result < 0 then
-      Result:=0;
-  except //PALOFF "Empty except-block"
-    // We must not raise the exception to the OpenSSL stack
-  end;
-end;
-
-class function TTaurusTLS_DefaultUI.Writer(ui: PUI;
-  uis: PUI_STRING): TIdC_INT;
-var
-  lStr: TTaurusTLS_UiString; // PALOFF 'Created and freed objects'
-
-begin
-  Result:=0;
-  if not Assigned(FHandler) then
-    Exit;
-  try
-    lStr:=TTaurusTLS_UiString.Create(uis, ui);
-    try
-      Result:=Pred(Ord(FHandler.DoSetString(ui, lStr)));
-      if Result < 0 then
-        Result:=0;
-    finally
-      lStr.Free;
-    end;
-  except //PALOFF "Empty except-block"
-    // We must not raise the exception to the OpenSSL stack
-  end;
-end;
-
-class function TTaurusTLS_DefaultUI.Flusher(ui: PUI): TIdC_INT;
-begin
-  Result:=0;
-  if not Assigned(FHandler) then
-    Exit;
-  try
-    Result:=Pred(Ord(FHandler.DoPrepare(ui)));
-  except //PALOFF "Empty except-block"
-    // We must not raise the exception to the OpenSSL stack
-  end;
-end;
-
-class function TTaurusTLS_DefaultUI.Reader(ui: PUI;
-  uis: PUI_STRING): TIdC_INT;
-var
-  lStr: TTaurusTLS_UiString; // PALOFF 'Created and freed objects'
-
-begin
-  Result:=0;
-  if not Assigned(FHandler) then
-    Exit;
-  try
-    lStr:=TTaurusTLS_UiString.Create(uis, ui);
-    try
-      Result:=Pred(Ord(FHandler.DoCheckString(ui, lStr)));
-    finally
-      lStr.Free;
-    end;
-  except //PALOFF "Empty except-block"
-    // We must not raise the exception to the OpenSSL stack
-  end;
-end;
-
-class function TTaurusTLS_DefaultUI.Closer(ui: PUI): TIdC_INT;
-begin
-  Result:=0;
-  if not Assigned(FHandler) then
-    Exit;
-  try
-    Result:=Pred(Ord(FHandler.DoPrepare(ui)));
-    if Result < 0 then
-      Result:=0;
-  except //PALOFF "Empty except-block"
-    // We must not raise the exception to the OpenSSL stack
-  end;
-end;
-
-class function TTaurusTLS_DefaultUI.GetUiMethodName: AnsiString;
-begin
-  Result:=cUiMethodName;
-end;
-
-class procedure TTaurusTLS_DefaultUI.SetHandler(AHandler: TCustomUIHandler);
-var
-  lHandler: TCustomUIHandler; // PALOFF 'Created and freed objects'
-begin
-  if FHandler = AHandler then
-    Exit;
-  Lock;
-  try
-    lHandler:=FHandler;
-    if not Assigned(AHandler) then
-      UnregisterMethod
-    else if not Registered then
-      RegisterMethod;  // PALOFF 'Functions called as procedures'
-    lHandler.Free;
-    FHandler:=AHandler;
-  finally
-    UnLock;
-  end;
-end;
-
-class function TTaurusTLS_DefaultUI.RegisterMethod: PUI_METHOD;
-begin
-  Result:=UI_create_method(PAnsiChar(GetUiMethodName));
-  if Assigned(Result) then
-  try
-    FPrevUiMethod:=UI_get_default_method;
-
-    CheckOSSLMethError(UI_method_set_opener(Result, Opener), 0, 'Opener'); // Do not localize
-    CheckOSSLMethError(UI_method_set_writer(Result, Writer), 0, 'Writer'); // Do not localize
-    CheckOSSLMethError(UI_method_set_flusher(Result, Flusher), 0, 'Flusher'); // Do not localize
-    CheckOSSLMethError(UI_method_set_reader(Result, Reader), 0, 'Reader'); // Do not localize
-    CheckOSSLMethError(UI_method_set_closer(Result, Closer), 0, 'Closer'); // Do not localize
-    UI_set_default_method(Result);
-    FUiMethod:=Result;
-  except
-    UnregisterMethod;
-    Raise;
-  end;
-end;
-
-class procedure TTaurusTLS_DefaultUI.UnregisterMethod;
-begin
-  UI_set_default_method(FPrevUiMethod);
-  UI_destroy_method(FUiMethod);
-  FRegistered:=False;
-end;
-
-class procedure TTaurusTLS_DefaultUI.Lock;
-begin
-  FLock.Enter;
-end;
-
-class procedure TTaurusTLS_DefaultUI.Unlock;
-begin
-  FLock.Leave;
+  FUIStrings.Clear;
 end;
 
 { TTaurusTLSCustomOsslUi }
 
-class destructor TTaurusTLSCustomOsslUi.Destroy;
+constructor TTaurusTLSCustomOsslUi.Create;
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+var
+  lLoader: IOpenSSLLoader;
+
 begin
-  if Assigned(FUiMeth) then
-    UI_destroy_method(FUiMeth);
+  lLoader:=GetOpenSSLLoader;
+  lLoader.RegisterLoaderMethod(OnSSLLibEvent);
 end;
+{$ELSE}
+begin
+  RegisterMethods;  // PALOFF 'Functions called as procedures'
+end;
+{$ENDIF}
+
+destructor TTaurusTLSCustomOsslUi.Destroy;
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+var
+  lLoader: IOpenSSLLoader;
+
+begin
+  lLoader:=GetOpenSSLLoader;
+  lLoader.UnRegisterLoaderMethod(OnSSLLibEvent);
+  inherited;
+end;
+{$ELSE}
+begin
+  UnregisterMethods;  // PALOFF 'Functions called as procedures'
+  inherited;
+end;
+{$ENDIF}
 
 class function TTaurusTLSCustomOsslUi.Opener(ui: PUI): TIdC_INT;
 var
   lUi: TTaurusTLSCustomOsslUi;
+  lUiCtx: TTaurusTLS_UICtx;
 
 begin
   Result:=0;
   try
-    lUi:=GetUi(ui);
+    lUiCtx:=GetUiCtx(ui);
+    if not Assigned(lUiCtx) then
+      Exit;
+
+    lUi:=lUiCtx.Ui;
+    lUiCtx.Clear;
     if Assigned(lUi) then
     begin
-      lUi.SetUi(ui);
-      Result:=Pred(Ord(lUi.DoPrepare));
+      Result:=Pred(Ord(lUi.DoPromptInit(lUiCtx)));
       if Result < 0 then
         Result:=0;
     end;
@@ -837,6 +598,7 @@ class function TTaurusTLSCustomOsslUi.Writer(ui: PUI;
   uis: PUI_STRING): TIdC_INT;
 var
   lUi: TTaurusTLSCustomOsslUi;
+  lUiCtx: TTaurusTLS_UICtx;
   lStr: TTaurusTLS_UiString; // PALOFF 'Created and freed objects'
 
 begin
@@ -844,12 +606,16 @@ begin
   lStr:=nil;
   try
     try
-      lUi:=GetUi(ui);
+      lUiCtx:=GetUiCtx(ui);
+      if not Assigned(lUiCtx) then
+        Exit;
+
+      lUi:=lUiCtx.Ui;
       if Assigned(lUi) then
       begin
         lStr:=NewUiString(uis, ui);
-        if Assigned(lUi) then
-          Result:=Pred(Ord(lUi.DoSetString(lStr)));
+        lUiCtx.AddUIString(lStr);
+        Result:=Pred(Ord(lUi.DoPromptSetup(lUiCtx, lStr)));
         if Result < 0 then
           Result:=0;
       end;
@@ -864,14 +630,19 @@ end;
 class function TTaurusTLSCustomOsslUi.Flusher(ui: PUI): TIdC_INT;
 var
   lUi: TTaurusTLSCustomOsslUi;
+  lUiCtx: TTaurusTLS_UICtx;
 
 begin
   Result:=0;
   try
-    lUi:=GetUi(ui);
+    lUiCtx:=GetUiCtx(ui);
+    if not Assigned(lUiCtx) then
+      Exit;
+
+    lUi:=lUiCtx.Ui;
     if Assigned(lUi) then
     begin
-      Result:=Pred(Ord(lUi.DoDisplay));
+      Result:=Pred(Ord(lUi.DoPromptDisplay(lUiCtx)));
       if Result < 0 then
         Result:=0;
     end;
@@ -884,6 +655,7 @@ class function TTaurusTLSCustomOsslUi.Reader(ui: PUI;
   uis: PUI_STRING): TIdC_INT;
 var
   lUi: TTaurusTLSCustomOsslUi;
+  lUiCtx: TTaurusTLS_UICtx;
   lStr: TTaurusTLS_UiString; // PALOFF 'Created and freed objects'
 
 begin
@@ -891,12 +663,16 @@ begin
   lStr:=nil;
   try
     try
-      lUi:=GetUi(ui);
+      lUiCtx:=GetUiCtx(ui);
+      if not Assigned(lUiCtx) then
+        Exit;
+
+      lUi:=lUiCtx.Ui;
       if Assigned(lUi) then
       begin
         lStr:=NewUiString(uis, ui);
         if Assigned(lUi) then
-          Result:=Pred(Ord(lUi.DoCheckString(lStr)));
+          Result:=Pred(Ord(lUi.DoPromptSetResult(lUiCtx, lStr)));
       end;
     except //PALOFF "Empty except-block"
       // We must not raise the exception to the OpenSSL stack
@@ -909,31 +685,67 @@ end;
 class function TTaurusTLSCustomOsslUi.Closer(ui: PUI): TIdC_INT;
 var
   lUi: TTaurusTLSCustomOsslUi;
+  lUiCtx: TTaurusTLS_UICtx;
 
 begin
   Result:=0;
+  lUiCtx:=nil;
   try
-    lUi:=nil;
     try
-      lUi:=GetUi(ui);
+      lUiCtx:=GetUiCtx(ui);
+      if not Assigned(lUiCtx) then
+        Exit;
+
+      lUi:=lUiCtx.Ui;
       if Assigned(lUi) then
       begin
-        Result:=Pred(Ord(lUi.DoRelease));
+        Result:=Pred(Ord(lUi.DoPromptRelease(lUiCtx)));
         if Result < 0 then
           Result:=0;
       end;
-    finally
-      if Assigned(lUi) then
-        lUi.SetUi(nil);
+    except //PALOFF "Empty except-block"
+      // We must not raise the exception to the OpenSSL stack
     end;
-  except //PALOFF "Empty except-block"
-    // We must not raise the exception to the OpenSSL stack
+  finally
+    if Assigned(lUiCtx) then
+      lUiCtx.Clear;
   end;
 end;
 
-class function TTaurusTLSCustomOsslUi.RegisterMethods: PUI_METHOD;
+function TTaurusTLSCustomOsslUi.GetIsRegistered: boolean;
 begin
-  Result:=UI_create_method(PIdAnsiChar(cUiMethodName));
+  Result:=Assigned(FUIMeth);
+end;
+
+class function TTaurusTLSCustomOsslUi.GetUiCtx(AUi: PUI): TTaurusTLS_UICtx;
+var
+  lUiCtx: pointer;
+
+begin
+  lUiCtx:=UI_get0_user_data(AUi);
+  Result:=TObject(lUiCtx) as TTaurusTLS_UICtx;
+end;
+
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+procedure TTaurusTLSCustomOsslUi.OnSSLLibEvent(AAction: TOpenSSLLoadAction);
+begin
+  case AAction of
+    osaLoad:
+      if not IsRegistered then
+        RegisterMethods;
+    osaUnload:
+      if IsRegistered then
+        UnregisterMethods;
+  end;
+end;
+{$ENDIF}
+
+function TTaurusTLSCustomOsslUi.RegisterMethods: PUI_METHOD;
+begin
+  FUIMeth:=nil;
+  Result:=UI_create_method(
+    PIdAnsiChar(RawByteString(Format(cMethStrFormat, [ClassName, Self]))));
+  FUIMeth:=Result;
   if Assigned(Result) then
   try
     CheckOSSLMethError(UI_method_set_opener(Result, Opener), 0, 'Opener'); // Do not localize
@@ -941,41 +753,34 @@ begin
     CheckOSSLMethError(UI_method_set_flusher(Result, Flusher), 0, 'Flusher'); // Do not localize
     CheckOSSLMethError(UI_method_set_reader(Result, Reader), 0, 'Reader'); // Do not localize
     CheckOSSLMethError(UI_method_set_closer(Result, Closer), 0, 'Closer'); // Do not localize
+    FUIMeth:=Result;
   except
-    UI_destroy_method(Result);
+    UnregisterMethods;
     Raise;
   end;
 end;
 
-procedure TTaurusTLSCustomOsslUi.SetUi(ui: PUI);
-begin
-  if FUi <> ui then
-    FUi:=ui;
-end;
+procedure TTaurusTLSCustomOsslUi.UnregisterMethods;
+var
+  lMeth: PUI_METHOD;
 
-class function TTaurusTLSCustomOsslUi.GetUi(
-  ui: PUI): TTaurusTLSCustomOsslUi;
 begin
-  Result:=UI_get0_user_data(ui);
-  Result.SetUi(ui);
-end;
-
-class function TTaurusTLSCustomOsslUi.GetUiMethod: PUI_METHOD;
-begin
-  if not Assigned(FUiMeth) then
-  begin
-    Result:=RegisterMethods;
-    if Assigned(Result) then
-    begin
-      {$IFDEF DCC}
-      if TInterlocked.CompareExchange(Pointer(FUiMeth), Result, nil) <> nil then // PALOFF Possible bad pointer usage
-      {$ELSE}
-      if InterlockedCompareExchange(Pointer(FUiMeth), Result, nil)  <> nil then
-      {$ENDIF}
-        UI_destroy_method(Result);
-    end;
+  lMeth:=FUIMeth;
+  try
+    FUIMeth:=nil;
+    UI_method_set_opener(lMeth, nil);
+    UI_method_set_writer(lMeth, nil);
+    UI_method_set_flusher(lMeth, nil);
+    UI_method_set_reader(lMeth, nil);
+    UI_method_set_closer(lMeth, nil);
+  finally
+    UI_destroy_method(lMeth);
   end;
-  Result:=FUiMeth;
+end;
+
+function TTaurusTLSCustomOsslUi.NewUICtx: TTaurusTLS_UICtx;
+begin
+  Result:=TTaurusTLS_UICtx.Create(Self);
 end;
 
 class function TTaurusTLSCustomOsslUi.NewUiString(
@@ -984,23 +789,23 @@ begin
   Result:=TTaurusTLS_UiString.Create(uis, ui);
 end;
 
-function TTaurusTLSCustomOsslUi.DoPrepare: TTaurusTLS_UiResult;
+function TTaurusTLSCustomOsslUi.DoPromptInit(AUiCtx: TTaurusTLS_UICtx): TTaurusTLS_UiResult;
 begin
   Result:=uirSuccess;
 end;
 
-function TTaurusTLSCustomOsslUi.DoSetString(
+function TTaurusTLSCustomOsslUi.DoPromptSetup(AUiCtx: TTaurusTLS_UICtx;
   AString: TTaurusTLS_UiString): TTaurusTLS_UiResult;
 begin
   Result:=uirSuccess;
 end;
 
-function TTaurusTLSCustomOsslUi.DoDisplay: TTaurusTLS_UiResult;
+function TTaurusTLSCustomOsslUi.DoPromptDisplay(AUiCtx: TTaurusTLS_UICtx): TTaurusTLS_UiResult;
 begin
   Result:=uirSuccess;
 end;
 
-function TTaurusTLSCustomOsslUi.DoCheckString(
+function TTaurusTLSCustomOsslUi.DoPromptSetResult(AUiCtx: TTaurusTLS_UICtx;
   AString: TTaurusTLS_UiString): TTaurusTLS_UiResult;
 begin
   if AString.&Type = UIT_PROMPT then
@@ -1008,7 +813,7 @@ begin
   Result:=uirSuccess;
 end;
 
-function TTaurusTLSCustomOsslUi.DoRelease: TTaurusTLS_UiResult;
+function TTaurusTLSCustomOsslUi.DoPromptRelease(AUiCtx: TTaurusTLS_UICtx): TTaurusTLS_UiResult;
 begin
   Result:=uirSuccess;
 end;
@@ -1021,7 +826,7 @@ begin
   inherited Create;
 end;
 
-function TTaurusTLS_SimplePasswordUI.DoCheckString(
+function TTaurusTLS_SimplePasswordUI.DoPromptSetResult(AUiCtx: TTaurusTLS_UICtx;
   AString: TTaurusTLS_UiString): TTaurusTLS_UiResult;
 begin
   if (AString.&Type <> UIT_PROMPT) or
