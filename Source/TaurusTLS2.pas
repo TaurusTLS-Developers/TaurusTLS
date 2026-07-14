@@ -12,7 +12,6 @@
 unit TaurusTLS2;
 
 interface
-{$I TaurusTLSLinkDefines.inc}
 
 uses
 {$IFDEF WINDOWS}

@@ -847,7 +847,7 @@ type
       ///  <returns>
       ///  A new <see cref="POSSL_STORE_CTX" /> instance. Ownership is transferred.
       ///  </returns>
-      constructor Create(AUri: PIdAnsiChar; AUi: TTaurusTLSCustomOsslUi); overload;
+      constructor Create(AUri: PIdAnsiChar; AUi: TTaurusTLSOsslUiMethod); overload;
 
       ///  <summary>
       ///  Opens a new OSSL Store Context using a custom BIO interface
@@ -860,7 +860,7 @@ type
       ///  <returns>
       ///  A new <see cref="POSSL_STORE_CTX" /> instance. Ownership is transferred.
       ///  </returns>
-      constructor Create(ABio: TTaurusTLSCustomBIO; AUi: TTaurusTLSCustomOsslUi);
+      constructor Create(ABio: TTaurusTLSCustomBIO; AUi: TTaurusTLSOsslUiMethod);
         overload;
 
       ///  <summary>
@@ -1107,7 +1107,7 @@ type
     ///  <param name="AUri">The URI (Ansi or UTF8 String).</param>
     ///  <param name="AUi">The User Interaction instance for password prompts.</param>
     ///  <param name="ALoadFilter">The set of types to load.</param>
-    constructor Create(const AUri: RawByteString; AUi: TTaurusTLSCustomOsslUi;
+    constructor Create(const AUri: RawByteString; AUi: TTaurusTLSOsslUiMethod;
       ALoadFilter: TStoreItemTypes = cStoreAElementsAll); overload;
 
     ///  <summary>
@@ -1116,7 +1116,7 @@ type
     ///  <param name="AUri">The URI (e.g., file path).</param>
     ///  <param name="AUi">The User Interaction instance for password prompts.</param>
     ///  <param name="ALoadFilter">The set of types to load.</param>
-    constructor Create(const AUri: UnicodeString; AUi: TTaurusTLSCustomOsslUi;
+    constructor Create(const AUri: UnicodeString; AUi: TTaurusTLSOsslUiMethod;
       ALoadFilter: TStoreItemTypes = cStoreAElementsAll); overload;
 
     /// <summary>
@@ -1132,7 +1132,7 @@ type
     /// <param name="ALoadFilter">
     ///   The set of types to load.
     /// </param>
-    constructor Create(ABio: TTaurusTLSCustomBIO; AUi: TTaurusTLSCustomOsslUi;
+    constructor Create(ABio: TTaurusTLSCustomBIO; AUi: TTaurusTLSOsslUiMethod;
       ALoadFilter: TStoreItemTypes = cStoreAElementsAll); overload;
 
     ///  <summary>
@@ -1950,7 +1950,7 @@ begin
 end;
 
 constructor TTaurusTLSOSSLStore.Create(const AUri: RawByteString;
-  AUi:TTaurusTLSCustomOsslUi; ALoadFilter: TStoreItemTypes);
+  AUi:TTaurusTLSOsslUiMethod; ALoadFilter: TStoreItemTypes);
 var
   lCtx: TStoreCtx;
 
@@ -1960,13 +1960,13 @@ begin
 end;
 
 constructor TTaurusTLSOSSLStore.Create(const AUri: UnicodeString;
-  AUi: TTaurusTLSCustomOsslUi; ALoadFilter: TStoreItemTypes);
+  AUi: TTaurusTLSOsslUiMethod; ALoadFilter: TStoreItemTypes);
 begin
   Create(RawByteString(AUri), AUi, ALoadFilter); // PALOFF 'UnicodeString cast to RawByteString'
 end;
 
 constructor TTaurusTLSOSSLStore.Create(ABio: TTaurusTLSCustomBIO;
-  AUi: TTaurusTLSCustomOsslUi; ALoadFilter: TStoreItemTypes);
+  AUi: TTaurusTLSOsslUiMethod; ALoadFilter: TStoreItemTypes);
 var
   lCtx: TStoreCtx;
 
@@ -2418,7 +2418,7 @@ begin
 end;
 
 constructor TTaurusTLSOSSLStore.TStoreCtx.Create(AUri: PIdAnsiChar;
-  AUi: TTaurusTLSCustomOsslUi);
+  AUi: TTaurusTLSOsslUiMethod);
 var
   lMeth: PUI_METHOD;
 
@@ -2438,7 +2438,7 @@ begin
 end;
 
 constructor TTaurusTLSOSSLStore.TStoreCtx.Create(ABio: TTaurusTLSCustomBIO;
-  AUi: TTaurusTLSCustomOsslUi);
+  AUi: TTaurusTLSOsslUiMethod);
 var
   lMeth: PUI_METHOD;
 

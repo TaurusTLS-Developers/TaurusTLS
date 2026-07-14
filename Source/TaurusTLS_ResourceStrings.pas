@@ -290,6 +290,7 @@ resourcestring
 
   // TaurusTLS_SSLUI messages
   RMSG_RegisterUIMeth_err = 'Error registering the UI_METHOD "%s".';
+  RMSG_CreateUI_err = 'Error creating UI context.';
 
   // TaurusTLS_SSLStores.TTaurusTLSCustomX509VerifyParam messages
   RMSG_X509VfyParamNull_err = 'Error creating X509_VERIFY_PARAM Instance with NULL handle.';
