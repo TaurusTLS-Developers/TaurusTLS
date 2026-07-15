@@ -256,7 +256,7 @@ type
   /// <seealso href="https://docs.openssl.org/master/man3/UI_create_method/">OpenSSL UI_METHOD APIs</seealso>
   TTaurusTLSOsslUiMethod = class abstract
   private const
-    cMethNameFmt = '%s-%p';
+    cMethNameFmt = '%s %p';
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FUiMeth: PUI_METHOD;
 
@@ -435,7 +435,6 @@ var
   lPass: PAnsiChar;
 
 begin
-  Result:=True;
   lLen:=Length(APass);
   if lLen > 0 then
     lPass:=PIdAnsiChar(@APass[0])
@@ -542,7 +541,6 @@ var
 
 begin
   Result:=0;
-  lStr:=nil;
   try
     lUiCtx:=GetUiCtx(ui);
     if not Assigned(lUiCtx) then
@@ -657,7 +655,7 @@ var
 
 begin
   lMeth:=UI_create_method(
-    PIdAnsiChar(RawByteString(Format(cMethNameFmt, [ClassName, Self]))));
+    PIdAnsiChar(RawByteString(Format(cMethNameFmt, [ClassName, Pointer(Self)]))));
 
   FUIMeth:=lMeth;
   if Assigned(lMeth) then
