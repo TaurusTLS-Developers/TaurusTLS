@@ -21,20 +21,80 @@ uses
   SysUtils,
   IdCTypes,
   IdGlobal,
-  IdIOHandler,
-  IdSocketHandle,
-  IdThread,
-  IdSSL,
-  IdYarn,
+//  IdIOHandler,
+//  IdSocketHandle,
+//  IdThread,
+//  IdSSL,
+//  IdYarn,
   TaurusTLSHeaders_types,
   TaurusTLS_types,
   TaurusTLSExceptionHandlers,
   TaurusTLSFIPS {Ensure FIPS functions initialised},
-  TaurusTLS,
+//  TaurusTLS,
+  TaurusTLSLoader,
   TaurusTLS_Sockets,
+  TaurusTLS_SSLUI,
   TaurusTLS_X509;
 
 type
+  TTaurusTLSCustomPasswdPrompt = class abstract(TComponent)
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
+    FUiMeth: TTaurusTLSOsslUiMethod;
+    function GetIsUiReady: boolean; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure OnOsslLoaderAction(AAction: TOpenSSLLoadAction);
+    procedure RegisterUiMeth; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure UnregisterUiMeth; {$IFDEF USE_INLINE}inline;{$ENDIF}
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
+    function DoInitMethod: TTaurusTLSOsslUiMethod; dynamic; abstract;
+
+    property IsUiReady: boolean read GetIsUiReady;
+  public
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+
+    property UiMethod: TTaurusTLSOsslUiMethod read FUiMeth;
+  end;
+
+  TTaurusTLS2DelegatedPasswdPrompt = class(TTaurusTLSCustomPasswdPrompt)
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
+    FOnPrepareUI: TTaurusTLS_UISimpleEvent;
+    FOnSetupUI: TTaurusTLS_UISetupEvent;
+    FOnDisplayUI: TTaurusTLS_UIDisplayEvent;
+    FOnResultUI: TTaurusTLS_UIResultEvent;
+    FOnReleaseUI: TTaurusTLS_UISimpleEvent;
+
+    function GetDelegatedUIMeth: TTaurusTLS_DelegatedUI;
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure SetOnPrepareUI(const AValue: TTaurusTLS_UISimpleEvent);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure SetOnSetupUI(const AValue: TTaurusTLS_UISetupEvent);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure SetOnDisplayUI(const AValue: TTaurusTLS_UIDisplayEvent);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure SetOnResultUI(const AValue: TTaurusTLS_UIResultEvent);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure SetOnReleaseUI(const AValue: TTaurusTLS_UISimpleEvent);
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
+  protected
+    function DoInitMethod: TTaurusTLSOsslUiMethod; override;
+    property DelegatedUIMeth: TTaurusTLS_DelegatedUI
+      read GetDelegatedUIMeth;
+
+  published
+    property OnPrepareUI: TTaurusTLS_UISimpleEvent read FOnPrepareUI
+      write SetOnPrepareUI;
+    property OnSetupUI: TTaurusTLS_UISetupEvent read FOnSetupUI
+      write SetOnSetupUI;
+    property OnDisplayUI: TTaurusTLS_UIDisplayEvent read FOnDisplayUI
+      write SetOnDisplayUI;
+    property OnResultUI: TTaurusTLS_UIResultEvent read FOnResultUI
+      write SetOnResultUI;
+    property OnReleaseUI: TTaurusTLS_UISimpleEvent read FOnReleaseUI
+      write SetOnReleaseUI;
+  end;
+
+  // Below are temporary defined classes and components
+  // These classes and components are subject to change or removal.
   TTaurusTLSIOHandlerStoreAsset = class(TCollectionItem)
   public type
     TAssetKind = (akPath, akText, akBinary);
@@ -197,6 +257,156 @@ type
 
 implementation
 
+
+uses
+  TaurusTLSHeaders_ui;
+
+{ TTaurusTLSCustomPasswdPrompt }
+
+constructor TTaurusTLSCustomPasswdPrompt.Create(AOwner: TComponent);
+{$IFNDEF STATICLOAD_OPENSSL}
+var
+  lLoader: IOpenSSLLoader;
+{$ENDIF}
+
+begin
+  inherited;
+{$IFNDEF STATICLOAD_OPENSSL}
+  lLoader:=GetOpenSSLLoader;
+  lLoader.RegisterLoaderMethod(OnOsslLoaderAction);
+{$ELSE}
+  RegisterUiMeth;
+{$ENDIF}
+end;
+
+destructor TTaurusTLSCustomPasswdPrompt.Destroy;
+{$IFNDEF STATICLOAD_OPENSSL}
+var
+  lLoader: IOpenSSLLoader;
+{$ENDIF}
+
+begin
+{$IFNDEF STATICLOAD_OPENSSL}
+  lLoader:=GetOpenSSLLoader;
+  lLoader.UnregisterLoaderMethod(OnOsslLoaderAction);
+{$ELSE}
+  UnregisterUiMeth;
+{$ENDIF}
+  inherited;
+end;
+
+function TTaurusTLSCustomPasswdPrompt.GetIsUiReady: boolean;
+begin
+  Result:=Assigned(FUiMeth);
+end;
+
+procedure TTaurusTLSCustomPasswdPrompt.OnOsslLoaderAction(
+  AAction: TOpenSSLLoadAction);
+begin
+  case AAction of
+    osaLoad:
+      RegisterUiMeth;
+    osaUnload:
+      UnregisterUiMeth;
+  end;
+end;
+
+procedure TTaurusTLSCustomPasswdPrompt.RegisterUiMeth;
+begin
+  FUiMeth:=DoInitMethod;
+end;
+
+procedure TTaurusTLSCustomPasswdPrompt.UnregisterUiMeth;
+begin
+  FreeAndNil(FUiMeth);
+end;
+
+{ TTaurusTLS2DelegatedPasswdPrompt }
+
+function TTaurusTLS2DelegatedPasswdPrompt.GetDelegatedUIMeth: TTaurusTLS_DelegatedUI;
+begin
+  Result:=UiMethod as TTaurusTLS_DelegatedUI;
+end;
+
+procedure TTaurusTLS2DelegatedPasswdPrompt.SetOnDisplayUI(
+  const AValue: TTaurusTLS_UIDisplayEvent);
+begin
+  if (TMethod(FOnDisplayUI).Code = TMethod(AValue).Code)
+    and (TMethod(FOnDisplayUI).Data = TMethod(AValue).Data) then
+    Exit;
+
+  FOnDisplayUI:=AValue;
+  if IsUiReady then
+    DelegatedUIMeth.OnDisplayUI:=AValue;
+end;
+
+procedure TTaurusTLS2DelegatedPasswdPrompt.SetOnPrepareUI(
+  const AValue: TTaurusTLS_UISimpleEvent);
+begin
+  if (TMethod(FOnPrepareUI).Code = TMethod(AValue).Code)
+    and (TMethod(FOnPrepareUI).Data = TMethod(AValue).Data) then
+    Exit;
+
+  FOnPrepareUI:=AValue;
+  if IsUiReady then
+    DelegatedUIMeth.OnPrepareUI:=AValue;
+end;
+
+procedure TTaurusTLS2DelegatedPasswdPrompt.SetOnReleaseUI(
+  const AValue: TTaurusTLS_UISimpleEvent);
+begin
+  if (TMethod(FOnReleaseUI).Code = TMethod(AValue).Code)
+    and (TMethod(FOnReleaseUI).Data = TMethod(AValue).Data) then
+    Exit;
+
+  FOnReleaseUI:=AValue;
+  if IsUiReady then
+    DelegatedUIMeth.OnReleaseUI:=AValue;
+end;
+
+procedure TTaurusTLS2DelegatedPasswdPrompt.SetOnResultUI(
+  const AValue: TTaurusTLS_UIResultEvent);
+begin
+  if (TMethod(FOnResultUI).Code = TMethod(AValue).Code)
+    and (TMethod(FOnResultUI).Data = TMethod(AValue).Data) then
+    Exit;
+
+  FOnResultUI:=AValue;
+  if IsUiReady then
+    DelegatedUIMeth.OnResultUI:=AValue;
+end;
+
+procedure TTaurusTLS2DelegatedPasswdPrompt.SetOnSetupUI(
+  const AValue: TTaurusTLS_UISetupEvent);
+begin
+  if (TMethod(FOnSetupUI).Code = TMethod(AValue).Code)
+    and (TMethod(FOnSetupUI).Data = TMethod(AValue).Data) then
+    Exit;
+
+  FOnSetupUI:=AValue;
+  if IsUiReady then
+    DelegatedUIMeth.OnSetupUI:=AValue;
+end;
+
+function TTaurusTLS2DelegatedPasswdPrompt.DoInitMethod: TTaurusTLSOsslUiMethod;
+var
+  lResult: TTaurusTLS_DelegatedUI;
+
+begin
+  lResult:=nil;
+  try
+    lResult:=TTaurusTLS_DelegatedUI.Create;
+    lResult.OnPrepareUI:=FOnPrepareUI;
+    lResult.OnSetupUI:=FOnSetupUI;
+    lResult.OnDisplayUI:=FOnDisplayUI;
+    lResult.OnResultUI:=FOnResultUI;
+    lResult.OnReleaseUI:=FOnReleaseUI;
+  except
+    lResult.Free;
+    raise
+  end;
+  Result:=lResult;
+end;
 
 { TTaurusTLSIOHandlerStoreAsset }
 
