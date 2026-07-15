@@ -5210,13 +5210,17 @@ end;
 
 function TTaurusTLSSocket.Readable: TTaurusTLSReadStatus;
 //From Tony WHyman - IndySecOpenSSL
-var buf : byte;   //PALOFF - Variables that are set, but never referenced
-    Lr: integer;
+var
+//  buf : byte;   //PALOFF - Variables that are set, but never referenced
+  Lr: integer;
+
 begin
   Result := sslNoData;
   if not Assigned(fSSL) then Exit;
   {Confirm that there is application data to be read.}
-  Lr := SSL_peek(fSSL, buf, 1);
+//  Lr := SSL_peek(fSSL, buf, 1);
+  // Using modern mechanism that flags if any application data exists for processing
+  Lr := SSL_has_pending(fSSL);
   {Return DataAvailable if application data pending, or if it looks like we have disconnected,
           UnrecoverableError if error state indicates thus,
           EOF if the connection has been shutdown, or
