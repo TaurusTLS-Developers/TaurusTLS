@@ -37,6 +37,11 @@ uses
   TaurusTLS_X509;
 
 type
+  /// <summary>
+  /// Base abstract class for implementing custom OpenSSL password prompts and UI interactions.
+  /// This component manages the registration and unregistration of the <see cref="TTaurusTLSOsslUiMethod"/>
+  /// with the OpenSSL loader, based on OpenSSL's UI_METHOD documentation (see https://www.openssl.org/docs/manmaster/man3/UI_METHOD.html).
+  /// </summary>
   TTaurusTLSCustomPasswdPrompt = class abstract(TComponent)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FUiMeth: TTaurusTLSOsslUiMethod;
@@ -45,16 +50,33 @@ type
     procedure RegisterUiMeth; {$IFDEF USE_INLINE}inline;{$ENDIF}
     procedure UnregisterUiMeth; {$IFDEF USE_INLINE}inline;{$ENDIF}
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
+    /// <summary>
+    /// Initializes and returns the OpenSSL UI method implementation.
+    /// Must be implemented by descendants to provide the specific callback logic.
+    /// </summary>
+    /// <returns>A pointer to the initialized <see cref="TTaurusTLSOsslUiMethod"/>.</returns>
     function DoInitMethod: TTaurusTLSOsslUiMethod; dynamic; abstract;
 
+    /// <summary>
+    /// Indicates whether the UI method has been successfully initialized and registered with OpenSSL.
+    /// </summary>
     property IsUiReady: boolean read GetIsUiReady;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
+    /// <summary>
+    /// The underlying OpenSSL UI method structure used for callback registrations.
+    /// </summary>
     property UiMethod: TTaurusTLSOsslUiMethod read FUiMeth;
   end;
 
+  /// <summary>
+  /// This component delegates OpenSSL UI callbacks to Delphi events.
+  /// This allows developers to implement custom password dialogs or
+  /// automated credential providers directly within the Delphi IDE,
+  /// wrapping the underlying OpenSSL UI_STRING objects.
+  /// </summary>
   TTaurusTLS2DelegatedPasswdPrompt = class(TTaurusTLSCustomPasswdPrompt)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FOnPrepareUI: TTaurusTLS_UISimpleEvent;
@@ -76,19 +98,54 @@ type
     procedure SetOnReleaseUI(const AValue: TTaurusTLS_UISimpleEvent);
       {$IFDEF USE_INLINE}inline;{$ENDIF}
   protected
+    /// <summary>
+    /// Overrides the base initialization to create a <see cref="TTaurusTLS_DelegatedUI"/>
+    /// instance and bind the current component events to the internal OpenSSL callbacks.
+    /// </summary>
     function DoInitMethod: TTaurusTLSOsslUiMethod; override;
+
+    /// <summary>
+    /// Provides access to the internal delegated UI object for direct manipulation of callback pointers.
+    /// </summary>
     property DelegatedUIMeth: TTaurusTLS_DelegatedUI
       read GetDelegatedUIMeth;
 
   published
+    /// <summary>
+    /// Event triggered when OpenSSL is preparing to initiate a UI request.
+    /// </summary>
     property OnPrepareUI: TTaurusTLS_UISimpleEvent read FOnPrepareUI
       write SetOnPrepareUI;
+
+    /// <summary>
+    ///   Event triggered during the setup phase of the UI request. The event
+    ///   provides an <see cref="TaurusTLS_SSLUI|TTaurusTLS_UiString" />
+    ///   instance. <br />
+    ///   Use this to inspect the type of prompt (e.g., password, input) and
+    ///   configure initial text. <br />
+    /// </summary>
     property OnSetupUI: TTaurusTLS_UISetupEvent read FOnSetupUI
       write SetOnSetupUI;
+
+    /// <summary>
+    /// Event triggered when the UI should be displayed to the user (e.g., showing the password entry dialog).
+    /// </summary>
     property OnDisplayUI: TTaurusTLS_UIDisplayEvent read FOnDisplayUI
       write SetOnDisplayUI;
+
+    /// <summary>
+    ///   Event triggered to return the user's input back to OpenSSL. The event
+    ///   provides an <see cref="TaurusTLS_SSLUI|TTaurusTLS_UiString" />
+    ///   instance. <br />
+    ///   Use this to write the user's input back to the UI_STRING using the
+    ///   wrapper's methods. <br />
+    /// </summary>
     property OnResultUI: TTaurusTLS_UIResultEvent read FOnResultUI
       write SetOnResultUI;
+
+    /// <summary>
+    /// Event triggered when the UI resources are being released by OpenSSL.
+    /// </summary>
     property OnReleaseUI: TTaurusTLS_UISimpleEvent read FOnReleaseUI
       write SetOnReleaseUI;
   end;
