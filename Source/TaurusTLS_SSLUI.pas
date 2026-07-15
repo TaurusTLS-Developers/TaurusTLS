@@ -228,10 +228,6 @@ type
     /// <summary>Safely clears and deallocates all tracked UI string wrappers.</summary>
     procedure Clear; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
-    /// <summary>Gets the raw OpenSSL UI session handle.</summary>
-    property Ui: PUI read FUi;
-    /// <summary>Gets the parent unmanaged UI method wrapper definition.</summary>
-    property UIMeth: TTaurusTLSOsslUiMethod read FUiMeth;
   public
     /// <summary>
     ///   Initializes a new instance of <see cref="TTaurusTLS_UICtx" /> mapped to a specific
@@ -245,6 +241,10 @@ type
     /// <summary>Attempts to retrieve a tracked UI string wrapper by its native key.</summary>
     function TryGetUIString(const Key: PUI_STRING; out AValue: TTaurusTLS_UiString): boolean;
 
+    /// <summary>Gets the raw OpenSSL UI session handle.</summary>
+    property Ui: PUI read FUi;
+    /// <summary>Gets the parent unmanaged UI method wrapper definition.</summary>
+    property UIMethod: TTaurusTLSOsslUiMethod read FUiMeth;
     /// <summary>Exposes the active string dictionary of the session.</summary>
     property UIStrings: TUIStrings read FUIStrings;
   end;
@@ -461,6 +461,7 @@ end;
 constructor TTaurusTLS_UICtx.Create(AUiMeth: TTaurusTLSOsslUiMethod);
 begin
   Assert(Assigned(AUiMeth), 'Parameter ''AUi'' must not be ''nil''.'); // Do not localize
+  FUiMeth:=AUiMeth;
   FUIStrings:=TUIStrings.Create([doOwnsValues]);
   FUi:=AUiMeth.NewUi;
   UI_add_user_data(FUi, Self);
@@ -523,7 +524,7 @@ begin
     if not Assigned(lUiCtx) then
       Exit;
 
-    lUiMeth:=lUiCtx.UiMeth;
+    lUiMeth:=lUiCtx.UiMethod;
     lUiCtx.Clear;
     if Assigned(lUiMeth) then
       Result:=lUiMeth.DoPromptInit(lUiCtx).AsInt
@@ -546,7 +547,7 @@ begin
     if not Assigned(lUiCtx) then
       Exit;
 
-    lUiMeth:=lUiCtx.UiMeth;
+    lUiMeth:=lUiCtx.UiMethod;
     if Assigned(lUiMeth) then
     begin
       lStr:=NewUiString(uis, ui);
@@ -570,7 +571,7 @@ begin
     if not Assigned(lUiCtx) then
       Exit;
 
-    lUiMeth:=lUiCtx.UiMeth;
+    lUiMeth:=lUiCtx.UiMethod;
     if Assigned(lUiMeth) then
       Result:=lUiMeth.DoPromptDisplay(lUiCtx).AsInt;
   except //PALOFF "Empty except-block"
@@ -594,7 +595,7 @@ begin
       if not Assigned(lUiCtx) then
         Exit;
 
-      lUiMeth:=lUiCtx.UiMeth;
+      lUiMeth:=lUiCtx.UiMethod;
       if Assigned(lUiMeth) then
       begin
         if not lUiCtx.TryGetUIString(uis, lStr) then
@@ -628,7 +629,7 @@ begin
       if not Assigned(lUiCtx) then
         Exit;
 
-      lUiMeth:=lUiCtx.UiMeth;
+      lUiMeth:=lUiCtx.UiMethod;
       if Assigned(lUiMeth) then
         Result:=lUiMeth.DoPromptRelease(lUiCtx).AsInt;
     except //PALOFF "Empty except-block"
@@ -744,8 +745,9 @@ end;
 function TTaurusTLS_DelegatedUI.DoPromptInit(
   AUiCtx: TTaurusTLS_UICtx): TTaurusTLS_UiResult;
 begin
-  if Assigned(FOnDisplayUI) then
-    FOnDisplayUI(Self, AUiCtx, Result)
+  Result:=uirSuccess;
+  if Assigned(FOnPrepareUI) then
+    FOnPrepareUI(Self, Result)
   else
     Result:=inherited;
 end;
@@ -753,6 +755,7 @@ end;
 function TTaurusTLS_DelegatedUI.DoPromptSetup(AUiCtx: TTaurusTLS_UICtx;
   AString: TTaurusTLS_UiString): TTaurusTLS_UiResult;
 begin
+  Result:=uirSuccess;
   if Assigned(FOnSetupUI) then
     FOnSetupUI(Self, AString, Result)
   else
@@ -762,6 +765,7 @@ end;
 function TTaurusTLS_DelegatedUI.DoPromptDisplay(
   AUiCtx: TTaurusTLS_UICtx): TTaurusTLS_UiResult;
 begin
+  Result:=uirSuccess;
   if Assigned(FOnDisplayUI) then
     FOnDisplayUI(Self, AUiCtx, Result)
   else
@@ -771,6 +775,7 @@ end;
 function TTaurusTLS_DelegatedUI.DoPromptSetResult(AUiCtx: TTaurusTLS_UICtx;
   AString: TTaurusTLS_UiString): TTaurusTLS_UiResult;
 begin
+  Result:=uirSuccess;
   if Assigned(FOnResultUI) then
     FOnResultUI(Self, AString, Result)
   else
@@ -780,6 +785,7 @@ end;
 function TTaurusTLS_DelegatedUI.DoPromptRelease(
   AUiCtx: TTaurusTLS_UICtx): TTaurusTLS_UiResult;
 begin
+  Result:=uirSuccess;
   if Assigned(FOnReleaseUI) then
     FOnReleaseUI(Self, Result)
   else

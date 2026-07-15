@@ -290,14 +290,14 @@ type
     procedure SetName(const AName: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
   public
     constructor Create(const AName: string; const AUri: RawByteString;
-      AUi: TTaurusTLSOsslUiMethod); reintroduce; overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
+      AUiCtx: TTaurusTLS_UICtx); reintroduce; overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
     constructor Create(const AName: string; const AUri: UnicodeString;
-      AUi: TTaurusTLSOsslUiMethod); reintroduce; overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
+      AUiCtx: TTaurusTLS_UICtx); reintroduce; overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
     constructor Create(const AName: string; ABio: TTaurusTLSCustomBIO;
-      AUi: TTaurusTLSOsslUiMethod); reintroduce; overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    constructor CreateMem(const AName: string; AUi: TTaurusTLSOsslUiMethod;
+      AUiCtx: TTaurusTLS_UICtx); reintroduce; overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    constructor CreateMem(const AName: string; AUiCtx: TTaurusTLS_UICtx;
       const AData: TBytes); reintroduce; overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    constructor CreateMem(const AName: string; AUi: TTaurusTLSOsslUiMethod;
+    constructor CreateMem(const AName: string; AUiCtx: TTaurusTLS_UICtx;
       const AData: string); reintroduce; overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     property Name: string read FName;
@@ -1774,49 +1774,49 @@ end;
 { TTaurusTLSTrustStore }
 
 constructor TTaurusTLSTrustStore.Create(const AName: string;
-  const AUri: RawByteString; AUi: TTaurusTLSOsslUiMethod);
+  const AUri: RawByteString; AUiCtx: TTaurusTLS_UICtx);
 begin
-  inherited Create(AUri, AUi, cFilter);
+  inherited Create(AUri, AUiCtx, cFilter);
   SetName(AName);
 end;
 
 constructor TTaurusTLSTrustStore.Create(const AName: string;
-  const AUri: UnicodeString; AUi: TTaurusTLSOsslUiMethod);
+  const AUri: UnicodeString; AUiCtx: TTaurusTLS_UICtx);
 begin
-  inherited Create(AUri, AUi, cFilter);
+  inherited Create(AUri, AUiCtx, cFilter);
   SetName(AName);
 end;
 
 constructor TTaurusTLSTrustStore.Create(const AName: string;
-  ABio: TTaurusTLSCustomBIO; AUi: TTaurusTLSOsslUiMethod);
+  ABio: TTaurusTLSCustomBIO; AUiCtx: TTaurusTLS_UICtx);
 begin
-  inherited Create(ABio, AUi, cFilter);
+  inherited Create(ABio, AUiCtx, cFilter);
   SetName(AName);
 end;
 
 constructor TTaurusTLSTrustStore.CreateMem(const AName: string;
-  AUi: TTaurusTLSOsslUiMethod; const AData: string);
+  AUiCtx: TTaurusTLS_UICtx; const AData: string);
 var
   lBio: TTaurusTLSRawByteStringBIO; // PALOFF 'Created and freed objects'
 
 begin
   lBio:=TTaurusTLSRawByteStringBIO.Create(RawByteString(AData)); // PALOFF 'TBytes cast to RawByteString' // Why PAL detects AData as  TBytes ???
   try
-    Create(AName, lBio, AUi);
+    Create(AName, lBio, AUiCtx);
   finally
     lBio.Free;
   end;
 end;
 
 constructor TTaurusTLSTrustStore.CreateMem(const AName: string;
-  AUi: TTaurusTLSOsslUiMethod; const AData: TBytes);
+  AUiCtx: TTaurusTLS_UICtx; const AData: TBytes);
 var
   lBio: TTaurusTLSBytesBio;  // PALOFF 'Created and freed objects'
 
 begin
   lBio:=TTaurusTLSBytesBio.Create(AData);
   try
-    Create(AName, lBio, AUi);
+    Create(AName, lBio, AUiCtx);
   finally
     lBio.Free;
   end;

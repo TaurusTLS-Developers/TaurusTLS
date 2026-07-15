@@ -847,20 +847,20 @@ type
       ///  <returns>
       ///  A new <see cref="POSSL_STORE_CTX" /> instance. Ownership is transferred.
       ///  </returns>
-      constructor Create(AUri: PIdAnsiChar; AUi: TTaurusTLSOsslUiMethod); overload;
+      constructor Create(AUri: PIdAnsiChar; AUiCtx: TTaurusTLS_UICtx); overload;
 
       ///  <summary>
       ///  Opens a new OSSL Store Context using a custom BIO interface
       ///  containing cryptographic objects (PEM, DER, etc.).
       ///  </summary>
       ///  <param name="ABio">The custom BIO interface instance.</param>
-      ///  <param name="AUi">
+      ///  <param name="AUiCtx">
       ///  An instance handling user interaction (e.g., password prompts).
       ///  </param>
       ///  <returns>
       ///  A new <see cref="POSSL_STORE_CTX" /> instance. Ownership is transferred.
       ///  </returns>
-      constructor Create(ABio: TTaurusTLSCustomBIO; AUi: TTaurusTLSOsslUiMethod);
+      constructor Create(ABio: TTaurusTLSCustomBIO; AUiCtx: TTaurusTLS_UICtx);
         overload;
 
       ///  <summary>
@@ -1105,18 +1105,18 @@ type
     ///  String URI.
     ///  </summary>
     ///  <param name="AUri">The URI (Ansi or UTF8 String).</param>
-    ///  <param name="AUi">The User Interaction instance for password prompts.</param>
+    ///  <param name="AUiCtx">The User Interaction instance for password prompts.</param>
     ///  <param name="ALoadFilter">The set of types to load.</param>
-    constructor Create(const AUri: RawByteString; AUi: TTaurusTLSOsslUiMethod;
+    constructor Create(const AUri: RawByteString; AUiCtx: TTaurusTLS_UICtx;
       ALoadFilter: TStoreItemTypes = cStoreAElementsAll); overload;
 
     ///  <summary>
     ///  Creates an instance by opening the store using a URI (UnicodeString).
     ///  </summary>
     ///  <param name="AUri">The URI (e.g., file path).</param>
-    ///  <param name="AUi">The User Interaction instance for password prompts.</param>
+    ///  <param name="AUiCtx">The User Interaction instance for password prompts.</param>
     ///  <param name="ALoadFilter">The set of types to load.</param>
-    constructor Create(const AUri: UnicodeString; AUi: TTaurusTLSOsslUiMethod;
+    constructor Create(const AUri: UnicodeString; AUiCtx: TTaurusTLS_UICtx;
       ALoadFilter: TStoreItemTypes = cStoreAElementsAll); overload;
 
     /// <summary>
@@ -1126,13 +1126,13 @@ type
     /// <param name="ABio">
     ///   The BIO instance with the content that .
     /// </param>
-    /// <param name="AUi">
+    /// <param name="AUiCtx">
     ///   The User Interaction instance for password prompts.
     /// </param>
     /// <param name="ALoadFilter">
     ///   The set of types to load.
     /// </param>
-    constructor Create(ABio: TTaurusTLSCustomBIO; AUi: TTaurusTLSOsslUiMethod;
+    constructor Create(ABio: TTaurusTLSCustomBIO; AUiCtx: TTaurusTLS_UICtx;
       ALoadFilter: TStoreItemTypes = cStoreAElementsAll); overload;
 
     ///  <summary>
@@ -1852,7 +1852,7 @@ end;
 constructor TTaurusTLSOSSLStore.TStoreItem.Create(const AInfo: TStoreInfo);
 begin
   inherited Create;
-  if not AInfo.IsExist then
+  if AInfo.IsExist then
     FData.FType:=AInfo.GetType;
   case FData.FType of // PALOFF 'Enumerated constant missing in case structure'
     sitName:
@@ -1950,28 +1950,28 @@ begin
 end;
 
 constructor TTaurusTLSOSSLStore.Create(const AUri: RawByteString;
-  AUi:TTaurusTLSOsslUiMethod; ALoadFilter: TStoreItemTypes);
+  AUiCtx:TTaurusTLS_UICtx; ALoadFilter: TStoreItemTypes);
 var
   lCtx: TStoreCtx;
 
 begin
-  lCtx:=TStoreCtx.Create(PIdAnsiChar(AUri), AUi); // PALOFF Possible bad typecast
+  lCtx:=TStoreCtx.Create(PIdAnsiChar(AUri), AUiCtx); // PALOFF Possible bad typecast
   Create(lCtx, ALoadFilter);
 end;
 
 constructor TTaurusTLSOSSLStore.Create(const AUri: UnicodeString;
-  AUi: TTaurusTLSOsslUiMethod; ALoadFilter: TStoreItemTypes);
+  AUiCtx: TTaurusTLS_UICtx; ALoadFilter: TStoreItemTypes);
 begin
-  Create(RawByteString(AUri), AUi, ALoadFilter); // PALOFF 'UnicodeString cast to RawByteString'
+  Create(RawByteString(AUri), AUiCtx, ALoadFilter); // PALOFF 'UnicodeString cast to RawByteString'
 end;
 
 constructor TTaurusTLSOSSLStore.Create(ABio: TTaurusTLSCustomBIO;
-  AUi: TTaurusTLSOsslUiMethod; ALoadFilter: TStoreItemTypes);
+  AUiCtx: TTaurusTLS_UICtx; ALoadFilter: TStoreItemTypes);
 var
   lCtx: TStoreCtx;
 
 begin
-  lCtx:=TStoreCtx.Create(ABio, AUi);
+  lCtx:=TStoreCtx.Create(ABio, AUiCtx);
   Create(lCtx, ALoadFilter);
 end;
 
@@ -1990,19 +1990,20 @@ procedure TTaurusTLSOSSLStore.DoLoad(const ACtx: TStoreCtx;
   ALoadFilter: TStoreItemTypes);
 var
   lInfo: TStoreInfo;
-  lItem: TStoreItem; // PALOFF 'Unbalanced Create/Free'
+  lType: TStoreInfoType;
 
 begin
   while not ACtx.Eof do
   begin
-    lInfo:=Actx.Load;
-    if not ((lInfo.IsExist and (lInfo.GetType in ALoadFilter))) then
+    lInfo:=ACtx.Load;
+    if not lInfo.IsExist then
+      continue;
+    lType:=lInfo.GetType;
+    if not (lType in ALoadFilter) then
       continue;
     try
-      lItem:=TStoreItem.Create(lInfo); // PALOFF 'Unbalanced Create/Free'
-      // FList takes ownerthip on lItem
-      FList.Add(lItem);
-      Inc(FCounters[lItem.&Type]);
+      FList.Add(TStoreItem.Create(lInfo));
+      Inc(FCounters[lType]);
     finally
       lInfo.Free;
     end;
@@ -2418,15 +2419,15 @@ begin
 end;
 
 constructor TTaurusTLSOSSLStore.TStoreCtx.Create(AUri: PIdAnsiChar;
-  AUi: TTaurusTLSOsslUiMethod);
+  AUiCtx: TTaurusTLS_UICtx);
 var
   lMeth: PUI_METHOD;
 
 begin
-  if Assigned(AUi) then
+  if Assigned(AUiCtx) then
   begin
-    lMeth:=AUi.UiMethod;
-    FUiCtx:=AUi.NewUICtx;
+    lMeth:=AUiCtx.UIMethod.UiMethod;
+    FUiCtx:=AUiCtx;
   end
   else
   begin
@@ -2438,7 +2439,7 @@ begin
 end;
 
 constructor TTaurusTLSOSSLStore.TStoreCtx.Create(ABio: TTaurusTLSCustomBIO;
-  AUi: TTaurusTLSOsslUiMethod);
+  AUiCtx: TTaurusTLS_UICtx);
 var
   lMeth: PUI_METHOD;
 
@@ -2446,10 +2447,10 @@ begin
   if not Assigned(ABio) then
     Exit;
 
-  if Assigned(AUi) then
+  if Assigned(AUiCtx) then
   begin
-    lMeth:=AUi.UiMethod;
-    FUiCtx:=AUi.NewUICtx;
+    lMeth:=AUiCtx.UIMethod.UiMethod;
+    FUiCtx:=AUiCtx;
   end
   else
   begin
