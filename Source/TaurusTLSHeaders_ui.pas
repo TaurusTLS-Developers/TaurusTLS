@@ -109,12 +109,14 @@ type
     * needed by method authors.
   *)
   {$EXTERNALSYM UI_string_types}
-  UI_string_types = (UIT_NONE = 0, UIT_PROMPT, (* Prompt for a string *)
+  UI_string_type = (UIT_NONE = 0, UIT_PROMPT, (* Prompt for a string *)
     UIT_VERIFY, (* Prompt for a string and verify *)
     UIT_BOOLEAN, (* Prompt for a yes/no response *)
     UIT_INFO, (* Send info to the user *)
     UIT_ERROR (* Send an error message to the user *)
     );
+
+  UI_string_types = set of UI_string_type;
 
   (* Create and manipulate methods *)
   {$EXTERNALSYM UI_method_opener_cb}
@@ -431,7 +433,7 @@ UI_method_get_ex_data:  function(const method: PUI_Method; idx: TIdC_INT): Point
 
 (* Return type of the UI_STRING *)
   {$EXTERNALSYM UI_get_string_type}
-UI_get_string_type: function(uis: PUI_STRING): UI_string_types; cdecl = nil;
+UI_get_string_type: function(uis: PUI_STRING): UI_string_type; cdecl = nil;
 (* Return input flags of the UI_STRING *)
   {$EXTERNALSYM UI_get_input_flags}
 UI_get_input_flags: function(uis: PUI_STRING): TIdC_INT; cdecl = nil;
@@ -789,7 +791,7 @@ function UI_method_get_ex_data(const method: PUI_Method; idx: TIdC_INT)
 
 (* Return type of the UI_STRING *)
   {$EXTERNALSYM UI_get_string_type}
-function UI_get_string_type(uis: PUI_STRING): UI_string_types cdecl;
+function UI_get_string_type(uis: PUI_STRING): UI_string_type cdecl;
   external CLibCrypto;
 (* Return input flags of the UI_STRING *)
   {$EXTERNALSYM UI_get_input_flags}
@@ -1544,7 +1546,7 @@ end;
 *)
 
 (* Return type of the UI_STRING *)
-function ERR_UI_get_string_type(uis: PUI_STRING): UI_string_types; cdecl;
+function ERR_UI_get_string_type(uis: PUI_STRING): UI_string_type; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(UI_get_string_type_procname);
 end;
