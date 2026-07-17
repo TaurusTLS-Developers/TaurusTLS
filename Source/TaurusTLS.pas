@@ -4027,20 +4027,25 @@ function TTaurusTLSIOHandlerSocket.Readable
 var
   LSock: TTaurusTLSSocket;
 begin
+  Result:=False;
   repeat
-    {Wait for data ready - or timer expiry}
-    Result := inherited Readable(AMSec);
-    {If the inherited Readable returns false then we have a timeout.
-     Otherwise data is present but could be application or non-application data}
-    if not Result then
-      Exit;
-
     { BUGFIX #217: Use a local variable to prevent a race condition where fSSLSocket
-      could be destroyed or set to nil by another thread (e.g. during a Close) 
+      could be destroyed or set to nil by another thread (e.g. during a Close)
       while this loop is evaluating it. }
+
+    { BUGFIX #251: inherited Readable method should be called only in PassThrough mode.
+      TTaurusTLSSocket.Readable always check if the data available for processing. }
     LSock := fSSLSocket;
-    if (not fPassThrough) and (LSock <> nil) then
-      Result := LSock.Readable in [sslDataAvailable,sslUnRecoverableError,sslEOF];
+    if Assigned(LSock) then
+      if fPassThrough then
+      begin
+        {Wait for data ready - or timer expiry}
+        Result := inherited Readable(AMSec);
+        if not Result then
+          Exit;
+      end
+      else
+        Result := LSock.Readable in [sslDataAvailable,sslUnRecoverableError,sslEOF];
   until Result;
 end;
 
