@@ -1644,6 +1644,7 @@ type
     // function GetPeerCert: TTaurusTLSX509;
     // procedure CreateSSLContext(axMode: TTaurusTLSSSLMode);
     //
+    procedure SetSocketTimeout(ATimeOut: Integer);
     procedure SetPassThrough(const Value: Boolean); override;
     function RecvEnc(var VBuffer: TIdBytes): Integer; override;
     function SendEnc(const ABuffer: TIdBytes; const AOffset, ALength: Integer)
@@ -2593,6 +2594,12 @@ uses
   System.Generics.Collections,
 {$ENDIF}
 {$IFDEF USE_VCL_POSIX}
+  {$IFDEF FPC}
+  Sockets,
+  {$ENDIF}
+  {$IFDEF DCC}
+  Posix.SysSocket,
+  {$ENDIF}
   Posix.SysTime,
   Posix.Time,
   Posix.Unistd,
@@ -4083,6 +4090,9 @@ begin
           SSL_shutdown(fSSLSocket.SSL);  //PALOFF - Functions called as procedures
         end;
       end;
+      SetSocketTimeout(0);
+ { TODO : To remove commented out legacy code }
+(*
 {$IFDEF WIN32_OR_WIN64}
       // begin bug fix
       if BindingAllocated and IndyCheckWindowsVersion(6) then
@@ -4093,6 +4103,7 @@ begin
       end;
       // end bug fix
 {$ENDIF}
+*)
     end;
     fPassThrough := Value;
   end;
@@ -4189,6 +4200,53 @@ end;
 // }
 
 
+procedure TTaurusTLSIOHandlerSocket.SetSocketTimeout(ATimeout: Integer);
+{$IFDEF USE_VCL_POSIX}
+var
+  {$IFDEF FPC}
+  LTv: TTimeVal;
+  {$ENDIF}
+  {$IFDEF DCC}
+  LTv: timeval;
+  {$ENDIF}
+{$ENDIF}
+
+begin
+  if not Assigned(Binding) then
+    Exit;
+
+  if ATimeout <= 0 then
+  begin
+    ATimeout := 30000; // 30 seconds
+  end;
+  // reuse existing code for Windows
+{$IFDEF WIN32_OR_WIN64}
+  // begin bug fix
+  if IndyCheckWindowsVersion(6) then
+  begin
+    // Note: Fix needed to allow SSL_Read and SSL_Write to timeout under
+    // Vista+ when connection is dropped
+    Binding.SetSockOpt(Id_SOL_SOCKET, Id_SO_RCVTIMEO, ATimeout);
+    Binding.SetSockOpt(Id_SOL_SOCKET, Id_SO_SNDTIMEO, ATimeout);
+  end;
+  // end bug fix
+{$ENDIF}
+{$IFDEF USE_VCL_POSIX}
+  // TIdSocketHandle and GStack support the only integer parameter.
+  // Use direct POSIX setsockopt routine calls instead.
+  LTv.tv_sec := ATimeout div 1000;
+  LTv.tv_usec := (ATimeout mod 1000) * 1000;
+  {$IFDEF FPC}
+  fpsetsockopt(Binding.Handle, SOL_SOCKET, SO_RCVTIMEO, @LTv, SizeOf(LTv));
+  fpsetsockopt(Binding.Handle, SOL_SOCKET, SO_SNDTIMEO, @LTv, SizeOf(LTv));
+  {$ENDIF}
+  {$IFDEF DCC}
+  setsockopt(Binding.Handle, SOL_SOCKET, SO_RCVTIMEO, LTv, SizeOf(LTv));
+  setsockopt(Binding.Handle, SOL_SOCKET, SO_SNDTIMEO, LTv, SizeOf(LTv));
+  {$ENDIF}
+{$ENDIF}
+end;
+
 procedure TTaurusTLSIOHandlerSocket.OpenEncodedConnection;
 var
 {$IFDEF WIN32_OR_WIN64}
@@ -4207,6 +4265,9 @@ begin
   end;
   Assert(fSSLSocket.SSLContext = nil);
   fSSLSocket.SSLContext := fSSLContext;
+  SetSocketTimeout(FReadTimeOut);
+{ TODO : To remove commented out legacy code }
+(*
 {$IFDEF WIN32_OR_WIN64}
   // begin bug fix
   if IndyCheckWindowsVersion(6) then
@@ -4223,6 +4284,7 @@ begin
   end;
   // end bug fix
 {$ENDIF}
+*)
   // RLebeau 7/2/2015: do not rely on IsPeer to decide whether to call Connect()
   // or Accept(). SSLContext.Mode controls whether a client or server method is
   // used to handle the connection, so that same value should be used here as well.
