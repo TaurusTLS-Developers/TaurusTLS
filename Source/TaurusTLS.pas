@@ -2593,13 +2593,11 @@ uses
 {$IFDEF HAS_UNIT_Generics_Collections}
   System.Generics.Collections,
 {$ENDIF}
-{$IFDEF USE_VCL_POSIX}
-  {$IFDEF FPC}
+{$IFDEF USE_FPC_POSIX}
   Sockets,
-  {$ENDIF}
-  {$IFDEF DCC}
+{$ENDIF}
+{$IFDEF USE_VCL_POSIX}
   Posix.SysSocket,
-  {$ENDIF}
   Posix.SysTime,
   Posix.Time,
   Posix.Unistd,
@@ -4203,12 +4201,11 @@ end;
 procedure TTaurusTLSIOHandlerSocket.SetSocketTimeout(ATimeout: Integer);
 {$IFDEF USE_VCL_POSIX}
 var
-  {$IFDEF FPC}
-  LTv: TTimeVal;
-  {$ENDIF}
-  {$IFDEF DCC}
   LTv: timeval;
-  {$ENDIF}
+{$ENDIF}
+{$IFDEF USE_FPC_POSIX}
+var
+  LTv: TTimeVal;
 {$ENDIF}
 
 begin
@@ -4236,14 +4233,16 @@ begin
   // Use direct POSIX setsockopt routine calls instead.
   LTv.tv_sec := ATimeout div 1000;
   LTv.tv_usec := (ATimeout mod 1000) * 1000;
-  {$IFDEF FPC}
-  fpsetsockopt(Binding.Handle, SOL_SOCKET, SO_RCVTIMEO, @LTv, SizeOf(LTv));
-  fpsetsockopt(Binding.Handle, SOL_SOCKET, SO_SNDTIMEO, @LTv, SizeOf(LTv));
-  {$ENDIF}
-  {$IFDEF DCC}
   setsockopt(Binding.Handle, SOL_SOCKET, SO_RCVTIMEO, LTv, SizeOf(LTv));
   setsockopt(Binding.Handle, SOL_SOCKET, SO_SNDTIMEO, LTv, SizeOf(LTv));
-  {$ENDIF}
+{$ENDIF}
+{$IFDEF USE_FPC_POSIX}
+  // TIdSocketHandle and GStack support the only integer parameter.
+  // Use direct POSIX setsockopt routine calls instead.
+  LTv.tv_sec := ATimeout div 1000;
+  LTv.tv_usec := (ATimeout mod 1000) * 1000;
+  fpsetsockopt(Binding.Handle, SOL_SOCKET, SO_RCVTIMEO, @LTv, SizeOf(LTv));
+  fpsetsockopt(Binding.Handle, SOL_SOCKET, SO_SNDTIMEO, @LTv, SizeOf(LTv));
 {$ENDIF}
 end;
 
