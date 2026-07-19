@@ -21,6 +21,21 @@
 {******************************************************************************}
 unit TaurusTLSHeaders_ssl;
 
+{$IFDEF HAS_DIRECTIVE_HPPEMIT_NAMESPACE}
+{$HPPEMIT OPENNAMESPACE}
+{$ELSE}
+(*$HPPEMIT 'namespace Taurustlsheaders_ssl'*)
+(*$HPPEMIT '{'*)
+{$ENDIF}
+(*$HPPEMIT '  struct SSL_CIPHER;'*)
+(*$HPPEMIT '  typedef SSL_CIPHER* PSSL_CIPHER;'*)
+(*$HPPEMIT '  struct SSL_SESSION;'*)
+(*$HPPEMIT '  typedef SSL_SESSION* PSSL_SESSION;'*)
+{$IFDEF HAS_DIRECTIVE_HPPEMIT_NAMESPACE}
+{$HPPEMIT CLOSENAMESPACE}
+{$ELSE}
+(*$HPPEMIT '}'*)
+{$ENDIF}
 interface
 
 // Headers for OpenSSL 1.1.1
@@ -3289,6 +3304,7 @@ var
   SSL_get_accept_stream_queue_len : function(s : PSSL) : TIdC_SIZET; cdecl = nil;    {introduced 3.2.0}
 
   {$IFNDEF  OPENSSL_NO_QUIC}
+  {$EXTERNALSYM SSL_inject_net_dgram}
   SSL_inject_net_dgram: function(s : PSSL; buf : PIdAnsiChar;
                                 buf_len : TIdC_SIZET;
                                 peer : PBIO_ADDR;

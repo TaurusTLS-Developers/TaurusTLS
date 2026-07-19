@@ -26,6 +26,19 @@ interface
 // Headers for OpenSSL 1.1.1
 // x509v3.h
 
+{$IFDEF HAS_DIRECTIVE_HPPEMIT_NAMESPACE}
+{$HPPEMIT OPENNAMESPACE}
+{$ELSE}
+(*$HPPEMIT 'namespace Taurustlsheaders_x509v3'*)
+(*$HPPEMIT '{'*)
+{$ENDIF}
+(*$HPPEMIT ' struct GENERAL_NAME;'*)
+(*$HPPEMIT ' typedef GENERAL_NAME* PGENERAL_NAME;'*)
+{$IFDEF HAS_DIRECTIVE_HPPEMIT_NAMESPACE}
+{$HPPEMIT CLOSENAMESPACE}
+{$ELSE}
+(*$HPPEMIT '}'*)
+{$ENDIF}
 
 uses
   IdCTypes,

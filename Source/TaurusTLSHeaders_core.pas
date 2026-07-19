@@ -115,7 +115,7 @@ uses
           implementation_ : ^OSSL_DISPATCH;
           algorithm_description : PIdAnsiChar;
         end;
-
+  {$EXTERNALSYM OSSL_ALGORITHM}
       OSSL_ALGORITHM = ossl_algorithm_st;
 
     {
@@ -245,12 +245,13 @@ uses
       }
 
 type
+     {$EXTERNALSYM OSSL_provider_init_fn}
       OSSL_provider_init_fn = function (const handle: POSSL_CORE_HANDLE;
                                     const in_: POSSL_DISPATCH;
                                     var out_: POSSL_DISPATCH;
                                     var provctx: pointer): TIdC_INT cdecl;
 
-
+    {$EXTERNALSYM OSSL_provider_init}
     OSSL_provider_init = OSSL_provider_init_fn;
 
     {
@@ -266,8 +267,10 @@ type
      * libcrypto may use the OSSL_PARAM array to create arguments for an
      * application callback it knows about.
       }
+    {$EXTERNALSYM  OSSL_CALLBACK}
     OSSL_CALLBACK = function(params: POSSL_PARAM_ARRAY; arg: pointer): TIdC_INT cdecl;
 
+    {$EXTERNALSYM OSSL_INOUT_CALLBACK}
     OSSL_INOUT_CALLBACK = function(in_params: POSSL_PARAM_ARRAY;
                                   out_params: POSSL_PARAM_ARRAY; arg: pointer): TIdC_INT cdecl;
 
@@ -277,6 +280,7 @@ type
      * This is similar to the generic callback function above, but adds a
      * result parameter.
       }
+    {$EXTERNALSYM OSSL_PASSPHRASE_CALLBACK}
     OSSL_PASSPHRASE_CALLBACK = function(pass: PIdAnsiChar; pass_size: TIdC_SSIZET;
                                        pass_len: PIdC_SSIZET;
                                        params: POSSL_PARAM_ARRAY; arg: pointer): TIdC_INT cdecl;

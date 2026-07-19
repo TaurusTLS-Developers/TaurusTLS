@@ -26,7 +26,70 @@ interface
 
 // Headers for OpenSSL 1.1.1
 // ossl_typ.h
+// the following emits are a workaround to a
+// name conflict with Win32 API header files
+(*$HPPEMIT '#include <time.h>'*)
+{$IFDEF WINDOWS}
+(*$HPPEMIT '#undef X509_NAME'*)
+(*$HPPEMIT '#undef X509_EXTENSIONS'*)
+(*$HPPEMIT '#undef X509_CERT_PAIR'*)
+(*$HPPEMIT '#undef PKCS7_ISSUER_AND_SERIAL'*)
+(*$HPPEMIT '#undef OCSP_RESPONSE'*)
+(*$HPPEMIT '#undef OCSP_REQUEST'*)
+(*$HPPEMIT '#undef PKCS7_SIGNER_INFO'*)
+(*$HPPEMIT '#undef OCSP_REQUEST'*)
+(*$HPPEMIT '#undef OCSP_RESPONSE'*)
+{$ENDIF}
 
+// the following emits are a workaround to allow
+// compiling in C++ without having to re-define
+// OpenSSL data types and without having to
+// include the OpenSSL header files
+{$IFDEF HAS_DIRECTIVE_HPPEMIT_NAMESPACE}
+{$HPPEMIT OPENNAMESPACE}
+{$ELSE}
+(*$HPPEMIT 'namespace Taurustlsheaders_types'*)
+(*$HPPEMIT '{'*)
+{$ENDIF}
+(*$HPPEMIT '  struct ASN1_STRING;'*)
+(*$HPPEMIT '  typedef ASN1_STRING* PASN1_STRING;'*)
+(*$HPPEMIT '  struct ASN1_OCTET_STRING;'*)
+(*$HPPEMIT '  typedef ASN1_OCTET_STRING* PASN1_OCTET_STRING;'*)
+(*$HPPEMIT '  struct ASN1_BIT_STRING;'*)
+(*$HPPEMIT '  typedef ASN1_BIT_STRING* PASN1_BIT_STRING;'*)
+(*$HPPEMIT '  struct ASN1_OBJECT;'*)
+(*$HPPEMIT '  typedef ASN1_OBJECT* PASN1_OBJECT;'*)
+(*$HPPEMIT '  struct ASN1_TIME;'*)
+(*$HPPEMIT '  typedef ASN1_TIME* PASN1_TIME;'*)
+(*$HPPEMIT '  struct ASN1_OCTET_STRING;'*)
+(*$HPPEMIT '  typedef ASN1_OCTET_STRING* PASN1_OCTET_STRING;'*)
+(*$HPPEMIT '	struct SSL;'*)
+(*$HPPEMIT '	typedef SSL* PSSL;'*)
+(*$HPPEMIT '	struct SSL_CTX;'*)
+(*$HPPEMIT '	typedef SSL_CTX* PSSL_CTX;'*)
+(*$HPPEMIT '	struct SSL_METHOD;'*)
+(*$HPPEMIT '	typedef SSL_METHOD* PSSL_METHOD;'*)
+(*$HPPEMIT '  struct X509_ALGOR;'*)
+(*$HPPEMIT '  typedef X509_ALGOR* PX509_ALGOR;'*)
+(*$HPPEMIT '	struct X509;'*)
+(*$HPPEMIT '	typedef X509* PX509;'*)
+(*$HPPEMIT '	struct X509_NAME;'*)
+(*$HPPEMIT '	typedef X509_NAME* PX509_NAME;'*)
+{$IFDEF HAS_DIRECTIVE_HPPEMIT_NAMESPACE}
+{$HPPEMIT CLOSENAMESPACE}
+{$ELSE}
+(*$HPPEMIT '}'*)
+{$ENDIF}
+
+// RLebeau: why are the following types not being placed in
+// the Idsslopensslheaders namespace with the types above?
+(*$HPPEMIT 'struct RSA;'*)
+(*$HPPEMIT 'typedef RSA* PRSA;'*)
+(*$HPPEMIT 'struct DSA;'*)
+(*$HPPEMIT 'typedef DSA* PDSA;'*)
+(*$HPPEMIT 'struct DH;'*)
+(*$HPPEMIT 'typedef DH* PDH;'*)
+(*$HPPEMIT 'typedef void* PEC_KEY;'*)
 
 uses
   IdCTypes,
