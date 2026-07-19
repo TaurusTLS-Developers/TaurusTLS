@@ -66,6 +66,12 @@
 //Define for Delphi 10.3 inline variable declarion availability
 {$UNDEF USE_INLINE_VAR}
 
+
+// Define for Delphi to auto-generate platform-appropriate '#pragma link' statements in HPP files
+{$UNDEF HAS_DIRECTIVE_HPPEMIT_LINKUNIT}
+{$UNDEF HAS_DIRECTIVE_HPPEMIT_NAMESPACE}
+{$UNDEF HAS_DIRECTIVE_HPPEMIT_LEGACYHPP}
+
 // detect compiler versions
 
 {$IFNDEF FPC}
@@ -457,6 +463,9 @@
 // FPC (2+)
 
 {$IFDEF FPC}
+  {$IFDEF UNIX}
+    {$DEFINE USE_VCL_POSIX}
+  {$ENDIF}
   // TODO: In FreePascal 4.2.0+, a Delphi-like UnicodeString type is supported.
   // However, String/(P)Char do not map to UnicodeString/(P)WideChar unless
   // either {$MODE DelphiUnicode} or {$MODESWITCH UnicodeStrings} is used.
@@ -797,9 +806,12 @@
 
 {$IFDEF VCL_XE6_OR_ABOVE}
   {$DEFINE VCL_XE5_OR_ABOVE}
+  {$DEFINE VCL_XE5_UPDATE2_OR_ABOVE}
 {$ELSE}
   {$IFDEF VCL_XE5}
     {$DEFINE VCL_XE5_OR_ABOVE}
+    // TODO: figure out how to detect this version
+    {.$DEFINE VCL_XE5_UPDATE2_OR_ABOVE}
   {$ENDIF}
 {$ENDIF}
 
