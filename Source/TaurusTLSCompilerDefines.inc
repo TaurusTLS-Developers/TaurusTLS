@@ -464,7 +464,7 @@
 
 {$IFDEF FPC}
   {$IFDEF UNIX}
-    {$DEFINE USE_VCL_POSIX}
+    {$DEFINE USE_FPC_POSIX}
   {$ENDIF}
   // TODO: In FreePascal 4.2.0+, a Delphi-like UnicodeString type is supported.
   // However, String/(P)Char do not map to UnicodeString/(P)WideChar unless
