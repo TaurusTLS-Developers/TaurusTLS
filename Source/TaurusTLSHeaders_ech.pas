@@ -117,6 +117,7 @@ var
   OSSL_ECHSTORE_write_pem : function(es : POSSL_ECHSTORE; index : TIdC_INT; _out : PBIO) : TIdC_INT ; cdecl = nil;
   {$EXTERNALSYM OSSL_ECHSTORE_read_echconfiglist}
   OSSL_ECHSTORE_read_echconfiglist : function(es : POSSL_ECHSTORE; _in : PBIO) : TIdC_INT ; cdecl = nil;
+  {$EXTERNALSYM OSSL_ECHSTORE_get1_info}
   OSSL_ECHSTORE_get1_info : function(es : POSSL_ECHSTORE; index : TIdC_INT; loaded_secs : PIdC_TIMET;
     public_name, echconfig : PPIdAnsiChar;
     has_private, for_retry : PIdC_INT) : TIdC_INT ; cdecl = nil;
@@ -156,6 +157,7 @@ var
  * contrasts with SSL_set1_alpn_protos() which (unusually for OpenSSL)
  * returns 0 for success and 1 on error.
  *}
+  {$EXTERNALSYM SSL_ech_set1_outer_alpn_protos}
   SSL_ech_set1_outer_alpn_protos : function(s : PSSL; const protos : PByte;
     const protos_len : TIdC_SIZET) : TIdC_INT ; cdecl = nil;
 
@@ -175,6 +177,7 @@ var
  * contrasts with SSL_set1_alpn_protos() which (unusually for OpenSSL)
  * returns 0 for success and 1 on error.
  *}
+  {$EXTERNALSYM SSL_CTX_ech_set1_outer_alpn_protos}
   SSL_CTX_ech_set1_outer_alpn_protos : function(s : PSSL_CTX; const protos : PByte;
     const protos_len : TIdC_SIZET) : TIdC_INT ; cdecl = nil;
   {$EXTERNALSYM SSL_CTX_ech_set_callback}

@@ -262,6 +262,7 @@ UI_dup_error_string: function(ui: PUI; const _text: PIdAnsiChar): TIdC_INT;  cde
   *
   *       "Enter pass phrase for foo.key:"
 *)
+{$EXTERNALSYM UI_construct_prompt}
 UI_construct_prompt: function(ui_method: PUI; const object_desc: PIdAnsiChar;
   const object_name: PIdAnsiChar): PIdAnsiChar; cdecl = nil;
 

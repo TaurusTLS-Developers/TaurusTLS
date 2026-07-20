@@ -37,14 +37,20 @@ uses
 }
 
 Type
+  {$EXTERNALSYM DES_LONG}
   DES_LONG = type cardinal;
+  {$EXTERNALSYM Pconst_DES_cblock}
   Pconst_DES_cblock = ^const_DES_cblock;
+  {$EXTERNALSYM PDES_cblock}
   PDES_cblock = ^DES_cblock;
+  {$EXTERNALSYM PDES_key_schedule}
   PDES_key_schedule = ^DES_key_schedule;
+  {$EXTERNALSYM PDES_LONG}
   PDES_LONG = ^DES_LONG;
-
+  {$EXTERNALSYM DES_cblock}
   DES_cblock = array [0 .. 7] of byte;
   { const }
+  {$EXTERNALSYM const_DES_cblock}
   const_DES_cblock = array [0 .. 7] of byte;
   {
     * With "const", gcc 2.8.1 on Solaris thinks that DES_cblock * and
