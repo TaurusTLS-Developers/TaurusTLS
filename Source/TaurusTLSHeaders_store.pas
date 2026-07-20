@@ -204,8 +204,10 @@ var
  *}
   {$EXTERNALSYM OSSL_STORE_SEARCH_by_name}
   OSSL_STORE_SEARCH_by_name : function(name : PX509_NAME) : POSSL_STORE_SEARCH; cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_SEARCH_by_issuer_serial}
   OSSL_STORE_SEARCH_by_issuer_serial : function(name : PX509_NAME;
     const serial : PASN1_INTEGER) : POSSL_STORE_SEARCH  cdecl = nil;
+  {$EXTERNALSYM OSSL_STORE_SEARCH_by_key_fingerprint}
   OSSL_STORE_SEARCH_by_key_fingerprint : function(const digest : PEVP_MD;
     const bytes : PIdAnsiChar; len : TIdC_SIZET) : POSSL_STORE_SEARCH  cdecl = nil;
   {$EXTERNALSYM OSSL_STORE_SEARCH_by_alias}
