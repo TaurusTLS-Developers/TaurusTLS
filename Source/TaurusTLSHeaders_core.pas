@@ -129,6 +129,7 @@ uses
     { value being passed in or out  }
     { data size  }
     { returned content size  }
+  {$EXTERNALSYM ossl_param_st}
       ossl_param_st = record
           key : PIdAnsiChar;
           data_type : dword;
@@ -136,9 +137,11 @@ uses
           data_size : TIdC_SSIZET;
           return_size : TIdC_SSIZET;
         end;
-
+   {$EXTERNALSYM OSSL_PARAM}
       OSSL_PARAM        = ossl_param_st;
+   {$EXTERNALSYM POSSL_PARAM}
       POSSL_PARAM       = ^OSSL_PARAM;
+   {$EXTERNALSYM POSSL_PARAM_ARRAY}
       POSSL_PARAM_ARRAY = POSSL_PARAM; // declaration of "array of OSSL_PARAM"
 
     { Currently supported OSSL_PARAM data types  }
@@ -156,23 +159,28 @@ uses
       }
 
     const
+      {$EXTERNALSYM OSSL_PARAM_INTEGER}
       OSSL_PARAM_INTEGER = 1;
+      {$EXTERNALSYM OSSL_PARAM_UNSIGNED_INTEGER}
       OSSL_PARAM_UNSIGNED_INTEGER = 2;
     {-
      * OSSL_PARAM_REAL
      * is a C binary floating point values in native form and alignment.
       }
+      {$EXTERNALSYM OSSL_PARAM_REAL}
       OSSL_PARAM_REAL = 3;
     {-
      * OSSL_PARAM_UTF8_STRING
      * is a printable string.  It is expected to be printed as it is.
       }
+      {$EXTERNALSYM OSSL_PARAM_UTF8_STRING}
       OSSL_PARAM_UTF8_STRING = 4;
     {-
      * OSSL_PARAM_OCTET_STRING
      * is a string of bytes with no further specification.  It is expected to be
      * printed as a hexdump.
       }
+      {$EXTERNALSYM OSSL_PARAM_OCTET_STRING}
       OSSL_PARAM_OCTET_STRING = 5;
     {-
      * OSSL_PARAM_UTF8_PTR
@@ -191,6 +199,7 @@ uses
      * EXTRA WARNING!  If you are not completely sure you most likely want
      * to use the OSSL_PARAM_UTF8_STRING type.
       }
+      {$EXTERNALSYM OSSL_PARAM_UTF8_PTR}
       OSSL_PARAM_UTF8_PTR = 6;
     {-
      * OSSL_PARAM_OCTET_PTR
@@ -210,6 +219,7 @@ uses
      * EXTRA WARNING!  If you are not completely sure you most likely want
      * to use the OSSL_PARAM_OCTET_STRING type.
       }
+      {$EXTERNALSYM OSSL_PARAM_OCTET_PTR}
       OSSL_PARAM_OCTET_PTR = 7;
     {
      * Typedef for the thread stop handling callback. Used both internally and by
@@ -223,7 +233,7 @@ uses
       }
 
     type
-
+      {$EXTERNALSYM OSSL_thread_stop_handler_fn}
       OSSL_thread_stop_handler_fn = procedure (arg:pointer);cdecl;
     {-
      * Provider entry point
