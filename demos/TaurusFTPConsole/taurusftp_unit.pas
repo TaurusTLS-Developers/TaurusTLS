@@ -109,6 +109,15 @@ implementation
 
 uses
   IniFiles,
+{$IFDEF UNIX}
+  {$IFDEF FPC}
+  BaseUnix,
+  termio,
+  {$ELSE}
+  Posix.Termios,
+  Posix.Unistd,
+  {$ENDIF}
+{$ENDIF}
 {$IFDEF VCL_2010_OR_ABOVE}
   System.IOUtils,
 {$ENDIF}
@@ -270,6 +279,54 @@ begin
     AFTP.IPVersion := Id_IPv6;
   end;
 end;
+
+function ReadInputWithoutEcho : String;
+{$IFNDEF WINDOWS}
+  {$IFDEF UNIX}
+var LOldTerm, LNewTerm : termios;
+begin
+    {$IFDEF FPC}
+  tcgetattr(StdInputHandle,  &LOldTerm);
+    {$ELSE}
+  tcgetattr(STDIN_FILENO, &LOldTerm);
+    {$ENDIF}
+  LNewTerm := LOldTerm;
+  LNewTerm.c_lflag := LNewTerm.c_lflag and (not (ICANON or ECHO));
+    {$IFDEF FPC}
+  tcsetattr(StdInputHandle, TCSANOW,LNewTerm);
+    {$ELSE}
+  tcsetattr(STDIN_FILENO, TCSANOW,LNewTerm);
+    {$ENDIF}
+  try
+    ReadLn(Result);
+  finally
+    {$IFDEF FPC}
+    tcsetattr(StdInputHandle, TCSANOW,LOldTerm);
+    {$ELSE}
+    tcsetattr(STDIN_FILENO, TCSANOW,LOldTerm);
+    {$ENDIF}
+  end;
+end;
+  {$ELSE}
+begin
+  Result := ReadLn;
+end;
+  {$ENDIF}
+{$ELSE}
+var LMode : DWORD;
+  LConsole : THandle;
+begin
+  LConsole := GetStdHandle(STD_INPUT_HANDLE);
+  LMode := 0;
+  GetConsoleMode(LConsole, LMode);
+  try
+    SetConsoleMode(LConsole, LMode and (not ENABLE_ECHO_INPUT));
+    ReadLn(Result);
+  finally
+    SetConsoleMode(LConsole, LMode);
+  end;
+end;
+{$ENDIF}
 
 { TFTPApplication }
 
@@ -454,18 +511,26 @@ begin
   LCmdParams := TStringList.Create;
   try
     ParseArgs(ACmd, LCmdParams);
-    if LCmdParams.Count >= 3 then
+    if LCmdParams.Count >= 2 then
     begin
       case IdGlobal.PosInStrArray(LCmdParams[0],
         ['ftp', 'ftps', 'ftpsi'], False) of
         0:
           begin
             FFTP.UseTLS := utNoTLSSupport;
-            if LCmdParams.Count > 3 then
+            if LCmdParams.Count > 2 then
             begin
               SetHostAndIPVersion(LCmdParams[1],FFTP);
               FFTP.Username := LCmdParams[2];
-              FFTP.Password := LCmdParams[3];
+              if LCmdParams.Count > 2 then
+              begin
+                FFTP.Password := LCmdParams[3];
+              end
+              else
+              begin
+                Write('Password: ');
+                FFTP.Password := ReadInputWithoutEcho;
+              end;
               Open;
             end
             else
@@ -477,11 +542,19 @@ begin
           begin
             FFTP.UseTLS := utUseExplicitTLS;
             FFTP.DataPortProtection := ftpdpsPrivate;
-            if LCmdParams.Count > 3 then
+            if LCmdParams.Count > 2 then
             begin
               SetHostAndIPVersion(LCmdParams[1],FFTP);
               FFTP.Username := LCmdParams[2];
-              FFTP.Password := LCmdParams[3];
+              if LCmdParams.Count > 3 then
+              begin
+                FFTP.Password := LCmdParams[3];
+              end
+              else
+              begin
+                Write('Password: ');
+                FFTP.Password := ReadInputWithoutEcho;
+              end;
               Open;
             end
             else
@@ -493,11 +566,19 @@ begin
           begin
             FFTP.UseTLS := utUseImplicitTLS;
             FFTP.DataPortProtection := ftpdpsPrivate;
-            if LCmdParams.Count > 3 then
+            if LCmdParams.Count > 2 then
             begin
               SetHostAndIPVersion(LCmdParams[1],FFTP);
               FFTP.Username := LCmdParams[2];
-              FFTP.Password := LCmdParams[3];
+              if LCmdParams.Count > 3 then
+              begin
+                FFTP.Password := LCmdParams[3];
+              end
+              else
+              begin
+                Write('Password: ');
+                FFTP.Password := ReadInputWithoutEcho;
+              end;
               Open;
             end
             else
@@ -510,7 +591,15 @@ begin
           FFTP.UseTLS := utNoTLSSupport;
           SetHostAndIPVersion(LCmdParams[0],FFTP);
           FFTP.Username := LCmdParams[1];
-          FFTP.Password := LCmdParams[2];
+          if LCmdParams.Count > 2 then
+          begin
+            FFTP.Password := LCmdParams[2];
+          end
+          else
+          begin
+            Write('Password: ');
+            FFTP.Password := ReadInputWithoutEcho;
+          end;
           Open;
         end;
       end;
@@ -1243,13 +1332,16 @@ begin
       2:
         begin
           PrintCmdHelp(['open'], 'Connect to remote ftp',
-            'open [protocol] host username password');
+            'open [protocol] host username [password]');
           WriteLn('');
           WriteLn('the protocol value may be:');
           WriteLn('');
           WriteLn('ftp   - File Transfer Protocol');
           WriteLn('ftps  - File Transfer Protocol with TLS');
           WriteLn('ftpsi - File Transfer Protocol with Implicit TLS');
+          WriteLn('');
+          WriteLn('If a password is not provided in the command paramets, you will');
+          WriteLn('be prompted for the password without the password being displayed.');
         end;
       3:
         begin
