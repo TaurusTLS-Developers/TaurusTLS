@@ -1758,6 +1758,7 @@ begin
   FIO.SSLOptions.UseBidirectionalShutdown := True;
   FFTP.IOHandler := FIO;
   FFTP.Passive := True;
+  FFTP.UseExtensionDataPort := True;
   FLog := TTaurusTLSUnicodeLog.Create(nil);
   FLog.OnReceived := OnReceived;
   FLog.OnSent := OnSent;
