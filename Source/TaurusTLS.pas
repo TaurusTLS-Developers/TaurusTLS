@@ -4039,25 +4039,12 @@ function TTaurusTLSIOHandlerSocket.Readable
 //From Tony WHyman - IndySecOpenSSL
 var
   LSock: TTaurusTLSSocket;
-  LStart: Int64;
-  LRemaining: Int64;
 
 begin
   Result:=False;
 
   if not (PassThrough or Assigned(fSSLSocket)) then
     Exit; // Nothing to read
-
-  if AMSec > 0 then
-  begin
-    LStart:=TThread.GetTickCount64;
-    LRemaining:=AMsec;
-  end
-  else
-  begin
-    LStart:=0;
-    LRemaining:=0;
-  end;
 
   repeat
     { BUGFIX #217: Use a local variable to prevent a race condition where fSSLSocket
@@ -4071,21 +4058,16 @@ begin
     if (not PassThrough) and Assigned(LSock) and LSock.HasPendingAppData then
       Exit(True); // SSL Socket buffer has application data ready. Exiting.
 
-    Result := inherited Readable(Integer(LRemaining));
+    Result := inherited Readable(AMsec);
 
-    if Result then
+    if not Result then
+      Exit
+    else
     begin
       LSock := fSSLSocket;
       if (not PassThrough) and Assigned(LSock) then
         Result:=LSock.Readable in [sslDataAvailable, sslUnRecoverableError, sslEOF];
-
-      if not Result then
-      begin
-        LRemaining:=AMSec - (Int64(TThread.GetTickCount64) - LStart);
-        if LRemaining <= 0 then
-          Break;
-      end;
-    end;
+    end
   until Result;
 end;
 
