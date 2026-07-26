@@ -81,7 +81,7 @@ type
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FString: PUI_STRING;
     FFlags: TIdC_Int;
-    FType: UI_string_types;
+    FType: UI_string_type;
     FUi: PUI;
     function GetIsBooleanPrompt: boolean; {$IFDEF USE_INLINE}inline;{$ENDIF}
     function GetIsDefaultPwd: boolean; {$IFDEF USE_INLINE}inline;{$ENDIF}
@@ -145,7 +145,7 @@ type
     /// <summary>
     ///   Returns the native, underlying type of this UI string (e.g. prompt, verify, or message).
     /// </summary>
-    property &Type: UI_string_types read FType;
+    property &Type: UI_string_type read FType;
 
     /// <summary>
     ///   Retrieves the descriptive output prompt text to display to the user.
