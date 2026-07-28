@@ -1307,16 +1307,6 @@ type
   /// Properties and methods for dealing with a TLS Socket.
   /// </summary>
   TTaurusTLSSocket = class(TObject)
-{$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict {$ENDIF}protected
-    fSession: PSSL_SESSION;
-{$IFDEF USE_OBJECT_ARC}[Weak]
-{$ENDIF} FParent: TObject;
-    fPeerCert: TTaurusTLSX509; //PALOFF "Created and freed objects"
-    fSSL: PSSL;
-    fSSLCipher: TTaurusTLSCipher;
-    fSSLContext: TTaurusTLSContext;
-    fHostName: String;
-    fVerifyHostname: Boolean;
 {$IFDEF SIGPIPE_MASK}
 { BUGFIX: Fixes issue #217 and #240 }
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict {$ENDIF}private class var
@@ -1328,6 +1318,19 @@ type
     /// </summary>
     FSigSet: sigset_t;
 {$ENDIF}
+{$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict {$ENDIF}private
+    function GetHasPendingAppData: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
+{$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict {$ENDIF}protected
+    fSession: PSSL_SESSION;
+{$IFDEF USE_OBJECT_ARC}[Weak]
+{$ENDIF} FParent: TObject;
+    fPeerCert: TTaurusTLSX509; //PALOFF "Created and freed objects"
+    fSSL: PSSL;
+    fSSLCipher: TTaurusTLSCipher;
+    fSSLContext: TTaurusTLSContext;
+    fHostName: String;
+    fVerifyHostname: Boolean;
+
     function GetSSLProtocolVersion: TTaurusTLSSSLVersion;
     function GetSSLProtocolVersionStr: string;
     function GetPeerCert: TTaurusTLSX509;
@@ -1427,6 +1430,11 @@ type
     /// Session ID
     /// </returns>
     function GetSessionIDAsString: String;
+    /// <summary>
+    ///   Displays if the underlayed SSL object contains decoded data for
+    ///   reading.
+    /// </summary>
+    property HasPendingAppData: boolean read GetHasPendingAppData;
     /// <summary>
     /// OpenSSL SSL object.
     /// </summary>
@@ -1645,6 +1653,7 @@ type
     // function GetPeerCert: TTaurusTLSX509;
     // procedure CreateSSLContext(axMode: TTaurusTLSSSLMode);
     //
+    procedure SetSocketTimeout(ATimeOut: Integer);
     procedure SetPassThrough(const Value: Boolean); override;
     function RecvEnc(var VBuffer: TIdBytes): Integer; override;
     function SendEnc(const ABuffer: TIdBytes; const AOffset, ALength: Integer)
@@ -2589,7 +2598,11 @@ uses
 {$IFDEF HAS_UNIT_Generics_Collections}
   System.Generics.Collections,
 {$ENDIF}
+{$IFDEF USE_FPC_POSIX}
+  Sockets,
+{$ENDIF}
 {$IFDEF USE_VCL_POSIX}
+  Posix.SysSocket,
   Posix.SysTime,
   Posix.Time,
   Posix.Unistd,
@@ -4023,21 +4036,35 @@ function TTaurusTLSIOHandlerSocket.Readable
 //From Tony WHyman - IndySecOpenSSL
 var
   LSock: TTaurusTLSSocket;
-begin
-  repeat
-    {Wait for data ready - or timer expiry}
-    Result := inherited Readable(AMSec);
-    {If the inherited Readable returns false then we have a timeout.
-     Otherwise data is present but could be application or non-application data}
-    if not Result then
-      Exit;
 
+begin
+  Result:=False;
+
+  if not (PassThrough or Assigned(fSSLSocket)) then
+    Exit; // Nothing to read
+
+  repeat
     { BUGFIX #217: Use a local variable to prevent a race condition where fSSLSocket
-      could be destroyed or set to nil by another thread (e.g. during a Close) 
+      could be destroyed or set to nil by another thread (e.g. during a Close)
       while this loop is evaluating it. }
+
+    { BUGFIX #251: inherited Readable method should be called only in PassThrough mode.
+      TTaurusTLSSocket.Readable always check if the data available for processing. }
     LSock := fSSLSocket;
-    if (not fPassThrough) and (LSock <> nil) then
-      Result := LSock.Readable in [sslDataAvailable,sslUnRecoverableError,sslEOF];
+
+    if (not PassThrough) and Assigned(LSock) and LSock.HasPendingAppData then
+      Exit(True); // SSL Socket buffer has application data ready. Exiting.
+
+    Result := inherited Readable(AMsec);
+
+    if not Result then
+      Exit
+    else
+    begin
+      LSock := fSSLSocket;
+      if (not PassThrough) and Assigned(LSock) then
+        Result:=LSock.Readable in [sslDataAvailable, sslUnRecoverableError, sslEOF];
+    end
   until Result;
 end;
 
@@ -4075,6 +4102,9 @@ begin
           SSL_shutdown(fSSLSocket.SSL);  //PALOFF - Functions called as procedures
         end;
       end;
+      SetSocketTimeout(0);
+ { TODO : To remove commented out legacy code }
+(*
 {$IFDEF WIN32_OR_WIN64}
       // begin bug fix
       if BindingAllocated and IndyCheckWindowsVersion(6) then
@@ -4085,6 +4115,7 @@ begin
       end;
       // end bug fix
 {$ENDIF}
+*)
     end;
     fPassThrough := Value;
   end;
@@ -4181,11 +4212,61 @@ end;
 // }
 
 
+procedure TTaurusTLSIOHandlerSocket.SetSocketTimeout(ATimeout: Integer);
+{$IFDEF USE_VCL_POSIX}
+var
+  LTv: timeval;
+{$ENDIF}
+{$IFDEF USE_FPC_POSIX}
+var
+  LTv: TTimeVal;
+{$ENDIF}
+
+begin
+  if not Assigned(Binding) then
+    Exit;
+
+  if ATimeout <= 0 then
+  begin
+    ATimeout := 30000; // 30 seconds
+  end;
+  // reuse existing code for Windows
+{$IFDEF WIN32_OR_WIN64}
+  // begin bug fix
+  if IndyCheckWindowsVersion(6) then
+  begin
+    // Note: Fix needed to allow SSL_Read and SSL_Write to timeout under
+    // Vista+ when connection is dropped
+    Binding.SetSockOpt(Id_SOL_SOCKET, Id_SO_RCVTIMEO, ATimeout);
+    Binding.SetSockOpt(Id_SOL_SOCKET, Id_SO_SNDTIMEO, ATimeout);
+  end;
+  // end bug fix
+{$ENDIF}
+{$IFDEF USE_VCL_POSIX}
+  // TIdSocketHandle and GStack support the only integer parameter.
+  // Use direct POSIX setsockopt routine calls instead.
+  LTv.tv_sec := ATimeout div 1000;
+  LTv.tv_usec := (ATimeout mod 1000) * 1000;
+  if setsockopt(Binding.Handle, SOL_SOCKET, SO_RCVTIMEO, LTv, SizeOf(LTv)) >= 0 then
+    setsockopt(Binding.Handle, SOL_SOCKET, SO_SNDTIMEO, LTv, SizeOf(LTv));
+{$ENDIF}
+{$IFDEF USE_FPC_POSIX}
+  // TIdSocketHandle and GStack support the only integer parameter.
+  // Use direct POSIX setsockopt routine calls instead.
+  LTv.tv_sec := cint64(ATimeout div 1000);
+  LTv.tv_usec := cint64((ATimeout mod 1000) * 1000);
+  if fpsetsockopt(Binding.Handle, SOL_SOCKET, SO_RCVTIMEO, @LTv, SizeOf(LTv)) >= 0 then
+    fpsetsockopt(Binding.Handle, SOL_SOCKET, SO_SNDTIMEO, @LTv, SizeOf(LTv));
+{$ENDIF}
+end;
+
 procedure TTaurusTLSIOHandlerSocket.OpenEncodedConnection;
 var
+(*
 {$IFDEF WIN32_OR_WIN64}
   LTimeout: Integer;
 {$ENDIF}
+*)
   LMode: TTaurusTLSSSLMode;
   LURI: TIdURI;  //PALOFF - Created and freed objects
   // under ARC, convert a weak reference to a strong reference before working with it
@@ -4199,6 +4280,9 @@ begin
   end;
   Assert(fSSLSocket.SSLContext = nil);
   fSSLSocket.SSLContext := fSSLContext;
+  SetSocketTimeout(FReadTimeOut);
+{ TODO : To remove commented out legacy code }
+(*
 {$IFDEF WIN32_OR_WIN64}
   // begin bug fix
   if IndyCheckWindowsVersion(6) then
@@ -4215,6 +4299,7 @@ begin
   end;
   // end bug fix
 {$ENDIF}
+*)
   // RLebeau 7/2/2015: do not rely on IsPeer to decide whether to call Connect()
   // or Accept(). SSLContext.Mode controls whether a client or server method is
   // used to handle the connection, so that same value should be used here as well.
@@ -5207,30 +5292,33 @@ end;
 
 function TTaurusTLSSocket.Readable: TTaurusTLSReadStatus;
 //From Tony WHyman - IndySecOpenSSL
-var buf : byte;   //PALOFF - Variables that are set, but never referenced
-    Lr: integer;
+var
+  buf : byte;   //PALOFF - Variables that are set, but never referenced
+  Lr: integer;
+
 begin
   Result := sslNoData;
-  if not Assigned(fSSL) then Exit;
-  {Confirm that there is application data to be read.}
+  if not Assigned(fSSL)
+    then Exit;
+
+  {Confirm that there is application data to be read from the OpenSSL decoded
+   buffer, or in the wire buffer }
   Lr := SSL_peek(fSSL, buf, 1);
-  {Return DataAvailable if application data pending, or if it looks like we have disconnected,
-          UnrecoverableError if error state indicates thus,
-          EOF if the connection has been shutdown, or
-          NoData otherwise => try again later}
   if Lr > 0 then
     Result := sslDataAvailable
   else
   begin
     case SSL_get_error(fSSL,Lr) of
       SSL_ERROR_SSL, SSL_ERROR_SYSCALL:
-          if SSL_get_shutdown(fSSL) = SSL_RECEIVED_SHUTDOWN then
+          // Use bitwise AND to correctly handle completed bidirectional shutdowns
+          if (SSL_get_shutdown(fSSL) and SSL_RECEIVED_SHUTDOWN) <> 0 then
             Result := sslEOF
           else
             Result := sslUnrecoverableError;
 
-      SSL_ERROR_ZERO_RETURN:
-          if SSL_get_shutdown(fSSL) = SSL_RECEIVED_SHUTDOWN then
+      SSL_ERROR_WANT_READ, SSL_ERROR_ZERO_RETURN:
+          // Use bitwise AND to correctly handle completed bidirectional shutdowns
+          if (SSL_get_shutdown(fSSL) and SSL_RECEIVED_SHUTDOWN) <> 0 then
             Result := sslEOF;
 
       {anything else return the function default - sslNoData (yet)}
@@ -5238,6 +5326,32 @@ begin
   end;
 end;
 
+function TTaurusTLSSocket.Recv(var VBuffer: TIdBytes): TIdC_SIZET;
+var
+  Lret, LErr: Integer;
+
+begin
+  // This condition should not happen ever.
+  if Length(VBuffer) = 0 then
+    Exit(0);
+
+  // Clear OpenSSL error queue to prevent stale check
+  ERR_clear_error;
+  // OpenSSL 1.1.1+ use SSL_MODE_AUTO_RETRY by default.
+  // We do not need use loop. OpenSSL does it for us.
+  Lret := SSL_read_ex(fSSL, VBuffer[0], Length(VBuffer), Result);
+  if Lret <= 0 then
+  begin
+    LErr := GetSSLError(Lret);
+    if lErr = SSL_ERROR_ZERO_RETURN then
+      Result:=0
+    else
+      // Indy use negative return value as error code
+      Result:=TIdC_SIZET(Lret);
+  end;
+end;
+
+{
 function TTaurusTLSSocket.Recv(var VBuffer: TIdBytes): TIdC_SIZET;
 var
   Lret, LErr: Integer;
@@ -5271,6 +5385,7 @@ begin
     break;
   until False; //PALOFF - Condition evaluates to constant value
 end;
+}
 
 function TTaurusTLSSocket.Send(const ABuffer: TIdBytes;
   const AOffset, ALength: TIdC_SIZET): TIdC_SIZET;
@@ -5396,6 +5511,11 @@ begin
     fSSLCipher := TTaurusTLSCipher.Create(Self);
   end;
   Result := fSSLCipher;
+end;
+
+function TTaurusTLSSocket.GetHasPendingAppData: boolean;
+begin
+  Result:=Assigned(fSSL) and (SSL_has_pending(fSSL) > 0);
 end;
 
 function TTaurusTLSSocket.GetSessionIDAsString: String;
