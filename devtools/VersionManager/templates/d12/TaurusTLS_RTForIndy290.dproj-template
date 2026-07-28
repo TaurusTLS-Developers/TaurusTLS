@@ -107,6 +107,7 @@
 		<DCC_ObjOutput>..\Output\BPI\$(Platform)\$(Config)</DCC_ObjOutput>
 		<DCC_HppOutput>..\Output\BPI\$(Platform)\$(Config)</DCC_HppOutput>
 		<DCC_BpiOutput>..\Output\BPI\$(Platform)\$(Config)</DCC_BpiOutput>
+		<DCC_CBuilderOutput>All</DCC_CBuilderOutput>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Base_Android)'!=''">
 		<DCC_CBuilderOutput>None</DCC_CBuilderOutput>

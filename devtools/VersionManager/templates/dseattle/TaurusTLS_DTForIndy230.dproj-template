@@ -84,6 +84,7 @@
 		<DCC_ObjOutput>.\$(Platform)\$(Config)</DCC_ObjOutput>
 		<DCC_BpiOutput>.\$(Platform)\$(Config)</DCC_BpiOutput>
 		<DCC_HppOutput>.\$(Platform)\$(Config)</DCC_HppOutput>
+		<DCC_CBuilderOutput>All</DCC_CBuilderOutput>
 		<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
 	</PropertyGroup>
 	<ItemGroup>

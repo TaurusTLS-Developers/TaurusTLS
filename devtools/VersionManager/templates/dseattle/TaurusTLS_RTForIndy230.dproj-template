@@ -55,6 +55,7 @@
 		<DCC_ObjOutput>.\$(Platform)\$(Config)</DCC_ObjOutput>
 		<DCC_HppOutput>.\$(Platform)\$(Config)</DCC_HppOutput>
 		<DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
+		<DCC_CBuilderOutput>All</DCC_CBuilderOutput>
 		<DCC_E>false</DCC_E>
 		<DCC_N>false</DCC_N>
 		<VerInfo_Locale>1033</VerInfo_Locale>
