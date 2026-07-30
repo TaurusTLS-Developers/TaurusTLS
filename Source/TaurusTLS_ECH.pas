@@ -112,7 +112,13 @@ function IsECHSupported : Boolean;  {$IFDEF USE_INLINE}inline; {$ENDIF}
 function EncodeConfigList(AConfigList: Pointer; ASize: TIdC_SIZET): string;
 
 implementation
-uses IdCoderMIME, IdIDN, TaurusTLSHeaders_crypto;
+
+uses
+  IdCoderMIME,
+{$IFDEF WINDOWS}
+  IdIDN,
+{$ENDIF}
+  TaurusTLSHeaders_crypto;
 
 
 {
