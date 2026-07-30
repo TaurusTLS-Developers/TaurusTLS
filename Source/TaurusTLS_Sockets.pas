@@ -314,7 +314,7 @@ type
       reintroduce; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function TryAdd(const AValue: TTaurusTLSTrustStore): boolean;
       reintroduce; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function BuildStore: TaurusTLS_X509Store;
+    function BuildStore: TTaurusTLS_X509Store;
   end;
 
   // Forward declaration
@@ -600,7 +600,7 @@ type
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function SetVerifyParam(const AValue: TTaurusTLSCustomX509VerifyParam): TTaurusTLSSslSocketCtx;
       overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function SetTrustStore(const AValue: TaurusTLS_X509Store): TTaurusTLSSslSocketCtx;
+    function SetTrustStore(const AValue: TTaurusTLS_X509Store): TTaurusTLSSslSocketCtx;
       overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function SetMaxSendFragment(const AValue: TTaurusTLSSslMaxSendFragment): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -1873,12 +1873,12 @@ begin
   {$IFEND}
 end;
 
-function TTaurusTLSTrustStores.BuildStore: TaurusTLS_X509Store;
+function TTaurusTLSTrustStores.BuildStore: TTaurusTLS_X509Store;
 var
   lStorePair: TPair<string, TTaurusTLSTrustStore>;
 
 begin
-  Result:=TaurusTLS_X509Store.Create;
+  Result:=TTaurusTLS_X509Store.Create;
   try
     for lStorePair in Self do
       Result.AppendFromOsslStore(lStorePair.Value, [sitCert, sitCRL]);
@@ -2605,7 +2605,7 @@ procedure TTaurusTLSSslSocketCtxBuilder.DoBuild(ASender: TObject;
   ASocketCtx: TTaurusTLSSslSocketCtx);
 var
   lVerifyParam: TTaurusTLSX509VerifyParam; // PALOFF 'Created and freed objects'
-  lTrustStore: TaurusTLS_X509Store; // PALOFF 'Created and freed objects'
+  lTrustStore: TTaurusTLS_X509Store; // PALOFF 'Created and freed objects'
 
 begin
   Assert(Assigned(ASender), '''ASender'' parameter must not be ''nil'' value.'); // Do not localize
@@ -3051,7 +3051,7 @@ begin
     AValue.AttachToSSLCtx(FSSLCtx);
 end;
 
-function TTaurusTLSSslSocketCtx.SetTrustStore(const AValue: TaurusTLS_X509Store): TTaurusTLSSslSocketCtx;
+function TTaurusTLSSslSocketCtx.SetTrustStore(const AValue: TTaurusTLS_X509Store): TTaurusTLSSslSocketCtx;
 begin
   Result:=Self;
   if not Assigned(AValue) then

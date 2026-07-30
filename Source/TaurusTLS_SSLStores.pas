@@ -1239,7 +1239,7 @@ type
   ///  owns the native <see cref="PX509_STORE" /> pointer and provides integrated
   ///  management for verification parameters via the <see cref="VfyParam" /> property.
   ///  </remarks>
-  TaurusTLS_X509Store = class
+  TTaurusTLS_X509Store = class
   public type
     ///  <summary>
     ///  Defines the range of X.509 objects that can be stored (Certificate and CRL).
@@ -1368,7 +1368,7 @@ type
     /// </param>
     /// <remarks>
     ///   This method adds refernce count to the underlined <c>X509_STORE</c>
-    ///   object. The TaurusTLS_X509Store can be freed safely after that.
+    ///   object. The TTaurusTLS_X509Store can be freed safely after that.
     /// </remarks>
     procedure AttachToSSLCtx(ASSLCtx: PSSL_CTX); {$IFDEF USE_INLINE}inline;{$ENDIF}
 
@@ -2070,16 +2070,16 @@ begin
   inherited;
 end;
 
-{ TaurusTLS_X509Store.TVfyParam }
+{ TTaurusTLS_X509Store.TVfyParam }
 
-constructor TaurusTLS_X509Store.TVfyParam.Create(AStore: PX509_STORE);
+constructor TTaurusTLS_X509Store.TVfyParam.Create(AStore: PX509_STORE);
 begin
   inherited Create(X509_STORE_get0_param(AStore));
 end;
 
-{ TaurusTLS_X509Store }
+{ TTaurusTLS_X509Store }
 
-constructor TaurusTLS_X509Store.Create;
+constructor TTaurusTLS_X509Store.Create;
 begin
   FStore:=X509_STORE_new;
   if not Assigned(FStore) then
@@ -2087,20 +2087,20 @@ begin
   inherited;
 end;
 
-constructor TaurusTLS_X509Store.Create(AStore: TTaurusTLSOSSLStore;
+constructor TTaurusTLS_X509Store.Create(AStore: TTaurusTLSOSSLStore;
   AFilter: TX509Elements);
 begin
   Create;
   AppendFromOsslStore(AStore, AFilter);
 end;
 
-destructor TaurusTLS_X509Store.Destroy;
+destructor TTaurusTLS_X509Store.Destroy;
 begin
   X509_STORE_free(FStore);
   inherited;
 end;
 
-procedure TaurusTLS_X509Store.AppendFromLocation(const AUri: string);
+procedure TTaurusTLS_X509Store.AppendFromLocation(const AUri: string);
 begin
 {$IFDEF DCC}
   if not AppendFromLocationW(AUri) then
@@ -2114,17 +2114,17 @@ begin
 {$ENDIF}
 end;
 
-function TaurusTLS_X509Store.AppendFromLocationA(const AUri: RawByteString): boolean;
+function TTaurusTLS_X509Store.AppendFromLocationA(const AUri: RawByteString): boolean;
 begin
   Result:=X509_STORE_load_store(FStore, PIdAnsiChar(AUri)) > 0;  // PALOFF Possible bad typecast
 end;
 
-function TaurusTLS_X509Store.AppendFromLocationW(const AUri: UnicodeString): boolean;
+function TTaurusTLS_X509Store.AppendFromLocationW(const AUri: UnicodeString): boolean;
 begin
   Result:=AppendFromLocationA(RawByteString(AUri)); // PALOFF 'UnicodeString cast to RawByteString'
 end;
 
-procedure TaurusTLS_X509Store.AppendFromOsslStore(const AStore: TTaurusTLSOSSLStore;
+procedure TTaurusTLS_X509Store.AppendFromOsslStore(const AStore: TTaurusTLSOSSLStore;
   const AFilter: TX509Elements);
 var
   lElement: TTaurusTLSOSSLStore.TStoreItem;
@@ -2143,24 +2143,24 @@ begin
   end;
 end;
 
-procedure TaurusTLS_X509Store.AttachToSSLCtx(ASSLCtx: PSSL_CTX);
+procedure TTaurusTLS_X509Store.AttachToSSLCtx(ASSLCtx: PSSL_CTX);
 begin
   SSL_CTX_set1_cert_store(ASSLCtx, FStore);
 end;
 
-procedure TaurusTLS_X509Store.AppendCert(ACert: PX509);
+procedure TTaurusTLS_X509Store.AppendCert(ACert: PX509);
 begin
   if X509_STORE_add_cert(FStore, ACert) <= 0 then
     ETaurusTLSX509StoreError.RaiseException(RMSG_X509StoreCertAdd_err);
 end;
 
-procedure TaurusTLS_X509Store.AppendCrl(ACrl: PX509_CRL);
+procedure TTaurusTLS_X509Store.AppendCrl(ACrl: PX509_CRL);
 begin
   if X509_STORE_add_crl(FStore, ACrl) <= 0 then
     ETaurusTLSX509StoreError.RaiseException(RMSG_X509StoreCRLAdd_err);
 end;
 
-procedure TaurusTLS_X509Store.SetParam(
+procedure TTaurusTLS_X509Store.SetParam(
   AVfyParam: TTaurusTLSCustomX509VerifyParam);
 begin
   if not Assigned(AVfyParam) then
@@ -2171,7 +2171,7 @@ begin
   FreeAndNil(FVfyParam);
 end;
 
-function TaurusTLS_X509Store.GetParam: TTaurusTLSCustomX509VerifyParam;
+function TTaurusTLS_X509Store.GetParam: TTaurusTLSCustomX509VerifyParam;
 begin
   if not Assigned(FVfyParam) then
     FVfyParam:=TVfyParam.Create(FStore);
