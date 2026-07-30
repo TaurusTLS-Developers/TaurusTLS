@@ -15,7 +15,11 @@ interface
 
 uses
 {$IFDEF WINDOWS}
+  {$IFDEF VCL_XE2_OR_ABOVE}
   WinAPI.Windows,
+  {$ELSE}
+  Windows,
+  {$ENDIF}
 {$ENDIF}
   Classes,
   SysUtils,
