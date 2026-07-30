@@ -1126,6 +1126,7 @@ type
     // The Dual-Track State Fields
     FContextIntf: ITaurusTLSSslSocketCtx;  // Holds reference count safely
     FCtx: TTaurusTLSSslSocketCtx;
+
     function GetPerCertificate: TTaurusTLSX509;       // Fast class pointer
 
     // OpenSSL callback methods
@@ -1159,7 +1160,10 @@ type
     // Centralized Hostname Verification Helper
     procedure CheckPeerCertificateValidationResult; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
-    function CheckForError(ALastResult: Integer): Integer; virtual;
+    function CheckForError(const ALastResult: TIdC_INT): Integer; overload;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function CheckForError(const AErrCode: TIdC_INT;
+      const ALastResult: TIdC_INT): Integer; overload; virtual;
     function GetSSLError(ALastResult: Integer): Integer; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     procedure InitSSL; {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -1168,6 +1172,9 @@ type
     procedure ReleaseSSL; {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure ReleaseSSLCallbacks; virtual;
     procedure BindSocket; {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    function WaitForRead(AMsec: integer): boolean;  {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function WaitForWrite(AMsec: integer): boolean;  {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     procedure DoHandshake;
     procedure DoHandshakeIteration; virtual; abstract;
@@ -1197,9 +1204,11 @@ type
     procedure TransitionTo(ATarget: TTaurusTLSSslSocketState); virtual;
 
     procedure Connect(const pHandle: TIdStackSocketHandle); virtual;
-    function Send(const ABuffer: TIdBytes; const AOffset, ALength: TIdC_SIZET): TIdC_SIZET; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function Recv(var ABuffer: TIdBytes): TIdC_SIZET; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function Readable: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function Send(const ABuffer: TIdBytes; const AOffset, ALength: TIdC_SIZET;
+      const AMSec: Integer): TIdC_SIZET; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function Recv(var ABuffer: TIdBytes; const AMSec: Integer): TIdC_SIZET;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function Readable(AMsec: integer): boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure Shutdown;
 
     property SSL: PSSL read FSSL;
@@ -1291,6 +1300,7 @@ uses
   TaurusTLSHeaders_sslerr,
   TaurusTLSHeaders_objects,
   TaurusTLS_ResourceStrings,
+  IdAntifreezeBase,
   IdException,
   IdResourceStrings,
   IdResourceStringsProtocols
@@ -3820,16 +3830,10 @@ end;
 function TTaurusTLSSslSocket.GetSSLError(ALastResult: Integer): Integer;
 begin
   if Assigned(FSSL) then
-  begin
-    // Clear the error stack first to ensure we do not read stale results
-    ERR_clear_error;
-    Result:=SSL_get_error(FSSL, ALastResult);
-  end
+    Result:=SSL_get_error(FSSL, ALastResult)
   else
-  begin
     // Fallback if the SSL handle was already freed during state transition
     Result:=SSL_ERROR_SYSCALL;
-  end;
 end;
 
 function TTaurusTLSSslSocket.IsValidTransition(ACurrent,
@@ -3899,6 +3903,44 @@ begin
   DoSetState(ATarget);
 end;
 
+function TTaurusTLSSslSocket.WaitForRead(AMsec: integer): boolean;
+var
+  lList: TIdSocketList;
+
+begin
+  Result:=False;
+  if FSocketHandle = Id_INVALID_SOCKET then
+    Exit;
+
+  lList := TIdSocketList.CreateSocketList;
+  try
+    lList.Add(FSocketHandle);
+    Result:=lList.Select(lList, nil, nil, AMsec);
+  finally
+    lList.Free;
+  end;
+  TIdAntiFreezeBase.DoProcess(not Result);
+end;
+
+function TTaurusTLSSslSocket.WaitForWrite(AMsec: integer): boolean;
+var
+  lList: TIdSocketList;
+
+begin
+  Result:=False;
+  if FSocketHandle = Id_INVALID_SOCKET then
+    Exit;
+
+  lList := TIdSocketList.CreateSocketList;
+  try
+    lList.Add(FSocketHandle);
+    Result:=lList.Select(nil, lList, nil, AMsec);
+  finally
+    lList.Free;
+  end;
+  TIdAntiFreezeBase.DoProcess(not Result);
+end;
+
 procedure TTaurusTLSSslSocket.Connect(const pHandle: TIdStackSocketHandle);
 begin
   FSocketHandle:=pHandle;
@@ -3912,23 +3954,42 @@ procedure TTaurusTLSSslSocket.CheckActiveState(
   const AExpectedStates: TTaurusTLSSslSocketStates);
 begin
   if not (FState in AExpectedStates) then
-    ETaurusTLSSocketStateError.RaiseWithMessageFmt(
+     ETaurusTLSSocketStateError.RaiseWithMessageFmt(
+      { TODO : To make ResourseString }
       'Invalid socket operation in the ''%s'' state.', [FState.AsString]);
 end;
 
-function TTaurusTLSSslSocket.CheckForError(ALastResult: Integer): Integer;
+function TTaurusTLSSslSocket.CheckForError(const ALastResult: TIdC_INT): Integer;
 begin
-  // Get SSLError code
-  Result:=SSL_get_error(FSSL, ALastResult);
+  Result:=CheckForError(GetSSLError(ALastResult));
+end;
+
+function TTaurusTLSSslSocket.CheckForError(const AErrCode: TIdC_INT;
+  const ALastResult: TIdC_INT): TIdC_INT;
+var
+  lErrStr: string;
+  lQErr: TIdC_ULONG;
+begin
+  Result := AErrCode;
+
   if Result = SSL_ERROR_NONE then
     Exit(0);
 
+  // 1. Handle OS-level network socket failures via Indy's GStack
   if Result = SSL_ERROR_SYSCALL then
     Exit(GStack.CheckForSocketError(Integer(Id_SOCKET_ERROR),
       [Id_WSAESHUTDOWN, Id_WSAECONNABORTED, Id_WSAECONNRESET, Id_WSAETIMEDOUT]));
 
-  { TODO : Use correct exception class here. }
-  ETaurusTLSAPISSLError.RaiseExceptionCode(Result, ALastResult);
+  // 2. Handle OpenSSL protocol/crypto failures by querying the OpenSSL error queue
+  lQErr:=ERR_get_error;
+  if lQErr <> 0 then
+    lErrStr:=string(ERR_error_string(lQErr, nil))
+  else
+    { TODO : To make ResourceString }
+    lErrStr:='Unspecified OpenSSL error.';
+
+  // Raise standard TaurusTLS API exception with full error details
+  ETaurusTLSAPISSLError.RaiseExceptionCode(Result, ALastResult, lErrStr);
 end;
 
 procedure TTaurusTLSSslSocket.CheckPeerCertificateValidationResult;
@@ -3952,119 +4013,264 @@ begin
     ETaurusTLSCertValidationError.RaiseWithMessage(lErr.ErrorShortDescription);
 end;
 
-function TTaurusTLSSslSocket.Readable: boolean;
+function TTaurusTLSSslSocket.Readable(AMsec: integer): boolean;
+var
+  lSW: TStopWatch;
+  lTimeout: integer;
+  lByte: byte;
+  lRet, lErr: TIdC_INT;
+
 begin
-  Result:=Assigned(FSSL) and (FState = seEstablished) and
-    (SSL_has_pending(FSSL) > 0);
+  Result:=False;
+
+  if Assigned(FSSL) and (FState = seEstablished) then
+  begin
+    lSW:=TStopWatch.StartNew;
+    lTimeout:=AMsec;
+
+    repeat
+      // 1. Check OpenSSL internal memory queue for decrypted application data
+      if SSL_has_pending(FSSL) > 0 then
+      begin
+        Result:=True;
+        Break; // Data ready; exit loop
+      end;
+
+      // 2. Check if the OS socket descriptor was closed
+      if FSocketHandle = Id_INVALID_SOCKET then
+      begin
+        Result:=False;
+        Break;
+      end;
+
+      if AMsec > 0 then
+      begin
+        lTimeout:=AMsec - Integer(lSW.ElapsedMilliseconds);
+        if lTimeout <= 0 then
+          Break; // Timeout budget exhausted
+      end;
+
+      ERR_clear_error;
+
+      // 3. Perform a non-destructive 1-byte peek
+      lRet:=SSL_peek(FSSL, lByte, 1);
+      if lRet > 0 then
+      begin
+        Result:=True;
+        Break; // Application data is ready for Recv
+      end;
+
+      lErr:=GetSSLError(lRet);
+      case lErr of
+        SSL_ERROR_WANT_READ:
+          // Suspend thread at OS level via select(). Exit loop if wait fails/times out
+          if not WaitForRead(lTimeout) then
+            Break; // Timeout budget exhausted
+
+        SSL_ERROR_WANT_WRITE:
+          if not WaitForWrite(lTimeout) then
+            Break;
+
+        SSL_ERROR_ZERO_RETURN, SSL_ERROR_SYSCALL, SSL_ERROR_SSL:
+          begin
+            // Disconnect or error state detected; set True so Indy invokes
+            // Recv to handle graceful shutdown or raise exceptions cleanly.
+            Result:=True;
+            Break;
+          end;
+      else
+        Break;
+      end;
+
+    // Loop termination condition for finite positive timeouts
+    until False;
+  end;
 end;
 
-function TTaurusTLSSslSocket.Recv(var ABuffer: TIdBytes): TIdC_SIZET;
+function TTaurusTLSSslSocket.Recv(var ABuffer: TIdBytes; const AMSec: Integer): TIdC_SIZET;
 var
-  lLen, lRet, lErr, lQErr: Integer;
-  lSSL: PSSL;
+  lLen, lRet, lErr: TIdC_INT;
+  lQErr: TIdC_ULONG;
+  lReadBytes, lCurrOffset, lRemaining: TIdC_SIZET;
+  lTimeout: Integer;
+  lIsTimeout: Boolean;
+  lSW: TStopWatch;
 
 begin
   Result:=0;
   lLen:=Length(ABuffer);
-
   if lLen = 0 then
     Exit;
 
-  CheckActiveState([seEstablished]); // Security guard
+  CheckActiveState([seEstablished]);
 
-  lSSL:=FSSL;
+  lCurrOffset:=0;
+  lRemaining:=lLen;
+  lIsTimeout:=False;
+  lSW:=TStopWatch.StartNew;
+
   repeat
-    // Clear error queue before doing read to avoid getting unhandled previously error
+    // 1. Single Top-of-Loop Timeout Enforcement
+    if AMSec <> IdTimeoutInfinite then
+    begin
+      lTimeout:=AMSec - Integer(lSW.ElapsedMilliseconds);
+      lIsTimeout:=(lTimeout <= 0);
+    end
+    else
+      lTimeout:=IdTimeoutInfinite;
+
+    if lIsTimeout then
+      Break;
+
     ERR_clear_error;
 
-    lRet:=SSL_read_ex(lSSL, ABuffer[0], lLen, Result);
-    if lRet = 1 then // Success
-      Exit
-    else
-    begin // Read error. Checking the reason
-      lErr:=SSL_get_error(lSSL, lRet);
-      case lErr of
+    lReadBytes:=0;
+    // Read directly into the current offset buffer segment
+    lRet:=SSL_read_ex(FSSL, ABuffer[lCurrOffset], lRemaining, lReadBytes);
+
+    if lRet > 0 then
+    begin
+      // Partial or Full Read Success: Accumulate bytes and advance offset
+      Inc(Result, lReadBytes);
+      Inc(lCurrOffset, lReadBytes);
+      Dec(lRemaining, lReadBytes);
+
+      // If ABuffer is completely filled, exit loop
+      if lRemaining = 0 then
+        Break;
+
+      // Continue reading remaining bytes into ABuffer[lCurrOffset]
+      Continue;
+    end;
+
+    // 2. Handle Non-Success / Pending / Error States
+    lErr:=GetSSLError(lRet);
+    case lErr of
+      SSL_ERROR_WANT_READ:
+        lIsTimeout:=not WaitForRead(lTimeout);
+
+      SSL_ERROR_WANT_WRITE:
+        lIsTimeout:=not WaitForWrite(lTimeout);
+
       SSL_ERROR_ZERO_RETURN:
         begin
-          // 1. Cleanly update our internal state and free SSL
+          // Graceful SSL close_notify: Return any bytes accumulated so far
           TransitionTo(seClosed);
-          // 2. Return 0 to let Indy's core pipeline handle the graceful close
-          // Original code did Exit(lRet);
-          Exit(0);
+          Exit(Result);
         end;
 
       SSL_ERROR_SSL:
         begin
-          lQErr:=ERR_get_error; // Read the specific error from the queue
+          lQErr:=ERR_get_error;
           if (ERR_GET_LIB(lQErr) = ERR_LIB_SSL) and
-            (ERR_GET_REASON(lQErr) = SSL_R_UNEXPECTED_EOF_WHILE_READING) then
+             (ERR_GET_REASON(lQErr) = SSL_R_UNEXPECTED_EOF_WHILE_READING) then
           begin
-            // Treat unexpected EOF as graceful close for web/Indy compatibility
+            // Graceful unexpected EOF: Return any bytes accumulated so far
             TransitionTo(seClosed);
-            Exit(0); // Return 0 to let Indy handle EOF gracefully
-          end
-          else
-          begin
-            TransitionTo(seError);
-            ETaurusTLSIOError.RaiseWithMessage('Fatal SSL protocol error during read.');
+            Exit(Result);
           end;
+
+          TransitionTo(seError);
+          ETaurusTLSAPISSLError.RaiseExceptionCode(lErr, lRet, 'SSL read error');
         end;
 
-      SSL_ERROR_SYSCALL:
-        begin
-          // This is a hard OS socket reset (RST), not a graceful close.
-          // We transition to seClosed and raise the reset exception immediately.
-          TransitionTo(seClosed);
-          // Let Indy's GStack query LastError/errno and raise EIdSocketError
-          CheckForError(lRet); //PALOFF
-          ETaurusTLSConnectionReset.RaiseWithMessage('Connection reset by peer during read.');
-        end;
-      else
-        begin
+    else
+      begin
+        if lErr = SSL_ERROR_SYSCALL then
+          TransitionTo(seClosed)
+        else
           TransitionTo(seError);
-          raise ETaurusTLSIOError.Create('Fatal read error.');
-        end;
+
+        ETaurusTLSAPISSLError.RaiseExceptionCode(lErr, lRet, 'SSL read error');
       end;
-    end
-  until False; //PALOFF "Condition evaluates to constant value"
+    end;
+  until lIsTimeout;
+
+  // Raise timeout exception ONLY if zero bytes were accumulated before timing out
+  if lIsTimeout and (Result = 0) then
+  begin
+    { TODO : To make ResourceString }
+    ETaurusTLSIOError.RaiseWithMessage('SSL Socket IO Timeout');
+  end;
 end;
 
 function TTaurusTLSSslSocket.Send(const ABuffer: TIdBytes; const AOffset,
-  ALength: TIdC_SIZET): TIdC_SIZET;
+  ALength: TIdC_SIZET; const AMSec: Integer): TIdC_SIZET;
 var
   lRet, lErr: TIdC_INT;
+  lWritten: TIdC_SIZET;
+  lLen, lCurrOffset, lRemaining: TIdC_SIZET;
+  lTimeout: Integer;
+  lIsTimeout: boolean;
+  lSW: TStopWatch;
 
 begin
   Result:=0;
-  if (ALength = 0) or (Length(ABuffer) = 0) then
+  lLen:=Length(ABuffer);
+  if (ALength = 0) or (lLen = 0) then
     Exit;
 
-  CheckActiveState([seEstablished]); // Security guard
+  CheckActiveState([seEstablished]);
 
-  // Clear error queue before doing read to avoid getting unhandled previously error
-  ERR_clear_error;
+  lCurrOffset:=AOffset;
+  lRemaining:=ALength;
+  lIsTimeOut:=False;
+  lSW:=TStopWatch.StartNew;
 
-  // We trust Indy that AOffset+ALength never exceeds the Length(ABuffer)
-  lRet:=SSL_write_ex(FSSL, ABuffer[AOffset], ALength, Result);
-  if lRet = 1 then
-    Exit
-  else
-  begin
-    lErr:=SSL_get_error(FSSL, lRet);
-    if lErr = SSL_ERROR_SYSCALL then
+  repeat
+      if AMSec <> IdTimeoutInfinite then
     begin
-      TransitionTo(seClosed); // Force-close immediate teardown
-
-      // Let Indy's GStack query LastError/errno and raise EIdSocketError
-      CheckForError(lRet); // PALOFF 'Functions called as procedures'
-      ETaurusTLSConnectionReset.RaiseWithMessage('Connection reset by peer during write.');
+      lTimeout:=AMSec - Integer(lSW.ElapsedMilliseconds);
+      lIsTimeout:=(lTimeout <= 0);
     end
     else
+      lTimeout:=IdTimeoutInfinite;
+
+    if lIsTimeout then
+      Break;
+
+    ERR_clear_error;
+
+    lWritten:=0;
+    lRet:=SSL_write_ex(FSSL, ABuffer[lCurrOffset], lRemaining, lWritten);
+
+    if lRet > 0 then
     begin
-      TransitionTo(seError);
-      ETaurusTLSIOError.RaiseWithMessage('Fatal write error.');
+      // Partial or Full Write Success: Track bytes and advance offset
+      Inc(Result, lWritten);
+      Inc(lCurrOffset, lWritten);
+      Dec(lRemaining, lWritten);
+
+      if lRemaining = 0 then
+        Break; // All requested bytes transmitted successfully
+
+      Continue; // Loop back to send remaining bytes
     end;
-  end
+
+    lErr:=GetSSLError(lRet);
+    case lErr of
+      SSL_ERROR_WANT_WRITE:
+        lIsTimeout:=not WaitForWrite(lTimeout);
+
+      SSL_ERROR_WANT_READ:
+        lIsTimeout:=not WaitForRead(lTimeout);
+
+    else
+      begin
+        // Differentiate transport resets (seClosed) from protocol/crypto errors (seError)
+        if lErr = SSL_ERROR_SYSCALL then
+          TransitionTo(seClosed)
+        else
+          TransitionTo(seError);
+
+        ETaurusTLSAPISSLError.RaiseExceptionCode(lErr, lRet, 'SSL write error');
+      end;
+    end;
+  until lIsTimeout;
+
+  if lIsTimeout then
+    { TODO : To make ResourceString }
+    ETaurusTLSIOError.RaiseWithMessage('SSL Socket IO Timeout');
 end;
 
 procedure TTaurusTLSSslSocket.Shutdown;
@@ -4551,7 +4757,7 @@ begin
       Exit;
     end;
 
-    lErr:=SSL_get_error(SSL, lRet);
+    lErr:=GetSSLError(lRet);
     case lErr of
     SSL_ERROR_SYSCALL:
       begin
