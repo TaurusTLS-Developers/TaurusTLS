@@ -17,10 +17,17 @@
 unit TaurusTLS_types;
 {$I TaurusTLSLinkDefines.inc}
 
+{$IF (not Defined(USE_NATIVE_STOPWATCH)) and Defined(FPC)}
+  {$MODESWITCH ADVANCEDRECORDS}
+{$IFEND}
+
 interface
 
 uses
   SysUtils,
+{$IFDEF USE_NATIVE_STOPWATCH}
+  System.Diagnostics,
+{$ENDIF}
   IdGlobal,
   IdCTypes,
   IdSSLOpenSSL,
@@ -1165,10 +1172,46 @@ const
     or X509_CHECK_FLAG_MULTI_LABEL_WILDCARDS or X509_CHECK_FLAG_SINGLE_LABEL_SUBDOMAINS;
 
 
+type
+{$IFNDEF USE_NATIVE_STOPWATCH}
+  // This TSTopWatch implementation is only for compatibilty with older FPC versions
+  // It does not support HighFrequency as it's not needed for TaurusTLS.
+  // FPC 3.3.1+ and Delphi 10.4+ will use native System.Diagnostics.TStopWatch type
+  TStopWatch = record
+  const
+    cTicksPerMillisecond = 10*1000;
+
+  strict private
+    FStart: Int64;
+    FStop: Int64;
+    FRunning: boolean;
+    procedure Initialize; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    class function GetTicks: Int64; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    function GetElapsedMilliseconds: Int64; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    function GetElapsedTicks: Int64; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    function GetFrequency: Int64; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    function GetIsHighResolution: boolean; {$IFDEF USE_INLINE}inline;{$ENDIF}
+  public
+    class function Create: TStopwatch; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure Start; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    class function StartNew: TStopwatch; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure Stop; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    procedure Reset; {$IFDEF USE_INLINE}inline;{$ENDIF}
+
+    property ElapsedTicks: Int64 read GetElapsedTicks;
+    property ElapsedMilliseconds: Int64 read GetElapsedMilliseconds;
+    property IsRunning: Boolean read FRunning;
+    property Frequency: Int64 read GetFrequency;
+    property IsHighResolution: Boolean read GetIsHighResolution;
+  end;
+{$ELSE}
+  TStopWatch = System.Diagnostics.TStopwatch;
+{$ENDIF}
 
 implementation
 
 uses
+  Classes,
   TaurusTLS_ResourceStrings;
 
 { TTaurusTLSOSSLVersion }
@@ -1802,5 +1845,84 @@ function TTaurusTLSX509HostCheckFlagsHelper.IsEqualTo(
 begin
   Result:=AValue = AsInt;
 end;
+
+{$IFNDEF USE_NATIVE_STOPWATCH}
+
+{ TStopWatch }
+
+class function TStopWatch.Create: TStopwatch;
+begin
+  Result.Initialize;
+end;
+
+procedure TStopWatch.Initialize;
+begin
+  FStart:=0;
+  FStop:=0;
+  FRunning:=False;
+end;
+
+class function TStopWatch.StartNew: TStopwatch;
+begin
+  Result:=Create;
+  Result.Start;
+end;
+
+function TStopWatch.GetElapsedMilliseconds: Int64;
+begin
+  Result:=GetElapsedTicks;
+end;
+
+function TStopWatch.GetElapsedTicks: Int64;
+begin
+  if FRunning then
+    Result:=GetTicks
+  else
+    Result:=FStop;
+
+  if FStart = 0 then
+    Result:=0
+  else
+    Result:=Result - FStart;
+end;
+
+function TStopWatch.GetFrequency: Int64;
+begin
+  Result:=1;
+end;
+
+function TStopWatch.GetIsHighResolution: boolean;
+begin
+  Result:=False;
+end;
+
+class function TStopWatch.GetTicks: Int64;
+begin
+  Result:=Int64(TThread.GetTickCount64);
+end;
+
+procedure TStopWatch.Reset;
+begin
+  Initialize;
+end;
+
+procedure TStopWatch.Start;
+begin
+  Initialize;
+  FStart:=GetTicks;
+  FRunning:=True;
+end;
+
+procedure TStopWatch.Stop;
+var
+  lStopTicks: Int64;
+
+begin
+  lStopTicks:=GetTicks;
+  FRunning:=False;
+  FStop:=lStopTicks;
+end;
+
+{$ENDIF}
 
 end.
