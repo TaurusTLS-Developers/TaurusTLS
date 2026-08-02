@@ -2877,6 +2877,9 @@ var
   lBool: TIdC_INT;
 
 begin
+  // Disabling SSL_MODE_AUTO_RETRY
+  SSL_CTX_clear_mode(SSLCtx, SSL_MODE_AUTO_RETRY);
+
   // Attach Self to the SSL_CTX
   if SSL_CTX_set_app_data(SSLCtx, Self) <= 0 then
     ETaurusTLSDataBindingError.RaiseWithMessage(
@@ -3065,7 +3068,8 @@ function TTaurusTLSSslSocketCtx.SetOnKeyLog(
   const AValue: TTaurusTLSOnKeyLog): TTaurusTLSSslSocketCtx;
 begin
   Result:=Self;
-  if @FOnKeyLog = @AValue then
+  if (TMethod(FOnKeyLog).Code = TMethod(AValue).Code) and
+     (TMethod(FOnKeyLog).Data = TMethod(AValue).Data) then
     Exit;
 
   CheckFrozen;
@@ -3076,7 +3080,8 @@ function TTaurusTLSSslSocketCtx.SetOnMessage(
   const AValue: TTaurusTLSOnSSLMessageCallback): TTaurusTLSSslSocketCtx;
 begin
   Result:=Self;
-  if @FOnMessage = @AValue then
+  if (TMethod(FOnMessage).Code = TMethod(AValue).Code) and
+     (TMethod(FOnMessage).Data = TMethod(AValue).Data) then
     Exit;
 
   CheckFrozen;
@@ -3087,7 +3092,8 @@ function TTaurusTLSSslSocketCtx.SetOnPeerCertError(
   const AValue: TTaurusTLSOnPeerCertError): TTaurusTLSSslSocketCtx;
 begin
   Result:=Self;
-  if @FOnPeerCertError = @AValue then
+  if (TMethod(FOnPeerCertError).Code =TMethod(AValue).Code) and
+     (TMethod(FOnPeerCertError).Data =TMethod(AValue).Data) then
     Exit;
 
   CheckFrozen;
@@ -3098,7 +3104,8 @@ function TTaurusTLSSslSocketCtx.SetOnSecurityCheck(
   const AValue: TTaurusTLSOnSecurityCheck): TTaurusTLSSslSocketCtx;
 begin
   Result:=Self;
-  if @FOnSecurityCheck = @AValue then
+  if (TMethod(FOnSecurityCheck).Code = TMethod(AValue).Code) and
+     (TMethod(FOnSecurityCheck).Data = TMethod(AValue).Data) then
     Exit;
 
   CheckFrozen;
@@ -3109,7 +3116,8 @@ function TTaurusTLSSslSocketCtx.SetOnStateChange(
   const AValue: TTaurusTLSOnStateChange): TTaurusTLSSslSocketCtx;
 begin
   Result:=Self;
-  if @FOnStateChange = @AValue then
+  if (TMethod(FOnStateChange).Code = TMethod(AValue).Code) and
+     (TMethod(FOnStateChange).Data = TMethod(AValue).Data) then
     Exit;
 
   CheckFrozen;
@@ -3120,7 +3128,8 @@ function TTaurusTLSSslSocketCtx.SetOnStatusInfo(
   const AValue: TTaurusTLSOnSSLStatusInfo): TTaurusTLSSslSocketCtx;
 begin
   Result:=Self;
-  if @FOnStatusInfo = @AValue then
+  if (TMethod(FOnStatusInfo).Code = TMethod(AValue).Code) and
+     (TMethod(FOnStatusInfo).Data = TMethod(AValue).Data) then
     Exit;
 
   CheckFrozen;
@@ -3131,7 +3140,8 @@ function TTaurusTLSSslSocketCtx.SetOnVerifyCertificate(
   const AValue: TTaurusTLSOnVerifyCallback): TTaurusTLSSslSocketCtx;
 begin
   Result:=Self;
-  if @FOnVerifyCertificate = @AValue then
+  if (TMethod(FOnVerifyCertificate).Code = TMethod(AValue).Code) and
+     (TMethod(FOnVerifyCertificate).Data = TMethod(AValue).Data) then
     Exit;
 
   CheckFrozen;
@@ -3681,7 +3691,7 @@ end;
 
 destructor TTaurusTLSSslSocket.Destroy;
 begin
-  ReleaseSSL;
+  Shutdown;
   inherited;
 end;
 
@@ -3888,7 +3898,7 @@ begin
   seClosed, seError:
     // Safety Cleanup: If the socket is currently armed or active, release OpenSSL
     // session resources and tear down the physical OS network socket.
-    if lCurrentState in [seInitialized, seHandshaking, seEstablished, seClosing] then
+    if lCurrentState in [seInitialized, seHandshaking, seClosing] then
       ReleaseSSL;
    // seIdle:         ; // Handled during object construction
    // seHandshaking:  ; // Handled by active call loops (Connect/Accept)
@@ -4047,6 +4057,9 @@ begin
           Break; // Timeout budget exhausted
       end;
 
+      if not WaitForRead(lTimeout) then
+        Continue;
+
       ERR_clear_error;
 
       // 3. Perform a non-destructive 1-byte peek
@@ -4087,8 +4100,6 @@ end;
 function TTaurusTLSSslSocket.Recv(var ABuffer: TIdBytes; const AMSec: Integer): TIdC_SIZET;
 var
   lLen, lRet, lErr: TIdC_INT;
-  lQErr: TIdC_ULONG;
-  lReadBytes, lCurrOffset, lRemaining: TIdC_SIZET;
   lTimeout: Integer;
   lIsTimeout: Boolean;
   lSW: TStopWatch;
@@ -4101,8 +4112,6 @@ begin
 
   CheckActiveState([seEstablished]);
 
-  lCurrOffset:=0;
-  lRemaining:=lLen;
   lIsTimeout:=False;
   lSW:=TStopWatch.StartNew;
 
@@ -4121,24 +4130,11 @@ begin
 
     ERR_clear_error;
 
-    lReadBytes:=0;
     // Read directly into the current offset buffer segment
-    lRet:=SSL_read_ex(FSSL, ABuffer[lCurrOffset], lRemaining, lReadBytes);
+    lRet:=SSL_read_ex(FSSL, ABuffer[0], Length(ABuffer), Result);
 
     if lRet > 0 then
-    begin
-      // Partial or Full Read Success: Accumulate bytes and advance offset
-      Inc(Result, lReadBytes);
-      Inc(lCurrOffset, lReadBytes);
-      Dec(lRemaining, lReadBytes);
-
-      // If ABuffer is completely filled, exit loop
-      if lRemaining = 0 then
-        Break;
-
-      // Continue reading remaining bytes into ABuffer[lCurrOffset]
-      Continue;
-    end;
+      Break;
 
     // 2. Handle Non-Success / Pending / Error States
     lErr:=GetSSLError(lRet);
@@ -4149,54 +4145,21 @@ begin
       SSL_ERROR_WANT_WRITE:
         lIsTimeout:=not WaitForWrite(lTimeout);
 
-      SSL_ERROR_ZERO_RETURN:
+      else
+        if lErr <> SSL_ERROR_ZERO_RETURN then
         begin
-          // Graceful SSL close_notify: Return any bytes accumulated so far
-          TransitionTo(seClosed);
-          Exit(Result);
+          Result:=lRet;
+          Break;
         end;
-
-      SSL_ERROR_SSL:
-        begin
-          lQErr:=ERR_get_error;
-          if (ERR_GET_LIB(lQErr) = ERR_LIB_SSL) and
-             (ERR_GET_REASON(lQErr) = SSL_R_UNEXPECTED_EOF_WHILE_READING) then
-          begin
-            // Graceful unexpected EOF: Return any bytes accumulated so far
-            TransitionTo(seClosed);
-            Exit(Result);
-          end;
-
-          TransitionTo(seError);
-          ETaurusTLSAPISSLError.RaiseExceptionCode(lErr, lRet, 'SSL read error');
-        end;
-
-    else
-      begin
-        if lErr = SSL_ERROR_SYSCALL then
-          TransitionTo(seClosed)
-        else
-          TransitionTo(seError);
-
-        ETaurusTLSAPISSLError.RaiseExceptionCode(lErr, lRet, 'SSL read error');
-      end;
     end;
   until lIsTimeout;
-
-  // Raise timeout exception ONLY if zero bytes were accumulated before timing out
-  if lIsTimeout and (Result = 0) then
-  begin
-    { TODO : To make ResourceString }
-    ETaurusTLSIOError.RaiseWithMessage('SSL Socket IO Timeout');
-  end;
 end;
 
 function TTaurusTLSSslSocket.Send(const ABuffer: TIdBytes; const AOffset,
   ALength: TIdC_SIZET; const AMSec: Integer): TIdC_SIZET;
 var
   lRet, lErr: TIdC_INT;
-  lWritten: TIdC_SIZET;
-  lLen, lCurrOffset, lRemaining: TIdC_SIZET;
+  lLen: TIdC_SIZET;
   lTimeout: Integer;
   lIsTimeout: boolean;
   lSW: TStopWatch;
@@ -4209,8 +4172,6 @@ begin
 
   CheckActiveState([seEstablished]);
 
-  lCurrOffset:=AOffset;
-  lRemaining:=ALength;
   lIsTimeOut:=False;
   lSW:=TStopWatch.StartNew;
 
@@ -4228,21 +4189,10 @@ begin
 
     ERR_clear_error;
 
-    lWritten:=0;
-    lRet:=SSL_write_ex(FSSL, ABuffer[lCurrOffset], lRemaining, lWritten);
+    lRet:=SSL_write_ex(FSSL, ABuffer[AOffset], ALength, Result);
 
     if lRet > 0 then
-    begin
-      // Partial or Full Write Success: Track bytes and advance offset
-      Inc(Result, lWritten);
-      Inc(lCurrOffset, lWritten);
-      Dec(lRemaining, lWritten);
-
-      if lRemaining = 0 then
-        Break; // All requested bytes transmitted successfully
-
-      Continue; // Loop back to send remaining bytes
-    end;
+      Break; // All requested bytes transmitted successfully
 
     lErr:=GetSSLError(lRet);
     case lErr of
@@ -4252,22 +4202,14 @@ begin
       SSL_ERROR_WANT_READ:
         lIsTimeout:=not WaitForRead(lTimeout);
 
-    else
-      begin
-        // Differentiate transport resets (seClosed) from protocol/crypto errors (seError)
-        if lErr = SSL_ERROR_SYSCALL then
-          TransitionTo(seClosed)
-        else
-          TransitionTo(seError);
-
-        ETaurusTLSAPISSLError.RaiseExceptionCode(lErr, lRet, 'SSL write error');
-      end;
+      else
+        if lErr <> SSL_ERROR_ZERO_RETURN then
+        begin
+          Result:=lRet;
+          Break;
+        end;
     end;
   until lIsTimeout;
-
-  if lIsTimeout then
-    { TODO : To make ResourceString }
-    ETaurusTLSIOError.RaiseWithMessage('SSL Socket IO Timeout');
 end;
 
 procedure TTaurusTLSSslSocket.Shutdown;
@@ -4289,15 +4231,20 @@ end;
 // callbacks
 
 procedure TTaurusTLSSslSocket.InitSSLCallbacks;
+var
+  lCertCallback: function(const APreVerify: TIdC_INT;
+      ACtx: PX509_STORE_CTX): TIdC_INT; cdecl;
+
 begin
   if FCtx.HasOnStatusInfo then
     SSL_set_info_callback(FSSL, TTaurusTLSSslSocket.CbSslInfo);
 
   if FCtx.HasOnVerifyCertificate then
-  begin
-    SSL_set_verify(FSSL, FCtx.CertVerifyFlags.AsInt,
-      TTaurusTLSSslSocket.CbSslVerify);
-  end;
+    lCertCallback:=TTaurusTLSSslSocket.CbSslVerify
+  else
+    lCertCallback:=nil;
+  SSL_set_verify(FSSL, FCtx.CertVerifyFlags.AsInt, lCertCallback);
+
 
   if FCtx.HasOnSecurityCheck then
     SSL_set_security_callback(FSSL,
