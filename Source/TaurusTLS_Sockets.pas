@@ -1195,8 +1195,8 @@ type
 
     procedure Connect(const pHandle: TIdStackSocketHandle); virtual;
     function Send(const ABuffer: TIdBytes; const AOffset, ALength: TIdC_SIZET;
-      const AMSec: Integer): TIdC_SIZET; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function Recv(var ABuffer: TIdBytes; const AMSec: Integer): TIdC_SIZET;
+      const AMSec: Integer): Integer; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function Recv(var ABuffer: TIdBytes; const AMSec: Integer): Integer;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function Readable(AMsec: integer): boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure Shutdown;
@@ -3745,25 +3745,29 @@ procedure TTaurusTLSSslSocket.DoShutdown;
 var
   lRet: Integer;
 begin
+  // Guard against unallocated session handles
+  if not Assigned(FSSL) then
+  begin
+    TransitionTo(seClosed);
+    Exit;
+  end;
+
   try
     ERR_clear_error;
-    lRet := SSL_shutdown(FSSL);
+    lRet:=SSL_shutdown(FSSL);
 
-    // 1. Handle C-Style OpenSSL Failures
     if lRet < 0 then
-      Exit; // Triggers the finally block to transition to seClosed cleanly.
+      Exit; // FSSL error/reset; finally block will transition to seClosed cleanly
 
+    // lRet = 0 means close_notify sent, awaiting peer's response.
+    // Call it a second time if bi-directional shutdown is enabled.
     if (lRet = 0) and (not Ctx.Flags.UniDirectShutdown) then
     begin
-      // Sent close_notify successfully.
-      // In blocking mode, calling it a second time will block synchronously
-      // until the peer's close_notify is read or a socket timeout/error occurs.
+      ERR_clear_error;
       SSL_shutdown(FSSL);
     end;
-
   finally
-    // Guarantees that the socket transitions to seClosed on every path,
-    // and clears the unmanaged thread-local error queue safely.
+    // Guarantees that the socket transitions to seClosed on every path
     TransitionTo(seClosed);
     ERR_clear_error;
   end;
@@ -3820,17 +3824,13 @@ var
 begin
   lCurrentState:=State; // Using your internal State property
 
-  // 1. Redundant Transition Guard (Fails fast in Debug, exits silently in Release)
-  // Do not localize
-  Assert(lCurrentState <> ATarget, 'Redundant state transition: '+lCurrentState.AsString);
+  // 1. Exit if state is not changing (can happens on exception handling)
   if lCurrentState = ATarget then
-  begin
-    // TODO: Trigger OnDebugMessage warning here (No-op in production)
     Exit;
-  end;
 
   // 2. Validate Transition Feasibility
   if not IsValidTransition(lCurrentState, ATarget) then
+    { TODO : To make ResourceString }
     ETaurusTLSSocketStateError.RaiseWithMessageFmt(
       'Unable to transition Socket ''%s''''s state from ''%s'' to ''%s''.',
       [ClassName, lCurrentState.AsString, ATarget.AsString]);
@@ -3844,7 +3844,7 @@ begin
   seClosed, seError:
     // Safety Cleanup: If the socket is currently armed or active, release OpenSSL
     // session resources and tear down the physical OS network socket.
-    if lCurrentState in [seInitialized, seHandshaking, seClosing] then
+    if lCurrentState in [seInitialized, seHandshaking, seEstablished, seClosing] then
       ReleaseSSL;
    // seIdle:         ; // Handled during object construction
    // seHandshaking:  ; // Handled by active call loops (Connect/Accept)
@@ -4007,7 +4007,7 @@ begin
       end;
 
       if not WaitForRead(lTimeout) then
-        Continue;
+        Break;
 
       ERR_clear_error;
 
@@ -4045,15 +4045,18 @@ begin
   end;
 end;
 
-function TTaurusTLSSslSocket.Recv(var ABuffer: TIdBytes; const AMSec: Integer): TIdC_SIZET;
+function TTaurusTLSSslSocket.Recv(var ABuffer: TIdBytes;
+  const AMSec: Integer): Integer;
 var
+  lResult: TIdC_SIZET;
   lLen, lRet, lErr: TIdC_INT;
   lTimeout: Integer;
   lIsTimeout: Boolean;
   lSW: TStopWatch;
 
 begin
-  Result:=0;
+  lResult:=0;
+
   lLen:=Length(ABuffer);
   if lLen = 0 then
     Exit;
@@ -4064,7 +4067,13 @@ begin
   lSW:=TStopWatch.StartNew;
 
   repeat
-    // 1. Single Top-of-Loop Timeout Enforcement
+    ERR_clear_error;
+    lRet:=SSL_read_ex(FSSL, ABuffer[0], Length(ABuffer), lResult);
+    Result:=lResult;
+
+    if lRet > 0 then
+      Break;
+
     if AMSec <> IdTimeoutInfinite then
     begin
       lTimeout:=AMSec - Integer(lSW.ElapsedMilliseconds);
@@ -4076,14 +4085,7 @@ begin
     if lIsTimeout then
       Break;
 
-    ERR_clear_error;
-
-    lRet:=SSL_read_ex(FSSL, ABuffer[0], Length(ABuffer), Result);
-
-    if lRet > 0 then
-      Break;
-
-    // 2. Handle Non-Success / Pending / Error States
+    // Handle Non-Success / Pending / Error States
     lErr:=GetSSLError(lRet);
     case lErr of
       SSL_ERROR_WANT_READ:
@@ -4106,8 +4108,9 @@ begin
 end;
 
 function TTaurusTLSSslSocket.Send(const ABuffer: TIdBytes; const AOffset,
-  ALength: TIdC_SIZET; const AMSec: Integer): TIdC_SIZET;
+  ALength: TIdC_SIZET; const AMSec: Integer): Integer;
 var
+  lResult: TIdC_SIZET;
   lRet, lErr: TIdC_INT;
   lLen: TIdC_SIZET;
   lTimeout: Integer;
@@ -4126,7 +4129,14 @@ begin
   lSW:=TStopWatch.StartNew;
 
   repeat
-      if AMSec <> IdTimeoutInfinite then
+    ERR_clear_error;
+    lRet:=SSL_write_ex(FSSL, ABuffer[AOffset], ALength, lResult);
+    Result:=lResult;
+
+    if lRet > 0 then
+      Break;
+
+    if AMSec <> IdTimeoutInfinite then
     begin
       lTimeout:=AMSec - Integer(lSW.ElapsedMilliseconds);
       lIsTimeout:=(lTimeout <= 0);
@@ -4136,13 +4146,6 @@ begin
 
     if lIsTimeout then
       Break;
-
-    ERR_clear_error;
-
-    lRet:=SSL_write_ex(FSSL, ABuffer[AOffset], ALength, Result);
-
-    if lRet > 0 then
-      Break; // All requested bytes transmitted successfully
 
     lErr:=GetSSLError(lRet);
     case lErr of
@@ -4171,10 +4174,7 @@ begin
       DoShutdown;
     end;
   except
-    on E: Exception do
-    begin
-      TransitionTo(seClosed); // Intercept and force immediate closed state teardown
-    end;
+    TransitionTo(seClosed); // Intercept and force immediate closed state teardown
   end;
 end;
 
