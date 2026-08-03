@@ -1120,6 +1120,12 @@ type
     FContextIntf: ITaurusTLSSslSocketCtx;  // Holds reference count safely
     FCtx: TTaurusTLSSslSocketCtx;
 
+    // Error Snapshot
+    FLastSSLError: TIdC_INT;     // Result of SSL_get_error (e.g. SSL_ERROR_SSL, SSL_ERROR_SYSCALL)
+    FLastRetCode: TIdC_INT;      // Return code of SSL_read_ex / SSL_write_ex (e.g. 0 or -1)
+    FLastQueueError: TIdC_ULONG; // Peeked OpenSSL queue error code (via ERR_peek_error)
+    FLastSocketError: Integer;   // Captured OS socket error (via GStack.WSGetLastError)
+
     function GetPerCertificate: TTaurusTLSX509;       // Fast class pointer
 
     // OpenSSL callback methods
@@ -1150,10 +1156,7 @@ type
     class function GetInstanceFromSSL(ASSL: PSSL): TTaurusTLSSslSocket; static;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
-    function CheckForError(const ALastResult: TIdC_INT): Integer; overload;
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function CheckForError(const AErrCode: TIdC_INT;
-      const ALastResult: TIdC_INT): Integer; overload; virtual;
+    function CheckForError: Integer; overload; virtual;
     function GetSSLError(ALastResult: Integer): Integer; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     procedure InitSSL; {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -2012,7 +2015,7 @@ begin
   { TODO : Make a ResourceString for Exception call }
   if not (AValue in [Ord(Low(TTaurusTLSAlpnResult))..Ord(High(TTaurusTLSAlpnResult))]) then
     ETaurusTLSAlpnResultError.RaiseWithMessageFmt(
-      { TODO : To make ResourseString }
+      { TODO : To make ResourceString }
       'Invalid ALPN result value: %d.', [AValue]);
   Self:=TTaurusTLSAlpnResult(AValue);
 end;
@@ -2052,14 +2055,14 @@ begin
     lLen:=PIdC_UINT8(lPos)^;
     if lLen = 0 then
       ETaurusTLSAlpnResultError.RaiseWithMessage(
-        { TODO : To make ResourseString }
+        { TODO : To make ResourceString }
         'ALPN Input list corrupted. Unexpected Zero Length element found.');
 
     Inc(lPos);
     lPair.FOffset:=lPos;
     if ((lPos-AInProtos)+lLen) > NativeInt(AInLen) then // Boundary check
       ETaurusTLSAlpnResultError.RaiseWithMessage(
-        { TODO : To make ResourseString }
+        { TODO : To make ResourceString }
         'ALPN Input list corrupted. Element length is out input bounds.');
 
     SetString(lPair.FValue, PIdAnsiChar(lPos), lLen); // PALOFF PIdC_UINT8 cast to PIdAnsiChar
@@ -2103,7 +2106,7 @@ var
 
 begin
   if (AItem < 0) or (AItem > (Count-1)) then
-    { TODO : To make ResourseString }
+    { TODO : To make ResourceString }
     raise ERangeError.CreateFmt('ALPN selection index out of range: %d.', [AItem]);
 
   lPair:=FPairs[AItem];
@@ -2701,7 +2704,7 @@ procedure TTaurusTLSSslSocketCtx.CheckFrozen;
 begin
   if FLags.IsFrozen then
     ETaurusTLSSslSocketCtxError.RaiseWithMessage(
-      { TODO : To make ResourseString }
+      { TODO : To make ResourceString }
       'TTaurusTLSSslSocketCtx instance is frozen and cannot be modified.');
 end;
 
@@ -2839,7 +2842,7 @@ begin
     Result:=TTaurusTLSSslSocketCtx(lResult)
   else
     ETaurusTLSDataBindingError.RaiseWithMessageFmt(
-      { TODO : To make ResourseString }
+      { TODO : To make ResourceString }
       'SSL_CTX object %p is not bound to a valid TTaurusTLSSslSocketCtx instance.',
       [ACtx]);
 end;
@@ -2855,7 +2858,7 @@ begin
   // Attach Self to the SSL_CTX
   if SSL_CTX_set_app_data(SSLCtx, Self) <= 0 then
     ETaurusTLSDataBindingError.RaiseWithMessage(
-      { TODO : To make ResourseString }
+      { TODO : To make ResourceString }
       'Unable to link TTaurusTLSSslSocketCtx instance with SSL_CTX object');
   if Flags.QuietShutdown then
     SSL_CTX_set_quiet_shutdown(SSLCtx, 1);
@@ -2927,7 +2930,7 @@ begin
   CheckFrozen;
   if SSL_CTX_set_cipher_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then  // PALOFF Possible bad typecast
     ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
-    { TODO : To make ResourseString }
+    { TODO : To make ResourceString }
       'Error setting cipher list ''%s'' to the SSL Context.', [AValue]);
 end;
 
@@ -2940,7 +2943,7 @@ begin
   CheckFrozen;
   if SSL_CTX_set_ciphersuites(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then // PALOFF Possible bad typecast
     ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
-    { TODO : To make ResourseString }
+    { TODO : To make ResourceString }
       'Error setting cipher suites ''%s'' to the SSL Context.', [AValue]);
 end;
 
@@ -2953,7 +2956,7 @@ begin
   CheckFrozen;
   if SSL_CTX_set1_groups_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then // PALOFF Possible bad typecast
     ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
-    { TODO : To make ResourseString }
+    { TODO : To make ResourceString }
       'Error setting key exchange groups ''%s'' to the SSL Context.', [AValue]);
 end;
 
@@ -2966,7 +2969,7 @@ begin
   CheckFrozen;
   if SSL_CTX_set1_sigalgs_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then // PALOFF Possible bad typecast
     ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
-    { TODO : To make ResourseString }
+    { TODO : To make ResourceString }
       'Error setting signature algorithms ''%s'' to the SSL Context.', [AValue]);
 end;
 
@@ -2989,7 +2992,7 @@ begin
   CheckFrozen;
   if SSL_CTX_set_max_send_fragment(FSSLCtx, AValue) <= 0 then
     ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
-      { TODO : To make ResourseString }
+      { TODO : To make ResourceString }
       'Error setting max send fragment size %d to the SSL Context.', [AValue]
     );
 end;
@@ -3786,11 +3789,26 @@ end;
 
 function TTaurusTLSSslSocket.GetSSLError(ALastResult: Integer): Integer;
 begin
+  // 1. Capture the OpenSSL return code and OS-level socket error immediately
+  FLastRetCode:=ALastResult;
+  FLastSocketError:=GStack.WSGetLastError;
+
   if Assigned(FSSL) then
-    Result:=SSL_get_error(FSSL, ALastResult)
+  begin
+    // 2. Query OpenSSL for the high-level error code (SSL_ERROR_SSL, SSL_ERROR_SYSCALL, etc.)
+    Result:=SSL_get_error(FSSL, ALastResult);
+
+    // 3. Peek at the top error in OpenSSL's thread-local queue without clearing it
+    FLastQueueError:=ERR_peek_error;
+  end
   else
-    // Fallback if the SSL handle was already freed during state transition
+  begin
     Result:=SSL_ERROR_SYSCALL;
+    FLastQueueError:=0;
+  end;
+
+  // 4. Cache the resolved SSL error code
+  FLastSSLError:=Result;
 end;
 
 function TTaurusTLSSslSocket.IsValidTransition(ACurrent,
@@ -3865,7 +3883,7 @@ begin
   if FSocketHandle = Id_INVALID_SOCKET then
     Exit;
 
-  lList := TIdSocketList.CreateSocketList;
+  lList:=TIdSocketList.CreateSocketList;
   try
     lList.Add(FSocketHandle);
     Result:=lList.Select(lList, nil, nil, AMsec);
@@ -3884,7 +3902,7 @@ begin
   if FSocketHandle = Id_INVALID_SOCKET then
     Exit;
 
-  lList := TIdSocketList.CreateSocketList;
+  lList:=TIdSocketList.CreateSocketList;
   try
     lList.Add(FSocketHandle);
     Result:=lList.Select(nil, lList, nil, AMsec);
@@ -3908,41 +3926,71 @@ procedure TTaurusTLSSslSocket.CheckActiveState(
 begin
   if not (FState in AExpectedStates) then
      ETaurusTLSSocketStateError.RaiseWithMessageFmt(
-      { TODO : To make ResourseString }
+      { TODO : To make ResourceString }
       'Invalid socket operation in the ''%s'' state.', [FState.AsString]);
 end;
 
-function TTaurusTLSSslSocket.CheckForError(const ALastResult: TIdC_INT): Integer;
-begin
-  Result:=CheckForError(GetSSLError(ALastResult));
-end;
-
-function TTaurusTLSSslSocket.CheckForError(const AErrCode: TIdC_INT;
-  const ALastResult: TIdC_INT): TIdC_INT;
+function TTaurusTLSSslSocket.CheckForError: Integer;
 var
   lErrStr: string;
-  lQErr: TIdC_ULONG;
+
 begin
-  Result := AErrCode;
+  // 1. EARLY TERMINAL GUARD: Handle sockets that were already closed/erred
+  // before the SSL stack executed or during an earlier teardown
+  if FState in [seClosed, seError] then
+  begin
+    if FLastSocketError <> 0 then
+      GStack.RaiseSocketError(FLastSocketError) // Raises EIdSocketError with exact OS error
+    else if FLastSSLError <> SSL_ERROR_NONE then
+    begin
+      lErrStr:=string(ERR_error_string(FLastQueueError, nil));
+      ETaurusTLSAPISSLError.RaiseExceptionCode(FLastSSLError, FLastRetCode, lErrStr);
+    end
+    else
+    begin
+      // Fallback: Check Indy's GStack for any last socket error
+      GStack.CheckForSocketError(Integer(Id_SOCKET_ERROR),
+        [Id_WSAESHUTDOWN, Id_WSAECONNABORTED, Id_WSAECONNRESET, Id_WSAETIMEDOUT]);
+    end;
 
+    Exit(FLastSocketError);
+  end;
+
+  Result:=FLastSSLError;
+
+  // 2. SSL Layer Reports No Error, but OS Socket Handle is Invalid
   if Result = SSL_ERROR_NONE then
-    Exit(0);
+  begin
+    if FSocketHandle = Id_INVALID_SOCKET then
+    begin
+      TransitionTo(seClosed);
+      { TODO : To make ResourceString }
+      ETaurusTLSConnectionReset.RaiseWithMessage('Socket closed before SSL operation completed.');
+    end;
+    Exit(0); // Healthy session
+  end;
 
-  // 1. Handle OS-level network socket failures via Indy's GStack
+  // 3. Handle OS-level Network Resets (SSL_ERROR_SYSCALL)
   if Result = SSL_ERROR_SYSCALL then
-    Exit(GStack.CheckForSocketError(Integer(Id_SOCKET_ERROR),
-      [Id_WSAESHUTDOWN, Id_WSAECONNABORTED, Id_WSAECONNRESET, Id_WSAETIMEDOUT]));
+  begin
+    TransitionTo(seClosed);
+    if FLastSocketError <> 0 then
+      GStack.RaiseSocketError(FLastSocketError)
+    else
+      Exit(GStack.CheckForSocketError(Integer(Id_SOCKET_ERROR),
+        [Id_WSAESHUTDOWN, Id_WSAECONNABORTED, Id_WSAECONNRESET, Id_WSAETIMEDOUT]));
+  end;
 
-  // 2. Handle OpenSSL protocol/crypto failures by querying the OpenSSL error queue
-  lQErr:=ERR_get_error;
-  if lQErr <> 0 then
-    lErrStr:=string(ERR_error_string(lQErr, nil))
+  // 4. Handle OpenSSL Protocol / Cryptographic Failures
+  TransitionTo(seError);
+
+  if FLastQueueError <> 0 then
+    lErrStr:=string(ERR_error_string(FLastQueueError, nil))
   else
     { TODO : To make ResourceString }
     lErrStr:='Unspecified OpenSSL error.';
 
-  // Raise standard TaurusTLS API exception with full error details
-  ETaurusTLSAPISSLError.RaiseExceptionCode(Result, ALastResult, lErrStr);
+  ETaurusTLSAPISSLError.RaiseExceptionCode(Result, FLastRetCode, lErrStr);
 end;
 
 procedure TTaurusTLSSslSocket.CheckPeerCertificateValidationResult;
@@ -4059,7 +4107,7 @@ begin
 
   lLen:=Length(ABuffer);
   if lLen = 0 then
-    Exit;
+    Exit(0);
 
   CheckActiveState([seEstablished]);
 
@@ -4222,7 +4270,7 @@ begin
     Result:=TTaurusTLSSslSocket(lResult)
   else
     ETaurusTLSDataBindingError.RaiseWithMessageFmt(
-      { TODO : To make ResourseString }
+      { TODO : To make ResourceString }
       'SSL object %p is not bound to a valid TTaurusTLSSslSocket instance.',
       [ASSL]);
 end;
