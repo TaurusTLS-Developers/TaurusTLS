@@ -580,8 +580,6 @@ type
     // protected setters
     function SetFlags(const AValue: TaurusTLSSslSocketCtxFlags): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function SetCertVerifyFlags(const AValue: TTaurusTLSVerifyModes): TTaurusTLSSslSocketCtx;
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
     function SetMinTLSVersion(const AValue: TTaurusTLS2TlsVersion): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function SetMaxTLSVersion(const AValue: TTaurusTLS2TlsVersion): TTaurusTLSSslSocketCtx;
@@ -941,7 +939,7 @@ type
 
     // TTaurusTLSSslSocketCtx fields
     FFlags: TaurusTLSSslSocketCtxFlags;
-    FCertVerifyFlags: TTaurusTLSVerifyModes;
+    FVerifyModes: TTaurusTLSVerifyModes;
     FSSLContextOptions: TTaurusTLSSSLOptionFlags;
 
     // standalone SSL_CTX fields
@@ -951,7 +949,6 @@ type
     FCipherSuites: string;
     FKeyExchangeGroups: string;
     FSigAlgorithms: string;
-    FVerifyModes: TTaurusTLSVerifyModes;
 
     // X509 Verify Params field
     FX509VerifyParam: TTaurusTLSMetaX509VerifyParam; // PALOFF 'Created and freed objects'
@@ -986,8 +983,6 @@ type
     procedure SetQuietShutdown(const AValue: boolean);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure SetReadAheadBuffering(const AValue: boolean);
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure SetCertVerifyFlags(const AValue: TTaurusTLSVerifyModes);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure SetSSLContextOptions(const AValue: TTaurusTLSSSLOptionFlags);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -1068,8 +1063,6 @@ type
     property SigAlgorithms: string read FSigAlgorithms write SetSigAlgorithms;
     property VerifyModes: TTaurusTLSVerifyModes read FVerifyModes
       write SetVerifyModes;
-    property CertVerifyFlags: TTaurusTLSVerifyModes read FCertVerifyFlags
-      write SetCertVerifyFlags;
     property VerifyHostName: boolean read GetVerifyHostName write SetVerifyHostName;
     property UniDirectShutdown: boolean read GetUniDirectShutdown
       write SetUniDirectShutdown;
@@ -1157,9 +1150,6 @@ type
     class function GetInstanceFromSSL(ASSL: PSSL): TTaurusTLSSslSocket; static;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
-    // Centralized Hostname Verification Helper
-    procedure CheckPeerCertificateValidationResult; {$IFDEF USE_INLINE}inline; {$ENDIF}
-
     function CheckForError(const ALastResult: TIdC_INT): Integer; overload;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function CheckForError(const AErrCode: TIdC_INT;
@@ -1210,6 +1200,8 @@ type
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function Readable(AMsec: integer): boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure Shutdown;
+    procedure CheckPeerCertificateValidationResult; {$IFDEF USE_INLINE}inline; {$ENDIF}
+
 
     property SSL: PSSL read FSSL;
     property State: TTaurusTLSSslSocketState read FState;
@@ -1970,12 +1962,12 @@ begin
     Result:=Format('Alert [Level: %s, Desc: %d (%s)]',
       [LLevelStr, LAlertDesc, LDescStr]);
   end
-  else if (FContentType = SSL3_RT_INNER_CONTENT_TYPE) and (FLen >= 1) and Assigned(FBuf) then
+  else if (FContentType = SSL3_RT_INNER_CONTENT_TYPE) and (FLen > 0) and Assigned(FBuf) then
   begin
     // TLS 1.3 Decrypted Inner Content Type indicator
     Result:=Format('Decrypted Inner Type: %d', [PByte(FBuf)^]);
   end
-  else if (FContentType = DTLS1_RT_HEARTBEAT) and (FLen >= 1) and Assigned(FBuf) then
+  else if (FContentType = DTLS1_RT_HEARTBEAT) and (FLen > 0) and Assigned(FBuf) then
   begin
     // Heartbeat Protocol frame type (RFC 6520)
     case PByte(FBuf)^ of
@@ -2224,19 +2216,19 @@ begin
   end;
 end;
 
-procedure TTaurusTLSSslSocketCtxBuilder.SetCertVerifyFlags(
+procedure TTaurusTLSSslSocketCtxBuilder.SetVerifyModes(
   const AValue: TTaurusTLSVerifyModes);
 begin
-  if FCertVerifyFlags = AValue then
+  if FVerifyModes = AValue then
     Exit;
 
   Lock;
   try
     // Check it again it can be changed by other thread
     // between previous check and actual lock accurision
-    if FCertVerifyFlags = AValue then
+    if FVerifyModes = AValue then
       Exit;
-    FCertVerifyFlags:=AValue;
+    FVerifyModes:=AValue;
     SetDirty;
   finally
     Unlock;
@@ -2472,25 +2464,6 @@ begin
   Result:=GetFlag(slfReadAheadBuffering);
 end;
 
-procedure TTaurusTLSSslSocketCtxBuilder.SetVerifyModes(
-  const AValue: TTaurusTLSVerifyModes);
-begin
-  if FVerifyModes = AValue then
-    Exit;
-
-  Lock;
-  try
-    // Check it again it can be changed by other thread
-    // between previous check and actual lock accurision
-    if FVerifyModes = AValue then
-      Exit;
-    FVerifyModes:=AValue;
-    SetDirty;
-  finally
-    Unlock;
-  end;
-end;
-
 procedure TTaurusTLSSslSocketCtxBuilder.SetOnKeyLog(
   const AValue: TTaurusTLSOnKeyLog);
 begin
@@ -2628,7 +2601,6 @@ begin
       .SetSigAlgorithms(FSigAlgorithms)
       .SetVerifyModes(FVerifyModes)
       .SetMaxSendFragment(FMaxSendFragment)
-      .SetCertVerifyFlags(FCertVerifyFlags)
       .SetSSLCtxOptions(FSSLContextOptions)
       .SetVerifyParam(lVerifyParam)
       .SetTrustStore(lTrustStore)
@@ -2675,7 +2647,7 @@ constructor TTaurusTLSSslSocketCtx.Create(ASender: TObject; ATLSMeth: PSSL_METHO
 begin
   FSender:=ASender;
   FSSLCtx:=SSL_CTX_new(ATLSMeth);
-  SetVerifyModes(cVerifyModesDef);   // PALOFF 'Functions called as procedures'
+//  SetVerifyModes(cVerifyModesDef);   // PALOFF 'Functions called as procedures'
 end;
 
 destructor TTaurusTLSSslSocketCtx.Destroy;
@@ -2926,12 +2898,12 @@ begin
   FFlags:=AValue;
 end;
 
-function TTaurusTLSSslSocketCtx.SetCertVerifyFlags(
+function TTaurusTLSSslSocketCtx.SetVerifyModes(
   const AValue: TTaurusTLSVerifyModes): TTaurusTLSSslSocketCtx;
 begin
   Result:=Self;
   CheckFrozen;
-  FCertVerifyFlags:=TTaurusTLSVerifyModeFlags.Create(AValue);
+  FCertVerifyFlags.Flags:=AValue;
 end;
 
 function TTaurusTLSSslSocketCtx.SetSSLCtxOptions(
@@ -3032,17 +3004,6 @@ begin
   CheckFrozen;
   if SSL_CTX_set_max_proto_version(FSSLCtx, AValue.AsInt) <= 0 then
     ETaurusTLSSslSocketCtxError.RaiseWithMessage(RSOSSLMaxProtocolError);
-end;
-
-function TTaurusTLSSslSocketCtx.SetVerifyModes(
-  const AValue: TTaurusTLSVerifyModes): TTaurusTLSSslSocketCtx;
-var
-  lFlags: TTaurusTLSVerifyModeFlags;
-begin
-  Result:=Self;
-  CheckFrozen;
-  lFlags:=TTaurusTLSVerifyModeFlags.Create(AValue);
-  SSL_CTX_set_verify(FSSLCtx, lFlags.AsInt, nil);
 end;
 
 function TTaurusTLSSslSocketCtx.SetVerifyParam(
@@ -3434,21 +3395,6 @@ begin
   FSNIKind:=AValue;
   ResetIdentity;
 end;
-
-(*
-procedure TTaurusTLSSslClientCtx.DoCloneSession(ASSL: PSSL);
-var
-  lSess: PSSL_SESSION;
-
-begin
-  if not Assigned(FSessionToResume) then
-    Exit;
-
-  lSess:=FSessionToResume;
-  if (SSL_SESSION_is_resumable(lSess) and SSL_set_session(ASSL, lSess)) <> 1 then
-    ETaurusTLSSSLCopySessionId.RaiseWithMessage(RSOSSLCopySessionIdError);
-end;
-*)
 
 { TTaurusTLSSslPeerCtx }
 
@@ -4006,6 +3952,9 @@ var
   lSuccess: boolean;
 
 begin
+  if not Ctx.CertVerifyFlags.VerifyPeer then
+    Exit;
+
   lCert:=nil;
   lErr:=TTaurusTLSX509Error.Create(SSL_get_verify_result(FSSL));
   lSuccess:=lErr.ErrorCode = X509_V_OK;
@@ -4092,7 +4041,6 @@ begin
         Break;
       end;
 
-    // Loop termination condition for finite positive timeouts
     until False;
   end;
 end;
@@ -4130,7 +4078,6 @@ begin
 
     ERR_clear_error;
 
-    // Read directly into the current offset buffer segment
     lRet:=SSL_read_ex(FSSL, ABuffer[0], Length(ABuffer), Result);
 
     if lRet > 0 then
@@ -4140,7 +4087,10 @@ begin
     lErr:=GetSSLError(lRet);
     case lErr of
       SSL_ERROR_WANT_READ:
-        lIsTimeout:=not WaitForRead(lTimeout);
+        if SSL_has_pending(FSSL) > 0 then
+          Continue // SSL has decoded or raw data in the buffer (Read Ahead is ON)
+        else
+          lIsTimeout:=not WaitForRead(lTimeout);
 
       SSL_ERROR_WANT_WRITE:
         lIsTimeout:=not WaitForWrite(lTimeout);
@@ -4606,7 +4556,7 @@ begin
     ERR_clear_error;
     lRet:=SSL_connect(SSL);
 
-    if lRet = 1 then
+    if lRet > 0 then
     begin
       CheckPeerCertificateValidationResult;
       // Verify ECH status prior to accepting handshake success
@@ -4631,7 +4581,7 @@ begin
               lECHConfigLen:=0;
 
               // Attempt to extract the updated keys provided by the server
-              if SSL_ech_get1_retry_config(SSL, @lECHConfigBuf, @lECHConfigLen) = 1 then
+              if SSL_ech_get1_retry_config(SSL, @lECHConfigBuf, @lECHConfigLen) > 0 then
               begin
                 try
                   if (lECHConfigBuf <> nil) and (lECHConfigLen > 0) then
@@ -4716,7 +4666,8 @@ begin
     else
       begin
         TransitionTo(seError);
-        raise ETaurusTLSHandshakeError.Create('Fatal handshake error.');
+        { TODO : To make ResourceString }
+        ETaurusTLSHandshakeError.RaiseExceptionCode(lErr, lRet, 'Fatal handshake error.');
       end;
     end;
 

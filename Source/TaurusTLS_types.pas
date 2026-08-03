@@ -240,6 +240,48 @@ type
   /// </summary>
   TTaurusTLSVerifyModes = set of TTaurusTLSVerifyMode;
 
+  TTaurusTLSVerifyModeFlags = record
+  public const
+    cVerifyNone = [];
+    cOsslFlags = [Low(TTaurusTLSVerifyMode)..sslvrfPostHandshake];
+
+  private const
+    cMask = SSL_VERIFY_PEER or SSL_VERIFY_FAIL_IF_NO_PEER_CERT or
+            SSL_VERIFY_CLIENT_ONCE or SSL_VERIFY_POST_HANDSHAKE;
+
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
+    FFlags: TTaurusTLSVerifyModes;
+
+    function GetAsInt: TIdC_INT; {$IFDEF USE_INLINE} inline;{$ENDIF}
+    procedure SetAsInt(const AValue: TIdC_INT); {$IFDEF USE_INLINE} inline;{$ENDIF}
+    procedure SetFlags(const AFlags: TTaurusTLSVerifyModes);
+      {$IFDEF USE_INLINE} inline;{$ENDIF}
+    function GetFailIfNoPeer: boolean; {$IFDEF USE_INLINE} inline;{$ENDIF}
+    function GetVerifyPeer: boolean; {$IFDEF USE_INLINE} inline;{$ENDIF}
+    function GetVerifyPostHandshake: boolean;
+      {$IFDEF USE_INLINE} inline;{$ENDIF}
+  public
+    constructor Create(const AFlags: TTaurusTLSVerifyModes); overload;
+    constructor Create(const AIntFlags: TIdC_INT); overload;
+//    class operator Implicit(AFlags: TTaurusTLSVerifyModes): TTaurusTLSVerifyModeFlags;
+//    class operator Implicit(AFlags: TTaurusTLSVerifyModeFlags): TTaurusTLSVerifyModes;
+    class procedure Include(var AValue: TTaurusTLSVerifyModeFlags;
+      AFlag: TTaurusTLSVerifyMode); overload; static;
+      {$IFDEF USE_INLINE} inline;{$ENDIF}
+    procedure Include(AFlag: TTaurusTLSVerifyMode); overload;
+      {$IFDEF USE_INLINE} inline;{$ENDIF}
+    class procedure Exclude(var AValue: TTaurusTLSVerifyModeFlags;
+      AFlag: TTaurusTLSVerifyMode); overload; static;
+      {$IFDEF USE_INLINE} inline;{$ENDIF}
+    procedure Exclude(AFlag: TTaurusTLSVerifyMode); overload;
+      {$IFDEF USE_INLINE} inline;{$ENDIF}
+    property AsInt: TIdC_INT read GetAsInt write SetAsInt;
+    property Flags: TTaurusTLSVerifyModes read FFlags write SetFlags;
+    property VerifyPeer: boolean read GetVerifyPeer;
+    property FailIfNoPeer: boolean read GetFailIfNoPeer;
+    property VerifyPostHandshake: boolean read GetVerifyPostHandshake;
+  end;
+
   ETaurusTLSSecurityBits = class(ETaurusTLSError);
 
   TTaurusTLSSecurityBits = (sbZero, sb80, sb112, sb128, sb192, sb256);
@@ -411,41 +453,6 @@ type
     /// </summary>
     sslUnrecoverableError);
 
-
-  TTaurusTLSVerifyModeFlags = record
-  public const
-    cVerifyNone = [];
-    cOsslFlags = [Low(TTaurusTLSVerifyMode)..sslvrfPostHandshake];
-
-  private const
-    cMask = SSL_VERIFY_PEER or SSL_VERIFY_FAIL_IF_NO_PEER_CERT or
-            SSL_VERIFY_CLIENT_ONCE or SSL_VERIFY_POST_HANDSHAKE;
-
-  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
-    FFlags: TTaurusTLSVerifyModes;
-
-    function GetAsInt: TIdC_INT; {$IFDEF USE_INLINE} inline;{$ENDIF}
-    procedure SetAsInt(const AValue: TIdC_INT); {$IFDEF USE_INLINE} inline;{$ENDIF}
-    procedure SetFlags(const AFlags: TTaurusTLSVerifyModes);
-      {$IFDEF USE_INLINE} inline;{$ENDIF}
-  public
-    constructor Create(const AFlags: TTaurusTLSVerifyModes); overload;
-    constructor Create(const AIntFlags: TIdC_INT); overload;
-//    class operator Implicit(AFlags: TTaurusTLSVerifyModes): TTaurusTLSVerifyModeFlags;
-//    class operator Implicit(AFlags: TTaurusTLSVerifyModeFlags): TTaurusTLSVerifyModes;
-    class procedure Include(var AValue: TTaurusTLSVerifyModeFlags;
-      AFlag: TTaurusTLSVerifyMode); overload; static;
-      {$IFDEF USE_INLINE} inline;{$ENDIF}
-    procedure Include(AFlag: TTaurusTLSVerifyMode); overload;
-      {$IFDEF USE_INLINE} inline;{$ENDIF}
-    class procedure Exclude(var AValue: TTaurusTLSVerifyModeFlags;
-      AFlag: TTaurusTLSVerifyMode); overload; static;
-      {$IFDEF USE_INLINE} inline;{$ENDIF}
-    procedure Exclude(AFlag: TTaurusTLSVerifyMode); overload;
-      {$IFDEF USE_INLINE} inline;{$ENDIF}
-    property AsInt: TIdC_INT read GetAsInt write SetAsInt;
-    property Flags: TTaurusTLSVerifyModes read FFlags;
-  end;
 
   ///  <summary>
   ///  Represents a single X.509 certificate verification flag,
@@ -1472,20 +1479,6 @@ begin
   SetFlags(lFlags+lHighFlags);
 end;
 
-(*
-class operator TTaurusTLSVerifyModeFlags.Implicit(
-  AFlags: TTaurusTLSVerifyModeFlags): TTaurusTLSVerifyModes;
-begin
-  Result:=AFlags.FFlags;
-end;
-
-class operator TTaurusTLSVerifyModeFlags.Implicit(
-  AFlags: TTaurusTLSVerifyModes): TTaurusTLSVerifyModeFlags;
-begin
-  Result.SetFlags(AFlags);
-end;
-*)
-
 procedure TTaurusTLSVerifyModeFlags.Exclude(
   AFlag: TTaurusTLSVerifyMode);
 var
@@ -1519,6 +1512,21 @@ class procedure TTaurusTLSVerifyModeFlags.Include(
   AFlag: TTaurusTLSVerifyMode);
 begin
   AValue.Include(AFlag);
+end;
+
+function TTaurusTLSVerifyModeFlags.GetFailIfNoPeer: boolean;
+begin
+  Result:=sslvrfFailIfNoPeerCert in FFlags;
+end;
+
+function TTaurusTLSVerifyModeFlags.GetVerifyPeer: boolean;
+begin
+  Result:=sslvrfPeer in FFlags;
+end;
+
+function TTaurusTLSVerifyModeFlags.GetVerifyPostHandshake: boolean;
+begin
+  Result:=sslvrfPostHandshake in FFlags;
 end;
 
 { TTaurusTLSX509VerifyFlagHelper }
