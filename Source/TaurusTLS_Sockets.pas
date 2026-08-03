@@ -1158,6 +1158,7 @@ type
 
     function CheckForError: Integer; overload; virtual;
     function GetSSLError(ALastResult: Integer): Integer; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure ClearError; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     procedure InitSSL; {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure InitSSLCallbacks; virtual;
@@ -3712,7 +3713,7 @@ var
 begin
   if Assigned(FSSL) and (FSocketHandle <> Id_INVALID_SOCKET) then
   begin
-    ERR_clear_error;
+    ClearError;
     lRet:=SSL_set_fd(FSSL, FSocketHandle);
     if lRet <= 0 then
       ETaurusTLSSslSocketBindError.RaiseException(FSSL, lRet,
@@ -3747,8 +3748,8 @@ end;
 procedure TTaurusTLSSslSocket.DoShutdown;
 var
   lRet: Integer;
+
 begin
-  // Guard against unallocated session handles
   if not Assigned(FSSL) then
   begin
     TransitionTo(seClosed);
@@ -3756,22 +3757,26 @@ begin
   end;
 
   try
-    ERR_clear_error;
+    ClearError; // Reset snapshot before starting first shutdown attempt
     lRet:=SSL_shutdown(FSSL);
 
     if lRet < 0 then
-      Exit; // FSSL error/reset; finally block will transition to seClosed cleanly
+    begin
+      GetSSLError(lRet); // Capture failure snapshot
+      Exit; // Jumps to finally block
+    end;
 
-    // lRet = 0 means close_notify sent, awaiting peer's response.
-    // Call it a second time if bi-directional shutdown is enabled.
     if (lRet = 0) and (not Ctx.Flags.UniDirectShutdown) then
     begin
-      ERR_clear_error;
-      SSL_shutdown(FSSL);
+      ClearError; // Reset snapshot before second blocking shutdown call
+      lRet:=SSL_shutdown(FSSL);
+      if lRet < 0 then
+        GetSSLError(lRet);
     end;
   finally
-    // Guarantees that the socket transitions to seClosed on every path
     TransitionTo(seClosed);
+    // Use raw ERR_clear_error here so OpenSSL's C-queue is cleaned up,
+    // but your Delphi FLastSSLError snapshot is PRESERVED for post-mortem inspection!
     ERR_clear_error;
   end;
 end;
@@ -3789,26 +3794,36 @@ end;
 
 function TTaurusTLSSslSocket.GetSSLError(ALastResult: Integer): Integer;
 begin
-  // 1. Capture the OpenSSL return code and OS-level socket error immediately
-  FLastRetCode:=ALastResult;
-  FLastSocketError:=GStack.WSGetLastError;
+  FLastRetCode := ALastResult;
 
-  if Assigned(FSSL) then
+  // 1. SUCCESS PATH (ALastResult > 0)
+  // OpenSSL guarantees that SSL_get_error returns SSL_ERROR_NONE when ret > 0.
+  if ALastResult > 0 then
   begin
-    // 2. Query OpenSSL for the high-level error code (SSL_ERROR_SSL, SSL_ERROR_SYSCALL, etc.)
-    Result:=SSL_get_error(FSSL, ALastResult);
-
-    // 3. Peek at the top error in OpenSSL's thread-local queue without clearing it
-    FLastQueueError:=ERR_peek_error;
+    ClearError; // Reset all snapshot fields to clean state
+    Result:=SSL_ERROR_NONE;
   end
   else
   begin
-    Result:=SSL_ERROR_SYSCALL;
-    FLastQueueError:=0;
-  end;
+    // 2. FAILURE / PENDING PATH (ALastResult <= 0, including 0)
+    // Capture OS-level socket error at the microsecond of failure
+    FLastSocketError:=GStack.WSGetLastError;
 
-  // 4. Cache the resolved SSL error code
-  FLastSSLError:=Result;
+    if Assigned(FSSL) then
+    begin
+      // Resolves ZERO_RETURN, SYSCALL, WANT_READ, WANT_WRITE, SSL_ERROR_SSL, etc.
+      Result:=SSL_get_error(FSSL, ALastResult);
+
+      // Peeks at the top error in OpenSSL's C-queue without clearing it
+      FLastQueueError:=ERR_peek_error;
+    end
+    else
+    begin
+      Result:=SSL_ERROR_SYSCALL;
+      FLastQueueError:=0;
+    end;
+    FLastSSLError:=Result;
+  end;
 end;
 
 function TTaurusTLSSslSocket.IsValidTransition(ACurrent,
@@ -4017,6 +4032,17 @@ begin
     ETaurusTLSCertValidationError.RaiseWithMessage(lErr.ErrorShortDescription);
 end;
 
+procedure TTaurusTLSSslSocket.ClearError;
+begin
+  ERR_clear_error; // Clear OpenSSL's thread-local error queue
+
+  // Reset local captured snapshot fields
+  FLastSSLError := SSL_ERROR_NONE;
+  FLastRetCode := 0;
+  FLastQueueError := 0;
+  FLastSocketError := 0;
+end;
+
 function TTaurusTLSSslSocket.Readable(AMsec: integer): boolean;
 var
   lSW: TStopWatch;
@@ -4057,7 +4083,7 @@ begin
       if not WaitForRead(lTimeout) then
         Break;
 
-      ERR_clear_error;
+      ClearError;
 
       // 3. Perform a non-destructive 1-byte peek
       lRet:=SSL_peek(FSSL, lByte, 1);
@@ -4115,7 +4141,7 @@ begin
   lSW:=TStopWatch.StartNew;
 
   repeat
-    ERR_clear_error;
+    ClearError;
     lRet:=SSL_read_ex(FSSL, ABuffer[0], Length(ABuffer), lResult);
     Result:=lResult;
 
@@ -4177,7 +4203,7 @@ begin
   lSW:=TStopWatch.StartNew;
 
   repeat
-    ERR_clear_error;
+    ClearError;
     lRet:=SSL_write_ex(FSSL, ABuffer[AOffset], ALength, lResult);
     Result:=lResult;
 
@@ -4601,7 +4627,7 @@ var
 begin
   lContext:=ClientCtx;
   try
-    ERR_clear_error;
+    ClearError;
     lRet:=SSL_connect(SSL);
 
     if lRet > 0 then
