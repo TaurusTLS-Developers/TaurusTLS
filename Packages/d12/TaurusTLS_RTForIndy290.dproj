@@ -89,14 +89,12 @@
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Base)'!=''">
 		<SanitizedProjectName>TaurusTLS_RTForIndy290</SanitizedProjectName>
-		<DCC_CBuilderOutput>All</DCC_CBuilderOutput>
 		<DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
 		<DCC_Description>TaurusTLS Run-Time package</DCC_Description>
 		<DCC_ExeOutput>.\$(Platform)\$(Config)</DCC_ExeOutput>
 		<DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;$(DCC_Namespace)</DCC_Namespace>
 		<DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
 		<DCC_UnitSearchPath>$(INDY_PATH)\Lib\System;$(INDY_PATH)\Lib\Core;$(INDY_PATH)\Lib\Protocols;..\..\\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
-		<DllSuffix></DllSuffix>
 		<GenDll>true</GenDll>
 		<GenPackage>true</GenPackage>
 		<RuntimeOnlyPackage>true</RuntimeOnlyPackage>
@@ -104,9 +102,6 @@
 		<VerInfo_Keys>CompanyName=TaurusTLS Developers;FileDescription=$(MSBuildProjectName);FileVersion=1.0.10.52;InternalName=TaurusTLS_RTForIndy290.bpl;LegalCopyright=Copyright (c) 2026 TaurusTLS Developers.  All Rights Reserved.;LegalTrademarks=;OriginalFilename=TaurusTLS_RTForIndy290.bpl;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.10.52;Comments=</VerInfo_Keys>
 		<VerInfo_Locale>1033</VerInfo_Locale>
 		<DCC_OutputXMLDocumentation>true</DCC_OutputXMLDocumentation>
-		<DCC_ObjOutput>..\Output\BPI\$(Platform)\$(Config)</DCC_ObjOutput>
-		<DCC_HppOutput>..\Output\BPI\$(Platform)\$(Config)</DCC_HppOutput>
-		<DCC_BpiOutput>..\Output\BPI\$(Platform)\$(Config)</DCC_BpiOutput>
 		<DCC_CBuilderOutput>All</DCC_CBuilderOutput>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Base_Android)'!=''">
@@ -185,7 +180,8 @@
 		<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-		<VerInfo_Keys>CompanyName=TaurusTLS Developers;FileDescription=$(MSBuildProjectName);FileVersion=1.0.10.52;InternalName=TaurusTLS_RTForIndy290.bpl;LegalCopyright=Copyright (c) 2026 TaurusTLS Developers.  All Rights Reserved.;LegalTrademarks=;OriginalFilename=TaurusTLS_RTForIndy290.bpl;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.10.52;Comments=</VerInfo_Keys>
+		<VerInfo_Release>10</VerInfo_Release>
+		<VerInfo_Build>52</VerInfo_Build>
 	</PropertyGroup>
 	<ItemGroup>
 		<DelphiCompile Include="$(MainSource)">
@@ -320,16 +316,11 @@
 					<Source Name="MainSource">TaurusTLS_RTForIndy290.dpk</Source>
 				</Source>
 				<Excluded_Packages>
-					<Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\23.0\Bpl\AbbreviaVCLDDesign290.bpl">TurboPack Abbrevia VCL Designtime Delphi package</Excluded_Packages>
-					<Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\23.0\Bpl\AsyncProCD290.bpl">TurboPack Async Professional CBuilder Designtime Package</Excluded_Packages>
-					<Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\23.0\Bpl\dclStyledComponents290.bpl">Ethea Styled Components Library</Excluded_Packages>
-					<Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\23.0\Bpl\dclStyledAnimatedComponents290.bpl">Ethea Styled Components with Animations by Skia4Delphi</Excluded_Packages>
-					<Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\23.0\Bpl\OnGuardFMXDD290.bpl">TurboPack OnGuard FireMonkey Delphi Designtime package</Excluded_Packages>
+					<Excluded_Packages Name="$(BDSBIN)\dclemsedge290.bpl">Embarcadero RAD Server Edge Components</Excluded_Packages>
 					<Excluded_Packages Name="$(BDSBIN)\bcboffice2k290.bpl">Embarcadero C++Builder Office 2000 Servers Package</Excluded_Packages>
 					<Excluded_Packages Name="$(BDSBIN)\bcbofficexp290.bpl">Embarcadero C++Builder Office XP Servers Package</Excluded_Packages>
 					<Excluded_Packages Name="$(BDSBIN)\dcloffice2k290.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
 					<Excluded_Packages Name="$(BDSBIN)\dclofficexp290.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
-					<Excluded_Packages Name="$(BDSBIN)\dclemsedge290.bpl">Embarcadero RAD Server Edge Components</Excluded_Packages>
 					<Excluded_Packages Name="$(BDSBIN)\dclIPIndyImpl290.bpl">IP Abstraction Indy Implementation Design Time</Excluded_Packages>
 				</Excluded_Packages>
 			</Delphi.Personality>

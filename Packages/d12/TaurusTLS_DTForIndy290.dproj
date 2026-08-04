@@ -72,9 +72,6 @@
 		<Base>true</Base>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Base)'!=''">
-		<DCC_BpiOutput>.\$(Platform)\$(Config)</DCC_BpiOutput>
-		<DCC_HppOutput>.\$(Platform)\$(Config)</DCC_HppOutput>
-		<DCC_ObjOutput>.\$(Platform)\$(Config)</DCC_ObjOutput>
 		<DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
 		<DCC_ExeOutput>.\$(Platform)\$(Config)</DCC_ExeOutput>
 		<DCC_CBuilderOutput>All</DCC_CBuilderOutput>
@@ -93,6 +90,7 @@
 		<DesignOnlyPackage>true</DesignOnlyPackage>
 		<DCC_Description>TaurusTLS Design-Time-Only package</DCC_Description>
 		<DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
+		<VerInfo_Release>10</VerInfo_Release>
 		<DCC_UnitSearchPath>..\..\Source\;.\$(Platform)\$(Config);$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
 		<VerInfo_Build>52</VerInfo_Build>
 	</PropertyGroup>
@@ -158,7 +156,7 @@
 		<DCC_DebugInformation>0</DCC_DebugInformation>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-		<VerInfo_Build>52</VerInfo_Build>
+		<VerInfo_Release>10</VerInfo_Release>
 	</PropertyGroup>
 	<ItemGroup>
 		<DelphiCompile Include="$(MainSource)">
@@ -197,16 +195,11 @@
 					<Source Name="MainSource">TaurusTLS_DTForIndy290.dpk</Source>
 				</Source>
 				<Excluded_Packages>
-					<Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\23.0\Bpl\AbbreviaVCLDDesign290.bpl">TurboPack Abbrevia VCL Designtime Delphi package</Excluded_Packages>
-					<Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\23.0\Bpl\AsyncProCD290.bpl">TurboPack Async Professional CBuilder Designtime Package</Excluded_Packages>
-					<Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\23.0\Bpl\dclStyledComponents290.bpl">Ethea Styled Components Library</Excluded_Packages>
-					<Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\23.0\Bpl\dclStyledAnimatedComponents290.bpl">Ethea Styled Components with Animations by Skia4Delphi</Excluded_Packages>
-					<Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\23.0\Bpl\OnGuardFMXDD290.bpl">TurboPack OnGuard FireMonkey Delphi Designtime package</Excluded_Packages>
+					<Excluded_Packages Name="$(BDSBIN)\dclemsedge290.bpl">Embarcadero RAD Server Edge Components</Excluded_Packages>
 					<Excluded_Packages Name="$(BDSBIN)\bcboffice2k290.bpl">Embarcadero C++Builder Office 2000 Servers Package</Excluded_Packages>
 					<Excluded_Packages Name="$(BDSBIN)\bcbofficexp290.bpl">Embarcadero C++Builder Office XP Servers Package</Excluded_Packages>
 					<Excluded_Packages Name="$(BDSBIN)\dcloffice2k290.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
 					<Excluded_Packages Name="$(BDSBIN)\dclofficexp290.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
-					<Excluded_Packages Name="$(BDSBIN)\dclemsedge290.bpl">Embarcadero RAD Server Edge Components</Excluded_Packages>
 					<Excluded_Packages Name="$(BDSBIN)\dclIPIndyImpl290.bpl">IP Abstraction Indy Implementation Design Time</Excluded_Packages>
 				</Excluded_Packages>
 			</Delphi.Personality>
