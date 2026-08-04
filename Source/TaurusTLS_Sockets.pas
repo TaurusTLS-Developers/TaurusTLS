@@ -4000,7 +4000,7 @@ end;
 
 procedure TTaurusTLSSslSocket.CheckPeerCertificateValidationResult;
 var
-  lErr: TTaurusTLSX509Error;
+  lErr: TTaurusTLSX509Error;  // its a record type. No lErr.Free is required.
   lCert: TTaurusTLSX509; // PALOFF 'Created and freed objects'
   lSuccess: boolean;
 
@@ -4297,12 +4297,11 @@ var
 
 begin
   Result:=nil;
-  if not (State in [seHandshaking, seEstablished]) then
-    Exit;
+  if State in [seHandshaking, seEstablished] then
   try
-    lX509:=SSL_get_certificate(FSSL);
+    lX509:=SSL_get1_peer_certificate(FSSL);
     if Assigned(lX509) then
-      Result:=TTaurusTLSX509.Create(lX509, False);
+      Result:=TTaurusTLSX509.Create(lX509, True);
   except
     FreeAndNil(Result);
   end;
