@@ -1156,10 +1156,10 @@ type
     function GetSSLError(ALastResult: Integer): Integer; {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure ClearError; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
-    procedure InitSSL; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure InitSSL; virtual;{$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure InitSSLCallbacks; virtual;
     procedure SetupConnection; virtual; abstract;
-    procedure ReleaseSSL; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure ReleaseSSL; virtual;{$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure ReleaseSSLCallbacks; virtual;
     procedure BindSocket; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
@@ -1168,7 +1168,7 @@ type
 
     procedure DoHandshake;
     procedure DoHandshakeIteration; virtual; abstract;
-    procedure DoShutdown;
+    procedure DoShutdown; virtual;
     procedure DoSetState(ATarget: TTaurusTLSSslSocketState); virtual;
 
     function IsValidTransition(ACurrent, ATarget: TTaurusTLSSslSocketState): Boolean; virtual;
@@ -1231,6 +1231,7 @@ type
     procedure SetupConnection; override;
     procedure SetupHostnameVerification;
     procedure DoHandshakeIteration; override;
+    procedure DoShutdown; override;
     property ClientCtx: TTaurusTLSSslClientCtx read GetClientCtx;
   public
     procedure Connect(const pHandle: TIdStackSocketHandle;
@@ -3762,6 +3763,7 @@ begin
         GetSSLError(lRet);
     end;
   finally
+    // Transition to seClosed state releases SSL resources.
     TransitionTo(seClosed);
     // Use raw ERR_clear_error here so OpenSSL's C-queue is cleaned up,
     // but your Delphi FLastSSLError snapshot is PRESERVED for post-mortem inspection!
@@ -4750,6 +4752,15 @@ begin
         TransitionTo(seError); // Safely aborts, preventing illegal "shutdown while in init"
       raise;
     end;
+  end;
+end;
+
+procedure TTaurusTLSClientSocket.DoShutdown;
+begin
+  try
+    inherited;
+  finally
+    FreeAndNil(FSessionToResume);
   end;
 end;
 
