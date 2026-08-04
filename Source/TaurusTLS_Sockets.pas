@@ -1122,7 +1122,7 @@ type
     // SSL Session Resumption flag
     FIsSessionResumed: boolean;
 
-    function GetPerCertificate: TTaurusTLSX509;       // Fast class pointer
+    function GetPeerCertificate: TTaurusTLSX509;       // Fast class pointer
 
     // OpenSSL callback methods
     class procedure CbSslInfo(const ASSL: PSSL;
@@ -1179,7 +1179,7 @@ type
 
     property SocketHandle: TIdStackSocketHandle read FSocketHandle write FSocketHandle;
     property IsSessionResumed: boolean read FIsSessionResumed;
-    property PeerCertificate: TTaurusTLSX509 read GetPerCertificate;
+    property PeerCertificate: TTaurusTLSX509 read GetPeerCertificate;
   public
 {$IFDEF SIGPIPE_MASK}
 { BUGFIX: Fixes issue #217 and #240 }
@@ -4013,7 +4013,7 @@ begin
   lSuccess:=lErr.ErrorCode = X509_V_OK;
   if not lSuccess then
   try
-    lCert:=GetPerCertificate;
+    lCert:=GetPeerCertificate;
     Ctx.DoOnPeerCertError(Self, lCert, lErr, lSuccess);
   finally
     lCert.Free;
@@ -4291,7 +4291,7 @@ begin
       [ASSL]);
 end;
 
-function TTaurusTLSSslSocket.GetPerCertificate: TTaurusTLSX509;
+function TTaurusTLSSslSocket.GetPeerCertificate: TTaurusTLSX509;
 var
   lX509: PX509;
 
