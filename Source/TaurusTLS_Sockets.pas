@@ -642,7 +642,6 @@ type
   public
     constructor Create(ASender: TObject; ATLSMeth: PSSL_METHOD);
     destructor Destroy; override;
-    procedure CloneSession(ASSL: PSSL); {$IFDEF USE_INLINE}inline; {$ENDIF}
     function FreezeCtx: TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
@@ -654,7 +653,6 @@ type
 
   TTaurusTLSSslClientCtx = class(TTaurusTLSSslSocketCtx)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
-    FSessionToResume: PSSL_SESSION;
     FHostname: RawByteString;
     FDefaultSNI: RawByteString;
     FSNIKind: TTaurusTLSSNICliKind;
@@ -694,8 +692,6 @@ type
     procedure ReleaseCtx; override;
 
     // protected setters
-    function SetSessionToResume(const ASSL: PSSL): TTaurusTLSSslClientCtx;
-      {$IFDEF USE_INLINE}inline;{$ENDIF}
     function SetHostName(const AValue: string): TTaurusTLSSslClientCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function SetDefaultSNI(const AValue: string): TTaurusTLSSslClientCtx;
@@ -715,10 +711,7 @@ type
       var ACert: PX509; APKey: PEVP_PKEY);
 
   public
-    destructor Destroy; override;
-
     property HasOnClientCert: boolean read GetHasOnClientCert;
-    property SessionToResume: PSSL_SESSION read FSessionToResume;
     property HostName: string read GetHostName;
     property DefaultSNI: string read GetDefaultSNI;
     property SNIKind: TTaurusTLSSNICliKind read FSNIKind;
@@ -1126,6 +1119,9 @@ type
     FLastQueueError: TIdC_ULONG; // Peeked OpenSSL queue error code (via ERR_peek_error)
     FLastSocketError: Integer;   // Captured OS socket error (via GStack.WSGetLastError)
 
+    // SSL Session Resumption flag
+    FIsSessionResumed: boolean;
+
     function GetPerCertificate: TTaurusTLSX509;       // Fast class pointer
 
     // OpenSSL callback methods
@@ -1182,6 +1178,7 @@ type
     procedure CheckActiveState(const AExpectedStates: TTaurusTLSSslSocketStates); {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     property SocketHandle: TIdStackSocketHandle read FSocketHandle write FSocketHandle;
+    property IsSessionResumed: boolean read FIsSessionResumed;
     property PeerCertificate: TTaurusTLSX509 read GetPerCertificate;
   public
 {$IFDEF SIGPIPE_MASK}
@@ -1197,7 +1194,7 @@ type
 
     procedure TransitionTo(ATarget: TTaurusTLSSslSocketState); virtual;
 
-    procedure Connect(const pHandle: TIdStackSocketHandle); virtual;
+    procedure Connect(const pHandle: TIdStackSocketHandle); overload; virtual;
     function Send(const ABuffer: TIdBytes; const AOffset, ALength: TIdC_SIZET;
       const AMSec: Integer): Integer; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function Recv(var ABuffer: TIdBytes; const AMSec: Integer): Integer;
@@ -1212,12 +1209,21 @@ type
     property Ctx: TTaurusTLSSslSocketCtx read FCtx;
   end;
 
+  TTaurusTLSSSLSession = class
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
+    FSession: PSSL_SESSION;
+  public
+    constructor Create(ASocket: TTaurusTLSSslSocket);
+    destructor Destroy; override;
+
+    property SSLSession: PSSL_SESSION read FSession;
+  end;
+
   TTaurusTLSClientSocket = class(TTaurusTLSSslSocket)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
+    FSessionToResume: TTaurusTLSSSLSession;
     FECHStatus: TTaurusECHClientStatus;
     function GetClientCtx: TTaurusTLSSslClientCtx;
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
-
   protected
     procedure SetECHStatus(AECHStatus: TTaurusECHClientStatus);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -1227,7 +1233,8 @@ type
     procedure DoHandshakeIteration; override;
     property ClientCtx: TTaurusTLSSslClientCtx read GetClientCtx;
   public
-    procedure Connect(const pHandle: TIdStackSocketHandle); override;
+    procedure Connect(const pHandle: TIdStackSocketHandle;
+      ASessionToResume: TTaurusTLSSSLSession); overload;
   end;
 
   TTaurusTLSPeerSocket = class(TTaurusTLSSslSocket)
@@ -2709,11 +2716,6 @@ begin
       'TTaurusTLSSslSocketCtx instance is frozen and cannot be modified.');
 end;
 
-procedure TTaurusTLSSslSocketCtx.CloneSession(ASSL: PSSL);
-begin
-{ TODO :  }
-end; // PALOFF 'Empty begin/end-blocks'
-
 procedure TTaurusTLSSslSocketCtx.DoOnKeyLog(ASocket: TTaurusTLSSslSocket;
   ALine: PIdAnsiChar);
 begin
@@ -3149,12 +3151,6 @@ begin
   end;
 end;
 
-destructor TTaurusTLSSslClientCtx.Destroy;
-begin
-  SSL_SESSION_free(FSessionToResume);
-  inherited;
-end;
-
 procedure TTaurusTLSSslClientCtx.InitCtx;
 begin
   inherited;
@@ -3375,17 +3371,6 @@ begin
   CheckFrozen;
   FECHFlags:=AValue;
   ResetIdentity;
-end;
-
-function TTaurusTLSSslClientCtx.SetSessionToResume(
-  const ASSL: PSSL): TTaurusTLSSslClientCtx;
-begin
-  Result:=Self;
-  if not Assigned(ASSL) then
-    Exit;
-
-  CheckFrozen;
-  FSessionToResume:= SSL_get1_session(ASSL);
 end;
 
 function TTaurusTLSSslClientCtx.SetSNIKind(
@@ -3730,6 +3715,9 @@ begin
     { TODO : IndySleep should be replaced with the smart cross-compiler "spin wait" call. }
       IndySleep(1);
   until State <> seHandshaking;
+
+  FIsSessionResumed:=Assigned(FSSL) and (State in [seEstablished, seClosing]) and
+    (SSL_session_reused(FSSL) > 0);
 end;
 
 procedure TTaurusTLSSslSocket.DoSetState(ATarget: TTaurusTLSSslSocketState);
@@ -4486,6 +4474,24 @@ begin
   end;
 end;
 
+{ TTaurusTLSSSLSession }
+
+constructor TTaurusTLSSSLSession.Create(ASocket: TTaurusTLSSslSocket);
+begin
+  inherited Create;
+  if Assigned(ASocket) and (ASocket.State in [seEstablished, seClosing]) and
+    Assigned(ASocket.SSL) then
+    FSession:=SSL_get1_session(ASocket.SSL)
+  else
+    FSession:=nil;
+end;
+
+destructor TTaurusTLSSSLSession.Destroy;
+begin
+  SSL_SESSION_free(FSession);
+  inherited;
+end;
+
 { TTaurusTLSClientSocket }
 
 function TTaurusTLSClientSocket.GetClientCtx: TTaurusTLSSslClientCtx;
@@ -4509,6 +4515,10 @@ begin
   lContext:=ClientCtx;
   if not Assigned(lContext) then
     ETaurusTLSClientSocketSSLSetupError.RaiseWithMessage(RSOSSLModeNotSet);
+
+  // Setup session resumption
+  if Assigned(FSessionToResume) then
+    SSL_set_session(FSSL, FSessionToResume.SSLSession);
 
   SetECHStatus(echCliNotConfigured);
 
@@ -4595,23 +4605,11 @@ begin
   end;
 end;
 
-procedure TTaurusTLSClientSocket.Connect(const pHandle: TIdStackSocketHandle);
+procedure TTaurusTLSClientSocket.Connect(const pHandle: TIdStackSocketHandle;
+  ASessionToResume: TTaurusTLSSSLSession);
 begin
-  // 1. Capture the raw OS socket handle
-  SocketHandle:=pHandle;
-
-  // 2. Transition to Initialized (Allocates FSSL, configures SNI/ECH/Verification, binds callbacks) [2.2, 3]
-  TransitionTo(seInitialized);
-
-  // 3. Bind the physical socket descriptor to OpenSSL
-  BindSocket;
-
-  // 4. Clone the session ID if this is a cloned IOHandler (e.g., FTP data channels)
-  Ctx.CloneSession(FSSL);
-
-  // 5. Transition to Handshaking and initiate the Handshake loop
-  TransitionTo(seHandshaking);
-  DoHandshake;
+  FSessionToResume:=ASessionToResume;
+  Connect(pHandle);
 end;
 
 procedure TTaurusTLSClientSocket.DoHandshakeIteration;
