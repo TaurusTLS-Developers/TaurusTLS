@@ -3,10 +3,10 @@
         <ProjectGuid>{2F4FFBCF-BABC-477F-97EB-145D4373D99A}</ProjectGuid>
     </PropertyGroup>
     <ItemGroup>
-        <Projects Include="..\d12\TaurusTLS_RT.dproj">
+        <Projects Include="TaurusTLS_RT.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="..\d12\TaurusTLS_DT.dproj">
+        <Projects Include="TaurusTLS_DT.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -18,22 +18,22 @@
         </BorlandProject>
     </ProjectExtensions>
     <Target Name="TaurusTLS_RT">
-        <MSBuild Projects="..\d12\TaurusTLS_RT.dproj"/>
+        <MSBuild Projects="TaurusTLS_RT.dproj"/>
     </Target>
     <Target Name="TaurusTLS_RT:Clean">
-        <MSBuild Projects="..\d12\TaurusTLS_RT.dproj" Targets="Clean"/>
+        <MSBuild Projects="TaurusTLS_RT.dproj" Targets="Clean"/>
     </Target>
     <Target Name="TaurusTLS_RT:Make">
-        <MSBuild Projects="..\d12\TaurusTLS_RT.dproj" Targets="Make"/>
+        <MSBuild Projects="TaurusTLS_RT.dproj" Targets="Make"/>
     </Target>
     <Target Name="TaurusTLS_DT">
-        <MSBuild Projects="..\d12\TaurusTLS_DT.dproj"/>
+        <MSBuild Projects="TaurusTLS_DT.dproj"/>
     </Target>
     <Target Name="TaurusTLS_DT:Clean">
-        <MSBuild Projects="..\d12\TaurusTLS_DT.dproj" Targets="Clean"/>
+        <MSBuild Projects="TaurusTLS_DT.dproj" Targets="Clean"/>
     </Target>
     <Target Name="TaurusTLS_DT:Make">
-        <MSBuild Projects="..\d12\TaurusTLS_DT.dproj" Targets="Make"/>
+        <MSBuild Projects="TaurusTLS_DT.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
         <CallTarget Targets="TaurusTLS_RT;TaurusTLS_DT"/>
