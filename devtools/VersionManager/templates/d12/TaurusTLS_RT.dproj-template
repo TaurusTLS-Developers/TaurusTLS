@@ -116,6 +116,9 @@
         <DCC_UnitSearchPath>..\..\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DllSuffix>290</DllSuffix>
         <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
+        <DCC_BpiOutput>.\$(Platform)\$(Config)</DCC_BpiOutput>
+        <DCC_HppOutput>.\$(Platform)\$(Config)</DCC_HppOutput>
+        <DCC_ObjOutput>.\$(Platform)\$(Config)</DCC_ObjOutput>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Android)'!=''">
         <DCC_CBuilderOutput>None</DCC_CBuilderOutput>
@@ -162,13 +165,11 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
         <VerInfo_Build>52</VerInfo_Build>
-        <DCC_BpiOutput>..\Output\BPI\$(Platform)\$(Config)</DCC_BpiOutput>
-        <DCC_HppOutput>..\Output\BPI\$(Platform)\$(Config)</DCC_HppOutput>
-        <DCC_ObjOutput>..\Output\BPI\$(Platform)\$(Config)</DCC_ObjOutput>
         <VerInfo_Release>10</VerInfo_Release>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64x)'!=''">
         <VerInfo_Build>52</VerInfo_Build>
+        <VerInfo_Release>10</VerInfo_Release>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>

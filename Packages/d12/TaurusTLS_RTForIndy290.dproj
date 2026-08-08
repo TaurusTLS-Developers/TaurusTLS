@@ -87,6 +87,12 @@
 		<Cfg_2>true</Cfg_2>
 		<Base>true</Base>
 	</PropertyGroup>
+	<PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win64)'!=''">
+		<Cfg_2_Win64>true</Cfg_2_Win64>
+		<CfgParent>Cfg_2</CfgParent>
+		<Cfg_2>true</Cfg_2>
+		<Base>true</Base>
+	</PropertyGroup>
 	<PropertyGroup Condition="'$(Base)'!=''">
 		<SanitizedProjectName>TaurusTLS_RTForIndy290</SanitizedProjectName>
 		<DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
@@ -103,6 +109,9 @@
 		<VerInfo_Locale>1033</VerInfo_Locale>
 		<DCC_OutputXMLDocumentation>true</DCC_OutputXMLDocumentation>
 		<DCC_CBuilderOutput>All</DCC_CBuilderOutput>
+		<DCC_BpiOutput>.\$(Platform)\$(Config)</DCC_BpiOutput>
+		<DCC_HppOutput>.\$(Platform)\$(Config)</DCC_HppOutput>
+		<DCC_ObjOutput>.\$(Platform)\$(Config)</DCC_ObjOutput>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Base_Android)'!=''">
 		<DCC_CBuilderOutput>None</DCC_CBuilderOutput>
@@ -169,9 +178,11 @@
 		<DCC_RemoteDebug>false</DCC_RemoteDebug>
 		<VerInfo_Build>52</VerInfo_Build>
 		<DCC_OutputXMLDocumentation>true</DCC_OutputXMLDocumentation>
+		<VerInfo_Release>10</VerInfo_Release>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
-		<VerInfo_Keys>CompanyName=TaurusTLS Developers;FileDescription=$(MSBuildProjectName);FileVersion=1.0.10.52;InternalName=TaurusTLS_RTForIndy290.bpl;LegalCopyright=Copyright (c) 2026 TaurusTLS Developers.  All Rights Reserved.;LegalTrademarks=;OriginalFilename=TaurusTLS_RTForIndy290.bpl;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.10.52;Comments=</VerInfo_Keys>
+		<VerInfo_Release>10</VerInfo_Release>
+		<VerInfo_Build>52</VerInfo_Build>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Cfg_2)'!=''">
 		<DCC_DebugInformation>0</DCC_DebugInformation>
@@ -180,6 +191,10 @@
 		<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+		<VerInfo_Release>10</VerInfo_Release>
+		<VerInfo_Build>52</VerInfo_Build>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
 		<VerInfo_Release>10</VerInfo_Release>
 		<VerInfo_Build>52</VerInfo_Build>
 	</PropertyGroup>
