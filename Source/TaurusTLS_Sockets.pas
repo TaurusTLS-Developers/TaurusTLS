@@ -52,28 +52,69 @@ uses
   TaurusTLSExceptionHandlers;
 
 type
-  TTaurusTLSSslSocketState = (
-    seIdle,
-    seInitialized,
-    seHandshaking,
-    seEstablished,
-    seClosing,
-    seClosed,
-    seError
-  );
-  TTaurusTLSSslSocketStates = set of TTaurusTLSSslSocketState;
+  ETaurusTLSSslSocketCtxError = class(ETaurusTLSError);
+  ETaurusTLSSslSocketCtxBuildError = class(ETaurusTLSError);
 
-  TTaurusTLSSslSocketStateHelper = record helper for TTaurusTLSSslSocketState
-  public const
-    // Do not localize
-    cNames: array[TTaurusTLSSslSocketState] of string = ('Idle', 'Initialized',
-      'Handshaking', 'Established', 'Closing', 'Closed', 'Error');  // Do not localize
-  private
-    function GetAsString: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+  ETaurusTLSSocketCtxSSLCtxError = class(ETaurusTLSAPISSLError);
+  ETaurusTLSSocketCtxSSLTrustStoreError = class(ETaurusTLSAPISSLError);
+
+  ETaurusTLSSocketStateError = class(ETaurusTLSError);
+
+  /// <summary>
+  /// Raised if <c>SSL_set_fd</c> failed.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.0/man3/SSL_set_fd/">
+  /// SSL_set_fd
+  /// </seealso>
+  ETaurusTLSSSLSocketCreateError = class(ETaurusTLSAPICryptoError);
+  ETaurusTLSSslSocketBindError = class(ETaurusTLSAPICryptoError);
+
+  ETaurusTLSSSLSocketError = class(ETaurusTLSAPISSLError)
   public
-    property AsString: string read GetAsString;
+    class function TargetSocketState: TTaurusTLSSslSocketState; virtual;
   end;
 
+  ETaurusTLSSSLSocketClose = class(ETaurusTLSSSLSocketError)
+  public
+    class function TargetSocketState: TTaurusTLSSslSocketState; override;
+  end;
+
+  ETaurusTLSSSLSocketConnectionReset = class(ETaurusTLSSSLSocketClose);
+
+  /// <summary>
+  /// Raised if certificate validation failed and the message breifly
+  /// describes the failure.
+  /// </summary>
+  ETaurusTLSSSLSocketCertValidationError = class(ETaurusTLSError)
+  private
+    FVerifyCode: TIdC_LONG;
+  public
+    constructor Create(AVerifyCode: TIdC_LONG; const AMessage: string);
+    class procedure RaiseErrorCode(AVerifyCode: TIdC_LONG;
+      const AMessage: string);
+
+    property VerifyCode: TIdC_LONG read FVerifyCode;
+  end;
+
+  ETaurusTLSSSLSocketDataBindingError = class(ETaurusTLSAPICryptoError);
+
+  ETaurusTLSClientSSLSocketSetupError = class(ETaurusTLSSSLSocketError);
+  ETaurusTLSClientSSLSocketHostNameError = class(ETaurusTLSAPISSLError);
+  ETaurusTLSHandshakeError = class(ETaurusTLSAPISSLError);
+
+  ETaurusTLSECHCliFlagsError = class(ETaurusTLSError);
+  EECHNotSupported = class(ETaurusTLSError);
+
+
+  ETaurusTLSECHBadNameError = class(ETaurusTLSECHError);
+  ETaurusTLSECHProtocolError = class(ETaurusTLSECHError);
+
+
+  ETaurusTLSAlpnResultError = class(ETaurusTLSError);
+
+
+type
   TTaurusTLSSNICliKind = (
     skNoSNI,
     skHostSNI,
@@ -137,9 +178,6 @@ type
     property UseNoOuter: boolean read GetUseNoOuter;
     property Value: TTaurusTLSECHCLiEnums read FValue write SetValue;
   end;
-
-  ETaurusTLSECHCliFlagsError = class(ETaurusTLSError);
-  EECHNotSupported = class(ETaurusTLSError);
 
   TTaurusTLSSslStateFlag  = (
     stfLoop               = 0,    // 1 shl 0  = SSL_CB_LOOP
@@ -444,8 +482,6 @@ type
     property SelectedProtoLen: TIdC_UINT8 read FOutLen;
   end;
 
-  ETaurusTLSAlpnResultError = class(ETaurusTLSError);
-
   TTaurusTLSOnAlpnSelect = procedure(ASender: TObject;
     ASocket: TTaurusTLSSslSocket; const AAlpnState: TTaurusTLSAlpnSelector);
 
@@ -648,8 +684,6 @@ type
     property Sender: TObject read FSender;
     property SSLCtx: PSSL_CTX read FSSLCtx;
   end;
-
-  ETaurusTLSSslSocketCtxError = class(ETaurusTLSError);
 
   TTaurusTLSSslClientCtx = class(TTaurusTLSSslSocketCtx)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
@@ -1084,8 +1118,6 @@ type
 
   end;
 
-  ETaurusTLSSslSocketCtxBuildError = class(ETaurusTLSError);
-
   TTaurusECHClientStatus = (echCliNone, echCliSuccess, echCliFailed,
     echCliRetryConfig, echCliNotConfigured);
 
@@ -1102,6 +1134,10 @@ type
     FSigSet: sigset_t;
 {$ENDIF}
 
+  public const
+    cTerminalStates = [seError, seClosed];
+    cDefaultTransitions = 8;
+
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
   {$IFDEF DCC}
     [Volatile]
@@ -1114,10 +1150,10 @@ type
     FCtx: TTaurusTLSSslSocketCtx;
 
     // Error Snapshot
-    FLastSSLError: TIdC_INT;     // Result of SSL_get_error (e.g. SSL_ERROR_SSL, SSL_ERROR_SYSCALL)
-    FLastRetCode: TIdC_INT;      // Return code of SSL_read_ex / SSL_write_ex (e.g. 0 or -1)
-    FLastQueueError: TIdC_ULONG; // Peeked OpenSSL queue error code (via ERR_peek_error)
-    FLastSocketError: Integer;   // Captured OS socket error (via GStack.WSGetLastError)
+    FLastSSLError: TIdC_INT;      // Result of SSL_get_error (e.g. SSL_ERROR_SSL, SSL_ERROR_SYSCALL)
+    FLastRetCode: TIdC_INT;       // Return code of SSL_read_ex / SSL_write_ex (e.g. 0 or -1)
+    FLastQueueError: TIdC_ULONG;  // Peeked OpenSSL queue error code (via ERR_peek_error)
+    FLastSocketError: Integer;    // Captured OS socket error (via GStack.WSGetLastError)
 
     // SSL Session Resumption flag
     FIsSessionResumed: boolean;
@@ -1153,29 +1189,41 @@ type
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     function CheckForError: Integer; overload; virtual;
-    function GetSSLError(ALastResult: Integer): Integer; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetLastError(ARetCode: Integer): Integer; overload;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetSSLError(ALastResult: Integer): Integer; overload;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure ClearError; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
-    procedure InitSSL; virtual;{$IFDEF USE_INLINE}inline; {$ENDIF}
+    function InitSSL: TTaurusTLSSslSocketState; virtual;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure InitSSLCallbacks; virtual;
     procedure SetupConnection; virtual; abstract;
-    procedure ReleaseSSL; virtual;{$IFDEF USE_INLINE}inline; {$ENDIF}
+    function ReleaseSSL: TTaurusTLSSslSocketState; virtual;
     procedure ReleaseSSLCallbacks; virtual;
-    procedure BindSocket; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function BindSocket: TTaurusTLSSslSocketState; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     function WaitForRead(AMsec: integer): boolean;  {$IFDEF USE_INLINE}inline; {$ENDIF}
     function WaitForWrite(AMsec: integer): boolean;  {$IFDEF USE_INLINE}inline; {$ENDIF}
 
-    procedure DoHandshake;
-    procedure DoHandshakeIteration; virtual; abstract;
-    procedure DoShutdown; virtual;
-    procedure DoSetState(ATarget: TTaurusTLSSslSocketState); virtual;
+    function DoHandshake: TTaurusTLSSslSocketState;
+    function DoHandshakeIteration: TTaurusTLSSslSocketState; virtual; abstract;
+    function DoShutdown: TTaurusTLSSslSocketState; virtual;
 
+    // State machine
     function IsValidTransition(ACurrent, ATarget: TTaurusTLSSslSocketState): Boolean; virtual;
-
-    // Event handlers
-    procedure DoStateChangeNotify(ACurrent, ATarget: TTaurusTLSSslSocketState); {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure CheckActiveState(const AExpectedStates: TTaurusTLSSslSocketStates); {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure CheckActiveState(const AExpectedStates: TTaurusTLSSslSocketStates);
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetNextStepTarget(ACurrent,
+      ATarget: TTaurusTLSSslSocketState): TTaurusTLSSslSocketState; virtual;
+    function DoTransitionTo(ASource, ATarget: TTaurusTLSSslSocketState): TTaurusTLSSslSocketState;
+      virtual;
+    function DoSetState(ATarget: TTaurusTLSSslSocketState): boolean;
+      overload; virtual;
+    procedure DoSetState(ATarget: TTaurusTLSSslSocketState; ANotify: boolean);
+      overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure DoStateChangeNotify(ACurrent, ATarget: TTaurusTLSSslSocketState);
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     property SocketHandle: TIdStackSocketHandle read FSocketHandle write FSocketHandle;
     property IsSessionResumed: boolean read FIsSessionResumed;
@@ -1192,7 +1240,8 @@ type
     constructor Create(const AConfigIntf: ITaurusTLSSslSocketCtx); virtual;
     destructor Destroy; override;
 
-    procedure TransitionTo(ATarget: TTaurusTLSSslSocketState); virtual;
+    procedure TransitionTo(ATarget: TTaurusTLSSslSocketState;
+      ASteps: integer = cDefaultTransitions); virtual;
 
     procedure Connect(const pHandle: TIdStackSocketHandle); overload; virtual;
     function Send(const ABuffer: TIdBytes; const AOffset, ALength: TIdC_SIZET;
@@ -1230,56 +1279,19 @@ type
 
     procedure SetupConnection; override;
     procedure SetupHostnameVerification;
-    procedure DoHandshakeIteration; override;
-    procedure DoShutdown; override;
+    function DoHandshakeIteration: TTaurusTLSSslSocketState; override;
+    function DoShutdown: TTaurusTLSSslSocketState; override;
     property ClientCtx: TTaurusTLSSslClientCtx read GetClientCtx;
   public
     procedure Connect(const pHandle: TIdStackSocketHandle;
       ASessionToResume: TTaurusTLSSSLSession); overload;
+
+    property ECHStatus: TTaurusECHClientStatus read FECHStatus;
   end;
 
   TTaurusTLSPeerSocket = class(TTaurusTLSSslSocket)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
   end;
-
-  /// <summary>
-  /// Raised if <c>SSL_set_fd</c> failed.
-  /// </summary>
-  /// <seealso href="https://docs.openssl.org/3.0/man3/SSL_set_fd/">
-  /// SSL_set_fd
-  /// </seealso>
-  ETaurusTLSSslSocketBindError = class(ETaurusTLSAPISSLError);
-
-  ETaurusTLSSocketConfigSSLCtxError = class(ETaurusTLSAPISSLError);
-  ETaurusTLSSocketConfigSSLTrustStoreError = class(ETaurusTLSAPISSLError);
-
-  ETaurusTLSCreatingSessionError = class(ETaurusTLSError);
-  ETaurusTLSSocketStateError = class(ETaurusTLSAPISSLError);
-
-  ETaurusTLSIOError = class(ETaurusTLSAPISSLError);
-  ETaurusTLSConnectionReset = class(ETaurusTLSAPISSLError);
-
-  /// <summary>
-  /// Raised if <c>SSL_copy_session_id</c> failed.
-  /// </summary>
-  /// <seealso href="https://docs.openssl.org/3.0/man7/ssl/">
-  /// SSL_copy_session_id
-  /// </seealso>
-  ETaurusTLSSSLCopySessionId = class(ETaurusTLSError);
-
-  /// <summary>
-  /// Raised if certificate validation failed and the message breifly
-  /// describes the failure.
-  /// </summary>
-  ETaurusTLSCertValidationError = class(ETaurusTLSError);
-
-  ETaurusTLSInvalidSocketConfigType = class(ETaurusTLSError);
-
-type
-  ETaurusTLSDataBindingError = class(ETaurusTLSAPISSLError);
-  ETaurusTLSSettingTLSHostNameError = class(ETaurusTLSAPISSLError);
-  ETaurusTLSHandshakeError = class(ETaurusTLSAPISSLError);
-  ETaurusTLSClientSocketSSLSetupError = class(ETaurusTLSError);
 
   // Global support routines
 
@@ -1340,11 +1352,33 @@ begin
 end;
 
 
-{ TTaurusTLSSslSocketStateHelper }
+{ ETaurusTLSSSLSocketError }
 
-function TTaurusTLSSslSocketStateHelper.GetAsString: string;
+class function ETaurusTLSSSLSocketError.TargetSocketState: TTaurusTLSSslSocketState;
 begin
-  Result:=cNames[Self];
+  Result:=seError;
+end;
+
+{ ETaurusTLSSSLSocketClose }
+
+class function ETaurusTLSSSLSocketClose.TargetSocketState: TTaurusTLSSslSocketState;
+begin
+  Result:=seClosed;
+end;
+
+{ ETaurusTLSCertValidationError }
+
+constructor ETaurusTLSSSLSocketCertValidationError.Create(AVerifyCode: TIdC_LONG;
+  const AMessage: string);
+begin
+  FVerifyCode:=AVerifyCode;
+  inherited Create(AMessage);
+end;
+
+class procedure ETaurusTLSSSLSocketCertValidationError.RaiseErrorCode(
+  AVerifyCode: TIdC_LONG; const AMessage: string);
+begin
+  Raise ETaurusTLSSSLSocketCertValidationError.Create(AVerifyCode, AMessage);
 end;
 
 { TTaurusTLSECHCliFlags }
@@ -2845,7 +2879,7 @@ begin
   if Assigned(lResult) and (TObject(lResult) is TTaurusTLSSslSocketCtx) then // PALOFF 'Pointer cast to TObject'
     Result:=TTaurusTLSSslSocketCtx(lResult)
   else
-    ETaurusTLSDataBindingError.RaiseWithMessageFmt(
+    ETaurusTLSSSLSocketDataBindingError.RaiseWithMessageFmt(
       { TODO : To make ResourceString }
       'SSL_CTX object %p is not bound to a valid TTaurusTLSSslSocketCtx instance.',
       [ACtx]);
@@ -2854,16 +2888,19 @@ end;
 procedure TTaurusTLSSslSocketCtx.InitCtx;
 var
   lBool: TIdC_INT;
+  lErr: TIdC_INT;
 
 begin
   // Disabling SSL_MODE_AUTO_RETRY
   SSL_CTX_clear_mode(SSLCtx, SSL_MODE_AUTO_RETRY);
 
   // Attach Self to the SSL_CTX
-  if SSL_CTX_set_app_data(SSLCtx, Self) <= 0 then
-    ETaurusTLSDataBindingError.RaiseWithMessage(
-      { TODO : To make ResourceString }
+  lErr:=SSL_CTX_set_app_data(SSLCtx, Self);
+  if lErr  <= 0 then
+    { TODO : To make ResourceString }
+    ETaurusTLSSSLSocketDataBindingError.RaiseExceptionCode(lErr,
       'Unable to link TTaurusTLSSslSocketCtx instance with SSL_CTX object');
+
   if Flags.QuietShutdown then
     SSL_CTX_set_quiet_shutdown(SSLCtx, 1);
 
@@ -3628,7 +3665,10 @@ end;
 destructor TTaurusTLSSslSocket.Destroy;
 begin
   Shutdown;
-  inherited;
+  if not (FState in [seError, seClosed]) then
+    TransitionTo(seClosed);
+
+  inherited Destroy;
 end;
 
 {$IFDEF SIGPIPE_MASK}
@@ -3639,45 +3679,43 @@ begin
 end;
 {$ENDIF}
 
-procedure TTaurusTLSSslSocket.InitSSL;
+function TTaurusTLSSslSocket.InitSSL: TTaurusTLSSslSocketState;
 var
   lErr: TIdC_INT;
 
 begin
-  try
-    // 1. Allocate the SSL session structure using the pinned context
-    FSSL:=SSL_new(FCtx.SSLCtx);
-    if not Assigned(FSSL) then
-      ETaurusTLSCreatingSessionError.RaiseWithMessage(RSSSLCreatingSessionError);
+  ClearError;
+  CheckActiveState([seInitializing]);
 
-    // 2. Bind the Delphi object instance to the SSL handle for callback routing
-    lErr:=SSL_set_app_data(FSSL, Self);
-    if lErr <= 0 then
-      ETaurusTLSDataBindingError.RaiseException(FSSL, lErr,
-        RMSG_SslSocketSetAppData_err);
+  // 1. Allocate the SSL session structure using the pinned context
+  FSSL:=SSL_new(FCtx.SSLCtx);
+  if not Assigned(FSSL) then
+    ETaurusTLSSSLSocketCreateError.RaiseExceptionCode(GetLastError(0),
+      RSSSLCreatingSessionError);
 
-    // 3. Do Socket/Connection specific configuration (Virtual polymorphic hook)
-    SetupConnection;
+  // 2. Bind the Delphi object instance to the SSL handle for callback routing
+  lErr:=GetLastError(SSL_set_app_data(FSSL, Self));
+  if lErr <= 0 then
+    ETaurusTLSSSLSocketDataBindingError.RaiseExceptionCode(lErr,
+      RMSG_SslSocketSetAppData_err);
 
-    // 4. Register the callback bridges
-    InitSSLCallbacks;
+  // 3. Do Socket/Connection specific configuration (Virtual polymorphic hook)
+  SetupConnection;
 
-    // 5. For Linux only: mask SIGPIPE signal for the current thread.
+  // 4. Register the callback bridges
+  InitSSLCallbacks;
+
+  // 5. For Linux only: mask SIGPIPE signal for the current thread.
 {$IFDEF SIGPIPE_MASK}
-    MaskSigPipe;
+  MaskSigPipe;
 {$ENDIF}
-  except
-    on E: Exception do
-    begin
-      // If callback binding fails, fully deallocate SSL resources and propagate the error
-      ReleaseSSL;
-      raise;
-    end;
-  end;
+  Result:=seInitialized;
 end;
 
-procedure TTaurusTLSSslSocket.ReleaseSSL;
+function TTaurusTLSSslSocket.ReleaseSSL: TTaurusTLSSslSocketState;
 begin
+  ClearError;
+  Result:=seClosed;
   if Assigned(FSSL) then
   try
     try
@@ -3692,82 +3730,88 @@ begin
   end;
 end;
 
-procedure TTaurusTLSSslSocket.BindSocket;
+function TTaurusTLSSslSocket.BindSocket: TTaurusTLSSslSocketState;
 var
   lRet: TIdC_INT;
 
 begin
+  ClearError;
+  Result:=seError;
   if Assigned(FSSL) and (FSocketHandle <> Id_INVALID_SOCKET) then
   begin
-    ClearError;
     lRet:=SSL_set_fd(FSSL, FSocketHandle);
-    if lRet <= 0 then
-      ETaurusTLSSslSocketBindError.RaiseException(FSSL, lRet,
-        RSSSLDataBindingError_2);
-  end;
+    if GetLastError(lRet) <= 0 then
+      ETaurusTLSSslSocketBindError.RaiseExceptionCode(lRet,
+        RSSSLDataBindingError_2)
+    else
+      Result:=seHandshaking;
+  end
+  else
+    Result:=seClosed;
 end;
 
-procedure TTaurusTLSSslSocket.DoHandshake;
+function TTaurusTLSSslSocket.DoHandshake: TTaurusTLSSslSocketState;
+var
+  lNextState: TTaurusTLSSslSocketState;
+
 begin
+  ClearError;
   CheckActiveState([seHandshaking]);
+  Result:=seError;
+
   repeat
-    DoHandshakeIteration;
-    if State = seHandshaking then
+    lNextState:=DoHandshakeIteration;
+    if lNextState = seHandshaking then
     { TODO : IndySleep should be replaced with the smart cross-compiler "spin wait" call. }
-      IndySleep(1);
-  until State <> seHandshaking;
+      IndySleep(1)
+  until lNextState <> seHandshaking;
 
   FIsSessionResumed:=Assigned(FSSL) and (State in [seEstablished, seClosing]) and
     (SSL_session_reused(FSSL) > 0);
 end;
 
-procedure TTaurusTLSSslSocket.DoSetState(ATarget: TTaurusTLSSslSocketState);
+function TTaurusTLSSslSocket.DoShutdown: TTaurusTLSSslSocketState;
 var
-  lCurrentState: TTaurusTLSSslSocketState;
+  lRet, lErr: Integer;
 
 begin
-  lCurrentState:=FState;
-  if ATarget = lCurrentState then // guard for notification.
-    Exit;
+  if FState = seError then
+    Exit(seError)
+  else
+    Result:=seClosed; // Default next step on successful close_notify exchange
 
-  FState:=ATarget;
-  DoStateChangeNotify(lCurrentState, ATarget);
-end;
-
-procedure TTaurusTLSSslSocket.DoShutdown;
-var
-  lRet: Integer;
-
-begin
   if not Assigned(FSSL) then
-  begin
-    TransitionTo(seClosed);
     Exit;
-  end;
 
-  try
-    ClearError; // Reset snapshot before starting first shutdown attempt
+  ClearError;
+  lRet:=SSL_shutdown(FSSL);
+
+  // Handle first SSL_shutdown call
+  if lRet < 0 then
+  begin
+    lErr:=GetSSLError(lRet); // Captures error snapshot automatically
+    if lErr = SSL_ERROR_SYSCALL then
+      Result:=seClosed // Hard socket disconnect
+    else
+      Result:=seError;  // OpenSSL protocol or cryptographic error
+    Exit;
+  end
+
+  // lRet = 0 means close_notify sent, awaiting peer response.
+  // Execute second call if bi-directional shutdown is required.
+  else if (lRet = 0) and (not Ctx.Flags.UniDirectShutdown) then
+  begin
+    ERR_clear_error;
     lRet:=SSL_shutdown(FSSL);
-
     if lRet < 0 then
     begin
-      GetSSLError(lRet); // Capture failure snapshot
-      Exit; // Jumps to finally block
+      lErr:=GetSSLError(lRet);
+      if lErr = SSL_ERROR_SYSCALL then
+        Result:=seClosed
+      else
+        Result:=seError;
+      Exit;
     end;
-
-    if (lRet = 0) and (not Ctx.Flags.UniDirectShutdown) then
-    begin
-      ClearError; // Reset snapshot before second blocking shutdown call
-      lRet:=SSL_shutdown(FSSL);
-      if lRet < 0 then
-        GetSSLError(lRet);
-    end;
-  finally
-    // Transition to seClosed state releases SSL resources.
-    TransitionTo(seClosed);
-    // Use raw ERR_clear_error here so OpenSSL's C-queue is cleaned up,
-    // but your Delphi FLastSSLError snapshot is PRESERVED for post-mortem inspection!
-    ERR_clear_error;
   end;
 end;
 
@@ -3782,37 +3826,111 @@ begin
     lContext.DoOnStateChange(Self, ACurrent, ATarget);
 end;
 
+function TTaurusTLSSslSocket.GetLastError(ARetCode: Integer): Integer;
+begin
+  FLastRetCode:=ARetCode;
+  FLastSocketError:=GStack.WSGetLastError;
+
+  // 1. Peek at the top error in OpenSSL's thread-local queue WITHOUT popping/clearing it [1.1.2]
+  Result:=ARetCode;
+  FLastQueueError:= ERR_peek_error;
+
+  // 2. Resolve High-Level SSL Error Code
+  if Assigned(FSSL) then
+  begin
+    // If FSSL exists, query SSL_get_error for the high-level classification [1.1.2]
+    FLastSSLError:=SSL_get_error(FSSL, ARetCode);
+  end
+  else if FLastSocketError <> 0 then
+  begin
+    // If no OpenSSL queue error exists but an OS socket error was recorded
+    FLastSSLError:=SSL_ERROR_SYSCALL;
+  end
+  else
+    FLastSSLError:=SSL_ERROR_NONE;
+end;
+
 function TTaurusTLSSslSocket.GetSSLError(ALastResult: Integer): Integer;
 begin
   FLastRetCode := ALastResult;
 
   // 1. SUCCESS PATH (ALastResult > 0)
-  // OpenSSL guarantees that SSL_get_error returns SSL_ERROR_NONE when ret > 0.
+  // OpenSSL guarantees SSL_get_error returns SSL_ERROR_NONE when ret > 0 [1.1.2].
   if ALastResult > 0 then
   begin
     ClearError; // Reset all snapshot fields to clean state
-    Result:=SSL_ERROR_NONE;
+    Result := SSL_ERROR_NONE;
+    Exit;
+  end;
+
+  // 2. FAILURE / PENDING PATH (ALastResult <= 0)
+  // Capture OS-level socket error at the exact microsecond of failure
+  FLastSocketError := GStack.WSGetLastError;
+
+  if Assigned(FSSL) then
+  begin
+    // Resolves ZERO_RETURN, SYSCALL, WANT_READ, WANT_WRITE, SSL_ERROR_SSL, etc. [1.1.2]
+    Result := SSL_get_error(FSSL, ALastResult);
+
+    // Peeks at the top error in OpenSSL's C-queue without clearing it [1.1.2]
+    FLastQueueError := ERR_peek_error;
   end
   else
   begin
-    // 2. FAILURE / PENDING PATH (ALastResult <= 0, including 0)
-    // Capture OS-level socket error at the microsecond of failure
-    FLastSocketError:=GStack.WSGetLastError;
+    Result := SSL_ERROR_SYSCALL;
+    FLastQueueError := ERR_peek_error;
+  end;
 
-    if Assigned(FSSL) then
-    begin
-      // Resolves ZERO_RETURN, SYSCALL, WANT_READ, WANT_WRITE, SSL_ERROR_SSL, etc.
-      Result:=SSL_get_error(FSSL, ALastResult);
+  FLastSSLError := Result;
+end;
 
-      // Peeks at the top error in OpenSSL's C-queue without clearing it
-      FLastQueueError:=ERR_peek_error;
-    end
+procedure TTaurusTLSSslSocket.CheckActiveState(
+  const AExpectedStates: TTaurusTLSSslSocketStates);
+begin
+  if not (FState in AExpectedStates) then
+     ETaurusTLSSocketStateError.RaiseWithMessageFmt(
+      { TODO : To make ResourceString }
+      'Invalid socket operation in the ''%s'' state.', [FState.AsString]);
+end;
+
+function TTaurusTLSSslSocket.GetNextStepTarget(ACurrent,
+  ATarget: TTaurusTLSSslSocketState): TTaurusTLSSslSocketState;
+begin
+  if ACurrent in cTerminalStates then
+    Exit(ACurrent);
+
+  if ATarget in cTerminalStates then
+  begin
+    if (ACurrent = seEstablished) and (ATarget = seClosed) then
+      Exit(seClosing)
     else
-    begin
-      Result:=SSL_ERROR_SYSCALL;
-      FLastQueueError:=0;
-    end;
-    FLastSSLError:=Result;
+      Exit(ATarget);
+  end;
+
+  if ATarget <= ACurrent then
+    Exit(ATarget); // Handled/rejected by IsValidTransition
+
+  case ACurrent of
+    seIdle:
+      Result:=seInitializing; // Step 1 from Idle
+
+    seInitializing:
+      Result:=seInitialized;  // Step 2 from Initializing
+
+    seInitialized:
+      Result:=seHandshaking;  // Step 3 from Initialized
+
+    seHandshaking:
+      Result:=seEstablished;  // Step 4 from Handshaking
+
+    seEstablished:
+      Result:=seClosing;      // Step 5 from Established
+
+    seClosing:
+      Result:=seClosed;
+
+  else
+    Result:=seError;
   end;
 end;
 
@@ -3825,15 +3943,17 @@ begin
 
   case ACurrent of
     seIdle:
-      Result:=ATarget = seInitialized;
+      Result:=ATarget in [seInitializing, seClosed];
+    seInitializing:
+      Result:=ATarget in ([seInitialized]+cTerminalStates);
     seInitialized:
-      Result:=ATarget in [seHandshaking, seClosed];
+      Result:=ATarget in ([seHandshaking]+cTerminalStates);
     seHandshaking:
-      Result:=ATarget in [seEstablished, seClosed];
+      Result:=ATarget in ([seEstablished]+cTerminalStates);
     seEstablished:
-      Result:=ATarget in [seClosing, seClosed];
+      Result:=ATarget in ([seClosing]+cTerminalStates);
     seClosing:
-      Result:=ATarget = seClosed;
+      Result:=ATarget in cTerminalStates;
     seClosed, seError:
       Result:=False; // Terminal states cannot transition out
   else
@@ -3841,42 +3961,123 @@ begin
   end;
 end;
 
-procedure TTaurusTLSSslSocket.TransitionTo(ATarget: TTaurusTLSSslSocketState);
-var
-  lCurrentState: TTaurusTLSSslSocketState;
+function TTaurusTLSSslSocket.DoSetState(ATarget: TTaurusTLSSslSocketState): boolean;
 begin
-  lCurrentState:=State; // Using your internal State property
+  Result:=not (ATarget = FState);
+  if Result then
+    FState:=ATarget;
+end;
 
-  // 1. Exit if state is not changing (can happens on exception handling)
-  if lCurrentState = ATarget then
+procedure TTaurusTLSSslSocket.DoSetState(ATarget: TTaurusTLSSslSocketState;
+  ANotify: boolean);
+begin
+  if DoSetState(ATarget) and ANotify then
+    DoStateChangeNotify(FState, ATarget);
+end;
+
+function TTaurusTLSSslSocket.DoTransitionTo(
+  ASource, ATarget: TTaurusTLSSslSocketState): TTaurusTLSSslSocketState;
+begin
+  try
+    Result:=ATarget;
+
+    if ASource = Result then
+      Exit;
+
+    case ATarget of
+      seInitializing:
+        Result:=InitSSL;
+
+      seHandshaking:
+        begin
+          Result:=BindSocket;  // Binds FSocketHandle via SSL_set_fd
+          if Result = seHandshaking then
+            Result:=DoHandshake; // Executes handshake loop; transitions to seEstablished on success
+        end;
+
+      seClosing:
+        Result:=DoShutdown;
+
+      seClosed, seError:
+        if FState in [seInitialized, seHandshaking, seEstablished, seClosing] then
+          ReleaseSSL;
+
+      else
+        Result:=seError;
+    end;
+
+  except
+    on E: Exception do
+    begin
+      // Exception Safety: If an error occurs during non-terminal transitions,
+      // release SSL resources and set state directly to seError
+      if not (ATarget in [seClosed, seError]) then
+      begin
+        ReleaseSSL;
+        FState:=seError; // Force state without triggering recursive transitions
+      end;
+      raise; // Re-raise exception for caller
+    end;
+  end;
+end;
+
+procedure TTaurusTLSSslSocket.TransitionTo(ATarget: TTaurusTLSSslSocketState;
+  ASteps: integer);
+var
+  lState, lNextState: TTaurusTLSSslSocketState;
+
+begin
+  // Exit if already in requested target state
+  if FState = ATarget then
     Exit;
 
-  // 2. Validate Transition Feasibility
-  if not IsValidTransition(lCurrentState, ATarget) then
-    { TODO : To make ResourceString }
-    ETaurusTLSSocketStateError.RaiseWithMessageFmt(
-      'Unable to transition Socket ''%s''''s state from ''%s'' to ''%s''.',
-      [ClassName, lCurrentState.AsString, ATarget.AsString]);
+  try
+    while (FState <> ATarget) and not (FState in cTerminalStates) do
+    begin
+      lState := FState;
 
-  // 3. Execute Transition-Specific Initialization or Cleanup
-  case ATarget of  // PALOFF 'Enumerated constant missing in case structure'
-  seInitialized:
-    // Transitioning from seIdle to seInitialized: Allocate session and arm callbacks
-    InitSSL;
+      // Resolve the immediate next forward step required to reach ATarget
+      lNextState := GetNextStepTarget(lState, ATarget);
 
-  seClosed, seError:
-    // Safety Cleanup: If the socket is currently armed or active, release OpenSSL
-    // session resources and tear down the physical OS network socket.
-    if lCurrentState in [seInitialized, seHandshaking, seEstablished, seClosing] then
+      // Validate single-step feasibility using your exact IsValidTransition rules
+      if not IsValidTransition(lState, lNextState) then
+        { TODO : To make ResourceString }
+        ETaurusTLSSocketStateError.RaiseWithMessageFmt(
+          'Unable to transition Socket ''%s''''s state from ''%s'' to ''%s''.',
+          [ClassName, lState.AsString, lNextState.AsString]);
+
+      // Notify state change before executing the transition
+      DoSetState(lNextState, False);
+
+      // Execute the single step
+      lNextState:=DoTransitionTo(lState, lNextState);
+
+      // Update State and notify
+
+      DoStateChangeNotify(lState, FState);
+
+      // Infinite Loop / Stagnation Guard
+      Dec(ASteps);
+      if ASteps <= 0 then
+      begin
+        ETaurusTLSSocketStateError.RaiseWithMessageFmt(
+          'Infinite state transition loop detected on Socket ''%s'' at state ''%s''.',
+          [ClassName, FState.AsString]);
+      end;
+    end;
+  except
+    on E: Exception do
+    begin
+      if E is EIdConnClosedGracefully then
+        lState:=seClosed
+      else
+        lState:=seError;
+
       ReleaseSSL;
-   // seIdle:         ; // Handled during object construction
-   // seHandshaking:  ; // Handled by active call loops (Connect/Accept)
-   // seEstablished:  ; // Handled upon successful Connect/Accept loop completion
-   // seClosing:      ; // Handled during bi-directional CloseNotify negotiation
+      DoSetState(lState, True);
+      raise;
+    end;
   end;
-
-  // 4. Commit the new state enum
-  DoSetState(ATarget);
 end;
 
 function TTaurusTLSSslSocket.WaitForRead(AMsec: integer): boolean;
@@ -3919,20 +4120,9 @@ end;
 
 procedure TTaurusTLSSslSocket.Connect(const pHandle: TIdStackSocketHandle);
 begin
-  FSocketHandle:=pHandle;
-  TransitionTo(seInitialized);
-  BindSocket;
-  TransitionTo(seHandshaking);
-  DoHandshake;
-end;
-
-procedure TTaurusTLSSslSocket.CheckActiveState(
-  const AExpectedStates: TTaurusTLSSslSocketStates);
-begin
-  if not (FState in AExpectedStates) then
-     ETaurusTLSSocketStateError.RaiseWithMessageFmt(
-      { TODO : To make ResourceString }
-      'Invalid socket operation in the ''%s'' state.', [FState.AsString]);
+  CheckActiveState([seIdle]);
+  FSocketHandle := pHandle;
+  TransitionTo(seEstablished);
 end;
 
 function TTaurusTLSSslSocket.CheckForError: Integer;
@@ -3970,7 +4160,8 @@ begin
     begin
       TransitionTo(seClosed);
       { TODO : To make ResourceString }
-      ETaurusTLSConnectionReset.RaiseWithMessage('Socket closed before SSL operation completed.');
+      ETaurusTLSSSLSocketConnectionReset.RaiseWithMessage(
+        'Socket closed before SSL operation completed.');
     end;
     Exit(0); // Healthy session
   end;
@@ -4001,6 +4192,7 @@ end;
 procedure TTaurusTLSSslSocket.CheckPeerCertificateValidationResult;
 var
   lErr: TTaurusTLSX509Error;  // its a record type. No lErr.Free is required.
+  lErrCode: TIdC_INT;
   lCert: TTaurusTLSX509; // PALOFF 'Created and freed objects'
   lSuccess: boolean;
 
@@ -4009,8 +4201,9 @@ begin
     Exit;
 
   lCert:=nil;
-  lErr:=TTaurusTLSX509Error.Create(SSL_get_verify_result(FSSL));
-  lSuccess:=lErr.ErrorCode = X509_V_OK;
+  lErrCode:=SSL_get_verify_result(FSSL);
+  lErr:=TTaurusTLSX509Error.Create(lErrCode);
+  lSuccess:=lErrCode = X509_V_OK;
   if not lSuccess then
   try
     lCert:=GetPeerCertificate;
@@ -4019,7 +4212,8 @@ begin
     lCert.Free;
   end;
   if not lSuccess then
-    ETaurusTLSCertValidationError.RaiseWithMessage(lErr.ErrorShortDescription);
+    ETaurusTLSSSLSocketCertValidationError.RaiseErrorCode(lErrCode,
+      lErr.ErrorShortDescription);
 end;
 
 procedure TTaurusTLSSslSocket.ClearError;
@@ -4231,14 +4425,24 @@ end;
 
 procedure TTaurusTLSSslSocket.Shutdown;
 begin
-  try
-    if FState = seEstablished then
-    begin
-      TransitionTo(seClosing);
-      DoShutdown;
+  if FState = seEstablished then
+  begin
+    try
+      // Initiates pipeline: seEstablished -> seClosing -> seClosed (or seError on failure)
+      TransitionTo(seClosed);
+    except
+      on E: Exception do
+      begin
+        // If an exception escapes DoShutdown, force seError state and re-raise
+        TransitionTo(seError);
+        raise;
+      end;
     end;
-  except
-    TransitionTo(seClosed); // Intercept and force immediate closed state teardown
+  end
+  else if FState in [seInitialized, seHandshaking] then
+  begin
+    // For non-established connections being torn down, move directly to seClosed
+    TransitionTo(seClosed);
   end;
 end;
 
@@ -4285,8 +4489,8 @@ begin
   if Assigned(lResult) and (TObject(lResult) is TTaurusTLSSslSocket) then // PALOFF 'Pointer cast to TObject'
     Result:=TTaurusTLSSslSocket(lResult)
   else
-    ETaurusTLSDataBindingError.RaiseWithMessageFmt(
-      { TODO : To make ResourceString }
+    { TODO : To make ResourceString }
+    ETaurusTLSSSLSocketDataBindingError.RaiseWithMessageFmt(
       'SSL object %p is not bound to a valid TTaurusTLSSslSocket instance.',
       [ASSL]);
 end;
@@ -4515,7 +4719,7 @@ var
 begin
   lContext:=ClientCtx;
   if not Assigned(lContext) then
-    ETaurusTLSClientSocketSSLSetupError.RaiseWithMessage(RSOSSLModeNotSet);
+    ETaurusTLSClientSSLSocketSetupError.RaiseWithMessage(RSOSSLModeNotSet);
 
   // Setup session resumption
   if Assigned(FSessionToResume) then
@@ -4556,7 +4760,8 @@ begin
       );
 
       if lRetCode <= 0 then
-        ETaurusTLSSettingTLSHostNameError.RaiseException(FSSL, lRetCode, RSSSLSettingTLSHostNameError_2);
+        ETaurusTLSClientSSLSocketHostNameError.RaiseException(FSSL, lRetCode,
+          RSSSLSettingTLSHostNameError_2);
     end
     else
     begin
@@ -4566,7 +4771,8 @@ begin
 
       lRetCode:=SSL_set_tlsext_host_name(FSSL, PIdAnsiChar(lIdentity));  // PALOFF Possible bad typecast
       if lRetCode <= 0 then
-        ETaurusTLSSettingTLSHostNameError.RaiseException(FSSL, lRetCode, RSSSLSettingTLSHostNameError_2);
+        ETaurusTLSClientSSLSocketHostNameError.RaiseException(FSSL, lRetCode,
+          RSSSLSettingTLSHostNameError_2);
     end;
   end;
 end;
@@ -4613,7 +4819,7 @@ begin
   Connect(pHandle);
 end;
 
-procedure TTaurusTLSClientSocket.DoHandshakeIteration;
+function TTaurusTLSClientSocket.DoHandshakeIteration: TTaurusTLSSslSocketState;
 var
   lRet, lErr: Integer;
   lStatus: TIdC_INT;
@@ -4625,139 +4831,115 @@ var
 
 begin
   lContext:=ClientCtx;
-  try
-    ClearError;
-    lRet:=SSL_connect(SSL);
+  ClearError;
+  Result:=seError;
 
-    if lRet > 0 then
+  lRet:=SSL_connect(SSL);
+
+  if lRet > 0 then
+  begin
+    CheckPeerCertificateValidationResult;
+    // Verify ECH status prior to accepting handshake success
+    if lContext.UseECH then
     begin
-      CheckPeerCertificateValidationResult;
-      // Verify ECH status prior to accepting handshake success
-      if lContext.UseECH then
-      begin
-        lInner:=nil;
-        lOuter:=nil;
-        try
-          lStatus:=SSL_ech_get1_status(SSL, @lInner, @lOuter);
+      lInner:=nil;
+      lOuter:=nil;
+      try
+        lStatus:=SSL_ech_get1_status(SSL, @lInner, @lOuter);
 
-          case lStatus of
-          SSL_ECH_STATUS_SUCCESS,
-          SSL_ECH_STATUS_BACKEND:
-            SetECHStatus(echCliSuccess);
+        case lStatus of
+        SSL_ECH_STATUS_SUCCESS,
+        SSL_ECH_STATUS_BACKEND:
+          SetECHStatus(echCliSuccess);
 
-          SSL_ECH_STATUS_GREASE_ECH,
-          SSL_ECH_STATUS_FAILED_ECH,
-          SSL_ECH_STATUS_FAILED_ECH_BAD_NAME:
+        SSL_ECH_STATUS_GREASE_ECH,
+        SSL_ECH_STATUS_FAILED_ECH,
+        SSL_ECH_STATUS_FAILED_ECH_BAD_NAME:
+          begin
+            SetECHStatus(echCliFailed);
+            lECHConfigBuf:=nil;
+            lECHConfigLen:=0;
+
+            // Attempt to extract the updated keys provided by the server
+            if SSL_ech_get1_retry_config(SSL, @lECHConfigBuf, @lECHConfigLen) > 0 then
             begin
-              SetECHStatus(echCliFailed);
-              lECHConfigBuf:=nil;
-              lECHConfigLen:=0;
-
-              // Attempt to extract the updated keys provided by the server
-              if SSL_ech_get1_retry_config(SSL, @lECHConfigBuf, @lECHConfigLen) > 0 then
-              begin
-                try
-                  if (lECHConfigBuf <> nil) and (lECHConfigLen > 0) then
-                  begin
-                    lNewConfigBase64:=EncodeConfigList(lECHConfigBuf, lECHConfigLen);
-                    TransitionTo(seClosed); // Safely close and tear down SSL session
-                    ETaurusTLSECHRetryRequired.RaiseWithMessage(
-                      'ECH Handshake error. Try to reconnect with updated ECH Config List.',
-                      lNewConfigBase64
-                    );
-                  end;
-                finally
-                  OPENSSL_free(lECHConfigBuf);
+              try
+                if (lECHConfigBuf <> nil) and (lECHConfigLen > 0) then
+                begin
+                  lNewConfigBase64:=EncodeConfigList(lECHConfigBuf, lECHConfigLen);
+                  ETaurusTLSECHRetryRequired.RaiseWithMessage(
+                    'ECH Handshake error. Try to reconnect with updated ECH Config List.',
+                    lNewConfigBase64
+                  );
                 end;
-              end;
-
-              // If no keys were returned, it is a hard rejection
-              TransitionTo(seClosed);
-              ETaurusTLSECHRejectedError.RaiseWithMessage(
-                'ECH Handshake failed. The server rejected the key and provided no retry configuration.');
-            end;
-
-          SSL_ECH_STATUS_NOT_TRIED,
-          SSL_ECH_STATUS_NOT_CONFIGURED:
-            begin
-              if lContext.ECHFlags.Enforced then
-              begin
-                TransitionTo(seError);
-                ETaurusTLSECHDowngradeError.RaiseWithMessage(
-                  'ECH Handshake bypassed. Possible downgrade attack or configuration mismatch.');
-              end
-              else
-              begin
-                SetECHStatus(echCliNotConfigured);
+              finally
+                OPENSSL_free(lECHConfigBuf);
               end;
             end;
 
-          SSL_ECH_STATUS_BAD_NAME:
-            begin
-              { TODO :
-                Need to double check if it needs to raise the exception
-                or just fire an OnDebug event }
-              TransitionTo(seError);
-              ETaurusTLSECHBadNameError.RaiseWithMessage(
-                'ECH Handshake completed but the server certificate did not match the inner name.');
-            end;
-
-          else 
-            begin
-              // Covers SSL_ECH_STATUS_FAILED (0), SSL_ECH_STATUS_BAD_CALL (-100), and any other negative codes
-              TransitionTo(seError);
-              ETaurusTLSECHProtocolError.RaiseWithMessage(
-                'ECH Handshake failed due to an internal OpenSSL or protocol error.');
-            end;
+            // If no keys were returned, it is a hard rejection
+            ETaurusTLSECHRejectedError.RaiseWithMessage(
+              'ECH Handshake failed. The server rejected the key and provided no retry configuration.');
           end;
-        finally
-          // Clean up ECH status output buffers allocated by OpenSSL
-          if Assigned(lInner) then
-            OPENSSL_free(lInner);
-          if Assigned(lOuter) then
-            OPENSSL_free(lOuter);
+
+        SSL_ECH_STATUS_NOT_TRIED,
+        SSL_ECH_STATUS_NOT_CONFIGURED:
+          begin
+            if lContext.ECHFlags.Enforced then
+              { TODO : To make ResourceString }
+              ETaurusTLSECHDowngradeError.RaiseWithMessage(
+                'ECH Handshake bypassed. Possible downgrade attack or configuration mismatch.')
+            else
+              SetECHStatus(echCliNotConfigured);
+          end;
+
+        SSL_ECH_STATUS_BAD_NAME:
+          { TODO :
+            Need to double check if it needs to raise the exception
+            or just fire an OnDebug event }
+          { TODO : To make ResourceString }
+          ETaurusTLSECHBadNameError.RaiseWithMessage(
+            'ECH Handshake completed but the server certificate did not match the inner name.');
+        else
+          // Covers SSL_ECH_STATUS_FAILED (0), SSL_ECH_STATUS_BAD_CALL (-100), and any other negative codes
+          { TODO : To make ResourceString }
+          ETaurusTLSECHProtocolError.RaiseWithMessage(
+            'ECH Handshake failed due to an internal OpenSSL or protocol error.');
         end;
-      end;
-
-      TransitionTo(seEstablished);
-
-      Exit;
-    end;
-
-    lErr:=GetSSLError(lRet);
-    case lErr of
-    SSL_ERROR_SYSCALL:
-      begin
-        TransitionTo(seClosed); // Triggers immediate teardown
-        raise ETaurusTLSConnectionReset.Create('Handshake reset by peer.');
-      end;
-
-    SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE: // PALOFF 'Empty case labels'
-      // Waiting for data
-      ;
-
-    else
-      begin
-        TransitionTo(seError);
-        { TODO : To make ResourceString }
-        ETaurusTLSHandshakeError.RaiseExceptionCode(lErr, lRet, 'Fatal handshake error.');
+      finally
+        // Clean up ECH status output buffers allocated by OpenSSL
+        if Assigned(lInner) then
+          OPENSSL_free(lInner);
+        if Assigned(lOuter) then
+          OPENSSL_free(lOuter);
       end;
     end;
 
-  except
-    on E: Exception do
-    begin
-      if (State = seHandshaking) then
-        TransitionTo(seError); // Safely aborts, preventing illegal "shutdown while in init"
-      raise;
-    end;
+    Result:=seEstablished;
+    Exit;
+  end;
+
+ lErr:=GetSSLError(lRet);
+  case lErr of
+  SSL_ERROR_SYSCALL:
+    { TODO : To make ResourceString }
+    ETaurusTLSSSLSocketConnectionReset.RaiseException(FSSL, lErr,
+      'Handshake reset by peer.');
+
+  SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE: // PALOFF 'Empty case labels'
+    // Waiting for data
+    ;
+
+  else
+    { TODO : To make ResourceString }
+    ETaurusTLSHandshakeError.RaiseExceptionCode(lErr, lRet, 'Fatal handshake error.');
   end;
 end;
 
-procedure TTaurusTLSClientSocket.DoShutdown;
+function TTaurusTLSClientSocket.DoShutdown: TTaurusTLSSslSocketState;
 begin
   try
-    inherited;
+    Result:=inherited DoShutdown;
   finally
     FreeAndNil(FSessionToResume);
   end;

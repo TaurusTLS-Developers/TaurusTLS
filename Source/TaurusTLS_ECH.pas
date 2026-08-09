@@ -20,6 +20,7 @@ uses
   Classes,
   SysUtils,
   IdCTypes,
+  IdException,
   IdDNSResolver,
   IdGlobal,
   IdHTTP,
@@ -30,6 +31,24 @@ uses
   TaurusTLSHeaders_ssl;
 
 type
+  /// <summary>
+  ///   Base class for ECH Exceptions that can be handled silently
+  /// </summary>
+  ETaurusTLSECHSilentError = class(EIdConnClosedGracefully);
+
+  /// <summary>
+  /// Raised when the server rejects the ECH key but provides a new configuration.
+  /// (Maps to SSL_ECH_STATUS_GREASE_ECH with a retry config)
+  /// </summary>
+  ETaurusTLSECHRetryRequired = class(ETaurusTLSECHSilentError)
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict {$ENDIF}protected
+    FECHConfigList: String;
+  public
+    constructor Create(const AMsg, AECHConfig: String);
+    class procedure RaiseWithMessage(const AMsg, AECHConfig: String); reintroduce;
+    property ECHConfigList: String read FECHConfigList;
+  end;
+
   /// <summary>Base class for all ECH-related runtime errors.</summary>
   ETaurusTLSECHError = class(ETaurusTLSError)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict {$ENDIF}protected
@@ -38,19 +57,6 @@ type
     constructor Create(AECHCode: TIdC_INT; const AMsg: String);
     constructor CreateFmt(AECHCode: TIdC_INT; const AMsg: String; const AArgs: array of const);
     property ECHCode: TIdC_INT read FECHCode;
-  end;
-
-  /// <summary>
-  /// Raised when the server rejects the ECH key but provides a new configuration.
-  /// (Maps to SSL_ECH_STATUS_GREASE_ECH with a retry config)
-  /// </summary>
-  ETaurusTLSECHRetryRequired = class(ETaurusTLSECHError)
-  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict {$ENDIF}protected
-    FECHConfigList: String;
-  public
-    constructor Create(const AMsg, AECHConfig: String);
-    class procedure RaiseWithMessage(const AMsg, AECHConfig: String); reintroduce;
-    property ECHConfigList: String read FECHConfigList;
   end;
 
   /// <summary>
@@ -202,8 +208,8 @@ end;
 
 function IsECHSupported : Boolean;  {$IFDEF USE_INLINE}inline; {$ENDIF}
 begin
-  {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   Result := False;
+  {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   if Assigned(SSLeay) then
   begin
   {$ENDIF}
@@ -268,7 +274,7 @@ end;
 
 constructor ETaurusTLSECHRetryRequired.Create(const AMsg, AECHConfig: String);
 begin
-  inherited Create(SSL_ECH_STATUS_GREASE_ECH, AMsg);
+  inherited Create(AMsg);
   FECHConfigList := AECHConfig;
 end;
 

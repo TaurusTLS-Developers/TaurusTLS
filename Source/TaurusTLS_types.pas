@@ -1178,6 +1178,30 @@ const
     or X509_CHECK_FLAG_NO_WILDCARDS or X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS
     or X509_CHECK_FLAG_MULTI_LABEL_WILDCARDS or X509_CHECK_FLAG_SINGLE_LABEL_SUBDOMAINS;
 
+type
+  TTaurusTLSSslSocketState = (
+    seIdle,
+    seInitializing,
+    seInitialized,
+    seHandshaking,
+    seEstablished,
+    seClosing,
+    seClosed,
+    seError
+  );
+  TTaurusTLSSslSocketStates = set of TTaurusTLSSslSocketState;
+
+  TTaurusTLSSslSocketStateHelper = record helper for TTaurusTLSSslSocketState
+  public const
+    // Do not localize
+    cNames: array[TTaurusTLSSslSocketState] of string = ('Idle',
+      'Initializing', 'Initialized', 'Handshaking', 'Established',
+      'Closing', 'Closed', 'Error');  // Do not localize
+  private
+    function GetAsString: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+  public
+    property AsString: string read GetAsString;
+  end;
 
 type
 {$IFNDEF USE_NATIVE_STOPWATCH}
@@ -1852,6 +1876,13 @@ function TTaurusTLSX509HostCheckFlagsHelper.IsEqualTo(
   AValue: TIdC_UINT): boolean;
 begin
   Result:=AValue = AsInt;
+end;
+
+{ TTaurusTLSSslSocketStateHelper }
+
+function TTaurusTLSSslSocketStateHelper.GetAsString: string;
+begin
+  Result:=cNames[Self];
 end;
 
 {$IFNDEF USE_NATIVE_STOPWATCH}
