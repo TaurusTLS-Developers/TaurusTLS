@@ -1216,7 +1216,7 @@ type
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetNextStepTarget(ACurrent,
       ATarget: TTaurusTLSSslSocketState): TTaurusTLSSslSocketState; virtual;
-    function DoTransitionTo(ASource, ATarget: TTaurusTLSSslSocketState): TTaurusTLSSslSocketState;
+    function DoTransitionTo(ATarget: TTaurusTLSSslSocketState): TTaurusTLSSslSocketState;
       virtual;
     function DoSetState(ATarget: TTaurusTLSSslSocketState): boolean;
       overload; virtual;
@@ -3390,7 +3390,7 @@ var
 
 begin
   Result:=Self;
-  lValue:=NormalizeHostName(RawByteString(AValue)); // PALOFF 'UnicodeString cast to RawByteString'
+  lValue:=RawByteString(AValue); // PALOFF 'UnicodeString cast to RawByteString'
   if FECHConfigList = lValue then
     Exit;
 
@@ -3685,7 +3685,7 @@ var
 
 begin
   ClearError;
-  CheckActiveState([seInitializing]);
+  CheckActiveState([seIdle]);
 
   // 1. Allocate the SSL session structure using the pinned context
   FSSL:=SSL_new(FCtx.SSLCtx);
@@ -3709,7 +3709,7 @@ begin
 {$IFDEF SIGPIPE_MASK}
   MaskSigPipe;
 {$ENDIF}
-  Result:=seInitialized;
+  Result:=seInitializing;
 end;
 
 function TTaurusTLSSslSocket.ReleaseSSL: TTaurusTLSSslSocketState;
@@ -3976,30 +3976,39 @@ begin
 end;
 
 function TTaurusTLSSslSocket.DoTransitionTo(
-  ASource, ATarget: TTaurusTLSSslSocketState): TTaurusTLSSslSocketState;
+  ATarget: TTaurusTLSSslSocketState): TTaurusTLSSslSocketState;
+var
+  lState: TTaurusTLSSslSocketState;
+
 begin
   try
+    lState:=FState;
     Result:=ATarget;
 
-    if ASource = Result then
+    if FState = Result then
       Exit;
 
     case ATarget of
       seInitializing:
         Result:=InitSSL;
 
-      seHandshaking:
+      seInitialized:
         begin
-          Result:=BindSocket;  // Binds FSocketHandle via SSL_set_fd
-          if Result = seHandshaking then
-            Result:=DoHandshake; // Executes handshake loop; transitions to seEstablished on success
+          CheckActiveState([seInitializing]);
+          Result:=seInitialized;
         end;
+
+      seHandshaking:
+        Result:=BindSocket;
+
+      seEstablished:
+        Result:=DoHandshake; // Executes handshake loop; transitions to seEstablished on success
 
       seClosing:
         Result:=DoShutdown;
 
       seClosed, seError:
-        if FState in [seInitialized, seHandshaking, seEstablished, seClosing] then
+        if lState in [seInitialized, seHandshaking, seEstablished, seClosing] then
           ReleaseSSL;
 
       else
@@ -4032,8 +4041,7 @@ begin
     Exit;
 
   try
-    while (FState <> ATarget) and not (FState in cTerminalStates) do
-    begin
+    repeat
       lState := FState;
 
       // Resolve the immediate next forward step required to reach ATarget
@@ -4046,25 +4054,23 @@ begin
           'Unable to transition Socket ''%s''''s state from ''%s'' to ''%s''.',
           [ClassName, lState.AsString, lNextState.AsString]);
 
-      // Notify state change before executing the transition
-      DoSetState(lNextState, False);
-
       // Execute the single step
-      lNextState:=DoTransitionTo(lState, lNextState);
+      lState:=DoTransitionTo(lNextState);
 
       // Update State and notify
-
-      DoStateChangeNotify(lState, FState);
+      DoSetState(lState, True);
 
       // Infinite Loop / Stagnation Guard
       Dec(ASteps);
-      if ASteps <= 0 then
-      begin
-        ETaurusTLSSocketStateError.RaiseWithMessageFmt(
-          'Infinite state transition loop detected on Socket ''%s'' at state ''%s''.',
-          [ClassName, FState.AsString]);
-      end;
+    until (FState in ([ATarget]+cTerminalStates)) or (ASteps <= 0);
+
+    if ASteps <= 0 then
+    begin
+      ETaurusTLSSocketStateError.RaiseWithMessageFmt(
+        'Infinite state transition loop detected on Socket ''%s'' at state ''%s''.',
+        [ClassName, FState.AsString]);
     end;
+
   except
     on E: Exception do
     begin
