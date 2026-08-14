@@ -353,9 +353,9 @@ var
   {$EXTERNALSYM PEM_write_bio_PKCS8PrivateKey_nid}
   PEM_write_bio_PKCS8PrivateKey_nid: function (bp: PBIO; x: PEVP_PKEY; nid: TIdC_INT; kstr: PIdAnsiChar; klen: TIdC_INT; cb: pem_password_cb; u: Pointer): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM PEM_write_bio_PKCS8PrivateKey}
-  PEM_write_bio_PKCS8PrivateKey: function (bp: PBIO; x: PEVP_PKEY_METHOD; const enc: PEVP_CIPHER; kstr: PIdAnsiChar; klen: TIdC_INT; cb: pem_password_cb; u: Pointer): TIdC_INT; cdecl = nil;
+  PEM_write_bio_PKCS8PrivateKey: function (bp: PBIO; x: PEVP_PKEY; const enc: PEVP_CIPHER; kstr: PIdAnsiChar; klen: TIdC_INT; cb: pem_password_cb; u: Pointer): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM i2d_PKCS8PrivateKey_bio}
-  i2d_PKCS8PrivateKey_bio: function (bp: PBIO; x: PEVP_PKEY; const enc: PEVP_CIPHER_CTX; kstr: PIdAnsiChar; klen: TIdC_INT; cb: pem_password_cb; u: Pointer): TIdC_INT; cdecl = nil;
+  i2d_PKCS8PrivateKey_bio: function (bp: PBIO; x: PEVP_PKEY; const enc: PEVP_CIPHER; kstr: PIdAnsiChar; klen: TIdC_INT; cb: pem_password_cb; u: Pointer): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM i2d_PKCS8PrivateKey_nid_bio}
   i2d_PKCS8PrivateKey_nid_bio: function (bp: PBIO; x: PEVP_PKEY; nid: TIdC_INT; kstr: PIdAnsiChar; klen: TIdC_INT; cb: pem_password_cb; u: Pointer): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM d2i_PKCS8PrivateKey_bio}
@@ -558,9 +558,9 @@ var
   {$EXTERNALSYM PEM_write_bio_PKCS8PrivateKey_nid}
   function PEM_write_bio_PKCS8PrivateKey_nid(bp: PBIO; x: PEVP_PKEY; nid: TIdC_INT; kstr: PIdAnsiChar; klen: TIdC_INT; cb: pem_password_cb; u: Pointer): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM PEM_write_bio_PKCS8PrivateKey}
-  function PEM_write_bio_PKCS8PrivateKey(bp: PBIO; x: PEVP_PKEY_METHOD; const enc: PEVP_CIPHER; kstr: PIdAnsiChar; klen: TIdC_INT; cb: pem_password_cb; u: Pointer): TIdC_INT cdecl; external CLibCrypto;
+  function PEM_write_bio_PKCS8PrivateKey(bp: PBIO; x: PEVP_PKEY; const enc: PEVP_CIPHER; kstr: PIdAnsiChar; klen: TIdC_INT; cb: pem_password_cb; u: Pointer): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM i2d_PKCS8PrivateKey_bio}
-  function i2d_PKCS8PrivateKey_bio(bp: PBIO; x: PEVP_PKEY; const enc: PEVP_CIPHER_CTX; kstr: PIdAnsiChar; klen: TIdC_INT; cb: pem_password_cb; u: Pointer): TIdC_INT cdecl; external CLibCrypto;
+  function i2d_PKCS8PrivateKey_bio(bp: PBIO; x: PEVP_PKEY; const enc: PEVP_CIPHER; kstr: PIdAnsiChar; klen: TIdC_INT; cb: pem_password_cb; u: Pointer): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM i2d_PKCS8PrivateKey_nid_bio}
   function i2d_PKCS8PrivateKey_nid_bio(bp: PBIO; x: PEVP_PKEY; nid: TIdC_INT; kstr: PIdAnsiChar; klen: TIdC_INT; cb: pem_password_cb; u: Pointer): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM d2i_PKCS8PrivateKey_bio}
@@ -1178,13 +1178,13 @@ begin
 end;
 
 
-function  ERR_PEM_write_bio_PKCS8PrivateKey(bp: PBIO; x: PEVP_PKEY_METHOD; const enc: PEVP_CIPHER; kstr: PIdAnsiChar; klen: TIdC_INT; cb: pem_password_cb; u: Pointer): TIdC_INT;  cdecl;
+function  ERR_PEM_write_bio_PKCS8PrivateKey(bp: PBIO; x: PEVP_PKEY; const enc: PEVP_CIPHER; kstr: PIdAnsiChar; klen: TIdC_INT; cb: pem_password_cb; u: Pointer): TIdC_INT;  cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(PEM_write_bio_PKCS8PrivateKey_procname);
 end;
 
 
-function  ERR_i2d_PKCS8PrivateKey_bio(bp: PBIO; x: PEVP_PKEY; const enc: PEVP_CIPHER_CTX; kstr: PIdAnsiChar; klen: TIdC_INT; cb: pem_password_cb; u: Pointer): TIdC_INT;  cdecl;
+function  ERR_i2d_PKCS8PrivateKey_bio(bp: PBIO; x: PEVP_PKEY; const enc: PEVP_CIPHER; kstr: PIdAnsiChar; klen: TIdC_INT; cb: pem_password_cb; u: Pointer): TIdC_INT;  cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(i2d_PKCS8PrivateKey_bio_procname);
 end;

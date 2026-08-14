@@ -1229,16 +1229,16 @@ var
   EVP_CipherFinal_ex: function (ctx: PEVP_CIPHER_CTX; var outm; var out1: TIdC_INT): TIdC_INT; cdecl = nil;
 
   {$EXTERNALSYM EVP_SignFinal}
-  EVP_SignFinal: function (ctx: PEVP_CIPHER_CTX; md: PByte; s: PIdC_UINT; pkey: PEVP_PKEY): TIdC_INT; cdecl = nil;
+  EVP_SignFinal: function (ctx: EVP_MD_CTX; md: PByte; s: PIdC_UINT; pkey: PEVP_PKEY): TIdC_INT; cdecl = nil;
 
   {$EXTERNALSYM EVP_DigestSign}
-  EVP_DigestSign: function (ctx: PEVP_CIPHER_CTX; sigret: PByte; siglen: PIdC_SIZET; const tbs: PByte; tbslen: TIdC_SIZET): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  EVP_DigestSign: function (ctx: EVP_MD_CTX; sigret: PByte; siglen: PIdC_SIZET; const tbs: PByte; tbslen: TIdC_SIZET): TIdC_INT; cdecl = nil; {introduced 1.1.0}
 
   {$EXTERNALSYM EVP_VerifyFinal}
   EVP_VerifyFinal: function (ctx: PEVP_MD_CTX; const sigbuf: PByte; siglen: TIdC_UINT; pkey: PEVP_PKEY): TIdC_INT; cdecl = nil;
 
   {$EXTERNALSYM EVP_DigestVerify}
-  EVP_DigestVerify: function (ctx: PEVP_CIPHER_CTX; const sigret: PByte; siglen: TIdC_SIZET; const tbs: PByte; tbslen: TIdC_SIZET): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  EVP_DigestVerify: function (ctx: PEVP_MD_CTX; const sigret: PByte; siglen: TIdC_SIZET; const tbs: PByte; tbslen: TIdC_SIZET): TIdC_INT; cdecl = nil; {introduced 1.1.0}
 
   {$EXTERNALSYM EVP_DigestSignInit}
   EVP_DigestSignInit: function (ctx: PEVP_MD_CTX; pctx: PPEVP_PKEY_CTX; const type_: PEVP_MD; e: PENGINE; pkey: PEVP_PKEY): TIdC_INT; cdecl = nil;
@@ -2495,19 +2495,19 @@ var
   function EVP_CipherFinal_ex(ctx: PEVP_CIPHER_CTX; var outm; var out1: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
 
   {$EXTERNALSYM EVP_SignFinal}
-  function EVP_SignFinal(ctx: PEVP_CIPHER_CTX; md: PByte; s: PIdC_UINT; pkey: PEVP_PKEY): TIdC_INT cdecl; external CLibCrypto;
+  function EVP_SignFinal(ctx: EVP_MD_CTX; md: PByte; s: PIdC_UINT; pkey: PEVP_PKEY): TIdC_INT cdecl; external CLibCrypto;
 
   {$EXTERNALSYM EVP_DigestSign}
-  function EVP_DigestSign(ctx: PEVP_CIPHER_CTX; sigret: PByte; siglen: PIdC_SIZET; const tbs: PByte; tbslen: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  function EVP_DigestSign(ctx: EVP_MD_CTX; sigret: PByte; siglen: PIdC_SIZET; const tbs: PByte; tbslen: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
 
   {$EXTERNALSYM EVP_VerifyFinal}
   function EVP_VerifyFinal(ctx: PEVP_MD_CTX; const sigbuf: PByte; siglen: TIdC_UINT; pkey: PEVP_PKEY): TIdC_INT cdecl; external CLibCrypto;
 
   {$EXTERNALSYM EVP_DigestVerify}
-  function EVP_DigestVerify(ctx: PEVP_CIPHER_CTX; const sigret: PByte; siglen: TIdC_SIZET; const tbs: PByte; tbslen: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  function EVP_DigestVerify(ctx: PEVP_MD_CTX; const sigret: PByte; siglen: TIdC_SIZET; const tbs: PByte; tbslen: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
 
   {$EXTERNALSYM EVP_DigestSignInit}
-  function EVP_DigestSignInit(ctx: PEVP_MD_CTX; pctx: PPEVP_PKEY_CTX; const type_: PEVP_MD; e: PENGINE; pkey: PEVP_PKEY): TIdC_INT cdecl; external CLibCrypto;
+  function EVP_DigestSignInit(ctx: EVP_MD_CTX; pctx: PPEVP_PKEY_CTX; const type_: PEVP_MD; e: PENGINE; pkey: PEVP_PKEY): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM EVP_DigestSignFinal}
   function EVP_DigestSignFinal(ctx: PEVP_MD_CTX; sigret: PByte; siglen: PIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
 
@@ -5903,14 +5903,14 @@ end;
 
 
 
-function  ERR_EVP_SignFinal(ctx: PEVP_CIPHER_CTX; md: PByte; s: PIdC_UINT; pkey: PEVP_PKEY): TIdC_INT;  cdecl;
+function  ERR_EVP_SignFinal(ctx: EVP_MD_CTX; md: PByte; s: PIdC_UINT; pkey: PEVP_PKEY): TIdC_INT;  cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_SignFinal_procname);
 end;
 
 
 
-function  ERR_EVP_DigestSign(ctx: PEVP_CIPHER_CTX; sigret: PByte; siglen: PIdC_SIZET; const tbs: PByte; tbslen: TIdC_SIZET): TIdC_INT;  cdecl;
+function  ERR_EVP_DigestSign(ctx: EVP_MD_CTX; sigret: PByte; siglen: PIdC_SIZET; const tbs: PByte; tbslen: TIdC_SIZET): TIdC_INT;  cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_DigestSign_procname);
 end;
@@ -5924,7 +5924,7 @@ end;
 
 
 
-function  ERR_EVP_DigestVerify(ctx: PEVP_CIPHER_CTX; const sigret: PByte; siglen: TIdC_SIZET; const tbs: PByte; tbslen: TIdC_SIZET): TIdC_INT;  cdecl;
+function  ERR_EVP_DigestVerify(ctx: PEVP_MD_CTX; const sigret: PByte; siglen: TIdC_SIZET; const tbs: PByte; tbslen: TIdC_SIZET): TIdC_INT;  cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_DigestVerify_procname);
 end;
