@@ -102,49 +102,7 @@ The design-time package should depend upon the run-time package and include the 
 
 ## Deploying Your Applications
 
-TaurusTLS relies on OpenSSL 3.x or 4.x. Depending on the target platform, OpenSSL is either linked dynamically (requiring DLLs) or statically (compiled into your executable).
-
-You can download the correct binaries for all platforms here:
-**[OpenSSL-Distribution Releases](https://github.com/TaurusTLS-Developers/OpenSSL-Distribution/releases)**
-
-### Dynamic Linking
-#### Linux
-
-`TaurusTLS` uses **dynamic linking** for the `Linux64` platform. 
-On Linux, OpenSSL is usually installed by default on the OS. We recommend explicitly documenting this dependency for your end-users. If you choose to deploy a specific version, you can download redistributable Linux package from the **[OpenSSL-Distribution Releases](https://github.com/TaurusTLS-Developers/OpenSSL-Distribution/releases)** and resistribute it with your application(s).
-
-#### Windows
-
-On Windows, TaurusTLS uses **Dynamic Linking**. You **must** redistribute the OpenSSL shared libraries (`.dll`) and the License file alongside your application executable.
-
-*   **Download:** Look for the standard packages (e.g., `openssl-3.6.1-Windows-x86.zip`, `openssl-3.6.1-Windows-x64.zip`, `openssl-3.6.1-Windows-arm64ec.zip`).
-*   **Redistribution:** You must ship the following files with your application:
-
-| Platform | OpenSSL 3.x Required Files | OpenSSL 4.x Required Files |
-| :--- | :--- | :--- |
-| **Windows 32-bit** | `libcrypto-3.dll`, `libssl-3.dll`, `LICENSE.txt` | `libcrypto-4.dll`, `libssl-4.dll`, `LICENSE.txt` |
-| **Windows 64-bit** | `libcrypto-3-x64.dll`, `libssl-3-x64.dll`, `LICENSE.txt` | `libcrypto-4-x64.dll`, `libssl-4-x64.dll`, `LICENSE.txt` |
-| **Windows ARM64EC**| `libcrypto-3-arm64.dll`, `libssl-3-arm64.dll`, `LICENSE.txt` | `libcrypto-4-arm64.dll`, `libssl-4-arm64.dll`, `LICENSE.txt` |
-
-> **Note:** We strongly recommend also redistributing the `openssl.exe` included in the package, as users may need it for certificate management tasks like:
-- Generate keys
-- Create Certificate Signing Requests
-- Create self-signed Certificates
-- Examine certificates
-- convert Certificate
-- etc.
-
-There's a reference book called the *OpenSSL Cookbook* at <https://www.feistyduck.com/books/openssl-cookbook/>.
-
-### Static Linking (Android, iOS, macOS)
-
-On Mobile and macOS platforms, TaurusTLS uses **Static Linking**. The OpenSSL code is compiled directly into your application binary.
-
-*   **Download:** Look for the standard packages (e.g., `openssl-3.6.1-Android-arm64.zip`, `openssl-3.6.1-iOS-arm64.zip`, `openssl-3.6.1-macOS-arm64.zip`).
-*   **Development:** You need the static library files (`.a`) contained in the `lib\static` folder of these archives to compile your project.
-*   **Redistribution:** You do **not** need to ship any separate OpenSSL files (`.dylib`, `.so`, or `.a`). You only need to distribute:
-    1.  Your Application package
-    2.  The `LICENSE.txt` file (to comply with the OpenSSL license).
+Deployment instructions are now on the TaurusTLS website's [Deploying Your TaurusTLS Applications](https://taurustls.org/deployapps.xhtml)
 
 ## Component Reference
 
