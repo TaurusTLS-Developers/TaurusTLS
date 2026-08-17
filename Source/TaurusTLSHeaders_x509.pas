@@ -1263,7 +1263,7 @@ var
   {$EXTERNALSYM sk_X509_ATTRIBUTE_find}
   function sk_X509_ATTRIBUTE_find (sk : PSTACK_OF_X509_ATTRIBUTE; _val : PX509_ATTRIBUTE) : TIdC_INT cdecl; external CLibCrypto name 'OPENSSL_sk_find';
   {$EXTERNALSYM sk_X509_ATTRIBUTE_pop_free}
-  procedure sk_X509_ATTRIBUTE_pop_free (sk : PSTACK_OF_X509_ATTRIBUTE; fun88c: TOPENSSL_sk_freefunc) cdecl; external CLibCrypto name 'OPENSSL_sk_pop_free';
+  procedure sk_X509_ATTRIBUTE_pop_free (sk : PSTACK_OF_X509_ATTRIBUTE; func: TOPENSSL_sk_freefunc) cdecl; external CLibCrypto name 'OPENSSL_sk_pop_free';
 {$ENDIF}
 {/helper_functions}
 
