@@ -66,8 +66,6 @@ interface
 (*$HPPEMIT '  typedef ASN1_OBJECT* PASN1_OBJECT;'*)
 (*$HPPEMIT '  struct ASN1_TIME;'*)
 (*$HPPEMIT '  typedef ASN1_TIME* PASN1_TIME;'*)
-(*$HPPEMIT '  struct ASN1_OCTET_STRING;'*)
-(*$HPPEMIT '  typedef ASN1_OCTET_STRING* PASN1_OCTET_STRING;'*)
 (*$HPPEMIT '	struct SSL;'*)
 (*$HPPEMIT '	typedef SSL* PSSL;'*)
 (*$HPPEMIT '	struct SSL_CTX;'*)
