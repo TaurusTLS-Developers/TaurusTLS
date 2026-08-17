@@ -26,19 +26,23 @@ interface
 // Headers for OpenSSL 1.1.1
 // x509.h
 
+{$IFDEF TAURUSTLS_HPPEMIT_TYPES_IN_NAMESPACE}
 {$IFDEF HAS_DIRECTIVE_HPPEMIT_NAMESPACE}
 {$HPPEMIT OPENNAMESPACE}
 {$ELSE}
 (*$HPPEMIT 'namespace Taurustlsheaders_x509'*)
 (*$HPPEMIT '{'*)
 {$ENDIF}
+{$ENDIF TAURUSTLS_HPPEMIT_TYPES_IN_NAMESPACE}
 (*$HPPEMIT '  struct X509_EXTENSION;'*)
 (*$HPPEMIT '  typedef X509_EXTENSION* PX509_EXTENSION;'*)
+{$IFDEF TAURUSTLS_HPPEMIT_TYPES_IN_NAMESPACE}
 {$IFDEF HAS_DIRECTIVE_HPPEMIT_NAMESPACE}
 {$HPPEMIT CLOSENAMESPACE}
 {$ELSE}
 (*$HPPEMIT '}'*)
 {$ENDIF}
+{$ENDIF TAURUSTLS_HPPEMIT_TYPES_IN_NAMESPACE}
 
 uses
   IdCTypes,
@@ -1259,7 +1263,7 @@ var
   {$EXTERNALSYM sk_X509_ATTRIBUTE_find}
   function sk_X509_ATTRIBUTE_find (sk : PSTACK_OF_X509_ATTRIBUTE; _val : PX509_ATTRIBUTE) : TIdC_INT cdecl; external CLibCrypto name 'OPENSSL_sk_find';
   {$EXTERNALSYM sk_X509_ATTRIBUTE_pop_free}
-  procedure sk_X509_ATTRIBUTE_pop_free (sk : PSTACK_OF_X509_ATTRIBUTE; func: TOPENSSL_sk_freefunc) cdecl; external CLibCrypto name 'OPENSSL_sk_pop_free';
+  procedure sk_X509_ATTRIBUTE_pop_free (sk : PSTACK_OF_X509_ATTRIBUTE; fun88c: TOPENSSL_sk_freefunc) cdecl; external CLibCrypto name 'OPENSSL_sk_pop_free';
 {$ENDIF}
 {/helper_functions}
 

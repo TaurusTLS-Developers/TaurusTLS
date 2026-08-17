@@ -45,12 +45,17 @@ interface
 // compiling in C++ without having to re-define
 // OpenSSL data types and without having to
 // include the OpenSSL header files
+// NOTE: deliberately emitted at global scope to match how {$EXTERNALSYM} tells the
+// .hpp generator these symbols are visible: unqualified, everywhere.
+// Define TAURUSTLS_HPPEMIT_TYPES_IN_NAMESPACE to emit the namespace directives.
+{$IFDEF TAURUSTLS_HPPEMIT_TYPES_IN_NAMESPACE}
 {$IFDEF HAS_DIRECTIVE_HPPEMIT_NAMESPACE}
 {$HPPEMIT OPENNAMESPACE}
 {$ELSE}
 (*$HPPEMIT 'namespace Taurustlsheaders_types'*)
 (*$HPPEMIT '{'*)
 {$ENDIF}
+{$ENDIF TAURUSTLS_HPPEMIT_TYPES_IN_NAMESPACE}
 (*$HPPEMIT '  struct ASN1_STRING;'*)
 (*$HPPEMIT '  typedef ASN1_STRING* PASN1_STRING;'*)
 (*$HPPEMIT '  struct ASN1_OCTET_STRING;'*)
@@ -75,11 +80,13 @@ interface
 (*$HPPEMIT '	typedef X509* PX509;'*)
 (*$HPPEMIT '	struct X509_NAME;'*)
 (*$HPPEMIT '	typedef X509_NAME* PX509_NAME;'*)
+{$IFDEF TAURUSTLS_HPPEMIT_TYPES_IN_NAMESPACE}
 {$IFDEF HAS_DIRECTIVE_HPPEMIT_NAMESPACE}
 {$HPPEMIT CLOSENAMESPACE}
 {$ELSE}
 (*$HPPEMIT '}'*)
 {$ENDIF}
+{$ENDIF TAURUSTLS_HPPEMIT_TYPES_IN_NAMESPACE}
 
 // RLebeau: why are the following types not being placed in
 // the Idsslopensslheaders namespace with the types above?
