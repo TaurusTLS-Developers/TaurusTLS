@@ -1185,8 +1185,8 @@ type
     seInitialized,
     seHandshaking,
     seEstablished,
-    seClosing,
     seClosed,
+    seReleased,
     seError
   );
   TTaurusTLSSslSocketStates = set of TTaurusTLSSslSocketState;
@@ -1196,7 +1196,7 @@ type
     // Do not localize
     cNames: array[TTaurusTLSSslSocketState] of string = ('Idle',
       'Initializing', 'Initialized', 'Handshaking', 'Established',
-      'Closing', 'Closed', 'Error');  // Do not localize
+      'Closed', 'Released', 'Error');  // Do not localize
   private
     function GetAsString: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
   public

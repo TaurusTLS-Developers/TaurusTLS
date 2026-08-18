@@ -287,6 +287,11 @@ resourcestring
   RMSG_ClientSocketEmptySNIConfig_err = 'Can not setup TLS Connection. '+
     'The Client SNI Config is nil.';
   RMSG_SslSocketSetAppData_err = 'SSL_set_app_data error';
+  RMSG_SetHostNameIPVerification_err = 'Hostname should not be IP address when '+
+    'certificate hostname verification enable.';
+  RMSG_SetHostNameVerificationSetup_err = 'Error setting certificate hostname '+
+    'verification.';
+  RMSG_SetECHHostNamesSetup_err = 'Error setting ECH SNI(s).';
 
   // TaurusTLS_SSLUI messages
   RMSG_RegisterUIMeth_err = 'Error registering the UI_METHOD "%s".';
