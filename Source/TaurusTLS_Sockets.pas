@@ -1513,7 +1513,7 @@ begin
   else
     lValue:=[ekNoECH];
 
-  if IsEnabled(lValue) and (GetMethods(lValue) <> []) then
+  if IsEnabled(lValue) and (GetMethods(lValue) = []) then
     ETaurusTLSECHCliFlagsError.RaiseWithMessage(RMSG_ClientECHFlagsInvalidMethods_err);
   FValue:=lValue;
 end;
