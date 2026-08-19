@@ -890,7 +890,7 @@ type
   {$EXTERNALSYM Tsk_X509_TRUST_num}
   Tsk_X509_TRUST_num = function (const sk : PSTACK_OF_X509_TRUST) : TIdC_INT cdecl;
   {$EXTERNALSYM Tsk_X509_TRUST_value}
-  Tsk_X509_TRUST_value = function (const sk : PSTACK_OF_X509_TRUST; i : TIdC_INT) : PX509_NAME cdecl;
+  Tsk_X509_TRUST_value = function (const sk : PSTACK_OF_X509_TRUST; i : TIdC_INT) : PX509_TRUST cdecl;
   {$EXTERNALSYM Tsk_X509_TRUST_push}
   Tsk_X509_TRUST_push = function (sk : PSTACK_OF_X509_TRUST; st : PX509_NAME) : TIdC_INT cdecl;
   {$EXTERNALSYM Tsk_X509_TRUST_dup}
@@ -1165,7 +1165,7 @@ var
   {$EXTERNALSYM sk_X509_TRUST_num}
   function sk_X509_TRUST_num (const sk : PSTACK_OF_X509_TRUST) : TIdC_INT cdecl; external CLibCrypto name 'OPENSSL_sk_num';
   {$EXTERNALSYM sk_X509_TRUST_value}
-  function sk_X509_TRUST_value (const sk : PSTACK_OF_X509_TRUST; i : TIdC_INT): PX509_NAME cdecl; external CLibCrypto name 'OPENSSL_sk_value';
+  function sk_X509_TRUST_value (const sk : PSTACK_OF_X509_TRUST; i : TIdC_INT): PX509_TRUST cdecl; external CLibCrypto name 'OPENSSL_sk_value';
   {$EXTERNALSYM sk_X509_TRUST_push}
   function sk_X509_TRUST_push (sk : PSTACK_OF_X509_TRUST; st : PX509_NAME): TIdC_INT cdecl; external CLibCrypto name 'OPENSSL_sk_push';
   {$EXTERNALSYM sk_X509_TRUST_dup}
@@ -1201,7 +1201,7 @@ var
   {$EXTERNALSYM sk_X509_EXTENSION_num}
   function sk_X509_EXTENSION_num (const sk : PSTACK_OF_X509_EXTENSION) : TIdC_INT cdecl; external CLibCrypto name 'OPENSSL_sk_num';
   {$EXTERNALSYM sk_X509_EXTENSION_value}
-  function sk_X509_EXTENSION_value (const sk : PSTACK_OF_X509_EXTENSION; i : TIdC_INT) : PX509_INFO cdecl; external CLibCrypto name 'OPENSSL_sk_value';
+  function sk_X509_EXTENSION_value (const sk : PSTACK_OF_X509_EXTENSION; i : TIdC_INT) : PX509_EXTENSION cdecl; external CLibCrypto name 'OPENSSL_sk_value';
   {$EXTERNALSYM sk_X509_EXTENSION_push}
   function sk_X509_EXTENSION_push (sk : PSTACK_OF_X509_EXTENSION; st : PX509_EXTENSION) : TIdC_INT cdecl; external CLibCrypto  name 'OPENSSL_sk_push';
   {$EXTERNALSYM sk_X509_EXTENSION_dup}

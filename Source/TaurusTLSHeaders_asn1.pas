@@ -1896,7 +1896,7 @@ var
   {$EXTERNALSYM sk_ASN1_GENERALSTRING_num}
   function sk_ASN1_GENERALSTRING_num (const sk : PSTACK_OF_ASN1_GENERALSTRING) : TIdC_INT; external CLibCrypto name 'OPENSSL_sk_num';
   {$EXTERNALSYM sk_ASN1_GENERALSTRING_value}
-  function sk_ASN1_GENERALSTRING_value (const sk :PSTACK_OF_ASN1_GENERALSTRING; i : TIdC_INT) : ASN1_GENERALSTRING cdecl; external CLibCrypto name 'OPENSSL_sk_value';
+  function sk_ASN1_GENERALSTRING_value (const sk :PSTACK_OF_ASN1_GENERALSTRING; i : TIdC_INT) : PASN1_GENERALSTRING  cdecl; external CLibCrypto name 'OPENSSL_sk_value';
   {$EXTERNALSYM sk_ASN1_GENERALSTRING_push}
   function sk_ASN1_GENERALSTRING_push (sk : PSTACK_OF_ASN1_GENERALSTRING; st : PX509_ALGOR) : TIdC_INT cdecl; external CLibCrypto  name 'OPENSSL_sk_push';
   {$EXTERNALSYM sk_ASN1_GENERALSTRING_dup}

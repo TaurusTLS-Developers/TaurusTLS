@@ -2199,7 +2199,7 @@ var
   {$EXTERNALSYM sk_IPAddressFamily_num}
   function sk_IPAddressFamily_num (const sk : PSTACK_OF_IPAddressFamily) : TIdC_INT cdecl; external CLibCrypto name 'OPENSSL_sk_num';
   {$EXTERNALSYM sk_IPAddressFamily_value}
-  function sk_IPAddressFamily_value (const sk : PSTACK_OF_IPAddressFamily; i : TIdC_INT): PX509_NAME cdecl; external CLibCrypto name 'OPENSSL_sk_value';
+  function sk_IPAddressFamily_value (const sk : PSTACK_OF_IPAddressFamily; i : TIdC_INT): PIPAddressFamily cdecl; external CLibCrypto name 'OPENSSL_sk_value';
   {$EXTERNALSYM sk_IPAddressFamily_push}
   function sk_IPAddressFamily_push (sk : PSTACK_OF_IPAddressFamily; st : PX509_NAME): TIdC_INT cdecl; external CLibCrypto name 'OPENSSL_sk_push';
   {$EXTERNALSYM sk_IPAddressFamily_dup}
