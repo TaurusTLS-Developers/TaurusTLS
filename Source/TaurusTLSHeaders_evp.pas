@@ -2507,7 +2507,7 @@ var
   function EVP_DigestVerify(ctx: PEVP_MD_CTX; const sigret: PByte; siglen: TIdC_SIZET; const tbs: PByte; tbslen: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
 
   {$EXTERNALSYM EVP_DigestSignInit}
-  function EVP_DigestSignInit(ctx: EVP_MD_CTX; pctx: PPEVP_PKEY_CTX; const type_: PEVP_MD; e: PENGINE; pkey: PEVP_PKEY): TIdC_INT cdecl; external CLibCrypto;
+  function EVP_DigestSignInit(ctx: PEVP_MD_CTX; pctx: PPEVP_PKEY_CTX; const type_: PEVP_MD; e: PENGINE; pkey: PEVP_PKEY): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM EVP_DigestSignFinal}
   function EVP_DigestSignFinal(ctx: PEVP_MD_CTX; sigret: PByte; siglen: PIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
 

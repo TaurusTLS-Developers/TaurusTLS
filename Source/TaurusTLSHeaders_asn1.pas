@@ -1862,11 +1862,11 @@ var
   {$EXTERNALSYM sk_ASN1_OBJECT_value}
   function sk_ASN1_OBJECT_value (const sk : PSTACK_OF_ASN1_OBJECT; i : TIdC_INT) : PASN1_OBJECT cdecl; external CLibCrypto name 'OPENSSL_sk_value';
   {$EXTERNALSYM sk_ASN1_OBJECT_push}
-  function sk_ASN1_OBJECT_push (sk : PSTACK_OF_ASN1_OBJECT; st : PX509_ALGOR) : TIdC_INT cdecl; external CLibCrypto  name 'OPENSSL_sk_push';
+  function sk_ASN1_OBJECT_push (sk : PSTACK_OF_ASN1_OBJECT; st : PASN1_OBJECT) : TIdC_INT cdecl; external CLibCrypto  name 'OPENSSL_sk_push';
   {$EXTERNALSYM sk_ASN1_OBJECT_dup}
   function sk_ASN1_OBJECT_dup (sk : PSTACK_OF_ASN1_OBJECT) : PSTACK_OF_ASN1_OBJECT cdecl; external CLibCrypto name 'OPENSSL_sk_dup';
   {$EXTERNALSYM sk_ASN1_OBJECT_find}
-  function sk_ASN1_OBJECT_find (sk : PSTACK_OF_ASN1_OBJECT; _val : PX509_ALGOR) : TIdC_INT cdecl; external CLibCrypto name 'OPENSSL_sk_find';
+  function sk_ASN1_OBJECT_find (sk : PSTACK_OF_ASN1_OBJECT; _val : PASN1_OBJECT) : TIdC_INT cdecl; external CLibCrypto name 'OPENSSL_sk_find';
   {$EXTERNALSYM sk_ASN1_OBJECT_pop_free}
   procedure sk_ASN1_OBJECT_pop_free (sk : PSTACK_OF_ASN1_OBJECT; func: TOPENSSL_sk_freefunc) cdecl; external CLibCrypto name 'OPENSSL_sk_pop_free';
   {$EXTERNALSYM sk_ASN1_INTEGER_new}
@@ -1880,11 +1880,11 @@ var
   {$EXTERNALSYM sk_ASN1_INTEGER_value}
   function sk_ASN1_INTEGER_value (const sk : PSTACK_OF_ASN1_INTEGER; i : TIdC_INT) : PASN1_INTEGER cdecl; external CLibCrypto name 'OPENSSL_sk_value';
   {$EXTERNALSYM sk_ASN1_INTEGER_push}
-  function sk_ASN1_INTEGER_push (sk : PSTACK_OF_ASN1_INTEGER; st : PX509_ALGOR) : TIdC_INT cdecl; external CLibCrypto  name 'OPENSSL_sk_push';
+  function sk_ASN1_INTEGER_push (sk : PSTACK_OF_ASN1_INTEGER; st : PASN1_INTEGER) : TIdC_INT cdecl; external CLibCrypto  name 'OPENSSL_sk_push';
   {$EXTERNALSYM sk_ASN1_INTEGER_dup}
   function sk_ASN1_INTEGER_dup (sk : PSTACK_OF_ASN1_INTEGER) : PSTACK_OF_ASN1_INTEGER cdecl; external CLibCrypto name 'OPENSSL_sk_dup';
   {$EXTERNALSYM sk_ASN1_INTEGER_find}
-  function sk_ASN1_INTEGER_find (sk : PSTACK_OF_ASN1_INTEGER; _val : PX509_ALGOR) : TIdC_INT cdecl; external CLibCrypto name 'OPENSSL_sk_find';
+  function sk_ASN1_INTEGER_find (sk : PSTACK_OF_ASN1_INTEGER; _val : PASN1_INTEGER) : TIdC_INT cdecl; external CLibCrypto name 'OPENSSL_sk_find';
   {$EXTERNALSYM sk_ASN1_INTEGER_pop_free}
   procedure sk_ASN1_INTEGER_pop_free (sk : PSTACK_OF_ASN1_INTEGER; func: TOPENSSL_sk_freefunc) cdecl; external CLibCrypto name 'OPENSSL_sk_pop_free';
   {$EXTERNALSYM sk_ASN1_GENERALSTRING_new}
@@ -1898,11 +1898,11 @@ var
   {$EXTERNALSYM sk_ASN1_GENERALSTRING_value}
   function sk_ASN1_GENERALSTRING_value (const sk :PSTACK_OF_ASN1_GENERALSTRING; i : TIdC_INT) : PASN1_GENERALSTRING  cdecl; external CLibCrypto name 'OPENSSL_sk_value';
   {$EXTERNALSYM sk_ASN1_GENERALSTRING_push}
-  function sk_ASN1_GENERALSTRING_push (sk : PSTACK_OF_ASN1_GENERALSTRING; st : PX509_ALGOR) : TIdC_INT cdecl; external CLibCrypto  name 'OPENSSL_sk_push';
+  function sk_ASN1_GENERALSTRING_push (sk : PSTACK_OF_ASN1_GENERALSTRING; st : PASN1_GENERALSTRING) : TIdC_INT cdecl; external CLibCrypto  name 'OPENSSL_sk_push';
   {$EXTERNALSYM sk_ASN1_GENERALSTRING_dup}
   function sk_ASN1_GENERALSTRING_dup (sk : PSTACK_OF_ASN1_GENERALSTRING) : PSTACK_OF_ASN1_GENERALSTRING cdecl; external CLibCrypto name 'OPENSSL_sk_dup';
   {$EXTERNALSYM sk_ASN1_GENERALSTRING_find}
-  function sk_ASN1_GENERALSTRING_find (sk : PSTACK_OF_ASN1_GENERALSTRING; _val : PX509_ALGOR) : TIdC_INT cdecl; external CLibCrypto name 'OPENSSL_sk_find';
+  function sk_ASN1_GENERALSTRING_find (sk : PSTACK_OF_ASN1_GENERALSTRING; _val : PASN1_GENERALSTRING) : TIdC_INT cdecl; external CLibCrypto name 'OPENSSL_sk_find';
   {$EXTERNALSYM sk_ASN1_GENERALSTRING_pop_free}
   procedure sk_ASN1_GENERALSTRING_pop_free (sk : PSTACK_OF_ASN1_GENERALSTRING; func: TOPENSSL_sk_freefunc) cdecl; external CLibCrypto name 'OPENSSL_sk_pop_free';
   {$EXTERNALSYM sk_ASN1_UTF8STRING_new}
@@ -1916,11 +1916,11 @@ var
   {$EXTERNALSYM sk_ASN1_UTF8STRING_value}
   function sk_ASN1_UTF8STRING_value (const sk : PSTACK_OF_ASN1_UTF8STRING; i : TIdC_INT) : PASN1_UTF8STRING cdecl; external CLibCrypto name 'OPENSSL_sk_value';
   {$EXTERNALSYM sk_ASN1_UTF8STRING_push}
-  function sk_ASN1_UTF8STRING_push (sk : PSTACK_OF_ASN1_UTF8STRING; st : PX509_ALGOR) : TIdC_INT cdecl; external CLibCrypto  name 'OPENSSL_sk_push';
+  function sk_ASN1_UTF8STRING_push (sk : PSTACK_OF_ASN1_UTF8STRING; st : PASN1_UTF8STRING) : TIdC_INT cdecl; external CLibCrypto  name 'OPENSSL_sk_push';
   {$EXTERNALSYM sk_ASN1_UTF8STRING_dup}
   function sk_ASN1_UTF8STRING_dup (sk : PSTACK_OF_ASN1_UTF8STRING) : PSTACK_OF_ASN1_UTF8STRING cdecl; external CLibCrypto name 'OPENSSL_sk_dup';
   {$EXTERNALSYM sk_ASN1_UTF8STRING_find}
-  function sk_ASN1_UTF8STRING_find (sk : PSTACK_OF_ASN1_UTF8STRING; _val : PX509_ALGOR) : TIdC_INT cdecl; external CLibCrypto name 'OPENSSL_sk_find';
+  function sk_ASN1_UTF8STRING_find (sk : PSTACK_OF_ASN1_UTF8STRING; _val : PASN1_UTF8STRING) : TIdC_INT cdecl; external CLibCrypto name 'OPENSSL_sk_find';
   {$EXTERNALSYM sk_ASN1_UTF8STRING_pop_free}
   procedure sk_ASN1_UTF8STRING_pop_free (sk : PSTACK_OF_ASN1_UTF8STRING; func: TOPENSSL_sk_freefunc) cdecl; external CLibCrypto name 'OPENSSL_sk_pop_free';
   {$EXTERNALSYM sk_ASN1_TYPE_new}
@@ -1934,11 +1934,11 @@ var
   {$EXTERNALSYM sk_ASN1_TYPE_value}
   function sk_ASN1_TYPE_value (const sk : PSTACK_OF_ASN1_TYPE; i : TIdC_INT) : PASN1_TYPE cdecl; external CLibCrypto name 'OPENSSL_sk_value';
   {$EXTERNALSYM sk_ASN1_TYPE_push}
-  function sk_ASN1_TYPE_push (sk : PSTACK_OF_ASN1_TYPE; st : PX509_ALGOR) : TIdC_INT cdecl; external CLibCrypto  name 'OPENSSL_sk_push';
+  function sk_ASN1_TYPE_push (sk : PSTACK_OF_ASN1_TYPE; st : PASN1_TYPE) : TIdC_INT cdecl; external CLibCrypto  name 'OPENSSL_sk_push';
   {$EXTERNALSYM sk_ASN1_TYPE_dup}
   function sk_ASN1_TYPE_dup (sk : PSTACK_OF_ASN1_TYPE) : PSTACK_OF_ASN1_TYPE cdecl; external CLibCrypto name 'OPENSSL_sk_dup';
   {$EXTERNALSYM sk_ASN1_TYPE_find}
-  function sk_ASN1_TYPE_find (sk : PSTACK_OF_ASN1_TYPE; _val : PX509_ALGOR) : TIdC_INT cdecl; external CLibCrypto name 'OPENSSL_sk_find';
+  function sk_ASN1_TYPE_find (sk : PSTACK_OF_ASN1_TYPE; _val : PASN1_TYPE) : TIdC_INT cdecl; external CLibCrypto name 'OPENSSL_sk_find';
   {$EXTERNALSYM sk_ASN1_TYPE_pop_free}
   procedure sk_ASN1_TYPE_pop_free (sk : PSTACK_OF_ASN1_TYPE; func: TOPENSSL_sk_freefunc) cdecl; external CLibCrypto name 'OPENSSL_sk_pop_free';
   {$EXTERNALSYM sk_X509_ALGOR_new}

@@ -2201,11 +2201,11 @@ var
   {$EXTERNALSYM sk_IPAddressFamily_value}
   function sk_IPAddressFamily_value (const sk : PSTACK_OF_IPAddressFamily; i : TIdC_INT): PIPAddressFamily cdecl; external CLibCrypto name 'OPENSSL_sk_value';
   {$EXTERNALSYM sk_IPAddressFamily_push}
-  function sk_IPAddressFamily_push (sk : PSTACK_OF_IPAddressFamily; st : PX509_NAME): TIdC_INT cdecl; external CLibCrypto name 'OPENSSL_sk_push';
+  function sk_IPAddressFamily_push (sk : PSTACK_OF_IPAddressFamily; st : PIPAddressFamily): TIdC_INT cdecl; external CLibCrypto name 'OPENSSL_sk_push';
   {$EXTERNALSYM sk_IPAddressFamily_dup}
   function sk_IPAddressFamily_dup (sk : PSTACK_OF_IPAddressFamily) : PSTACK_OF_IPAddressFamily cdecl; external CLibCrypto name 'OPENSSL_sk_dup';
   {$EXTERNALSYM sk_IPAddressFamily_find}
-  function sk_IPAddressFamily_find (sk : PSTACK_OF_IPAddressFamily; _val : PX509_NAME) : TIdC_INT cdecl; external CLibCrypto name 'OPENSSL_sk_find';
+  function sk_IPAddressFamily_find (sk : PSTACK_OF_IPAddressFamily; _val : PIPAddressFamily) : TIdC_INT cdecl; external CLibCrypto name 'OPENSSL_sk_find';
   {$EXTERNALSYM sk_IPAddressFamily_pop_free}
   procedure sk_IPAddressFamily_pop_free (sk : PSTACK_OF_IPAddressFamily; func: TOPENSSL_sk_freefunc) cdecl; external CLibCrypto name 'OPENSSL_sk_pop_free';
   {$EXTERNALSYM sk_GENERAL_NAME_new}
