@@ -793,7 +793,7 @@ type
   {$EXTERNALSYM Tsk_PKCS7_RECIP_INFO_num}
   Tsk_PKCS7_RECIP_INFO_num = function (const sk : PSTACK_OF_PKCS7_RECIP_INFO) : TIdC_INT cdecl;
   {$EXTERNALSYM Tsk_PKCS7_RECIP_INFO_value}
-  Tsk_PKCS7_RECIP_INFO_value = function (const sk : PSTACK_OF_PKCS7_RECIP_INFO; i : TIdC_INT) : PX509_CRL cdecl;
+  Tsk_PKCS7_RECIP_INFO_value = function (const sk : PSTACK_OF_PKCS7_RECIP_INFO; i : TIdC_INT) : PPKCS7_RECIP_INFO  cdecl;
   {$EXTERNALSYM Tsk_PKCS7_RECIP_INFO_push}
   Tsk_PKCS7_RECIP_INFO_push = function (sk : PSTACK_OF_PKCS7_RECIP_INFO; st : PPKCS7_RECIP_INFO) : TIdC_INT cdecl;
   {$EXTERNALSYM Tsk_PKCS7_RECIP_INFO_dup}

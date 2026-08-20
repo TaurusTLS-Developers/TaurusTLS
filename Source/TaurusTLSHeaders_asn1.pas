@@ -1888,7 +1888,7 @@ var
   {$EXTERNALSYM sk_ASN1_INTEGER_pop_free}
   procedure sk_ASN1_INTEGER_pop_free (sk : PSTACK_OF_ASN1_INTEGER; func: TOPENSSL_sk_freefunc) cdecl; external CLibCrypto name 'OPENSSL_sk_pop_free';
   {$EXTERNALSYM sk_ASN1_GENERALSTRING_new}
-  function sk_ASN1_GENERALSTRING_new(cmp : TOPENSSL_sk_compfunc) : PSTACK_OF_ASN1_OBJECT cdecl; external CLibCrypto name 'OPENSSL_sk_new';
+  function sk_ASN1_GENERALSTRING_new(cmp : TOPENSSL_sk_compfunc) : PSTACK_OF_ASN1_GENERALSTRING cdecl; external CLibCrypto name 'OPENSSL_sk_new';
   {$EXTERNALSYM sk_ASN1_GENERALSTRING_new_null}
   function sk_ASN1_GENERALSTRING_new_null : PSTACK_OF_ASN1_GENERALSTRING cdecl; external CLibCrypto name 'OPENSSL_sk_new_null';
   {$EXTERNALSYM sk_ASN1_GENERALSTRING_free}
