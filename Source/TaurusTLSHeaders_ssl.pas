@@ -525,23 +525,23 @@ const
   (* TLS ECH OPTIONS. Added in OpenSSL 4.0.0 *)
   // Set this to tell client to emit greased ECH values
   {$EXTERNALSYM SSL_OP_ECH_GREASE}
-  SSL_OP_ECH_GREASE                               = Int64(1) shl 37;
+  SSL_OP_ECH_GREASE                               = UInt64(1) shl 37;
   // If this is set then the server side will attempt trial decryption
   // of ECHs even if there is no matching ECH config_id. That's a bit
   // inefficient, but more privacy friendly.
   {$EXTERNALSYM SSL_OP_ECH_TRIALDECRYPT}
-  SSL_OP_ECH_TRIALDECRYPT                         = Int64(1) shl 38;
+  SSL_OP_ECH_TRIALDECRYPT                         = UInt64(1) shl 38;
   // If set, clients will ignore the supplied ECH config_id and replace
   // that with a random value.
   {$EXTERNALSYM SSL_OP_ECH_IGNORE_CID}
-  SSL_OP_ECH_IGNORE_CID                           = Int64(1) shl 39;
+  SSL_OP_ECH_IGNORE_CID                           = UInt64(1) shl 39;
   // If set, servers will add GREASEy ECHConfig values to those sent
   // in retry_configs.
   {$EXTERNALSYM SSL_OP_ECH_GREASE_RETRY_CONFIG}
-  SSL_OP_ECH_GREASE_RETRY_CONFIG                  = Int64(1) shl 40;
+  SSL_OP_ECH_GREASE_RETRY_CONFIG                  = UInt64(1) shl 40;
   // RFC 8701: Send GREASE values in ClientHello
   {$EXTERNALSYM SSL_OP_GREASE}
-  SSL_OP_GREASE                                   = Int64(1) shl 41;
+  SSL_OP_GREASE                                   = UInt64(1) shl 41;
 
 
   (* OBSOLETE OPTIONS: retained for compatibility *)
