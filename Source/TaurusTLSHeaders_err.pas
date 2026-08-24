@@ -36,119 +36,216 @@ uses
   TaurusTLSHeaders_types;
 
 const
+  {$EXTERNALSYM ERR_TXT_MALLOCED}
   ERR_TXT_MALLOCED = $01;
+  {$EXTERNALSYM ERR_TXT_STRING}
   ERR_TXT_STRING = $02;
+  {$EXTERNALSYM ERR_FLAG_MARK}
   ERR_FLAG_MARK = $01;
+  {$EXTERNALSYM ERR_FLAG_CLEAR}
   ERR_FLAG_CLEAR = $02;
 
+  {$EXTERNALSYM ERR_NUM_ERRORS}
   ERR_NUM_ERRORS = 16;
 
 //* library */
+  {$EXTERNALSYM ERR_LIB_SYS}
   ERR_LIB_SYS =    2;
+  {$EXTERNALSYM ERR_LIB_BN}
   ERR_LIB_BN =    3;
+  {$EXTERNALSYM ERR_LIB_RSA}
   ERR_LIB_RSA =    4;
+  {$EXTERNALSYM ERR_LIB_DH}
   ERR_LIB_DH =    5;
+  {$EXTERNALSYM ERR_LIB_EVP}
   ERR_LIB_EVP =    6;
+  {$EXTERNALSYM ERR_LIB_BUF}
   ERR_LIB_BUF =    7;
+  {$EXTERNALSYM ERR_LIB_OBJ}
   ERR_LIB_OBJ =    8;
+  {$EXTERNALSYM ERR_LIB_PEM}
   ERR_LIB_PEM =    9;
+  {$EXTERNALSYM ERR_LIB_DSA}
   ERR_LIB_DSA =    10;
+  {$EXTERNALSYM ERR_LIB_X509}
   ERR_LIB_X509 =    11;
   // ERR_LIB_METH         12
+  {$EXTERNALSYM ERR_LIB_ASN1}
   ERR_LIB_ASN1 =    13;
+  {$EXTERNALSYM ERR_LIB_CONF}
   ERR_LIB_CONF =    14;
+  {$EXTERNALSYM ERR_LIB_CRYPTO}
   ERR_LIB_CRYPTO =   15;
+  {$EXTERNALSYM ERR_LIB_EC}
   ERR_LIB_EC =    16;
+  {$EXTERNALSYM ERR_LIB_SSL}
   ERR_LIB_SSL =    20;
 (* #define ERR_LIB_SSL23        21 *)
 (* #define ERR_LIB_SSL2         22 *)
 (* #define ERR_LIB_SSL3         23 *)
 (* #define ERR_LIB_RSAREF       30 *)
 (* #define ERR_LIB_PROXY        31 *)
+  {$EXTERNALSYM ERR_LIB_BIO}
   ERR_LIB_BIO =    32;
+  {$EXTERNALSYM ERR_LIB_PKCS7}
   ERR_LIB_PKCS7 =    33;
+  {$EXTERNALSYM ERR_LIB_X509V3}
   ERR_LIB_X509V3 =   34;
+  {$EXTERNALSYM ERR_LIB_PKCS12}
   ERR_LIB_PKCS12 =   35;
+  {$EXTERNALSYM ERR_LIB_RAND}
   ERR_LIB_RAND =    36;
+  {$EXTERNALSYM ERR_LIB_DSO}
   ERR_LIB_DSO =    37;
+  {$EXTERNALSYM ERR_LIB_ENGINE}
   ERR_LIB_ENGINE =   38;
+  {$EXTERNALSYM ERR_LIB_OCSP}
   ERR_LIB_OCSP =    39;
+  {$EXTERNALSYM ERR_LIB_UI}
   ERR_LIB_UI =    40;
+  {$EXTERNALSYM ERR_LIB_COMP}
   ERR_LIB_COMP =    41;
+  {$EXTERNALSYM ERR_LIB_ECDSA}
   ERR_LIB_ECDSA =    42;
+  {$EXTERNALSYM ERR_LIB_ECDH}
   ERR_LIB_ECDH =    43;
+  {$EXTERNALSYM ERR_LIB_OSSL_STORE}
   ERR_LIB_OSSL_STORE =  44;
+  {$EXTERNALSYM ERR_LIB_FIPS}
   ERR_LIB_FIPS =    45;
+  {$EXTERNALSYM ERR_LIB_CMS}
   ERR_LIB_CMS =    46;
+  {$EXTERNALSYM ERR_LIB_TS}
   ERR_LIB_TS =    47;
+  {$EXTERNALSYM ERR_LIB_HMAC}
   ERR_LIB_HMAC =    48;
 (* # define ERR_LIB_JPAKE       49 *)
+  {$EXTERNALSYM ERR_LIB_CT}
   ERR_LIB_CT =    50;
+  {$EXTERNALSYM ERR_LIB_ASYNC}
   ERR_LIB_ASYNC =    51;
+  {$EXTERNALSYM ERR_LIB_KDF}
   ERR_LIB_KDF =    52;
+  {$EXTERNALSYM ERR_LIB_SM2}
   ERR_LIB_SM2 =    53;
+  {$EXTERNALSYM ERR_LIB_USER}
   ERR_LIB_USER =    128;
 
 //* OS functions */
+  {$EXTERNALSYM SYS_F_FOPEN}
   SYS_F_FOPEN = 1;
+  {$EXTERNALSYM SYS_F_CONNECT}
   SYS_F_CONNECT = 2;
+  {$EXTERNALSYM SYS_F_GETSERVBYNAME}
   SYS_F_GETSERVBYNAME = 3;
+  {$EXTERNALSYM SYS_F_SOCKET}
   SYS_F_SOCKET = 4;
+  {$EXTERNALSYM SYS_F_IOCTLSOCKET}
   SYS_F_IOCTLSOCKET = 5;
+  {$EXTERNALSYM SYS_F_BIND}
   SYS_F_BIND = 6;
+  {$EXTERNALSYM SYS_F_LISTEN}
   SYS_F_LISTEN = 7;
+  {$EXTERNALSYM SYS_F_ACCEPT}
   SYS_F_ACCEPT = 8;
+  {$EXTERNALSYM SYS_F_WSASTARTUP}
   SYS_F_WSASTARTUP = 9; (* Winsock stuff *)
+  {$EXTERNALSYM SYS_F_OPENDIR}
   SYS_F_OPENDIR = 10;
+  {$EXTERNALSYM SYS_F_FREAD}
   SYS_F_FREAD = 11;
+  {$EXTERNALSYM SYS_F_GETADDRINFO}
   SYS_F_GETADDRINFO = 12;
+  {$EXTERNALSYM SYS_F_GETNAMEINFO}
   SYS_F_GETNAMEINFO = 13;
+  {$EXTERNALSYM SYS_F_SETSOCKOPT}
   SYS_F_SETSOCKOPT = 14;
+  {$EXTERNALSYM SYS_F_GETSOCKOPT}
   SYS_F_GETSOCKOPT = 15;
+  {$EXTERNALSYM SYS_F_GETSOCKNAME}
   SYS_F_GETSOCKNAME = 16;
+  {$EXTERNALSYM SYS_F_GETHOSTBYNAME}
   SYS_F_GETHOSTBYNAME = 17;
+  {$EXTERNALSYM SYS_F_FFLUSH}
   SYS_F_FFLUSH = 18;
+  {$EXTERNALSYM SYS_F_OPEN}
   SYS_F_OPEN = 19;
+  {$EXTERNALSYM SYS_F_CLOSE}
   SYS_F_CLOSE = 20;
+  {$EXTERNALSYM SYS_F_IOCTL}
   SYS_F_IOCTL = 21;
+  {$EXTERNALSYM SYS_F_STAT}
   SYS_F_STAT = 22;
+  {$EXTERNALSYM SYS_F_FCNTL}
   SYS_F_FCNTL = 23;
+  {$EXTERNALSYM SYS_F_FSTAT}
   SYS_F_FSTAT = 24;
 
 //* reasons */
+  {$EXTERNALSYM ERR_R_SYS_LIB}
   ERR_R_SYS_LIB = ERR_LIB_SYS; //2
+  {$EXTERNALSYM ERR_R_BN_LIB}
   ERR_R_BN_LIB = ERR_LIB_BN; //3
+  {$EXTERNALSYM ERR_R_RSA_LIB}
   ERR_R_RSA_LIB = ERR_LIB_RSA; //4
+  {$EXTERNALSYM ERR_R_DH_LIB}
   ERR_R_DH_LIB = ERR_LIB_DH; //5
+  {$EXTERNALSYM ERR_R_EVP_LIB}
   ERR_R_EVP_LIB = ERR_LIB_EVP; //6
+  {$EXTERNALSYM ERR_R_BUF_LIB}
   ERR_R_BUF_LIB = ERR_LIB_BUF; //7
+  {$EXTERNALSYM ERR_R_OBJ_LIB}
   ERR_R_OBJ_LIB = ERR_LIB_OBJ; //8
+  {$EXTERNALSYM ERR_R_PEM_LIB}
   ERR_R_PEM_LIB = ERR_LIB_PEM; //9
+  {$EXTERNALSYM ERR_R_DSA_LIB}
   ERR_R_DSA_LIB = ERR_LIB_DSA; //10
+  {$EXTERNALSYM ERR_R_X509_LIB}
   ERR_R_X509_LIB = ERR_LIB_X509; //11
+  {$EXTERNALSYM ERR_R_ASN1_LIB}
   ERR_R_ASN1_LIB = ERR_LIB_ASN1; //13
+  {$EXTERNALSYM ERR_R_EC_LIB}
   ERR_R_EC_LIB = ERR_LIB_EC; //16
+  {$EXTERNALSYM ERR_R_BIO_LIB}
   ERR_R_BIO_LIB = ERR_LIB_BIO; //32
+  {$EXTERNALSYM ERR_R_PKCS7_LIB}
   ERR_R_PKCS7_LIB = ERR_LIB_PKCS7; //33
+  {$EXTERNALSYM ERR_R_X509V3_LIB}
   ERR_R_X509V3_LIB = ERR_LIB_X509V3; //34
+  {$EXTERNALSYM ERR_R_ENGINE_LIB}
   ERR_R_ENGINE_LIB = ERR_LIB_ENGINE; //38
+  {$EXTERNALSYM ERR_R_UI_LIB}
   ERR_R_UI_LIB = ERR_LIB_UI; //40
+  {$EXTERNALSYM ERR_R_ECDSA_LIB}
   ERR_R_ECDSA_LIB = ERR_LIB_ECDSA; //42
+  {$EXTERNALSYM ERR_R_OSSL_STORE_LIB}
   ERR_R_OSSL_STORE_LIB = ERR_LIB_OSSL_STORE; //44
 
+  {$EXTERNALSYM ERR_R_NESTED_ASN1_ERROR}
   ERR_R_NESTED_ASN1_ERROR =  58;
+  {$EXTERNALSYM ERR_R_MISSING_ASN1_EOS}
   ERR_R_MISSING_ASN1_EOS =  63;
 
   //* fatal error */
+  {$EXTERNALSYM ERR_R_FATAL}
   ERR_R_FATAL =  64;
+  {$EXTERNALSYM ERR_R_MALLOC_FAILURE}
   ERR_R_MALLOC_FAILURE = (1 or ERR_R_FATAL);
+  {$EXTERNALSYM ERR_R_SHOULD_NOT_HAVE_BEEN_CALLED}
   ERR_R_SHOULD_NOT_HAVE_BEEN_CALLED = (2 or ERR_R_FATAL);
+  {$EXTERNALSYM ERR_R_PASSED_NULL_PARAMETER}
   ERR_R_PASSED_NULL_PARAMETER = (3 or ERR_R_FATAL);
+  {$EXTERNALSYM ERR_R_INTERNAL_ERROR}
   ERR_R_INTERNAL_ERROR = (4 or ERR_R_FATAL);
+  {$EXTERNALSYM ERR_R_DISABLED}
   ERR_R_DISABLED = (5 or ERR_R_FATAL);
+  {$EXTERNALSYM ERR_R_INIT_FAIL}
   ERR_R_INIT_FAIL = (6 or ERR_R_FATAL);
+  {$EXTERNALSYM ERR_R_PASSED_INVALID_ARGUMENT}
   ERR_R_PASSED_INVALID_ARGUMENT = (7);
+  {$EXTERNALSYM ERR_R_OPERATION_FAIL}
   ERR_R_OPERATION_FAIL = (8 or ERR_R_FATAL);
+  {$EXTERNALSYM ERR_R_PKCS12_LIB}
   ERR_R_PKCS12_LIB = ERR_LIB_PKCS12;
 
 
@@ -159,6 +256,7 @@ const
 
 type
   //This is now opaque in OpenSSL 4.0.0
+  {$EXTERNALSYM err_state_st}
   err_state_st = record
 {    err_flags: array[0..ERR_NUM_ERRORS -1] of TIdC_INT;
     err_buffer: array[0..ERR_NUM_ERRORS -1] of TIdC_ULONG;
@@ -168,16 +266,22 @@ type
     err_line: array[0..ERR_NUM_ERRORS -1] of TIdC_INT;
     top, bottom: TIdC_INT;   }
   end;
+  {$EXTERNALSYM ERR_STATE}
   ERR_STATE = err_state_st;
+  {$EXTERNALSYM PERR_STATE}
   PERR_STATE = ^ERR_STATE;
 
+  {$EXTERNALSYM ERR_string_data_st}
   ERR_string_data_st = record
     _error: TIdC_ULONG;
     string_: PIdAnsiChar;
   end;
+  {$EXTERNALSYM ERR_STRING_DATA}
   ERR_STRING_DATA = ERR_string_data_st;
+  {$EXTERNALSYM PERR_STRING_DATA}
   PERR_STRING_DATA = ^ERR_STRING_DATA;
 
+  {$EXTERNALSYM ERR_print_errors_cb_cb}
   ERR_print_errors_cb_cb = function(_str: PIdAnsiChar; len: TIdC_SIZET; u: Pointer): TIdC_INT; cdecl;
 
 // DEFINE_LHASH_OF(ERR_STRING_DATA);
@@ -187,47 +291,15 @@ type
   	  The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header 
 	  files generated for C++. }
 	  
-  {$EXTERNALSYM ERR_new} {introduced 3.0.0}
-  {$EXTERNALSYM ERR_set_debug}  {introduced 3.0.0}
-  {$EXTERNALSYM ERR_set_error} {introduced 3.0.0}
-  {$EXTERNALSYM ERR_set_error_data}
-  {$EXTERNALSYM ERR_get_error}
-  {$EXTERNALSYM ERR_get_error_line}
-  {$EXTERNALSYM ERR_get_error_line_data}
-  {$EXTERNALSYM ERR_peek_error}
-  {$EXTERNALSYM ERR_peek_error_line}
-  {$EXTERNALSYM ERR_peek_error_line_data}
-  {$EXTERNALSYM ERR_peek_last_error}
-  {$EXTERNALSYM ERR_peek_last_error_line}
-  {$EXTERNALSYM ERR_peek_last_error_line_data}
-  {$EXTERNALSYM ERR_clear_error}
-  {$EXTERNALSYM ERR_error_string}
-  {$EXTERNALSYM ERR_error_string_n}
-  {$EXTERNALSYM ERR_lib_error_string}
-  {$EXTERNALSYM ERR_func_error_string}
-  {$EXTERNALSYM ERR_reason_error_string}
-  {$EXTERNALSYM ERR_print_errors_cb}
-  {$EXTERNALSYM ERR_print_errors}
-  {$EXTERNALSYM ERR_load_strings}
-  {$EXTERNALSYM ERR_load_strings_const} {introduced 1.1.0}
-  {$EXTERNALSYM ERR_unload_strings}
-  {$EXTERNALSYM ERR_load_ERR_strings}
-  {$EXTERNALSYM ERR_get_state}
-  {$EXTERNALSYM ERR_get_next_error_library}
-  {$EXTERNALSYM ERR_set_mark}
-  {$EXTERNALSYM ERR_pop_to_mark}
-  {$EXTERNALSYM ERR_clear_last_mark} {introduced 1.1.0}
 {helper_functions}
+  {$EXTERNALSYM ERR_GET_LIB}
 function ERR_GET_LIB(l: TIdC_INT): TIdC_ULONG;
 {\helper_functions}
 
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
-  {$EXTERNALSYM ERR_put_error} {removed 3.0.0}
-  {$EXTERNALSYM SSLErr} {removed 1.0.0}
-  {$EXTERNALSYM X509err} {removed 1.0.0}
-  {$EXTERNALSYM ERR_GET_REASON} {removed 1.0.0}
+  {$EXTERNALSYM ERR_put_error}
   ERR_put_error: procedure (lib: TIdC_INT; func: TIdC_INT; reason: TIdC_INT; file_: PIdAnsiChar; line: TIdC_INT); cdecl = nil; {removed 3.0.0}
 
 { From 3.0 onwards, replaced by a macro
@@ -236,50 +308,83 @@ var
      ERR_set_debug((file), (line), OPENSSL_FUNC),
      ERR_set_error((lib), (reason), NULL))}
 
+  {$EXTERNALSYM ERR_new}
   ERR_new: procedure ; cdecl = nil; {introduced 3.0.0}
+  {$EXTERNALSYM ERR_set_debug}
   ERR_set_debug: procedure (const file_: PIdAnsiChar; line: TIdC_INT; const func: PIdAnsiChar); cdecl = nil;  {introduced 3.0.0}
 //  ERR_set_error: procedure (lib: TIdC_INT; reason: TIdC_INT; fmt: PIdAnsiChar; args: array of const); cdecl = nil; {introduced 3.0.0}
+  {$EXTERNALSYM ERR_set_error}
   ERR_set_error: procedure (lib: TIdC_INT; reason: TIdC_INT; fmt: PIdAnsiChar); cdecl varargs = nil; {introduced 3.0.0}
 
 
+  {$EXTERNALSYM ERR_set_error_data}
   ERR_set_error_data: procedure (data: PIdAnsiChar; flags: TIdC_INT); cdecl = nil;
   
+  {$EXTERNALSYM ERR_get_error}
   ERR_get_error: function : TIdC_ULONG; cdecl = nil;
+  {$EXTERNALSYM ERR_get_error_line}
   ERR_get_error_line: function (file_: PPIdAnsiChar; line: PIdC_INT): TIdC_ULONG; cdecl = nil;
+  {$EXTERNALSYM ERR_get_error_line_data}
   ERR_get_error_line_data: function (file_: PPIdAnsiChar; line: PIdC_INT; data: PPIdAnsiChar; flags: PIdC_INT): TIdC_ULONG; cdecl = nil;
 
+  {$EXTERNALSYM ERR_peek_error}
   ERR_peek_error: function : TIdC_ULONG; cdecl = nil;
+  {$EXTERNALSYM ERR_peek_error_line}
   ERR_peek_error_line: function (file_: PPIdAnsiChar; line: PIdC_INT): TIdC_ULONG; cdecl = nil;
+  {$EXTERNALSYM ERR_peek_error_line_data}
   ERR_peek_error_line_data: function (file_: PPIdAnsiChar; line: PIdC_INT; data: PPIdAnsiChar; flags: PIdC_INT): TIdC_ULONG; cdecl = nil;
 
+  {$EXTERNALSYM ERR_peek_last_error}
   ERR_peek_last_error: function : TIdC_ULONG; cdecl = nil;
+  {$EXTERNALSYM ERR_peek_last_error_line}
   ERR_peek_last_error_line: function (file_: PPIdAnsiChar; line: PIdC_INT): TIdC_ULONG; cdecl = nil;
+  {$EXTERNALSYM ERR_peek_last_error_line_data}
   ERR_peek_last_error_line_data: function (file_: PPIdAnsiChar; line: PIdC_INT; data: PPIdAnsiChar; flags: PIdC_INT): TIdC_ULONG; cdecl = nil;
 
+  {$EXTERNALSYM ERR_clear_error}
   ERR_clear_error: procedure ; cdecl = nil;
+  {$EXTERNALSYM ERR_error_string}
   ERR_error_string: function (e: TIdC_ULONG; buf: PIdAnsiChar): PIdAnsiChar; cdecl = nil;
+  {$EXTERNALSYM ERR_error_string_n}
   ERR_error_string_n: procedure (e: TIdC_ULONG; buf: PIdAnsiChar; len: TIdC_SIZET); cdecl = nil;
+  {$EXTERNALSYM ERR_lib_error_string}
   ERR_lib_error_string: function (e: TIdC_ULONG): PIdAnsiChar; cdecl = nil;
+  {$EXTERNALSYM ERR_func_error_string}
   ERR_func_error_string: function (e: TIdC_ULONG): PIdAnsiChar; cdecl = nil;
+  {$EXTERNALSYM ERR_reason_error_string}
   ERR_reason_error_string: function (e: TIdC_ULONG): PIdAnsiChar; cdecl = nil;
+  {$EXTERNALSYM ERR_print_errors_cb}
   ERR_print_errors_cb: procedure (cb: ERR_print_errors_cb_cb; u: Pointer); cdecl = nil;
 
+  {$EXTERNALSYM ERR_print_errors}
   ERR_print_errors: procedure (bp: PBIO); cdecl = nil;
   // void ERR_add_error_data(int num, ...);
   // procedure ERR_add_error_vdata(num: TIdC_INT; args: va_list);
+  {$EXTERNALSYM ERR_load_strings}
   ERR_load_strings: function (lib: TIdC_INT; _str: PERR_STRING_DATA): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ERR_load_strings_const}
   ERR_load_strings_const: function (_str: PERR_STRING_DATA): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM ERR_unload_strings}
   ERR_unload_strings: function (lib: TIdC_INT; _str: PERR_STRING_DATA): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ERR_load_ERR_strings}
   ERR_load_ERR_strings: function : TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM ERR_get_state}
   ERR_get_state: function : PERR_STATE; cdecl = nil;
+  {$EXTERNALSYM ERR_get_next_error_library}
   ERR_get_next_error_library: function : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ERR_set_mark}
   ERR_set_mark: function : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ERR_pop_to_mark}
   ERR_pop_to_mark: function : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ERR_clear_last_mark}
   ERR_clear_last_mark: function : TIdC_INT; cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM SSLErr}
   SSLErr: procedure (func: TIdC_INT; reason: TIdC_INT); cdecl = nil; {removed 1.0.0}
+  {$EXTERNALSYM X509err}
   X509err: procedure (const f,r : TIdC_INT); cdecl = nil; {removed 1.0.0}
+  {$EXTERNALSYM ERR_GET_REASON}
   ERR_GET_REASON: function (const l : TIdC_INT) : TIdC_INT; cdecl = nil; {removed 1.0.0}
 
 {$ELSE}
@@ -290,51 +395,85 @@ var
      ERR_set_debug((file), (line), OPENSSL_FUNC),
      ERR_set_error((lib), (reason), NULL))}
 
+  {$EXTERNALSYM ERR_new}
   procedure ERR_new cdecl; external CLibCrypto; {introduced 3.0.0}
+  {$EXTERNALSYM ERR_set_debug}
   procedure ERR_set_debug(const file_: PIdAnsiChar; line: TIdC_INT; const func: PIdAnsiChar) cdecl; external CLibCrypto;  {introduced 3.0.0}
 //  procedure ERR_set_error(lib: TIdC_INT; reason: TIdC_INT; fmt: PIdAnsiChar; args: array of const) cdecl; external CLibCrypto; {introduced 3.0.0}
+  {$EXTERNALSYM ERR_set_error}
   procedure ERR_set_error(lib: TIdC_INT; reason: TIdC_INT; fmt: PIdAnsiChar) cdecl; varargs; external CLibCrypto; {introduced 3.0.0}
 
+  {$EXTERNALSYM ERR_set_error_data}
   procedure ERR_set_error_data(data: PIdAnsiChar; flags: TIdC_INT) cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM ERR_get_error}
   function ERR_get_error: TIdC_ULONG cdecl; external CLibCrypto;
+  {$EXTERNALSYM ERR_get_error_line}
   function ERR_get_error_line(file_: PPIdAnsiChar; line: PIdC_INT): TIdC_ULONG cdecl; external CLibCrypto;
+  {$EXTERNALSYM ERR_get_error_line_data}
   function ERR_get_error_line_data(file_: PPIdAnsiChar; line: PIdC_INT; data: PPIdAnsiChar; flags: PIdC_INT): TIdC_ULONG cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM ERR_peek_error}
   function ERR_peek_error: TIdC_ULONG cdecl; external CLibCrypto;
+  {$EXTERNALSYM ERR_peek_error_line}
   function ERR_peek_error_line(file_: PPIdAnsiChar; line: PIdC_INT): TIdC_ULONG cdecl; external CLibCrypto;
+  {$EXTERNALSYM ERR_peek_error_line_data}
   function ERR_peek_error_line_data(file_: PPIdAnsiChar; line: PIdC_INT; data: PPIdAnsiChar; flags: PIdC_INT): TIdC_ULONG cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM ERR_peek_last_error}
   function ERR_peek_last_error: TIdC_ULONG cdecl; external CLibCrypto;
+  {$EXTERNALSYM ERR_peek_last_error_line}
   function ERR_peek_last_error_line(file_: PPIdAnsiChar; line: PIdC_INT): TIdC_ULONG cdecl; external CLibCrypto;
+  {$EXTERNALSYM ERR_peek_last_error_line_data}
   function ERR_peek_last_error_line_data(file_: PPIdAnsiChar; line: PIdC_INT; data: PPIdAnsiChar; flags: PIdC_INT): TIdC_ULONG cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM ERR_clear_error}
   procedure ERR_clear_error cdecl; external CLibCrypto;
+  {$EXTERNALSYM ERR_error_string}
   function ERR_error_string(e: TIdC_ULONG; buf: PIdAnsiChar): PIdAnsiChar cdecl; external CLibCrypto;
+  {$EXTERNALSYM ERR_error_string_n}
   procedure ERR_error_string_n(e: TIdC_ULONG; buf: PIdAnsiChar; len: TIdC_SIZET) cdecl; external CLibCrypto;
+  {$EXTERNALSYM ERR_lib_error_string}
   function ERR_lib_error_string(e: TIdC_ULONG): PIdAnsiChar cdecl; external CLibCrypto;
+  {$EXTERNALSYM ERR_func_error_string}
   function ERR_func_error_string(e: TIdC_ULONG): PIdAnsiChar cdecl; external CLibCrypto;
+  {$EXTERNALSYM ERR_reason_error_string}
   function ERR_reason_error_string(e: TIdC_ULONG): PIdAnsiChar cdecl; external CLibCrypto;
+  {$EXTERNALSYM ERR_print_errors_cb}
   procedure ERR_print_errors_cb(cb: ERR_print_errors_cb_cb; u: Pointer) cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM ERR_print_errors}
   procedure ERR_print_errors(bp: PBIO) cdecl; external CLibCrypto;
   // void ERR_add_error_data(int num, ...);
   // procedure ERR_add_error_vdata(num: TIdC_INT; args: va_list);
+  {$EXTERNALSYM ERR_load_strings}
   function ERR_load_strings(lib: TIdC_INT; _str: PERR_STRING_DATA): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ERR_load_strings_const}
   function ERR_load_strings_const(_str: PERR_STRING_DATA): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM ERR_unload_strings}
   function ERR_unload_strings(lib: TIdC_INT; _str: PERR_STRING_DATA): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ERR_load_ERR_strings}
   function ERR_load_ERR_strings: TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM ERR_get_state}
   function ERR_get_state: PERR_STATE cdecl; external CLibCrypto;
+  {$EXTERNALSYM ERR_get_next_error_library}
   function ERR_get_next_error_library: TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ERR_set_mark}
   function ERR_set_mark: TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ERR_pop_to_mark}
   function ERR_pop_to_mark: TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ERR_clear_last_mark}
   function ERR_clear_last_mark: TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
 
 
+  {$EXTERNALSYM ERR_put_error}
   procedure ERR_put_error(lib: TIdC_INT; func: TIdC_INT; reason: TIdC_INT; file_: PIdAnsiChar; line: TIdC_INT); {removed 3.0.0}
+  {$EXTERNALSYM SSLErr}
   procedure SSLErr(func: TIdC_INT; reason: TIdC_INT); {removed 1.0.0}
+  {$EXTERNALSYM X509err}
   procedure X509err(const f,r : TIdC_INT); {removed 1.0.0}
+  {$EXTERNALSYM ERR_GET_REASON}
   function ERR_GET_REASON(const l : TIdC_INT) : TIdC_INT; {removed 1.0.0}
 {$ENDIF}
 

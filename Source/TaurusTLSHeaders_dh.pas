@@ -39,57 +39,99 @@ uses
   TaurusTLSHeaders_evp;
 
 const
+  {$EXTERNALSYM OPENSSL_DH_MAX_MODULUS_BITS}
   OPENSSL_DH_MAX_MODULUS_BITS      = 10000;
+  {$EXTERNALSYM OPENSSL_DH_FIPS_MIN_MODULUS_BITS}
   OPENSSL_DH_FIPS_MIN_MODULUS_BITS =  1024;
 
+  {$EXTERNALSYM DH_FLAG_CACHE_MONT_P}
   DH_FLAG_CACHE_MONT_P   =   $01;
+  {$EXTERNALSYM DH_FLAG_FIPS_METHOD}
   DH_FLAG_FIPS_METHOD    = $0400;
+  {$EXTERNALSYM DH_FLAG_NON_FIPS_ALLOW}
   DH_FLAG_NON_FIPS_ALLOW = $0400;
 
+  {$EXTERNALSYM DH_GENERATOR_2}
   DH_GENERATOR_2 = 2;
+  {$EXTERNALSYM DH_GENERATOR_5}
   DH_GENERATOR_5 = 5;
 
+  {$EXTERNALSYM DH_CHECK_P_NOT_PRIME}
   DH_CHECK_P_NOT_PRIME         = $01;
+  {$EXTERNALSYM DH_CHECK_P_NOT_SAFE_PRIME}
   DH_CHECK_P_NOT_SAFE_PRIME    = $02;
+  {$EXTERNALSYM DH_UNABLE_TO_CHECK_GENERATOR}
   DH_UNABLE_TO_CHECK_GENERATOR = $04;
+  {$EXTERNALSYM DH_NOT_SUITABLE_GENERATOR}
   DH_NOT_SUITABLE_GENERATOR    = $08;
+  {$EXTERNALSYM DH_CHECK_Q_NOT_PRIME}
   DH_CHECK_Q_NOT_PRIME         = $10;
+  {$EXTERNALSYM DH_CHECK_INVALID_Q_VALUE}
   DH_CHECK_INVALID_Q_VALUE     = $20;
+  {$EXTERNALSYM DH_CHECK_INVALID_J_VALUE}
   DH_CHECK_INVALID_J_VALUE     = $40;
+  {$EXTERNALSYM DH_CHECK_PUBKEY_TOO_SMALL}
   DH_CHECK_PUBKEY_TOO_SMALL    = $01;
+  {$EXTERNALSYM DH_CHECK_PUBKEY_TOO_LARGE}
   DH_CHECK_PUBKEY_TOO_LARGE    = $02;
+  {$EXTERNALSYM DH_CHECK_PUBKEY_INVALID}
   DH_CHECK_PUBKEY_INVALID      = $04;
+  {$EXTERNALSYM DH_CHECK_P_NOT_STRONG_PRIME}
   DH_CHECK_P_NOT_STRONG_PRIME  = DH_CHECK_P_NOT_SAFE_PRIME;
 
+  {$EXTERNALSYM EVP_PKEY_DH_KDF_NONE}
   EVP_PKEY_DH_KDF_NONE  = 1;
+  {$EXTERNALSYM EVP_PKEY_DH_KDF_X9_42}
   EVP_PKEY_DH_KDF_X9_42 = 2;
 
+  {$EXTERNALSYM EVP_PKEY_CTRL_DH_PARAMGEN_PRIME_LEN}
   EVP_PKEY_CTRL_DH_PARAMGEN_PRIME_LEN    = (EVP_PKEY_ALG_CTRL + 1);
+  {$EXTERNALSYM EVP_PKEY_CTRL_DH_PARAMGEN_GENERATOR}
   EVP_PKEY_CTRL_DH_PARAMGEN_GENERATOR    = (EVP_PKEY_ALG_CTRL + 2);
+  {$EXTERNALSYM EVP_PKEY_CTRL_DH_RFC5114}
   EVP_PKEY_CTRL_DH_RFC5114               = (EVP_PKEY_ALG_CTRL + 3);
+  {$EXTERNALSYM EVP_PKEY_CTRL_DH_PARAMGEN_SUBPRIME_LEN}
   EVP_PKEY_CTRL_DH_PARAMGEN_SUBPRIME_LEN = (EVP_PKEY_ALG_CTRL + 4);
+  {$EXTERNALSYM EVP_PKEY_CTRL_DH_PARAMGEN_TYPE}
   EVP_PKEY_CTRL_DH_PARAMGEN_TYPE         = (EVP_PKEY_ALG_CTRL + 5);
+  {$EXTERNALSYM EVP_PKEY_CTRL_DH_KDF_TYPE}
   EVP_PKEY_CTRL_DH_KDF_TYPE              = (EVP_PKEY_ALG_CTRL + 6);
+  {$EXTERNALSYM EVP_PKEY_CTRL_DH_KDF_MD}
   EVP_PKEY_CTRL_DH_KDF_MD                = (EVP_PKEY_ALG_CTRL + 7);
+  {$EXTERNALSYM EVP_PKEY_CTRL_GET_DH_KDF_MD}
   EVP_PKEY_CTRL_GET_DH_KDF_MD            = (EVP_PKEY_ALG_CTRL + 8);
+  {$EXTERNALSYM EVP_PKEY_CTRL_DH_KDF_OUTLEN}
   EVP_PKEY_CTRL_DH_KDF_OUTLEN            = (EVP_PKEY_ALG_CTRL + 9);
+  {$EXTERNALSYM EVP_PKEY_CTRL_GET_DH_KDF_OUTLEN}
   EVP_PKEY_CTRL_GET_DH_KDF_OUTLEN        = (EVP_PKEY_ALG_CTRL + 10);
+  {$EXTERNALSYM EVP_PKEY_CTRL_DH_KDF_UKM}
   EVP_PKEY_CTRL_DH_KDF_UKM               = (EVP_PKEY_ALG_CTRL + 11);
+  {$EXTERNALSYM EVP_PKEY_CTRL_GET_DH_KDF_UKM}
   EVP_PKEY_CTRL_GET_DH_KDF_UKM           = (EVP_PKEY_ALG_CTRL + 12);
+  {$EXTERNALSYM EVP_PKEY_CTRL_DH_KDF_OID}
   EVP_PKEY_CTRL_DH_KDF_OID               = (EVP_PKEY_ALG_CTRL + 13);
+  {$EXTERNALSYM EVP_PKEY_CTRL_GET_DH_KDF_OID}
   EVP_PKEY_CTRL_GET_DH_KDF_OID           = (EVP_PKEY_ALG_CTRL + 14);
+  {$EXTERNALSYM EVP_PKEY_CTRL_DH_NID}
   EVP_PKEY_CTRL_DH_NID                   = (EVP_PKEY_ALG_CTRL + 15);
+  {$EXTERNALSYM EVP_PKEY_CTRL_DH_PAD}
   EVP_PKEY_CTRL_DH_PAD                   = (EVP_PKEY_ALG_CTRL + 16);
 
 type
+  {$EXTERNALSYM DH_meth_generate_key_cb}
   DH_meth_generate_key_cb = function(dh: PDH): TIdC_INT cdecl;
+  {$EXTERNALSYM DH_meth_compute_key_cb}
   DH_meth_compute_key_cb = function(key: PByte; const pub_key: PBIGNUM; dh: PDH): TIdC_INT cdecl;
+  {$EXTERNALSYM DH_meth_bn_mod_exp_cb}
   DH_meth_bn_mod_exp_cb = function(
     const dh: PDH; r: PBIGNUM; const a: PBIGNUM;
     const p: PBIGNUM; const m: PBIGNUM;
     ctx: PBN_CTX; m_ctx: PBN_MONT_CTX): TIdC_INT cdecl;
+  {$EXTERNALSYM DH_meth_init_cb}
   DH_meth_init_cb = function(dh: PDH): TIdC_INT cdecl;
+  {$EXTERNALSYM DH_meth_finish_cb}
   DH_meth_finish_cb = function(dh: PDH): TIdC_INT cdecl;
+  {$EXTERNALSYM DH_meth_generate_params_cb}
   DH_meth_generate_params_cb = function(dh: PDH; prime_len: TIdC_INT; generator: TIdC_INT; cb: PBN_GENCB): TIdC_INT cdecl;
 
 {
@@ -125,166 +167,166 @@ type
   	  The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header 
 	  files generated for C++. }
 	  
-  {$EXTERNALSYM DHparams_dup}
-  {$EXTERNALSYM DH_OpenSSL}
-  {$EXTERNALSYM DH_set_default_method}
-  {$EXTERNALSYM DH_get_default_method}
-  {$EXTERNALSYM DH_set_method}
-  {$EXTERNALSYM DH_new_method}
-  {$EXTERNALSYM DH_new}
-  {$EXTERNALSYM DH_free}
-  {$EXTERNALSYM DH_up_ref}
-  {$EXTERNALSYM DH_bits} {introduced 1.1.0}
-  {$EXTERNALSYM DH_size}
-  {$EXTERNALSYM DH_security_bits} {introduced 1.1.0}
-  {$EXTERNALSYM DH_set_ex_data}
-  {$EXTERNALSYM DH_get_ex_data}
-  {$EXTERNALSYM DH_generate_parameters_ex}
-  {$EXTERNALSYM DH_check_params_ex} {introduced 1.1.0}
-  {$EXTERNALSYM DH_check_ex} {introduced 1.1.0}
-  {$EXTERNALSYM DH_check_pub_key_ex} {introduced 1.1.0}
-  {$EXTERNALSYM DH_check_params} {introduced 1.1.0}
-  {$EXTERNALSYM DH_check}
-  {$EXTERNALSYM DH_check_pub_key}
-  {$EXTERNALSYM DH_generate_key}
-  {$EXTERNALSYM DH_compute_key}
-  {$EXTERNALSYM DH_compute_key_padded}
-  {$EXTERNALSYM d2i_DHparams}
-  {$EXTERNALSYM i2d_DHparams}
-  {$EXTERNALSYM d2i_DHxparams}
-  {$EXTERNALSYM i2d_DHxparams}
-  {$EXTERNALSYM DHparams_print}
-  {$EXTERNALSYM DH_get_1024_160}
-  {$EXTERNALSYM DH_get_2048_224}
-  {$EXTERNALSYM DH_get_2048_256}
-  {$EXTERNALSYM DH_new_by_nid} {introduced 1.1.0}
-  {$EXTERNALSYM DH_get_nid} {introduced 1.1.0}
-  {$EXTERNALSYM DH_KDF_X9_42}
-  {$EXTERNALSYM DH_get0_pqg} {introduced 1.1.0}
-  {$EXTERNALSYM DH_set0_pqg} {introduced 1.1.0}
-  {$EXTERNALSYM DH_get0_key} {introduced 1.1.0}
-  {$EXTERNALSYM DH_set0_key} {introduced 1.1.0}
-  {$EXTERNALSYM DH_get0_p} {introduced 1.1.0}
-  {$EXTERNALSYM DH_get0_q} {introduced 1.1.0}
-  {$EXTERNALSYM DH_get0_g} {introduced 1.1.0}
-  {$EXTERNALSYM DH_get0_priv_key} {introduced 1.1.0}
-  {$EXTERNALSYM DH_get0_pub_key} {introduced 1.1.0}
-  {$EXTERNALSYM DH_clear_flags} {introduced 1.1.0}
-  {$EXTERNALSYM DH_test_flags} {introduced 1.1.0}
-  {$EXTERNALSYM DH_set_flags} {introduced 1.1.0}
-  {$EXTERNALSYM DH_get0_engine} {introduced 1.1.0}
-  {$EXTERNALSYM DH_get_length} {introduced 1.1.0}
-  {$EXTERNALSYM DH_set_length} {introduced 1.1.0}
-  {$EXTERNALSYM DH_meth_new} {introduced 1.1.0}
-  {$EXTERNALSYM DH_meth_free} {introduced 1.1.0}
-  {$EXTERNALSYM DH_meth_dup} {introduced 1.1.0}
-  {$EXTERNALSYM DH_meth_get0_name} {introduced 1.1.0}
-  {$EXTERNALSYM DH_meth_set1_name} {introduced 1.1.0}
-  {$EXTERNALSYM DH_meth_get_flags} {introduced 1.1.0}
-  {$EXTERNALSYM DH_meth_set_flags} {introduced 1.1.0}
-  {$EXTERNALSYM DH_meth_get0_app_data} {introduced 1.1.0}
-  {$EXTERNALSYM DH_meth_set0_app_data} {introduced 1.1.0}
-  {$EXTERNALSYM DH_meth_get_generate_key} {introduced 1.1.0}
-  {$EXTERNALSYM DH_meth_set_generate_key} {introduced 1.1.0}
-  {$EXTERNALSYM DH_meth_get_compute_key} {introduced 1.1.0}
-  {$EXTERNALSYM DH_meth_set_compute_key} {introduced 1.1.0}
-  {$EXTERNALSYM DH_meth_get_bn_mod_exp} {introduced 1.1.0}
-  {$EXTERNALSYM DH_meth_set_bn_mod_exp} {introduced 1.1.0}
-  {$EXTERNALSYM DH_meth_get_init} {introduced 1.1.0}
-  {$EXTERNALSYM DH_meth_set_init} {introduced 1.1.0}
-  {$EXTERNALSYM DH_meth_get_finish} {introduced 1.1.0}
-  {$EXTERNALSYM DH_meth_set_finish} {introduced 1.1.0}
-  {$EXTERNALSYM DH_meth_get_generate_params} {introduced 1.1.0}
-  {$EXTERNALSYM DH_meth_set_generate_params} {introduced 1.1.0}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM DHparams_dup}
   DHparams_dup: function (dh: PDH): PDH; cdecl = nil;
 
+  {$EXTERNALSYM DH_OpenSSL}
   DH_OpenSSL: function : PDH_Method; cdecl = nil;
 
+  {$EXTERNALSYM DH_set_default_method}
   DH_set_default_method: procedure (const meth: PDH_Method); cdecl = nil;
+  {$EXTERNALSYM DH_get_default_method}
   DH_get_default_method: function : PDH_Method; cdecl = nil;
+  {$EXTERNALSYM DH_set_method}
   DH_set_method: function (dh: PDH; const meth: PDH_Method): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM DH_new_method}
   DH_new_method: function (engine: PENGINE): PDH; cdecl = nil;
 
+  {$EXTERNALSYM DH_new}
   DH_new: function : PDH; cdecl = nil;
+  {$EXTERNALSYM DH_free}
   DH_free: procedure (dh: PDH); cdecl = nil;
+  {$EXTERNALSYM DH_up_ref}
   DH_up_ref: function (dh: PDH): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM DH_bits}
   DH_bits: function (const dh: PDH): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_size}
   DH_size: function (const dh: PDH): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM DH_security_bits}
   DH_security_bits: function (const dh: PDH): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_set_ex_data}
   DH_set_ex_data: function (d: PDH; idx: TIdC_INT; arg: Pointer): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM DH_get_ex_data}
   DH_get_ex_data: function (d: PDH; idx: TIdC_INT): Pointer; cdecl = nil;
 
+  {$EXTERNALSYM DH_generate_parameters_ex}
   DH_generate_parameters_ex: function (dh: PDH; prime_len: TIdC_INT; generator: TIdC_INT; cb: PBN_GENCB): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM DH_check_params_ex}
   DH_check_params_ex: function (const dh: PDH): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_check_ex}
   DH_check_ex: function (const dh: PDH): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_check_pub_key_ex}
   DH_check_pub_key_ex: function (const dh: PDH; const pub_key: PBIGNUM): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_check_params}
   DH_check_params: function (const dh: PDH; ret: PIdC_INT): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_check}
   DH_check: function (const dh: PDH; codes: PIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM DH_check_pub_key}
   DH_check_pub_key: function (const dh: PDH; const pub_key: PBIGNUM; codes: PIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM DH_generate_key}
   DH_generate_key: function (dh: PDH): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM DH_compute_key}
   DH_compute_key: function (key: PByte; const pub_key: PBIGNUM; dh: PDH): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM DH_compute_key_padded}
   DH_compute_key_padded: function (key: PByte; const pub_key: PBIGNUM; dh: PDH): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM d2i_DHparams}
   d2i_DHparams: function (a: PPDH; const pp: PPByte; _length: TIdC_LONG): PDH; cdecl = nil;
+  {$EXTERNALSYM i2d_DHparams}
   i2d_DHparams: function (const a: PDH; pp: PPByte): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM d2i_DHxparams}
   d2i_DHxparams: function (a: PPDH; const pp: PPByte; _length: TIdC_LONG): PDH; cdecl = nil;
+  {$EXTERNALSYM i2d_DHxparams}
   i2d_DHxparams: function (const a: PDH; pp: PPByte): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM DHparams_print}
   DHparams_print: function (bp: PBIO; const x: PDH): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM DH_get_1024_160}
   DH_get_1024_160: function : PDH; cdecl = nil;
+  {$EXTERNALSYM DH_get_2048_224}
   DH_get_2048_224: function : PDH; cdecl = nil;
+  {$EXTERNALSYM DH_get_2048_256}
   DH_get_2048_256: function : PDH; cdecl = nil;
 
+  {$EXTERNALSYM DH_new_by_nid}
   DH_new_by_nid: function (nid: TIdC_INT): PDH; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_get_nid}
   DH_get_nid: function (const dh: PDH): TIdC_INT; cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM DH_KDF_X9_42}
   DH_KDF_X9_42: function ( out_: PByte; outlen: TIdC_SIZET; const Z: PByte; Zlen: TIdC_SIZET; key_oid: PASN1_OBJECT; const ukm: PByte; ukmlen: TIdC_SIZET; const md: PEVP_MD): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM DH_get0_pqg}
   DH_get0_pqg: procedure (const dh: PDH; const p: PPBIGNUM; const q: PPBIGNUM; const g: PPBIGNUM); cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_set0_pqg}
   DH_set0_pqg: function (dh: PDH; p: PBIGNUM; q: PBIGNUM; g: PBIGNUM): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_get0_key}
   DH_get0_key: procedure (const dh: PDH; const pub_key: PPBIGNUM; const priv_key: PPBIGNUM); cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_set0_key}
   DH_set0_key: function (dh: PDH; pub_key: PBIGNUM; priv_key: PBIGNUM): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_get0_p}
   DH_get0_p: function (const dh: PDH): PBIGNUM; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_get0_q}
   DH_get0_q: function (const dh: PDH): PBIGNUM; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_get0_g}
   DH_get0_g: function (const dh: PDH): PBIGNUM; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_get0_priv_key}
   DH_get0_priv_key: function (const dh: PDH): PBIGNUM; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_get0_pub_key}
   DH_get0_pub_key: function (const dh: PDH): PBIGNUM; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_clear_flags}
   DH_clear_flags: procedure (dh: PDH; flags: TIdC_INT); cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_test_flags}
   DH_test_flags: function (const dh: PDH; flags: TIdC_INT): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_set_flags}
   DH_set_flags: procedure (dh: PDH; flags: TIdC_INT); cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_get0_engine}
   DH_get0_engine: function (d: PDH): PENGINE; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_get_length}
   DH_get_length: function (const dh: PDH): TIdC_LONG; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_set_length}
   DH_set_length: function (dh: PDH; _length: TIdC_LONG): TIdC_INT; cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM DH_meth_new}
   DH_meth_new: function (const name: PIdAnsiChar; flags: TIdC_INT): PDH_Method; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_free}
   DH_meth_free: procedure (dhm: PDH_Method); cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_dup}
   DH_meth_dup: function (const dhm: PDH_Method): PDH_Method; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_get0_name}
   DH_meth_get0_name: function (const dhm: PDH_Method): PIdAnsiChar; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_set1_name}
   DH_meth_set1_name: function (dhm: PDH_Method; const name: PIdAnsiChar): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_get_flags}
   DH_meth_get_flags: function (const dhm: PDH_Method): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_set_flags}
   DH_meth_set_flags: function (const dhm: PDH_Method; flags: TIdC_INT): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_get0_app_data}
   DH_meth_get0_app_data: function (const dhm: PDH_Method): Pointer; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_set0_app_data}
   DH_meth_set0_app_data: function (const dhm: PDH_Method; app_data: Pointer): TIdC_INT; cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM DH_meth_get_generate_key}
   DH_meth_get_generate_key: function (const dhm: PDH_Method): DH_meth_generate_key_cb; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_set_generate_key}
   DH_meth_set_generate_key: function (const dhm: PDH_Method; generate_key: DH_meth_generate_key_cb): TIdC_INT; cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM DH_meth_get_compute_key}
   DH_meth_get_compute_key: function (const dhm: PDH_Method): DH_meth_compute_key_cb; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_set_compute_key}
   DH_meth_set_compute_key: function (const dhm: PDH_Method; compute_key: DH_meth_compute_key_cb): TIdC_INT; cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM DH_meth_get_bn_mod_exp}
   DH_meth_get_bn_mod_exp: function (const dhm: PDH_Method): DH_meth_bn_mod_exp_cb; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_set_bn_mod_exp}
   DH_meth_set_bn_mod_exp: function (const dhm: PDH_Method; bn_mod_expr: DH_meth_bn_mod_exp_cb): TIdC_INT; cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM DH_meth_get_init}
   DH_meth_get_init: function (const dhm: PDH_Method): DH_meth_init_cb; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_set_init}
   DH_meth_set_init: function (const dhm: PDH_Method; init: DH_meth_init_cb): TIdC_INT; cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM DH_meth_get_finish}
   DH_meth_get_finish: function (const dhm: PDH_Method): DH_meth_finish_cb; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_set_finish}
   DH_meth_set_finish: function (const dhm: PDH_Method; finish: DH_meth_finish_cb): TIdC_INT; cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM DH_meth_get_generate_params}
   DH_meth_get_generate_params: function (const dhm: PDH_Method): DH_meth_generate_params_cb; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_set_generate_params}
   DH_meth_set_generate_params: function (const dhm: PDH_Method; generate_params: DH_meth_generate_params_cb): TIdC_INT; cdecl = nil; {introduced 1.1.0}
 
 {
@@ -373,92 +415,163 @@ var
 }
 
 {$ELSE}
+  {$EXTERNALSYM DHparams_dup}
   function DHparams_dup(dh: PDH): PDH cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM DH_OpenSSL}
   function DH_OpenSSL: PDH_Method cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM DH_set_default_method}
   procedure DH_set_default_method(const meth: PDH_Method) cdecl; external CLibCrypto;
+  {$EXTERNALSYM DH_get_default_method}
   function DH_get_default_method: PDH_Method cdecl; external CLibCrypto;
+  {$EXTERNALSYM DH_set_method}
   function DH_set_method(dh: PDH; const meth: PDH_Method): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM DH_new_method}
   function DH_new_method(engine: PENGINE): PDH cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM DH_new}
   function DH_new: PDH cdecl; external CLibCrypto;
+  {$EXTERNALSYM DH_free}
   procedure DH_free(dh: PDH) cdecl; external CLibCrypto;
+  {$EXTERNALSYM DH_up_ref}
   function DH_up_ref(dh: PDH): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM DH_bits}
   function DH_bits(const dh: PDH): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_size}
   function DH_size(const dh: PDH): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM DH_security_bits}
   function DH_security_bits(const dh: PDH): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_set_ex_data}
   function DH_set_ex_data(d: PDH; idx: TIdC_INT; arg: Pointer): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM DH_get_ex_data}
   function DH_get_ex_data(d: PDH; idx: TIdC_INT): Pointer cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM DH_generate_parameters_ex}
   function DH_generate_parameters_ex(dh: PDH; prime_len: TIdC_INT; generator: TIdC_INT; cb: PBN_GENCB): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM DH_check_params_ex}
   function DH_check_params_ex(const dh: PDH): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_check_ex}
   function DH_check_ex(const dh: PDH): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_check_pub_key_ex}
   function DH_check_pub_key_ex(const dh: PDH; const pub_key: PBIGNUM): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_check_params}
   function DH_check_params(const dh: PDH; ret: PIdC_INT): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_check}
   function DH_check(const dh: PDH; codes: PIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM DH_check_pub_key}
   function DH_check_pub_key(const dh: PDH; const pub_key: PBIGNUM; codes: PIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM DH_generate_key}
   function DH_generate_key(dh: PDH): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM DH_compute_key}
   function DH_compute_key(key: PByte; const pub_key: PBIGNUM; dh: PDH): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM DH_compute_key_padded}
   function DH_compute_key_padded(key: PByte; const pub_key: PBIGNUM; dh: PDH): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM d2i_DHparams}
   function d2i_DHparams(a: PPDH; const pp: PPByte; _length: TIdC_LONG): PDH cdecl; external CLibCrypto;
+  {$EXTERNALSYM i2d_DHparams}
   function i2d_DHparams(const a: PDH; pp: PPByte): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM d2i_DHxparams}
   function d2i_DHxparams(a: PPDH; const pp: PPByte; _length: TIdC_LONG): PDH cdecl; external CLibCrypto;
+  {$EXTERNALSYM i2d_DHxparams}
   function i2d_DHxparams(const a: PDH; pp: PPByte): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM DHparams_print}
   function DHparams_print(bp: PBIO; const x: PDH): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM DH_get_1024_160}
   function DH_get_1024_160: PDH cdecl; external CLibCrypto;
+  {$EXTERNALSYM DH_get_2048_224}
   function DH_get_2048_224: PDH cdecl; external CLibCrypto;
+  {$EXTERNALSYM DH_get_2048_256}
   function DH_get_2048_256: PDH cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM DH_new_by_nid}
   function DH_new_by_nid(nid: TIdC_INT): PDH cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_get_nid}
   function DH_get_nid(const dh: PDH): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
 
+  {$EXTERNALSYM DH_KDF_X9_42}
   function DH_KDF_X9_42( out_: PByte; outlen: TIdC_SIZET; const Z: PByte; Zlen: TIdC_SIZET; key_oid: PASN1_OBJECT; const ukm: PByte; ukmlen: TIdC_SIZET; const md: PEVP_MD): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM DH_get0_pqg}
   procedure DH_get0_pqg(const dh: PDH; const p: PPBIGNUM; const q: PPBIGNUM; const g: PPBIGNUM) cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_set0_pqg}
   function DH_set0_pqg(dh: PDH; p: PBIGNUM; q: PBIGNUM; g: PBIGNUM): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_get0_key}
   procedure DH_get0_key(const dh: PDH; const pub_key: PPBIGNUM; const priv_key: PPBIGNUM) cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_set0_key}
   function DH_set0_key(dh: PDH; pub_key: PBIGNUM; priv_key: PBIGNUM): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_get0_p}
   function DH_get0_p(const dh: PDH): PBIGNUM cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_get0_q}
   function DH_get0_q(const dh: PDH): PBIGNUM cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_get0_g}
   function DH_get0_g(const dh: PDH): PBIGNUM cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_get0_priv_key}
   function DH_get0_priv_key(const dh: PDH): PBIGNUM cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_get0_pub_key}
   function DH_get0_pub_key(const dh: PDH): PBIGNUM cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_clear_flags}
   procedure DH_clear_flags(dh: PDH; flags: TIdC_INT) cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_test_flags}
   function DH_test_flags(const dh: PDH; flags: TIdC_INT): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_set_flags}
   procedure DH_set_flags(dh: PDH; flags: TIdC_INT) cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_get0_engine}
   function DH_get0_engine(d: PDH): PENGINE cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_get_length}
   function DH_get_length(const dh: PDH): TIdC_LONG cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_set_length}
   function DH_set_length(dh: PDH; _length: TIdC_LONG): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
 
+  {$EXTERNALSYM DH_meth_new}
   function DH_meth_new(const name: PIdAnsiChar; flags: TIdC_INT): PDH_Method cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_free}
   procedure DH_meth_free(dhm: PDH_Method) cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_dup}
   function DH_meth_dup(const dhm: PDH_Method): PDH_Method cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_get0_name}
   function DH_meth_get0_name(const dhm: PDH_Method): PIdAnsiChar cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_set1_name}
   function DH_meth_set1_name(dhm: PDH_Method; const name: PIdAnsiChar): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_get_flags}
   function DH_meth_get_flags(const dhm: PDH_Method): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_set_flags}
   function DH_meth_set_flags(const dhm: PDH_Method; flags: TIdC_INT): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_get0_app_data}
   function DH_meth_get0_app_data(const dhm: PDH_Method): Pointer cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_set0_app_data}
   function DH_meth_set0_app_data(const dhm: PDH_Method; app_data: Pointer): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
 
+  {$EXTERNALSYM DH_meth_get_generate_key}
   function DH_meth_get_generate_key(const dhm: PDH_Method): DH_meth_generate_key_cb cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_set_generate_key}
   function DH_meth_set_generate_key(const dhm: PDH_Method; generate_key: DH_meth_generate_key_cb): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
 
+  {$EXTERNALSYM DH_meth_get_compute_key}
   function DH_meth_get_compute_key(const dhm: PDH_Method): DH_meth_compute_key_cb cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_set_compute_key}
   function DH_meth_set_compute_key(const dhm: PDH_Method; compute_key: DH_meth_compute_key_cb): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
 
+  {$EXTERNALSYM DH_meth_get_bn_mod_exp}
   function DH_meth_get_bn_mod_exp(const dhm: PDH_Method): DH_meth_bn_mod_exp_cb cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_set_bn_mod_exp}
   function DH_meth_set_bn_mod_exp(const dhm: PDH_Method; bn_mod_expr: DH_meth_bn_mod_exp_cb): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
 
+  {$EXTERNALSYM DH_meth_get_init}
   function DH_meth_get_init(const dhm: PDH_Method): DH_meth_init_cb cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_set_init}
   function DH_meth_set_init(const dhm: PDH_Method; init: DH_meth_init_cb): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
 
+  {$EXTERNALSYM DH_meth_get_finish}
   function DH_meth_get_finish(const dhm: PDH_Method): DH_meth_finish_cb cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_set_finish}
   function DH_meth_set_finish(const dhm: PDH_Method; finish: DH_meth_finish_cb): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
 
+  {$EXTERNALSYM DH_meth_get_generate_params}
   function DH_meth_get_generate_params(const dhm: PDH_Method): DH_meth_generate_params_cb cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM DH_meth_set_generate_params}
   function DH_meth_set_generate_params(const dhm: PDH_Method; generate_params: DH_meth_generate_params_cb): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
 
 {
@@ -548,7 +661,9 @@ var
 
 {$ENDIF}
 
+  {$EXTERNALSYM d2i_DHparams_bio}
 function d2i_DHparams_bio(bp: PBIO; x: PPDH): PDH;
+  {$EXTERNALSYM DH_get_ex_new_index}
 function DH_get_ex_new_index(l : TIdC_LONG; p : PDH;
     newf : CRYPTO_EX_new; dupf : CRYPTO_EX_dup; freef : CRYPTO_EX_FREE) : TIdC_INT;
 

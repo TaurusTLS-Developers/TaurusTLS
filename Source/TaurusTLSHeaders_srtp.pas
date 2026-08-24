@@ -37,15 +37,23 @@ uses
   TaurusTLSHeaders_ssl;
 
 const
+  {$EXTERNALSYM SRTP_AES128_CM_SHA1_80}
   SRTP_AES128_CM_SHA1_80 = $0001;
+  {$EXTERNALSYM SRTP_AES128_CM_SHA1_32}
   SRTP_AES128_CM_SHA1_32 = $0002;
+  {$EXTERNALSYM SRTP_AES128_F8_SHA1_80}
   SRTP_AES128_F8_SHA1_80 = $0003;
+  {$EXTERNALSYM SRTP_AES128_F8_SHA1_32}
   SRTP_AES128_F8_SHA1_32 = $0004;
+  {$EXTERNALSYM SRTP_NULL_SHA1_80}
   SRTP_NULL_SHA1_80      = $0005;
+  {$EXTERNALSYM SRTP_NULL_SHA1_32}
   SRTP_NULL_SHA1_32      = $0006;
 
   (* AEAD SRTP protection profiles from RFC 7714 *)
+  {$EXTERNALSYM SRTP_AEAD_AES_128_GCM}
   SRTP_AEAD_AES_128_GCM = $0007;
+  {$EXTERNALSYM SRTP_AEAD_AES_256_GCM}
   SRTP_AEAD_AES_256_GCM = $0008;
 
     { The EXTERNALSYM directive is ignored by FPC, however, it is used by Delphi as follows:
@@ -53,23 +61,28 @@ const
   	  The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header 
 	  files generated for C++. }
 	  
-  {$EXTERNALSYM SSL_CTX_set_tlsext_use_srtp}
-  {$EXTERNALSYM SSL_set_tlsext_use_srtp}
-  {$EXTERNALSYM SSL_get_selected_srtp_profile}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM SSL_CTX_set_tlsext_use_srtp}
   SSL_CTX_set_tlsext_use_srtp: function (ctx: PSSL_CTX; const profiles: PIdAnsiChar): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM SSL_set_tlsext_use_srtp}
   SSL_set_tlsext_use_srtp: function (ctx: PSSL_CTX; const profiles: PIdAnsiChar): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM SSL_get_srtp_profiles}
   SSL_get_srtp_profiles : function(s: PSSL): PSTACK_OF_SRTP_PROTECTION_PROFILE;  cdecl = nil;
+  {$EXTERNALSYM SSL_get_selected_srtp_profile}
   SSL_get_selected_srtp_profile: function (s: PSSL): PSRTP_PROTECTION_PROFILE; cdecl = nil;
 
 {$ELSE}
+  {$EXTERNALSYM SSL_CTX_set_tlsext_use_srtp}
   function SSL_CTX_set_tlsext_use_srtp(ctx: PSSL_CTX; const profiles: PIdAnsiChar): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM SSL_set_tlsext_use_srtp}
   function SSL_set_tlsext_use_srtp(ctx: PSSL_CTX; const profiles: PIdAnsiChar): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM SSL_get_srtp_profiles}
   function SSL_get_srtp_profiles(s: PSSL): PSTACK_OF_SRTP_PROTECTION_PROFILE  cdecl; external CLibCrypto;
+  {$EXTERNALSYM SSL_get_selected_srtp_profile}
   function SSL_get_selected_srtp_profile(s: PSSL): PSRTP_PROTECTION_PROFILE cdecl; external CLibCrypto;
 
 {$ENDIF}

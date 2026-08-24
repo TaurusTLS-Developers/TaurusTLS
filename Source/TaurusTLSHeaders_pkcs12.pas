@@ -38,8 +38,11 @@ uses
   TaurusTLSHeaders_x509;
 
 const
+  {$EXTERNALSYM PKCS12_KEY_ID}
   PKCS12_KEY_ID = 1;
+  {$EXTERNALSYM PKCS12_IV_ID}
   PKCS12_IV_ID = 2;
+  {$EXTERNALSYM PKCS12_MAC_ID}
   PKCS12_MAC_ID = 3;
 
   ///* Default iteration count */
@@ -47,8 +50,10 @@ const
   //#  define PKCS12_DEFAULT_ITER     PKCS5_DEFAULT_ITER
   //# endif
 
+  {$EXTERNALSYM PKCS12_MAC_KEY_LENGTH}
   PKCS12_MAC_KEY_LENGTH = 20;
 
+  {$EXTERNALSYM PKCS12_SALT_LEN}
   PKCS12_SALT_LEN = 8;
 
   ///* It's not clear if these are actually needed... */
@@ -56,33 +61,53 @@ const
   //# define PKCS12_add_friendlyname PKCS12_add_friendlyname_utf8
 
   (* MS key usage constants *)
+  {$EXTERNALSYM KEY_EX}
   KEY_EX  = $10;
+  {$EXTERNALSYM KEY_SIG}
   KEY_SIG = $80;
 
+  {$EXTERNALSYM PKCS12_ERROR}
   PKCS12_ERROR    = 0;
+  {$EXTERNALSYM PKCS12_OK}
   PKCS12_OK       = 1;
 
 type
+  {$EXTERNALSYM PKCS12_MAC_DATA_st}
   PKCS12_MAC_DATA_st = record end;
+  {$EXTERNALSYM PKCS12_MAC_DATA}
   PKCS12_MAC_DATA = PKCS12_MAC_DATA_st;
+  {$EXTERNALSYM PPKCS12_MAC_DATA}
   PPKCS12_MAC_DATA = ^PKCS12_MAC_DATA;
+  {$EXTERNALSYM PPPKCS12_MAC_DATA}
   PPPKCS12_MAC_DATA = ^PPKCS12_MAC_DATA;
 
+  {$EXTERNALSYM PKCS12_st}
   PKCS12_st = record end;
+  {$EXTERNALSYM PKCS12}
   PKCS12 = PKCS12_st;
+  {$EXTERNALSYM PPKCS12}
   PPKCS12 = ^PKCS12;
+  {$EXTERNALSYM PPPKCS12}
   PPPKCS12 = ^PPKCS12;
 
+  {$EXTERNALSYM PKCS12_SAFEBAG_st}
   PKCS12_SAFEBAG_st = record end;
+  {$EXTERNALSYM PKCS12_SAFEBAG}
   PKCS12_SAFEBAG = PKCS12_SAFEBAG_st;
+  {$EXTERNALSYM PPKCS12_SAFEBAG}
   PPKCS12_SAFEBAG = ^PKCS12_SAFEBAG;
+  {$EXTERNALSYM PPPKCS12_SAFEBAG}
   PPPKCS12_SAFEBAG = ^PPKCS12_SAFEBAG;
 
 //  DEFINE_STACK_OF(PKCS12_SAFEBAG)
 
+  {$EXTERNALSYM pkcs12_bag_st}
   pkcs12_bag_st = record end;
+  {$EXTERNALSYM PKCS12_BAGS}
   PKCS12_BAGS = pkcs12_bag_st;
+  {$EXTERNALSYM PPKCS12_BAGS}
   PPKCS12_BAGS = ^PKCS12_BAGS;
+  {$EXTERNALSYM PPPKCS12_BAGS}
   PPPKCS12_BAGS = ^PPKCS12_BAGS;
 
   //ASN1_TYPE *PKCS8_get_attr(PKCS8_PRIV_KEY_INFO *p8, TIdC_INT attr_nid);
@@ -91,102 +116,53 @@ type
   	  The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header 
 	  files generated for C++. }
 	  
-  {$EXTERNALSYM PKCS12_mac_present} {introduced 1.1.0}
-  {$EXTERNALSYM PKCS12_get0_mac} {introduced 1.1.0}
-  {$EXTERNALSYM PKCS12_SAFEBAG_get0_attr} {introduced 1.1.0}
-  {$EXTERNALSYM PKCS12_SAFEBAG_get0_type} {introduced 1.1.0}
-  {$EXTERNALSYM PKCS12_SAFEBAG_get_nid} {introduced 1.1.0}
-  {$EXTERNALSYM PKCS12_SAFEBAG_get_bag_nid} {introduced 1.1.0}
-  {$EXTERNALSYM PKCS12_SAFEBAG_get1_cert} {introduced 1.1.0}
-  {$EXTERNALSYM PKCS12_SAFEBAG_get1_crl} {introduced 1.1.0}
-  {$EXTERNALSYM PKCS12_SAFEBAG_get0_p8inf} {introduced 1.1.0}
-  {$EXTERNALSYM PKCS12_SAFEBAG_get0_pkcs8} {introduced 1.1.0}
-  {$EXTERNALSYM PKCS12_SAFEBAG_create_cert} {introduced 1.1.0}
-  {$EXTERNALSYM PKCS12_SAFEBAG_create_crl} {introduced 1.1.0}
-  {$EXTERNALSYM PKCS12_SAFEBAG_create0_p8inf} {introduced 1.1.0}
-  {$EXTERNALSYM PKCS12_SAFEBAG_create0_pkcs8} {introduced 1.1.0}
-  {$EXTERNALSYM PKCS12_SAFEBAG_create_pkcs8_encrypt} {introduced 1.1.0}
-  {$EXTERNALSYM PKCS12_item_pack_safebag}
-  {$EXTERNALSYM PKCS8_decrypt}
-  {$EXTERNALSYM PKCS12_decrypt_skey}
-  {$EXTERNALSYM PKCS8_encrypt}
-  {$EXTERNALSYM PKCS8_set0_pbe} {introduced 1.1.0}
-  {$EXTERNALSYM PKCS12_add_localkeyid}
-  {$EXTERNALSYM PKCS12_add_friendlyname_asc}
-  {$EXTERNALSYM PKCS12_add_friendlyname_utf8} {introduced 1.1.0}
-  {$EXTERNALSYM PKCS12_add_CSPName_asc}
-  {$EXTERNALSYM PKCS12_add_friendlyname_uni}
-  {$EXTERNALSYM PKCS8_add_keyusage}
-  {$EXTERNALSYM PKCS12_get_friendlyname}
-  {$EXTERNALSYM PKCS12_pbe_crypt}
-  {$EXTERNALSYM PKCS12_item_decrypt_d2i}
-  {$EXTERNALSYM PKCS12_item_i2d_encrypt}
-  {$EXTERNALSYM PKCS12_init}
-  {$EXTERNALSYM PKCS12_key_gen_asc}
-  {$EXTERNALSYM PKCS12_key_gen_uni}
-  {$EXTERNALSYM PKCS12_key_gen_utf8} {introduced 1.1.0}
-  {$EXTERNALSYM PKCS12_PBE_keyivgen}
-  {$EXTERNALSYM PKCS12_gen_mac}
-  {$EXTERNALSYM PKCS12_verify_mac}
-  {$EXTERNALSYM PKCS12_set_mac}
-  {$EXTERNALSYM PKCS12_setup_mac}
-  {$EXTERNALSYM OPENSSL_asc2uni}
-  {$EXTERNALSYM OPENSSL_uni2asc}
-  {$EXTERNALSYM OPENSSL_utf82uni} {introduced 1.1.0}
-  {$EXTERNALSYM OPENSSL_uni2utf8} {introduced 1.1.0}
-  {$EXTERNALSYM PKCS12_new}
-  {$EXTERNALSYM PKCS12_free}
-  {$EXTERNALSYM d2i_PKCS12}
-  {$EXTERNALSYM i2d_PKCS12}
-  {$EXTERNALSYM PKCS12_it}
-  {$EXTERNALSYM PKCS12_MAC_DATA_new}
-  {$EXTERNALSYM PKCS12_MAC_DATA_free}
-  {$EXTERNALSYM d2i_PKCS12_MAC_DATA}
-  {$EXTERNALSYM i2d_PKCS12_MAC_DATA}
-  {$EXTERNALSYM PKCS12_MAC_DATA_it}
-  {$EXTERNALSYM PKCS12_SAFEBAG_new}
-  {$EXTERNALSYM PKCS12_SAFEBAG_free}
-  {$EXTERNALSYM d2i_PKCS12_SAFEBAG}
-  {$EXTERNALSYM i2d_PKCS12_SAFEBAG}
-  {$EXTERNALSYM PKCS12_SAFEBAG_it}
-  {$EXTERNALSYM PKCS12_BAGS_new}
-  {$EXTERNALSYM PKCS12_BAGS_free}
-  {$EXTERNALSYM d2i_PKCS12_BAGS}
-  {$EXTERNALSYM i2d_PKCS12_BAGS}
-  {$EXTERNALSYM PKCS12_BAGS_it}
-  {$EXTERNALSYM PKCS12_PBE_add}
-  {$EXTERNALSYM PKCS12_parse}
-  {$EXTERNALSYM PKCS12_create}
-  {$EXTERNALSYM i2d_PKCS12_bio}
-  {$EXTERNALSYM d2i_PKCS12_bio}
-  {$EXTERNALSYM PKCS12_newpass}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM PKCS12_mac_present}
   PKCS12_mac_present: function (const p12: PPKCS12): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_get0_mac}
   PKCS12_get0_mac: procedure (const pmac: PPASN1_OCTET_STRING; const pmacalg: PPX509_ALGOR; const psalt: PPASN1_OCTET_STRING; const piter: PPASN1_INTEGER; const p12: PPKCS12); cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM PKCS12_SAFEBAG_get0_attr}
   PKCS12_SAFEBAG_get0_attr: function (const bag: PPKCS12_SAFEBAG; attr_nid: TIdC_INT): PASN1_TYPE; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_SAFEBAG_get0_type}
   PKCS12_SAFEBAG_get0_type: function (const bag: PPKCS12_SAFEBAG): PASN1_OBJECT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_SAFEBAG_get_nid}
   PKCS12_SAFEBAG_get_nid: function (const bag: PPKCS12_SAFEBAG): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_SAFEBAG_get_bag_nid}
   PKCS12_SAFEBAG_get_bag_nid: function (const bag: PPKCS12_SAFEBAG): TIdC_INT; cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM PKCS12_SAFEBAG_get1_cert}
   PKCS12_SAFEBAG_get1_cert: function (const bag: PPKCS12_SAFEBAG): PX509; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_SAFEBAG_get1_crl}
   PKCS12_SAFEBAG_get1_crl: function (const bag: PPKCS12_SAFEBAG): PX509_CRL; cdecl = nil; {introduced 1.1.0}
 //  const STACK_OF(PKCS12_SAFEBAG) *PKCS12_SAFEBAG_get0_safes(const PKCS12_SAFEBAG *bag);
+  {$EXTERNALSYM PKCS12_SAFEBAG_get0_p8inf}
   PKCS12_SAFEBAG_get0_p8inf: function (const bag: PPKCS12_SAFEBAG): PPKCS8_PRIV_KEY_INFO; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_SAFEBAG_get0_pkcs8}
   PKCS12_SAFEBAG_get0_pkcs8: function (const bag: PPKCS12_SAFEBAG): PX509_SIG; cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM PKCS12_SAFEBAG_create_cert}
   PKCS12_SAFEBAG_create_cert: function (x509: PX509): PPKCS12_SAFEBAG; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_SAFEBAG_create_crl}
   PKCS12_SAFEBAG_create_crl: function (crl: PX509_CRL): PPKCS12_SAFEBAG; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_SAFEBAG_create0_p8inf}
   PKCS12_SAFEBAG_create0_p8inf: function (p8: PPKCS8_PRIV_KEY_INFO): PPKCS12_SAFEBAG; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_SAFEBAG_create0_pkcs8}
   PKCS12_SAFEBAG_create0_pkcs8: function (p8: PX509_SIG): PPKCS12_SAFEBAG; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_SAFEBAG_create_pkcs8_encrypt}
   PKCS12_SAFEBAG_create_pkcs8_encrypt: function (pbe_nid: TIdC_INT; const pass: PIdAnsiChar; passlen: TIdC_INT; salt: PByte; saltlen: TIdC_INT; iter: TIdC_INT; p8inf: PPKCS8_PRIV_KEY_INFO): PPKCS12_SAFEBAG; cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM PKCS12_item_pack_safebag}
   PKCS12_item_pack_safebag: function (obj: Pointer; const it: PASN1_ITEM; nid1: TIdC_INT; nid2: TIdC_INT): PPKCS12_SAFEBAG; cdecl = nil;
+  {$EXTERNALSYM PKCS8_decrypt}
   PKCS8_decrypt: function (const p8: PX509_SIG; const pass: PIdAnsiChar; passlen: TIdC_INT): PPKCS8_PRIV_KEY_INFO; cdecl = nil;
+  {$EXTERNALSYM PKCS12_decrypt_skey}
   PKCS12_decrypt_skey: function (const bag: PPKCS12_SAFEBAG; const pass: PIdAnsiChar; passlen: TIdC_INT): PPKCS8_PRIV_KEY_INFO; cdecl = nil;
+  {$EXTERNALSYM PKCS8_encrypt}
   PKCS8_encrypt: function (pbe_nid: TIdC_INT; const cipher: PEVP_CIPHER; const pass: PIdAnsiChar; passlen: TIdC_INT; salt: PByte; saltlen: TIdC_INT; iter: TIdC_INT; p8: PPKCS8_PRIV_KEY_INFO): PX509_SIG; cdecl = nil;
+  {$EXTERNALSYM PKCS8_set0_pbe}
   PKCS8_set0_pbe: function (const pass: PIdAnsiChar; passlen: TIdC_INT; p8inf: PPKCS8_PRIV_KEY_INFO; pbe: PX509_ALGOR): PX509_SIG; cdecl = nil; {introduced 1.1.0}
 //  PKCS7 *PKCS12_pack_p7data(STACK_OF(PKCS12_SAFEBAG) *sk);
 //  STACK_OF(PKCS12_SAFEBAG) *PKCS12_unpack_p7data(PKCS7 *p7);
@@ -199,58 +175,104 @@ var
 //  TIdC_INT PKCS12_pack_authsafes(PKCS12 *p12, STACK_OF(PKCS7) *safes);
 //  STACK_OF(PKCS7) *PKCS12_unpack_authsafes(const PKCS12 *p12);
 
+  {$EXTERNALSYM PKCS12_add_localkeyid}
   PKCS12_add_localkeyid: function (bag: PPKCS12_SAFEBAG; name: PByte; namelen: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS12_add_friendlyname_asc}
   PKCS12_add_friendlyname_asc: function (bag: PPKCS12_SAFEBAG; const name: PIdAnsiChar; namelen: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS12_add_friendlyname_utf8}
   PKCS12_add_friendlyname_utf8: function (bag: PPKCS12_SAFEBAG; const name: PIdAnsiChar; namelen: TIdC_INT): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_add_CSPName_asc}
   PKCS12_add_CSPName_asc: function (bag: PPKCS12_SAFEBAG; const name: PIdAnsiChar; namelen: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS12_add_friendlyname_uni}
   PKCS12_add_friendlyname_uni: function (bag: PPKCS12_SAFEBAG; const name: PByte; namelen: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS8_add_keyusage}
   PKCS8_add_keyusage: function (p8: PPKCS8_PRIV_KEY_INFO; usage: TIdC_INT): TIdC_INT; cdecl = nil;
 //  function PKCS12_get_attr_gen(const STACK_OF(X509_ATTRIBUTE) *attrs; TIdC_INT attr_nid): PASN1_TYPE;
+  {$EXTERNALSYM PKCS12_get_friendlyname}
   PKCS12_get_friendlyname: function (bag: PPKCS12_SAFEBAG): PIdAnsiChar; cdecl = nil;
 //  const STACK_OF(X509_ATTRIBUTE) *PKCS12_SAFEBAG_get0_attrs(const PKCS12_SAFEBAG *bag);
+  {$EXTERNALSYM PKCS12_pbe_crypt}
   PKCS12_pbe_crypt: function (const algor: PX509_ALGOR; const pass: PIdAnsiChar; passlen: TIdC_INT; const in_: PByte; inlen: TIdC_INT; data: PPByte; datalen: PIdC_INT; en_de: TIdC_INT): PByte; cdecl = nil;
+  {$EXTERNALSYM PKCS12_item_decrypt_d2i}
   PKCS12_item_decrypt_d2i: function (const algor: PX509_ALGOR; const it: PASN1_ITEM; const pass: PIdAnsiChar; passlen: TIdC_INT; const oct: PASN1_OCTET_STRING; zbuf: TIdC_INT): Pointer; cdecl = nil;
+  {$EXTERNALSYM PKCS12_item_i2d_encrypt}
   PKCS12_item_i2d_encrypt: function (algor: PX509_ALGOR; const it: PASN1_ITEM; const pass: PIdAnsiChar; passlen: TIdC_INT; obj: Pointer; zbuf: TIdC_INT): PASN1_OCTET_STRING; cdecl = nil;
+  {$EXTERNALSYM PKCS12_init}
   PKCS12_init: function (mode: TIdC_INT): PPKCS12; cdecl = nil;
+  {$EXTERNALSYM PKCS12_key_gen_asc}
   PKCS12_key_gen_asc: function (const pass: PIdAnsiChar; passlen: TIdC_INT; salt: PByte; saltlen: TIdC_INT; id: TIdC_INT; iter: TIdC_INT; n: TIdC_INT; out_: PByte; const md_type: PEVP_MD): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS12_key_gen_uni}
   PKCS12_key_gen_uni: function (pass: PByte; passlen: TIdC_INT; salt: PByte; saltlen: TIdC_INT; id: TIdC_INT; iter: TIdC_INT; n: TIdC_INT; out_: PByte; const md_type: PEVP_MD): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS12_key_gen_utf8}
   PKCS12_key_gen_utf8: function (const pass: PIdAnsiChar; passlen: TIdC_INT; salt: PByte; saltlen: TIdC_INT; id: TIdC_INT; iter: TIdC_INT; n: TIdC_INT; out_: PByte; const md_type: PEVP_MD): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_PBE_keyivgen}
   PKCS12_PBE_keyivgen: function (ctx: PEVP_CIPHER_CTX; const pass: PIdAnsiChar; passlen: TIdC_INT; param: PASN1_TYPE; const cipher: PEVP_CIPHER; const md_type: PEVP_MD; en_de: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS12_gen_mac}
   PKCS12_gen_mac: function (p12: PPKCS12; const pass: PIdAnsiChar; passlen: TIdC_INT; mac: PByte; maclen: PIdC_UINT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS12_verify_mac}
   PKCS12_verify_mac: function (p12: PPKCS12; const pass: PIdAnsiChar; passlen: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS12_set_mac}
   PKCS12_set_mac: function (p12: PPKCS12; const pass: PIdAnsiChar; passlen: TIdC_INT; salt: PByte; saltlen: TIdC_INT; iter: TIdC_INT; const md_type: PEVP_MD): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS12_setup_mac}
   PKCS12_setup_mac: function (p12: PPKCS12; iter: TIdC_INT; salt: PByte; saltlen: TIdC_INT; const md_type: PEVP_MD): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OPENSSL_asc2uni}
   OPENSSL_asc2uni: function (const asc: PIdAnsiChar; asclen: TIdC_INT; uni: PPByte; unilen: PIdC_INT): PByte; cdecl = nil;
+  {$EXTERNALSYM OPENSSL_uni2asc}
   OPENSSL_uni2asc: function (const uni: PByte; unilen: TIdC_INT): PIdAnsiChar; cdecl = nil;
+  {$EXTERNALSYM OPENSSL_utf82uni}
   OPENSSL_utf82uni: function (const asc: PIdAnsiChar; asclen: TIdC_INT; uni: PPByte; unilen: PIdC_INT): PByte; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM OPENSSL_uni2utf8}
   OPENSSL_uni2utf8: function (const uni: PByte; unilen: TIdC_INT): PIdAnsiChar; cdecl = nil; {introduced 1.1.0}
 
+  {$EXTERNALSYM PKCS12_new}
   PKCS12_new: function : PPKCS12; cdecl = nil;
+  {$EXTERNALSYM PKCS12_free}
   PKCS12_free: procedure (a: PPKCS12); cdecl = nil;
+  {$EXTERNALSYM d2i_PKCS12}
   d2i_PKCS12: function (a: PPPKCS12; const in_: PPByte; len: TIdC_LONG): PPKCS12; cdecl = nil;
+  {$EXTERNALSYM i2d_PKCS12}
   i2d_PKCS12: function (a: PPKCS12; out_: PPByte): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS12_it}
   PKCS12_it: function : PASN1_ITEM; cdecl = nil;
 
+  {$EXTERNALSYM PKCS12_MAC_DATA_new}
   PKCS12_MAC_DATA_new: function : PPKCS12_MAC_DATA; cdecl = nil;
+  {$EXTERNALSYM PKCS12_MAC_DATA_free}
   PKCS12_MAC_DATA_free: procedure (a: PPKCS12_MAC_DATA); cdecl = nil;
+  {$EXTERNALSYM d2i_PKCS12_MAC_DATA}
   d2i_PKCS12_MAC_DATA: function (a: PPPKCS12_MAC_DATA; const in_: PPByte; len: TIdC_LONG): PPKCS12_MAC_DATA; cdecl = nil;
+  {$EXTERNALSYM i2d_PKCS12_MAC_DATA}
   i2d_PKCS12_MAC_DATA: function (a: PPKCS12_MAC_DATA; out_: PPByte): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS12_MAC_DATA_it}
   PKCS12_MAC_DATA_it: function : PASN1_ITEM; cdecl = nil;
 
+  {$EXTERNALSYM PKCS12_SAFEBAG_new}
   PKCS12_SAFEBAG_new: function : PPKCS12_SAFEBAG; cdecl = nil;
+  {$EXTERNALSYM PKCS12_SAFEBAG_free}
   PKCS12_SAFEBAG_free: procedure (a: PPKCS12_SAFEBAG); cdecl = nil;
+  {$EXTERNALSYM d2i_PKCS12_SAFEBAG}
   d2i_PKCS12_SAFEBAG: function (a: PPPKCS12_SAFEBAG; const in_: PPByte; len: TIdC_LONG): PPKCS12_SAFEBAG; cdecl = nil;
+  {$EXTERNALSYM i2d_PKCS12_SAFEBAG}
   i2d_PKCS12_SAFEBAG: function (a: PPKCS12_SAFEBAG; out_: PPByte): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS12_SAFEBAG_it}
   PKCS12_SAFEBAG_it: function : PASN1_ITEM; cdecl = nil;
 
+  {$EXTERNALSYM PKCS12_BAGS_new}
   PKCS12_BAGS_new: function : PPKCS12_BAGS; cdecl = nil;
+  {$EXTERNALSYM PKCS12_BAGS_free}
   PKCS12_BAGS_free: procedure (a: PPKCS12_BAGS); cdecl = nil;
+  {$EXTERNALSYM d2i_PKCS12_BAGS}
   d2i_PKCS12_BAGS: function (a: PPPKCS12_BAGS; const in_: PPByte; len: TIdC_LONG): PPKCS12_BAGS; cdecl = nil;
+  {$EXTERNALSYM i2d_PKCS12_BAGS}
   i2d_PKCS12_BAGS: function (a: PPKCS12_BAGS; out_: PPByte): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS12_BAGS_it}
   PKCS12_BAGS_it: function : PASN1_ITEM; cdecl = nil;
 
+  {$EXTERNALSYM PKCS12_PBE_add}
   PKCS12_PBE_add: procedure (v: Pointer); cdecl = nil;
+  {$EXTERNALSYM PKCS12_parse}
   PKCS12_parse: function (p12: PPKCS12; const pass: PIdAnsiChar; var pkey: PEVP_PKEY; var cert: PX509; ca: PPStack_Of_X509): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM PKCS12_create}
   PKCS12_create: function (const pass: PIdAnsiChar; const name: PIdAnsiChar; pkey: PEVP_PKEY; cert: PX509; ca: PStack_Of_X509; nid_key: TIdC_INT; nid_cert: TIdC_INT; iter: TIdC_INT; mac_iter: TIdC_INT; keytype: TIdC_INT): PPKCS12; cdecl = nil;
 
 //  function PKCS12_add_cert(STACK_OF(PKCS12_SAFEBAG) **pbags; X509 *cert): PKCS12_SAFEBAG;
@@ -261,35 +283,58 @@ var
 //                      TIdC_INT safe_nid; iter: TIdC_INT; const pass: PIdAnsiChar);
 //  PKCS12 *PKCS12_add_safes(STACK_OF(PKCS7) *safes; TIdC_INT p7_nid);
 
+  {$EXTERNALSYM i2d_PKCS12_bio}
   i2d_PKCS12_bio: function (bp: PBIO; p12: PPKCS12): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM d2i_PKCS12_bio}
   d2i_PKCS12_bio: function (bp: PBIO; p12: PPPKCS12): PPKCS12; cdecl = nil;
+  {$EXTERNALSYM PKCS12_newpass}
   PKCS12_newpass: function (p12: PPKCS12; const oldpass: PIdAnsiChar; const newpass: PIdAnsiChar): TIdC_INT; cdecl = nil;
 
 {$ELSE}
+  {$EXTERNALSYM PKCS12_mac_present}
   function PKCS12_mac_present(const p12: PPKCS12): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_get0_mac}
   procedure PKCS12_get0_mac(const pmac: PPASN1_OCTET_STRING; const pmacalg: PPX509_ALGOR; const psalt: PPASN1_OCTET_STRING; const piter: PPASN1_INTEGER; const p12: PPKCS12) cdecl; external CLibCrypto; {introduced 1.1.0}
 
+  {$EXTERNALSYM PKCS12_SAFEBAG_get0_attr}
   function PKCS12_SAFEBAG_get0_attr(const bag: PPKCS12_SAFEBAG; attr_nid: TIdC_INT): PASN1_TYPE cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_SAFEBAG_get0_type}
   function PKCS12_SAFEBAG_get0_type(const bag: PPKCS12_SAFEBAG): PASN1_OBJECT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_SAFEBAG_get_nid}
   function PKCS12_SAFEBAG_get_nid(const bag: PPKCS12_SAFEBAG): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_SAFEBAG_get_bag_nid}
   function PKCS12_SAFEBAG_get_bag_nid(const bag: PPKCS12_SAFEBAG): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
 
+  {$EXTERNALSYM PKCS12_SAFEBAG_get1_cert}
   function PKCS12_SAFEBAG_get1_cert(const bag: PPKCS12_SAFEBAG): PX509 cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_SAFEBAG_get1_crl}
   function PKCS12_SAFEBAG_get1_crl(const bag: PPKCS12_SAFEBAG): PX509_CRL cdecl; external CLibCrypto; {introduced 1.1.0}
 //  const STACK_OF(PKCS12_SAFEBAG) *PKCS12_SAFEBAG_get0_safes(const PKCS12_SAFEBAG *bag);
+  {$EXTERNALSYM PKCS12_SAFEBAG_get0_p8inf}
   function PKCS12_SAFEBAG_get0_p8inf(const bag: PPKCS12_SAFEBAG): PPKCS8_PRIV_KEY_INFO cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_SAFEBAG_get0_pkcs8}
   function PKCS12_SAFEBAG_get0_pkcs8(const bag: PPKCS12_SAFEBAG): PX509_SIG cdecl; external CLibCrypto; {introduced 1.1.0}
 
+  {$EXTERNALSYM PKCS12_SAFEBAG_create_cert}
   function PKCS12_SAFEBAG_create_cert(x509: PX509): PPKCS12_SAFEBAG cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_SAFEBAG_create_crl}
   function PKCS12_SAFEBAG_create_crl(crl: PX509_CRL): PPKCS12_SAFEBAG cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_SAFEBAG_create0_p8inf}
   function PKCS12_SAFEBAG_create0_p8inf(p8: PPKCS8_PRIV_KEY_INFO): PPKCS12_SAFEBAG cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_SAFEBAG_create0_pkcs8}
   function PKCS12_SAFEBAG_create0_pkcs8(p8: PX509_SIG): PPKCS12_SAFEBAG cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_SAFEBAG_create_pkcs8_encrypt}
   function PKCS12_SAFEBAG_create_pkcs8_encrypt(pbe_nid: TIdC_INT; const pass: PIdAnsiChar; passlen: TIdC_INT; salt: PByte; saltlen: TIdC_INT; iter: TIdC_INT; p8inf: PPKCS8_PRIV_KEY_INFO): PPKCS12_SAFEBAG cdecl; external CLibCrypto; {introduced 1.1.0}
 
+  {$EXTERNALSYM PKCS12_item_pack_safebag}
   function PKCS12_item_pack_safebag(obj: Pointer; const it: PASN1_ITEM; nid1: TIdC_INT; nid2: TIdC_INT): PPKCS12_SAFEBAG cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS8_decrypt}
   function PKCS8_decrypt(const p8: PX509_SIG; const pass: PIdAnsiChar; passlen: TIdC_INT): PPKCS8_PRIV_KEY_INFO cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_decrypt_skey}
   function PKCS12_decrypt_skey(const bag: PPKCS12_SAFEBAG; const pass: PIdAnsiChar; passlen: TIdC_INT): PPKCS8_PRIV_KEY_INFO cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS8_encrypt}
   function PKCS8_encrypt(pbe_nid: TIdC_INT; const cipher: PEVP_CIPHER; const pass: PIdAnsiChar; passlen: TIdC_INT; salt: PByte; saltlen: TIdC_INT; iter: TIdC_INT; p8: PPKCS8_PRIV_KEY_INFO): PX509_SIG cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS8_set0_pbe}
   function PKCS8_set0_pbe(const pass: PIdAnsiChar; passlen: TIdC_INT; p8inf: PPKCS8_PRIV_KEY_INFO; pbe: PX509_ALGOR): PX509_SIG cdecl; external CLibCrypto; {introduced 1.1.0}
 //  PKCS7 *PKCS12_pack_p7data(STACK_OF(PKCS12_SAFEBAG) *sk);
 //  STACK_OF(PKCS12_SAFEBAG) *PKCS12_unpack_p7data(PKCS7 *p7);
@@ -302,58 +347,104 @@ var
 //  TIdC_INT PKCS12_pack_authsafes(PKCS12 *p12, STACK_OF(PKCS7) *safes);
 //  STACK_OF(PKCS7) *PKCS12_unpack_authsafes(const PKCS12 *p12);
 
+  {$EXTERNALSYM PKCS12_add_localkeyid}
   function PKCS12_add_localkeyid(bag: PPKCS12_SAFEBAG; name: PByte; namelen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_add_friendlyname_asc}
   function PKCS12_add_friendlyname_asc(bag: PPKCS12_SAFEBAG; const name: PIdAnsiChar; namelen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_add_friendlyname_utf8}
   function PKCS12_add_friendlyname_utf8(bag: PPKCS12_SAFEBAG; const name: PIdAnsiChar; namelen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_add_CSPName_asc}
   function PKCS12_add_CSPName_asc(bag: PPKCS12_SAFEBAG; const name: PIdAnsiChar; namelen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_add_friendlyname_uni}
   function PKCS12_add_friendlyname_uni(bag: PPKCS12_SAFEBAG; const name: PByte; namelen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS8_add_keyusage}
   function PKCS8_add_keyusage(p8: PPKCS8_PRIV_KEY_INFO; usage: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
 //  function PKCS12_get_attr_gen(const STACK_OF(X509_ATTRIBUTE) *attrs; TIdC_INT attr_nid): PASN1_TYPE;
+  {$EXTERNALSYM PKCS12_get_friendlyname}
   function PKCS12_get_friendlyname(bag: PPKCS12_SAFEBAG): PIdAnsiChar cdecl; external CLibCrypto;
 //  const STACK_OF(X509_ATTRIBUTE) *PKCS12_SAFEBAG_get0_attrs(const PKCS12_SAFEBAG *bag);
+  {$EXTERNALSYM PKCS12_pbe_crypt}
   function PKCS12_pbe_crypt(const algor: PX509_ALGOR; const pass: PIdAnsiChar; passlen: TIdC_INT; const in_: PByte; inlen: TIdC_INT; data: PPByte; datalen: PIdC_INT; en_de: TIdC_INT): PByte cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_item_decrypt_d2i}
   function PKCS12_item_decrypt_d2i(const algor: PX509_ALGOR; const it: PASN1_ITEM; const pass: PIdAnsiChar; passlen: TIdC_INT; const oct: PASN1_OCTET_STRING; zbuf: TIdC_INT): Pointer cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_item_i2d_encrypt}
   function PKCS12_item_i2d_encrypt(algor: PX509_ALGOR; const it: PASN1_ITEM; const pass: PIdAnsiChar; passlen: TIdC_INT; obj: Pointer; zbuf: TIdC_INT): PASN1_OCTET_STRING cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_init}
   function PKCS12_init(mode: TIdC_INT): PPKCS12 cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_key_gen_asc}
   function PKCS12_key_gen_asc(const pass: PIdAnsiChar; passlen: TIdC_INT; salt: PByte; saltlen: TIdC_INT; id: TIdC_INT; iter: TIdC_INT; n: TIdC_INT; out_: PByte; const md_type: PEVP_MD): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_key_gen_uni}
   function PKCS12_key_gen_uni(pass: PByte; passlen: TIdC_INT; salt: PByte; saltlen: TIdC_INT; id: TIdC_INT; iter: TIdC_INT; n: TIdC_INT; out_: PByte; const md_type: PEVP_MD): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_key_gen_utf8}
   function PKCS12_key_gen_utf8(const pass: PIdAnsiChar; passlen: TIdC_INT; salt: PByte; saltlen: TIdC_INT; id: TIdC_INT; iter: TIdC_INT; n: TIdC_INT; out_: PByte; const md_type: PEVP_MD): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM PKCS12_PBE_keyivgen}
   function PKCS12_PBE_keyivgen(ctx: PEVP_CIPHER_CTX; const pass: PIdAnsiChar; passlen: TIdC_INT; param: PASN1_TYPE; const cipher: PEVP_CIPHER; const md_type: PEVP_MD; en_de: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_gen_mac}
   function PKCS12_gen_mac(p12: PPKCS12; const pass: PIdAnsiChar; passlen: TIdC_INT; mac: PByte; maclen: PIdC_UINT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_verify_mac}
   function PKCS12_verify_mac(p12: PPKCS12; const pass: PIdAnsiChar; passlen: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_set_mac}
   function PKCS12_set_mac(p12: PPKCS12; const pass: PIdAnsiChar; passlen: TIdC_INT; salt: PByte; saltlen: TIdC_INT; iter: TIdC_INT; const md_type: PEVP_MD): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_setup_mac}
   function PKCS12_setup_mac(p12: PPKCS12; iter: TIdC_INT; salt: PByte; saltlen: TIdC_INT; const md_type: PEVP_MD): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OPENSSL_asc2uni}
   function OPENSSL_asc2uni(const asc: PIdAnsiChar; asclen: TIdC_INT; uni: PPByte; unilen: PIdC_INT): PByte cdecl; external CLibCrypto;
+  {$EXTERNALSYM OPENSSL_uni2asc}
   function OPENSSL_uni2asc(const uni: PByte; unilen: TIdC_INT): PIdAnsiChar cdecl; external CLibCrypto;
+  {$EXTERNALSYM OPENSSL_utf82uni}
   function OPENSSL_utf82uni(const asc: PIdAnsiChar; asclen: TIdC_INT; uni: PPByte; unilen: PIdC_INT): PByte cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM OPENSSL_uni2utf8}
   function OPENSSL_uni2utf8(const uni: PByte; unilen: TIdC_INT): PIdAnsiChar cdecl; external CLibCrypto; {introduced 1.1.0}
 
+  {$EXTERNALSYM PKCS12_new}
   function PKCS12_new: PPKCS12 cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_free}
   procedure PKCS12_free(a: PPKCS12) cdecl; external CLibCrypto;
+  {$EXTERNALSYM d2i_PKCS12}
   function d2i_PKCS12(a: PPPKCS12; const in_: PPByte; len: TIdC_LONG): PPKCS12 cdecl; external CLibCrypto;
+  {$EXTERNALSYM i2d_PKCS12}
   function i2d_PKCS12(a: PPKCS12; out_: PPByte): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_it}
   function PKCS12_it: PASN1_ITEM cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS12_MAC_DATA_new}
   function PKCS12_MAC_DATA_new: PPKCS12_MAC_DATA cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_MAC_DATA_free}
   procedure PKCS12_MAC_DATA_free(a: PPKCS12_MAC_DATA) cdecl; external CLibCrypto;
+  {$EXTERNALSYM d2i_PKCS12_MAC_DATA}
   function d2i_PKCS12_MAC_DATA(a: PPPKCS12_MAC_DATA; const in_: PPByte; len: TIdC_LONG): PPKCS12_MAC_DATA cdecl; external CLibCrypto;
+  {$EXTERNALSYM i2d_PKCS12_MAC_DATA}
   function i2d_PKCS12_MAC_DATA(a: PPKCS12_MAC_DATA; out_: PPByte): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_MAC_DATA_it}
   function PKCS12_MAC_DATA_it: PASN1_ITEM cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS12_SAFEBAG_new}
   function PKCS12_SAFEBAG_new: PPKCS12_SAFEBAG cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_SAFEBAG_free}
   procedure PKCS12_SAFEBAG_free(a: PPKCS12_SAFEBAG) cdecl; external CLibCrypto;
+  {$EXTERNALSYM d2i_PKCS12_SAFEBAG}
   function d2i_PKCS12_SAFEBAG(a: PPPKCS12_SAFEBAG; const in_: PPByte; len: TIdC_LONG): PPKCS12_SAFEBAG cdecl; external CLibCrypto;
+  {$EXTERNALSYM i2d_PKCS12_SAFEBAG}
   function i2d_PKCS12_SAFEBAG(a: PPKCS12_SAFEBAG; out_: PPByte): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_SAFEBAG_it}
   function PKCS12_SAFEBAG_it: PASN1_ITEM cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS12_BAGS_new}
   function PKCS12_BAGS_new: PPKCS12_BAGS cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_BAGS_free}
   procedure PKCS12_BAGS_free(a: PPKCS12_BAGS) cdecl; external CLibCrypto;
+  {$EXTERNALSYM d2i_PKCS12_BAGS}
   function d2i_PKCS12_BAGS(a: PPPKCS12_BAGS; const in_: PPByte; len: TIdC_LONG): PPKCS12_BAGS cdecl; external CLibCrypto;
+  {$EXTERNALSYM i2d_PKCS12_BAGS}
   function i2d_PKCS12_BAGS(a: PPKCS12_BAGS; out_: PPByte): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_BAGS_it}
   function PKCS12_BAGS_it: PASN1_ITEM cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM PKCS12_PBE_add}
   procedure PKCS12_PBE_add(v: Pointer) cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_parse}
   function PKCS12_parse(p12: PPKCS12; const pass: PIdAnsiChar; var pkey: PEVP_PKEY; var cert: PX509; ca: PPStack_Of_X509): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_create}
   function PKCS12_create(const pass: PIdAnsiChar; const name: PIdAnsiChar; pkey: PEVP_PKEY; cert: PX509; ca: PStack_Of_X509; nid_key: TIdC_INT; nid_cert: TIdC_INT; iter: TIdC_INT; mac_iter: TIdC_INT; keytype: TIdC_INT): PPKCS12 cdecl; external CLibCrypto;
 
 //  function PKCS12_add_cert(STACK_OF(PKCS12_SAFEBAG) **pbags; X509 *cert): PKCS12_SAFEBAG;
@@ -364,8 +455,11 @@ var
 //                      TIdC_INT safe_nid; iter: TIdC_INT; const pass: PIdAnsiChar);
 //  PKCS12 *PKCS12_add_safes(STACK_OF(PKCS7) *safes; TIdC_INT p7_nid);
 
+  {$EXTERNALSYM i2d_PKCS12_bio}
   function i2d_PKCS12_bio(bp: PBIO; p12: PPKCS12): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM d2i_PKCS12_bio}
   function d2i_PKCS12_bio(bp: PBIO; p12: PPPKCS12): PPKCS12 cdecl; external CLibCrypto;
+  {$EXTERNALSYM PKCS12_newpass}
   function PKCS12_newpass(p12: PPKCS12; const oldpass: PIdAnsiChar; const newpass: PIdAnsiChar): TIdC_INT cdecl; external CLibCrypto;
 
 {$ENDIF}

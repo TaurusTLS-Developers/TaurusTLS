@@ -37,9 +37,11 @@ uses
   TaurusTLSHeaders_types;
 
 const
+  {$EXTERNALSYM BUF_MEM_FLAG_SECURE}
   BUF_MEM_FLAG_SECURE = $01;
 
 type
+  {$EXTERNALSYM buf_mem_st}
   buf_mem_st = record
     _length: TIdC_SIZET;
     data: PIdAnsiChar;
@@ -52,28 +54,34 @@ type
   	  The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header 
 	  files generated for C++. }
 	  
-  {$EXTERNALSYM BUF_MEM_new}
-  {$EXTERNALSYM BUF_MEM_new_ex}
-  {$EXTERNALSYM BUF_MEM_free}
-  {$EXTERNALSYM BUF_MEM_grow}
-  {$EXTERNALSYM BUF_MEM_grow_clean}
-  {$EXTERNALSYM BUF_reverse}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM BUF_MEM_new}
   BUF_MEM_new: function : PBUF_MEM; cdecl = nil;
+  {$EXTERNALSYM BUF_MEM_new_ex}
   BUF_MEM_new_ex: function (flags: TIdC_ULONG): PBUF_MEM; cdecl = nil;
+  {$EXTERNALSYM BUF_MEM_free}
   BUF_MEM_free: procedure (a: PBUF_MEM); cdecl = nil;
+  {$EXTERNALSYM BUF_MEM_grow}
   BUF_MEM_grow: function (_str: PBUF_MEM; len: TIdC_SIZET): TIdC_SIZET; cdecl = nil;
+  {$EXTERNALSYM BUF_MEM_grow_clean}
   BUF_MEM_grow_clean: function (_str: PBUF_MEM; len: TIdC_SIZET): TIdC_SIZET; cdecl = nil;
+  {$EXTERNALSYM BUF_reverse}
   BUF_reverse: procedure (out_: PByte; const in_: PByte; siz: TIdC_SIZET); cdecl = nil;
 
 {$ELSE}
+  {$EXTERNALSYM BUF_MEM_new}
   function BUF_MEM_new: PBUF_MEM cdecl; external CLibCrypto;
+  {$EXTERNALSYM BUF_MEM_new_ex}
   function BUF_MEM_new_ex(flags: TIdC_ULONG): PBUF_MEM cdecl; external CLibCrypto;
+  {$EXTERNALSYM BUF_MEM_free}
   procedure BUF_MEM_free(a: PBUF_MEM) cdecl; external CLibCrypto;
+  {$EXTERNALSYM BUF_MEM_grow}
   function BUF_MEM_grow(_str: PBUF_MEM; len: TIdC_SIZET): TIdC_SIZET cdecl; external CLibCrypto;
+  {$EXTERNALSYM BUF_MEM_grow_clean}
   function BUF_MEM_grow_clean(_str: PBUF_MEM; len: TIdC_SIZET): TIdC_SIZET cdecl; external CLibCrypto;
+  {$EXTERNALSYM BUF_reverse}
   procedure BUF_reverse(out_: PByte; const in_: PByte; siz: TIdC_SIZET) cdecl; external CLibCrypto;
 
 {$ENDIF}

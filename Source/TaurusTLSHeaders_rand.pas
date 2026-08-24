@@ -36,17 +36,26 @@ uses
   TaurusTLSHeaders_types;
 
 const
+  {$EXTERNALSYM RAND_DRBG_STRENGTH}
   RAND_DRBG_STRENGTH = 256; // Openssl default RANDOM strength constant.
+  {$EXTERNALSYM RAND_DEFAULT_STRENGTH}
   RAND_DEFAULT_STRENGTH = RAND_DRBG_STRENGTH; // Default RANDOM strength
 
 type
+  {$EXTERNALSYM rand_meth_st_seed}
   rand_meth_st_seed = function (const buf: Pointer; num: TIdC_INT): TIdC_INT; cdecl;
+  {$EXTERNALSYM rand_meth_st_bytes}
   rand_meth_st_bytes = function (buf: PByte; num: TIdC_INT): TIdC_INT; cdecl;
+  {$EXTERNALSYM rand_meth_st_cleanup}
   rand_meth_st_cleanup = procedure; cdecl;
+  {$EXTERNALSYM rand_meth_st_add}
   rand_meth_st_add = function (const buf: Pointer; num: TIdC_INT; randomness: TIdC_DOUBLE): TIdC_INT; cdecl;
+  {$EXTERNALSYM rand_meth_st_pseudorand}
   rand_meth_st_pseudorand = function (buf: PByte; num: TIdC_INT): TIdC_INT; cdecl;
+  {$EXTERNALSYM rand_meth_st_status}
   rand_meth_st_status = function: TIdC_INT; cdecl;
 
+  {$EXTERNALSYM rand_meth_st}
   rand_meth_st = record
     seed: rand_meth_st_seed;
     bytes: rand_meth_st_bytes;
@@ -61,85 +70,104 @@ type
   	  The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header 
 	  files generated for C++. }
 	  
-  {$EXTERNALSYM RAND_set_rand_method}
-  {$EXTERNALSYM RAND_get_rand_method}
-  {$EXTERNALSYM RAND_set_rand_engine}
-  {$EXTERNALSYM RAND_OpenSSL}
-  {$EXTERNALSYM RAND_bytes}
-  {$EXTERNALSYM RAND_priv_bytes}
-  {$EXTERNALSYM RAND_priv_bytes_ex}
-  {$EXTERNALSYM RAND_seed}
-  {$EXTERNALSYM RAND_keep_random_devices_open}
-  {$EXTERNALSYM RAND_add}
-  {$EXTERNALSYM RAND_load_file}
-  {$EXTERNALSYM RAND_write_file}
-  {$EXTERNALSYM RAND_status}
   {$IFNDEF OPENSSL_NO_EGD}
-  {$EXTERNALSYM RAND_query_egd_bytes}
-  {$EXTERNALSYM RAND_egd}
-  {$EXTERNALSYM RAND_egd_bytes}
   {$ENDIF}
-  {$EXTERNALSYM RAND_poll}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM RAND_set_rand_method}
   RAND_set_rand_method: function (const meth: PRAND_METHOD): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RAND_get_rand_method}
   RAND_get_rand_method: function : PRAND_METHOD; cdecl = nil;
+  {$EXTERNALSYM RAND_set_rand_engine}
   RAND_set_rand_engine: function (engine: PENGINE): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM RAND_OpenSSL}
   RAND_OpenSSL: function : PRAND_METHOD; cdecl = nil;
 
+  {$EXTERNALSYM RAND_bytes}
   RAND_bytes: function (buf: PByte; num: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RAND_bytes_ex}
   RAND_bytes_ex: function(ctx : POSSL_LIB_CTX; buf : PIdAnsiChar;
      num : TIdC_SIZET; strength : TIdC_UINT) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RAND_priv_bytes}
   RAND_priv_bytes: function (buf: PByte; num: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RAND_priv_bytes_ex}
   RAND_priv_bytes_ex : function(ctx : POSSL_LIB_CTX; buf : PIdAnsiChar;
      num : TIdC_SIZET;  strength : TIdC_UINT) : TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM RAND_seed}
   RAND_seed: procedure (const buf: Pointer; num: TIdC_INT); cdecl = nil;
+  {$EXTERNALSYM RAND_keep_random_devices_open}
   RAND_keep_random_devices_open: procedure (keep: TIdC_INT); cdecl = nil;
 
+  {$EXTERNALSYM RAND_add}
   RAND_add: procedure (const buf: Pointer; num: TIdC_INT; randomness: TIdC_DOUBLE); cdecl = nil;
+  {$EXTERNALSYM RAND_load_file}
   RAND_load_file: function (const file_: PIdAnsiChar; max_bytes: TIdC_LONG): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RAND_write_file}
   RAND_write_file: function (const file_: PIdAnsiChar): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RAND_status}
   RAND_status: function : TIdC_INT; cdecl = nil;
 
   {$IFNDEF OPENSSL_NO_EGD}
+  {$EXTERNALSYM RAND_query_egd_bytes}
   RAND_query_egd_bytes: function (const path: PIdAnsiChar; buf: PByte; bytes: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RAND_egd}
   RAND_egd: function (const path: PIdAnsiChar): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM RAND_egd_bytes}
   RAND_egd_bytes: function (const path: PIdAnsiChar; bytes: TIdC_INT): TIdC_INT; cdecl = nil;
   {$ENDIF}
 
+  {$EXTERNALSYM RAND_poll}
   RAND_poll: function : TIdC_INT; cdecl = nil;
 
 {$ELSE}
+  {$EXTERNALSYM RAND_set_rand_method}
   function RAND_set_rand_method(const meth: PRAND_METHOD): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RAND_get_rand_method}
   function RAND_get_rand_method: PRAND_METHOD cdecl; external CLibCrypto;
+  {$EXTERNALSYM RAND_set_rand_engine}
   function RAND_set_rand_engine(engine: PENGINE): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM RAND_OpenSSL}
   function RAND_OpenSSL: PRAND_METHOD cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM RAND_bytes}
   function RAND_bytes(buf: PByte; num: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RAND_bytes_ex}
   function RAND_bytes_ex(ctx : POSSL_LIB_CTX; buf : PIdAnsiChar;
      num : TIdC_SIZET; strength : TIdC_UINT) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RAND_priv_bytes}
   function RAND_priv_bytes(buf: PByte; num: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RAND_priv_bytes_ex}
   function RAND_priv_bytes_ex(ctx : POSSL_LIB_CTX; buf : PIdAnsiChar;
      num : TIdC_SIZET;  strength : TIdC_UINT) : TIdC_INT; cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM RAND_seed}
   procedure RAND_seed(const buf: Pointer; num: TIdC_INT) cdecl; external CLibCrypto;
+  {$EXTERNALSYM RAND_keep_random_devices_open}
   procedure RAND_keep_random_devices_open(keep: TIdC_INT) cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM RAND_add}
   procedure RAND_add(const buf: Pointer; num: TIdC_INT; randomness: TIdC_DOUBLE) cdecl; external CLibCrypto;
+  {$EXTERNALSYM RAND_load_file}
   function RAND_load_file(const file_: PIdAnsiChar; max_bytes: TIdC_LONG): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RAND_write_file}
   function RAND_write_file(const file_: PIdAnsiChar): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RAND_status}
   function RAND_status: TIdC_INT cdecl; external CLibCrypto;
 
  {$IFNDEF OPENSSL_NO_EGD}
+  {$EXTERNALSYM RAND_query_egd_bytes}
   function RAND_query_egd_bytes(const path: PIdAnsiChar; buf: PByte; bytes: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RAND_egd}
   function RAND_egd(const path: PIdAnsiChar): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM RAND_egd_bytes}
   function RAND_egd_bytes(const path: PIdAnsiChar; bytes: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
   {$ENDIF}
 
+  {$EXTERNALSYM RAND_poll}
   function RAND_poll: TIdC_INT cdecl; external CLibCrypto;
 
 {$ENDIF}

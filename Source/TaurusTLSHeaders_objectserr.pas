@@ -38,20 +38,31 @@ const
   (*
    * OBJ function codes.
    *)
+  {$EXTERNALSYM OBJ_F_OBJ_ADD_OBJECT}
   OBJ_F_OBJ_ADD_OBJECT =  105;
+  {$EXTERNALSYM OBJ_F_OBJ_ADD_SIGID}
   OBJ_F_OBJ_ADD_SIGID =  107;
+  {$EXTERNALSYM OBJ_F_OBJ_CREATE}
   OBJ_F_OBJ_CREATE =   100;
+  {$EXTERNALSYM OBJ_F_OBJ_DUP}
   OBJ_F_OBJ_DUP =   101;
+  {$EXTERNALSYM OBJ_F_OBJ_NAME_NEW_INDEX}
   OBJ_F_OBJ_NAME_NEW_INDEX =  106;
+  {$EXTERNALSYM OBJ_F_OBJ_NID2LN}
   OBJ_F_OBJ_NID2LN =   102;
+  {$EXTERNALSYM OBJ_F_OBJ_NID2OBJ}
   OBJ_F_OBJ_NID2OBJ =   103;
+  {$EXTERNALSYM OBJ_F_OBJ_NID2SN}
   OBJ_F_OBJ_NID2SN =   104;
+  {$EXTERNALSYM OBJ_F_OBJ_TXT2OBJ}
   OBJ_F_OBJ_TXT2OBJ =   108;
 
   (*
    * OBJ reason codes.
    *)
+  {$EXTERNALSYM OBJ_R_OID_EXISTS}
   OBJ_R_OID_EXISTS = 102;
+  {$EXTERNALSYM OBJ_R_UNKNOWN_NID}
   OBJ_R_UNKNOWN_NID = 101;
 
     { The EXTERNALSYM directive is ignored by FPC, however, it is used by Delphi as follows:
@@ -59,13 +70,14 @@ const
   	  The EXTERNALSYM directive prevents the specified Delphi symbol from appearing in header 
 	  files generated for C++. }
 	  
-  {$EXTERNALSYM ERR_load_OBJ_strings}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM ERR_load_OBJ_strings}
   ERR_load_OBJ_strings: function : TIdC_INT; cdecl = nil;
 
 {$ELSE}
+  {$EXTERNALSYM ERR_load_OBJ_strings}
   function ERR_load_OBJ_strings: TIdC_INT cdecl; external CLibCrypto;
 
 {$ENDIF}

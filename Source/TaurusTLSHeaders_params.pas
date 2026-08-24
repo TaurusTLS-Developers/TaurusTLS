@@ -32,165 +32,281 @@ uses
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
 //* Search an OSSL_PARAM array for a matching name */
+  {$EXTERNALSYM OSSL_PARAM_locate}
   OSSL_PARAM_locate : function (p : POSSL_PARAM; const key : PIdAnsiChar) : POSSL_PARAM; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_locate_const}
   OSSL_PARAM_locate_const : function(const  p : POSSL_PARAM; const key : PIdAnsiChar) : POSSL_PARAM; cdecl = nil;
 
 //* Basic parameter type run-time construction */
+  {$EXTERNALSYM OSSL_PARAM_construct_int}
   OSSL_PARAM_construct_int : function(const key : PIdAnsiChar;  buf : PIdC_INT) : OSSL_PARAM;  cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_construct_uint}
   OSSL_PARAM_construct_uint : function(const key : PIdAnsiChar; buf : PIDC_UINT) : OSSL_PARAM; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_construct_long}
   OSSL_PARAM_construct_long : function(const key : PIdAnsiChar; buf : PIdC_LONG) : OSSL_PARAM;  cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_construct_ulong}
   OSSL_PARAM_construct_ulong : function(const key : PIdAnsiChar; buf : PIdC_ULONG) : OSSL_PARAM; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_construct_int32}
   OSSL_PARAM_construct_int32 : function(const key : PIdAnsiChar; buf : PIdC_INT32) : OSSL_PARAM;  cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_construct_uint32}
   OSSL_PARAM_construct_uint32 : function(const key : PIdAnsiChar; buf : PIdC_UINT32) : OSSL_PARAM;  cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_construct_int64}
   OSSL_PARAM_construct_int64 : function(const key : PIdAnsiChar; buf : PIdC_INT64) : OSSL_PARAM; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_construct_uint64}
   OSSL_PARAM_construct_uint64 : function(const key : PIdAnsiChar; buf : PIdC_UINT64) : OSSL_PARAM; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_construct_size_t}
   OSSL_PARAM_construct_size_t : function(const key : PIdAnsiChar; buf : PIdC_SIZET) : OSSL_PARAM; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_construct_time_t}
   OSSL_PARAM_construct_time_t : function(const key : PIdAnsiChar; buf : PIdC_TIMET) : OSSL_PARAM; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_construct_BN}
   OSSL_PARAM_construct_BN : function(const key : PIdAnsiChar; buf : PIdAnsiChar; bsize : TIdC_SIZET) : OSSL_PARAM; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_construct_double}
   OSSL_PARAM_construct_double : function(const key : PIdAnsiChar; buf : PIdC_DOUBLE) : OSSL_PARAM;  cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_construct_utf8_string}
   OSSL_PARAM_construct_utf8_string : function(const key : PIdAnsiChar; buf : PIdAnsiChar; bsize : TIdC_SIZET) : OSSL_PARAM; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_construct_utf8_ptr}
   OSSL_PARAM_construct_utf8_ptr : function(const key : PIdAnsiChar; buf : PPIdAnsiChar; bsize : TIdC_SIZET) : OSSL_PARAM; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_construct_octet_string}
   OSSL_PARAM_construct_octet_string : function(const key : PIdAnsiChar; buf : Pointer; bsize : TIdC_SIZET) : OSSL_PARAM; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_construct_octet_ptr}
   OSSL_PARAM_construct_octet_ptr : function(const key : PIdAnsiChar; buf : PPointer; bsize : TIdC_SIZET) : OSSL_PARAM;  cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_construct_end}
   OSSL_PARAM_construct_end : function : OSSL_PARAM; cdecl = nil;
 
+  {$EXTERNALSYM OSSL_PARAM_allocate_from_text}
   OSSL_PARAM_allocate_from_text : function(to_ : POSSL_PARAM;
                                   const paramdefs : POSSL_PARAM;
                                   const key, value : PIdAnsiChar;
                                   value_n : TIdC_SIZET; found : PIdC_INT) : TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM OSSL_PARAM_get_int}
   OSSL_PARAM_get_int : function(const p : POSSL_PARAM; _val : PIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_get_uint}
   OSSL_PARAM_get_uint : function(const p : POSSL_PARAM; _val : PIdC_UINT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_get_long}
   OSSL_PARAM_get_long : function(const p : POSSL_PARAM; _val : PIdC_LONG): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_get_ulong}
   OSSL_PARAM_get_ulong : function(const p : POSSL_PARAM; _val : PIdC_ULONG): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_get_int32}
   OSSL_PARAM_get_int32 : function(const p : POSSL_PARAM; _val : PIdC_INT32): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_get_uint32}
   OSSL_PARAM_get_uint32 : function(const p : POSSL_PARAM; _val : PIdC_UINT32): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_get_int64}
   OSSL_PARAM_get_int64 : function(const p : POSSL_PARAM; _val : PIdC_INT64): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_get_uint64}
   OSSL_PARAM_get_uint64 : function(const p : POSSL_PARAM; _val : PIdC_UINT64): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_get_size_t}
   OSSL_PARAM_get_size_t : function(const p : POSSL_PARAM; _val : PIdC_SIZET): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_get_time_t}
   OSSL_PARAM_get_time_t : function(const p : POSSL_PARAM; _val : PIdC_TIMET): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM OSSL_PARAM_set_int}
   OSSL_PARAM_set_int : function(p : POSSL_PARAM; _val : TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_set_uint}
   OSSL_PARAM_set_uint : function(p : POSSL_PARAM; _val : TIdC_UINT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_set_long}
   OSSL_PARAM_set_long : function(p : POSSL_PARAM; _val : TIdC_LONG): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_set_ulong}
   OSSL_PARAM_set_ulong : function(p : POSSL_PARAM; _val : TIdC_ULONG): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_set_int32}
   OSSL_PARAM_set_int32 : function(p : POSSL_PARAM; _val : TIdC_INT32): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_set_uint32}
   OSSL_PARAM_set_uint32 : function(p : POSSL_PARAM; _val : TIdC_UINT32): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_set_int64}
   OSSL_PARAM_set_int64 : function(p : POSSL_PARAM; _val : TIdC_INT64): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_set_uint64}
   OSSL_PARAM_set_uint64 : function(p : POSSL_PARAM; _val : TIdC_UINT64): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_set_size_t}
   OSSL_PARAM_set_size_t : function(p : POSSL_PARAM; _val : TIdC_SIZET): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_set_time_t}
   OSSL_PARAM_set_time_t : function(p : POSSL_PARAM; _val : TIdC_TIMET): TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM OSSL_PARAM_get_double}
   OSSL_PARAM_get_double : function(const p : POSSL_PARAM; _val : PIdC_DOUBLE) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_set_double}
   OSSL_PARAM_set_double : function(p : POSSL_PARAM; _val : TIdC_DOUBLE) : TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM OSSL_PARAM_get_BN}
   OSSL_PARAM_get_BN : function(const p : POSSL_PARAM; _val : PPBIGNUM) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_set_BN}
   OSSL_PARAM_set_BN : function(p : POSSL_PARAM; const _val : PBIGNUM) : TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM OSSL_PARAM_get_utf8_string}
   OSSL_PARAM_get_utf8_string : function(const  p : POSSL_PARAM; _val : PPIdAnsiChar; max_len : TIdC_SIZET) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_set_utf8_string}
   OSSL_PARAM_set_utf8_string : function(p : POSSL_PARAM; const _val : PIdAnsiChar) : TIdC_INT; cdecl = nil;
-
+  {$EXTERNALSYM  OSSL_PARAM_get_octet_string}
   OSSL_PARAM_get_octet_string : function(const p : POSSL_PARAM; _val : PPointer; max_len : TIdC_SIZET;
     used_len : PIdC_SIZET) : TIdC_INT;  cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_set_octet_string}
   OSSL_PARAM_set_octet_string : function(p : POSSL_PARAM; const _val : Pointer; len : TIdC_SIZET) : TIdC_INT;  cdecl = nil;
 
+  {$EXTERNALSYM OSSL_PARAM_get_utf8_ptr}
   OSSL_PARAM_get_utf8_ptr : function(const p : POSSL_PARAM; const _val : PPIdAnsiChar) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_set_utf8_ptr}
   OSSL_PARAM_set_utf8_ptr : function(p : POSSL_PARAM; const _val : PIdAnsiChar) : TIdC_INT; cdecl = nil;
-
+  {$EXTERNALSYM  OSSL_PARAM_get_octet_ptr}
   OSSL_PARAM_get_octet_ptr : function(const p : POSSL_PARAM; const _val : PPointer;
      used_len : TIdC_SIZET) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_set_octet_ptr}
   OSSL_PARAM_set_octet_ptr : function(p : POSSL_PARAM; const _val : Pointer;
      used_len : TIdC_SIZET) : TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM OSSL_PARAM_get_utf8_string_ptr}
   OSSL_PARAM_get_utf8_string_ptr : function(const p : POSSL_PARAM; const _val : PPIdAnsiChar) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_get_octet_string_ptr}
   OSSL_PARAM_get_octet_string_ptr : function(const p : POSSL_PARAM; const _val : PPointer; used_len : PIdC_SIZET) : TIdC_INT; cdecl = nil;
 
+  {$EXTERNALSYM OSSL_PARAM_modified}
   OSSL_PARAM_modified : function(const p : POSSL_PARAM) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_set_all_unmodified}
   OSSL_PARAM_set_all_unmodified : procedure(p : POSSL_PARAM); cdecl = nil;
 
+  {$EXTERNALSYM OSSL_PARAM_dup}
   OSSL_PARAM_dup : function(const  p : POSSL_PARAM) : POSSL_PARAM; cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_merge}
   OSSL_PARAM_merge : function(const p1, p2 : POSSL_PARAM) : POSSL_PARAM;  cdecl = nil;
+  {$EXTERNALSYM OSSL_PARAM_free}
   OSSL_PARAM_free : procedure(p : POSSL_PARAM);  cdecl = nil;
 {$ELSE}
 //* Search an OSSL_PARAM array for a matching name */
+  {$EXTERNALSYM OSSL_PARAM_locate}
   function OSSL_PARAM_locate(p : POSSL_PARAM; const key : PIdAnsiChar) : POSSL_PARAM cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_locate_const}
   function OSSL_PARAM_locate_const(const  p : POSSL_PARAM; const key : PIdAnsiChar) : POSSL_PARAM cdecl; external CLibCrypto;
 
 ///* Basic parameter type run-time construction */
+  {$EXTERNALSYM OSSL_PARAM_construct_int}
   function OSSL_PARAM_construct_int(const key : PIdAnsiChar;  buf : PIdC_INT) : OSSL_PARAM cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_construct_uint}
   function OSSL_PARAM_construct_uint(const key : PIdAnsiChar; buf : PIDC_UINT) : OSSL_PARAM cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_construct_long}
   function OSSL_PARAM_construct_long(const key : PIdAnsiChar; buf : PIdC_LONG) : OSSL_PARAM cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_construct_ulong}
   function OSSL_PARAM_construct_ulong(const key : PIdAnsiChar; buf : PIdC_ULONG) : OSSL_PARAM cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_construct_int32}
   function OSSL_PARAM_construct_int32(const key : PIdAnsiChar; buf : PIdC_INT32) : OSSL_PARAM cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_construct_uint32}
   function OSSL_PARAM_construct_uint32(const key : PIdAnsiChar; buf : PIdC_UINT32) : OSSL_PARAM cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_construct_int64}
   function OSSL_PARAM_construct_int64(const key : PIdAnsiChar; buf : PIdC_INT64) : OSSL_PARAM cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_construct_uint64}
   function OSSL_PARAM_construct_uint64(const key : PIdAnsiChar; buf : PIdC_UINT64) : OSSL_PARAM cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_construct_size_t}
   function OSSL_PARAM_construct_size_t(const key : PIdAnsiChar; buf : PIdC_SIZET) : OSSL_PARAM cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_construct_time_t}
   function OSSL_PARAM_construct_time_t(const key : PIdAnsiChar; buf : PIdC_TIMET) : OSSL_PARAM cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_construct_BN}
   function OSSL_PARAM_construct_BN(const key : PIdAnsiChar; buf : PIdAnsiChar; bsize : TIdC_SIZET) : OSSL_PARAM cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_construct_double}
   function OSSL_PARAM_construct_double(const key : PIdAnsiChar; buf : PIdC_DOUBLE) : OSSL_PARAM cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_construct_utf8_string}
   function OSSL_PARAM_construct_utf8_string(const key : PIdAnsiChar; buf : PIdAnsiChar; bsize : TIdC_SIZET) : OSSL_PARAM cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_construct_utf8_ptr}
   function OSSL_PARAM_construct_utf8_ptr(const key : PIdAnsiChar; buf : PPIdAnsiChar; bsize : TIdC_SIZET) : OSSL_PARAM cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_construct_octet_string}
   function OSSL_PARAM_construct_octet_string(const key : PIdAnsiChar; buf : Pointer; bsize : TIdC_SIZET) : OSSL_PARAM cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_construct_octet_ptr}
   function OSSL_PARAM_construct_octet_ptr(const key : PIdAnsiChar; buf : PPointer; bsize : TIdC_SIZET) : OSSL_PARAM cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_construct_end}
   function OSSL_PARAM_construct_end : OSSL_PARAM cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM OSSL_PARAM_allocate_from_text}
   function OSSL_PARAM_allocate_from_text(to_ : POSSL_PARAM;
                                   const paramdefs : POSSL_PARAM;
                                   const key, value : PIdAnsiChar;
                                   value_n : TIdC_SIZET; found : PIdC_INT) : TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM OSSL_PARAM_get_int}
   function OSSL_PARAM_get_int(const p : POSSL_PARAM; _val : PIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_get_uint}
   function OSSL_PARAM_get_uint(const p : POSSL_PARAM; _val : PIdC_UINT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_get_long}
   function OSSL_PARAM_get_long(const p : POSSL_PARAM; _val : PIdC_LONG): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_get_ulong}
   function OSSL_PARAM_get_ulong(const p : POSSL_PARAM; _val : PIdC_ULONG): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_get_int32}
   function OSSL_PARAM_get_int32(const p : POSSL_PARAM; _val : PIdC_INT32): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_get_uint32}
   function OSSL_PARAM_get_uint32(const p : POSSL_PARAM; _val : PIdC_UINT32): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_get_int64}
   function OSSL_PARAM_get_int64(const p : POSSL_PARAM; _val : PIdC_INT64): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_get_uint64}
   function OSSL_PARAM_get_uint64(const p : POSSL_PARAM; _val : PIdC_UINT64): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_get_size_t}
   function OSSL_PARAM_get_size_t(const p : POSSL_PARAM; _val : PIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_get_time_t}
   function OSSL_PARAM_get_time_t(const p : POSSL_PARAM; _val : PIdC_TIMET): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM OSSL_PARAM_set_int}
   function OSSL_PARAM_set_int(p : POSSL_PARAM; _val : TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_set_uint}
   function OSSL_PARAM_set_uint(p : POSSL_PARAM; _val : TIdC_UINT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_set_long}
   function OSSL_PARAM_set_long(p : POSSL_PARAM; _val : TIdC_LONG): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_set_ulong}
   function OSSL_PARAM_set_ulong(p : POSSL_PARAM; _val : TIdC_ULONG): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_set_int32}
   function OSSL_PARAM_set_int32(p : POSSL_PARAM; _val : TIdC_INT32): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_set_uint32}
   function OSSL_PARAM_set_uint32(p : POSSL_PARAM; _val : TIdC_UINT32): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_set_int64}
   function OSSL_PARAM_set_int64(p : POSSL_PARAM; _val : TIdC_INT64): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_set_uint64}
   function OSSL_PARAM_set_uint64(p : POSSL_PARAM; _val : TIdC_UINT64): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_set_size_t}
   function OSSL_PARAM_set_size_t(p : POSSL_PARAM; _val : TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_set_time_t}
   function OSSL_PARAM_set_time_t(p : POSSL_PARAM; _val : TIdC_TIMET): TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM OSSL_PARAM_get_double}
   function OSSL_PARAM_get_double(const p : POSSL_PARAM; _val : PIdC_DOUBLE) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_set_double}
   function OSSL_PARAM_set_double(p : POSSL_PARAM; _val : TIdC_DOUBLE) : TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM OSSL_PARAM_get_BN}
   function OSSL_PARAM_get_BN(const p : POSSL_PARAM; _val : PPBIGNUM) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_set_BN}
   function OSSL_PARAM_set_BN(p : POSSL_PARAM; const _val : PBIGNUM) : TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM OSSL_PARAM_get_utf8_string}
   function OSSL_PARAM_get_utf8_string(const  p : POSSL_PARAM; _val : PPIdAnsiChar; max_len : TIdC_SIZET) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_set_utf8_string}
   function OSSL_PARAM_set_utf8_string(p : POSSL_PARAM; const _val : PIdAnsiChar) : TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM OSSL_PARAM_get_octet_string}
   function OSSL_PARAM_get_octet_string(const p : POSSL_PARAM; _val : PPointer; max_len : TIdC_SIZET;
     used_len : PIdC_SIZET) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_set_octet_string}
   function OSSL_PARAM_set_octet_string(p : POSSL_PARAM; const _val : Pointer; len : TIdC_SIZET) : TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM OSSL_PARAM_get_utf8_ptr}
   function OSSL_PARAM_get_utf8_ptr(const p : POSSL_PARAM; const _val : PPIdAnsiChar) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_set_utf8_ptr}
   function OSSL_PARAM_set_utf8_ptr(p : POSSL_PARAM; const _val : PIdAnsiChar) : TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM OSSL_PARAM_get_octet_ptr}
   function OSSL_PARAM_get_octet_ptr(const p : POSSL_PARAM; const _val : PPointer;
      used_len : TIdC_SIZET) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_set_octet_ptr}
   function OSSL_PARAM_set_octet_ptr(p : POSSL_PARAM; const _val : Pointer;
      used_len : TIdC_SIZET) : TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM OSSL_PARAM_get_utf8_string_ptr}
   function OSSL_PARAM_get_utf8_string_ptr(const p : POSSL_PARAM; const _val : PPIdAnsiChar) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_get_octet_string_ptr}
   function OSSL_PARAM_get_octet_string_ptr(const p : POSSL_PARAM; const _val : PPointer; used_len : PIdC_SIZET) : TIdC_INT cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM OSSL_PARAM_modified}
   function OSSL_PARAM_modified(const p : POSSL_PARAM) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_set_all_unmodified}
   procedure OSSL_PARAM_set_all_unmodified(p : POSSL_PARAM) cdecl; external CLibCrypto;
 
+  {$EXTERNALSYM OSSL_PARAM_dup}
   function OSSL_PARAM_dup(const  p : POSSL_PARAM) : POSSL_PARAM cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_merge}
   function OSSL_PARAM_merge(const p1, p2 : POSSL_PARAM) : POSSL_PARAM  cdecl; external CLibCrypto;
+  {$EXTERNALSYM OSSL_PARAM_free}
   procedure OSSL_PARAM_free(p : POSSL_PARAM) cdecl; external CLibCrypto;
 {$ENDIF}
 

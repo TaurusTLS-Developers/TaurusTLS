@@ -26,10 +26,12 @@ uses
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  {$EXTERNALSYM ossl_err_load_OSSL_ENCODER_strings}
   ossl_err_load_OSSL_ENCODER_strings: function : TIdC_INT; cdecl = nil;
 
 {$ELSE}
 
+  {$EXTERNALSYM ossl_err_load_OSSL_ENCODER_strings}
   function ossl_err_load_OSSL_ENCODER_strings: TIdC_INT cdecl; external CLibCrypto;
 {$ENDIF}
 
