@@ -525,23 +525,23 @@ const
   (* TLS ECH OPTIONS. Added in OpenSSL 4.0.0 *)
   // Set this to tell client to emit greased ECH values
   {$EXTERNALSYM SSL_OP_ECH_GREASE}
-  SSL_OP_ECH_GREASE                               = TIdC_INT64(1 shl 37);
+  SSL_OP_ECH_GREASE                               = Int64(1) shl 37;
   // If this is set then the server side will attempt trial decryption
   // of ECHs even if there is no matching ECH config_id. That's a bit
   // inefficient, but more privacy friendly.
   {$EXTERNALSYM SSL_OP_ECH_TRIALDECRYPT}
-  SSL_OP_ECH_TRIALDECRYPT                         = TIdC_INT64(1 shl 38);
+  SSL_OP_ECH_TRIALDECRYPT                         = Int64(1) shl 38;
   // If set, clients will ignore the supplied ECH config_id and replace
   // that with a random value.
   {$EXTERNALSYM SSL_OP_ECH_IGNORE_CID}
-  SSL_OP_ECH_IGNORE_CID                           = TIdC_INT64(1 shl 39);
+  SSL_OP_ECH_IGNORE_CID                           = Int64(1) shl 39;
   // If set, servers will add GREASEy ECHConfig values to those sent
   // in retry_configs.
   {$EXTERNALSYM SSL_OP_ECH_GREASE_RETRY_CONFIG}
-  SSL_OP_ECH_GREASE_RETRY_CONFIG                  = TIdC_INT64(1 shl 40);
+  SSL_OP_ECH_GREASE_RETRY_CONFIG                  = Int64(1) shl 40;
   // RFC 8701: Send GREASE values in ClientHello
   {$EXTERNALSYM SSL_OP_GREASE}
-  SSL_OP_GREASE                                   = TIdC_INT64(1 shl 41);
+  SSL_OP_GREASE                                   = Int64(1) shl 41;
 
 
   (* OBSOLETE OPTIONS: retained for compatibility *)
@@ -2115,11 +2115,11 @@ var
   {$EXTERNALSYM SSL_CTX_get_options}
   SSL_CTX_get_options: function (const ctx: PSSL_CTX): TIdC_UINT64; cdecl = nil; {introduced 1.1.0}
   {$EXTERNALSYM SSL_get_options}
-  SSL_get_options: function (const s: PSSL): TIdC_ULONG; cdecl = nil; {introduced 1.1.0}
+  SSL_get_options: function (const s: PSSL): TIdC_UINT64; cdecl = nil; {introduced 1.1.0}
   {$EXTERNALSYM SSL_CTX_clear_options}
   SSL_CTX_clear_options: function (ctx: PSSL_CTX; op: TIdC_UINT64): TIdC_UINT64; cdecl = nil; {introduced 1.1.0}
   {$EXTERNALSYM SSL_clear_options}
-  SSL_clear_options: function (s: PSSL; op: TIdC_ULONG): TIdC_ULONG; cdecl = nil; {introduced 1.1.0}
+  SSL_clear_options: function (s: PSSL; op: TIdC_UINT64): TIdC_UINT64; cdecl = nil; {introduced 1.1.0}
   {$EXTERNALSYM SSL_CTX_set_options}
   SSL_CTX_set_options: function (ctx: PSSL_CTX; op: TIdC_UINT64): TIdC_UINT64; cdecl = nil; {introduced 1.1.0}
   {$EXTERNALSYM SSL_set_options}
@@ -3550,11 +3550,11 @@ var
   {$EXTERNALSYM SSL_CTX_get_options}
   function SSL_CTX_get_options(const ctx: PSSL_CTX): TIdC_UINT64 cdecl; external CLibSSL; {introduced 1.1.0}
   {$EXTERNALSYM SSL_get_options}
-  function SSL_get_options(const s: PSSL): TIdC_ULONG cdecl; external CLibSSL; {introduced 1.1.0}
+  function SSL_get_options(const s: PSSL): TIdC_UINT64 cdecl; external CLibSSL; {introduced 1.1.0}
   {$EXTERNALSYM SSL_CTX_clear_options}
   function SSL_CTX_clear_options(ctx: PSSL_CTX; op: TIdC_UINT64): TIdC_UINT64 cdecl; external CLibSSL; {introduced 1.1.0}
   {$EXTERNALSYM SSL_clear_options}
-  function SSL_clear_options(s: PSSL; op: TIdC_ULONG): TIdC_ULONG cdecl; external CLibSSL; {introduced 1.1.0}
+  function SSL_clear_options(s: PSSL; op: TIdC_UINT64): TIdC_UINT64 cdecl; external CLibSSL; {introduced 1.1.0}
   {$EXTERNALSYM SSL_CTX_set_options}
   function SSL_CTX_set_options(ctx: PSSL_CTX; op: TIdC_UINT64): TIdC_UINT64 cdecl; external CLibSSL; {introduced 1.1.0}
   {$EXTERNALSYM SSL_set_options}
@@ -8243,7 +8243,7 @@ begin
 end;
 
  {introduced 1.1.0}
-function  ERR_SSL_get_options(const s: PSSL): TIdC_ULONG;  cdecl;
+function  ERR_SSL_get_options(const s: PSSL): TIdC_UINT64;  cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SSL_get_options_procname);
 end;
@@ -8255,7 +8255,7 @@ begin
 end;
 
  {introduced 1.1.0}
-function  ERR_SSL_clear_options(s: PSSL; op: TIdC_ULONG): TIdC_ULONG;  cdecl;
+function  ERR_SSL_clear_options(s: PSSL; op: TIdC_UINT64): TIdC_UINT64;  cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SSL_clear_options_procname);
 end;
