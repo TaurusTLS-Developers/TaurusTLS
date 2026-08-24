@@ -2123,7 +2123,7 @@ var
   {$EXTERNALSYM SSL_CTX_set_options}
   SSL_CTX_set_options: function (ctx: PSSL_CTX; op: TIdC_UINT64): TIdC_UINT64; cdecl = nil; {introduced 1.1.0}
   {$EXTERNALSYM SSL_set_options}
-  SSL_set_options: function (s: PSSL; op: TIdC_ULONG): TIdC_ULONG; cdecl = nil; {introduced 1.1.0}
+  SSL_set_options: function (s: PSSL; op: TIdC_UINT64): TIdC_UINT64; cdecl = nil; {introduced 1.1.0}
 
   //# define SSL_CTX_set_mode(ctx,op) \
   //        SSL_CTX_ctrl((ctx),SSL_CTRL_MODE,(op),NULL)
@@ -3558,7 +3558,7 @@ var
   {$EXTERNALSYM SSL_CTX_set_options}
   function SSL_CTX_set_options(ctx: PSSL_CTX; op: TIdC_UINT64): TIdC_UINT64 cdecl; external CLibSSL; {introduced 1.1.0}
   {$EXTERNALSYM SSL_set_options}
-  function SSL_set_options(s: PSSL; op: TIdC_ULONG): TIdC_ULONG cdecl; external CLibSSL; {introduced 1.1.0}
+  function SSL_set_options(s: PSSL; op: TIdC_UINT64): TIdC_UINT64 cdecl; external CLibSSL; {introduced 1.1.0}
 
   //# define SSL_CTX_set_mode(ctx,op) \
   //        SSL_CTX_ctrl((ctx),SSL_CTRL_MODE,(op),NULL)
@@ -8267,7 +8267,7 @@ begin
 end;
 
  {introduced 1.1.0}
-function  ERR_SSL_set_options(s: PSSL; op: TIdC_ULONG): TIdC_ULONG; cdecl;
+function  ERR_SSL_set_options(s: PSSL; op: TIdC_UINT64): TIdC_UINT64; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SSL_set_options_procname);
 end;
