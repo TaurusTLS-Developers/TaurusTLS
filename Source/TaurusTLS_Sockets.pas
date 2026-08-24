@@ -106,78 +106,46 @@ type
   ETaurusTLSECHCliFlagsError = class(ETaurusTLSError);
   EECHNotSupported = class(ETaurusTLSError);
 
-
-  ETaurusTLSECHBadNameError = class(ETaurusTLSECHError);
-  ETaurusTLSECHProtocolError = class(ETaurusTLSECHError);
+  ETaurusTLSECHRejectedError = class(ETaurusTLSAPISSLError);
+  ETaurusTLSECHDowngradeError = class(ETaurusTLSAPISSLError);
+  ETaurusTLSECHBadNameError = class(ETaurusTLSAPISSLError);
+  ETaurusTLSECHProtocolError = class(ETaurusTLSAPISSLError);
 
 
   ETaurusTLSAlpnResultError = class(ETaurusTLSError);
 
 
 type
-  TTaurusTLSSNICliKind = (
-    skNoSNI,
-    skHostSNI,
-    skForceSNI
+  /// <summary>
+  ///   ECH was not configured on this connection
+  /// </summary>
+  TTaurusTLSClientSNIMode = (
+    /// <summary>
+    ///   No SNI extension sent on wire (RFC 3546 IP connect or suppression)
+    /// </summary>
+    csmDisabled,
+    /// <summary>
+    ///   Standard cleartext SNI (HostName or DefaultSNI override)
+    /// </summary>
+    csmStandardSNI,
+    /// <summary>
+    ///   Cleartext SNI (if domain) or No-SNI (if IP) + dummy ECH GREASE payload
+    /// </summary>
+    csmECHGrease,
+    /// <summary>
+    ///   Bootstrapping: Probes for ECHConfig (omits private SNI, triggers retry
+    ///   on response)
+    /// </summary>
+    csmECHGreaseDiscovery,
+    /// <summary>
+    ///   Strict ECH with decoy/public_name; fails on downgrade/bypass
+    /// </summary>
+    csmECH,
+    /// <summary>
+    ///   Strict ECH with outer SNI omitted (no_outer = 1); fails on downgrade
+    /// </summary>
+    csmECHNoOuter
   );
-
-  TTaurusTLSECHCliEnum = (
-    ekNoECH,
-    ekTryECH,
-    ekForceECH,
-    emMethECHList,
-    emMethECHGrease,
-    emMethECHNoOuter
-  );
-
-  TTaurusTLSECHCliKind  = ekNoECH..ekForceECH;
-  TTaurusTLSECHCliKinds = set of TTaurusTLSECHCliKind;
-  TTaurusTLSECHCliMeth  = emMethECHList..emMethECHNoOuter;
-  TTaurusTLSECHCliMeths = set of TTaurusTLSECHCliMeth;
-
-  TTaurusTLSECHCliEnums = set of TTaurusTLSECHCLiEnum;
-  TTaurusTLSECHCliFlags = record
-  private const
-    cMaskKind     = [ekNoECH..ekForceECH];
-    cMaskMethods  = [emMethECHList..emMethECHNoOuter];
-    cMaskEchEnabled   = [ekTryECH..ekForceECH];
-
-  private
-    FValue: TTaurusTLSECHCliEnums;
-    procedure SetValue(const AValue: TTaurusTLSECHCLiEnums);
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function CheckECHSupported: boolean;
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetKind: TTaurusTLSECHCliKind; overload;
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetMethods: TTaurusTLSECHCliMeths; overload;
-    function GetEnabled: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetEnforced: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetIsMethSet: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetUseConfigList: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetUseFallback: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetUseGrease: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetUseNoOuter: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    class function IsEnabled(const AValue: TTaurusTLSECHCliEnums): boolean;
-      static; {$IFDEF USE_INLINE}inline; {$ENDIF}
-  public
-    constructor Create(const AFlags: TTaurusTLSECHCliEnums);
-    class function GetKinds(const AValue: TTaurusTLSECHCliEnums):
-      TTaurusTLSECHCliKinds; overload; static; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    class function GetMethods(const AValue: TTaurusTLSECHCliEnums):
-      TTaurusTLSECHCliMeths; overload; static; {$IFDEF USE_INLINE}inline; {$ENDIF}
-
-    property Kind: TTaurusTLSECHCLiKind read GetKind;
-    property Methods: TTaurusTLSECHCliMeths read GetMethods;
-    property Enabled: boolean read GetEnabled;
-    property Enforced: boolean read GetEnforced;
-    property IsMethodSet: boolean read GetIsMethSet;
-    property UseConfigList: boolean read GetUseConfigList;
-    property UseGrease: boolean read GetUseGrease;
-    property UseGreaseFallback: boolean read GetUseFallback;
-    property UseNoOuter: boolean read GetUseNoOuter;
-    property Value: TTaurusTLSECHCLiEnums read FValue write SetValue;
-  end;
 
   TTaurusTLSSslStateFlag  = (
     stfLoop               = 0,    // 1 shl 0  = SSL_CB_LOOP
@@ -395,6 +363,9 @@ type
 
   TTaurusTLSOnECHLog = procedure(ASender: TObject;
     ASocket: TTaurusTLSSslSocket; const AECHLogStr: PAnsiChar) of object;
+
+  TTaurusTLSOnCliECHConfigRetry = procedure(ASender: TObject;
+    ASocket: TTaurusTLSSslSocket; const AECHRetryConfig: string) of object;
 
   TTaurusTLSSSLOp = (sslOpRecvd, sslOpSent);
 
@@ -692,8 +663,7 @@ type
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FHostname: RawByteString;
     FDefaultSNI: RawByteString;
-    FSNIKind: TTaurusTLSSNICliKind;
-    FECHFlags: TTaurusTLSECHCliFlags;
+    FSNIMode: TTaurusTLSClientSNIMode;
     FECHOuterSNI: RawByteString;
     FECHConfigList: RawByteString;
     FIdentity: RawByteString;
@@ -703,6 +673,7 @@ type
     // OpenSSL Callback to Event bridge(s)
     FOnClientCert: TTaurusTLSOnClientCertCallback;
     FOnECHLog: TTaurusTLSOnECHLog;
+    FOnECHConfigRetry: TTaurusTLSOnCliECHConfigRetry;
 
     class function CbCliCert(ASSL: PSSL; var AX509: PX509;
       var APKey: PEVP_PKEY): TIdC_INT; static; cdecl;
@@ -712,14 +683,11 @@ type
 
     procedure ResetIdentity; {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure BuildIdentity; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetECHKind: TTaurusTLSECHCliKind;
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetECHMethods: TTaurusTLSECHCliMeths;
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetDefaultSNI: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetECHOuterSNI: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetHostName: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetECHConfigList: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetECHConfigListRaw: RawByteString; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetIdentity: RawByteString; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetIsIdentityIP: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetECHNoOuterVal: TIdC_INT; {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -728,7 +696,8 @@ type
     function GetECHOuterSNIRaw: RawByteString; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     function GetHasOnClientCert: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetOnECHLog: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetOnECHLog: boolean;
+    function GetHasOnECHRetry: boolean;
   protected
     procedure InitCtx; override;
     procedure ReleaseCtx; override;
@@ -738,15 +707,15 @@ type
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function SetDefaultSNI(const AValue: string): TTaurusTLSSslClientCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function SetSNIKind(const AValue: TTaurusTLSSNICliKind): TTaurusTLSSslClientCtx;
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function SetECHFlags(const AValue: TTaurusTLSECHCliFlags): TTaurusTLSSslClientCtx;
+    function SetSNIMode(const AValue: TTaurusTLSClientSNIMode): TTaurusTLSSslClientCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function SetECHOuterSNI(const AValue: string): TTaurusTLSSslClientCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function SetECHConfigList(const AValue: string): TTaurusTLSSslClientCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-
+    function SetOnECHConfigRetry(
+      const AValue: TTaurusTLSOnCliECHConfigRetry): TTaurusTLSSslClientCtx;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
     function SetOnClientCert(
       const AValue: TTaurusTLSOnClientCertCallback): TTaurusTLSSslClientCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -760,15 +729,17 @@ type
     procedure DoOnECHLogCallback(ASocket: TTaurusTLSSslSocket;
       const ALogStr: PAnsiChar);
 
+    procedure DoOnECHConfigRetry(ASocket: TTaurusTLSSslSocket;
+      const AECHRetryConfig: string);
+
   public
     property HasOnClientCert: boolean read GetHasOnClientCert;
     property HasOnECHLog: boolean read GetOnECHLog;
+    property HasOnECHRetry: boolean read GetHasOnECHRetry;
+
     property HostName: string read GetHostName;
     property DefaultSNI: string read GetDefaultSNI;
-    property SNIKind: TTaurusTLSSNICliKind read FSNIKind;
-    property ECHFlags: TTaurusTLSECHCliFlags read FECHFlags;
-    property ECHKind: TTaurusTLSECHCliKind read GetECHKind;
-    property ECHMethod: TTaurusTLSECHCliMeths read GetECHMethods;
+    property SNIMode: TTaurusTLSClientSNIMode read FSNIMode;
     property ECHOuterSNI: string read GetECHOuterSNI;
     property ECHConfigList: string read GetECHConfigList;
 
@@ -782,7 +753,7 @@ type
     property HostNameRaw: RawByteString read FHostname;
     property DefaultSNIRaw: RawByteString read FDefaultSNI;
     property ECHOuterSNIRaw: RawByteString read GetECHOuterSNIRaw;
-    property ECHConfigListRaw: RawByteString read FECHConfigList;
+    property ECHConfigListRaw: RawByteString read GetECHConfigListRaw;
   end;
 
   TTaurusTLSSslPeerCtx = class(TTaurusTLSSslSocketCtx)
@@ -1135,8 +1106,32 @@ type
 
   end;
 
-  TTaurusECHClientStatus = (echCliNone, echCliSuccess, echCliFailed,
-    echCliRetryConfig, echCliNotConfigured);
+  /// <summary>
+  ///   Represents the cryptographic outcome of ECH processing for the active connection.
+  /// </summary>
+  TTaurusECHClientStatus = (
+    /// <summary>
+    ///   ECH wasn't attempted or connection gracefully fell back to cleartext
+    /// </summary>
+    echCliNone,
+    /// <summary>
+    ///   ECH was accepted and decrypted by the server (Inner SNI active)
+    /// </summary>
+    echCliSuccess,
+    /// <summary>
+    ///   ECH decryption failed on the server
+    /// </summary>
+    echCliFailed,
+    /// <summary>
+    ///   ECH failed, but new server public keys were recovered via
+    ///   retry_configs
+    /// </summary>
+    echCliRetryConfig,
+    /// <summary>
+    ///   ECH was not configured on this connection
+    /// </summary>
+    echCliNotConfigured
+  );
 
   TTaurusTLSSslSocket = class
 {$IFDEF SIGPIPE_MASK}
@@ -1152,7 +1147,7 @@ type
 {$ENDIF}
 
   public const
-    cTerminalStates = [seReleased, seError];
+    cTerminalStates = [seReleased, seClosed, seError];
     cDefaultTransitions = 8;
 
   protected type
@@ -1271,7 +1266,8 @@ type
     procedure TransitionTo(ATarget: TTaurusTLSSslSocketState;
       ASteps: integer = cDefaultTransitions); virtual;
 
-    procedure Connect(const pHandle: TIdStackSocketHandle); overload; virtual;
+    function Connect(const pHandle: TIdStackSocketHandle): boolean; overload;
+      virtual;
     function Send(const ABuffer: TIdBytes; const AOffset, ALength: TIdC_SIZET;
       const AMSec: Integer): Integer; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function Recv(var ABuffer: TIdBytes; const AMSec: Integer): Integer;
@@ -1312,8 +1308,8 @@ type
     function DoShutdown: TTaurusTLSSslSocketState; override;
     property ClientCtx: TTaurusTLSSslClientCtx read GetClientCtx;
   public
-    procedure Connect(const pHandle: TIdStackSocketHandle;
-      ASessionToResume: TTaurusTLSSSLSession); overload;
+    function Connect(const pHandle: TIdStackSocketHandle;
+      ASessionToResume: TTaurusTLSSSLSession): boolean; overload;
 
     property ECHStatus: TTaurusECHClientStatus read FECHStatus;
   end;
@@ -1408,114 +1404,6 @@ class procedure ETaurusTLSSSLSocketCertValidationError.RaiseErrorCode(
   AVerifyCode: TIdC_LONG; const AMessage: string);
 begin
   Raise ETaurusTLSSSLSocketCertValidationError.Create(AVerifyCode, AMessage);
-end;
-
-{ TTaurusTLSECHCliFlags }
-
-function TTaurusTLSECHCliFlags.CheckECHSupported: boolean;
-begin
-  Result:=IsECHSupported;
-  if (not Result) and (ekForceECH in FValue) then
-    EECHNotSupported.RaiseWithMessage(RMSG_ECHNotSupported_err);
-end;
-
-constructor TTaurusTLSECHCliFlags.Create(const AFlags: TTaurusTLSECHCliEnums);
-begin
-  SetValue(AFlags);
-end;
-
-class function TTaurusTLSECHCliFlags.GetKinds(
-  const AValue: TTaurusTLSECHCLiEnums): TTaurusTLSECHCliKinds;
-begin
-  Result:=AValue*cMaskKind;
-end;
-
-class function TTaurusTLSECHCliFlags.GetMethods(
-  const AValue: TTaurusTLSECHCLiEnums): TTaurusTLSECHCliMeths;
-begin
-  if IsECHSupported then
-    Result:=AValue*cMaskMethods
-  else
-    Result:=[];
-end;
-
-function TTaurusTLSECHCliFlags.GetKind: TTaurusTLSECHCliKind;
-var
-  lKinds: TTaurusTLSECHCliKinds;
-  i: TTaurusTLSECHCliKind;
-
-begin
-  if not CheckECHSupported then
-    Exit(ekNoECH);
-
-  lKinds:=GetKinds(FValue);
-  for i:=High(TTaurusTLSECHCliKind) downto Low(TTaurusTLSECHCliKind) do
-    if i in lKinds then
-      Exit(i);
-  Result:=ekNoECH;
-end;
-
-function TTaurusTLSECHCliFlags.GetMethods: TTaurusTLSECHCliMeths;
-begin
-  Result:=GetMethods(FValue);
-end;
-
-function TTaurusTLSECHCliFlags.GetEnabled: boolean;
-begin
-  Result:=CheckECHSupported and (GetKinds(FValue)*cMaskEchEnabled <> []);
-end;
-
-function TTaurusTLSECHCliFlags.GetEnforced: boolean;
-begin
-  Result:=CheckECHSupported and (ekForceECH in FValue);
-end;
-
-function TTaurusTLSECHCliFlags.GetIsMethSet: boolean;
-begin
-  Result:=Enabled and (Methods <> []);
-end;
-
-function TTaurusTLSECHCliFlags.GetUseConfigList: boolean;
-begin
-  Result:=Enabled and (emMethECHList in FValue);
-end;
-
-function TTaurusTLSECHCliFlags.GetUseGrease: boolean;
-begin
-  Result:=Enabled and (emMethECHGrease in FValue);
-end;
-
-function TTaurusTLSECHCliFlags.GetUseFallback: boolean;
-begin
-  Result:=Enabled and (cMaskMethods*Methods <> []);
-end;
-
-function TTaurusTLSECHCliFlags.GetUseNoOuter: boolean;
-begin
-  Result:=Enabled and (emMethECHNoOuter in FValue);
-end;
-
-class function TTaurusTLSECHCliFlags.IsEnabled(
-  const AValue: TTaurusTLSECHCliEnums): boolean;
-begin
-  Result:=GetKinds(AValue)*cMaskEchEnabled <> [];
-end;
-
-procedure TTaurusTLSECHCliFlags.SetValue(const AValue: TTaurusTLSECHCLiEnums);
-var
-  lValue: TTaurusTLSECHCLiKinds;
-
-begin
-  if ekForceECH in AValue then
-    lValue:=AValue - [ekNoECH, ekTryECH]
-  else if ekTryECH in AValue then
-    lValue:=AValue - [ekNoECH]
-  else
-    lValue:=[ekNoECH];
-
-  if IsEnabled(lValue) and (GetMethods(lValue) = []) then
-    ETaurusTLSECHCliFlagsError.RaiseWithMessage(RMSG_ClientECHFlagsInvalidMethods_err);
-  FValue:=lValue;
 end;
 
 { TTaurusTLSSslState }
@@ -3275,6 +3163,13 @@ begin
     FOnClientCert(Sender, ASocket, ACert, APKey);
 end;
 
+procedure TTaurusTLSSslClientCtx.DoOnECHConfigRetry(
+  ASocket: TTaurusTLSSslSocket; const AECHRetryConfig: string);
+begin
+  if Assigned(FOnECHConfigRetry) then
+    FOnECHConfigRetry(Sender, ASocket, AECHRetryConfig);
+end;
+
 procedure TTaurusTLSSslClientCtx.DoOnECHLogCallback(ASocket: TTaurusTLSSslSocket;
   const ALogStr: PAnsiChar);
 begin
@@ -3283,9 +3178,6 @@ begin
 end;
 
 procedure TTaurusTLSSslClientCtx.BuildIdentity;
-var
-  lIsIp: boolean;
-
 begin
   if FIdentityBuilt then
     Exit;
@@ -3293,42 +3185,30 @@ begin
   FIdentity:='';
   FIdentityIP:=False;
 
-  // 1. Guard against completely uninitialized configs
-  if (FHostname = '') and (FDefaultSNI = '') then
+  // 1. Guard against completely uninitialized configurations
+  if (FHostname = '') and (FDefaultSNI = '') and (FECHOuterSNI = '') then
   begin
     FIdentityBuilt:=True;
     Exit;
   end;
 
-  lIsIp:=IsValidIP(string(FHostname));
-
-  // 2. Resolve the logical identity
-  if FHostname = '' then
+  // 2. DISCOVERY MODE:
+  // - If explicit public decoy is set, verify against that decoy
+  // - If NO decoy is set, Identity is empty (skip hostname check for this probe hop)
+  if FSNIMode = csmECHGreaseDiscovery then
   begin
-    // Fallback: If the primary hostname is empty, use the DefaultSNI if available
-    FIdentity:=FDefaultSNI;
-  end
-  else if lIsIp then
-  begin
-    // If the transport hostname is an IP, we prioritize the enforced SNI (DefaultSNI)
-    // if configured. Otherwise, the IP is the target identity.
-    if FDefaultSNI <> '' then
-      FIdentity:=FDefaultSNI
-    else
-      FIdentity:=FHostname;
+    FIdentity:=FECHOuterSNI; // If FECHOuterSNI = '', FIdentity remains ''
   end
   else
   begin
-    // If the transport hostname is a DNS domain name, we use the SNIKind
-    // rule to determine if we must force a custom SNI (DefaultSNI).
-    if (FSNIKind = skForceSNI) and (FDefaultSNI <> '') then
+    if FDefaultSNI <> '' then
       FIdentity:=FDefaultSNI
     else
       FIdentity:=FHostname;
   end;
 
-  // 3. Cryptographically check if the resolved identity is an IP address.
-  FIdentityIP:=(FIdentity <> '') and IsValidIP(string(FIdentity)); // PALOFF Common subexpression, consider elimination
+  // 3. Cryptographically check if the resolved identity is an IP address
+  FIdentityIP:=(FIdentity <> '') and IsValidIP(string(FIdentity));
   FIdentityBuilt:=True;
 end;
 
@@ -3342,19 +3222,9 @@ begin
   Result:=string(FDefaultSNI);
 end;
 
-function TTaurusTLSSslClientCtx.GetECHKind: TTaurusTLSECHCliKind;
-begin
-  Result:=FECHFlags.Kind;
-end;
-
-function TTaurusTLSSslClientCtx.GetECHMethods: TTaurusTLSECHCliMeths;
-begin
-  Result:=FECHFlags.Methods;
-end;
-
 function TTaurusTLSSslClientCtx.GetECHNoOuterVal: TIdC_INT;
 begin
-  if FECHFlags.UseNoOuter then
+  if FSNIMode = csmECHNoOuter then
     Result:=1
   else
     Result:=0;
@@ -3367,7 +3237,7 @@ end;
 
 function TTaurusTLSSslClientCtx.GetECHOuterSNIRaw: RawByteString;
 begin
-  if UseECH and (not FECHFlags.UseNoOuter) then
+  if FSNIMode in [csmECHGrease, csmECHGreaseDiscovery, csmECH] then
     Result:=FECHOuterSNI
   else
     Result:='';
@@ -3376,6 +3246,11 @@ end;
 function TTaurusTLSSslClientCtx.GetHasOnClientCert: boolean;
 begin
   Result:=Assigned(FOnClientCert);
+end;
+
+function TTaurusTLSSslClientCtx.GetHasOnECHRetry: boolean;
+begin
+  Result:=Assigned(FOnECHConfigRetry);
 end;
 
 function TTaurusTLSSslClientCtx.GetOnECHLog: boolean;
@@ -3402,17 +3277,27 @@ end;
 
 function TTaurusTLSSslClientCtx.GetUseECH: Boolean;
 begin
-  Result:=FECHFlags.Enabled;
+  Result:=FSNIMode in [csmECH, csmECHNoOuter];
 end;
 
 function TTaurusTLSSslClientCtx.GetUseGrease: Boolean;
 begin
-  Result:=FECHFlags.UseGrease;
+  Result:=FSNIMode in [csmECHGrease, csmECHGreaseDiscovery];
 end;
 
 function TTaurusTLSSslClientCtx.GetECHConfigList: string;
 begin
   Result:=string(FECHConfigList);
+end;
+
+function TTaurusTLSSslClientCtx.GetECHConfigListRaw: RawByteString;
+begin
+  // ECHConfigList is ONLY valid and active when real ECH is requested (csmECH, csmECHNoOuter).
+  // For GREASE modes (csmECHGrease, csmECHGreaseDiscovery) and standard SNI, it is completely ignored
+  if UseECH then
+    Result:=FECHConfigList
+  else
+    Result:='';
 end;
 
 function TTaurusTLSSslClientCtx.SetDefaultSNI(const AValue: string): TTaurusTLSSslClientCtx;
@@ -3483,6 +3368,18 @@ begin
   FOnECHLog:=AValue;
 end;
 
+function TTaurusTLSSslClientCtx.SetOnECHConfigRetry(
+  const AValue: TTaurusTLSOnCliECHConfigRetry): TTaurusTLSSslClientCtx;
+begin
+  Result:=Self;
+  if (TMethod(FOnECHConfigRetry).Code = TMethod(AValue).Code) and
+     (TMethod(FOnECHConfigRetry).Data = TMethod(AValue).Data) then
+    Exit;
+
+  CheckFrozen;
+  FOnECHConfigRetry:=AValue;
+end;
+
 function TTaurusTLSSslClientCtx.SetECHConfigList(const AValue: string): TTaurusTLSSslClientCtx;
 var
   lValue: RawByteString;
@@ -3498,27 +3395,15 @@ begin
   ResetIdentity;
 end;
 
-function TTaurusTLSSslClientCtx.SetECHFlags(
-  const AValue: TTaurusTLSECHCliFlags): TTaurusTLSSslClientCtx;
+function TTaurusTLSSslClientCtx.SetSNIMode(
+  const AValue: TTaurusTLSClientSNIMode): TTaurusTLSSslClientCtx;
 begin
   Result:=Self;
-  if FECHFlags.Value = AValue.Value then
+  if FSNIMode = AValue then
     Exit;
 
   CheckFrozen;
-  FECHFlags:=AValue;
-  ResetIdentity;
-end;
-
-function TTaurusTLSSslClientCtx.SetSNIKind(
-  const AValue: TTaurusTLSSNICliKind): TTaurusTLSSslClientCtx;
-begin
-  Result:=Self;
-  if FSNIKind = AValue then
-    Exit;
-
-  CheckFrozen;
-  FSNIKind:=AValue;
+  FSNIMode:=AValue;
   ResetIdentity;
 end;
 
@@ -3859,7 +3744,7 @@ begin
       IndySleep(1)
   until Result <> seHandshaking;
 
-  FIsSessionResumed:=Assigned(FSSL) and (State in [seEstablished, seClosed]) and
+  FIsSessionResumed:=Assigned(FSSL) and (Result in [seEstablished, seClosed]) and
     (SSL_session_reused(FSSL) > 0);
 end;
 
@@ -4079,52 +3964,37 @@ var
   lState: TTaurusTLSSslSocketState;
 
 begin
-  try
-    lState:=FState;
-    Result:=ATarget;
+  lState:=FState;
+  Result:=ATarget;
 
-    if FState = Result then
-      Exit;
+  if FState = Result then
+    Exit;
 
-    case ATarget of
-      seInitializing:
-        Result:=InitSSL;
+  case ATarget of
+    seInitializing:
+      Result:=InitSSL;
 
-      seInitialized:
-        begin
-          CheckActiveState([seInitializing]);
-          Result:=seInitialized;
-        end;
-
-      seHandshaking:
-        Result:=BindSocket;
-
-      seEstablished:
-        Result:=DoHandshake; // Executes handshake loop; transitions to seEstablished on success
-
-      seClosed:
-        Result:=DoShutdown;
-
-      seReleased, seError:
-        if lState in [seInitialized..seClosed] then
-          ReleaseSSL;
-
-      else
-        Result:=seError;
-    end;
-
-  except
-    on E: Exception do
-    begin
-      // Exception Safety: If an error occurs during non-terminal transitions,
-      // release SSL resources and set state directly to seError
-      if not (ATarget in [seClosed, seError]) then
+    seInitialized:
       begin
-        ReleaseSSL;
-        FState:=seError; // Force state without triggering recursive transitions
+        CheckActiveState([seInitializing]);
+        Result:=seInitialized;
       end;
-      raise; // Re-raise exception for caller
-    end;
+
+    seHandshaking:
+      Result:=BindSocket;
+
+    seEstablished:
+      Result:=DoHandshake; // Executes handshake loop; transitions to seEstablished on success
+
+    seClosed:
+      Result:=DoShutdown;
+
+    seReleased, seError:
+      if lState in [seInitialized..seClosed] then
+        ReleaseSSL;
+
+    else
+      Result:=seError;
   end;
 end;
 
@@ -4183,8 +4053,6 @@ begin
     end;
   end;
 end;
-
-
 
 class function TTaurusTLSSslSocket.CheckForSocketEvent(ASocketHandle: TIdStackSocketHandle;
       AKind: TSocketSelectKinds; AMsec: integer): boolean;
@@ -4261,11 +4129,12 @@ begin
   Result:=WaitForSocket(FSocketHandle, [sokWrite], AMsec);
 end;
 
-procedure TTaurusTLSSslSocket.Connect(const pHandle: TIdStackSocketHandle);
+function  TTaurusTLSSslSocket.Connect(const pHandle: TIdStackSocketHandle): boolean;
 begin
   CheckActiveState([seIdle]);
   FSocketHandle := pHandle;
   TransitionTo(seEstablished);
+  Result:=State = seEstablished;
 end;
 
 function TTaurusTLSSslSocket.CheckForError: Integer;
@@ -4856,66 +4725,93 @@ procedure TTaurusTLSClientSocket.SetupConnection;
 var
   lRetCode: TIdC_INT;
   lContext: TTaurusTLSSslClientCtx;
+  lECHOuterSNIRaw: RawByteString;
+  lOuterSNI: PIdAnsiChar;
+  lECHNoOuterVal: TIdC_INT;
+  lECHStore: TTaurusTLSECHStore;
   lIdentity: RawByteString;
-  lECHStore: TTaurusTLSECHStore; // PALOFF 'Created and freed objects'
+  lIdentityPtr: PIdAnsiChar;
 
 begin
   lContext:=ClientCtx;
+
   if not Assigned(lContext) then
     ETaurusTLSClientSSLSocketSetupError.RaiseWithMessage(RSOSSLModeNotSet);
 
-  // Setup session resumption
+  lIdentity:=lContext.Identity;
+  lIdentityPtr:=PIdAnsiChar(lIdentity);
+
+  // 1. Session ticket for resumption
   if Assigned(FSessionToResume) then
     SSL_set_session(FSSL, FSessionToResume.SSLSession);
 
   SetECHStatus(echCliNotConfigured);
 
-  // 1. Configure Hostname Verification on FSSL's local parameter block
-  // (Moves your previous SetupHostnameVerification logic here, fully self-contained)
+  // 2. Configure Hostname Verification (skips hostname check if Identity is empty)
   SetupHostnameVerification;
 
-  // 2. Wire-Level SNI Suppression Check
-  if lContext.SNIKind = skNoSNI then
+  // 3. SNI Mode & IP Literal Validation
+  if lContext.SNIMode = csmDisabled then
     Exit;
 
-  // 3. Retrieve pre-computed logical identity
-  lIdentity:=lContext.Identity;
-
-  if (lIdentity <> '') and (not lContext.IsIdentityIP) then
+  if lContext.IsIdentityIP then
   begin
     if lContext.UseECH then
-    begin
-      // Real ECH Path
-      lECHStore:=TTaurusTLSECHStore.Create;
-      try
-        lECHStore.SetConfigList(lContext.ECHConfigListRaw);
-        lECHStore.Attach(FSSL);
-      finally
-        lECHStore.Free;
-      end;
-
-      // Configure ECH Server Names using pre-computed parameters
-      lRetCode:=SSL_ech_set1_server_names(
-        FSSL,
-        PIdAnsiChar(lIdentity),  // PALOFF Possible bad typecast
-        PIdAnsiChar(lContext.ECHOuterSNIRaw),  // PALOFF Possible bad typecast
-        lContext.ECHNoOuterVal
+      ETaurusTLSClientSSLSocketSetupError.RaiseWithMessageFmt(
+        'Cannot configure real ECH mode for an IP address (%s). A domain name is required.',
+        [string(lIdentity)]
       );
 
-      if lRetCode <= 0 then
-        ETaurusTLSClientSSLSocketHostNameError.RaiseException(FSSL, lRetCode,
-          RMSG_SetECHHostNamesSetup_err);
-    end
-    else
-    begin
-      // Standard SNI (or GREASE) Path
-      if lContext.UseGREASE then
-        SSL_set_options(FSSL, SSL_OP_ECH_GREASE);
+    if lContext.UseGREASE then
+      SSL_set_options(FSSL, SSL_OP_ECH_GREASE);
 
-      lRetCode:=SSL_set_tlsext_host_name(FSSL, PIdAnsiChar(lIdentity));  // PALOFF Possible bad typecast
+    Exit; // IP literals never emit cleartext SNI
+  end;
+
+  // 4. Strict ECH Guard
+  if lContext.UseECH and (lContext.ECHConfigListRaw = '') then
+    ETaurusTLSClientSSLSocketSetupError.RaiseWithMessage(
+      'ECH was forced, but no ECHConfigList was provided.');
+
+  // 5. Real ECH Path (csmECH, csmECHNoOuter)
+  if lContext.UseECH then
+  begin
+    lECHStore:=TTaurusTLSECHStore.Create;
+    try
+      lECHStore.SetConfigList(lContext.ECHConfigListRaw);
+      lECHStore.Attach(FSSL);
+    finally
+      lECHStore.Free;
+    end;
+
+    lECHOuterSNIRaw:=lContext.ECHOuterSNIRaw;
+    lECHNoOuterVal:=lContext.ECHNoOuterVal;
+    if (lECHNoOuterVal = 0) and (lECHOuterSNIRaw <> '') then
+      lOuterSNI:=PIdAnsiChar(lECHOuterSNIRaw)
+    else
+      lOuterSNI:=nil;
+
+    lRetCode:=SSL_ech_set1_server_names(FSSL, lIdentityPtr, lOuterSNI,
+      lECHNoOuterVal);
+
+    if lRetCode <= 0 then
+      ETaurusTLSClientSSLSocketHostNameError.RaiseException(
+        FSSL, lRetCode, RMSG_SetECHHostNamesSetup_err);
+  end
+  // 6. Standard SNI or GREASE Path (csmStandardSNI, csmECHGrease, csmECHGreaseDiscovery)
+  else
+  begin
+    // Enable GREASE on session if active
+    if lContext.UseGREASE then
+      SSL_set_options(FSSL, SSL_OP_ECH_GREASE);
+
+    // Only send cleartext SNI if an Identity is populated (skips if Identity is empty in discovery)
+    if lIdentity <> '' then
+    begin
+      lRetCode:=SSL_set_tlsext_host_name(FSSL, lIdentityPtr);
       if lRetCode <= 0 then
-        ETaurusTLSClientSSLSocketHostNameError.RaiseException(FSSL, lRetCode,
-          RSSSLSettingTLSHostNameError_2);
+        ETaurusTLSClientSSLSocketHostNameError.RaiseException(
+          FSSL, lRetCode, RSSSLSettingTLSHostNameError_2);
     end;
   end;
 end;
@@ -4926,7 +4822,6 @@ var
   lTargetName: RawByteString;
   lContext: TTaurusTLSSslClientCtx;
   lIsIP: Boolean;
-  lRet: TIdC_INT;
 
 begin
   lContext:=ClientCtx;
@@ -4950,35 +4845,136 @@ begin
       // IPv4/IPv6 Literal Validation
       lParams.SetIpAddressA(lTargetName)
     else
-    begin
       // Standard DNS / Wildcard Validation
       lParams.AddHostA(lTargetName);
-      lRet:=SSL_set_tlsext_host_name(FSSL, PIdAnsiChar(lTargetName));
-      if lRet <= 0 then
-        ETaurusTLSClientSSLSocketHostNameError.RaiseException(FSSL, lRet,
-          RMSG_SetHostNameVerificationSetup_err);
-    end;
   finally
     lParams.Free;
   end;
 end;
 
-procedure TTaurusTLSClientSocket.Connect(const pHandle: TIdStackSocketHandle;
-  ASessionToResume: TTaurusTLSSSLSession);
+function TTaurusTLSClientSocket.Connect(const pHandle: TIdStackSocketHandle;
+  ASessionToResume: TTaurusTLSSSLSession): boolean;
 begin
   FSessionToResume:=ASessionToResume;
-  Connect(pHandle);
+  Result:=Connect(pHandle);
 end;
 
 function TTaurusTLSClientSocket.DoHandshakeIteration: TTaurusTLSSslSocketState;
 var
   lRet, lErr: Integer;
-  lStatus: TIdC_INT;
-  lInner, lOuter: PIdAnsiChar;
-  lECHConfigBuf: PByte;
-  lECHConfigLen: NativeUInt;
-  lNewConfigBase64: string; // PALOFF Managed local variable can be declared inline
   lContext: TTaurusTLSSslClientCtx;
+
+  procedure ProcessECHStatus(const ARet: Integer);
+  var
+    lStatus: TIdC_INT;
+    lInner, lOuter: PIdAnsiChar;
+    lECHConfigBuf: PByte;
+    lECHConfigLen: NativeUInt;
+    lNewConfigBase64: string;
+  begin
+    lInner:=nil;
+    lOuter:=nil;
+    try
+      lStatus:=SSL_ech_get1_status(SSL, @lInner, @lOuter);
+
+      case lStatus of
+        // --- 1. Real ECH Succeeded ---
+        SSL_ECH_STATUS_SUCCESS,
+        SSL_ECH_STATUS_BACKEND:
+          SetECHStatus(echCliSuccess);
+
+        // --- 2. GREASE Succeeded over cleartext SNI ---
+        SSL_ECH_STATUS_GREASE:
+          SetECHStatus(echCliNone);
+
+        // --- 3. Server returned retry_configs (stale key or GREASE probe response) ---
+        SSL_ECH_STATUS_GREASE_ECH,
+        SSL_ECH_STATUS_FAILED_ECH,
+        SSL_ECH_STATUS_FAILED_ECH_BAD_NAME:
+          begin
+            if lContext.SNIMode = csmECHGrease then
+            begin
+              // Anti-ossification mode: ignore retry_configs and keep current connection [4]
+              SetECHStatus(echCliNone);
+            end
+            else
+            begin
+              // Bootstrap (csmECHGreaseDiscovery) / Strict ECH (csmECH, csmECHNoOuter):
+              // Extract keys, notify application, and close session for clean reconnect [1.1, 1.3.1]
+              SetECHStatus(echCliFailed);
+              lECHConfigBuf:=nil;
+              lECHConfigLen:=0;
+
+              if SSL_ech_get1_retry_config(SSL, @lECHConfigBuf, @lECHConfigLen) > 0 then
+              begin
+                try
+                  if (lECHConfigBuf <> nil) and (lECHConfigLen > 0) then
+                  begin
+                    lNewConfigBase64 := EncodeConfigList(lECHConfigBuf, lECHConfigLen);
+                    lContext.DoOnECHConfigRetry(Self, lNewConfigBase64);
+                  end;
+                finally
+                  OPENSSL_free(lECHConfigBuf);
+                end;
+
+                SetECHStatus(echCliRetryConfig);
+                Result := seClosed; // Signal clean close so IOHandler can reconnect with fresh ECH keys [1.3.1]
+              end
+              else
+              begin
+                { TODO : To make ResourceString }
+                ETaurusTLSECHRejectedError.RaiseException(FSSL, ARet,
+                  'ECH Handshake failed. The server rejected the key and provided no retry configuration.'
+                );
+              end;
+            end;
+          end;
+
+        // --- 4. Server lacks ECH support (or was not configured/tried) ---
+        SSL_ECH_STATUS_NOT_TRIED,
+        SSL_ECH_STATUS_NOT_CONFIGURED:
+          begin
+            if lContext.UseECH then
+            begin
+              { TODO : To make ResourceString }
+              ETaurusTLSECHDowngradeError.RaiseException(FSSL, ARet,
+                'ECH Handshake bypassed. Possible downgrade attack or configuration mismatch.'
+              );
+            end
+            else
+            begin
+              SetECHStatus(echCliNone);
+              if ARet <= 0 then
+                Result:=seClosed; // Signal clean close so IOHandler can reconnect with cleartext SNI
+            end;
+          end;
+
+        // --- 5. Inner Server Name / Cert Mismatch ---
+        SSL_ECH_STATUS_BAD_NAME:
+          begin
+            { TODO : To make ResourceString }
+            ETaurusTLSECHBadNameError.RaiseException(FSSL, ARet,
+              'ECH Handshake completed but the server certificate verification failed.'
+            );
+          end;
+
+      else
+        // Covers SSL_ECH_STATUS_FAILED (0), SSL_ECH_STATUS_BAD_CALL (-100), etc.
+        if ARet <= 0 then
+        begin
+          { TODO : To make ResourceString }
+          ETaurusTLSECHProtocolError.RaiseException(FSSL, ARet,
+            'ECH Handshake failed due to an internal OpenSSL or protocol error.'
+          );
+        end;
+      end;
+    finally
+      if Assigned(lInner) then
+        OPENSSL_free(lInner);
+      if Assigned(lOuter) then
+        OPENSSL_free(lOuter);
+    end;
+  end;
 
 begin
   lContext:=ClientCtx;
@@ -4989,103 +4985,50 @@ begin
 
   if lRet > 0 then
   begin
-    CheckPeerCertificateValidationResult;
-    // Verify ECH status prior to accepting handshake success
-    if lContext.UseECH then
-    begin
-      lInner:=nil;
-      lOuter:=nil;
-      try
-        lStatus:=SSL_ech_get1_status(SSL, @lInner, @lOuter);
-        GetSSLError(SSL_ERROR_SSL);
-
-        case lStatus of
-        SSL_ECH_STATUS_SUCCESS,
-        SSL_ECH_STATUS_BACKEND:
-          SetECHStatus(echCliSuccess);
-
-        SSL_ECH_STATUS_GREASE_ECH,
-        SSL_ECH_STATUS_FAILED_ECH,
-        SSL_ECH_STATUS_FAILED_ECH_BAD_NAME:
-          begin
-            SetECHStatus(echCliFailed);
-            lECHConfigBuf:=nil;
-            lECHConfigLen:=0;
-
-
-            // Attempt to extract the updated keys provided by the server
-            if SSL_ech_get1_retry_config(SSL, @lECHConfigBuf, @lECHConfigLen) > 0 then
-            begin
-              try
-                if (lECHConfigBuf <> nil) and (lECHConfigLen > 0) then
-                begin
-                  lNewConfigBase64:=EncodeConfigList(lECHConfigBuf, lECHConfigLen);
-                  ETaurusTLSECHRetryRequired.RaiseWithMessage(
-                    'ECH Handshake error. Try to reconnect with updated ECH Config List.',
-                    lNewConfigBase64
-                  );
-                end;
-              finally
-                OPENSSL_free(lECHConfigBuf);
-              end;
-            end;
-
-            // If no keys were returned, it is a hard rejection
-            ETaurusTLSECHRejectedError.RaiseWithMessage(
-              'ECH Handshake failed. The server rejected the key and provided no retry configuration.');
-          end;
-
-        SSL_ECH_STATUS_NOT_TRIED,
-        SSL_ECH_STATUS_NOT_CONFIGURED:
-          begin
-            if lContext.ECHFlags.Enforced then
-              { TODO : To make ResourceString }
-              ETaurusTLSECHDowngradeError.RaiseWithMessage(
-                'ECH Handshake bypassed. Possible downgrade attack or configuration mismatch.')
-            else
-              SetECHStatus(echCliNotConfigured);
-          end;
-
-        SSL_ECH_STATUS_BAD_NAME:
-          { TODO :
-            Need to double check if it needs to raise the exception
-            or just fire an OnDebug event }
-          { TODO : To make ResourceString }
-          ETaurusTLSECHBadNameError.RaiseWithMessage(
-            'ECH Handshake completed but the server certificate did not match the inner name.');
-        else
-          // Covers SSL_ECH_STATUS_FAILED (0), SSL_ECH_STATUS_BAD_CALL (-100), and any other negative codes
-          { TODO : To make ResourceString }
-          ETaurusTLSECHProtocolError.RaiseWithMessage(
-            'ECH Handshake failed due to an internal OpenSSL or protocol error.');
-        end;
-      finally
-        // Clean up ECH status output buffers allocated by OpenSSL
-        if Assigned(lInner) then
-          OPENSSL_free(lInner);
-        if Assigned(lOuter) then
-          OPENSSL_free(lOuter);
-      end;
-    end;
-
     Result:=seEstablished;
-    Exit;
-  end;
+    SetECHStatus(echCliNone);
 
- lErr:=GetSSLError(lRet);
-  case lErr of
-  SSL_ERROR_SYSCALL:
-    { TODO : To make ResourceString }
-    ETaurusTLSSSLSocketConnectionReset.RaiseException(FSSL, lErr,
-      'Handshake reset by peer.');
+    // Evaluate ECH/GREASE status if active
+    if (lContext.UseECH or lContext.UseGREASE) and (not lContext.IsIdentityIP) then
+      ProcessECHStatus(lRet);
 
-  SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE: // PALOFF 'Empty case labels'
-    // Waiting for data
-    ;
-
+    // Only validate certificate and cache session if handshake reached established state [1.1]
+    if Result = seEstablished then
+    begin
+      CheckPeerCertificateValidationResult;
+//      lContext.SetSessionToResume(SSL);
+    end;
+  end
   else
-    { TODO : To make ResourceString }
-    ETaurusTLSHandshakeError.RaiseExceptionCode(lErr, lRet, 'Fatal handshake error.');
+  begin
+    lErr:=GetSSLError(lRet);
+    case lErr of
+      SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE:
+        begin
+          // Handshake in progress: signal caller to wait and retry
+          Result:=seHandshaking;
+        end;
+
+      SSL_ERROR_SYSCALL:
+        begin
+          { TODO : To make ResourceString }
+          ETaurusTLSSSLSocketConnectionReset.RaiseException(
+            FSSL, lErr, 'Handshake reset by peer.'
+          );
+        end;
+
+      SSL_ERROR_SSL:
+        begin
+          // If ECH was active, evaluate OpenSSL ECH failure status codes centrally
+          if (lContext.UseECH or lContext.UseGREASE) and (not lContext.IsIdentityIP) then
+            ProcessECHStatus(lRet)
+          else
+            ETaurusTLSHandshakeError.RaiseExceptionCode(lErr, lRet, 'Fatal handshake error.');
+        end;
+
+    else
+      ETaurusTLSHandshakeError.RaiseExceptionCode(lErr, lRet, 'Fatal handshake error.');
+    end;
   end;
 end;
 
