@@ -3133,7 +3133,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_STRING_to_UTF8_procname);
 end;
 
-function ERR_ASN1_d2i_bio(const it: PASN1_ITEM; in_: PBIO; x: Pointer): Pointer; cdecl;
+function ERR_ASN1_d2i_bio(xnew: pxnew; d2i: pd2i_of_void; in_: PBIO; x: PPointer): Pointer cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_d2i_bio_procname);
 end;
@@ -7284,27 +7284,27 @@ begin
   if FuncLoadError then
   begin
     {$if not defined(ASN1_item_d2i_bio_allownil)}
-    ASN1_item_d2i_bio := ERR_ASN1_d2i_bio;
+    ASN1_d2i_bio := ERR_ASN1_d2i_bio;
     {$ifend}
     {$if declared(ASN1_d2i_bio_introduced)}
     if LibVersion < ASN1_d2i_bio_introduced then
     begin
       {$if declared(FC_ASN1_d2i_bio)}
-      ASN1_item_d2i_bio := FC_ASN1_d2i_bio;
+      ASN1_d2i_bio := FC_ASN1_d2i_bio;
       {$ifend}
       FuncLoadError := false;
     end;
     {$ifend}
-    {$if declared(ASN1_item_d2i_bio_removed)}
-    if ASN1_item_d2i_bio_removed <= LibVersion then
+    {$if declared(ASN1_d2i_bio_removed)}
+    if ASN1_d2i_bio_removed <= LibVersion then
     begin
-      {$if declared(_ASN1_item_d2i_bio)}
-      ASN1_item_d2i_bio := _ASN1_item_d2i_bio;
+      {$if declared(_ASN1_d2i_bio)}
+      ASN1_d2i_bio := _ASN1_d2i_bio;
       {$ifend}
       FuncLoadError := false;
     end;
     {$ifend}
-    {$if not defined(ASN1_item_d2i_bio_allownil)}
+    {$if not defined(ASN1_d2i_bio_allownil)}
     if FuncLoadError then
       AFailed.Add('ASN1_d2i_bio');
     {$ifend}
