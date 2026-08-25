@@ -361,7 +361,7 @@ type
 
   ETaurusTLSSslVersion = class(ETaurusTLSError);
 
-  TTaurusTLSSSLOptionFlag = (
+  TTaurusTLSSslOptionFlag = (
     sslOpNoExtendedMasterSecret          = 0,  // (1 shl 0)  = SSL_OP_NO_EXTENDED_MASTER_SECRET
     sslOpCleansePlaintext                = 1,  // (1 shl 1)  = SSL_OP_CLEANSE_PLAINTEXT
     sslOpLegacyServerConnect             = 2,  // (1 shl 2)  = SSL_OP_LEGACY_SERVER_CONNECT
@@ -405,10 +405,10 @@ type
     sslOpGrease                          = 41  // (1 shl 41) = SSL_OP_GREASE
   );
 
-  TTaurusTLSSSLOptionFlags = set of TTaurusTLSSSLOptionFlag;
-  TTaurusTLSSSLOptionFlagsHelper = record helper for TTaurusTLSSSLOptionFlags
+  TTaurusTLSSslOptionFlags = set of TTaurusTLSSslOptionFlag;
+  TTaurusTLSSslOptionFlagsHelper = record helper for TTaurusTLSSslOptionFlags
   public const
-    cMask = (1 shl (Succ(Ord(High(TTaurusTLSSSLOptionFlag))))-1);
+    cMask = (1 shl (Succ(Ord(High(TTaurusTLSSslOptionFlag))))-1);
 
   private
     function GetAsInt: TIdC_UINT64; overload;
@@ -416,9 +416,9 @@ type
     procedure SetAsInt(AValue: TIdC_UINT64); overload;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
   public
-    class function ToInt(const AValue: TTaurusTLSSSLOptionFlags): TIdC_UINT64;
+    class function ToInt(const AValue: TTaurusTLSSslOptionFlags): TIdC_UINT64;
       overload; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
-    class function FromInt(const AValue: TIdC_UINT64): TTaurusTLSSSLOptionFlags;
+    class function FromInt(const AValue: TIdC_UINT64): TTaurusTLSSslOptionFlags;
       overload; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     property AsInt: TIdC_UINT64 read GetAsInt write SetAsInt;
@@ -1389,7 +1389,7 @@ begin
       ADest:=i;
       Exit;
     end;
-  ETaurusTLSSSLVersion.RaiseWithMessageFmt(RMSG_SSLVersion_Convert_err, [AValue]);
+  ETaurusTLSSslVersion.RaiseWithMessageFmt(RMSG_SSLVersion_Convert_err, [AValue]);
 end;
 
 function TTaurusTLS2SslVersionHelper.GetAsInt: TIdC_LONG;
@@ -1423,7 +1423,7 @@ begin
   Result:=TTaurusTLS2SslVersion(Self).AsInt;
 end;
 
-{ TTaurusTLSSSLOptionFlagsHelper }
+{ TTaurusTLSSslOptionFlagsHelper }
 
 constructor TTaurusTLSVerifyModeFlags.Create(const AIntFlags: TIdC_INT);
 begin
@@ -1437,28 +1437,28 @@ begin
   FFlags:=AFlags;
 end;
 
-function TTaurusTLSSSLOptionFlagsHelper.GetAsInt: TIdC_UINT64;
+function TTaurusTLSSslOptionFlagsHelper.GetAsInt: TIdC_UINT64;
 begin
   Result:=ToInt(Self);
 end;
 
-procedure TTaurusTLSSSLOptionFlagsHelper.SetAsInt(AValue: TIdC_UINT64);
+procedure TTaurusTLSSslOptionFlagsHelper.SetAsInt(AValue: TIdC_UINT64);
 begin
   Self:=FromInt(AValue);
 end;
 
-class function TTaurusTLSSSLOptionFlagsHelper.FromInt(
-  const AValue: TIdC_UINT64): TTaurusTLSSSLOptionFlags;
+class function TTaurusTLSSslOptionFlagsHelper.FromInt(
+  const AValue: TIdC_UINT64): TTaurusTLSSslOptionFlags;
 var
   lValue: TIdC_UINT64;
 
 begin
   lValue:=AValue and cMask; // clean-up possible garbage
-  Result:=TTaurusTLSSSLOptionFlags((@lValue)^); // PALOFF Possible bad pointer usage
+  Result:=TTaurusTLSSslOptionFlags((@lValue)^); // PALOFF Possible bad pointer usage
 end;
 
-class function TTaurusTLSSSLOptionFlagsHelper.ToInt(
-  const AValue: TTaurusTLSSSLOptionFlags): TIdC_UINT64;
+class function TTaurusTLSSslOptionFlagsHelper.ToInt(
+  const AValue: TTaurusTLSSslOptionFlags): TIdC_UINT64;
 begin
   Result:=PIdC_UINT64(@Avalue)^;
 end;
