@@ -1585,7 +1585,7 @@ var
   {$EXTERNALSYM BIO_ADDR_family}
   function BIO_ADDR_family(const ap: PBIO_ADDR): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
   {$EXTERNALSYM BIO_ADDR_rawaddress}
-  function BIO_ADDR_rawaddress(const ap: PBIO_ADDR; p: Pointer; var l: PIdC_SIZET): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  function BIO_ADDR_rawaddress(const ap: PBIO_ADDR; p: Pointer; var l: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
   {$EXTERNALSYM BIO_ADDR_rawport}
   function BIO_ADDR_rawport(const ap: PBIO_ADDR): TIdC_SHORT cdecl; external CLibCrypto; {introduced 1.1.0}
   {$EXTERNALSYM BIO_ADDR_hostname_string}

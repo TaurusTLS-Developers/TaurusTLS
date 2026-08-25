@@ -271,7 +271,7 @@ var
    CTLOG_get0_name : function(const log : PCTLOG) : PIdAnsiChar; cdecl = nil;
   {$EXTERNALSYM CTLOG_get0_log_id}
    CTLOG_get0_log_id : procedure(const log : PCTLOG; const log_id : PPIdAnsiChar;
-                                 log_id_len : TIdC_SIZET); cdecl = nil;
+                                 var log_id_len : TIdC_SIZET); cdecl = nil;
   {$EXTERNALSYM CTLOG_get0_public_key}
    CTLOG_get0_public_key : function(const log : PCTLOG) : PEVP_PKEY; cdecl = nil;
   {$EXTERNALSYM CTLOG_STORE_new}
@@ -370,7 +370,7 @@ function SCT_validation_status_string(const sct : PSCT) : PIdAnsiChar cdecl; ext
 procedure SCT_print(const sct : PSCT; _out : PBIO; indent : TIdC_INT; const logs : PCTLOG_STORE)  cdecl; external CLibCrypto;
   {$EXTERNALSYM SCT_LIST_print}
 procedure SCT_LIST_print(const sct_list : PSTACK_OF_SCT; _out : PBIO; indent : TIdC_INT;
-                         separator : PIdAnsiChar; const logs : PCTLOG_STORE) cdecl; external CLibCrypto;
+                         const separator : PIdAnsiChar; const logs : PCTLOG_STORE) cdecl; external CLibCrypto;
   {$EXTERNALSYM SCT_get_validation_status}
 function SCT_get_validation_status(const sct : PSCT) : sct_validation_status_t cdecl; external CLibCrypto;
   {$EXTERNALSYM SCT_validate}
@@ -401,8 +401,8 @@ procedure CTLOG_free(log : PCTLOG) cdecl; external CLibCrypto;
   {$EXTERNALSYM CTLOG_get0_name}
 function CTLOG_get0_name(const log : PCTLOG) : PIdAnsiChar cdecl; external CLibCrypto;
   {$EXTERNALSYM CTLOG_get0_log_id}
-procedure CTLOG_get0_log_id(const log : PCTLOG; const log_id : PIdAnsiChar;
-                            log_id_len : TIdC_SIZET)  cdecl; external CLibCrypto;
+procedure CTLOG_get0_log_id(const log : PCTLOG; const log_id : PPIdAnsiChar;
+                            var log_id_len : TIdC_SIZET)  cdecl; external CLibCrypto;
   {$EXTERNALSYM CTLOG_get0_public_key}
 function CTLOG_get0_public_key(const log : PCTLOG) : PEVP_PKEY cdecl; external CLibCrypto;
 
@@ -879,7 +879,7 @@ begin
 end;
 
 procedure ERR_CTLOG_get0_log_id(const log : PCTLOG; const log_id : PPIdAnsiChar;
-                            log_id_len : TIdC_SIZET); cdecl;
+                            var log_id_len : TIdC_SIZET); cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CTLOG_get0_log_id_procname);
 end;

@@ -3926,14 +3926,14 @@ begin
   FuncLoadError := not assigned(d2i_ASN1_BIT_STRING);
   if FuncLoadError then
   begin
-    {$if not defined(d2i_ASN1_OBJECT_allownil)}
+    {$if not defined(d2i_ASN1_BIT_STRING_allownil)}
     d2i_ASN1_BIT_STRING := ERR_d2i_ASN1_BIT_STRING;
     {$ifend}
-    {$if declared(d2i_ASN1_OBJECT_introduced)}
+    {$if declared(d2i_ASN1_BIT_STRING_introduced)}
     if LibVersion < d2i_ASN1_BIT_STRING_introduced then
     begin
-      {$if declared(FC_d2i_ASN1_OBJECT)}
-      d2i_ASN1_OBJECT := FC_d2i_ASN1_OBJECT;
+      {$if declared(FC_d2i_ASN1_BIT_STRING)}
+      d2i_ASN1_BIT_STRING  := FC_d2i_ASN1_BIT_STRING ;
       {$ifend}
       FuncLoadError := false;
     end;
@@ -3941,15 +3941,15 @@ begin
     {$if declared(d2i_ASN1_BIT_STRING_removed)}
     if d2i_ASN1_BIT_STRING_removed <= LibVersion then
     begin
-      {$if declared(_d2i_ASN1_OBJECT)}
-      d2i_ASN1_BIT_STRING := d2i_ASN1_BIT_STRING;
+      {$if declared(_d2i_ASN1_BIT_STRING)}
+      d2i_ASN1_BIT_STRING := _d2i_ASN1_BIT_STRING;
       {$ifend}
       FuncLoadError := false;
     end;
     {$ifend}
-    {$if not defined(d2i_ASN1_OBJECT_allownil)}
+    {$if not defined(d2i_ASN1_BIT_STRING_allownil)}
     if FuncLoadError then
-      AFailed.Add('d2i_ASN1_OBJECT');
+      AFailed.Add('d2i_ASN1_BIT_STRING');
     {$ifend}
   end;
 
@@ -5343,10 +5343,10 @@ begin
     end;
     {$ifend}
     {$if declared(d2i_ASN1_OCTET_STRING_removed)}
-    if UTF8_getc_removed <= LibVersion then
+    if d2i_ASN1_OCTET_STRING_removed <= LibVersion then
     begin
       {$if declared(_d2i_ASN1_OCTET_STRING)}
-      d2i_ASN1_OCTET_STRING := d2i_ASN1_OCTET_STRING;
+      d2i_ASN1_OCTET_STRING := _d2i_ASN1_OCTET_STRING;
       {$ifend}
       FuncLoadError := false;
     end;
@@ -5375,10 +5375,10 @@ begin
     end;
     {$ifend}
     {$if declared(i2d_ASN1_OCTET_STRING_removed)}
-    if UTF8_getc_removed <= LibVersion then
+    if i2d_ASN1_OCTET_STRING_removed <= LibVersion then
     begin
       {$if declared(_i2d_ASN1_OCTET_STRING)}
-      i2d_ASN1_OCTET_STRING := i2d_ASN1_OCTET_STRING;
+      i2d_ASN1_OCTET_STRING := _i2d_ASN1_OCTET_STRING;
       {$ifend}
       FuncLoadError := false;
     end;
@@ -5408,10 +5408,10 @@ begin
     end;
     {$ifend}
     {$if declared(ASN1_OCTET_STRING_free_removed)}
-    if UTF8_getc_removed <= LibVersion then
+    if ASN1_OCTET_STRING_free_removed <= LibVersion then
     begin
       {$if declared(_ASN1_OCTET_STRING_free)}
-      ASN1_OCTET_STRING_free := ASN1_OCTET_STRING_free;
+      ASN1_OCTET_STRING_free := _ASN1_OCTET_STRING_free;
       {$ifend}
       FuncLoadError := false;
     end;
