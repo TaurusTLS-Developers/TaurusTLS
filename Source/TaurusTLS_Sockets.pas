@@ -99,8 +99,8 @@ type
 
   ETaurusTLSSslSocketDataBindingError = class(ETaurusTLSAPICryptoError);
 
-  ETaurusTLSClientSSLSocketSetupError = class(ETaurusTLSSslSocketError);
-  ETaurusTLSClientSSLSocketHostNameError = class(ETaurusTLSAPISSLError);
+  ETaurusTLSSslClientSocketSetupError = class(ETaurusTLSSslSocketError);
+  ETaurusTLSSslClientSocketHostNameError = class(ETaurusTLSAPISSLError);
   ETaurusTLSHandshakeError = class(ETaurusTLSAPISSLError);
 
   ETaurusTLSECHCliFlagsError = class(ETaurusTLSError);
@@ -119,7 +119,7 @@ type
   /// <summary>
   ///   ECH was not configured on this connection
   /// </summary>
-  TTaurusTLSClientSNIMode = (
+  TTaurusTLSSslClientSNIMode = (
     /// <summary>
     ///   No SNI extension sent on wire (RFC 3546 IP connect or suppression)
     /// </summary>
@@ -663,7 +663,7 @@ type
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FHostname: RawByteString;
     FDefaultSNI: RawByteString;
-    FSNIMode: TTaurusTLSClientSNIMode;
+    FSNIMode: TTaurusTLSSslClientSNIMode;
     FECHOuterSNI: RawByteString;
     FECHConfigList: RawByteString;
     FIdentity: RawByteString;
@@ -707,7 +707,7 @@ type
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function SetDefaultSNI(const AValue: string): TTaurusTLSSslClientSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function SetSNIMode(const AValue: TTaurusTLSClientSNIMode): TTaurusTLSSslClientSocketCtx;
+    function SetSNIMode(const AValue: TTaurusTLSSslClientSNIMode): TTaurusTLSSslClientSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     function SetECHOuterSNI(const AValue: string): TTaurusTLSSslClientSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -739,7 +739,7 @@ type
 
     property HostName: string read GetHostName;
     property DefaultSNI: string read GetDefaultSNI;
-    property SNIMode: TTaurusTLSClientSNIMode read FSNIMode;
+    property SNIMode: TTaurusTLSSslClientSNIMode read FSNIMode;
     property ECHOuterSNI: string read GetECHOuterSNI;
     property ECHConfigList: string read GetECHConfigList;
 
@@ -1308,7 +1308,7 @@ type
     function DoShutdown: TTaurusTLSSslSocketState; override;
     property ClientCtx: TTaurusTLSSslClientSocketCtx read GetClientCtx;
   public
-    function Connect(const pHandle: TIdStackSocketHandle;
+    function Connect(const pHandle: TIdStackSocketHandle; //PALOFF "Redeclares ancestor member, or method in helped class/record"
       ASessionToResume: TTaurusTLSSslSession): boolean; overload;
 
     property ECHStatus: TTaurusECHClientStatus read FECHStatus;
@@ -2143,7 +2143,7 @@ function TTaurusTLSSslSocketCtxBuilder.IncludeFlags(
   const AValue: TaurusTLSSslSocketCtxFlags): TaurusTLSSslSocketCtxFlags;
 begin
   if (FFlags * AValue) = AValue then
-    Exit;
+    Exit(AValue);
 
   Lock;
   try
@@ -2163,7 +2163,7 @@ function TTaurusTLSSslSocketCtxBuilder.ExcludeFlags(
   const AValue: TaurusTLSSslSocketCtxFlags): TaurusTLSSslSocketCtxFlags;
 begin
   if (FFlags * AValue) = [] then
-    Exit;
+    Exit(AValue);
 
   Lock;
   try
@@ -2349,9 +2349,9 @@ end;
 procedure TTaurusTLSSslSocketCtxBuilder.SetVerifyHostName(const AValue: boolean);
 begin
   if AValue then
-    IncludeFlags([slfVerifyHostname])
+    IncludeFlags([slfVerifyHostname])  //PALOFF "Functions called as procedures"
   else
-    ExcludeFlags([slfVerifyHostname]);
+    ExcludeFlags([slfVerifyHostname]); //PALOFF "Functions called as procedures"
 end;
 
 procedure TTaurusTLSSslSocketCtxBuilder.SetUniDirectShutdown(
@@ -2391,9 +2391,9 @@ procedure TTaurusTLSSslSocketCtxBuilder.SetReadAheadBuffering(
   const AValue: boolean);
 begin
   if AValue then
-    IncludeFlags([slfReadAheadBuffering])
+    IncludeFlags([slfReadAheadBuffering])  //PALOFF "Functions called as procedures"
   else
-    ExcludeFlags([slfReadAheadBuffering]);
+    ExcludeFlags([slfReadAheadBuffering]); //PALOFF "Functions called as procedures"
 end;
 
 function TTaurusTLSSslSocketCtxBuilder.GetFlag(
@@ -2597,7 +2597,7 @@ begin
     DoBuild(ASender, lSocketCtx);
 
       // The final SocketCTX configuration lock.
-    lSocketCtx.FreezeCtx;
+    lSocketCtx.FreezeCtx; //PALOFF "Functions called as procedures"
     FSocketCtx:=Result;
   finally
     Unlock;
@@ -3396,7 +3396,7 @@ begin
 end;
 
 function TTaurusTLSSslClientSocketCtx.SetSNIMode(
-  const AValue: TTaurusTLSClientSNIMode): TTaurusTLSSslClientSocketCtx;
+  const AValue: TTaurusTLSSslClientSNIMode): TTaurusTLSSslClientSocketCtx;
 begin
   Result:=Self;
   if FSNIMode = AValue then
@@ -3991,7 +3991,7 @@ begin
 
     seReleased, seError:
       if lState in [seInitialized..seClosed] then
-        ReleaseSSL;
+        ReleaseSSL; //PALOFF "Functions called as procedures"
 
     else
       Result:=seError;
@@ -4002,11 +4002,14 @@ procedure TTaurusTLSSslSocket.TransitionTo(ATarget: TTaurusTLSSslSocketState;
   ASteps: integer);
 var
   lState, lNextState: TTaurusTLSSslSocketState;
+  lSteps: integer;
 
 begin
   // Exit if already in requested target state
   if FState = ATarget then
     Exit;
+
+  lSteps:=ASteps;
 
   try
     repeat
@@ -4029,10 +4032,10 @@ begin
       DoSetState(lState, True);
 
       // Infinite Loop / Stagnation Guard
-      Dec(ASteps);
-    until (FState in ([ATarget]+cTerminalStates)) or (ASteps <= 0);
+      Dec(lSteps);
+    until (FState in ([ATarget]+cTerminalStates)) or (lSteps <= 0);
 
-    if ASteps <= 0 then
+    if lSteps <= 0 then
     begin
       ETaurusTLSSocketStateError.RaiseWithMessageFmt(
         'Infinite state transition loop detected on Socket ''%s'' at state ''%s''.',
@@ -4047,7 +4050,7 @@ begin
       else
         lState:=seError;
 
-      ReleaseSSL;
+      ReleaseSSL; //PALOFF "Functions called as procedures"
       DoSetState(lState, True);
       raise;
     end;
@@ -4091,15 +4094,19 @@ end;
 class function TTaurusTLSSslSocket.WaitForSocket(
   ASocketHandle: TIdStackSocketHandle; AKind: TSocketSelectKinds;
   AMsec: integer): boolean;
+var
+  lMSec: integer;
+
 begin
   Result:=False;
+  lMSec:=AMsec;
 
-  if AMsec =IdTimeoutDefault then
-    AMsec:=IdTimeoutInfinite;
+  if lMSec =IdTimeoutDefault then
+    lMSec:=IdTimeoutInfinite;
 
   if TIdAntiFreezeBase.ShouldUse then
   begin
-    if AMsec = IdTimeoutInfinite then
+    if lMSec = IdTimeoutInfinite then
     begin
       repeat
         Result:=CheckForSocketEvent(ASocketHandle, AKind, GAntiFreeze.IdleTimeOut);
@@ -4107,16 +4114,16 @@ begin
       Exit;
     end
     else
-    while AMSec >= 0 do
+    while lMSec >= 0 do
     begin
       Result:=CheckForSocketEvent(ASocketHandle, AKind, GAntiFreeze.IdleTimeOut);
       if Result then
         Exit;
-      Dec(AMsec, GAntiFreeze.IdleTimeOut);
+      Dec(lMSec, GAntiFreeze.IdleTimeOut);
     end
   end
   else
-    Result:=CheckForSocketEvent(ASocketHandle, AKind, AMsec);
+    Result:=CheckForSocketEvent(ASocketHandle, AKind, lMSec);
 end;
 
 function TTaurusTLSSslSocket.WaitForRead(AMsec: integer): boolean;
@@ -4311,7 +4318,7 @@ begin
         Break;
       end;
 
-    until False;
+    until False; //PALOFF "Condition evaluates to constant value"
   end;
 end;
 
@@ -4380,7 +4387,7 @@ end;
 function TTaurusTLSSslSocket.Send(const ABuffer: TIdBytes; const AOffset,
   ALength: TIdC_SIZET; const AMSec: Integer): Integer;
 var
-  lResult: TIdC_SIZET;
+  lResult: TIdC_SIZET; // PALOFF "Variables that are referenced, but never set"
   lRet, lErr: TIdC_INT;
   lLen: TIdC_SIZET;
   lTimeout: Integer;
@@ -4728,7 +4735,7 @@ var
   lECHOuterSNIRaw: RawByteString;
   lOuterSNI: PIdAnsiChar;
   lECHNoOuterVal: TIdC_INT;
-  lECHStore: TTaurusTLSECHStore;
+  lECHStore: TTaurusTLSECHStore; //PALOFF "Created and freed objects"
   lIdentity: RawByteString;
   lIdentityPtr: PIdAnsiChar;
 
@@ -4736,7 +4743,7 @@ begin
   lContext:=ClientCtx;
 
   if not Assigned(lContext) then
-    ETaurusTLSClientSSLSocketSetupError.RaiseWithMessage(RSOSSLModeNotSet);
+    ETaurusTLSSslClientSocketSetupError.RaiseWithMessage(RSOSSLModeNotSet);
 
   lIdentity:=lContext.Identity;
   lIdentityPtr:=PIdAnsiChar(lIdentity);
@@ -4758,7 +4765,7 @@ begin
   begin
     if lContext.UseECH then
       { TODO : To make ResourceString }
-      ETaurusTLSClientSSLSocketSetupError.RaiseWithMessageFmt(
+      ETaurusTLSSslClientSocketSetupError.RaiseWithMessageFmt(
         'Cannot configure real ECH mode for an IP address (%s). A domain name is required.',
         [string(lIdentity)]
       );
@@ -4772,13 +4779,13 @@ begin
   // 4. Strict ECH Guard
   if lContext.UseECH and (lContext.ECHConfigListRaw = '') then
     { TODO : To make ResourceString }
-    ETaurusTLSClientSSLSocketSetupError.RaiseWithMessage(
+    ETaurusTLSSslClientSocketSetupError.RaiseWithMessage(
       'ECH was forced, but no ECHConfigList was provided.');
 
   // 5. Real ECH Path (csmECH, csmECHNoOuter)
   if lContext.UseECH then
   begin
-    lECHStore:=TTaurusTLSECHStore.Create;
+    lECHStore:=TTaurusTLSECHStore.Create; //PALOFF "Created and freed objects"
     try
       lECHStore.SetConfigList(lContext.ECHConfigListRaw);
       lECHStore.Attach(FSSL);
@@ -4797,7 +4804,7 @@ begin
       lECHNoOuterVal);
 
     if lRetCode <= 0 then
-      ETaurusTLSClientSSLSocketHostNameError.RaiseException(
+      ETaurusTLSSslClientSocketHostNameError.RaiseException(
         FSSL, lRetCode, RMSG_SetECHHostNamesSetup_err);
   end
   // 6. Standard SNI or GREASE Path (csmStandardSNI, csmECHGrease, csmECHGreaseDiscovery)
@@ -4812,7 +4819,7 @@ begin
     begin
       lRetCode:=SSL_set_tlsext_host_name(FSSL, lIdentityPtr);
       if lRetCode <= 0 then
-        ETaurusTLSClientSSLSocketHostNameError.RaiseException(
+        ETaurusTLSSslClientSocketHostNameError.RaiseException(
           FSSL, lRetCode, RSSSLSettingTLSHostNameError_2);
     end;
   end;
