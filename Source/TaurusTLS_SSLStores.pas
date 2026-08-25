@@ -1955,14 +1955,14 @@ var
   lCtx: TStoreCtx;
 
 begin
-  lCtx:=TStoreCtx.Create(PIdAnsiChar(AUri), AUiCtx); // PALOFF Possible bad typecast
+  lCtx:=TStoreCtx.Create(PIdAnsiChar(AUri), AUiCtx); // PALOFF "Possible bad typecast"
   Create(lCtx, ALoadFilter);
 end;
 
 constructor TTaurusTLSOSSLStore.Create(const AUri: UnicodeString;
   AUiCtx: TTaurusTLS_UICtx; ALoadFilter: TStoreItemTypes);
 begin
-  Create(RawByteString(AUri), AUiCtx, ALoadFilter); // PALOFF 'UnicodeString cast to RawByteString'
+  Create(RawByteString(AUri), AUiCtx, ALoadFilter); // PALOFF "UnicodeString cast to RawByteString"
 end;
 
 constructor TTaurusTLSOSSLStore.Create(ABio: TTaurusTLSCustomBIO;

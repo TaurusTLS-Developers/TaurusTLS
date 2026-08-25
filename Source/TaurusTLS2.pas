@@ -451,22 +451,22 @@ end;
 
 function TTaurusTLS2DelegatedPasswdPrompt.DoInitMethod: TTaurusTLSOsslUiMethod;
 var
-  lResult: TTaurusTLS_DelegatedUI;
+  lResult: TTaurusTLS_DelegatedUI;  //PALOFF "Created and freed object"
 
 begin
   lResult:=nil;
   try
-    lResult:=TTaurusTLS_DelegatedUI.Create;
+    lResult:=TTaurusTLS_DelegatedUI.Create; //PALOFF "Created and freed object"
     lResult.OnPrepareUI:=FOnPrepareUI;
     lResult.OnSetupUI:=FOnSetupUI;
     lResult.OnDisplayUI:=FOnDisplayUI;
     lResult.OnResultUI:=FOnResultUI;
     lResult.OnReleaseUI:=FOnReleaseUI;
+    Result:=lResult;
   except
     lResult.Free;
     raise
   end;
-  Result:=lResult;
 end;
 
 { TTaurusTLSIOHandlerStoreAsset }
