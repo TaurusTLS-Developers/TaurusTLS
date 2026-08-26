@@ -52,126 +52,268 @@ uses
   TaurusTLSExceptionHandlers;
 
 type
+  /// <summary>
+  ///   Base exception for errors occurring during context manipulation, such
+  ///   as modifying a frozen <see cref="TTaurusTLSSslSocketCtx"/> instance or
+  ///   setting invalid cipher lists, protocol versions, or fragment sizes.
+  /// </summary>
   ETaurusTLSSslSocketCtxError = class(ETaurusTLSError);
+
+  /// <summary>
+  ///   Raised when compilation inside <see cref="TTaurusTLSSslSocketCtxBuilder"/>
+  ///   fails due to missing requirements or invalid configuration states.
+  /// </summary>
   ETaurusTLSSslSocketCtxBuildError = class(ETaurusTLSError);
 
-
-  ETaurusTLSSocketCtxSSLCtxError = class(ETaurusTLSAPISSLError);
-  ETaurusTLSSocketCtxSSLTrustStoreError = class(ETaurusTLSAPISSLError);
-
+  /// <summary>
+  ///   Raised when an invalid or forbidden state transition is attempted
+  ///   within the socket state machine lifecycle.
+  /// </summary>
   ETaurusTLSSocketStateError = class(ETaurusTLSError);
 
   /// <summary>
-  /// Raised if <c>SSL_set_fd</c> failed.
+  ///   Raised when allocating the native OpenSSL SSL session handle via
+  ///   <c>SSL_new</c> fails during session initialization.
   /// </summary>
-  /// <seealso href="https://docs.openssl.org/3.0/man3/SSL_set_fd/">
-  /// SSL_set_fd
+  /// <seealso href="https://docs.openssl.org/3.0/man3/SSL_new/">
+  ///   SSL_new
   /// </seealso>
   ETaurusTLSSslSocketCreateError = class(ETaurusTLSAPICryptoError);
+
+  /// <summary>
+  ///   Raised when binding the physical OS socket descriptor to OpenSSL via
+  ///   <c>SSL_set_fd</c> fails.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.0/man3/SSL_set_fd/">
+  ///   SSL_set_fd
+  /// </seealso>
   ETaurusTLSSslSocketBindError = class(ETaurusTLSAPICryptoError);
 
+  /// <summary>
+  ///   Base exception class for errors occurring during active socket I/O
+  ///   or handshake state transitions.
+  /// </summary>
   ETaurusTLSSslSocketError = class(ETaurusTLSAPISSLError)
   public
+    /// <summary>
+    ///   Resolves the target socket state to transition to on this error.
+    /// </summary>
+    /// <returns>
+    ///   The target <see cref="TTaurusTLSSslSocketState"/> enum value.
+    /// </returns>
     class function TargetSocketState: TTaurusTLSSslSocketState; virtual;
   end;
 
+  /// <summary>
+  ///   Base exception representing an orderly or requested socket closure,
+  ///   mapping the state machine transition to <c>seReleased</c>.
+  /// </summary>
   ETaurusTLSSslSocketClose = class(ETaurusTLSSslSocketError)
   public
+    /// <summary>
+    ///   Resolves the target socket state to transition to on closure.
+    /// </summary>
+    /// <returns>
+    ///   Returns <c>seReleased</c>.
+    /// </returns>
     class function TargetSocketState: TTaurusTLSSslSocketState; override;
   end;
 
+  /// <summary>
+  ///   Raised when an unrecoverable TCP reset (RST) or EOF occurs during
+  ///   active reading, writing, or handshaking (<c>SSL_ERROR_SYSCALL</c>).
+  /// </summary>
   ETaurusTLSSslSocketConnectionReset = class(ETaurusTLSSslSocketClose);
 
   /// <summary>
-  /// Raised if certificate validation failed and the message breifly
-  /// describes the failure.
+  ///   Raised when post-handshake peer certificate validation fails.
   /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.0/man3/SSL_get_verify_result/">
+  ///   SSL_get_verify_result
+  /// </seealso>
   ETaurusTLSSslSocketCertValidationError = class(ETaurusTLSError)
   private
     FVerifyCode: TIdC_LONG;
   public
+    /// <summary>
+    ///   Initializes exception with the OpenSSL verification error code.
+    /// </summary>
+    /// <param name="AVerifyCode">
+    ///   The OpenSSL X509 error code (e.g. <c>X509_V_ERR_CERT_HAS_EXPIRED</c>).
+    /// </param>
+    /// <param name="AMessage">
+    ///   Descriptive text explaining the verification failure.
+    /// </param>
     constructor Create(AVerifyCode: TIdC_LONG; const AMessage: string);
+
+    /// <summary>
+    ///   Helper method to instantiate and raise the exception with code.
+    /// </summary>
+    /// <param name="AVerifyCode">
+    ///   The OpenSSL X509 error code.
+    /// </param>
+    /// <param name="AMessage">
+    ///   Descriptive text explaining the verification failure.
+    /// </param>
     class procedure RaiseErrorCode(AVerifyCode: TIdC_LONG;
       const AMessage: string);
 
+    /// <summary>
+    ///   The raw OpenSSL X.509 verification error code.
+    /// </summary>
     property VerifyCode: TIdC_LONG read FVerifyCode;
   end;
 
+  /// <summary>
+  ///   Raised when binding the Delphi object instance to the native OpenSSL
+  ///   handle via <c>SSL_set_app_data</c> or <c>SSL_CTX_set_app_data</c> fails.
+  /// </summary>
   ETaurusTLSSslSocketDataBindingError = class(ETaurusTLSAPICryptoError);
 
+  /// <summary>
+  ///   Raised when client connection setup fails, such as attempting real ECH
+  ///   mode on an IP address or missing the configuration snapshot.
+  /// </summary>
   ETaurusTLSSslClientSocketSetupError = class(ETaurusTLSSslSocketError);
+
+  /// <summary>
+  ///   Raised when setting the SNI hostname or ECH server names fails via
+  ///   <c>SSL_set_tlsext_host_name</c> or <c>SSL_ech_set1_server_names</c>.
+  /// </summary>
   ETaurusTLSSslClientSocketHostNameError = class(ETaurusTLSAPISSLError);
+
+  /// <summary>
+  ///   Raised when OpenSSL encounters an unrecoverable protocol or
+  ///   cryptographic error during <c>SSL_connect</c> or <c>SSL_accept</c>.
+  /// </summary>
   ETaurusTLSHandshakeError = class(ETaurusTLSAPISSLError);
 
-  ETaurusTLSECHCliFlagsError = class(ETaurusTLSError);
+  /// <summary>
+  ///   Raised when ECH mode is enabled, but the loaded OpenSSL library binary
+  ///   lacks ECH support (e.g. running under OpenSSL 3.x).
+  /// </summary>
   EECHNotSupported = class(ETaurusTLSError);
 
+  /// <summary>
+  ///   Raised when the server rejects the ECH key and provides no retry
+  ///   configuration for key rotation.
+  /// </summary>
   ETaurusTLSECHRejectedError = class(ETaurusTLSAPISSLError);
+
+  /// <summary>
+  ///   Raised when strict ECH mode is requested, but the server bypasses ECH
+  ///   or lacks ECH support, indicating a potential downgrade attack.
+  /// </summary>
   ETaurusTLSECHDowngradeError = class(ETaurusTLSAPISSLError);
+
+  /// <summary>
+  ///   Raised when ECH decryption completes, but the server certificate does
+  ///   not match the inner decrypted SNI identity.
+  /// </summary>
   ETaurusTLSECHBadNameError = class(ETaurusTLSAPISSLError);
+
+  /// <summary>
+  ///   Raised when an internal OpenSSL or protocol failure occurs during ECH
+  ///   negotiation (<c>SSL_ECH_STATUS_FAILED</c> or <c>SSL_ECH_STATUS_BAD_CALL</c>).
+  /// </summary>
   ETaurusTLSECHProtocolError = class(ETaurusTLSAPISSLError);
 
-
+  /// <summary>
+  ///   Raised when parsing or selecting an ALPN protocol value fails.
+  /// </summary>
   ETaurusTLSAlpnResultError = class(ETaurusTLSError);
-
 
 type
   /// <summary>
-  ///   ECH was not configured on this connection
+  ///   Governs the client-side wire transmission policy for SNI, GREASE, and ECH.
   /// </summary>
   TTaurusTLSSslClientSNIMode = (
     /// <summary>
-    ///   No SNI extension sent on wire (RFC 3546 IP connect or suppression)
+    ///   No SNI extension sent on wire (RFC 3546 IP connect or suppression).
     /// </summary>
     csmDisabled,
     /// <summary>
-    ///   Standard cleartext SNI (HostName or DefaultSNI override)
+    ///   Standard cleartext SNI (HostName or DefaultSNI override).
     /// </summary>
     csmStandardSNI,
     /// <summary>
-    ///   Cleartext SNI (if domain) or No-SNI (if IP) + dummy ECH GREASE payload
+    ///   Cleartext SNI (if domain) or No-SNI (if IP) + dummy ECH GREASE payload.
     /// </summary>
     csmECHGrease,
     /// <summary>
     ///   Bootstrapping: Probes for ECHConfig (omits private SNI, triggers retry
-    ///   on response)
+    ///   on response).
     /// </summary>
     csmECHGreaseDiscovery,
     /// <summary>
-    ///   Strict ECH with decoy/public_name; fails on downgrade/bypass
+    ///   Strict ECH with decoy/public_name; fails on downgrade/bypass.
     /// </summary>
     csmECH,
     /// <summary>
-    ///   Strict ECH with outer SNI omitted (no_outer = 1); fails on downgrade
+    ///   Strict ECH with outer SNI omitted (no_outer = 1); fails on downgrade.
     /// </summary>
     csmECHNoOuter
   );
 
+  /// <summary>
+  ///   Bit-shift ordinal positions representing OpenSSL info callback flags
+  ///   and status events (<c>SSL_CB_*</c> and <c>SSL_ST_*</c>).
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.0/man3/SSL_CTX_set_info_callback/">
+  ///   SSL_CTX_set_info_callback
+  /// </seealso>
   TTaurusTLSSslStateFlag  = (
+    /// <summary>Bit 0: Handshake loop iteration (<c>SSL_CB_LOOP</c>).</summary>
     stfLoop               = 0,    // 1 shl 0  = SSL_CB_LOOP
+    /// <summary>Bit 1: Handshake exit point (<c>SSL_CB_EXIT</c>).</summary>
     stfExit               = 1,    // 1 shl 1  = SSL_CB_EXIT
+    /// <summary>Bit 2: Read operation (<c>SSL_CB_READ</c>).</summary>
     stfRead               = 2,    // 1 shl 2  = SSL_CB_READ
+    /// <summary>Bit 3: Write operation (<c>SSL_CB_WRITE</c>).</summary>
     stfWrite              = 3,    // 1 shl 3  = SSL_CB_WRITE
+    /// <summary>Bit 4: Handshake start (<c>SSL_CB_HANDSHAKE_START</c>).</summary>
     stfHandShakeStart     = 4,    // 1 shl 4  = SSL_CB_HANDSHAKE_START
+    /// <summary>Bit 5: Handshake finished (<c>SSL_CB_HANDSHAKE_DONE</c>).</summary>
     stfHandShakeDone      = 5,    // 1 shl 5  = SSL_CB_HANDSHAKE_DONE
+    /// <summary>Bit 12: Client connection state (<c>SSL_ST_CONNECT</c>).</summary>
     stfConnect            = 12,   // 1 shl 12 = SSL_ST_CONNECT
+    /// <summary>Bit 13: Server acceptance state (<c>SSL_ST_ACCEPT</c>).</summary>
     stfAccept             = 13,   // 1 shl 13 = SSL_ST_ACCEPT
+    /// <summary>Bit 14: TLS alert received/sent (<c>SSL_ST_ALERT</c>).</summary>
     stfAlert              = 14    // 1 shl 14 = SSL_ST_ALERT
   );
 
+  /// <summary>
+  ///   Set representation of active OpenSSL state and callback flags.
+  /// </summary>
   TTaurusTLSSslStateFlags = set of TTaurusTLSSslStateFlag;
 
+  /// <summary>
+  ///   Immutable snapshot structure encapsulating OpenSSL state information,
+  ///   alert codes, and human-readable diagnostics from <c>SSL_info_callback</c>.
+  /// </summary>
   TTaurusTLSSslState = record
   public const
+    /// <summary>Lowest ordinal value of the lower flag range.</summary>
     cLowMin   = Ord(Low(TTaurusTLSSslStateFlag));
+    /// <summary>Highest ordinal value of the lower flag range.</summary>
     cLowMax   = Ord(stfHandShakeDone);
+    /// <summary>Lowest ordinal value of the higher flag range.</summary>
     cHighMin  = Ord(stfConnect);
+    /// <summary>Highest ordinal value of the higher flag range.</summary>
     cHighMax  = Ord(High(TTaurusTLSSslStateFlag));
-    // Compute contiguously active bits for the low range (0..5): Mask = $3F
+
+    /// <summary>
+    ///   Bitmask for the lower active range (bits 0..5): Mask = $3F.
+    /// </summary>
     cLowMask  = ((1 shl (cLowMax + 1)) - 1) - ((1 shl cLowMin) - 1);
-    // Compute contiguously active bits for the high range (12..14): Mask = $7000
+    /// <summary>
+    ///   Bitmask for the higher active range (bits 12..14): Mask = $7000.
+    /// </summary>
     cHighMask = ((1 shl (cHighMax + 1)) - 1) - ((1 shl cHighMin) - 1);
-    // Combining masks: Mask = $703F
+    /// <summary>
+    ///   Combined bitmask filtering active bits and ignoring the gap ($703F).
+    /// </summary>
     cStateFlagsMask = cLowMask or cHighMask;
 
   private
@@ -206,36 +348,81 @@ type
     procedure InitMessages; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
   public
+    /// <summary>
+    ///   Initializes state record from a strongly-typed flag set.
+    /// </summary>
+    /// <param name="AStates">The active set of state flags.</param>
+    /// <param name="ACode">The OpenSSL return/alert code.</param>
+    /// <param name="ASSL">The active OpenSSL session pointer.</param>
     constructor Create(const AStates: TTaurusTLSSslStateFlags; const ACode: TIdC_INT;
       ASSL: PSSL); overload;
+
+    /// <summary>
+    ///   Initializes state record from raw OpenSSL callback integers.
+    /// </summary>
+    /// <param name="ASSLStates">The raw bitwise where/state value.</param>
+    /// <param name="ACode">The OpenSSL return/alert code.</param>
+    /// <param name="ASSL">The active OpenSSL session pointer.</param>
     constructor Create(const ASSLStates, ACode: TIdC_INT; ASSL: PSSL); overload;
 
+    /// <summary>
+    ///   Converts a flag set to its integer representation with gap masking.
+    /// </summary>
+    /// <param name="AValue">The set of flags to convert.</param>
+    /// <returns>Integer bitmask value.</returns>
     class function ToInt(const AValue: TTaurusTLSSslStateFlags): TIdC_INT; static;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+    /// <summary>True if in client connection state (<c>stfConnect</c>).</summary>
     property IsConnect: boolean read GetIsConnect;
+    /// <summary>True if in server acceptance state (<c>stfAccept</c>).</summary>
     property IsAccept: boolean read GetIsAccept;
+    /// <summary>True if inside a handshake loop iteration (<c>stfLoop</c>).</summary>
     property IsInLoop: boolean read GetIsInLoop;
+    /// <summary>True if exiting a handshake state (<c>stfExit</c>).</summary>
     property IsExit: boolean read GetIsExit;
+    /// <summary>True if a TLS alert is signaled (<c>stfAlert</c>).</summary>
     property IsAlert: boolean read GetIsAlert;
+    /// <summary>True if performing a read operation (<c>stfRead</c>).</summary>
     property IsRead: boolean read GetIsRead;
+    /// <summary>True if performing a write operation (<c>stfWrite</c>).</summary>
     property IsWrite: boolean read GetIsWrite;
+    /// <summary>True if the handshake is starting (<c>stfHandShakeStart</c>).</summary>
     property IsHandshakeStarts: boolean read GetIsHandshakeStarts;
+    /// <summary>True if the handshake has completed (<c>stfHandShakeDone</c>).</summary>
     property IsHandshakeDone: boolean read GetIsHandshakeDone;
+    /// <summary>True if an incoming TLS alert was received.</summary>
     property IsReadAlert: boolean read GetIsReadAlert;
+    /// <summary>True if an outgoing TLS alert is being sent.</summary>
     property IsWriteAlert: boolean read GetIsWriteAlert;
+    /// <summary>True if server is iterating inside the accept loop.</summary>
     property IsAcceptLoop: boolean read GetIsAcceptLoop;
+    /// <summary>True if server has exited the accept state.</summary>
     property IsAcceptExit: boolean read GetIsAcceptExit;
+    /// <summary>True if client is iterating inside the connect loop.</summary>
     property IsConnectLoop: boolean read GetIsConnectLoop;
+    /// <summary>True if client has exited the connect state.</summary>
     property IsConnectExit: boolean read GetIsConnectExit;
 
+    /// <summary>The strongly-typed set of active state flags.</summary>
     property StateFlags: TTaurusTLSSslStateFlags read GetStateFlags;
+    /// <summary>The raw integer bitmask of active state flags.</summary>
     property StatesAsInt: TIdC_INT read FStates;
+    /// <summary>The raw OpenSSL return/alert code.</summary>
     property ErrorCode: TIdC_INT read FCode;
+    /// <summary>Human-readable description of the current status/action.</summary>
     property StateStatusMessage: string read GetStateStatusMessage;
+    /// <summary>Detailed description of the active state or alert message.</summary>
     property AlertMessage: string read GetAlertMessage;
   end;
 
+  /// <summary>
+  ///   Encapsulates parameters passed to the OpenSSL security check callback
+  ///   (<c>SSL_CTX_set_security_callback</c>) for custom cryptographic auditing.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.0/man3/SSL_CTX_set_security_callback/">
+  ///   SSL_CTX_set_security_callback
+  /// </seealso>
   TTaurusTLSSecurityCheckState = record
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FOp: TIdC_INT;
@@ -259,75 +446,186 @@ type
   private
     procedure Destroy; {$IFDEF USE_INLINE}inline; {$ENDIF}
   public
+    /// <summary>
+    ///   Initializes the security check state with raw OpenSSL parameters.
+    /// </summary>
+    /// <param name="AOp">Security operation identifier (<c>SSL_SECOP_*</c>).</param>
+    /// <param name="ABits">Security bits required/provided.</param>
+    /// <param name="ANid">Numerical Identifier of the cryptographic object.</param>
+    /// <param name="AOther">Raw pointer to the object under evaluation.</param>
     constructor Create(AOp, ABits, ANid: TIdC_INT; AOther: Pointer);
 
-    // Raw OpenSSL property accessors
+    /// <summary>Raw OpenSSL security operation code (<c>SSL_SECOP_*</c>).</summary>
     property Op: TIdC_INT read FOp;
+    /// <summary>Security strength level in bits.</summary>
     property Bits: TTaurusTLSSecurityBits read FBits;
+    /// <summary>OpenSSL numerical identifier (NID) of the item.</summary>
     property Nid: TIdC_INT read FNid;
-    property Other: Pointer read FOther; // Raw PX509 or PSSL_CIPHER pointer
+    /// <summary>Raw pointer to the object under evaluation (e.g. PX509).</summary>
+    property Other: Pointer read FOther;
+    /// <summary>Non-owning wrapper for the evaluated peer certificate.</summary>
     property Certificate: TTaurusTLSX509 read GetCertificate;
 
-    // Bitwise state properties
+    /// <summary>True if evaluating peer parameters.</summary>
     property IsPeer: Boolean read GetIsPeer;
+    /// <summary>True if evaluating a cipher suite.</summary>
     property IsCipher: Boolean read GetIsCipher;
+    /// <summary>True if evaluating an elliptic curve.</summary>
     property IsCurve: Boolean read GetIsCurve;
+    /// <summary>True if evaluating Diffie-Hellman parameters.</summary>
     property IsDH: Boolean read GetIsDH;
+    /// <summary>True if evaluating a public/private key.</summary>
     property IsPKey: Boolean read GetIsPKey;
+    /// <summary>True if evaluating a signature algorithm.</summary>
     property IsSigAlg: Boolean read GetIsSigAlg;
+    /// <summary>True if evaluating an X.509 certificate.</summary>
     property IsCert: Boolean read GetIsCert;
 
-    // Cryptographic name properties
+    /// <summary>Short text name associated with the NID.</summary>
     property NidShortName: string read GetNidShortName;
+    /// <summary>Long descriptive name associated with the NID.</summary>
     property NidLongName: string read GetNidLongName;
+    /// <summary>Name of the cipher under evaluation, if applicable.</summary>
     property CipherName: string read GetCipherName;
   end;
 
-
   // SSL Socket support types and classes
+type
+  /// <summary>
+  ///   Named cryptographic store specialized for loading trusted CA
+  ///   certificates and Certificate Revocation Lists (CRLs) using the
+  ///   OpenSSL <c>OSSL_STORE</c> architecture.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.0/man3/OSSL_STORE_open/">
+  ///   OSSL_STORE_open
+  /// </seealso>
   TTaurusTLSTrustStore = class(TTaurusTLSOSSLStore)
   public const
+    /// <summary>
+    ///   Restricts store ingestion filter to certificates and CRL items only.
+    /// </summary>
     cFilter = [sitCert, sitCRL];
   public type
+    /// <summary>Alias for the OSSL_STORE item filter type set.</summary>
     TStoreItemTypes = TTaurusTLSOSSLStore.TStoreItemTypes;
   private
     FName: string;
   protected
+    /// <summary>Sets the internal unique name for this store.</summary>
+    /// <param name="AName">The store name string.</param>
     procedure SetName(const AName: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
   public
+    /// <summary>
+    ///   Initializes a named trust store from a raw byte string URI.
+    /// </summary>
+    /// <param name="AName">Unique name identifying the store.</param>
+    /// <param name="AUri">The URI path (e.g. file path, PKCS#11 URI).</param>
+    /// <param name="AUiCtx">UI context handler for password prompts.</param>
     constructor Create(const AName: string; const AUri: RawByteString;
       AUiCtx: TTaurusTLS_UICtx); reintroduce; overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    /// <summary>
+    ///   Initializes a named trust store from a Unicode string URI.
+    /// </summary>
+    /// <param name="AName">Unique name identifying the store.</param>
+    /// <param name="AUri">The URI path (e.g. file path, PKCS#11 URI).</param>
+    /// <param name="AUiCtx">UI context handler for password prompts.</param>
     constructor Create(const AName: string; const AUri: UnicodeString;
       AUiCtx: TTaurusTLS_UICtx); reintroduce; overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    /// <summary>
+    ///   Initializes a named trust store from a custom OpenSSL BIO stream.
+    /// </summary>
+    /// <param name="AName">Unique name identifying the store.</param>
+    /// <param name="ABio">The custom BIO stream interface wrapper.</param>
+    /// <param name="AUiCtx">UI context handler for password prompts.</param>
     constructor Create(const AName: string; ABio: TTaurusTLSCustomBIO;
       AUiCtx: TTaurusTLS_UICtx); reintroduce; overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    /// <summary>
+    ///   Initializes a named trust store from an in-memory byte array.
+    /// </summary>
+    /// <param name="AName">Unique name identifying the store.</param>
+    /// <param name="AUiCtx">UI context handler for password prompts.</param>
+    /// <param name="AData">Byte array containing raw PEM/DER data.</param>
     constructor CreateMem(const AName: string; AUiCtx: TTaurusTLS_UICtx;
       const AData: TBytes); reintroduce; overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    /// <summary>
+    ///   Initializes a named trust store from an in-memory string buffer.
+    /// </summary>
+    /// <param name="AName">Unique name identifying the store.</param>
+    /// <param name="AUiCtx">UI context handler for password prompts.</param>
+    /// <param name="AData">String containing PEM-formatted data.</param>
     constructor CreateMem(const AName: string; AUiCtx: TTaurusTLS_UICtx;
       const AData: string); reintroduce; overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+    /// <summary>Unique name or identifier associated with this store.</summary>
     property Name: string read FName;
   end;
 
+  /// <summary>
+  ///   Dictionary collection managing multiple named <see
+  ///   cref="TTaurusTLSTrustStore"/> instances and compiling them into a
+  ///   consolidated native OpenSSL X.509 verification trust repository.
+  /// </summary>
   TTaurusTLSTrustStores = class(TDictionary<string, TTaurusTLSTrustStore>)
   protected
+    /// <summary>Validates that the store instance is not nil.</summary>
+    /// <param name="AStore">The trust store instance to validate.</param>
     procedure CheckStore(const AStore: TTaurusTLSTrustStore);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
   public
+    /// <summary>
+    ///   Adds a named trust store to the collection, using its <see
+    ///   cref="TTaurusTLSTrustStore.Name"/> property as the key.
+    /// </summary>
+    /// <param name="AValue">The trust store instance to add.</param>
     procedure Add(const AValue: TTaurusTLSTrustStore);
       reintroduce; {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    /// <summary>
+    ///   Adds or updates a named trust store in the collection.
+    /// </summary>
+    /// <param name="AValue">The trust store instance to add or update.</param>
     procedure AddOrSetValue(const AValue: TTaurusTLSTrustStore);
       reintroduce; {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    /// <summary>
+    ///   Attempts to add a named trust store without raising exceptions on
+    ///   duplicate keys.
+    /// </summary>
+    /// <param name="AValue">The trust store instance to add.</param>
+    /// <returns>True if the store was added successfully; False if duplicate.</returns>
     function TryAdd(const AValue: TTaurusTLSTrustStore): boolean;
       reintroduce; {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    /// <summary>
+    ///   Compiles all certificates and CRLs from every registered trust store
+    ///   into a single consolidated <see cref="TTaurusTLS_X509Store"/> object.
+    /// </summary>
+    /// <returns>
+    ///   A new <see cref="TTaurusTLS_X509Store"/> instance. Caller takes
+    ///   ownership.
+    /// </returns>
     function BuildStore: TTaurusTLS_X509Store;
   end;
 
   // Forward declaration
   TTaurusTLSSslSocket = class;
 
-  // Event type declarations
+// Event type declarations
 
+  /// <summary>
+  ///   Fired when OpenSSL evaluates security parameters (ciphers, key bits,
+  ///   curves) via <c>SSL_CTX_set_security_callback</c>.
+  /// </summary>
+  /// <param name="ASender">
+  ///   The parent IOHandler component initiating the connection.
+  /// </param>
+  /// <param name="ASocket">The active socket context instance.</param>
+  /// <param name="AState">Encapsulates operation, bits, NID, and object.</param>
+  /// <param name="AAccept">Set to True to permit; False to reject.</param>
   TTaurusTLSOnSecurityCheck = procedure(
     ASender: TObject;
     ASocket: TTaurusTLSSslSocket;
@@ -335,40 +633,119 @@ type
     var AAccept: Boolean
   ) of object;
 
+  (*
+  /// <summary>
+  ///   Unused legacy notification delegate.
+  /// </summary>
   TTaurusTLSOnIOHandlerNotify = procedure(ASender: TObject;
     ASocket: TTaurusTLSSslSocket) of object;
+  *)
 
+  /// <summary>
+  ///   Fired synchronously when the internal socket state machine transitions
+  ///   between lifecycle states.
+  /// </summary>
+  /// <param name="ASender">The parent IOHandler component instance.</param>
+  /// <param name="ASocket">The active socket context instance.</param>
+  /// <param name="AOldState">The previous state enum value.</param>
+  /// <param name="ANewState">The newly committed state enum value.</param>
   TTaurusTLSOnStateChange = procedure(ASender: TObject;
     ASocket: TTaurusTLSSslSocket; AOldState, ANewState: TTaurusTLSSslSocketState) of object;
 
+  /// <summary>
+  ///   Fired during OpenSSL info callback execution to report state transitions,
+  ///   handshake loops, and alerts.
+  /// </summary>
+  /// <param name="ASender">The parent IOHandler component instance.</param>
+  /// <param name="ASocket">The active socket context instance.</param>
+  /// <param name="AState">
+  ///   Immutable snapshot of OpenSSL state flags and message strings.
+  /// </param>
   TTaurusTLSOnSSLStatusInfo = procedure(ASender: TObject;
     ASocket: TTaurusTLSSslSocket; const AState: TTaurusTLSSslState) of object;
 
+  /// <summary>
+  ///   Fired to emit diagnostic log messages from the state machine.
+  /// </summary>
+  /// <param name="ASender">The parent IOHandler component instance.</param>
+  /// <param name="AMessage">The diagnostic text message.</param>
   TTaurusTLSOnDebugMessage = procedure(ASender: TObject;
     const AMessage: String) of object;
 
+  /// <summary>
+  ///   Fired post-handshake when peer certificate verification returns an
+  ///   error, allowing dynamic application overrides.
+  /// </summary>
+  /// <param name="ASender">The parent IOHandler component instance.</param>
+  /// <param name="ASocket">The active socket context instance.</param>
+  /// <param name="ACertificate">Wrapper around the peer X.509 certificate.</param>
+  /// <param name="AError">Encapsulates the OpenSSL error code.</param>
+  /// <param name="ASuccess">Set to True to accept; False to fail.</param>
   TTaurusTLSOnPeerCertError = procedure(ASender: TObject;
     ASocket: TTaurusTLSSslSocket; ACertificate: TTaurusTLSX509;
     const AError: TTaurusTLSX509Error; var ASuccess: boolean) of object;
 
+  /// <summary>
+  ///   Fired during in-handshake certificate verification for each certificate
+  ///   in the chain.
+  /// </summary>
+  /// <param name="ASender">The parent IOHandler component instance.</param>
+  /// <param name="ASocket">The active socket context instance.</param>
+  /// <param name="ACertValidator">Validator helper for the active chain.</param>
+  /// <param name="ASuccess">True if OpenSSL verification succeeded.</param>
+  /// <param name="AContinue">Set to False to terminate validation chain.</param>
   TTaurusTLSOnVerifyCallback = procedure(
     ASender: TObject; ASocket: TTaurusTLSSslSocket;
     ACertValidator: TTaurusTLSX509CertValidator;
     var ASuccess, AContinue: Boolean
   ) of object;
 
+  /// <summary>
+  ///   Fired when a server requests mutual TLS (mTLS) client credentials.
+  /// </summary>
+  /// <param name="ASender">The parent IOHandler component instance.</param>
+  /// <param name="ASocket">The active socket context instance.</param>
+  /// <param name="ACert">Out-parameter: Pointer to client certificate.</param>
+  /// <param name="APKey">Out-parameter: Pointer to matching private key.</param>
   TTaurusTLSOnClientCertCallback = procedure(ASender: TObject;
     ASocket: TTaurusTLSSslSocket; var ACert: PX509; APKey: PEVP_PKEY
   ) of object;
 
+  /// <summary>
+  ///   Fired when OpenSSL emits internal ECH diagnostic log lines.
+  /// </summary>
+  /// <param name="ASender">The parent IOHandler component instance.</param>
+  /// <param name="ASocket">The active socket context instance.</param>
+  /// <param name="AECHLogStr">Raw C-string containing the log text.</param>
   TTaurusTLSOnECHLog = procedure(ASender: TObject;
     ASocket: TTaurusTLSSslSocket; const AECHLogStr: PAnsiChar) of object;
 
+  /// <summary>
+  ///   Fired when the server returns updated ECHConfigList keys via retry_configs.
+  /// </summary>
+  /// <param name="ASender">The parent IOHandler component instance.</param>
+  /// <param name="ASocket">The active socket context instance.</param>
+  /// <param name="AECHRetryConfig">Base64-encoded ECHConfigList string.</param>
   TTaurusTLSOnCliECHConfigRetry = procedure(ASender: TObject;
     ASocket: TTaurusTLSSslSocket; const AECHRetryConfig: string) of object;
 
-  TTaurusTLSSslOp = (sslOpRecvd, sslOpSent);
+  /// <summary>
+  ///   Specifies the direction of a low-level TLS protocol message record.
+  /// </summary>
+  TTaurusTLSSslOp = (
+    /// <summary>Message was received from the peer.</summary>
+    sslOpRecvd,
+    /// <summary>Message is being sent to the peer.</summary>
+    sslOpSent
+  );
 
+  /// <summary>
+  ///   Encapsulates low-level TLS record frames, alerts, and handshake messages
+  ///   intercepted by <c>SSL_set_msg_callback</c>.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.0/man3/SSL_set_msg_callback/">
+  ///   SSL_set_msg_callback
+  /// </seealso>
   TTaurusTLSSslMessage = record
   private
     FOp: TTaurusTLSSslOp;
@@ -382,48 +759,107 @@ type
     function GetMsgDescription: string;
 
   public
+    /// <summary>
+    ///   Initializes record from raw OpenSSL message callback parameters.
+    /// </summary>
+    /// <param name="AWriteP">0 for received; 1 for sent.</param>
+    /// <param name="AVersion">Protocol version integer.</param>
+    /// <param name="AContentType">TLS content type integer.</param>
+    /// <param name="ABuf">Pointer to raw record buffer.</param>
+    /// <param name="ALen">Length of the buffer in bytes.</param>
     constructor Create(AWriteP, AVersion, AContentType: TIdC_INT;
       ABuf: pointer; ALen: TIdC_SIZET);
+
+    /// <summary>Copies the raw record buffer to a managed TIdBytes array.</summary>
+    /// <returns>Managed byte array containing the raw message data.</returns>
     function ToBytes: TIdBytes;
 
+    /// <summary>Indicates whether the message was sent or received.</summary>
     property Op: TTaurusTLSSslOp read FOp;
+    /// <summary>Strongly-typed TLS protocol version of the record.</summary>
     property Version: TTaurusTLS2SslVersion read GetVersion;
+    /// <summary>Raw OpenSSL version integer code.</summary>
     property VersionRaw: TIdC_INT read FVersion;
+    /// <summary>Raw OpenSSL content type identifier.</summary>
     property ContentType: TIdC_INT read FContentType;
+    /// <summary>Human-readable content type string.</summary>
     property ContentTypeStr: string read GetContentTypeStr;
+    /// <summary>Detailed decoded description of the message content.</summary>
     property Description: string read GetMsgDescription;
+    /// <summary>True if content type represents an internal pseudo-type.</summary>
     property IsPseudoType: Boolean read GetIsPseudoType;
+    /// <summary>Direct pointer to the unmanaged message buffer.</summary>
     property Buffer: PByte read FBuf;
+    /// <summary>Length of the message buffer in bytes.</summary>
     property Length: TIdC_SIZET read FLen;
   end;
 
+  /// <summary>
+  ///   Fired when a low-level TLS protocol message record is processed.
+  /// </summary>
+  /// <param name="ASender">The parent IOHandler component instance.</param>
+  /// <param name="ASocket">The active socket context instance.</param>
+  /// <param name="lMsg">Encapsulates the message type, version, and buffer.</param>
   TTaurusTLSOnSSLMessageCallback = procedure(ASender: TObject;
     ASocket: TTaurusTLSSslSocket; const lMsg: TTaurusTLSSslMessage) of object;
 
-  { TODO : This declararion is a subject to change due to security reason. }
+  /// <summary>
+  ///   Fired when OpenSSL exports TLS secrets for debugging (Wireshark keylog).
+  /// </summary>
+  /// <param name="ASender">The parent IOHandler component instance.</param>
+  /// <param name="ASocket">The active socket context instance.</param>
+  /// <param name="ALine">Raw text line containing secret key material.</param>
+  /// <remarks>
+  ///   Consumers must write data immediately; memory is cleansed upon return.
+  /// </remarks>
   TTaurusTLSOnKeyLog = procedure(ASender: TObject; ASocket: TTaurusTLSSslSocket;
     ALine: PIdAnsiChar) of object;
 
-  { TODO : This declararion is a subject to change due to future list of parameters change. }
+  /// <summary>
+  ///   Fired on the server side when the client SNI is negotiated.
+  /// </summary>
+  /// <param name="ASender">The parent IOHandler component instance.</param>
+  /// <param name="ASocket">The active socket context instance.</param>
+  /// <param name="AAlert">Out-parameter: Set to TLS alert code on failure.</param>
   TTaurusTLSOnSniSelect = procedure(ASender: TObject;
     ASocket: TTaurusTLSSslSocket; var AAlert: TIdC_INT);
 
+  /// <summary>
+  ///   Maps return codes for the server-side ALPN selection callback.
+  /// </summary>
   TTaurusTLSAlpnResult = (
+    /// <summary>Protocol matched successfully (<c>SSL_TLSEXT_ERR_OK</c>).</summary>
     alpnSuccess       = SSL_TLSEXT_ERR_OK,
+    /// <summary>Fatal alert generated (<c>SSL_TLSEXT_ERR_ALERT_FATAL</c>).</summary>
     alpnFatalAlert    = SSL_TLSEXT_ERR_ALERT_FATAL,
+    /// <summary>Warning alert generated (<c>SSL_TLSEXT_ERR_ALERT_WARNING</c>).</summary>
     alpnWarningAlert  = SSL_TLSEXT_ERR_ALERT_WARNING,
+    /// <summary>No mutually acceptable protocol (<c>SSL_TLSEXT_ERR_NOACK</c>).</summary>
     alpnNoAck         = SSL_TLSEXT_ERR_NOACK
   );
 
+  /// <summary>
+  ///   Record helper providing integer conversion for ALPN result enum.
+  /// </summary>
   TTaurusTLSAlpnResultHelper = record helper for TTaurusTLSAlpnResult
   private
     function GetAsInt: TIdC_INT;
     procedure SetAsInt(AValue: TIdC_INT);
   public
+    /// <summary>Initializes helper with the raw integer code.</summary>
+    /// <param name="AValue">The OpenSSL integer return code.</param>
     constructor Create(AValue: TIdC_INT);
+    /// <summary>Raw OpenSSL integer representation of the ALPN result.</summary>
     property AsInt: TIdC_INT read GetAsInt write SetAsInt;
   end;
 
+  /// <summary>
+  ///   Parses client-offered ALPN wire protocol buffers and manages server
+  ///   protocol selection during the ALPN callback.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.0/man3/SSL_CTX_set_alpn_select_cb/">
+  ///   SSL_CTX_set_alpn_select_cb
+  /// </seealso>
   TTaurusTLSAlpnSelector = record
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private type
     TAlpnPair = record
@@ -437,75 +873,161 @@ type
     FInLen: TIdC_UINT;
     FResultValue: TTaurusTLSAlpnResult;
 
-    // Pre-computed starting offset/Len pairs of each protocol in the raw buffer
     FPairs: TArray<TAlpnPair>;
 
     function GetCount: TIdC_INT; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetValues(AItem: TIdC_INT): string;
   public
+    /// <summary>
+    ///   Parses the client's wire-format ALPN protocol list.
+    /// </summary>
+    /// <param name="AInProtos">Pointer to raw wire-format buffer.</param>
+    /// <param name="AInLen">Length of the buffer in bytes.</param>
     constructor Create(AInProtos: PIdC_UINT8; AInLen: TIdC_UINT);
 
+    /// <summary>Selects the offered protocol at the specified index.</summary>
+    /// <param name="AItem">Zero-based index of the protocol to select.</param>
     procedure Select(AItem: TIdC_INT);
+
+    /// <summary>Declines all offered protocols (<c>alpnNoAck</c>).</summary>
     procedure Abort; {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    /// <summary>Sets an explicit error or alert result.</summary>
+    /// <param name="AValue">The ALPN result value to return.</param>
     procedure Error(AValue: TTaurusTLSAlpnResult); {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+    /// <summary>Total number of protocols offered by the client.</summary>
     property Count: TIdC_INT read GetCount;
+    /// <summary>Protocol string identifier at the specified index.</summary>
     property Values[AItem: TIdC_INT]: string read GetValues; default;
+    /// <summary>The final ALPN negotiation result code.</summary>
     property ResultValue: TTaurusTLSAlpnResult read FResultValue;
+    /// <summary>Pointer to the selected wire-format protocol string.</summary>
     property SelectedProto: PIdC_UINT8 read FOutProto;
+    /// <summary>Length of the selected protocol string in bytes.</summary>
     property SelectedProtoLen: TIdC_UINT8 read FOutLen;
   end;
 
+  /// <summary>
+  ///   Fired on the server side to select an Application-Layer Protocol (ALPN).
+  /// </summary>
+  /// <param name="ASender">The parent IOHandler component instance.</param>
+  /// <param name="ASocket">The active socket context instance.</param>
+  /// <param name="AAlpnState">Selector encapsulating client protocol list.</param>
   TTaurusTLSOnAlpnSelect = procedure(ASender: TObject;
     ASocket: TTaurusTLSSslSocket; const AAlpnState: TTaurusTLSAlpnSelector);
 
+  /// <summary>
+  ///   Fired on the server side when a new TLS session ticket is created.
+  /// </summary>
+  /// <param name="ASender">The parent IOHandler component instance.</param>
+  /// <param name="ASession">Pointer to the native OpenSSL session object.</param>
+  /// <param name="AAccept">Set to True to take ownership; False otherwise.</param>
   TTaurusTLSOnSslSessionNew = procedure(ASender: TObject;
     const ASession: PSSL_SESSION; var AAccept: boolean);
 
+  /// <summary>
+  ///   Fired on the server side when a TLS session ticket is invalidated.
+  /// </summary>
+  /// <param name="ASender">The parent IOHandler component instance.</param>
+  /// <param name="ACtx">The parent SSL context pointer.</param>
+  /// <param name="ASession">Pointer to the removed session object.</param>
   TTaurusTLSOnSslSessionRemove = procedure(ASender: TObject;
     ACtx: PSSL_CTX; const ASession: PSSL_SESSION);
 
   TTaurusTLSSslSocketCtx = class;
 
+  /// <summary>
+  ///   Reference-counted lifetime interface managing the underlying <see
+  ///   cref="TTaurusTLSSslSocketCtx"/> snapshot instance.
+  /// </summary>
   ITaurusTLSSslSocketCtx = interface
   ['{DCD600F0-1D28-482D-A883-A563CFE0D6FC}']
+    /// <summary>
+    ///   Retrieves the underlying configuration context class instance.
+    /// </summary>
+    /// <returns>The <see cref="TTaurusTLSSslSocketCtx"/> pointer.</returns>
     function GetCtx: TTaurusTLSSslSocketCtx;
+
+    /// <summary>
+    ///   Direct class pointer to the immutable configuration snapshot.
+    /// </summary>
     property Ctx: TTaurusTLSSslSocketCtx read GetCtx;
   end;
 
+  /// <summary>
+  ///   Operational and lifecycle state flags applied to a socket context.
+  /// </summary>
   TaurusTLSSslSocketCtxFlag = (
+    /// <summary>Context is frozen and immutable; modifications forbidden.</summary>
     slfFrozen,
+    /// <summary>Context is configured for client-side socket operations.</summary>
     slfClient,
+    /// <summary>Context is configured for server-peer socket operations.</summary>
     slfServer,
+    /// <summary>Enforces certificate hostname and IP identity verification.</summary>
     slfVerifyHostname,
+    /// <summary>Enables unidirectional close_notify session shutdown.</summary>
     slfUniDirectShutdown,
+    /// <summary>Enables quiet shutdown without sending close_notify alerts.</summary>
     slfQuietShutdown,
+    /// <summary>Enables OpenSSL read-ahead internal buffer optimization.</summary>
     slfReadAheadBuffering
   );
 
+  /// <summary>
+  ///   Set representing active context operational and lifecycle flags.
+  /// </summary>
   TaurusTLSSslSocketCtxFlags = set of TaurusTLSSslSocketCtxFlag;
 
+  /// <summary>
+  ///   Record helper providing indexed boolean property accessors for <see
+  ///   cref="TaurusTLSSslSocketCtxFlags"/>.
+  /// </summary>
   TaurusTLSSslSocketCtxFlagsHelper = record helper for TaurusTLSSslSocketCtxFlags
   private
     function GetFlag(const AFlag: TaurusTLSSslSocketCtxFlag): boolean;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
   public
+    /// <summary>True if the context is frozen and cannot be modified.</summary>
     property IsFrozen: boolean index slfFrozen read GetFlag;
+    /// <summary>True if the context is configured for a client socket.</summary>
     property IsClientSocket: boolean index slfClient read GetFlag;
+    /// <summary>True if the context is configured for a server socket.</summary>
     property IsServerSocket: boolean index slfServer read GetFlag;
+    /// <summary>True if peer certificate hostname verification is enabled.</summary>
     property VerifyHostName: boolean index slfVerifyHostname read GetFlag;
+    /// <summary>True if unidirectional shutdown is enabled.</summary>
     property UniDirectShutdown: boolean index slfUniDirectShutdown read GetFlag;
+    /// <summary>True if quiet shutdown is enabled.</summary>
     property QuietShutdown: boolean index slfQuietShutdown read GetFlag;
+    /// <summary>True if OpenSSL read-ahead buffering is enabled.</summary>
     property ReadAheadBuffering: boolean index slfReadAheadBuffering read GetFlag;
   end;
 
   TTaurusTLSMetaX509VerifyParam = class;
 
+  /// <summary>
+  ///   Subrange defining valid maximum TLS record payload fragment sizes
+  ///   (512 bytes up to the default maximum of 16384 bytes).
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.0/man3/SSL_CTX_set_max_send_fragment/">
+  ///   SSL_CTX_set_max_send_fragment
+  /// </seealso>
   TTaurusTLSSslMaxSendFragment = 512.. SSL3_RT_MAX_PLAIN_LENGTH;
 
+  /// <summary>
+  ///   Abstract base class representing an immutable runtime configuration
+  ///   snapshot and OpenSSL context holder for secure socket sessions.
+  /// </summary>
   TTaurusTLSSslSocketCtx = class abstract(TInterfacedObject, ITaurusTLSSslSocketCtx)
   public const
+    /// <summary>Default verification modes: peer validation enabled.</summary>
     cVerifyModesDef = [sslvrfPeer];
+    /// <summary>
+    ///   Default context options: compression disabled and middlebox
+    ///   compatibility enabled.
+    /// </summary>
     cDefaultCtxOptions = [sslOpNoCompression, sslOpEnableMiddleboxCompat];
 
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
@@ -545,120 +1067,256 @@ type
     function GetHasOnKeyLog: boolean;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
   protected
-    // IITaurusTLSSocketCtx method(s)
+    /// <summary>
+    ///   Retrieves the underlying context instance for interface mapping.
+    /// </summary>
+    /// <returns>Self instance as <see cref="TTaurusTLSSslSocketCtx"/>.</returns>
     function GetCtx: TTaurusTLSSslSocketCtx; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+    /// <summary>
+    ///   Resolves the Delphi context instance bound to an OpenSSL context.
+    /// </summary>
+    /// <param name="ACtx">The native OpenSSL context pointer.</param>
+    /// <returns>
+    ///   The bound <see cref="TTaurusTLSSslSocketCtx"/> instance.
+    /// </returns>
     class function GetInstanceFromCtx(ACtx: PSSL_CTX): TTaurusTLSSslSocketCtx;
       static; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+    /// <summary>
+    ///   Normalizes a domain string to lowercase for SNI matching.
+    /// </summary>
+    /// <param name="AValue">Raw hostname string to normalize.</param>
+    /// <returns>Lowercase normalized raw string.</returns>
     class function NormalizeHostName(const AValue: RawByteString): RawByteString;
       static; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+    /// <summary>
+    ///   Raises an exception if the context is frozen and cannot be modified.
+    /// </summary>
     procedure CheckFrozen; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+    /// <summary>
+    ///   Queries the status of a specific context configuration flag.
+    /// </summary>
+    /// <param name="AFlag">The flag enum to test.</param>
+    /// <returns>True if the flag is set; False otherwise.</returns>
     function GetFlag(const AFlag: TaurusTLSSslSocketCtxFlag): boolean;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
-    // Event handlers
+    /// <summary>
+    ///   Dispatches state machine transition events to the registered handler.
+    /// </summary>
+    /// <param name="ASocket">The active socket instance.</param>
+    /// <param name="AOldState">Previous socket state.</param>
+    /// <param name="ANewState">Committed socket state.</param>
     procedure DoOnStateChange(ASocket: TTaurusTLSSslSocket;
       AOldState, ANewState: TTaurusTLSSslSocketState); {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    /// <summary>
+    ///   Dispatches post-handshake certificate error events to user code.
+    /// </summary>
+    /// <param name="ASocket">The active socket instance.</param>
+    /// <param name="ACertificate">Peer X.509 certificate wrapper.</param>
+    /// <param name="AError">OpenSSL verification error record.</param>
+    /// <param name="ASuccess">Set to True to override and accept failure.</param>
     procedure DoOnPeerCertError(ASocket: TTaurusTLSSslSocket;
       ACertificate: TTaurusTLSX509; const AError: TTaurusTLSX509Error;
       var ASuccess: boolean); {$IFDEF USE_INLINE}inline; {$ENDIF}
 
-    // OpenSSL Callback to Event bridges
+    /// <summary>
+    ///   Bridges native certificate verification callbacks to Delphi handlers.
+    /// </summary>
+    /// <param name="ASocket">The active socket instance.</param>
+    /// <param name="ACtx">OpenSSL store context pointer.</param>
+    /// <param name="ASuccess">Verification status flag.</param>
+    /// <param name="AContinue">Set to False to terminate validation chain.</param>
     procedure DoOnVerifyCertificate(ASocket: TTaurusTLSSslSocket;
       ACtx: PX509_STORE_CTX; var ASuccess, AContinue: boolean);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    /// <summary>
+    ///   Bridges OpenSSL security evaluation callbacks to Delphi handlers.
+    /// </summary>
+    /// <param name="ASocket">The active socket instance.</param>
+    /// <param name="op">Security operation identifier.</param>
+    /// <param name="bits">Security strength bits.</param>
+    /// <param name="nid">Numerical identifier of the evaluated item.</param>
+    /// <param name="other">Raw pointer to the evaluated object.</param>
+    /// <param name="AAccept">Set to True to permit; False to reject.</param>
     procedure DoOnSecurityCheck(ASocket: TTaurusTLSSslSocket;
       op, bits, nid: TIdC_INT; other: pointer; var AAccept: boolean);
+
+    /// <summary>
+    ///   Bridges OpenSSL state info callbacks to Delphi status handlers.
+    /// </summary>
+    /// <param name="ASocket">The active socket instance.</param>
+    /// <param name="AWhere">OpenSSL where/state bitmask.</param>
+    /// <param name="ARet">OpenSSL return or alert code.</param>
     procedure DoOnStatusInfo(ASocket: TTaurusTLSSslSocket;
       AWhere, ARet: TIdC_INT); {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    /// <summary>
+    ///   Bridges OpenSSL protocol message callbacks to Delphi handlers.
+    /// </summary>
+    /// <param name="ASocket">The active socket instance.</param>
+    /// <param name="AWriteP">0 for read; 1 for write.</param>
+    /// <param name="AVersion">TLS protocol version.</param>
+    /// <param name="AContentType">TLS record content type.</param>
+    /// <param name="ABuf">Pointer to raw record buffer.</param>
+    /// <param name="ALen">Buffer length in bytes.</param>
     procedure DoOnMessage(ASocket: TTaurusTLSSslSocket;
       AWriteP, AVersion, AContentType: TIdC_INT;
       const ABuf: Pointer; ALen: TIdC_SIZET);
-    { TODO : This declararion is a subject to change due to security reason. }
+
+    /// <summary>
+    ///   Dispatches raw TLS secret keylog lines for Wireshark decryption.
+    /// </summary>
+    /// <param name="ASocket">The active socket instance.</param>
+    /// <param name="ALine">Raw text line containing secret key material.</param>
     procedure DoOnKeyLog(ASocket: TTaurusTLSSslSocket; ALine: PIdAnsiChar);
 
-    // OpenSSL Callback status checkers
+    /// <summary>True if a certificate verification event is assigned.</summary>
     property HasOnVerifyCertificate: boolean read GetHasOnVerifyCertificate;
+    /// <summary>True if a security check event is assigned.</summary>
     property HasOnSecurityCheck: boolean read GetHasOnSecurityCheck;
+    /// <summary>True if an SSL status info event is assigned.</summary>
     property HasOnStatusInfo: boolean read GetHasOnStatusInfo;
+    /// <summary>True if an SSL message tracing event is assigned.</summary>
     property HasOnMessage: boolean read GetHasOnMessage;
+    /// <summary>True if an SSL keylog event is assigned.</summary>
     property HasOnKeylog: boolean read GetHasOnKeyLog;
 
-    // protected setters
+    /// <summary>Applies context operational flags fluently.</summary>
     function SetFlags(const AValue: TaurusTLSSslSocketCtxFlags): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Sets the minimum permitted TLS protocol version fluently.</summary>
     function SetMinTLSVersion(const AValue: TTaurusTLS2TlsVersion): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Sets the maximum permitted TLS protocol version fluently.</summary>
     function SetMaxTLSVersion(const AValue: TTaurusTLS2TlsVersion): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Applies OpenSSL context bitwise option flags fluently.</summary>
     function SetSSLCtxOptions(const AValue: TTaurusTLSSslOptionFlags): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Configures TLS 1.2 and earlier cipher list fluently.</summary>
     function SetCipherList(const AValue: string): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Configures TLS 1.3 cipher suites fluently.</summary>
     function SetCipherSuites(const AValue: string): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Configures allowed key exchange curve groups fluently.</summary>
     function SetKeXGroups(const AValue: string): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Configures allowed signature algorithms fluently.</summary>
     function SetSigAlgorithms(const AValue: string): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Configures peer certificate verification modes fluently.</summary>
     function SetVerifyModes(const AValue: TTaurusTLSVerifyModes): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Attaches custom X.509 verification parameters fluently.</summary>
     function SetVerifyParam(const AValue: TTaurusTLSCustomX509VerifyParam): TTaurusTLSSslSocketCtx;
       overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Attaches compiled trusted CA store fluently.</summary>
     function SetTrustStore(const AValue: TTaurusTLS_X509Store): TTaurusTLSSslSocketCtx;
       overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Sets maximum TLS record payload fragment size fluently.</summary>
     function SetMaxSendFragment(const AValue: TTaurusTLSSslMaxSendFragment): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+    /// <summary>Assigns peer certificate error event handler fluently.</summary>
     function SetOnPeerCertError(const AValue: TTaurusTLSOnPeerCertError): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Assigns state change event handler fluently.</summary>
     function SetOnStateChange(const AValue: TTaurusTLSOnStateChange): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Assigns SSL status info event handler fluently.</summary>
     function SetOnStatusInfo(const AValue: TTaurusTLSOnSSLStatusInfo): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Assigns certificate verification event handler fluently.</summary>
     function SetOnVerifyCertificate(const AValue: TTaurusTLSOnVerifyCallback): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Assigns security check callback event handler fluently.</summary>
     function SetOnSecurityCheck(const AValue: TTaurusTLSOnSecurityCheck): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Assigns protocol message tracing event handler fluently.</summary>
     function SetOnMessage(const AValue: TTaurusTLSOnSSLMessageCallback): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Assigns TLS keylog export event handler fluently.</summary>
     function SetOnKeyLog(const AValue: TTaurusTLSOnKeyLog): TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
-    { TODO : Add more SSL_CTX setters here. }
-
-    // CtxBuild methods
+    /// <summary>
+    ///   Initializes OpenSSL context parameters, options, and callbacks.
+    /// </summary>
     procedure InitCtx; virtual;
+
+    /// <summary>
+    ///   Releases OpenSSL context callbacks and unbinds user data.
+    /// </summary>
     procedure ReleaseCtx; virtual;
+
+    /// <summary>
+    ///   Marks the context snapshot as frozen and immutable.
+    /// </summary>
     procedure DoFreeze;
 
+    /// <summary>Active TLS session pointer for resumption.</summary>
     property Session: PSSL_SESSION read FSession write FSession;
+    /// <summary>Set of active context operational flags.</summary>
     property Flags: TaurusTLSSslSocketCtxFlags read FFlags;
+    /// <summary>Set of active certificate verification flags.</summary>
     property CertVerifyFlags: TTaurusTLSVerifyModeFlags read FCertVerifyFlags;
+    /// <summary>True if peer hostname verification is enabled.</summary>
     property VerifyHostname: boolean index slfVerifyHostname read GetFlag;
+    /// <summary>True if unidirectional shutdown is enabled.</summary>
     property UniDirectShutdown: boolean index slfUniDirectShutdown read GetFlag;
+    /// <summary>True if quiet shutdown is enabled.</summary>
     property QuietShutdown: boolean index slfQuietShutdown read GetFlag;
+    /// <summary>True if read-ahead buffering is enabled.</summary>
     property ReadAheadBuffering: boolean index slfReadAheadBuffering read GetFlag;
 
+    /// <summary>Event fired synchronously on state machine transitions.</summary>
     property OnStateChange: TTaurusTLSOnStateChange read FOnStateChange;
+    /// <summary>Event fired post-handshake on peer certificate errors.</summary>
     property OnPeerCertError: TTaurusTLSOnPeerCertError read FOnPeerCertError;
+    /// <summary>Event fired during OpenSSL info callback execution.</summary>
     property OnStatusInfo: TTaurusTLSOnSSLStatusInfo read FOnStatusInfo;
+    /// <summary>Event fired during in-handshake certificate verification.</summary>
     property OnVerifyCertificate: TTaurusTLSOnVerifyCallback
       read FOnVerifyCertificate;
 
   public
+    /// <summary>
+    ///   Initializes a new context snapshot instance.
+    /// </summary>
+    /// <param name="ASender">The parent component instance.</param>
+    /// <param name="ATLSMeth">The OpenSSL protocol method pointer.</param>
     constructor Create(ASender: TObject; ATLSMeth: PSSL_METHOD);
+
+    /// <summary>
+    ///   Releases context resources and frees the native OpenSSL context.
+    /// </summary>
     destructor Destroy; override;
+
+    /// <summary>
+    ///   Initializes the OpenSSL context and marks the snapshot as frozen.
+    /// </summary>
+    /// <returns>Self instance for method chaining.</returns>
     function FreezeCtx: TTaurusTLSSslSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+    /// <summary>The parent component instance initiating the context.</summary>
     property Sender: TObject read FSender;
+
+    /// <summary>Direct pointer to the underlying native OpenSSL context.</summary>
     property SSLCtx: PSSL_CTX read FSSLCtx;
   end;
 
+  /// <summary>
+  ///   Client-specific runtime configuration snapshot managing SNI routing,
+  ///   ECH keys, domain identity resolution, and mTLS client credentials.
+  /// </summary>
   TTaurusTLSSslClientSocketCtx = class(TTaurusTLSSslSocketCtx)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FHostname: RawByteString;
@@ -699,63 +1357,122 @@ type
     function GetOnECHLog: boolean;
     function GetHasOnECHRetry: boolean;
   protected
+    /// <summary>
+    ///   Initializes client context callbacks on the OpenSSL SSL_CTX.
+    /// </summary>
     procedure InitCtx; override;
+
+    /// <summary>
+    ///   Releases client context callbacks from the OpenSSL SSL_CTX.
+    /// </summary>
     procedure ReleaseCtx; override;
 
-    // protected setters
+    /// <summary>Sets the primary target hostname fluently.</summary>
     function SetHostName(const AValue: string): TTaurusTLSSslClientSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Sets the fallback or override SNI hostname fluently.</summary>
     function SetDefaultSNI(const AValue: string): TTaurusTLSSslClientSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Sets the SNI and ECH wire transmission mode fluently.</summary>
     function SetSNIMode(const AValue: TTaurusTLSSslClientSNIMode): TTaurusTLSSslClientSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Sets the unencrypted outer decoy SNI fluently.</summary>
     function SetECHOuterSNI(const AValue: string): TTaurusTLSSslClientSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Sets the Base64-encoded ECHConfigList string fluently.</summary>
     function SetECHConfigList(const AValue: string): TTaurusTLSSslClientSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Sets the ECH retry configuration callback fluently.</summary>
     function SetOnECHConfigRetry(
       const AValue: TTaurusTLSOnCliECHConfigRetry): TTaurusTLSSslClientSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Sets the mTLS client certificate callback fluently.</summary>
     function SetOnClientCert(
       const AValue: TTaurusTLSOnClientCertCallback): TTaurusTLSSslClientSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Sets the internal ECH logging callback fluently.</summary>
     function SetOnECHLog(const AValue: TTaurusTLSOnECHLog): TTaurusTLSSslClientSocketCtx;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
-    //
+    /// <summary>
+    ///   Dispatches client certificate requests to the registered handler.
+    /// </summary>
+    /// <param name="ASocket">The active socket instance.</param>
+    /// <param name="ACert">Out-parameter: Selected client certificate.</param>
+    /// <param name="APKey">Out-parameter: Matching private key.</param>
     procedure DoOnClientCertCallback(ASocket: TTaurusTLSSslSocket;
       var ACert: PX509; APKey: PEVP_PKEY);
 
+    /// <summary>
+    ///   Dispatches OpenSSL internal ECH diagnostic logs to user code.
+    /// </summary>
+    /// <param name="ASocket">The active socket instance.</param>
+    /// <param name="ALogStr">Raw C-string containing the log line.</param>
     procedure DoOnECHLogCallback(ASocket: TTaurusTLSSslSocket;
       const ALogStr: PAnsiChar);
 
+    /// <summary>
+    ///   Dispatches ECH retry configuration notifications to user code.
+    /// </summary>
+    /// <param name="ASocket">The active socket instance.</param>
+    /// <param name="AECHRetryConfig">Base64-encoded new ECHConfigList.</param>
     procedure DoOnECHConfigRetry(ASocket: TTaurusTLSSslSocket;
       const AECHRetryConfig: string);
 
   public
+    /// <summary>True if a client certificate callback is assigned.</summary>
     property HasOnClientCert: boolean read GetHasOnClientCert;
+    /// <summary>True if an ECH logging callback is assigned.</summary>
     property HasOnECHLog: boolean read GetOnECHLog;
+    /// <summary>True if an ECH retry configuration callback is assigned.</summary>
     property HasOnECHRetry: boolean read GetHasOnECHRetry;
 
+    /// <summary>Primary target hostname string.</summary>
     property HostName: string read GetHostName;
+    /// <summary>Override SNI hostname string.</summary>
     property DefaultSNI: string read GetDefaultSNI;
+    /// <summary>Active SNI and ECH wire transmission mode.</summary>
     property SNIMode: TTaurusTLSSslClientSNIMode read FSNIMode;
+    /// <summary>Unencrypted outer decoy SNI string.</summary>
     property ECHOuterSNI: string read GetECHOuterSNI;
+    /// <summary>Base64-encoded ECHConfigList key material string.</summary>
     property ECHConfigList: string read GetECHConfigList;
 
+    /// <summary>
+    ///   Resolved logical target domain name or IP used for certificate
+    ///   verification and inner ECH encryption.
+    /// </summary>
     property Identity: RawByteString read GetIdentity;
+
+    /// <summary>True if the resolved identity is an IP literal address.</summary>
     property IsIdentityIP: boolean read GetIsIdentityIP;
 
+    /// <summary>True if active mode requires real ECH encryption.</summary>
     property UseECH: Boolean read GetUseECH;
+
+    /// <summary>True if active mode requires ECH GREASE probing.</summary>
     property UseGREASE: Boolean read GetUseGrease;
+
+    /// <summary>
+    ///   Returns 1 if the outer SNI extension must be omitted (<c>no_outer</c>);
+    ///   otherwise 0.
+    /// </summary>
     property ECHNoOuterVal: TIdC_INT read GetECHNoOuterVal;
 
+    /// <summary>Raw byte representation of the primary hostname.</summary>
     property HostNameRaw: RawByteString read FHostname;
+    /// <summary>Raw byte representation of the override SNI.</summary>
     property DefaultSNIRaw: RawByteString read FDefaultSNI;
+    /// <summary>Raw byte representation of the outer decoy SNI.</summary>
     property ECHOuterSNIRaw: RawByteString read GetECHOuterSNIRaw;
+    /// <summary>Raw byte representation of the ECHConfigList.</summary>
     property ECHConfigListRaw: RawByteString read GetECHConfigListRaw;
   end;
 
+  /// <summary>
+  ///   Server-peer runtime configuration snapshot managing server-side SNI
+  ///   virtual hosting, ALPN selection, and session ticket caching.
+  /// </summary>
   TTaurusTLSSslPeerCtx = class(TTaurusTLSSslSocketCtx)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FOnSniSelect: TTaurusTLSOnSniSelect;
@@ -782,55 +1499,112 @@ type
     function GetHasOnPeerSslSessionRemove: boolean;
 
   protected
+    /// <summary>
+    ///   Initializes server-peer context callbacks on the OpenSSL SSL_CTX.
+    /// </summary>
     procedure InitCtx; override;
+
+    /// <summary>
+    ///   Releases server-peer context callbacks from the OpenSSL SSL_CTX.
+    /// </summary>
     procedure ReleaseCtx; override;
 
-    { TODO : This method is subject to change by implementing SNI Contexts Dictionary. }
+    /// <summary>
+    ///   Dispatches server SNI selection events to user code.
+    /// </summary>
+    /// <param name="ASocket">The active socket instance.</param>
+    /// <param name="AAlert">Out-parameter: TLS alert code on failure.</param>
     procedure DoOnPeerSniSelect(ASocket: TTaurusTLSSslSocket;
       var AAlert: TIdC_INT); {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    /// <summary>
+    ///   Dispatches ALPN protocol selection negotiation to user code.
+    /// </summary>
+    /// <param name="ASocket">The active socket instance.</param>
+    /// <param name="AOut">Out-parameter: Pointer to selected protocol.</param>
+    /// <param name="AOutLen">Out-parameter: Length of selected protocol.</param>
+    /// <param name="AIn">In-parameter: Raw client-offered protocol list.</param>
+    /// <param name="AInLen">In-parameter: Length of offered list.</param>
+    /// <param name="AResultValue">Out-parameter: ALPN negotiation result.</param>
     procedure DoOnAlpnSelect(ASocket: TTaurusTLSSslSocket;
       var AOut: PIdC_UINT8; var AOutLen: TIdC_UINT8; const AIn: PIdC_UINT8;
       const AInLen: TIdC_UINT; var AResultValue: TIdC_INT);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    /// <summary>
+    ///   Dispatches new TLS session ticket creation events for caching.
+    /// </summary>
+    /// <param name="ASocket">The active socket instance.</param>
+    /// <param name="ASession">Pointer to the native OpenSSL session object.</param>
+    /// <param name="AAccept">Set to True to take ownership; False otherwise.</param>
     procedure DoOnSSLSessionNew(ASocket: TTaurusTLSSslSocket;
       ASession: PSSL_SESSION; var AAccept: boolean);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    /// <summary>
+    ///   Dispatches TLS session ticket invalidation/removal events.
+    /// </summary>
+    /// <param name="ACtx">The parent SSL context pointer.</param>
+    /// <param name="ASession">Pointer to the removed session object.</param>
     procedure DoOnSSLSessionRemove(ACtx: PSSL_CTX; ASession: PSSL_SESSION);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+    /// <summary>Event fired during server-side SNI negotiation.</summary>
     property OnSniSelect: TTaurusTLSOnSniSelect read FOnSniSelect;
+    /// <summary>Event fired during server-side ALPN selection.</summary>
     property OnAlpnSelect: TTaurusTLSOnAlpnSelect read FOnAlpnSelect;
+    /// <summary>Event fired when a new session ticket is created.</summary>
     property OnSSLSessionNew: TTaurusTLSOnSslSessionNew
       read FOnSslSessionNew;
+    /// <summary>Event fired when a session ticket is invalidated.</summary>
     property OnSSLSessionRemove: TTaurusTLSOnSslSessionRemove
       read FOnSslSessionRemove;
   public
+    /// <summary>True if an SNI selection event is assigned.</summary>
     property HasOnPeerSniSelect: boolean read GetHasOnPeerSniSelect;
+    /// <summary>True if an ALPN selection event is assigned.</summary>
     property HasOnPeerAlpnSelect: boolean read GetHasOnPeerAlpnSelect;
+    /// <summary>True if a new session creation event is assigned.</summary>
     property HasOnPeerSslSessionNew: boolean read GetHasOnPeerSslSessionNew;
+    /// <summary>True if a session removal event is assigned.</summary>
     property HasOnPeerSslSessionRemove: boolean read GetHasOnPeerSslSessionRemove;
-
   end;
 
   TTaurusTLSSslSocketCtxBuilder = class;
 
+  /// <summary>
+  ///   Abstract base class for builder meta-fields, providing thread
+  ///   synchronization and dirty-state propagation to the parent builder.
+  /// </summary>
   TTaurusTLSBuilderCustomMetaField = class
   private
     FParent: TTaurusTLSSslSocketCtxBuilder;
   protected
+    /// <summary>Enters parent builder's critical section lock.</summary>
     procedure Lock; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Leaves parent builder's critical section lock.</summary>
     procedure Unlock; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Marks parent builder dirty to trigger recompilation.</summary>
     procedure SetDirty; {$IFDEF USE_INLINE}inline; {$ENDIF}
   public
+    /// <summary>Initializes meta-field with parent builder reference.</summary>
+    /// <param name="AParent">The parent context builder instance.</param>
     constructor Create(AParent: TTaurusTLSSslSocketCtxBuilder);
+    /// <summary>Reference to the parent context builder instance.</summary>
     property Parent: TTaurusTLSSslSocketCtxBuilder read FParent;
   end;
 
+  /// <summary>
+  ///   Builder meta-field staging X.509 verification parameters, depth limits,
+  ///   flags, and target hostname/IP/email validation lists before compilation.
+  /// </summary>
   TTaurusTLSMetaX509VerifyParam = class(TTaurusTLSBuilderCustomMetaField)
   protected type
+    /// <summary>Identifiers for tracked non-default verify properties.</summary>
     TProperty = (vfDefSecurityBits, vfDefDepth, vfDefPurpose, vfDefTime,
       vfDefFlVerify, vfDefFlInheritance, vfDefFlHostCheck,
       vfDefHosts, vfDefIPAddresses, vfDefEmails);
+    /// <summary>Set tracking which verify properties were customized.</summary>
     TNonDefaultProps = set of TProperty;
 
     { TODO :
@@ -854,10 +1628,13 @@ type
     FEMails: TEmails;
 
   protected
+    /// <summary>True if specified verify property was explicitly set.</summary>
     function IsPropSet(const AProp: TProperty): boolean;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Marks specified property set and triggers dirty state.</summary>
     procedure SetDirty(const AProp: TProperty); reintroduce;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Clears non-default tracking flag for a property.</summary>
     procedure ResetProp(const AProp: TProperty); {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     // Property Setters
@@ -874,76 +1651,140 @@ type
     procedure SetHostCheckFlags(const AValue: TTaurusTLSX509HostCheckFlags);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+    /// <summary>Appends a hostname string to the verification list.</summary>
     procedure AddHost(const AValue: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Sets or updates a hostname string at the given index.</summary>
     procedure SetHost(const Item: TIdC_INT; const AValue: string);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Retrieves a hostname string at the given index.</summary>
     function GetHost(const Item: TIdC_INT): string;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Deletes a hostname string at the given index.</summary>
     procedure DeleteHost(const Item: TIdC_INT);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Retrieves total count of staged verification hostnames.</summary>
     function GetHostCount: TIdC_INT;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    /// <summary>Appends an email address to the verification list.</summary>
     procedure AddEMail(const AValue: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Sets or updates an email address at the given index.</summary>
     procedure SetEmail(const Item: TIdC_INT; const AValue: string);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Retrieves an email address at the given index.</summary>
     function GetEmail(const Item: TIdC_INT): string;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Deletes an email address at the given index.</summary>
     procedure DeleteEmail(const Item: TIdC_INT);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Retrieves total count of staged verification emails.</summary>
     function GetEmailCount: TIdC_INT;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    /// <summary>Appends an IP address literal to the verification list.</summary>
     procedure AddIpAddress(const AValue: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Sets or updates an IP address literal at the given index.</summary>
     procedure SetIpAddress(const Item: TIdC_INT; const AValue: string);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Retrieves an IP address literal at the given index.</summary>
     function GetIpAddress(const Item: TIdC_INT): string;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Deletes an IP address literal at the given index.</summary>
     procedure DeleteIpAddress(const Item: TIdC_INT);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Retrieves total count of staged verification IP addresses.</summary>
     function GetIpAddressCount: TIdC_INT;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+    /// <summary>Resets security bits setting to default.</summary>
     procedure ResetSecurityBits; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Resets verification depth limit to default.</summary>
     procedure ResetDepth; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Resets certificate purpose setting to default.</summary>
     procedure ResetPurspose; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Resets verification time override to default.</summary>
     procedure ResetTime; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Resets X.509 verification flags to default.</summary>
     procedure ResetVerifyFlags; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Resets parameter inheritance flags to default.</summary>
     procedure ResetInheritanceFlags; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Resets host checking flags to default.</summary>
     procedure ResetHostCheckFlags; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Clears all staged verification hostnames.</summary>
     procedure ResetHosts; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Clears all staged verification IP addresses.</summary>
     procedure ResetIPAddresses; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Clears all staged verification email addresses.</summary>
     procedure ResetEMails; {$IFDEF USE_INLINE}inline; {$ENDIF}
   public
+    /// <summary>Initializes meta-field with parent builder.</summary>
+    /// <param name="AParent">The parent context builder instance.</param>
     constructor Create(AParent: TTaurusTLSSslSocketCtxBuilder); reintroduce;
+    /// <summary>Frees internal string lists and releases resources.</summary>
     destructor Destroy; override;
+
+    /// <summary>
+    ///   Compiles staged parameters into a native OpenSSL verify parameter
+    ///   wrapper instance.
+    /// </summary>
+    /// <returns>A new <see cref="TTaurusTLSX509VerifyParam"/> instance.</returns>
     function BuildParam: TTaurusTLSX509VerifyParam;
 
+    /// <summary>True if security bits level was explicitly set.</summary>
     property IsSecurityBitsSet: boolean index vfDefSecurityBits read IsPropSet;
+    /// <summary>True if verification depth limit was explicitly set.</summary>
     property IsDepthSet: boolean index vfDefDepth read IsPropSet;
+    /// <summary>True if certificate purpose was explicitly set.</summary>
     property IsPurposeSet: boolean index vfDefPurpose read IsPropSet;
+    /// <summary>True if verification time override was explicitly set.</summary>
     property IsTimeSet: boolean index vfDefTime read IsPropSet;
+    /// <summary>True if verification flags were explicitly set.</summary>
     property IsVerifyFlagsSet: boolean index vfDefFlVerify read IsPropSet;
+    /// <summary>True if inheritance flags were explicitly set.</summary>
     property IsInheritanceFlagsSet: boolean index vfDefFlInheritance read IsPropSet;
+    /// <summary>True if host check flags were explicitly set.</summary>
     property IsHostCheckFlagsSet: boolean index vfDefFlHostCheck read IsPropSet;
+    /// <summary>True if custom verification hostnames were added.</summary>
     property IsHostsSet: boolean index vfDefHosts read IsPropSet;
+    /// <summary>True if custom verification IP addresses were added.</summary>
     property IsIPAddressesSet: boolean index vfDefIPAddresses read IsPropSet;
+    /// <summary>True if custom verification emails were added.</summary>
     property IsEmailsSet: boolean index vfDefEmails read IsPropSet;
 
+    /// <summary>Configured X.509 verification flags.</summary>
     property VerifyFlags: TTaurusTLSX509VerifyFlags read FVerifyFlags;
+    /// <summary>Configured parameter inheritance flags.</summary>
     property InheritanceFlags: TTaurusTLSX509InheritanceFlags read FInheritanceFlags;
+    /// <summary>Configured maximum verification chain depth.</summary>
     property Depth: TIdC_INT read FDepth;
+    /// <summary>Configured required security bits strength.</summary>
     property SecurityBits: TTaurusTLSSecurityBits read FSecurityBits;
+    /// <summary>Configured verification time override.</summary>
     property Time: TDateTime read FTime;
+    /// <summary>Flags controlling strictness of hostname matching.</summary>
     property HostCheckFlags: TTaurusTLSX509HostCheckFlags read FHostCheckFlags
       write SetHostCheckFlags;
+    /// <summary>Expected certificate purpose.</summary>
     property Purpose: TTaurusTLSX509Purpose read FPurpose;
+    /// <summary>Staged verification hostname string at specified index.</summary>
     property Hosts[const Item: TIdC_INT]: string read GetHost; // PALOFF 'Array properties that are referenced/set within methods'
+    /// <summary>Total count of staged verification hostnames.</summary>
     property HostCount: TIdC_INT read GetHostCount;
+    /// <summary>Staged verification email address at specified index.</summary>
     property Emails[const Item: TIdC_INT]: string read GetEmail; // PALOFF 'Array properties that are referenced/set within methods'
+    /// <summary>Total count of staged verification email addresses.</summary>
     property EmailCount: TIdC_INT read GetEmailCount;
+    /// <summary>Staged verification IP address literal at index.</summary>
     property IpAddresses[const Item: TIdC_INT]: string read GetIpAddress; // PALOFF 'Array properties that are referenced/set within methods'
+    /// <summary>Total count of staged verification IP addresses.</summary>
     property IpAddressCount: TIdC_INT read GetIpAddressCount;
   end;
 
+  /// <summary>
+  ///   Abstract base builder class managing thread-safe compilation of OpenSSL
+  ///   contexts and generating immutable <see cref="ITaurusTLSSslSocketCtx"/>
+  ///   snapshots.
+  /// </summary>
   TTaurusTLSSslSocketCtxBuilder = class abstract
   private
     FLock: TIdCriticalSection;
@@ -1035,123 +1876,226 @@ type
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
   protected
+    /// <summary>Enters builder's internal critical section lock.</summary>
     procedure Lock; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Leaves builder's internal critical section lock.</summary>
     procedure Unlock; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Marks builder dirty to trigger context recompilation.</summary>
     procedure SetDirty; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+    /// <summary>Sets context operational flags thread-safely.</summary>
     procedure SetFlags(const AValue: TaurusTLSSslSocketCtxFlags);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Includes flags into active flag set thread-safely.</summary>
     function IncludeFlags(const AValue: TaurusTLSSslSocketCtxFlags): TaurusTLSSslSocketCtxFlags;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Excludes flags from active flag set thread-safely.</summary>
     function ExcludeFlags(const AValue: TaurusTLSSslSocketCtxFlags): TaurusTLSSslSocketCtxFlags;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+    /// <summary>Hook for subclasses to validate required parameters.</summary>
     procedure CheckRequirements; virtual;
+    /// <summary>Factory method instantiating the specific context class.</summary>
+    /// <param name="ASender">Parent component instance.</param>
+    /// <returns>A new <see cref="TTaurusTLSSslSocketCtx"/> instance.</returns>
     function DoNewSocketCtx(ASender: TObject): TTaurusTLSSslSocketCtx; virtual; abstract;
-    procedure DoBuild(ASender: TObject; ASocketCtx: TTaurusTLSSslSocketCtx); virtual;
+    /// <summary>Populates context parameters and event bridges.</summary>
+    /// <param name="ASender">Parent component instance.</param>
+    /// <param name="ASocketCtx">Target context instance to configure.</param>
+    /// <returns>The configured context instance.</returns>
+    function DoBuild(ASender: TObject;
+      ASocketCtx: TTaurusTLSSslSocketCtx): TTaurusTLSSslSocketCtx; virtual;
 
+    /// <summary>The OpenSSL protocol method pointer for this builder.</summary>
     property TLSMeth: PSSL_METHOD read FTLSMeth;
   public
+    /// <summary>Initializes builder with specified protocol method.</summary>
+    /// <param name="ATLSMeth">The OpenSSL protocol method pointer.</param>
     constructor Create(ATLSMeth: PSSL_METHOD);
+    /// <summary>Frees meta-fields, critical section, and resources.</summary>
     destructor Destroy; override;
+
+    /// <summary>
+    ///   Compiles parameters, options, and stores into a frozen, thread-safe
+    ///   <see cref="ITaurusTLSSslSocketCtx"/> interface snapshot.
+    /// </summary>
+    /// <param name="ASender">Parent component requesting compilation.</param>
+    /// <returns>Reference-counted context interface instance.</returns>
     function Build(ASender : TObject): ITaurusTLSSslSocketCtx; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+    /// <summary>True if builder configuration changed since last build.</summary>
     property IsDirty: boolean read FDirty;
 
-    // builder own the property instance
-    // it can be configuree via X509VerifyParam.xxx properties
+    /// <summary>Meta-field configuring X.509 verification parameters.</summary>
     property X509VerifyParam: TTaurusTLSMetaX509VerifyParam read FX509VerifyParam;
 
-    // builder takes ownership on the property instance.
+    /// <summary>Collection of trusted CA stores used for verification.</summary>
     property TrustedStores: TTaurusTLSTrustStores write SetTrustStores;
 
-    // common properties
+    /// <summary>Bitwise OpenSSL context options (compression, middlebox).</summary>
     property SSLContextOptions: TTaurusTLSSslOptionFlags read FSSLContextOptions
       write SetSSLContextOptions;
+    /// <summary>Minimum allowed TLS protocol version.</summary>
     property MinTLSVersion: TTaurusTLS2TlsVersion read FMinTLSVersion
       write SetMinTLSVersion;
+    /// <summary>Maximum allowed TLS protocol version.</summary>
     property MaxTLSVersion: TTaurusTLS2TlsVersion read FMaxTLSVersion
       write SetMaxTLSVersion;
+    /// <summary>TLS 1.2 and earlier cipher suite list.</summary>
     property CipherList: string read FCipherList write SetCipherList;
+    /// <summary>TLS 1.3 cipher suite list.</summary>
     property CipherSuites: string read FCipherSuites write SetCipherSuites;
+    /// <summary>Allowed Elliptic Curve key exchange groups list.</summary>
     property KeyExchangeGroups: string read FKeyExchangeGroups write SetKeXGroups;
+    /// <summary>Allowed signature algorithms list.</summary>
     property SigAlgorithms: string read FSigAlgorithms write SetSigAlgorithms;
+    /// <summary>Peer certificate verification mode flags.</summary>
     property VerifyModes: TTaurusTLSVerifyModes read FVerifyModes
       write SetVerifyModes;
+    /// <summary>True to enforce peer hostname/IP identity validation.</summary>
     property VerifyHostName: boolean read GetVerifyHostName write SetVerifyHostName;
+    /// <summary>True to enable unidirectional close_notify shutdown.</summary>
     property UniDirectShutdown: boolean read GetUniDirectShutdown
       write SetUniDirectShutdown;
+    /// <summary>True to enable quiet shutdown without alerts.</summary>
     property QuietShutdown: boolean read GetQuietShutdown
       write SetQuietShutdown;
+    /// <summary>True to enable OpenSSL read-ahead internal buffering.</summary>
     property ReadAheadBuffering: boolean read GetReadAheadBuffering
       write SetReadAheadBuffering;
+    /// <summary>Active context operational flags set.</summary>
     property Flags: TaurusTLSSslSocketCtxFlags read FFlags;
+    /// <summary>Maximum TLS record payload send fragment size.</summary>
     property MaxSendFragment: TTaurusTLSSslMaxSendFragment read FMaxSendFragment
       write FMaxSendFragment default SSL3_RT_MAX_PLAIN_LENGTH;
 
-    // Events
+    /// <summary>Event fired on state machine lifecycle transitions.</summary>
     property OnStateChange: TTaurusTLSOnStateChange read FOnStateChange
       write SetOnStateChange;
+    /// <summary>Event fired post-handshake on peer certificate errors.</summary>
     property OnPeerCertError: TTaurusTLSOnPeerCertError read FOnPeerCertError
       write SetOnPeerCertError;
+    /// <summary>Event fired during OpenSSL info callback execution.</summary>
     property OnStatusInfo: TTaurusTLSOnSSLStatusInfo read FOnStatusInfo
       write SetOnStatusInfo;
+    /// <summary>Event fired during in-handshake certificate verification.</summary>
     property OnVerifyCertificate: TTaurusTLSOnVerifyCallback read FOnVerifyCertificate
       write SetOnVerifyCertificate;
+    /// <summary>Event fired during OpenSSL security check callback.</summary>
     property OnSecurityCheck: TTaurusTLSOnSecurityCheck read FOnSecurityCheck
       write SetOnSecurityCheck;
+    /// <summary>Event fired when low-level protocol records are processed.</summary>
     property OnMessage: TTaurusTLSOnSSLMessageCallback read FOnMessage
       write SetOnMessage;
+    /// <summary>Event fired when TLS secret key material is exported.</summary>
     property OnKeyLog: TTaurusTLSOnKeyLog read FOnKeyLog write SetOnKeyLog;
+  end;
 
+  /// <summary>
+  ///   Specialized context builder compiling client-side OpenSSL contexts and
+  ///   generating immutable <see cref="TTaurusTLSSslClientSocketCtx"/> instances.
+  /// </summary>
+  TTaurusTLSSslClientSocketCtxBuilder = class(TTaurusTLSSslSocketCtxBuilder)
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
+    FHostName: string;
+    FDefaultSNI: string;
+    FSNIMode: TTaurusTLSSslClientSNIMode;
+    FECHOuterSNI: string;
+    FECHConfigList: string;
+
+    // Client-specific callbacks
+    FOnClientCert: TTaurusTLSOnClientCertCallback;
+    FOnECHLog: TTaurusTLSOnECHLog;
+    FOnECHConfigRetry: TTaurusTLSOnCliECHConfigRetry;
+
+    // Property Setters (Thread-safe, invoke SetDirty)
+    procedure SetHostName(const AValue: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetDefaultSNI(const AValue: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetSNIMode(const AValue: TTaurusTLSSslClientSNIMode); {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetECHOuterSNI(const AValue: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetECHConfigList(const AValue: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetOnClientCert(const AValue: TTaurusTLSOnClientCertCallback); {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetOnECHLog(const AValue: TTaurusTLSOnECHLog); {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetOnECHConfigRetry(const AValue: TTaurusTLSOnCliECHConfigRetry); {$IFDEF USE_INLINE}inline; {$ENDIF}
+  protected
+    /// <summary>Validates client-specific ECH and SNI requirements.</summary>
+    procedure CheckRequirements; override;
+    /// <summary>Instantiates a new client socket context instance.</summary>
+    /// <param name="ASender">Parent component instance.</param>
+    /// <returns>A new <see cref="TTaurusTLSSslClientSocketCtx"/> instance.</returns>
+    function DoNewSocketCtx(ASender: TObject): TTaurusTLSSslSocketCtx; override;
+    /// <summary>Populates client-specific SNI, ECH, and mTLS properties.</summary>
+    /// <param name="ASender">Parent component instance.</param>
+    /// <param name="ASocketCtx">Target context instance to configure.</param>
+    /// <returns>The configured context instance.</returns>
+    function DoBuild(ASender: TObject;
+      ASocketCtx: TTaurusTLSSslSocketCtx): TTaurusTLSSslSocketCtx; override;
+  public
+    /// <summary>Initializes client builder with default TLS client method.</summary>
+    constructor Create; reintroduce; overload;
+    /// <summary>Initializes client builder with specified protocol method.</summary>
+    /// <param name="ATLSMeth">The OpenSSL protocol method pointer.</param>
+    constructor Create(ATLSMeth: PSSL_METHOD); reintroduce; overload;
+
+    /// <summary>Primary target hostname string.</summary>
+    property HostName: string read FHostName write SetHostName;
+    /// <summary>Override SNI hostname string.</summary>
+    property DefaultSNI: string read FDefaultSNI write SetDefaultSNI;
+    /// <summary>Active SNI and ECH wire transmission mode.</summary>
+    property SNIMode: TTaurusTLSSslClientSNIMode read FSNIMode write SetSNIMode;
+    /// <summary>Unencrypted outer decoy SNI string.</summary>
+    property ECHOuterSNI: string read FECHOuterSNI write SetECHOuterSNI;
+    /// <summary>Base64-encoded ECHConfigList key material string.</summary>
+    property ECHConfigList: string read FECHConfigList write SetECHConfigList;
+
+    /// <summary>Event fired when server requests mTLS client credentials.</summary>
+    property OnClientCert: TTaurusTLSOnClientCertCallback read FOnClientCert write SetOnClientCert;
+    /// <summary>Event fired when OpenSSL emits internal ECH logs.</summary>
+    property OnECHLog: TTaurusTLSOnECHLog read FOnECHLog write SetOnECHLog;
+    /// <summary>Event fired when server returns ECH retry configurations.</summary>
+    property OnECHConfigRetry: TTaurusTLSOnCliECHConfigRetry read FOnECHConfigRetry write SetOnECHConfigRetry;
   end;
 
   /// <summary>
   ///   Represents the cryptographic outcome of ECH processing for the active connection.
   /// </summary>
   TTaurusECHClientStatus = (
-    /// <summary>
-    ///   ECH wasn't attempted or connection gracefully fell back to cleartext
-    /// </summary>
+    /// <summary>ECH wasn't attempted or connection gracefully fell back to cleartext.</summary>
     echCliNone,
-    /// <summary>
-    ///   ECH was accepted and decrypted by the server (Inner SNI active)
-    /// </summary>
+    /// <summary>ECH was accepted and decrypted by the server (Inner SNI active).</summary>
     echCliSuccess,
-    /// <summary>
-    ///   ECH decryption failed on the server
-    /// </summary>
+    /// <summary>ECH decryption failed on the server.</summary>
     echCliFailed,
-    /// <summary>
-    ///   ECH failed, but new server public keys were recovered via
-    ///   retry_configs
-    /// </summary>
+    /// <summary>ECH failed, but new server public keys were recovered via retry_configs.</summary>
     echCliRetryConfig,
-    /// <summary>
-    ///   ECH was not configured on this connection
-    /// </summary>
+    /// <summary>ECH was not configured on this connection.</summary>
     echCliNotConfigured
   );
 
+  /// <summary>
+  ///   Universal socket engine managing secure connection lifecycles, I/O timeouts,
+  ///   and state machine transitions across client and server roles.
+  /// </summary>
   TTaurusTLSSslSocket = class
 {$IFDEF SIGPIPE_MASK}
 { BUGFIX: Fixes issue #217 and #240 }
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict {$ENDIF}private class var
     /// <summary>
-    /// This variable needs to mitigate SIGPIPE crash in Linux environment
-    /// This variable is initialized in the <c>class constructor Create</c>
-    /// once and used in the methods <c>Accpet</c> and <c>Connect</c> to setup
-    /// POSIX thread.
+    ///   Masks POSIX SIGPIPE signal once per process on Linux targets.
     /// </summary>
     FSigSet: sigset_t;
 {$ENDIF}
 
   public const
+    /// <summary>Set of terminal states from which no forward transition is valid.</summary>
     cTerminalStates = [seReleased, seClosed, seError];
+    /// <summary>Default maximum transition steps allowed per transition cycle.</summary>
     cDefaultTransitions = 8;
 
   protected type
+    /// <summary>Specifies socket event select polling types.</summary>
     TSocketSelectKind = (sokRead, sokWrite, sokError);
+    /// <summary>Set of socket event select polling types.</summary>
     TSocketSelectKinds = set of TSocketSelectKind;
 
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
@@ -1197,137 +2141,258 @@ type
 {$IFDEF SIGPIPE_MASK}
 { BUGFIX: Fixes issue #217 and #240 }
     /// <summary>
-    /// The <c>MaskSigPipe</c> excludes the POSIX SIGPIPE signal
-    /// for the running thread.
+    ///   Masks the POSIX SIGPIPE signal for the running thread.
     /// </summary>
     class procedure MaskSigPipe;  static; {$IFDEF USE_INLINE}inline; {$ENDIF}
 {$ENDIF}
 
   protected
+    /// <summary>Active native OpenSSL session structure pointer.</summary>
     FSSL: PSSL;
+    /// <summary>Resolves Delphi socket instance from native SSL app_data.</summary>
     class function GetInstanceFromSSL(ASSL: PSSL): TTaurusTLSSslSocket; static;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+    /// <summary>Processes captured errors and raises appropriate exceptions.</summary>
     function CheckForError: Integer; overload; virtual;
+    /// <summary>Captures OpenSSL queue and OS socket error snapshots.</summary>
     function GetLastError(ARetCode: Integer): Integer; overload;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Queries SSL_get_error and captures error state snapshot.</summary>
     function GetSSLError(ALastResult: Integer): Integer; overload;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Clears OpenSSL queue and resets captured error snapshot.</summary>
     procedure ClearError; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+    /// <summary>Allocates native SSL session and arms callbacks.</summary>
     function InitSSL: TTaurusTLSSslSocketState; virtual;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Registers connection-specific OpenSSL callback bridges.</summary>
     procedure InitSSLCallbacks; virtual;
+    /// <summary>Configures connection-specific SNI, ECH, or routing parameters.</summary>
     procedure SetupConnection; virtual; abstract;
+    /// <summary>Deallocates native SSL session and unbinds callbacks.</summary>
     function ReleaseSSL: TTaurusTLSSslSocketState; virtual;
+    /// <summary>Unbinds connection-specific OpenSSL callback bridges.</summary>
     procedure ReleaseSSLCallbacks; virtual;
+    /// <summary>Binds physical socket descriptor to OpenSSL session.</summary>
     function BindSocket: TTaurusTLSSslSocketState; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+    /// <summary>Polls OS socket handle for specified I/O select events.</summary>
     class function WaitForSocket(ASocketHandle: TIdStackSocketHandle;
       AKind: TSocketSelectKinds; AMsec: integer): boolean; static;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Waits for socket read readiness within timeout budget.</summary>
     function WaitForRead(AMsec: integer): boolean;  {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Waits for socket write readiness within timeout budget.</summary>
     function WaitForWrite(AMsec: integer): boolean;  {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+    /// <summary>Drives the handshake loop until completion or terminal state.</summary>
     function DoHandshake: TTaurusTLSSslSocketState;
+    /// <summary>Executes a single step of SSL_connect or SSL_accept.</summary>
     function DoHandshakeIteration: TTaurusTLSSslSocketState; virtual; abstract;
+    /// <summary>Executes orderly TLS session close_notify shutdown.</summary>
     function DoShutdown: TTaurusTLSSslSocketState; virtual;
 
     // State machine
+    /// <summary>Validates whether single-step transition is permitted.</summary>
     function IsValidTransition(ACurrent, ATarget: TTaurusTLSSslSocketState): Boolean; virtual;
+    /// <summary>Asserts that current state is within expected active states.</summary>
     procedure CheckActiveState(const AExpectedStates: TTaurusTLSSslSocketStates);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Resolves immediate next step required to reach target state.</summary>
     function GetNextStepTarget(ACurrent,
       ATarget: TTaurusTLSSslSocketState): TTaurusTLSSslSocketState; virtual;
+    /// <summary>Executes single step state initialization or cleanup.</summary>
     function DoTransitionTo(ATarget: TTaurusTLSSslSocketState): TTaurusTLSSslSocketState;
       virtual;
+    /// <summary>Commits new state value without firing notifications.</summary>
     function DoSetState(ATarget: TTaurusTLSSslSocketState): boolean;
       overload; virtual;
+    /// <summary>Commits new state value and optionally fires notifications.</summary>
     procedure DoSetState(ATarget: TTaurusTLSSslSocketState; ANotify: boolean);
       overload; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Dispatches state change notifications to context handlers.</summary>
     procedure DoStateChangeNotify(ACurrent, ATarget: TTaurusTLSSslSocketState);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+    /// <summary>Physical OS socket descriptor handle.</summary>
     property SocketHandle: TIdStackSocketHandle read FSocketHandle write FSocketHandle;
+    /// <summary>True if active connection successfully resumed a previous TLS session.</summary>
     property IsSessionResumed: boolean read FIsSessionResumed;
+    /// <summary>Peer X.509 certificate wrapper instance.</summary>
     property PeerCertificate: TTaurusTLSX509 read GetPeerCertificate;
   public
 {$IFDEF SIGPIPE_MASK}
 { BUGFIX: Fixes issue #217 and #240 }
     /// <summary>
-    /// Initialized the <c>FSigSet</c> variable once on application starts.
-    /// </summary?
+    ///   Initializes the POSIX signal mask once at application startup.
+    /// </summary>
     class constructor Create;
 {$ENDIF}
-    // Accepts the interface rather than raw class
+    /// <summary>Initializes socket instance with a reference-counted context interface.</summary>
+    /// <param name="AConfigIntf">The immutable context snapshot interface.</param>
     constructor Create(const AConfigIntf: ITaurusTLSSslSocketCtx); virtual;
+    /// <summary>Destroys socket instance and releases OpenSSL session resources.</summary>
     destructor Destroy; override;
 
+    /// <summary>Drives the state machine forward toward the requested target state.</summary>
+    /// <param name="ATarget">Desired final state enum value.</param>
+    /// <param name="ASteps">Maximum transition step budget before aborting.</param>
     procedure TransitionTo(ATarget: TTaurusTLSSslSocketState;
       ASteps: integer = cDefaultTransitions); virtual;
 
+    /// <summary>Binds socket handle and drives state machine to established state.</summary>
+    /// <param name="pHandle">The physical OS socket descriptor handle.</param>
+    /// <returns>True if established successfully; False otherwise.</returns>
     function Connect(const pHandle: TIdStackSocketHandle): boolean; overload;
       virtual;
+    /// <summary>Encrypts and sends application data buffer over active TLS session.</summary>
     function Send(const ABuffer: TIdBytes; const AOffset, ALength: TIdC_SIZET;
       const AMSec: Integer): Integer; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Receives and decrypts application data from active TLS session.</summary>
     function Recv(var ABuffer: TIdBytes; const AMSec: Integer): Integer;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Polls whether decrypted application data is ready for reading.</summary>
     function Readable(AMsec: integer): boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Initiates orderly session shutdown and state machine teardown.</summary>
     procedure Shutdown;
+    /// <summary>Validates post-handshake peer certificate verification result.</summary>
     procedure CheckPeerCertificateValidationResult; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
-
+    /// <summary>Direct pointer to active native OpenSSL session structure.</summary>
     property SSL: PSSL read FSSL;
+    /// <summary>Current operational state of the socket state machine.</summary>
     property State: TTaurusTLSSslSocketState read FState;
+    /// <summary>Direct class pointer to immutable configuration context snapshot.</summary>
     property Ctx: TTaurusTLSSslSocketCtx read FCtx;
   end;
 
+  /// <summary>
+  ///   Encapsulates and manages the reference-counted lifecycle of a native
+  ///   OpenSSL <c>SSL_SESSION</c> handle for TLS session resumption.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.0/man3/SSL_get1_session/">
+  ///   SSL_get1_session
+  /// </seealso>
   TTaurusTLSSslSession = class
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FSession: PSSL_SESSION;
   public
+    /// <summary>
+    ///   Captures and increments the reference count of the active TLS
+    ///   session from an established socket via <c>SSL_get1_session</c>.
+    /// </summary>
+    /// <param name="ASocket">The established socket instance.</param>
     constructor Create(ASocket: TTaurusTLSSslSocket);
+
+    /// <summary>
+    ///   Releases and frees the native <c>SSL_SESSION</c> handle via
+    ///   <c>SSL_SESSION_free</c>.
+    /// </summary>
     destructor Destroy; override;
 
+    /// <summary>Pointer to the native OpenSSL session structure.</summary>
     property SSLSession: PSSL_SESSION read FSession;
   end;
 
+  /// <summary>
+  ///   Client-side socket engine managing outbound connection setup, SNI
+  ///   routing, ECH encryption, and handshake execution.
+  /// </summary>
   TTaurusTLSClientSocket = class(TTaurusTLSSslSocket)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FSessionToResume: TTaurusTLSSslSession;
     FECHStatus: TTaurusECHClientStatus;
     function GetClientCtx: TTaurusTLSSslClientSocketCtx;
   protected
+    /// <summary>Updates the internal ECH outcome status.</summary>
+    /// <param name="AECHStatus">The new ECH status enum value.</param>
     procedure SetECHStatus(AECHStatus: TTaurusECHClientStatus);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+    /// <summary>
+    ///   Configures client SNI, ECH server names, and session parameters.
+    /// </summary>
     procedure SetupConnection; override;
-    procedure SetupHostnameVerification;  {$IFDEF USE_INLINE} inline;{$ENDIF}
 
+    /// <summary>
+    ///   Configures in-place hostname and IP validation targets on the
+    ///   active OpenSSL session verification parameters.
+    /// </summary>
+    procedure SetupHostnameVerification; {$IFDEF USE_INLINE}inline; {$ENDIF}
+
+    /// <summary>
+    ///   Executes a single step of <c>SSL_connect</c>, handles ECH status
+    ///   evaluations, and processes retry configurations.
+    /// </summary>
+    /// <returns>Next state machine target state.</returns>
     function DoHandshakeIteration: TTaurusTLSSslSocketState; override;
+
+    /// <summary>
+    ///   Executes client-side shutdown and cleans up session resumption state.
+    /// </summary>
+    /// <returns>Next state machine target state.</returns>
     function DoShutdown: TTaurusTLSSslSocketState; override;
+
+    /// <summary>
+    ///   Direct class pointer to the client-specific configuration snapshot.
+    /// </summary>
     property ClientCtx: TTaurusTLSSslClientSocketCtx read GetClientCtx;
   public
+    /// <summary>
+    ///   Binds the socket handle, applies a session resumption ticket, and
+    ///   drives the state machine to established state.
+    /// </summary>
+    /// <param name="pHandle">The physical OS socket descriptor handle.</param>
+    /// <param name="ASessionToResume">The session resumption container.</param>
+    /// <returns>True if established successfully; False otherwise.</returns>
     function Connect(const pHandle: TIdStackSocketHandle; //PALOFF "Redeclares ancestor member, or method in helped class/record"
       ASessionToResume: TTaurusTLSSslSession): boolean; overload;
 
+    /// <summary>Negotiated ECH status outcome for this connection.</summary>
     property ECHStatus: TTaurusECHClientStatus read FECHStatus;
   end;
 
+  /// <summary>
+  ///   Server-peer socket engine managing inbound connection handshakes and
+  ///   server-side session execution.
+  /// </summary>
   TTaurusTLSPeerSocket = class(TTaurusTLSSslSocket)
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
   end;
 
   // Global support routines
 
+/// <summary>
+///   Evaluates whether the loaded OpenSSL library version meets or exceeds
+///   the specified version number.
+/// </summary>
+/// <param name="AVersion">The version numeric constant to compare.</param>
+/// <returns>True if the library version is greater than or equal.</returns>
 function IsOpenSSLVersion(const AVersion: TTaurusTLSOSSLVersion): boolean;
   {$IFDEF USE_INLINE} inline;{$ENDIF}
 
+/// <summary>
+///   Determines whether the loaded OpenSSL library supports Encrypted Client
+///   Hello (OpenSSL 4.0+).
+/// </summary>
+/// <returns>True if ECH APIs are available in the loaded binary.</returns>
 function IsECHSupported: boolean; {$IFDEF USE_INLINE} inline;{$ENDIF}
 
+/// <summary>
+///   Determines whether the loaded OpenSSL library supports multiple IP
+///   addresses in verification parameters (OpenSSL 4.0+).
+/// </summary>
+/// <returns>True if multi-IP verification is supported.</returns>
 function IsX509StoreMultiIPSupported: boolean; {$IFDEF USE_INLINE} inline;{$ENDIF}
 
-function IsX509StoreMultiEmailSupported: boolean;  {$IFDEF USE_INLINE} inline;{$ENDIF}
+/// <summary>
+///   Determines whether the loaded OpenSSL library supports multiple email
+///   addresses in verification parameters (OpenSSL 4.0+).
+/// </summary>
+/// <returns>True if multi-email verification is supported.</returns>
+function IsX509StoreMultiEmailSupported: boolean; {$IFDEF USE_INLINE} inline;{$ENDIF}
 
 implementation
 
@@ -2537,8 +3602,8 @@ begin
 // Do nothing. Descendant may implement own requirement check.
 end; // PALOFF 'Empty begin/end-blocks'
 
-procedure TTaurusTLSSslSocketCtxBuilder.DoBuild(ASender: TObject;
-  ASocketCtx: TTaurusTLSSslSocketCtx);
+function TTaurusTLSSslSocketCtxBuilder.DoBuild(ASender: TObject;
+  ASocketCtx: TTaurusTLSSslSocketCtx): TTaurusTLSSslSocketCtx;
 var
   lVerifyParam: TTaurusTLSX509VerifyParam; // PALOFF 'Created and freed objects'
   lTrustStore: TTaurusTLS_X509Store; // PALOFF 'Created and freed objects'
@@ -2548,6 +3613,7 @@ begin
   Assert(Assigned(ASocketCtx),
     '''ASocketCtx'' parameter must not be ''nil'' value.'); // Do not localize
 
+  Result:=ASocketCtx;
   lVerifyParam:=nil;
   lTrustStore:=nil;
   try
@@ -2586,6 +3652,7 @@ var
   lSocketCtx: TTaurusTLSSslSocketCtx; // PALOFF 'Created and freed objects'
 
 begin
+  Result:=nil;
   Lock;
   try
     if (not IsDirty) and Assigned(FSocketCtx) then
@@ -2593,15 +3660,194 @@ begin
 
     CheckRequirements;
     lSocketCtx:=DoNewSocketCtx(ASender);
-    Result:=lSocketCtx as ITaurusTLSSslSocketCtx; // PALOFF 'Mixing interface variables and objects'
     DoBuild(ASender, lSocketCtx);
 
       // The final SocketCTX configuration lock.
     lSocketCtx.FreezeCtx; //PALOFF "Functions called as procedures"
+    Result:=lSocketCtx as ITaurusTLSSslSocketCtx; // PALOFF 'Mixing interface variables and objects'
     FSocketCtx:=Result;
   finally
     Unlock;
   end;
+end;
+
+{ TTaurusTLSSslClientSocketCtxBuilder }
+
+constructor TTaurusTLSSslClientSocketCtxBuilder.Create;
+begin
+  Create(TLS_client_method());
+end;
+
+constructor TTaurusTLSSslClientSocketCtxBuilder.Create(ATLSMeth: PSSL_METHOD);
+begin
+  inherited Create(ATLSMeth);
+  Include(FFlags, slfClient); // Default to client context role [1.2]
+  FSNIMode := csmStandardSNI;
+end;
+
+procedure TTaurusTLSSslClientSocketCtxBuilder.SetHostName(const AValue: string);
+begin
+  if FHostName = AValue then
+    Exit;
+
+  Lock;
+  try
+    if FHostName = AValue then
+      Exit;
+    FHostName := AValue;
+    SetDirty;
+  finally
+    Unlock;
+  end;
+end;
+
+procedure TTaurusTLSSslClientSocketCtxBuilder.SetDefaultSNI(const AValue: string);
+begin
+  if FDefaultSNI = AValue then
+    Exit;
+
+  Lock;
+  try
+    if FDefaultSNI = AValue then
+      Exit;
+    FDefaultSNI := AValue;
+    SetDirty;
+  finally
+    Unlock;
+  end;
+end;
+
+procedure TTaurusTLSSslClientSocketCtxBuilder.SetSNIMode(
+  const AValue: TTaurusTLSSslClientSNIMode);
+begin
+  if FSNIMode = AValue then
+    Exit;
+
+  Lock;
+  try
+    if FSNIMode = AValue then
+      Exit;
+    FSNIMode := AValue;
+    SetDirty;
+  finally
+    Unlock;
+  end;
+end;
+
+procedure TTaurusTLSSslClientSocketCtxBuilder.SetECHOuterSNI(const AValue: string);
+begin
+  if FECHOuterSNI = AValue then
+    Exit;
+
+  Lock;
+  try
+    if FECHOuterSNI = AValue then
+      Exit;
+    FECHOuterSNI := AValue;
+    SetDirty;
+  finally
+    Unlock;
+  end;
+end;
+
+procedure TTaurusTLSSslClientSocketCtxBuilder.SetECHConfigList(const AValue: string);
+begin
+  if FECHConfigList = AValue then
+    Exit;
+
+  Lock;
+  try
+    if FECHConfigList = AValue then
+      Exit;
+    FECHConfigList := AValue;
+    SetDirty;
+  finally
+    Unlock;
+  end;
+end;
+
+procedure TTaurusTLSSslClientSocketCtxBuilder.SetOnClientCert(
+  const AValue: TTaurusTLSOnClientCertCallback);
+begin
+  Lock;
+  try
+    if (TMethod(FOnClientCert).Code = TMethod(AValue).Code) and
+       (TMethod(FOnClientCert).Data = TMethod(AValue).Data) then
+      Exit;
+    FOnClientCert := AValue;
+    SetDirty;
+  finally
+    Unlock;
+  end;
+end;
+
+procedure TTaurusTLSSslClientSocketCtxBuilder.SetOnECHLog(
+  const AValue: TTaurusTLSOnECHLog);
+begin
+  Lock;
+  try
+    if (TMethod(FOnECHLog).Code = TMethod(AValue).Code) and
+       (TMethod(FOnECHLog).Data = TMethod(AValue).Data) then
+      Exit;
+    FOnECHLog := AValue;
+    SetDirty;
+  finally
+    Unlock;
+  end;
+end;
+
+procedure TTaurusTLSSslClientSocketCtxBuilder.SetOnECHConfigRetry(
+  const AValue: TTaurusTLSOnCliECHConfigRetry);
+begin
+  Lock;
+  try
+    if (TMethod(FOnECHConfigRetry).Code = TMethod(AValue).Code) and
+       (TMethod(FOnECHConfigRetry).Data = TMethod(AValue).Data) then
+      Exit;
+    FOnECHConfigRetry := AValue;
+    SetDirty;
+  finally
+    Unlock;
+  end;
+end;
+
+procedure TTaurusTLSSslClientSocketCtxBuilder.CheckRequirements;
+begin
+  inherited CheckRequirements;
+
+  // 1. Strict ECH Validation: Cannot force ECH if OpenSSL library lacks ECH support
+  if (FSNIMode in [csmECH, csmECHNoOuter]) and (not IsECHSupported) then
+    { TODO : To make ResourceString }
+    raise EECHNotSupported.Create('ECH mode is active, but the loaded OpenSSL library does not support ECH.');
+
+  // 2. Strict ECH Configuration Guard: Cannot force ECH without a key list
+  if (FSNIMode in [csmECH, csmECHNoOuter]) and (FECHConfigList = '') then
+    { TODO : To make ResourceString }
+    raise ETaurusTLSSslSocketCtxBuildError.Create('Real ECH mode requires an ECHConfigList.');
+end;
+
+function TTaurusTLSSslClientSocketCtxBuilder.DoNewSocketCtx(
+  ASender: TObject): TTaurusTLSSslSocketCtx;
+begin
+  Result := TTaurusTLSSslClientSocketCtx.Create(ASender, TLSMeth);
+end;
+
+function TTaurusTLSSslClientSocketCtxBuilder.DoBuild(ASender: TObject;
+  ASocketCtx: TTaurusTLSSslSocketCtx): TTaurusTLSSslSocketCtx;
+begin
+  // 1. Apply base parameters (Ciphers, trust stores, verify modes, base events)
+  Result:=inherited DoBuild(ASender, ASocketCtx);
+
+  // 2. Transfer client-specific SNI, ECH, and mTLS properties fluently
+  (Result as TTaurusTLSSslClientSocketCtx)
+    .SetHostName(FHostName)
+    .SetDefaultSNI(FDefaultSNI)
+    .SetSNIMode(FSNIMode)
+    .SetECHOuterSNI(FECHOuterSNI)
+    .SetECHConfigList(FECHConfigList)
+    .SetOnClientCert(FOnClientCert)
+    .SetOnECHLog(FOnECHLog)
+    .SetOnECHConfigRetry(FOnECHConfigRetry);
 end;
 
 { TTaurusTLSSslSocketCtx }
@@ -2610,7 +3856,7 @@ constructor TTaurusTLSSslSocketCtx.Create(ASender: TObject; ATLSMeth: PSSL_METHO
 begin
   FSender:=ASender;
   FSSLCtx:=SSL_CTX_new(ATLSMeth);
-//  SetVerifyModes(cVerifyModesDef);   // PALOFF 'Functions called as procedures'
+  SetVerifyModes(cVerifyModesDef);   // PALOFF 'Functions called as procedures'
 end;
 
 destructor TTaurusTLSSslSocketCtx.Destroy;
