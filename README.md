@@ -5,13 +5,13 @@ All Rights Reserved
 
 ## General Information
 
-TaurusTLS provides 3.x and 4.x support for Indy - Internet Direct.  It includes headers plus two components for Delphi and C++Builder.  Those components are:
+TaurusTLS provides 3.x and 4.x support for Indy - Internet Direct.  It includes headers plus three components for Delphi and C++Builder.  Those components are:
 
 - TTaurusTLSIOHandlerSocket - Enables TLS in a TIdTCPClientCustom descendant.
 - TTaurusTLSServerIOHandler - Enables TLS in a TIdCustomTCPServer descendant.
 - TTaurusTLSUnicodeLog - Triggers events when data is sent and received and data is provided in Unicode form if supported.
 
-Both components are in the TaurusTLS.pas unit and the components are available on the IDE palette page, “TaurusTLS”.
+The components are in the TaurusTLS.pas unit and the components are available on the IDE palette page, “TaurusTLS”.
 
 TaurusTLS supports the following operating systems:
 
@@ -112,7 +112,7 @@ TaurusTLS includes a component reference in "Compiled HTML Help file (.chm)" for
 
 Taurus TLS includes 3 demo programs.  
 
-### TaurusTLS\src\demos\FTPServer\TaurusFTPServer.dproj  
+### TaurusTLS\src\demos\FTPServer\TaurusFTPServer.dproj
 
 This is a FTP Server with TLS enabled that runs in the Windows console.  This program has been tested with the following FTP clients:
 
@@ -178,6 +178,7 @@ Analyzes source-code to find various types of potential issues.
 <https://peganza.com/products_pal.html>
 
 ### TMS FixInsight
+
 Analyzes source-code to find various types of potential issues.
 
 <https://www.tmssoftware.com/site/fixinsight.asp>
