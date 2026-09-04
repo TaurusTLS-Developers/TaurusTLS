@@ -842,6 +842,7 @@ type
     fUseBidirectionalShutdown: Boolean;  //20260605 xjikka
     fVerifyDirs: String;
     fCipherList: String;
+    fCipherSuites: String;
     fVerifyMode: TTaurusTLSVerifyModeSet;
     procedure AssignTo(Destination: TPersistent); override;
     procedure SetMinTLSVersion(const AValue: TTaurusTLSSSLVersion);
@@ -1011,6 +1012,19 @@ type
     /// SSL_CTX_set_cipher_list
     /// </seealso>
     property CipherList: String read fCipherList write fCipherList;
+    /// <summary>
+    /// The colon-separated (:) list of TLS 1.3 ciphersuites you wish to use,
+    /// using their standard TLS 1.3 names (for example
+    /// <c>TLS_AES_256_GCM_SHA384</c>), or left empty to use OpenSSL's
+    /// default. This property only controls ciphersuites used for TLS 1.3.
+    /// To control ciphers used for TLS 1.2 and earlier, use the <see
+    /// cref="TaurusTLS|TTaurusTLSOptions.CipherList" /> property instead.
+    /// </summary>
+    /// <seealso
+    /// href="https://docs.openssl.org/3.1/man3/SSL_CTX_set_ciphersuites/">
+    /// SSL_CTX_set_ciphersuites
+    /// </seealso>
+    property CipherSuites: String read fCipherSuites write fCipherSuites;
   end;
 
   /// <summary>
@@ -1033,6 +1047,7 @@ type
     // fVerifyFile: String;
     fVerifyDirs: String;
     fCipherList: String;
+    fCipherSuites: String;
     fContext: PSSL_CTX;
     fStatusInfoOn: Boolean;
     fMessageCBOn: Boolean;
@@ -1198,6 +1213,19 @@ type
     /// SSL_CTX_set_cipher_list
     /// </seealso>
     property CipherList: String read fCipherList write fCipherList;
+    /// <summary>
+    /// The colon-separated (:) list of TLS 1.3 ciphersuites you wish to use,
+    /// using their standard TLS 1.3 names (for example
+    /// <c>TLS_AES_256_GCM_SHA384</c>), or left empty to use OpenSSL's
+    /// default. This only controls ciphersuites used for TLS 1.3. To control
+    /// ciphers used for TLS 1.2 and earlier, use <see
+    /// cref="TaurusTLS|TTaurusTLSContext.CipherList" /> instead.
+    /// </summary>
+    /// <seealso
+    /// href="https://docs.openssl.org/3.1/man3/SSL_CTX_set_ciphersuites/">
+    /// SSL_CTX_set_ciphersuites
+    /// </seealso>
+    property CipherSuites: String read fCipherSuites write fCipherSuites;
     /// <summary>
     /// Private Key file.
     /// </summary>
@@ -3590,6 +3618,7 @@ begin
     LDest.fUseSystemRootCACertificateStore := fUseSystemRootCACertificateStore;
     LDest.VerifyDirs := VerifyDirs;
     LDest.CipherList := CipherList;
+    LDest.CipherSuites := CipherSuites;
   end
   else
   begin
@@ -3640,6 +3669,7 @@ var
   LUseSystemRootCACertificateStore,
   LVerifyHostname : Boolean;
   LCipherList : String;
+  LCipherSuites : String;
   LSecurityLevel : TTaurusTLSSecurityLevel;
 begin
   // ensure Init isn't called twice
@@ -3657,6 +3687,7 @@ begin
   LUseSystemRootCACertificateStore := SSLOptions.UseSystemRootCACertificateStore;
   LVerifyHostname := SSLOptions.VerifyHostname;
   LCipherList := SSLOptions.CipherList;
+  LCipherSuites := SSLOptions.CipherSuites;
   LSecurityLevel := SSLOptions.SecurityLevel;
   fSSLContext.VerifyDepth := LVerifyDepth;
   fSSLContext.VerifyMode := LVerifyMode;
@@ -3667,6 +3698,7 @@ begin
   fSSLContext.VerifyHostname := LVerifyHostname;
   fSSLContext.UseBidirectionalShutdown := SSLOptions.UseBidirectionalShutdown;
   fSSLContext.CipherList := LCipherList;
+  fSSLContext.CipherSuites := LCipherSuites;
   fSSLContext.VerifyOn := Assigned(fOnVerifyCallback);
   fSSLContext.StatusInfoOn := Assigned(FOnStatusInfo);
   fSSLContext.SecurityLevelCBOn := Assigned(fOnSecurityLevel);
@@ -3708,6 +3740,7 @@ begin
       LContext.VerifyHostname := LVerifyHostname;
       LContext.UseBidirectionalShutdown := SSLOptions.UseBidirectionalShutdown;
       LContext.CipherList := LCipherList;
+      LContext.CipherSuites := LCipherSuites;
       LContext.VerifyOn := Assigned(fOnVerifyCallback);
       LContext.StatusInfoOn := Assigned(FOnStatusInfo);
       LContext.SecurityLevelCBOn := Assigned(fOnSecurityLevel);
@@ -4193,6 +4226,7 @@ begin
       SSLOptions.UseSystemRootCACertificateStore;
     fSSLContext.VerifyDirs := SSLOptions.VerifyDirs;
     fSSLContext.CipherList := SSLOptions.CipherList;
+    fSSLContext.CipherSuites := SSLOptions.CipherSuites;
     fSSLContext.VerifyOn := Assigned(fOnVerifyCallback);
     fSSLContext.StatusInfoOn := Assigned(FOnStatusInfo);
     fSSLContext.SecurityLevelCBOn := Assigned(fOnSecurityLevel);
@@ -4856,6 +4890,26 @@ begin
   if LError <= 0 then
   begin
     ETaurusTLSSettingCipherError.RaiseWithMessage(RSSSLSettingCipherError);
+  end;
+  if fCipherSuites <> '' then
+  begin { Do not Localize }
+    LError := SSL_CTX_set_ciphersuites(fContext,
+{$IFDEF USE_MARSHALLED_PTRS}
+      M.AsAnsi(fCipherSuites).ToPointer
+{$ELSE}
+      PAnsiChar(
+{$IFDEF STRING_IS_ANSI}
+      fCipherSuites
+{$ELSE}
+      AnsiString(fCipherSuites) // explicit cast to Ansi   //PALOFF - Possible bad typecast [fCipherSuites : UnicodeString cast to PAnsiChar]
+{$ENDIF}
+      )
+{$ENDIF}
+      );
+    if LError <= 0 then
+    begin
+      ETaurusTLSSettingCipherSuitesError.RaiseWithMessage(RSSSLSettingCipherSuitesError);
+    end;
   end;
   if fVerifyMode <> [] then
   begin
