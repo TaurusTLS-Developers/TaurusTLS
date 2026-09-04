@@ -39,6 +39,7 @@ resourcestring
   RSSSLSettingTLSHostNameError_2 = 'SSL_set1_host failed error.';
   RSSSL_CTX_set_tlsext_servername_callback = 'SSL_CTX_set_tlsext_servername_callback error';
   RSSSL_CTX_set_tlsext_servername_arg = 'ETaurusTLSSSL_CTX_set_tlsext_servername_arg error';
+  RSSSLSettingCipherSuitesError = 'SSL_CTX_set_ciphersuites failed.';
   // callback where strings
   RSOSSLAlert = '%s Alert';
   RSOSSLReadAlert = '%s Read Alert';
