@@ -2425,6 +2425,13 @@ type
   /// SSL_CTX_set_cipher_list
   /// </seealso>
   ETaurusTLSSettingCipherError = class(ETaurusTLSError);
+  /// <summary>
+  /// Raised if <c>SSL_CTX_set_ciphersuites</c> failed.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.0/man3/SSL_CTX_set_ciphersuites/">
+  /// SSL_CTX_set_ciphersuites
+  /// </seealso>
+  ETaurusTLSSettingCipherSuitesError = class(ETaurusTLSError);
 
   /// <summary>
   /// Raised if <c>SSL_set_fd</c> failed.
