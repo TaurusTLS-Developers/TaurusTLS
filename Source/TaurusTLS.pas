@@ -1006,6 +1006,11 @@ type
     /// and TLS 1.3.
     /// </item>
     /// </list>
+    /// <para>
+    /// This property only controls ciphers used for TLS 1.2 and earlier. To
+    /// control ciphersuites used for TLS 1.3, use the <see
+    /// cref="TaurusTLS|TTaurusTLSOptions.CipherSuites" /> property instead.
+    /// </para>
     /// </summary>
     /// <seealso
     /// href="https://docs.openssl.org/3.1/man3/SSL_CTX_set_cipher_list/">
