@@ -617,7 +617,7 @@ type
 // Event type declarations
 
   /// <summary>
-  ///   Fired when OpenSSL evaluates security parameters (ciphers, key bits,
+  ///   Fired when OpenSSL evaluates Bitssecurity parameters (ciphers, key bits,
   ///   curves) via <c>SSL_CTX_set_security_callback</c>.
   /// </summary>
   /// <param name="ASender">
@@ -2109,6 +2109,9 @@ type
     FContextIntf: ITaurusTLSSslSocketCtx;  // Holds reference count safely
     FCtx: TTaurusTLSSslSocketCtx;
 
+    // The Connect/Accept timeout value for DoHandshake method.
+    FHandshakeTimeout: Integer;
+
     // SSL Session Resumption flag
     FIsSessionResumed: boolean;
 
@@ -2179,8 +2182,16 @@ type
 
     /// <summary>Drives the handshake loop until completion or terminal state.</summary>
     function DoHandshake: TTaurusTLSSslSocketState;
-    /// <summary>Executes a single step of SSL_connect or SSL_accept.</summary>
-    function DoHandshakeIteration: TTaurusTLSSslSocketState; virtual; abstract;
+      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>
+    ///   Executes a single step of SSL_connect or SSL_accept.
+    /// </summary>
+    /// <param name="ASSLError">
+    ///   Returns the OpenSSL error code it handshake attempt is unsuccessful,
+    ///   othewise it should return SSL_ERROR_NONE.
+    /// </param>
+    function DoHandshakeIteration(out ASSLError: Integer): TTaurusTLSSslSocketState;
+      virtual; abstract;
     /// <summary>Executes orderly TLS session close_notify shutdown.</summary>
     function DoShutdown: TTaurusTLSSslSocketState; virtual;
 
@@ -2206,6 +2217,10 @@ type
     procedure DoStateChangeNotify(ACurrent, ATarget: TTaurusTLSSslSocketState);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+    /// <summary>
+    ///   Timeout value in msec for completing SSL/TLS Handshake.
+    /// </summary>
+    property HandshakeTimeout: Integer read FHandshakeTimeout;
     /// <summary>Physical OS socket descriptor handle.</summary>
     property SocketHandle: TIdStackSocketHandle read FSocketHandle write FSocketHandle;
     /// <summary>True if active connection successfully resumed a previous TLS session.</summary>
@@ -2232,11 +2247,20 @@ type
     procedure TransitionTo(ATarget: TTaurusTLSSslSocketState;
       ASteps: integer = cDefaultTransitions); virtual;
 
-    /// <summary>Binds socket handle and drives state machine to established state.</summary>
-    /// <param name="pHandle">The physical OS socket descriptor handle.</param>
-    /// <returns>True if established successfully; False otherwise.</returns>
-    function Connect(const pHandle: TIdStackSocketHandle): boolean; overload;
-      virtual;
+    /// <summary>
+    ///   Binds socket handle and drives state machine to established state.
+    /// </summary>
+    /// <param name="pHandle">
+    ///   The physical OS socket descriptor handle.
+    /// </param>
+    /// <param name="AMSec">
+    ///   SSL Handshake timeout in msec.
+    /// </param>
+    /// <returns>
+    ///   True if established successfully; False otherwise.
+    /// </returns>
+    function Connect(const pHandle: TIdStackSocketHandle;
+      const AMSec: Integer): boolean; overload; virtual;
     /// <summary>Encrypts and sends application data buffer over active TLS session.</summary>
     function Send(const ABuffer: TIdBytes; const AOffset, ALength: TIdC_SIZET;
       const AMSec: Integer): Integer; {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -2244,7 +2268,7 @@ type
     function Recv(var ABuffer: TIdBytes; const AMSec: Integer): Integer;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     /// <summary>Polls whether decrypted application data is ready for reading.</summary>
-    function Readable(AMsec: integer): boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function Readable(const AMsec: integer): boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
     /// <summary>Initiates orderly session shutdown and state machine teardown.</summary>
     procedure Shutdown;
     /// <summary>Validates post-handshake peer certificate verification result.</summary>
@@ -2317,7 +2341,8 @@ type
     ///   evaluations, and processes retry configurations.
     /// </summary>
     /// <returns>Next state machine target state.</returns>
-    function DoHandshakeIteration: TTaurusTLSSslSocketState; override;
+    function DoHandshakeIteration(out ASSLError: Integer): TTaurusTLSSslSocketState;
+      override;
 
     /// <summary>
     ///   Executes client-side shutdown and cleans up session resumption state.
@@ -2334,11 +2359,21 @@ type
     ///   Binds the socket handle, applies a session resumption ticket, and
     ///   drives the state machine to established state.
     /// </summary>
-    /// <param name="pHandle">The physical OS socket descriptor handle.</param>
-    /// <param name="ASessionToResume">The session resumption container.</param>
-    /// <returns>True if established successfully; False otherwise.</returns>
+    /// <param name="pHandle">
+    ///   The physical OS socket descriptor handle.
+    /// </param>
+    /// <param name="ASessionToResume">
+    ///   The session resumption container.
+    /// </param>
+    /// <param name="AMSec">
+    ///   SSL Handshake timeout in msec
+    /// </param>
+    /// <returns>
+    ///   True if established successfully; False otherwise.
+    /// </returns>
     function Connect(const pHandle: TIdStackSocketHandle; //PALOFF "Redeclares ancestor member, or method in helped class/record"
-      ASessionToResume: TTaurusTLSSslSession): boolean; overload;
+      ASessionToResume: TTaurusTLSSslSession; const AMSec: Integer): boolean;
+      overload;
 
     /// <summary>Negotiated ECH status outcome for this connection.</summary>
     property ECHStatus: TTaurusECHClientStatus read FECHStatus;
@@ -4878,6 +4913,7 @@ begin
   Assert(Assigned(AConfigIntf), '''AConfigIntf'' should not be ''nil''.'); //Do not localize
   inherited Create;
   FSocketHandle:=Id_INVALID_SOCKET;
+  FHandshakeTimeout:=IdTimeoutInfinite;
   FContextIntf:=AConfigIntf;
   FCtx:=AConfigIntf.Ctx; // PALOFF 'Mixing interface variables and objects' (Not sure why)
 end;
@@ -4968,16 +5004,50 @@ begin
 end;
 
 function TTaurusTLSSslSocket.DoHandshake: TTaurusTLSSslSocketState;
+var
+  lTimeout: Integer;
+  lSW: TStopWatch;
+  lWaitOk: Boolean;
+  lSSLErr: Integer;
+
 begin
   ClearError;
   CheckActiveState([seHandshaking]);
+  lSW:=TStopWatch.StartNew;
 
   repeat
-    Result:=DoHandshakeIteration;
+    Result:=DoHandshakeIteration(lSSLErr);
+
     if Result = seHandshaking then
-    { TODO : IndySleep should be replaced with the smart cross-compiler "spin wait" call. }
-      IndySleep(1)
-  until Result <> seHandshaking;
+    begin
+      lTimeout:=HandshakeTimeout;
+      if lTimeout <> IdTimeoutInfinite then
+      begin
+        lTimeout:=HandshakeTimeout - Integer(lSW.ElapsedMilliseconds);
+        if lTimeout <= 0 then
+        { TODO : To make ResourceString }
+          ETaurusTLSHandshakeError.RaiseExceptionCode(
+            SSL_ERROR_SYSCALL, -1, 'Handshake timeout expired.'
+          );
+      end;
+
+      lWaitOk:=True;
+      case lSSLErr of
+        SSL_ERROR_WANT_READ:
+          lWaitOk:=WaitForRead(lTimeout);
+        SSL_ERROR_WANT_WRITE:
+          lWaitOk:=WaitForWrite(lTimeout);
+      else
+        IndySleep(1); // Fallback for in-memory BIO tests
+      end;
+
+      if not lWaitOk then
+        { TODO : To make ResourceString }
+        ETaurusTLSHandshakeError.RaiseExceptionCode(
+          SSL_ERROR_SYSCALL, -1, 'Handshake I/O wait timed out.'
+        );
+    end;
+  until (Result <> seHandshaking) or (not lWaitOk);
 
   FIsSessionResumed:=Assigned(FSSL) and (Result in [seEstablished, seClosed]) and
     (SSL_session_reused(FSSL) > 0);
@@ -5355,10 +5425,12 @@ begin
   Result:=WaitForSocket(FSocketHandle, [sokWrite], AMsec);
 end;
 
-function  TTaurusTLSSslSocket.Connect(const pHandle: TIdStackSocketHandle): boolean;
+function  TTaurusTLSSslSocket.Connect(const pHandle: TIdStackSocketHandle;
+  const AMSec: Integer): boolean;
 begin
   CheckActiveState([seIdle]);
   FSocketHandle := pHandle;
+  FHandshakeTimeout := AMSec;
   TransitionTo(seEstablished);
   Result:=State = seEstablished;
 end;
@@ -5419,7 +5491,7 @@ begin
   ETaurusTLSAPISSLError.RaiseExceptionCode(lSslErr, ALastResult, lErrStr);
 end;
 
-function TTaurusTLSSslSocket.Readable(AMsec: integer): boolean;
+function TTaurusTLSSslSocket.Readable(const AMsec: integer): boolean;
 var
   lSW: TStopWatch;
   lTimeout: integer;
@@ -6047,13 +6119,14 @@ begin
 end;
 
 function TTaurusTLSClientSocket.Connect(const pHandle: TIdStackSocketHandle;
-  ASessionToResume: TTaurusTLSSslSession): boolean;
+  ASessionToResume: TTaurusTLSSslSession; const AMSec: Integer): boolean;
 begin
   FSessionToResume:=ASessionToResume;
-  Result:=Connect(pHandle);
+  Result:=Connect(pHandle, AMsec);
 end;
 
-function TTaurusTLSClientSocket.DoHandshakeIteration: TTaurusTLSSslSocketState;
+function TTaurusTLSClientSocket.DoHandshakeIteration(
+  out ASSLError: Integer): TTaurusTLSSslSocketState;
 var
   lRet, lErr: Integer;
   lContext: TTaurusTLSSslClientSocketCtx;
@@ -6174,6 +6247,7 @@ begin
   lContext:=ClientCtx;
   ClearError;
   Result:=seError;
+  ASSLError:=SSL_ERROR_NONE;
 
   lRet:=SSL_connect(SSL);
 
@@ -6196,6 +6270,7 @@ begin
   else
   begin
     lErr:=GetSSLError(lRet);
+    ASSLError := lErr;
     case lErr of
       SSL_ERROR_WANT_READ, SSL_ERROR_WANT_WRITE:
         begin
@@ -6217,10 +6292,12 @@ begin
           if (lContext.UseECH or lContext.UseGREASE) and (not lContext.IsIdentityIP) then
             ProcessECHStatus(lRet)
           else
+            { TODO : To make ResourceString }
             ETaurusTLSHandshakeError.RaiseExceptionCode(lErr, lRet, 'Fatal handshake error.');
         end;
 
     else
+      { TODO : To make ResourceString }
       ETaurusTLSHandshakeError.RaiseExceptionCode(lErr, lRet, 'Fatal handshake error.');
     end;
   end;
