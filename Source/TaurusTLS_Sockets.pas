@@ -2109,12 +2109,6 @@ type
     FContextIntf: ITaurusTLSSslSocketCtx;  // Holds reference count safely
     FCtx: TTaurusTLSSslSocketCtx;
 
-    // Error Snapshot
-    FLastSSLError: TIdC_INT;      // Result of SSL_get_error (e.g. SSL_ERROR_SSL, SSL_ERROR_SYSCALL)
-    FLastRetCode: TIdC_INT;       // Return code of SSL_read_ex / SSL_write_ex (e.g. 0 or -1)
-    FLastQueueError: TIdC_ULONG;  // Peeked OpenSSL queue error code (via ERR_peek_error)
-    FLastSocketError: Integer;    // Captured OS socket error (via GStack.WSGetLastError)
-
     // SSL Session Resumption flag
     FIsSessionResumed: boolean;
 
@@ -2154,16 +2148,12 @@ type
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     /// <summary>Processes captured errors and raises appropriate exceptions.</summary>
-    function CheckForError: Integer; overload; virtual;
-    /// <summary>Captures OpenSSL queue and OS socket error snapshots.</summary>
-    function GetLastError(ARetCode: Integer): Integer; overload;
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function CheckForError(ALastResult: Integer): Integer; overload; virtual;
     /// <summary>Queries SSL_get_error and captures error state snapshot.</summary>
     function GetSSLError(ALastResult: Integer): Integer; overload;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     /// <summary>Clears OpenSSL queue and resets captured error snapshot.</summary>
     procedure ClearError; {$IFDEF USE_INLINE}inline; {$ENDIF}
-
     /// <summary>Allocates native SSL session and arms callbacks.</summary>
     function InitSSL: TTaurusTLSSslSocketState; virtual;
       {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -4920,11 +4910,10 @@ begin
   // 1. Allocate the SSL session structure using the pinned context
   FSSL:=SSL_new(FCtx.SSLCtx);
   if not Assigned(FSSL) then
-    ETaurusTLSSslSocketCreateError.RaiseExceptionCode(GetLastError(0),
-      RSSSLCreatingSessionError);
+    ETaurusTLSSslSocketCreateError.RaiseWithMessage(RSSSLCreatingSessionError);
 
   // 2. Bind the Delphi object instance to the SSL handle for callback routing
-  lErr:=GetLastError(SSL_set_app_data(FSSL, Self));
+  lErr:=SSL_set_app_data(FSSL, Self);
   if lErr <= 0 then
     ETaurusTLSSslSocketDataBindingError.RaiseExceptionCode(lErr,
       RMSG_SslSocketSetAppData_err);
@@ -4970,7 +4959,7 @@ begin
   if Assigned(FSSL) and (FSocketHandle <> Id_INVALID_SOCKET) then
   begin
     lRet:=SSL_set_fd(FSSL, FSocketHandle);
-    if GetLastError(lRet) <= 0 then
+    if lRet <= 0 then
       ETaurusTLSSslSocketBindError.RaiseExceptionCode(lRet,
         RSSSLDataBindingError_2)
     else
@@ -5042,62 +5031,14 @@ begin
     lContext.DoOnStateChange(Self, ACurrent, ATarget);
 end;
 
-function TTaurusTLSSslSocket.GetLastError(ARetCode: Integer): Integer;
-begin
-  FLastRetCode:=ARetCode;
-  FLastSocketError:=GStack.WSGetLastError;
-
-  // 1. Peek at the top error in OpenSSL's thread-local queue WITHOUT popping/clearing it
-  Result:=ARetCode;
-  FLastQueueError:= ERR_peek_error;
-
-  // 2. Resolve High-Level SSL Error Code
-  if Assigned(FSSL) then
-  begin
-    // If FSSL exists, query SSL_get_error for the high-level classification
-    FLastSSLError:=SSL_get_error(FSSL, ARetCode);
-  end
-  else if FLastSocketError <> 0 then
-  begin
-    // If no OpenSSL queue error exists but an OS socket error was recorded
-    FLastSSLError:=SSL_ERROR_SYSCALL;
-  end
-  else
-    FLastSSLError:=SSL_ERROR_NONE;
-end;
-
 function TTaurusTLSSslSocket.GetSSLError(ALastResult: Integer): Integer;
 begin
-  FLastRetCode := ALastResult;
-
-  // 1. SUCCESS PATH (ALastResult > 0)
-  // OpenSSL guarantees SSL_get_error returns SSL_ERROR_NONE when ret > 0.
   if ALastResult > 0 then
-  begin
-    ClearError; // Reset all snapshot fields to clean state
-    Result := SSL_ERROR_NONE;
-    Exit;
-  end;
-
-  // 2. FAILURE / PENDING PATH (ALastResult <= 0)
-  // Capture OS-level socket error at the exact microsecond of failure
-  FLastSocketError := GStack.WSGetLastError;
-
-  if Assigned(FSSL) then
-  begin
-    // Resolves ZERO_RETURN, SYSCALL, WANT_READ, WANT_WRITE, SSL_ERROR_SSL, etc.
-    Result := SSL_get_error(FSSL, ALastResult);
-
-    // Peeks at the top error in OpenSSL's C-queue without clearing it
-    FLastQueueError := ERR_peek_error;
-  end
+    Result := SSL_ERROR_NONE
+  else if Assigned(FSSL) then
+    Result := SSL_get_error(FSSL, ALastResult)
   else
-  begin
     Result := SSL_ERROR_SYSCALL;
-    FLastQueueError := ERR_peek_error;
-  end;
-
-  FLastSSLError := Result;
 end;
 
 procedure TTaurusTLSSslSocket.CheckActiveState(
@@ -5337,6 +5278,38 @@ begin
   end;
 end;
 
+procedure TTaurusTLSSslSocket.CheckPeerCertificateValidationResult;
+var
+  lErr: TTaurusTLSX509Error;  // its a record type. No lErr.Free is required.
+  lErrCode: TIdC_INT;
+  lCert: TTaurusTLSX509; // PALOFF 'Created and freed objects'
+  lSuccess: boolean;
+
+begin
+  if not Ctx.CertVerifyFlags.VerifyPeer then
+    Exit;
+
+  lCert:=nil;
+  lErrCode:=SSL_get_verify_result(FSSL);
+  lErr:=TTaurusTLSX509Error.Create(lErrCode);
+  lSuccess:=lErrCode = X509_V_OK;
+  if not lSuccess then
+  try
+    lCert:=GetPeerCertificate;
+    Ctx.DoOnPeerCertError(Self, lCert, lErr, lSuccess);
+  finally
+    lCert.Free;
+  end;
+  if not lSuccess then
+    ETaurusTLSSslSocketCertValidationError.RaiseErrorCode(lErrCode,
+      lErr.ErrorShortDescription);
+end;
+
+procedure TTaurusTLSSslSocket.ClearError;
+begin
+  ERR_clear_error;
+end;
+
 class function TTaurusTLSSslSocket.WaitForSocket(
   ASocketHandle: TIdStackSocketHandle; AKind: TSocketSelectKinds;
   AMsec: integer): boolean;
@@ -5390,106 +5363,60 @@ begin
   Result:=State = seEstablished;
 end;
 
-function TTaurusTLSSslSocket.CheckForError: Integer;
+function TTaurusTLSSslSocket.CheckForError(ALastResult: Integer): Integer;
 var
+  lSslErr: TIdC_INT;
+  lQueueErr: TIdC_ULONG;
   lErrStr: string;
 
 begin
-  // 1. EARLY TERMINAL GUARD: Handle sockets that were already closed/erred
-  // before the SSL stack executed or during an earlier teardown
-  if FState in ([seClosed]+cTerminalStates) then
-  begin
-    if FLastSocketError <> 0 then
-      GStack.RaiseSocketError(FLastSocketError) // Raises EIdSocketError with exact OS error
-    else if FLastSSLError <> SSL_ERROR_NONE then
-    begin
-      lErrStr:=string(ERR_error_string(FLastQueueError, nil));
-      ETaurusTLSAPISSLError.RaiseExceptionCode(FLastSSLError, FLastRetCode, lErrStr);
-    end
-    else
-    begin
-      // Fallback: Check Indy's GStack for any last socket error
-      GStack.CheckForSocketError(Integer(Id_SOCKET_ERROR),
-        [Id_WSAESHUTDOWN, Id_WSAECONNABORTED, Id_WSAECONNRESET, Id_WSAETIMEDOUT]);
-    end;
+  Result:=SSL_ERROR_NONE;
 
-    Exit(FLastSocketError);
+  // 1. Success Path
+  if ALastResult > 0 then
+    Exit;
+
+  // 2. Closed / Invalid Socket Guard
+  if (FState in cTerminalStates) or (FSocketHandle = Id_INVALID_SOCKET) then
+  begin
+    // Check Indy stack for captured socket error or raise standard reset
+    GStack.CheckForSocketError(Integer(Id_SOCKET_ERROR),
+      [Id_WSAESHUTDOWN, Id_WSAECONNABORTED, Id_WSAECONNRESET, Id_WSAETIMEDOUT]);
+    { TODO : To make ResourceString }
+    ETaurusTLSSslSocketConnectionReset.RaiseWithMessage('Socket is closed.');
   end;
 
-  Result:=FLastSSLError;
+  // 3. Query OpenSSL for the high-level error classification on demand
+  if Assigned(FSSL) then
+    lSslErr:=SSL_get_error(FSSL, ALastResult)
+  else
+    lSslErr:=SSL_ERROR_SYSCALL;
 
-  // 2. SSL Layer Reports No Error, but OS Socket Handle is Invalid
-  if Result = SSL_ERROR_NONE then
+  Result:=lSslErr;
+  if lSslErr = SSL_ERROR_NONE then
+    Exit;
+
+  // 4. Handle OS-Level Socket Failures (SSL_ERROR_SYSCALL)
+  if lSslErr = SSL_ERROR_SYSCALL then
   begin
-    if FSocketHandle = Id_INVALID_SOCKET then
-    begin
-      TransitionTo(seClosed);
-      { TODO : To make ResourceString }
-      ETaurusTLSSslSocketConnectionReset.RaiseWithMessage(
-        'Socket closed before SSL operation completed.');
-    end;
-    Exit(0); // Healthy session
+    // Delegate to Indy's GStack. If GStack.WSGetLastError is non-zero,
+    // this automatically translates and raises an EIdSocketError across all platforms.
+    GStack.CheckForSocketError(Integer(Id_SOCKET_ERROR));
+
+    // If GStack recorded 0 (clean TCP FIN without TLS alert / unexpected EOF)
+    { TODO : To make ResourceString }
+    ETaurusTLSSslSocketConnectionReset.RaiseWithMessage('Connection reset by peer.');
   end;
 
-  // 3. Handle OS-level Network Resets (SSL_ERROR_SYSCALL)
-  if Result = SSL_ERROR_SYSCALL then
-  begin
-    TransitionTo(seReleased);
-    if FLastSocketError <> 0 then
-      GStack.RaiseSocketError(FLastSocketError)
-    else
-      Exit(GStack.CheckForSocketError(Integer(Id_SOCKET_ERROR),
-        [Id_WSAESHUTDOWN, Id_WSAECONNABORTED, Id_WSAECONNRESET, Id_WSAETIMEDOUT]));
-  end;
-
-  // 4. Handle OpenSSL Protocol / Cryptographic Failures
-  TransitionTo(seError);
-
-  if FLastQueueError <> 0 then
-    lErrStr:=string(ERR_error_string(FLastQueueError, nil))
+  // 5. Handle OpenSSL Protocol / Cryptographic Errors (SSL_ERROR_SSL)
+  lQueueErr:=ERR_peek_error;
+  if lQueueErr <> 0 then
+    lErrStr:=string(ERR_error_string(lQueueErr, nil))
   else
     { TODO : To make ResourceString }
     lErrStr:='Unspecified OpenSSL error.';
 
-  ETaurusTLSAPISSLError.RaiseExceptionCode(Result, FLastRetCode, lErrStr);
-end;
-
-procedure TTaurusTLSSslSocket.CheckPeerCertificateValidationResult;
-var
-  lErr: TTaurusTLSX509Error;  // its a record type. No lErr.Free is required.
-  lErrCode: TIdC_INT;
-  lCert: TTaurusTLSX509; // PALOFF 'Created and freed objects'
-  lSuccess: boolean;
-
-begin
-  if not Ctx.CertVerifyFlags.VerifyPeer then
-    Exit;
-
-  lCert:=nil;
-  lErrCode:=SSL_get_verify_result(FSSL);
-  lErr:=TTaurusTLSX509Error.Create(lErrCode);
-  lSuccess:=lErrCode = X509_V_OK;
-  if not lSuccess then
-  try
-    lCert:=GetPeerCertificate;
-    Ctx.DoOnPeerCertError(Self, lCert, lErr, lSuccess);
-  finally
-    lCert.Free;
-  end;
-  if not lSuccess then
-    ETaurusTLSSslSocketCertValidationError.RaiseErrorCode(lErrCode,
-      lErr.ErrorShortDescription);
-end;
-
-procedure TTaurusTLSSslSocket.ClearError;
-begin
-  ERR_clear_error; // Clear OpenSSL's thread-local error queue
-
-  // Reset local captured snapshot fields
-  FLastSSLError := SSL_ERROR_NONE;
-  FLastRetCode := 0;
-  FLastQueueError := 0;
-  FLastSocketError := 0;
+  ETaurusTLSAPISSLError.RaiseExceptionCode(lSslErr, ALastResult, lErrStr);
 end;
 
 function TTaurusTLSSslSocket.Readable(AMsec: integer): boolean;
