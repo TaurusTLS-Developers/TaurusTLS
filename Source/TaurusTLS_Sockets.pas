@@ -5499,17 +5499,16 @@ function TTaurusTLSSslSocket.Recv(var ABuffer: TIdBytes;
   const AMSec: Integer): Integer;
 var
   lResult: TIdC_SIZET;
-  lLen, lRet, lErr: TIdC_INT;
-  lTimeout: Integer;
+  lLen, lRet, lErr, lTimeout: Integer;
   lIsTimeout: Boolean;
   lSW: TStopWatch;
 
 begin
+  Result:=0;
   lResult:=0;
-
   lLen:=Length(ABuffer);
   if lLen = 0 then
-    Exit(0);
+    Exit;
 
   CheckActiveState([seEstablished]);
 
@@ -5518,7 +5517,7 @@ begin
 
   repeat
     ClearError;
-    lRet:=SSL_read_ex(FSSL, ABuffer[0], Length(ABuffer), lResult);
+    lRet:=SSL_read_ex(FSSL, ABuffer[0], lLen, lResult);
     Result:=lResult;
 
     if lRet > 0 then
@@ -5535,24 +5534,30 @@ begin
     if lIsTimeout then
       Break;
 
-    // Handle Non-Success / Pending / Error States
     lErr:=GetSSLError(lRet);
     case lErr of
       SSL_ERROR_WANT_READ:
-        if SSL_has_pending(FSSL) > 0 then
-          Continue // SSL has decoded or raw data in the buffer (Read Ahead is ON)
-        else
-          lIsTimeout:=not WaitForRead(lTimeout);
+        begin
+          if SSL_has_pending(FSSL) > 0 then
+            Continue
+          else
+            lIsTimeout:=not WaitForRead(lTimeout);
+        end;
 
       SSL_ERROR_WANT_WRITE:
-        lIsTimeout:=not WaitForWrite(lTimeout);
-
-      else
-        if lErr <> SSL_ERROR_ZERO_RETURN then
         begin
-          Result:=lRet;
+          lIsTimeout:=not WaitForWrite(lTimeout);
+        end;
+
+      SSL_ERROR_ZERO_RETURN:
+        begin
+          Result:=0; // Graceful TLS EOF (close_notify received)
           Break;
         end;
+    else
+      // Handle fatal OS syscalls, TCP resets, and protocol errors
+      CheckForError(lRet);
+      Break;
     end;
   until lIsTimeout;
 end;
@@ -5560,22 +5565,23 @@ end;
 function TTaurusTLSSslSocket.Send(const ABuffer: TIdBytes; const AOffset,
   ALength: TIdC_SIZET; const AMSec: Integer): Integer;
 var
-  lResult: TIdC_SIZET; // PALOFF "Variables that are referenced, but never set"
-  lRet, lErr: TIdC_INT;
+  lResult: TIdC_SIZET;
+  lRet, lErr, lTimeout: Integer;
   lLen: TIdC_SIZET;
-  lTimeout: Integer;
-  lIsTimeout: boolean;
+  lIsTimeout: Boolean;
   lSW: TStopWatch;
 
 begin
   Result:=0;
   lLen:=Length(ABuffer);
-  if (ALength = 0) or (lLen = 0) then
+
+  // Guard against zero-length or out-of-bounds parameters
+  if (ALength = 0) or (lLen = 0) or (AOffset + ALength > lLen) then
     Exit;
 
   CheckActiveState([seEstablished]);
 
-  lIsTimeOut:=False;
+  lIsTimeout:=False;
   lSW:=TStopWatch.StartNew;
 
   repeat
@@ -5600,17 +5606,23 @@ begin
     lErr:=GetSSLError(lRet);
     case lErr of
       SSL_ERROR_WANT_WRITE:
-        lIsTimeout:=not WaitForWrite(lTimeout);
+        begin
+          lIsTimeout:=not WaitForWrite(lTimeout);
+        end;
 
       SSL_ERROR_WANT_READ:
-        lIsTimeout:=not WaitForRead(lTimeout);
-
-      else
-        if lErr <> SSL_ERROR_ZERO_RETURN then
         begin
-          Result:=lRet;
+          lIsTimeout:=not WaitForRead(lTimeout);
+        end;
+
+      SSL_ERROR_ZERO_RETURN:
+        begin
+          Result:=0;
           Break;
         end;
+    else
+      CheckForError(lRet);
+      Break;
     end;
   until lIsTimeout;
 end;
