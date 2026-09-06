@@ -5890,7 +5890,7 @@ begin
   try
     LErr:=GStack.WSGetLastError;
     try
-      lInstance:=TTaurusTLSSslSocket(AEx);
+      lInstance:=GetInstanceFromSSL(ASSL);
         if not Assigned(lInstance) then
           Exit;
 
