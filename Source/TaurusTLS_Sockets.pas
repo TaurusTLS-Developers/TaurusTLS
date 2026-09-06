@@ -5751,6 +5751,10 @@ end;
 
 procedure TTaurusTLSSslSocket.ReleaseSSLCallbacks;
 begin
+  if not Assigned(FSSL) then
+    Exit;
+  SSL_set_msg_callback(FSSL, nil);
+  SSL_set_security_callback(FSSL, nil);
   SSL_set_verify(FSSL, 0, nil);
   SSL_set_info_callback(FSSL, nil);
 end;
