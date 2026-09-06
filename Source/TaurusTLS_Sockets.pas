@@ -5943,7 +5943,7 @@ begin
       if Assigned(lContext) then
       begin
         lContext.DoOnVerifyCertificate(lInstance, ACtx, lResult, lContinue);
-        if lContinue then Result:=1 else Result:=0;
+        if lContinue and lResult then Result:=1 else Result:=0;
         if lResult then
           X509_STORE_CTX_set_error(ACtx, X509_V_OK);
       end;
