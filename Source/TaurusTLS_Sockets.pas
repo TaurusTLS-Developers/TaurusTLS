@@ -4961,16 +4961,17 @@ begin
     ETaurusTLSSslSocketDataBindingError.RaiseExceptionCode(lErr,
       RMSG_SslSocketSetAppData_err);
 
-  // 3. Do Socket/Connection specific configuration (Virtual polymorphic hook)
-  SetupConnection;
-
-  // 4. Register the callback bridges
-  InitSSLCallbacks;
-
-  // 5. For Linux only: mask SIGPIPE signal for the current thread.
+  // 3. For Linux only: mask SIGPIPE signal for the current thread.
 {$IFDEF SIGPIPE_MASK}
   MaskSigPipe;
 {$ENDIF}
+
+  // 4. Do Socket/Connection specific configuration (Virtual polymorphic hook)
+  SetupConnection;
+
+  // 5. Register the callback bridges
+  InitSSLCallbacks;
+
   Result:=seInitializing;
 end;
 
