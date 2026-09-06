@@ -4140,14 +4140,21 @@ end;
 
 function TTaurusTLSSslSocketCtx.SetSSLCtxOptions(
   const AValue: TTaurusTLSSslOptionFlags): TTaurusTLSSslSocketCtx;
+var
+  lOldOptions, lNewOptions: TIdC_UINT64;
+
 begin
   Result:=Self;
-  if AValue = cDefaultCtxOptions then
+  lOldOptions:=SSL_CTX_get_options(FSSLCtx);
+  lNewOptions:=AValue.AsInt;
+
+  // Do not call CheckFrozen if no changes needed.
+  if lOldOptions = lNewOptions then
     Exit;
 
   CheckFrozen;
   // Design time defaults: [sslOpNoCompression, sslOpEnableMiddleboxCompat]
-  SSL_CTX_set_options(FSSLCtx, AValue.AsInt);
+  SSL_CTX_set_options(FSSLCtx, lNewOptions);
 end;
 
 function TTaurusTLSSslSocketCtx.SetCipherList(const AValue: string): TTaurusTLSSslSocketCtx;
