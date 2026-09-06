@@ -2088,7 +2088,7 @@ type
 
   public const
     /// <summary>Set of terminal states from which no forward transition is valid.</summary>
-    cTerminalStates = [seReleased, seClosed, seError];
+    cTerminalStates = TTaurusTLSSslSocketState.cTerminalStates;
     /// <summary>Default maximum transition steps allowed per transition cycle.</summary>
     cDefaultTransitions = 8;
 
@@ -2165,7 +2165,7 @@ type
     /// <summary>Configures connection-specific SNI, ECH, or routing parameters.</summary>
     procedure SetupConnection; virtual; abstract;
     /// <summary>Deallocates native SSL session and unbinds callbacks.</summary>
-    function ReleaseSSL: TTaurusTLSSslSocketState; virtual;
+    procedure  ReleaseSSL; virtual;
     /// <summary>Unbinds connection-specific OpenSSL callback bridges.</summary>
     procedure ReleaseSSLCallbacks; virtual;
     /// <summary>Binds physical socket descriptor to OpenSSL session.</summary>
@@ -2478,7 +2478,7 @@ end;
 
 class function ETaurusTLSSslSocketClose.TargetSocketState: TTaurusTLSSslSocketState;
 begin
-  Result:=seReleased;
+  Result:=seClosed;
 end;
 
 { ETaurusTLSCertValidationError }
@@ -4927,10 +4927,11 @@ end;
 
 destructor TTaurusTLSSslSocket.Destroy;
 begin
-  Shutdown;
-  if not (FState in cTerminalStates) then
-    TransitionTo(seReleased);
-
+  try
+    Shutdown;
+  except
+    // Suppress exceptions during destruction
+  end;
   inherited Destroy;
 end;
 
@@ -4975,10 +4976,9 @@ begin
   Result:=seInitializing;
 end;
 
-function TTaurusTLSSslSocket.ReleaseSSL: TTaurusTLSSslSocketState;
+procedure TTaurusTLSSslSocket.ReleaseSSL;
 begin
   ClearError;
-  Result:=seReleased;
   if Assigned(FSSL) then
   try
     try
@@ -5063,13 +5063,10 @@ end;
 
 function TTaurusTLSSslSocket.DoShutdown: TTaurusTLSSslSocketState;
 var
-  lRet, lErr: Integer;
+  lRet: Integer;
 
 begin
-  if FState = seError then
-    Exit(seError)
-  else
-    Result:=seClosed; // Default next step on successful close_notify exchange
+  Result:=seClosed;
 
   if not Assigned(FSSL) then
     Exit;
@@ -5077,25 +5074,14 @@ begin
   ClearError;
   lRet:=SSL_shutdown(FSSL);
 
-  // Handle first SSL_shutdown call
-  if lRet < 0 then
+  // If lRet = 0, first close_notify sent; perform second call if bidirectional shutdown is enabled
+  if (lRet = 0) and (not Ctx.Flags.UniDirectShutdown) then
   begin
-    lErr:=GetSSLError(lRet); // Captures error snapshot automatically
-    if lErr = SSL_ERROR_SYSCALL then
-      Result:=seClosed // Hard socket disconnect
-    else
-      Result:=seError;  // OpenSSL protocol or cryptographic error
-    Exit;
-  end
-
-  // lRet = 0 means close_notify sent, awaiting peer response.
-  // Execute second call if bi-directional shutdown is required.
-  else if (lRet = 0) and (not Ctx.Flags.UniDirectShutdown) then
-  begin
-    ERR_clear_error;
+    ClearError;
     SSL_shutdown(FSSL);
-    Result:=seClosed
   end;
+  // Note: If lRet < 0 (socket reset, timeout, syscall drop), the error is suppressed
+  // because DoTransitionTo's finally block immediately calls ReleaseSSL.
 end;
 
 procedure TTaurusTLSSslSocket.DoStateChangeNotify(ACurrent,
@@ -5135,37 +5121,26 @@ begin
     Exit(ACurrent);
 
   if ATarget in cTerminalStates then
-  begin
-    if (ACurrent = seEstablished) and (ATarget = seReleased) then
-      Exit(seClosed)
-    else
-      Exit(ATarget);
-  end;
+    Exit(ATarget);
 
   if ATarget <= ACurrent then
-    Exit(ATarget); // Handled/rejected by IsValidTransition
+    Exit(ATarget);
 
   case ACurrent of
     seIdle:
-      Result:=seInitializing; // Step 1 from Idle
+      Result:=seInitializing;
 
     seInitializing:
-      Result:=seInitialized;  // Step 2 from Initializing
+      Result:=seInitialized;
 
     seInitialized:
-      Result:=seHandshaking;  // Step 3 from Initialized
+      Result:=seHandshaking;
 
     seHandshaking:
-      Result:=seEstablished;  // Step 4 from Handshaking
+      Result:=seEstablished;
 
     seEstablished:
-      Result:=seClosed;      // Step 5 from Established
-
-    seClosed:
-      Result:=seReleased;
-
-    seReleased:
-      Result:=seReleased;
+      Result:=seClosed;
 
   else
     Result:=seError;
@@ -5175,31 +5150,29 @@ end;
 function TTaurusTLSSslSocket.IsValidTransition(ACurrent,
   ATarget: TTaurusTLSSslSocketState): Boolean;
 begin
-  // Global Panic State Rule: seError is valid from any state except Closed and itself
+  // Terminal states cannot transition out under any circumstance
+  if ACurrent in cTerminalStates then
+    Exit(False);
+
+  // seError is reachable from any non-terminal state
   if ATarget = seError then
-    Exit((ACurrent <> seClosed) and (ACurrent <> seError));
+    Exit(True);
 
   case ACurrent of
     seIdle:
-      Result:=ATarget in ([seInitializing]+cTerminalStates);
+      Result:=ATarget in ([seInitializing] + cTerminalStates);
 
     seInitializing:
-      Result:=ATarget in ([seInitialized]+cTerminalStates);
+      Result:=ATarget in ([seInitialized] + cTerminalStates);
 
     seInitialized:
-      Result:=ATarget in ([seHandshaking]+cTerminalStates);
+      Result:=ATarget in ([seHandshaking] + cTerminalStates);
 
     seHandshaking:
-      Result:=ATarget in ([seEstablished]+cTerminalStates);
+      Result:=ATarget in ([seEstablished] + cTerminalStates);
 
     seEstablished:
-      Result:=ATarget in ([seClosed]+cTerminalStates);
-
-    seClosed:
       Result:=ATarget in cTerminalStates;
-
-    seReleased, seError:
-      Result:=False; // Terminal states cannot transition out
   else
     Result:=False;
   end;
@@ -5225,11 +5198,7 @@ end;
 
 function TTaurusTLSSslSocket.DoTransitionTo(
   ATarget: TTaurusTLSSslSocketState): TTaurusTLSSslSocketState;
-var
-  lState: TTaurusTLSSslSocketState;
-
 begin
-  lState:=FState;
   Result:=ATarget;
 
   if FState = Result then
@@ -5249,17 +5218,25 @@ begin
       Result:=BindSocket;
 
     seEstablished:
-      Result:=DoHandshake; // Executes handshake loop; transitions to seEstablished on success
+      Result:=DoHandshake;
 
     seClosed:
-      Result:=DoShutdown;
+      begin
+        try
+          DoShutdown; // Best-effort SSL_shutdown
+        finally
+          ReleaseSSL; // Guaranteed memory deallocation
+          Result:=seClosed;
+        end;
+      end;
 
-    seReleased, seError:
-      if lState in [seInitialized..seClosed] then
-        ReleaseSSL; //PALOFF "Functions called as procedures"
-
-    else
-      Result:=seError;
+    seError:
+      begin
+        ReleaseSSL;
+        Result:=seError;
+      end;
+  else
+    Result:=seError;
   end;
 end;
 
@@ -5270,7 +5247,6 @@ var
   lSteps: integer;
 
 begin
-  // Exit if already in requested target state
   if FState = ATarget then
     Exit;
 
@@ -5278,45 +5254,31 @@ begin
 
   try
     repeat
-      lState := FState;
+      lState:=FState;
+      lNextState:=GetNextStepTarget(lState, ATarget);
 
-      // Resolve the immediate next forward step required to reach ATarget
-      lNextState := GetNextStepTarget(lState, ATarget);
-
-      // Validate single-step feasibility using your exact IsValidTransition rules
       if not IsValidTransition(lState, lNextState) then
         { TODO : To make ResourceString }
         ETaurusTLSSocketStateError.RaiseWithMessageFmt(
           'Unable to transition Socket ''%s''''s state from ''%s'' to ''%s''.',
           [ClassName, lState.AsString, lNextState.AsString]);
 
-      // Execute the single step
       lState:=DoTransitionTo(lNextState);
-
-      // Update State and notify
       DoSetState(lState, True);
-
-      // Infinite Loop / Stagnation Guard
       Dec(lSteps);
-    until (FState in ([ATarget]+cTerminalStates)) or (lSteps <= 0);
+    until (FState in ([ATarget] + cTerminalStates)) or (lSteps <= 0);
 
     if lSteps <= 0 then
-    begin
+      { TODO : To make ResourceString }
       ETaurusTLSSocketStateError.RaiseWithMessageFmt(
         'Infinite state transition loop detected on Socket ''%s'' at state ''%s''.',
         [ClassName, FState.AsString]);
-    end;
 
   except
     on E: Exception do
     begin
-      if E is EIdConnClosedGracefully then
-        lState:=seReleased
-      else
-        lState:=seError;
-
-      ReleaseSSL; //PALOFF "Functions called as procedures"
-      DoSetState(lState, True);
+      ReleaseSSL;
+      DoSetState(seError, True);
       raise;
     end;
   end;
@@ -5709,24 +5671,11 @@ end;
 
 procedure TTaurusTLSSslSocket.Shutdown;
 begin
-  if FState = seEstablished then
+  // If the socket has not already reached a terminal state (seClosed or seError),
+  // drive the state machine to seClosed to perform shutdown and release memory.
+  if not (FState in cTerminalStates) then
   begin
-    try
-      // Initiates pipeline: seEstablished -> seClosing -> seClosed (or seError on failure)
-      TransitionTo(seReleased);
-    except
-      on E: Exception do
-      begin
-        // If an exception escapes DoShutdown, force seError state and re-raise
-        TransitionTo(seError);
-        raise;
-      end;
-    end;
-  end
-  else if FState in [seInitialized, seHandshaking] then
-  begin
-    // For non-established connections being torn down, move directly to seClosed
-    TransitionTo(seReleased);
+    TransitionTo(seClosed);
   end;
 end;
 
@@ -5972,8 +5921,8 @@ end;
 constructor TTaurusTLSSslSession.Create(ASocket: TTaurusTLSSslSocket);
 begin
   inherited Create;
-  if Assigned(ASocket) and (ASocket.State in [seEstablished..seReleased]) and
-    Assigned(ASocket.SSL) then
+  if Assigned(ASocket) and (ASocket.State in [seEstablished]+
+    TTaurusTLSSslSocketState.cTerminalStates) and Assigned(ASocket.SSL) then
     FSession:=SSL_get1_session(ASocket.SSL)
   else
     FSession:=nil;
