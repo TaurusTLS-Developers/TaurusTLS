@@ -5369,15 +5369,21 @@ begin
     begin
       repeat
         Result:=CheckForSocketEvent(ASocketHandle, AKind, GAntiFreeze.IdleTimeOut);
+        if not Result then
+          TIdAntiFreezeBase.DoProcess; // Pump application messages
       until Result;
       Exit;
     end
     else
     while lMSec >= 0 do
     begin
-      Result:=CheckForSocketEvent(ASocketHandle, AKind, GAntiFreeze.IdleTimeOut);
+      Result:=CheckForSocketEvent(ASocketHandle, AKind,
+        IndyMin(lMsec, GAntiFreeze.IdleTimeOut));
+
       if Result then
         Exit;
+
+      TIdAntiFreezeBase.DoProcess; // Pump application messages
       Dec(lMSec, GAntiFreeze.IdleTimeOut);
     end
   end
@@ -5618,7 +5624,8 @@ begin
   lLen:=Length(ABuffer);
 
   // Guard against zero-length or out-of-bounds parameters
-  if (ALength = 0) or (lLen = 0) or (AOffset + ALength > lLen) then
+  if (ALength = 0) or (lLen = 0) or
+    (AOffset >= lLen) or (ALength > lLen - AOffset) then
     Exit;
 
   CheckActiveState([seEstablished]);
