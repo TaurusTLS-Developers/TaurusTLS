@@ -3178,6 +3178,7 @@ end;
 constructor TTaurusTLSSslSocketCtxBuilder.Create(ATLSMeth: PSSL_METHOD);
 begin
   inherited Create;
+  FLock:=TIdCriticalSection.Create;
   SetDirty;
   FTLSMeth:=ATLSMeth;
   FX509VerifyParam:=TTaurusTLSMetaX509VerifyParam.Create(Self);
