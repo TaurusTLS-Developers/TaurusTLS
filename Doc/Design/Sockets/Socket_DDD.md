@@ -141,7 +141,7 @@ type
     [Volatile]
     FState: TTaurusTLSSslSocketState;
     FSocketHandle: TIdStackSocketHandle;
-    FHandshakeTimeout: Integer;           // Ephemeral handshake budget
+    FHandshakeTimeout: Integer;           // Ephemeral handshake budget set during Connect
 
     // The Dual-Track State Fields
     FContextIntf: ITaurusTLSSslSocketCtx; // Manages reference count safely
@@ -186,6 +186,7 @@ type
     function Recv(var ABuffer: TIdBytes; const AMSec: Integer): Integer; inline;
     function Readable(const AMsec: integer): boolean; inline;
     procedure Shutdown;
+    procedure CheckPeerCertificateValidationResult; inline;
 
     property SSL: PSSL read FSSL;
     property State: TTaurusTLSSslSocketState read FState;
@@ -195,6 +196,8 @@ type
 
 ### 1.4. Specialized Descendant Classes
 Specialized context classes implement client-specific and peer-specific setups. Descendants retrieve their appropriate concrete configuration safely via type-safe internal getters.
+*   **`TTaurusTLSClientSocket`:** Specialized client socket engine managing client SNI routing, ECH encryption, and outbound handshake execution.
+*   **`TTaurusTLSPeerSocket` (Scope Note):** Inbound server-peer socket engine. The class declaration currently exists as an architectural placeholder. Detailed implementation of server-side `SSL_accept` dispatch, SNI-based virtual hosting, and ALPN selection callbacks will be fully detailed in the Server-Side milestone.
 
 ~~~pascal
 type
@@ -222,52 +225,27 @@ type
   end;
 ~~~
 
+### 1.5. Operational Timeouts vs. Immutable Cryptographic Snapshots
+Timeouts are strictly categorized as transient operational execution constraints rather than cryptographic properties:
+*   `TTaurusTLSSslSocketCtx` contains zero timeout fields.
+*   All socket I/O methods (`Recv`, `Send`, `Readable`, `Connect`) accept an explicit `const AMSec: Integer` parameter passed from the executing thread's stack.
+*   The `TTaurusTLSIOHandlerSocket` control-plane component can modify its `ReadTimeout` or `ConnectTimeout` properties dynamically at any time without invalidating the active `ITaurusTLSSslSocketCtx` snapshot or triggering dirty-flag recompilations.
+
+### 1.6. Thread-Safety & Execution Contract
+*   **Single-Threaded Execution:** All data-plane methods of `TTaurusTLSSslSocket` and `TTaurusTLSSslSocketCtx` (`Connect`, `DoHandshake`, `Recv`, `Send`, `Readable`, `Shutdown`, and state transitions) execute strictly within a **single thread**—the Indy connection worker thread (`TIdYarn` / `TIdPeerThread`). There is no concurrent internal access to a socket instance across multiple threads.
+*   **Callback Context:** All OpenSSL callback bridges (`CbSslInfo`, `CbSslVerify`, `CbSslSecurityCheck`, `CbCliCert`, `CbCtxKeyLog`, `CbSslMessage`) fire synchronously on this same Indy worker thread.
+*   **Application Responsibility:** Events dispatched by the context (`OnStateChange`, `OnVerifyCertificate`, `OnPeerCertError`, `OnStatusInfo`, `OnMessage`, etc.) execute in the context of the worker thread. **The consuming application must implement thread-safe logic** (e.g., using `TThread.Queue`, critical sections, or synchronization primitives) if event handlers touch UI controls, shared data structures, or database sessions.
+
 ---
 
 ## 2. Indy Wrapper Integration (`TTaurusTLSIOHandlerSocket`)
 
-This skeleton shows how the high-level Indy component implements the secure I/O pipeline, delegates execution directly to the internal state machine, and implements the required factory methods.
+This skeleton illustrates how the high-level Indy component orchestrates the socket lifecycle, manages socket-option timeouts, and delegates encrypted buffers to the state machine.
+
+*(Note: Detailed production implementation of `TTaurusTLSIOHandlerSocket` will be finalized during the IOHandler integration milestone; the snippets below demonstrate control-plane binding).*
 
 ~~~pascal
-type
-  TTaurusTLSIOHandlerSocket = class(TIdSSLIOHandlerSocketBase)
-  {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
-    FSSLSocket: TTaurusTLSBaseSocket;
-    FSSLContext: PSSL_CTX; // Owned by the wrapper
-  protected
-    procedure SetPassThrough(const AValue: Boolean); override;
-    function RecvEnc(var VBuffer: TIdBytes): Integer; override;
-    function SendEnc(const ABuffer: TIdBytes; const AOffset, ALength: Integer): Integer; override;
-  public
-    procedure InitComponent; override;
-    procedure ConnectClient; override;
-    procedure AfterAccept; override;
-    procedure Close; override;
-    function Clone: TIdSSLIOHandlerSocketBase; override;
-    function MakeClientIOHandler: TIdSSLIOHandlerSocketBase; override;
-    function Readable(AMSec: Integer): Boolean; override;
-    function CheckForError(ALastResult: Integer): Integer; override;
-  end;
-
-procedure TTaurusTLSIOHandlerSocket.InitComponent;
-begin
-  inherited InitComponent;
-  fPassThrough := True; // Indy default: unencrypted until requested
-  FSSLContext := nil;
-  FSSLSocket := nil;
-end;
-
-procedure TTaurusTLSIOHandlerSocket.SetPassThrough(const AValue: Boolean);
-begin
-  if fPassThrough <> AValue then
-  begin
-    inherited SetPassThrough(AValue);
-    if (not fPassThrough) and IsOpen then
-      StartSSL;
-  end;
-end;
-
-procedure TTaurusTLSIOHandlerSocket.ConnectClient;
+procedure TTaurusTLSIOHandlerSocket.Connect;
 var
   LPassThrough: Boolean;
 begin
@@ -284,7 +262,12 @@ begin
   LPassThrough := fPassThrough;
   fPassThrough := True; // Pass through unencrypted during TCP connect (e.g., Proxies)
   try
-    inherited ConnectClient; // Connects underlying TCP socket
+    inherited Connect; // Connects underlying TCP socket
+
+    // Force synchronization of kernel timeouts on new descriptor
+    FLastAppliedReadTimeout := -1;
+    FLastAppliedWriteTimeout := -1;
+    SyncSocketTimeouts;
   finally
     fPassThrough := LPassThrough;
   end;
@@ -296,62 +279,19 @@ begin
     StartSSL;
 end;
 
-procedure TTaurusTLSIOHandlerSocket.Accept;
-begin
-  inherited Accept;
-  if not PassThrough then
-    StartSSL;
-end;
-
 procedure TTaurusTLSIOHandlerSocket.StartSSL;
 var
   LClientCtx: ITaurusTLSSslSocketCtx;
 begin
   if not Assigned(FSSLSocket) then
   begin
-    if IsPeer then
-    begin
-      // Peer context compilation
-    end
-    else
-    begin
-      // Retrieve frozen client context snapshot from the builder
-      LClientCtx := FClientBuilder.Build(Self);
-      FSSLSocket := TTaurusTLSClientSocket.Create(LClientCtx);
-    end;
+    // Compile or retrieve the immutable context snapshot via the builder
+    LClientCtx := FClientBuilder.Build(Self);
+    FSSLSocket := TTaurusTLSClientSocket.Create(LClientCtx);
 
-    // Drives state machine through non-recursive loop: seIdle -> seInitializing -> seInitialized -> seHandshaking -> seEstablished
-    FSSLSocket.Connect(Binding.Handle);
+    // Pass ConnectTimeout (falling back to ReadTimeout) to initialize FHandshakeTimeout
+    FSSLSocket.Connect(Binding.Handle, GetHandshakeTimeout);
   end;
-end;
-
-function TTaurusTLSIOHandlerSocket.RecvEnc(var VBuffer: TIdBytes): Integer;
-begin
-  if Assigned(FSSLSocket) and (FSSLSocket.State = seEstablished) then
-  begin
-    Result := FSSLSocket.Recv(VBuffer);
-  end;
-end;
-
-function TTaurusTLSIOHandlerSocket.SendEnc(const ABuffer: TIdBytes; const AOffset, ALength: Integer): Integer;
-begin
-  if Assigned(FSSLSocket) and (FSSLSocket.State = seEstablished) then
-  begin
-    Result := FSSLSocket.Send(ABuffer, AOffset, ALength);
-  end;
-end;
-
-procedure TTaurusTLSIOHandlerSocket.Close;
-begin
-  if Assigned(FSSLSocket) then
-  begin
-    try
-      FSSLSocket.Shutdown; // Moves to seClosing -> seClosed
-    finally
-      FreeAndNil(FSSLSocket);
-    end;
-  end;
-  inherited Close;
 end;
 
 function TTaurusTLSIOHandlerSocket.Clone: TIdSSLIOHandlerSocketBase;
@@ -359,67 +299,9 @@ var
   LClone: TTaurusTLSIOHandlerSocket;
 begin
   LClone := TTaurusTLSIOHandlerSocket(inherited Clone);
-  // Share immutable context interface directly with cloned data channel (FTP parity)
-  LClone.FContextIntf := Self.FContextIntf;
+  // When cloning (e.g. FTPS data channel), the child IOHandler receives
+  // the parent's compiled builder/context reference to ensure 100% parameter sync
   Result := LClone;
-end;
-
-function TTaurusTLSIOHandlerSocket.MakeClientIOHandler: TIdSSLIOHandlerSocketBase;
-var
-  LClient: TTaurusTLSIOHandlerSocket;
-begin
-  LClient := TTaurusTLSIOHandlerSocket(Create(nil));
-  LClient.FSSLContext := Self.FSSLContext;
-  LClient.IsPeer := False;
-  Result := LClient;
-end;
-
-function TTaurusTLSIOHandlerSocket.Readable(AMSec: Integer): Boolean;
-begin
-  if Assigned(FSSLSocket) and (FSSLSocket.State = seEstablished) then
-  begin
-    // Fast decrypted buffer check. If OpenSSL has decrypted data pending, we are readable immediately
-    if FSSLSocket.Readable then
-    begin
-      Result := True;
-      Exit;
-    end;
-  end;
-  // Fall back to Indy's native OS-level socket select polling
-  Result := inherited Readable(AMSec);
-end;
-
-function TTaurusTLSIOHandlerSocket.CheckForError(ALastResult: Integer): Integer;
-var
-  LSslErr: Integer;
-begin
-  if PassThrough then
-  begin
-    Result := inherited CheckForError(ALastResult);
-  end
-  else
-  begin
-    if not Assigned(FSSLSocket) then
-    begin
-      Result := inherited CheckForError(ALastResult);
-      Exit;
-    end;
-
-    LSslErr := FSSLSocket.GetSSLError(ALastResult);
-    if LSslErr = SSL_ERROR_NONE then
-    begin
-      Result := 0;
-      Exit;
-    end;
-
-    if LSslErr = SSL_ERROR_SYSCALL then
-    begin
-      Result := inherited CheckForError(Integer(Id_SOCKET_ERROR));
-      Exit;
-    end;
-
-    ETaurusTLSAPISSLError.RaiseExceptionCode(LSslErr, ALastResult);
-  end;
 end;
 ~~~
 
@@ -534,19 +416,24 @@ var
   lRet: Integer;
 begin
   Result := seClosed;
+
   if not Assigned(FSSL) then
     Exit;
 
   ClearError;
   lRet := SSL_shutdown(FSSL);
 
+  // lRet = 0 means our close_notify alert was sent, awaiting peer's response.
+  // Perform second call only if bidirectional shutdown is requested.
   if (lRet = 0) and (not Ctx.Flags.UniDirectShutdown) then
   begin
     ERR_clear_error;
     SSL_shutdown(FSSL);
   end;
-  // All errors (syscall drops, timeouts, RST) are swallowed here as DoTransitionTo
-  // guarantees ReleaseSSL in its finally block.
+
+  // Best-effort teardown: Any transport resets (RST), broken pipes, or timeouts
+  // during shutdown are swallowed because DoTransitionTo(seClosed)'s finally block
+  // immediately invokes ReleaseSSL to guarantee memory deallocation.
 end;
 
 procedure TTaurusTLSSslSocket.Shutdown;
@@ -732,7 +619,10 @@ begin
 end;
 ```
 
-### 4.2. Direct, High-Performance I/O (`Recv` and `Send`)
+### 4.2. Direct Non-Blocking I/O (`Recv` and `Send`)
+*   **Indy EOF Delegation (`SSL_ERROR_ZERO_RETURN`):** When OpenSSL detects a TLS `close_notify` alert from the peer, `SSL_read_ex` returns `SSL_ERROR_ZERO_RETURN`. The `Recv` loop assigns `Result := 0` and breaks cleanly. This returns `0` bytes to Indy's `RecvEnc`, which naturally triggers Indy's EOF handling and raises `EIdConnClosedGracefully` at the application level.
+*   **Handling Post-Handshake Authentication (PHA) in `Recv`:** In TLS 1.3, a server can request client certificates post-handshake at any time during active reading. When this occurs, OpenSSL handles the message flight inside `SSL_read_ex` and triggers the registered `CbCliCert` callback from within the `Recv` loop while the state machine is in `seEstablished`. Consuming event handlers must be aware that client certificate selection can fire both during handshakes and during active reading.
+
 These methods bypass all state action classes, checking the `FState` directly in-memory to prevent virtual redirect overhead on critical paths.
 
 ```pascal
@@ -883,42 +773,6 @@ begin
     lErrStr := 'Unspecified OpenSSL error.';
 
   ETaurusTLSAPISSLError.RaiseExceptionCode(lSslErr, ALastResult, lErrStr);
-end;
-```
-
-### 4.3. Orderly Disconnection (DoShutdown)
-Processes bidirectional closing of the TLS session with explicit try..except masking.
-
-```pascal
-function TTaurusTLSSslSocket.DoShutdown: TTaurusTLSSslSocketState;
-var
-  lRet, lErr: Integer;
-begin
-  if FState = seError then
-    Exit(seError)
-  else
-    Result := seClosed;
-
-  if not Assigned(FSSL) then Exit;
-
-  ClearError;
-  lRet := SSL_shutdown(FSSL);
-
-  if lRet < 0 then
-  begin
-    lErr := GetSSLError(lRet);
-    if lErr = SSL_ERROR_SYSCALL then
-      Result := seClosed
-    else
-      Result := seError;
-    Exit;
-  end
-  else if (lRet = 0) and (not Ctx.Flags.UniDirectShutdown) then
-  begin
-    ERR_clear_error;
-    SSL_shutdown(FSSL);
-    Result := seClosed;
-  end;
 end;
 ```
 

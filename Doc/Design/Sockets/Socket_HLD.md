@@ -61,6 +61,13 @@ OpenSSL's `SSL_MODE_AUTO_RETRY` is explicitly disabled at the context level (`SS
 *   **Atomic Invalidation:** When a property setter is modified on the control plane, it acquires `FLock: TIdCriticalSection`, updates the field, and sets `FDirty := True`. The next connection triggers `Build`, compiling a fresh context snapshot.
 *   **Zero-Downtime Memory Deallocation:** Active sockets hold an `ITaurusTLSSslSocketCtx` interface reference. Older connections continue using their referenced `SSL_CTX` without data races; when the last socket referencing an older context is destroyed, `SSL_CTX_free` is called automatically.
 
+### 2.4. Operational Timeouts & OS-Level Socket Synchronization
+TaurusTLS strictly distinguishes between **Cryptographic Configuration** (ciphers, TLS versions, trust stores, ECH keys) and **Operational Execution Properties** (timeouts):
+
+*   **Exclusion from Immutable Context:** Timeouts (`ReadTimeout`, `ConnectTimeout`) are operational properties. They are **not part of the immutable configuration snapshot** (`ITaurusTLSSslSocketCtx`). Storing timeouts on the context snapshot would break immutability and force expensive context recompilations whenever an application adjusts timeouts dynamically (such as switching from a short header read to a long stream download). Timeouts live on the `TTaurusTLSIOHandlerSocket` and are passed to the socket engine dynamically via `AMSec` method parameters.
+*   **Kernel-Level Synchronization (`SO_RCVTIMEO` / `SO_SNDTIMEO`):** Because OpenSSL's internal engine may block on the underlying OS descriptor during low-level protocol operations, relying solely on userland `Select` polling is insufficient. The `TTaurusTLSIOHandlerSocket` synchronizes its operational timeout values directly with the underlying OS socket descriptor using `SO_RCVTIMEO` and `SO_SNDTIMEO`.
+*   **Lazy System-Call Mutation:** To prevent performance degradation from issuing repetitive kernel-level `setsockopt` calls on every read or write, `SO_RCVTIMEO` and `SO_SNDTIMEO` are mutated **only when the timeout properties are actually modified** on the `IOHandler` or when a new physical descriptor is bound.
+
 ---
 
 ## 3. Core Architectural Patterns
