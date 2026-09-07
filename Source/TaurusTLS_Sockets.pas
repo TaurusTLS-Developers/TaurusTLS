@@ -2926,7 +2926,8 @@ begin
   Result:=TTaurusTLS_X509Store.Create;
   try
     for lStorePair in Self do
-      Result.AppendFromOsslStore(lStorePair.Value, [sitCert, sitCRL]);
+      if Assigned(lStorePair.Value) then
+        Result.AppendFromOsslStore(lStorePair.Value, [sitCert, sitCRL]);
   except
     FreeAndNil(Result);
     raise;
@@ -3182,12 +3183,16 @@ begin
   SetDirty;
   FTLSMeth:=ATLSMeth;
   FX509VerifyParam:=TTaurusTLSMetaX509VerifyParam.Create(Self);
+  FTrustStores:=TTaurusTLSTrustStores.Create;
+  FMaxSendFragment:=High(TTaurusTLSSslMaxSendFragment);
 end;
 
 destructor TTaurusTLSSslSocketCtxBuilder.Destroy;
 begin
   try
     Lock;
+    FreeAndNil(FTrustStores);
+    FreeAndNil(FX509VerifyParam);
     FSocketCtx:=nil;
   finally
     Unlock;
@@ -3320,6 +3325,7 @@ begin
     // between previous check and actual lock accurision
     if FTrustStores = AValue then
       Exit;
+    FreeAndNil(FTrustStores);
     FTrustStores:=AValue;
     SetDirty;
   finally
@@ -3644,7 +3650,11 @@ begin
   lTrustStore:=nil;
   try
     lVerifyParam:=FX509VerifyParam.BuildParam;
-    lTrustStore:=FTrustStores.BuildStore;
+    if Assigned(FTrustStores) then
+      lTrustStore:=FTrustStores.BuildStore
+    else
+      lTrustStore:=nil;
+
     ASocketCtx
     // Set Context Parameters
       .SetFlags(FFlags)
@@ -4165,10 +4175,11 @@ begin
     Exit; // Use defaults
 
   CheckFrozen;
-  if SSL_CTX_set_cipher_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then  // PALOFF Possible bad typecast
-    ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
-    { TODO : To make ResourceString }
-      'Error setting cipher list ''%s'' to the SSL Context.', [AValue]);
+  if AValue <> '' then // Empty AValue means DEFAULT
+    if SSL_CTX_set_cipher_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then  // PALOFF Possible bad typecast
+      ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
+      { TODO : To make ResourceString }
+        'Error setting cipher list ''%s'' to the SSL Context.', [AValue]);
 end;
 
 function TTaurusTLSSslSocketCtx.SetCipherSuites(const AValue: string): TTaurusTLSSslSocketCtx;
@@ -4178,10 +4189,11 @@ begin
     Exit; // Use defaults
 
   CheckFrozen;
-  if SSL_CTX_set_ciphersuites(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then // PALOFF Possible bad typecast
-    ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
-    { TODO : To make ResourceString }
-      'Error setting cipher suites ''%s'' to the SSL Context.', [AValue]);
+  if AValue <> '' then // Empty AValue means DEFAULT
+    if SSL_CTX_set_ciphersuites(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then // PALOFF Possible bad typecast
+      ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
+      { TODO : To make ResourceString }
+        'Error setting cipher suites ''%s'' to the SSL Context.', [AValue]);
 end;
 
 function TTaurusTLSSslSocketCtx.SetKeXGroups(const AValue: string): TTaurusTLSSslSocketCtx;
@@ -4191,10 +4203,11 @@ begin
 
   Result:=Self;
   CheckFrozen;
-  if SSL_CTX_set1_groups_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then // PALOFF Possible bad typecast
-    ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
-    { TODO : To make ResourceString }
-      'Error setting key exchange groups ''%s'' to the SSL Context.', [AValue]);
+  if AValue <> '' then // Empty AValue means DEFAULT
+    if SSL_CTX_set1_groups_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then // PALOFF Possible bad typecast
+      ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
+      { TODO : To make ResourceString }
+        'Error setting key exchange groups ''%s'' to the SSL Context.', [AValue]);
 end;
 
 function TTaurusTLSSslSocketCtx.SetSigAlgorithms(const AValue: string): TTaurusTLSSslSocketCtx;
@@ -4204,10 +4217,11 @@ begin
     Exit; // Use defaults
 
   CheckFrozen;
-  if SSL_CTX_set1_sigalgs_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then // PALOFF Possible bad typecast
-    ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
-    { TODO : To make ResourceString }
-      'Error setting signature algorithms ''%s'' to the SSL Context.', [AValue]);
+  if AValue <> '' then // Empty AValue means DEFAULT
+    if SSL_CTX_set1_sigalgs_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then // PALOFF Possible bad typecast
+      ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
+      { TODO : To make ResourceString }
+        'Error setting signature algorithms ''%s'' to the SSL Context.', [AValue]);
 end;
 
 function TTaurusTLSSslSocketCtx.SetMinTLSVersion(
