@@ -1097,14 +1097,6 @@ type
       static; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     /// <summary>
-    ///   Normalizes a domain string to lowercase for SNI matching.
-    /// </summary>
-    /// <param name="AValue">Raw hostname string to normalize.</param>
-    /// <returns>Lowercase normalized raw string.</returns>
-    class function NormalizeHostName(const AValue: RawByteString): RawByteString;
-      static; {$IFDEF USE_INLINE}inline; {$ENDIF}
-
-    /// <summary>
     ///   Raises an exception if the context is frozen and cannot be modified.
     /// </summary>
     procedure CheckFrozen; {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -2451,9 +2443,6 @@ uses
   IdException,
   IdResourceStrings,
   IdResourceStringsProtocols
-{$IFDEF MSWINDOWS}
-  ,IdIDN // For IDNToPunnyCode
-{$ENDIF}
   ;
 
 const
@@ -4155,17 +4144,6 @@ begin
   end;
 end;
 
-class function TTaurusTLSSslSocketCtx.NormalizeHostName(
-  const AValue: RawByteString): RawByteString;
-begin
-  { TODO : Implement lower-case IDNA conversion. }
-{$IFDEF STRING_IS_UNICODE}
-  Result:=System.AnsiStrings.LowerCase(AValue);
-{$ELSE}
-  Result:=LowerCase(AValue);
-{$ENDIF}
-end;
-
 function TTaurusTLSSslSocketCtx.SetFlags(
   const AValue: TaurusTLSSslSocketCtxFlags): TTaurusTLSSslSocketCtx;
 begin
@@ -4631,7 +4609,7 @@ var
 
 begin
   Result:=Self;
-  lValue:=NormalizeHostName(RawByteString(AValue)); // PALOFF 'UnicodeString cast to RawByteString'
+  lValue:=RawByteString(AValue); // PALOFF 'UnicodeString cast to RawByteString'
   if FDefaultSNI = lValue then
     Exit;
 
@@ -4646,7 +4624,7 @@ var
 
 begin
   Result:=Self;
-  lValue:=NormalizeHostName(RawByteString(AValue)); // PALOFF 'UnicodeString cast to RawByteString'
+  lValue:=RawByteString(AValue); // PALOFF 'UnicodeString cast to RawByteString'
   if FECHOuterSNI = lValue then
     Exit;
 
@@ -4661,7 +4639,7 @@ var
 
 begin
   Result:=Self;
-  lValue:=NormalizeHostName(RawByteString(AValue)); // PALOFF 'UnicodeString cast to RawByteString'
+  lValue:=RawByteString(AValue); // PALOFF 'UnicodeString cast to RawByteString'
   if FHostname = lValue then
     Exit;
 
