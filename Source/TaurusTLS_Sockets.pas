@@ -570,6 +570,16 @@ type
   ///   consolidated native OpenSSL X.509 verification trust repository.
   /// </summary>
   TTaurusTLSTrustStores = class(TDictionary<string, TTaurusTLSTrustStore>)
+  private const
+    {$IFDEF WINDOWS}
+    cSystemCertStoreLocation = 'org.openssl.winstore://';
+    {$ENDIF}
+  private
+    {$IFDEF WINDOWS}
+    FUseSystemCertStore: boolean;
+    {$ENDIF}
+    function GetUseSystemStore: boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetUseSystemStore(const AValue: boolean); {$IFDEF USE_INLINE}inline; {$ENDIF}
   protected
     /// <summary>Validates that the store instance is not nil.</summary>
     /// <param name="AStore">The trust store instance to validate.</param>
@@ -609,6 +619,9 @@ type
     ///   ownership.
     /// </returns>
     function BuildStore: TTaurusTLS_X509Store;
+
+    property UseSystemCertStore: boolean read GetUseSystemStore
+      write SetUseSystemStore;
   end;
 
   // Forward declaration
@@ -1856,8 +1869,6 @@ type
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure SetVerifyModes(const AValue: TTaurusTLSVerifyModes);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
-    procedure SetTrustStores(AValue: TTaurusTLSTrustStores);
-      {$IFDEF USE_INLINE}inline; {$ENDIF}
 
     // Event setters
     procedure SetOnKeyLog(const AValue: TTaurusTLSOnKeyLog);
@@ -1873,6 +1884,8 @@ type
     procedure SetOnStatusInfo(const AValue: TTaurusTLSOnSSLStatusInfo);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
     procedure SetOnVerifyCertificate(const AValue: TTaurusTLSOnVerifyCallback);
+    function GetUseSystemCertStore: boolean;
+    procedure SetUseSystemCertStore(const AValue: boolean);
       {$IFDEF USE_INLINE}inline; {$ENDIF}
 
   protected
@@ -1930,7 +1943,10 @@ type
     property X509VerifyParam: TTaurusTLSMetaX509VerifyParam read FX509VerifyParam;
 
     /// <summary>Collection of trusted CA stores used for verification.</summary>
-    property TrustedStores: TTaurusTLSTrustStores write SetTrustStores;
+    property TrustedStores: TTaurusTLSTrustStores read FTrustStores;
+
+    property UseWindowsCertStore: boolean read GetUseSystemCertStore
+      write SetUseSystemCertStore;
 
     /// <summary>Bitwise OpenSSL context options (compression, middlebox).</summary>
     property SSLContextOptions: TTaurusTLSSslOptionFlags read FSSLContextOptions
@@ -2889,6 +2905,26 @@ begin
   Assert(Assigned(AStore), 'AStore must not be ''nil'' value.'); // Do not localize
 end;
 
+function TTaurusTLSTrustStores.GetUseSystemStore: boolean;
+begin
+  {$IFDEF WINDOWS}
+  Result:=FUseSystemCertStore;
+  {$ELSE}
+  Result:=False;
+  {$ENDIF}
+end;
+
+procedure TTaurusTLSTrustStores.SetUseSystemStore(const AValue: boolean);
+begin
+  {$IFDEF WINDOWS}
+    {$IFDEF DCC}
+  TInterlocked.Exchange(FUseSystemCertStore, AValue);
+    {$ELSE}
+  InterlockedCompareExchange(FUseSystemCertStore, AValue);
+    {$ENDIF}
+  {$ENDIF}
+end;
+
 procedure TTaurusTLSTrustStores.Add(const AValue: TTaurusTLSTrustStore);
 begin
   CheckStore(AValue);
@@ -2928,6 +2964,10 @@ begin
     for lStorePair in Self do
       if Assigned(lStorePair.Value) then
         Result.AppendFromOsslStore(lStorePair.Value, [sitCert, sitCRL]);
+
+    if FUseSystemCertStore then
+      Result.AppendFromLocation(cSystemCertStoreLocation);
+
   except
     FreeAndNil(Result);
     raise;
@@ -3313,26 +3353,6 @@ begin
   end;
 end;
 
-procedure TTaurusTLSSslSocketCtxBuilder.SetTrustStores(
-  AValue: TTaurusTLSTrustStores);
-begin
-  if FTrustStores = AValue then
-    Exit;
-
-  Lock;
-  try
-    // Check it again it can be changed by other thread
-    // between previous check and actual lock accurision
-    if FTrustStores = AValue then
-      Exit;
-    FreeAndNil(FTrustStores);
-    FTrustStores:=AValue;
-    SetDirty;
-  finally
-    Unlock;
-  end;
-end;
-
 procedure TTaurusTLSSslSocketCtxBuilder.SetMinTLSVersion(
   const AValue: TTaurusTLS2TlsVersion);
 begin
@@ -3468,6 +3488,14 @@ begin
   end;
 end;
 
+procedure TTaurusTLSSslSocketCtxBuilder.SetUseSystemCertStore(
+  const AValue: boolean);
+begin
+  // FTrustStores.UseWindowsCertStore uses Atomic Exchenage to modify value
+  // This property has effect only on Windows
+  FTrustStores.UseSystemCertStore:=AValue;
+end;
+
 procedure TTaurusTLSSslSocketCtxBuilder.SetQuietShutdown(const AValue: boolean);
 begin
   Lock;
@@ -3512,6 +3540,11 @@ end;
 function TTaurusTLSSslSocketCtxBuilder.GetUniDirectShutdown: boolean;
 begin
   Result:=GetFlag(slfUniDirectShutdown);
+end;
+
+function TTaurusTLSSslSocketCtxBuilder.GetUseSystemCertStore: boolean;
+begin
+  Result:=FTrustStores.UseSystemCertStore;
 end;
 
 function TTaurusTLSSslSocketCtxBuilder.GetVerifyHostName: boolean;
@@ -4175,11 +4208,10 @@ begin
     Exit; // Use defaults
 
   CheckFrozen;
-  if AValue <> '' then // Empty AValue means DEFAULT
-    if SSL_CTX_set_cipher_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then  // PALOFF Possible bad typecast
-      ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
-      { TODO : To make ResourceString }
-        'Error setting cipher list ''%s'' to the SSL Context.', [AValue]);
+  if SSL_CTX_set_cipher_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then  // PALOFF Possible bad typecast
+    ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
+    { TODO : To make ResourceString }
+      'Error setting cipher list ''%s'' to the SSL Context.', [AValue]);
 end;
 
 function TTaurusTLSSslSocketCtx.SetCipherSuites(const AValue: string): TTaurusTLSSslSocketCtx;
@@ -4189,11 +4221,10 @@ begin
     Exit; // Use defaults
 
   CheckFrozen;
-  if AValue <> '' then // Empty AValue means DEFAULT
-    if SSL_CTX_set_ciphersuites(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then // PALOFF Possible bad typecast
-      ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
-      { TODO : To make ResourceString }
-        'Error setting cipher suites ''%s'' to the SSL Context.', [AValue]);
+  if SSL_CTX_set_ciphersuites(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then // PALOFF Possible bad typecast
+    ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
+    { TODO : To make ResourceString }
+      'Error setting cipher suites ''%s'' to the SSL Context.', [AValue]);
 end;
 
 function TTaurusTLSSslSocketCtx.SetKeXGroups(const AValue: string): TTaurusTLSSslSocketCtx;
@@ -4202,12 +4233,14 @@ begin
   // #define DEFAULT_GROUP_NAME "DEFAULT"
 
   Result:=Self;
+  if AValue = '' then
+    Exit; // Use defaults
+
   CheckFrozen;
-  if AValue <> '' then // Empty AValue means DEFAULT
-    if SSL_CTX_set1_groups_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then // PALOFF Possible bad typecast
-      ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
-      { TODO : To make ResourceString }
-        'Error setting key exchange groups ''%s'' to the SSL Context.', [AValue]);
+  if SSL_CTX_set1_groups_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then // PALOFF Possible bad typecast
+    ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
+    { TODO : To make ResourceString }
+      'Error setting key exchange groups ''%s'' to the SSL Context.', [AValue]);
 end;
 
 function TTaurusTLSSslSocketCtx.SetSigAlgorithms(const AValue: string): TTaurusTLSSslSocketCtx;
@@ -4217,11 +4250,10 @@ begin
     Exit; // Use defaults
 
   CheckFrozen;
-  if AValue <> '' then // Empty AValue means DEFAULT
-    if SSL_CTX_set1_sigalgs_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then // PALOFF Possible bad typecast
-      ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
-      { TODO : To make ResourceString }
-        'Error setting signature algorithms ''%s'' to the SSL Context.', [AValue]);
+  if SSL_CTX_set1_sigalgs_list(FSSLCtx, PIdAnsiChar(RawByteString(AValue))) <= 0 then // PALOFF Possible bad typecast
+    ETaurusTLSSslSocketCtxError.RaiseWithMessageFmt(
+    { TODO : To make ResourceString }
+      'Error setting signature algorithms ''%s'' to the SSL Context.', [AValue]);
 end;
 
 function TTaurusTLSSslSocketCtx.SetMinTLSVersion(
@@ -5038,6 +5070,7 @@ begin
   CheckActiveState([seHandshaking]);
   lSW:=TStopWatch.StartNew;
 
+  lWaitOk:=False;
   repeat
     Result:=DoHandshakeIteration(lSSLErr);
 
