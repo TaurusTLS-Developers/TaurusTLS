@@ -4495,15 +4495,19 @@ begin
     Exit;
   end;
 
-  // 2. DISCOVERY MODE:
-  // - If explicit public decoy is set, verify against that decoy
-  // - If NO decoy is set, Identity is empty (skip hostname check for this probe hop)
-  if FSNIMode = csmECHGreaseDiscovery then
-  begin
-    FIdentity:=FECHOuterSNI; // If FECHOuterSNI = '', FIdentity remains ''
-  end
+  // 2. Resolve logical identity based on SNIMode
+  case FSNIMode of
+    csmDisabled:
+      // SNI is disabled: always use the physical HostName, ignoring any SNI overrides
+      FIdentity:=FHostname;
+
+    csmECHGreaseDiscovery:
+      // Discovery mode: verify against the explicit public decoy if set;
+      // if not set, Identity remains empty (skipping hostname checks for this probe hop)
+      FIdentity:=FECHOuterSNI;
+
   else
-  begin
+    // Standard SNI, GREASE, and Real ECH modes: DefaultSNI overrides HostName
     if FDefaultSNI <> '' then
       FIdentity:=FDefaultSNI
     else
