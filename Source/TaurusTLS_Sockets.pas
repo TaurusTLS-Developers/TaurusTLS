@@ -2953,9 +2953,10 @@ begin
     for lStorePair in Self do
       if Assigned(lStorePair.Value) then
         Result.AppendFromOsslStore(lStorePair.Value, [sitCert, sitCRL]);
-
+    {$IFDEF WINDOWS}
     if FUseSystemCertStore then
       Result.AppendFromLocation(cSystemCertStoreLocation);
+    {$ENDIF}
 
   except
     FreeAndNil(Result);
@@ -3739,7 +3740,7 @@ end;
 constructor TTaurusTLSSslClientSocketCtxBuilder.Create(ATLSMeth: PSSL_METHOD);
 begin
   inherited Create(ATLSMeth);
-  Include(FFlags, slfClient); // Default to client context role [1.2]
+  Include(FFlags, slfClient); // Default to client context role
   FSNIMode := csmStandardSNI;
 end;
 
@@ -6159,13 +6160,13 @@ var
           begin
             if lContext.SNIMode = csmECHGrease then
             begin
-              // Anti-ossification mode: ignore retry_configs and keep current connection [4]
+              // Anti-ossification mode: ignore retry_configs and keep current connection
               SetECHStatus(echCliNone);
             end
             else
             begin
               // Bootstrap (csmECHGreaseDiscovery) / Strict ECH (csmECH, csmECHNoOuter):
-              // Extract keys, notify application, and close session for clean reconnect [1.1, 1.3.1]
+              // Extract keys, notify application, and close session for clean reconnect
               SetECHStatus(echCliFailed);
               lECHConfigBuf:=nil;
               lECHConfigLen:=0;
@@ -6183,7 +6184,7 @@ var
                 end;
 
                 SetECHStatus(echCliRetryConfig);
-                Result := seClosed; // Signal clean close so IOHandler can reconnect with fresh ECH keys [1.3.1]
+                Result := seClosed; // Signal clean close so IOHandler can reconnect with fresh ECH keys
               end
               else
               begin
@@ -6258,7 +6259,7 @@ begin
     if (lContext.UseECH or lContext.UseGREASE) and (not lContext.IsIdentityIP) then
       ProcessECHStatus(lRet);
 
-    // Only validate certificate and cache session if handshake reached established state [1.1]
+    // Only validate certificate and cache session if handshake reached established state
     if Result = seEstablished then
     begin
       CheckPeerCertificateValidationResult;
