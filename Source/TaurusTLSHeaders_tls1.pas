@@ -30,6 +30,7 @@ interface
 uses
   IdCTypes,
   IdGlobal,
+  TaurusTLSHeaders_prov_ssl,
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}

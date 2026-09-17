@@ -1029,6 +1029,7 @@ var
 
   {$EXTERNALSYM BIO_sock_should_retry}
   BIO_sock_should_retry: function (i: TIdC_INT): TIdC_INT; cdecl = nil;
+
   {$EXTERNALSYM BIO_sock_non_fatal_error}
   BIO_sock_non_fatal_error: function (_error: TIdC_INT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_err_is_non_fatal}
@@ -1037,6 +1038,10 @@ var
   BIO_fd_should_retry: function (i: TIdC_INT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_fd_non_fatal_error}
   BIO_fd_non_fatal_error: function (_error: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BIO_socket_wait}
+  BIO_socket_wait : function(fd : TIdC_INT; for_read : TIdC_INT; max_time : TIdC_TIMET) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM BIO_socket_ready}
+  BIO_socket_ready : function(fd : TIdC_INT; for_read : TIdC_INT) : TIdC_INT; cdecl = nil;
 //  function BIO_dump_cb(
 //    Pointer data: cb(;
 //    len: TIdC_SIZET;
@@ -1534,6 +1539,11 @@ var
   function BIO_s_datagram: PBIO_METHOD cdecl; external CLibCrypto;
   {$EXTERNALSYM BIO_dgram_non_fatal_error}
   function BIO_dgram_non_fatal_error(_error: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BIO_socket_wait}
+  function BIO_socket_wait(fd : TIdC_INT; for_read : TIdC_INT; max_time : TIdC_TIMET) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM BIO_socket_ready}
+  function BIO_socket_ready(fd : TIdC_INT; for_read : TIdC_INT) : TIdC_INT cdecl; external CLibCrypto;
+
   {$EXTERNALSYM BIO_new_dgram}
   function BIO_new_dgram(fd: TIdC_INT; close_flag: TIdC_INT): PBIO cdecl; external CLibCrypto;
 
@@ -1871,7 +1881,7 @@ const
   BIO_set_mem_eof_return_removed = (byte(1) shl 8 or byte(0)) shl 8 or byte(0);
   BIO_err_is_non_fatal_introduced = (byte(3) shl 8 or byte(2)) shl 8 or byte(0);
   BIO_set_send_flags_introduced = (byte(4) shl 8 or byte(0)) shl 8 or byte(0);
-
+  BIO_socket_ready_introduced = (byte(4) shl 8 or byte(1)) shl 8 or byte(0);
 // # define BIO_get_flags(b) BIO_test_flags(b, ~(0x0))
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 const
@@ -2171,6 +2181,8 @@ const
   BIO_sock_should_retry_procname = 'BIO_sock_should_retry';
   BIO_sock_non_fatal_error_procname = 'BIO_sock_non_fatal_error';
   BIO_err_is_non_fatal_procname = 'BIO_err_is_non_fatal';
+  BIO_socket_wait_procname = 'BIO_socket_wait';
+  BIO_socket_ready_procname = 'BIO_socket_ready';
 
   BIO_fd_should_retry_procname = 'BIO_fd_should_retry';
   BIO_fd_non_fatal_error_procname = 'BIO_fd_non_fatal_error';
@@ -3203,6 +3215,16 @@ end;
 function ERR_BIO_err_is_non_fatal(errcode : TIdC_UINT) : TIdC_INT; cdecl;
 begin
    ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_err_is_non_fatal_procname);
+end;
+
+function ERR_BIO_socket_wait(fd : TIdC_INT; for_read : TIdC_INT; max_time : TIdC_TIMET) : TIdC_INT; cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_socket_wait_procname);
+end;
+
+function ERR_BIO_socket_ready(fd : TIdC_INT; for_read : TIdC_INT) : TIdC_INT; cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_socket_ready_procname);
 end;
 
 function  ERR_BIO_fd_should_retry(i: TIdC_INT): TIdC_INT; cdecl;
@@ -6786,6 +6808,37 @@ begin
     {$ifend}
   end;
 
+  BIO_socket_wait := LoadLibFunction(ADllHandle,BIO_socket_wait_procname);
+  FuncLoadError := not assigned(BIO_socket_wait);
+  if FuncLoadError then
+  begin
+    {$if not defined(BIO_socket_wait_allownil)}
+    BIO_socket_wait := ERR_BIO_socket_wait;
+    {$ifend}
+    {$if declared(BIO_socket_wait_introduced)}
+    if LibVersion < BIO_socket_wait_introduced then
+    begin
+      {$if declared(FC_BIO_socket_wait)}
+      BIO_socket_wait := FC_BIO_socket_wait;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(BIO_socket_waitl_removed)}
+    if BIO_socket_wait_removed <= LibVersion then
+    begin
+      {$if declared(_BIO_socket_wait)}
+      BIO_socket_wait := _BIO_socket_wait;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(BIO_socket_wait_allownil)}
+    if FuncLoadError then
+      AFailed.Add('BIO_socket_wait');
+    {$ifend}
+  end;
+
   BIO_fd_should_retry := LoadLibFunction(ADllHandle, BIO_fd_should_retry_procname);
   FuncLoadError := not assigned(BIO_fd_should_retry);
   if FuncLoadError then
@@ -8277,6 +8330,9 @@ begin
   BIO_new_fd := nil;
   BIO_new_bio_pair := nil;
   BIO_copy_next_retry := nil;
+  BIO_err_is_non_fatal := nil;
+  BIO_socket_wait := nil;
+  BIO_socket_ready := nil;
 end;
   {$ENDIF}
 {$ELSE}
