@@ -252,6 +252,10 @@
 				<UnitName Value="TaurusTLSHeaders_idea"/>
 			</Item>
 			<Item>
+				<Filename Value="..\..\Source\TaurusTLSHeaders_kdf.pas"/>
+				<UnitName Value="TaurusTLSHeaders_kdf"/>
+			</Item>
+			<Item>
 				<Filename Value="..\..\Source\TaurusTLSHeaders_kdferr.pas"/>
 				<UnitName Value="TaurusTLSHeaders_kdferr"/>
 			</Item>

@@ -91,6 +91,7 @@ contains
   TaurusTLSHeaders_hmac in '..\..\Source\TaurusTLSHeaders_hmac.pas',
   TaurusTLSHeaders_hpke in '..\..\Source\TaurusTLSHeaders_hpke.pas',
   TaurusTLSHeaders_idea in '..\..\Source\TaurusTLSHeaders_idea.pas',
+  TaurusTLSHeaders_kdf in '..\..\Source\TaurusTLSHeaders_kdf.pas',
   TaurusTLSHeaders_kdferr in '..\..\Source\TaurusTLSHeaders_kdferr.pas',
   TaurusTLSHeaders_objects in '..\..\Source\TaurusTLSHeaders_objects.pas',
   TaurusTLSHeaders_objectserr in '..\..\Source\TaurusTLSHeaders_objectserr.pas',

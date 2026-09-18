@@ -63,6 +63,7 @@ uses
   TaurusTLSHeaders_hmac,
   TaurusTLSHeaders_hpke,
   TaurusTLSHeaders_idea,
+  TaurusTLSHeaders_kdf,
   TaurusTLSHeaders_kdferr,
   TaurusTLSHeaders_objects,
   TaurusTLSHeaders_objectserr,

@@ -210,6 +210,7 @@
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_hmac.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_hpke.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_idea.pas"/>
+		<DCCReference Include="..\..\Source\TaurusTLSHeaders_kdf.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_kdferr.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_objects.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_objectserr.pas"/>
