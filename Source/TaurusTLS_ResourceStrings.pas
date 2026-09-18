@@ -241,7 +241,7 @@ resourcestring
   RSMSG_X509_V_ERR_EMPTY_AUTHORITY_KEY_IDENTIFIER = 'Empty Authority Key '+
     'Identifier.';
   RSMSG_X509_V_ERR_AKID_ISSUER_SERIAL_NOT_PAIRED = 'Authority Key Identifier '+
-    'not paired.';
+    'and serial number are not paired.';
   RSMSG_X509_V_ERR_DUPLICATE_EXTENSION = 'Certificate verification failed '+
     'because a certificate extension appears more than once.';
 
