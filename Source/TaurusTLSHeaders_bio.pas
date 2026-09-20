@@ -16,8 +16,8 @@
 {*                                                                            *}
 {*  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              *}
 {*                                                                            *}
-{* Portions of this software are Copyright (c) 1993 – 2018,                   *}
-{* Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  *}
+{* Portions of this software are Copyright (c) 1993 â€“ 2018,                   *}
+{* Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  *}
 {******************************************************************************}
 
 unit TaurusTLSHeaders_bio;
@@ -6296,7 +6296,7 @@ begin
     {$if declared(BIO_wait_introduced)}
     if LibVersion < BIO_wait_introduced then
     begin
-      {$if declared(FC_BIO_s_socket)}
+      {$if declared(FC_BIO_wait)}
       BIO_wait := FC_BIO_wait;
       {$ifend}
       FuncLoadError := false;
