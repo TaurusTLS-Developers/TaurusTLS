@@ -16,8 +16,8 @@
 {*                                                                            *}
 {*  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              *}
 {*                                                                            *}
-{* Portions of this software are Copyright (c) 1993 – 2018,                   *}
-{* Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  *}
+{* Portions of this software are Copyright (c) 1993 â€“ 2018,                   *}
+{* Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  *}
 {******************************************************************************}
 unit TaurusTLSHeaders_asn1;
 
@@ -622,7 +622,7 @@ var
   {$EXTERNALSYM ASN1_STRING_type_new}
   ASN1_STRING_type_new: function (type_: TIdC_INT): PASN1_STRING; cdecl = nil;
   {$EXTERNALSYM ASN1_STRING_new_not_owned}
-  ASN1_STRING_new_not_owned: function(type_ : TIdC_INT; data : PIdAnsiChar) : PASN1_STRING; cdecl = nil;
+ASN1_STRING_new_not_owned: function(type_: TIdC_INT; const data: Pointer; length: TIdC_SIZET): PASN1_STRING; cdecl = nil;
   {$EXTERNALSYM ASN1_STRING_cmp}
   ASN1_STRING_cmp: function (const a: PASN1_STRING; const b: PASN1_STRING): TIdC_INT; cdecl = nil;
 
@@ -1147,7 +1147,7 @@ var
   {$EXTERNALSYM ASN1_STRING_type_new}
   function ASN1_STRING_type_new(type_: TIdC_INT): PASN1_STRING cdecl; external CLibCrypto;
   {$EXTERNALSYM ASN1_STRING_new_not_owned}
-  function ASN1_STRING_new_not_owned(type_ : TIdC_INT; data : PIdAnsiChar) : PASN1_STRING; cdecl; external CLibCrypto;
+function ASN1_STRING_new_not_owned(type_: TIdC_INT; const data: Pointer; length: TIdC_SIZET): PASN1_STRING; cdecl; external CLibCrypto;
 
   {$EXTERNALSYM ASN1_STRING_cmp}
   function ASN1_STRING_cmp(const a: PASN1_STRING; const b: PASN1_STRING): TIdC_INT cdecl; external CLibCrypto;
@@ -2505,7 +2505,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_STRING_set0_procname);
 end;
 
-function ERR_ASN1_STRING_set1_data(_str : PASN1_STRING; data : Pointer; len : TIdC_SIZET) : TIdC_INT; cdecl;
+function ERR_ASN1_STRING_set1_data(type_: TIdC_INT; const data: Pointer; length: TIdC_SIZET): PASN1_STRING; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException( ASN1_STRING_set1_data_procname);
 end;
@@ -4240,7 +4240,7 @@ begin
       FuncLoadError := false;
     end;
     {$ifend}
-    {$if declared(ASN1_STRING_type_new_removed)}
+    {$if declared(ASN1_STRING_new_not_owned)}
     if ASN1_STRING_new_not_owned_removed <= LibVersion then
     begin
       {$if declared(_ASN1_STRING_new_not_owned)}
@@ -4366,7 +4366,7 @@ begin
       FuncLoadError := false;
     end;
     {$ifend}
-    {$if declaredASN1_STRING_set1_data_removed)}
+    {$if declared(ASN1_STRING_set1_data_removed)}
     if   ASN1_STRING_set1_data_removed <= LibVersion then
     begin
       {$if declared(_ASN1_STRING_set1_data)}
@@ -4385,14 +4385,14 @@ begin
   FuncLoadError := not assigned(ASN1_STRING_set1_string);
   if FuncLoadError then
   begin
-    {$if not defined(ASN1_STRING_set1_data_allownil)}
+    {$if not defined(ASN1_STRING_set1_string )}
     ASN1_STRING_set1_string := ERR_ASN1_STRING_set1_string;
     {$ifend}
     {$if declared(ASN1_STRING_set1_string_introduced)}
     if LibVersion < ASN1_STRING_set1_string_introduced then
     begin
       {$if declared(FC_ASN1_STRING_set1_string)}
-      ASN1_STRING_set1_string := FC_ASN1_STRING_set1_string
+      ASN1_STRING_set1_string := FC_ASN1_STRING_set1_string;
       {$ifend}
       FuncLoadError := false;
     end;
@@ -4453,8 +4453,8 @@ begin
     {$if declared(ASN1_STRING_get_length_introduced)}
     if LibVersion < ASN1_STRING_get_length_introduced then
     begin
-      {$if declared(FC_ASN1_STRING_length)}
-      ASN1_STRING_length := FC_ASN1_STRING_get_length;
+      {$if declared(ASN1_STRING_get_length_introduced)}
+      ASN1_STRING_get_length := FC_ASN1_STRING_get_length;
       {$ifend}
       FuncLoadError := false;
     end;
