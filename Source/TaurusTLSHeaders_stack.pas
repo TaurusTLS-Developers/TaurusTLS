@@ -16,8 +16,8 @@
 {*                                                                            *}
 {*  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              *}
 {*                                                                            *}
-{* Portions of this software are Copyright (c) 1993 – 2018,                   *}
-{* Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  *}
+{* Portions of this software are Copyright (c) 1993 â€“ 2018,                   *}
+{* Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  *}
 {******************************************************************************}
 unit TaurusTLSHeaders_stack;
 
@@ -67,7 +67,7 @@ uses
   {$EXTERNALSYM OPENSSL_sk_copyfunc_thunk}
   OPENSSL_sk_copyfunc_thunk = function (_para1 : TOPENSSL_sk_copyfunc; _para2 : Pointer):pointer; cdecl;
   {$EXTERNALSYM OPENSSL_sk_set_cmp_thunks_c_thunk}
-  OPENSSL_sk_set_cmp_thunks_c_thunk = function(_para1, _para2 : Pointer) : TIdC_INT; cdecl;
+  OPENSSL_sk_set_cmp_thunks_c_thunk = function(cmp: TOPENSSL_sk_compfunc; const a, b: Pointer): TIdC_INT; cdecl;
 
     { The EXTERNALSYM directive is ignored by FPC, however, it is used by Delphi as follows:
 
