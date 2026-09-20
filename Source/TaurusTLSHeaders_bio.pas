@@ -6306,7 +6306,7 @@ begin
     if BIO_wait_removed <= LibVersion then
     begin
       {$if declared(_BIO_wait)}
-      BIO_s_socket := _BIO_wait;
+      BIO_wait := _BIO_wait;
       {$ifend}
       FuncLoadError := false;
     end;
@@ -6328,7 +6328,7 @@ begin
     if LibVersion < BIO_do_connect_retry_introduced then
     begin
       {$if declared(FC_BIO_do_connect_retry)}
-      BIO_s_socket := FC_BIO_do_connect_retry;
+      BIO_do_connect_retry := FC_BIO_do_connect_retry;
       {$ifend}
       FuncLoadError := false;
     end;
