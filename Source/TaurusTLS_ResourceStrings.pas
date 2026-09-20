@@ -5,8 +5,8 @@
 { *                                                                            * }
 { *  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              * }
 { *                                                                            * }
-{ * Portions of this software are Copyright (c) 1993 – 2018,                   * }
-{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  * }
+{ * Portions of this software are Copyright (c) 1993 â€“ 2018,                   * }
+{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  * }
 { ****************************************************************************** }
 {$I TaurusTLSCompilerDefines.inc}
 unit TaurusTLS_ResourceStrings;
@@ -227,14 +227,14 @@ resourcestring
     'the raw public key, or DNS-based Authentication of Named Entities (DANE) '+
     'was not enabled on the connection.';
   RSMSG_X509_V_ERR_OCSP_RESP_INVALID = 'One or more Online Certificate Status '+
-    'Protoco (OCSP) responses are invalid.';
+    'Protocol (OCSP) responses are invalid.';
   RSMSG_X509_V_ERR_OCSP_SIGNATURE_FAILURE = 'Online Certificate Status Protocol '+
     '(OCSP) response signature verification failed.';
-  RSMGS_X509_V_ERR_OCSP_NOT_YET_VALID = 'Online Certificate Status Protocol  '+
+  RSMSG_X509_V_ERR_OCSP_NOT_YET_VALID = 'Online Certificate Status Protocol  '+
     '(OCSP) response has a thisUpdate date in the future.';
   RSMSG_X509_V_ERR_OCSP_HAS_EXPIRED = 'Online Certificate Status Protocol  '+
     '(OCSP) response has expired.';
-  RSMSG_X509_V_ERR_OCSP_NO_RESPONSE = 'Mo Online Certificate Status Protocol '+
+  RSMSG_X509_V_ERR_OCSP_NO_RESPONSE = 'No Online Certificate Status Protocol '+
     '(OCSP) response is available for the certificate.';
   RSMSG_X509_V_ERR_CRL_VERIFY_FAILED = 'Certificate Revocation List (CRL) '+
     'verification failed.';

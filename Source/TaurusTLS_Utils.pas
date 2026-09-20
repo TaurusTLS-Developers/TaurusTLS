@@ -4,8 +4,8 @@
 { *                                                                            * }
 { *  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              * }
 { *                                                                            * }
-{ * Portions of this software are Copyright (c) 1993 – 2018,                   * }
-{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  * }
+{ * Portions of this software are Copyright (c) 1993 â€“ 2018,                   * }
+{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  * }
 { ****************************************************************************** }
 
 {$I TaurusTLSCompilerDefines.inc}
@@ -330,9 +330,9 @@ const
      (ErrCode: X509_V_ERR_SIGNATURE_ALGORITHM_INCONSISTENCY; Msg: RSMSG_X509_V_ERR_SIGNATURE_ALGORITHM_INCONSISTENCY),
      (ErrCode: X509_V_ERR_INVALID_CA; Msg: RSMSG_X509_V_ERR_INVALID_CA),
      (ErrCode: X509_V_ERR_RPK_UNTRUSTED; Msg: RSMSG_X509_V_ERR_RPK_UNTRUSTED),
-     (ErrCode: X509_V_ERR_OCSP_RESP_INVALID; Msg: RSMSG_X509_V_ERR_OCSP_RESP_INVALID),
+     (ErrCode: X509_V_ERR_OCSP_RESP_INVALID; Msg: RSMGS_X509_V_ERR_OCSP_RESP_INVALID),
      (ErrCode: X509_V_ERR_OCSP_SIGNATURE_FAILURE; Msg: RSMSG_X509_V_ERR_OCSP_SIGNATURE_FAILURE),
-     (ErrCode: X509_V_ERR_OCSP_NOT_YET_VALID; Msg: RSMGS_X509_V_ERR_OCSP_NOT_YET_VALID),
+     (ErrCode: X509_V_ERR_OCSP_NOT_YET_VALID; Msg: RSMSG_X509_V_ERR_OCSP_NOT_YET_VALID),
      (ErrCode: X509_V_ERR_OCSP_HAS_EXPIRED; Msg: RSMSG_X509_V_ERR_OCSP_HAS_EXPIRED),
      (ErrCode: X509_V_ERR_OCSP_NO_RESPONSE; Msg: RSMSG_X509_V_ERR_OCSP_NO_RESPONSE),
      (ErrCode: X509_V_ERR_CRL_VERIFY_FAILED; Msg: RSMSG_X509_V_ERR_CRL_VERIFY_FAILED),
