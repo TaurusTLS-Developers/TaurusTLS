@@ -1,4 +1,4 @@
-/// <exclude />
+﻿/// <exclude />
   (* This unit was generated using the script genTaurusTLSHdrs.sh from the source file TaurusTLSHeaders_bio.h2pas
      It should not be modified directly. All changes should be made to TaurusTLSHeaders_bio.h2pas
      and this file regenerated. TaurusTLSHeaders_bio.h2pas is distributed with the full Indy
@@ -8446,6 +8446,8 @@ begin
   BIO_err_is_non_fatal := nil;
   BIO_socket_wait := nil;
   BIO_socket_ready := nil;
+  BIO_wait := nil;
+  BIO_do_connect_retry := nil;
 end;
   {$ENDIF}
 {$ELSE}
