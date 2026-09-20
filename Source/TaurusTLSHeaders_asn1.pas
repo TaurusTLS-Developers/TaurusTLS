@@ -2477,7 +2477,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_STRING_type_new_procname);
 end;
 
-function ERR_ASN1_STRING_new_not_owned(type_ : TIdC_INT; data : PIdAnsiChar) : PASN1_STRING; cdecl;
+function ERR_ASN1_STRING_new_not_owned(type_ : TIdC_INT; data : PIdAnsiChar; length: TIdC_SIZET): PASN1_STRING; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_STRING_new_not_owned_procname);
 end;
