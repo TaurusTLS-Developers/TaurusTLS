@@ -16,8 +16,8 @@
 {*                                                                            *}
 {*  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              *}
 {*                                                                            *}
-{* Portions of this software are Copyright (c) 1993 – 2018,                   *}
-{* Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  *}
+{* Portions of this software are Copyright (c) 1993 â€“ 2018,                   *}
+{* Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  *}
 {******************************************************************************}
 
 unit TaurusTLSHeaders_cms;
@@ -3603,7 +3603,7 @@ begin
     {$ifend}
   end;
 
-  CMS_SignerInfo_get_verification_result := LoadLibFunction(ADllHandle, CMS_SignerInfo_get0_signature_procname);
+  CMS_SignerInfo_get_verification_result := LoadLibFunction(ADllHandle, CMS_SignerInfo_get_verification_result_procname);
   FuncLoadError := not assigned(CMS_SignerInfo_get_verification_result);
   if FuncLoadError then
   begin
@@ -3613,7 +3613,7 @@ begin
     {$if declared(CMS_SignerInfo_get_verification_result_introduced)}
     if LibVersion < CMS_SignerInfo_get_verification_result_introduced then
     begin
-      {$if declared(FC_CMS_SignerInfo_get0_signature)}
+      {$if declared(FC_CMS_SignerInfo_get_verification_result)}
       CMS_SignerInfo_get_verification_resultre := FC_CMS_SignerInfo_get_verification_result;
       {$ifend}
       FuncLoadError := false;
@@ -3622,7 +3622,7 @@ begin
     {$if declared(CMS_SignerInfo_get_verification_result_removed)}
     if CMS_SignerInfo_get_verification_result_removed <= LibVersion then
     begin
-      {$if declared(_CMS_SignerInfo_get0_signature)}
+      {$if declared(CMS_SignerInfo_get_verification_result)}
       CMS_SignerInfo_get_verification_result := _CMS_SignerInfo_get_verification_result;
       {$ifend}
       FuncLoadError := false;
@@ -3749,7 +3749,7 @@ begin
     if CMS_add_smimecap_removed <= LibVersion then
     begin
       {$if declared(_CMS_add_smimecap)}
-      CMS_add_smimecap_content := _CMS_add_smimecap
+      CMS_add_smimecap  := _CMS_add_smimecap;
       {$ifend}
       FuncLoadError := false;
     end;
@@ -3779,7 +3779,7 @@ begin
     {$if declared(CMS_add_simple_smimecap_removed)}
     if CMS_add_simple_smimecap_removed <= LibVersion then
     begin
-      {$if declared(_CMS_add_smimecap)}
+      {$if declared(_CMS_add_simple_smimecap)}
       CMS_add_simple_smimecap := _CMS_add_simple_smimecap;
       {$ifend}
       FuncLoadError := false;
@@ -3838,7 +3838,7 @@ begin
       FuncLoadError := false;
     end;
     {$ifend}
-    {$if declared(CMS_add_smimecap_removed)}
+    {$if declared(CMS_add_standard_smimecap_removed)}
     if CMS_add_smimecap_removed <= LibVersion then
     begin
       {$if declared(_CMS_add_smimecap)}
@@ -3847,7 +3847,7 @@ begin
       FuncLoadError := false;
     end;
     {$ifend}
-    {$if not defined(CMS_add_smimecap_allownil)}
+    {$if not defined(CMS_add_standard_smimecap_allownil)}
     if FuncLoadError then
       AFailed.Add('CMS_add_standard_smimecap');
     {$ifend}
