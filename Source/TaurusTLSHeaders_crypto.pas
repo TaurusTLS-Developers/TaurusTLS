@@ -16,8 +16,8 @@
 {*                                                                            *}
 {*  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              *}
 {*                                                                            *}
-{* Portions of this software are Copyright (c) 1993 – 2018,                   *}
-{* Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  *}
+{* Portions of this software are Copyright (c) 1993 â€“ 2018,                   *}
+{* Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  *}
 {******************************************************************************}
 unit TaurusTLSHeaders_crypto;
 
@@ -322,7 +322,7 @@ var
   {$EXTERNALSYM CRYPTO_atomic_load}
   CRYPTO_atomic_load : function (_val : PIdC_UINT64; ret : PIdC_UINT64; lock : PCRYPTO_RWLOCK) : TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CRYPTO_atomic_load_int}
-  CRYPTO_atomic_load_int : function (_val : PIdC_UINT64; ret : PIdC_INT; lock : PCRYPTO_RWLOCK) : TIdC_INT; cdecl = nil;
+  CRYPTO_atomic_load_int : function (_val : PIdC_INT; ret : PIdC_INT; lock : PCRYPTO_RWLOCK) : TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CRYPTO_atomic_store}
   CRYPTO_atomic_store : function(dst : PIdC_UINT64; _val : TIdC_UINT64; lock : PCRYPTO_RWLOCK) : TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CRYPTO_atomic_store_int}
@@ -628,7 +628,7 @@ var
   {$EXTERNALSYM CRYPTO_atomic_load}
   function CRYPTO_atomic_load(_val : PIdC_UINT64; ret : PIdC_UINT64; lock : PCRYPTO_RWLOCK) : TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM CRYPTO_atomic_load_int}
-  function CRYPTO_atomic_load_int(_val : PIdC_UINT64; ret : PIdC_INT; lock : PCRYPTO_RWLOCK) : TIdC_INT cdecl; external CLibCrypto;
+  function CRYPTO_atomic_load_int(_val : PIdC_INT; ret : PIdC_INT; lock : PCRYPTO_RWLOCK) : TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM CRYPTO_atomic_store}
   function CRYPTO_atomic_store(dst : PIdC_UINT64; _val : TIdC_UINT64; lock : PCRYPTO_RWLOCK) : TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM CRYPTO_atomic_store_int}
