@@ -28,7 +28,8 @@ interface
 
 
 uses
-  IdGlobal
+  IdGlobal,
+  TaurusTLSHeaders_prov_ssl
   {$IFNDEF FPC}
   , TaurusTLSHeaders_types
   {$ENDIF};
@@ -261,9 +262,6 @@ const
   {$EXTERNALSYM SSL3_RT_MAX_EXTRA}
   SSL3_RT_MAX_EXTRA = 16384;
 
-  (* Maximum plaintext _length: defined by SSL/TLS standards *)
-  {$EXTERNALSYM SSL3_RT_MAX_PLAIN_LENGTH}
-  SSL3_RT_MAX_PLAIN_LENGTH = 16384;
   (* Maximum compression overhead: defined by SSL/TLS standards *)
   {$EXTERNALSYM SSL3_RT_MAX_COMPRESSED_OVERHEAD}
   SSL3_RT_MAX_COMPRESSED_OVERHEAD = 1024;
@@ -319,6 +317,8 @@ const
   SSL3_RT_APPLICATION_DATA = 23;
   {$EXTERNALSYM DTLS1_RT_HEARTBEAT}
   DTLS1_RT_HEARTBEAT = 24;
+  {$EXTERNALSYM SSL3_RT_ACK}
+  SSL3_RT_ACK = 26; {* RFC 9147 *}
 
   (* Pseudo content types to indicate additional parameters *)
   {$EXTERNALSYM TLS1_RT_CRYPTO}
@@ -488,6 +488,10 @@ const
   {$EXTERNALSYM DTLS1_MT_HELLO_VERIFY_REQUEST}
   DTLS1_MT_HELLO_VERIFY_REQUEST = 3;
 
+  (* Dummy message type for handling ACK like a normal handshake message *)
+  {$EXTERNALSYM DTLS13_MT_ACK}
+  DTLS13_MT_ACK = $0126;
+
   (* Dummy message type for handling CCS like a normal handshake message *)
   {$EXTERNALSYM SSL3_MT_CHANGE_CIPHER_SPEC}
   SSL3_MT_CHANGE_CIPHER_SPEC = $0101;
@@ -510,6 +514,8 @@ const
   SSL3_CC_HANDSHAKE = $080;
   {$EXTERNALSYM SSL3_CC_APPLICATION}
   SSL3_CC_APPLICATION = $100;
+  {$EXTERNALSYM SSL3_CC_COMP_CERT}
+  SSL3_CC_COMP_CERT = $200;
   {$EXTERNALSYM SSL3_CHANGE_CIPHER_CLIENT_WRITE}
   SSL3_CHANGE_CIPHER_CLIENT_WRITE = SSL3_CC_CLIENT or SSL3_CC_WRITE;
   {$EXTERNALSYM SSL3_CHANGE_CIPHER_SERVER_READ}

@@ -195,6 +195,7 @@
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_dherr.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_dsa.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_dsaerr.pas"/>
+		<DCCReference Include="..\..\Source\TaurusTLSHeaders_dtls.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_ebcdic.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_ec.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_ecerr.pas"/>
@@ -207,6 +208,7 @@
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_hmac.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_hpke.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_idea.pas"/>
+		<DCCReference Include="..\..\Source\TaurusTLSHeaders_kdf.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_kdferr.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_objects.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_objectserr.pas"/>
@@ -223,6 +225,7 @@
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_pkcs7.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_pkcs7err.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_provider.pas"/>
+		<DCCReference Include="..\..\Source\TaurusTLSHeaders_prov_ssl.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_quic.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_rand.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLSHeaders_randerr.pas"/>

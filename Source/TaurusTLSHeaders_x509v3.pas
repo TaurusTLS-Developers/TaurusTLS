@@ -16,8 +16,8 @@
 {*                                                                            *}
 {*  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              *}
 {*                                                                            *}
-{* Portions of this software are Copyright (c) 1993 – 2018,                   *}
-{* Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  *}
+{* Portions of this software are Copyright (c) 1993 â€“ 2018,                   *}
+{* Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  *}
 {******************************************************************************}
 unit TaurusTLSHeaders_x509v3;
 
@@ -191,6 +191,9 @@ const
   EXFLAG_SAN_CRITICAL     = $80000; //introudced 3.0.0
   {$EXTERNALSYM EXFLAG_NO_FINGERPRINT}
   EXFLAG_NO_FINGERPRINT   = $100000; //introduced 3.0.0
+  (* A certificate MUST NOT include more than one instance of an extension. *)
+  {$EXTERNALSYM EXFLAG_DUPLICATE}
+  EXFLAG_DUPLICATE  = $200000;  //introduced 4.1.0
 
   {$EXTERNALSYM KU_DIGITAL_SIGNATURE}
   KU_DIGITAL_SIGNATURE    = $0080;

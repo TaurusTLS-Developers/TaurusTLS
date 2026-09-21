@@ -16,8 +16,8 @@
 {*                                                                            *}
 {*  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              *}
 {*                                                                            *}
-{* Portions of this software are Copyright (c) 1993 – 2018,                   *}
-{* Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  *}
+{* Portions of this software are Copyright (c) 1993 â€“ 2018,                   *}
+{* Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  *}
 {******************************************************************************}
 unit TaurusTLSHeaders_crypto;
 
@@ -313,6 +313,26 @@ var
 
   {$EXTERNALSYM CRYPTO_atomic_add}
   CRYPTO_atomic_add: function (_val: PIdC_INT; amount: TIdC_INT; ret: PIdC_INT; lock: PCRYPTO_RWLOCK): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_atomic_add64}
+  CRYPTO_atomic_add64:  function (_val : PIdC_UINT64; op : TIdC_UINT64; ret : PIdC_UINT64; lock : PCRYPTO_RWLOCK) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CRYPTO_atomic_and}
+  CRYPTO_atomic_and : function (_val : PIdC_UINT64; op : TIdC_UINT64; ret : PIdC_UINT64; lock : PCRYPTO_RWLOCK) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CRYPTO_atomic_or}
+  CRYPTO_atomic_or : function (_val : PIdC_UINT64; op : TIdC_UINT64; ret : PIdC_UINT64; lock : PCRYPTO_RWLOCK) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CRYPTO_atomic_load}
+  CRYPTO_atomic_load : function (_val : PIdC_UINT64; ret : PIdC_UINT64; lock : PCRYPTO_RWLOCK) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CRYPTO_atomic_load_int}
+  CRYPTO_atomic_load_int : function (_val : PIdC_INT; ret : PIdC_INT; lock : PCRYPTO_RWLOCK) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CRYPTO_atomic_store}
+  CRYPTO_atomic_store : function(dst : PIdC_UINT64; _val : TIdC_UINT64; lock : PCRYPTO_RWLOCK) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CRYPTO_atomic_store_int}
+  CRYPTO_atomic_store_int : function(dst : PIdC_INT;  _val : TIdC_INT; lock : PCRYPTO_RWLOCK) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CRYPTO_atomic_load_ptr}
+  CRYPTO_atomic_load_ptr : function(var ptr : Pointer; var ret : Pointer; lock : PCRYPTO_RWLOCK) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CRYPTO_atomic_store_ptr}
+  CRYPTO_atomic_store_ptr : function(var dst : Pointer; var _val : Pointer; lock : PCRYPTO_RWLOCK) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CRYPTO_atomic_cmp_exch_ptr}
+  CRYPTO_atomic_cmp_exch_ptr : function(var ptr : Pointer; var expect : Pointer; desire : Pointer; lock : PCRYPTO_RWLOCK; var lock_failed : TIdC_INT) : TIdC_INT; cdecl = nil;
 
   {$EXTERNALSYM CRYPTO_mem_ctrl}
   CRYPTO_mem_ctrl: function (mode: TIdC_INT): TIdC_INT; cdecl = nil; {removed 3.0.0}
@@ -598,6 +618,28 @@ var
 
   {$EXTERNALSYM CRYPTO_atomic_add}
   function CRYPTO_atomic_add(_val: PIdC_INT; amount: TIdC_INT; ret: PIdC_INT; lock: PCRYPTO_RWLOCK): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM CRYPTO_atomic_add64}
+  function CRYPTO_atomic_add64(_val : PIdC_UINT64; op : TIdC_UINT64; ret : PIdC_UINT64; lock : PCRYPTO_RWLOCK) : TIdC_INT cdecl; external CLibCrypto;
+
+  {$EXTERNALSYM CRYPTO_atomic_and}
+  function CRYPTO_atomic_and(_val : PIdC_UINT64; op : TIdC_UINT64; ret : PIdC_UINT64; lock : PCRYPTO_RWLOCK) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CRYPTO_atomic_or}
+  function CRYPTO_atomic_or(_val : PIdC_UINT64; op : TIdC_UINT64; ret : PIdC_UINT64; lock : PCRYPTO_RWLOCK) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CRYPTO_atomic_load}
+  function CRYPTO_atomic_load(_val : PIdC_UINT64; ret : PIdC_UINT64; lock : PCRYPTO_RWLOCK) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CRYPTO_atomic_load_int}
+  function CRYPTO_atomic_load_int(_val : PIdC_INT; ret : PIdC_INT; lock : PCRYPTO_RWLOCK) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CRYPTO_atomic_store}
+  function CRYPTO_atomic_store(dst : PIdC_UINT64; _val : TIdC_UINT64; lock : PCRYPTO_RWLOCK) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CRYPTO_atomic_store_int}
+  function CRYPTO_atomic_store_int(dst : PIdC_INT;  _val : TIdC_INT; lock : PCRYPTO_RWLOCK) : TIdC_INT cdecl; external CLibCrypto;
+
+  {$EXTERNALSYM CRYPTO_atomic_load_ptr}
+  function CRYPTO_atomic_load_ptr(var ptr : Pointer; var ret : Pointer; lock : PCRYPTO_RWLOCK) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CRYPTO_atomic_store_ptr}
+  function CRYPTO_atomic_store_ptr(var dst : Pointer; var _val : Pointer; lock : PCRYPTO_RWLOCK) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CRYPTO_atomic_cmp_exch_ptr}
+  function CRYPTO_atomic_cmp_exch_ptr(var ptr : Pointer; var expect : Pointer; desire : Pointer; lock : PCRYPTO_RWLOCK; var lock_failed : TIdC_INT) : TIdC_INT;  cdecl; external CLibCrypto;
 
 
   {$EXTERNALSYM OPENSSL_strlcpy}
@@ -921,6 +963,7 @@ const
   CRYPTO_THREAD_unlock_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
   CRYPTO_THREAD_lock_free_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
   CRYPTO_atomic_add_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
+  CRYPTO_atomic_add64_introduced = (byte(3) shl 8 or byte(4)) shl 8 or byte(0);
   OPENSSL_strlcpy_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
   OPENSSL_strlcat_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
   OPENSSL_strnlen_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
@@ -957,6 +1000,9 @@ const
   CRYPTO_THREAD_cleanup_local_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
   CRYPTO_THREAD_get_current_id_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
   CRYPTO_THREAD_compare_id_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
+  CRYPTO_atomic_load_ptr_introduced = (byte(4) shl 8 or byte(1)) shl 8 or byte(0);
+  CRYPTO_atomic_store_ptr_introduced = (byte(4) shl 8 or byte(1)) shl 8 or byte(0);
+  CRYPTO_atomic_cmp_exch_ptr_introduced = (byte(4) shl 8 or byte(1)) shl 8 or byte(0);
   OPENSSL_malloc_removed = (byte(1) shl 8 or byte(0)) shl 8 or byte(0);
   OPENSSL_zalloc_removed = (byte(1) shl 8 or byte(0)) shl 8 or byte(0);
   OPENSSL_realloc_removed = (byte(1) shl 8 or byte(0)) shl 8 or byte(0);
@@ -1021,6 +1067,16 @@ const
   CRYPTO_THREAD_lock_free_procname = 'CRYPTO_THREAD_lock_free'; {introduced 1.1.0}
 
   CRYPTO_atomic_add_procname = 'CRYPTO_atomic_add'; {introduced 1.1.0}
+  CRYPTO_atomic_add64_procname = 'CRYPTO_atomic_add64';  {introduced 3.4.0}
+  CRYPTO_atomic_and_procname = 'CRYPTO_atomic_and';
+  CRYPTO_atomic_or_procname = 'CRYPTO_atomic_or';
+  CRYPTO_atomic_load_procname = 'CRYPTO_atomic_load';
+  CRYPTO_atomic_load_int_procname = 'CRYPTO_atomic_load_int';
+  CRYPTO_atomic_store_procname = 'CRYPTO_atomic_store';
+  CRYPTO_atomic_store_int_procname = 'CRYPTO_atomic_store_int';
+  CRYPTO_atomic_load_ptr_procname = 'CRYPTO_atomic_load_ptr';
+  CRYPTO_atomic_store_ptr_procname = 'CRYPTO_atomic_store_ptr';
+  CRYPTO_atomic_cmp_exch_ptr_procname = 'CRYPTO_atomic_cmp_exch_ptr';
 
   CRYPTO_mem_ctrl_procname = 'CRYPTO_mem_ctrl'; {removed 3.0.0}
 
@@ -1530,6 +1586,57 @@ function  ERR_CRYPTO_atomic_add(_val: PIdC_INT; amount: TIdC_INT; ret: PIdC_INT;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_atomic_add_procname);
 end;
+
+function ERR_CRYPTO_atomic_add64(_val : PIdC_UINT64; op : TIdC_UINT64; ret : PIdC_UINT64; lock : PCRYPTO_RWLOCK) : TIdC_INT; cdecl;
+begin
+   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_atomic_add64_procname);
+end;
+
+function ERR_CRYPTO_atomic_and(_val : PIdC_UINT64; op : TIdC_UINT64; ret : PIdC_UINT64; lock : PCRYPTO_RWLOCK) : TIdC_INT cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_atomic_and_procname);
+end;
+
+function ERR_CRYPTO_atomic_or(_val : PIdC_UINT64; op : TIdC_UINT64; ret : PIdC_UINT64; lock : PCRYPTO_RWLOCK) : TIdC_INT cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_atomic_or_procname);
+end;
+
+function ERR_CRYPTO_atomic_load(_val : PIdC_UINT64; ret : PIdC_UINT64; lock : PCRYPTO_RWLOCK) : TIdC_INT cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_atomic_load_procname);
+end;
+
+function ERR_CRYPTO_atomic_load_int(_val : PIdC_INT; ret : PIdC_INT; lock : PCRYPTO_RWLOCK) : TIdC_INT cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_atomic_load_int_procname);
+end;
+
+function ERR_CRYPTO_atomic_store(dst : PIdC_UINT64; _val : TIdC_UINT64; lock : PCRYPTO_RWLOCK) : TIdC_INT cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_atomic_store_procname);
+end;
+
+function ERR_CRYPTO_atomic_store_int(dst : PIdC_INT;  _val : TIdC_INT; lock : PCRYPTO_RWLOCK) : TIdC_INT cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_atomic_store_int_procname);
+end;
+
+function ERR_CRYPTO_atomic_load_ptr(var ptr : Pointer; var ret : Pointer; lock : PCRYPTO_RWLOCK) : TIdC_INT; cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_atomic_load_ptr_procname);
+end;
+
+function ERR_CRYPTO_atomic_store_ptr(var dst : Pointer; var _val : Pointer; lock : PCRYPTO_RWLOCK) : TIdC_INT; cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_atomic_store_ptr_procname);
+end;
+
+function ERR_CRYPTO_atomic_cmp_exch_ptr(var ptr : Pointer; var expect : Pointer; desire : Pointer; lock : PCRYPTO_RWLOCK; var lock_failed : TIdC_INT) : TIdC_INT; cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_atomic_cmp_exch_ptr_procname);
+end;
+
 
  {introduced 1.1.0}
 
@@ -2720,6 +2827,315 @@ begin
     {$ifend}
   end;
 
+  CRYPTO_atomic_add64 := LoadLibFunction(ADllHandle, CRYPTO_atomic_add64_procname);
+  FuncLoadError := not assigned(CRYPTO_atomic_add64);
+  if FuncLoadError then
+  begin
+    {$if not defined(CRYPTO_atomic_add64_allownil)}
+    CRYPTO_atomic_add64 := ERR_CRYPTO_atomic_add64;
+    {$ifend}
+    {$if declared(CRYPTO_atomic_add64_introduced)}
+    if LibVersion < CRYPTO_atomic_add64_introduced then
+    begin
+      {$if declared(FC_CRYPTO_atomic_add64)}
+      CRYPTO_atomic_add64 := FC_CRYPTO_atomic_add64;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(CRYPTO_atomic_add64_removed)}
+    if CRYPTO_atomic_add64_removed <= LibVersion then
+    begin
+      {$if declared(_CRYPTO_atomic_add)}
+      CRYPTO_atomic_add64 := _CRYPTO_atomic_add64;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(CRYPTO_atomic_add64_allownil)}
+    if FuncLoadError then
+      AFailed.Add('CRYPTO_atomic_add64');
+    {$ifend}
+  end;
+
+  CRYPTO_atomic_and := LoadLibFunction(ADllHandle, CRYPTO_atomic_and_procname);
+  FuncLoadError := not assigned(CRYPTO_atomic_and);
+  if FuncLoadError then
+  begin
+    {$if not defined(CRYPTO_atomic_and_allownil)}
+    CRYPTO_atomic_and := ERR_CRYPTO_atomic_and;
+    {$ifend}
+    {$if declared(CRYPTO_atomic_and_introduced)}
+    if LibVersion < CRYPTO_atomic_and_introduced then
+    begin
+      {$if declared(FC_CRYPTO_atomic_and)}
+      CRYPTO_atomic_and := FC_CRYPTO_atomic_and;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(CRYPTO_atomic_and_removed)}
+    if CRYPTO_atomic_add64_removed <= LibVersion then
+    begin
+      {$if declared(_CRYPTO_atomic_add)}
+      CRYPTO_atomic_and := _CRYPTO_atomic_and;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(CRYPTO_atomic_and_allownil)}
+    if FuncLoadError then
+      AFailed.Add('CRYPTO_atomic_and');
+    {$ifend}
+  end;
+
+  CRYPTO_atomic_or := LoadLibFunction(ADllHandle, CRYPTO_atomic_or_procname);
+  FuncLoadError := not assigned(CRYPTO_atomic_or);
+  if FuncLoadError then
+  begin
+    {$if not defined(CRYPTO_atomic_or_allownil)}
+    CRYPTO_atomic_or := ERR_CRYPTO_atomic_or;
+    {$ifend}
+    {$if declared(CRYPTO_atomic_or_introduced)}
+    if LibVersion < CRYPTO_atomic_or_introduced then
+    begin
+      {$if declared(FC_CRYPTO_atomic_or)}
+      CRYPTO_atomic_or := FC_CRYPTO_atomic_or;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(CRYPTO_atomic_or_removed)}
+    if CRYPTO_atomic_or_removed <= LibVersion then
+    begin
+      {$if declared(_CRYPTO_atomic_or)}
+      CRYPTO_atomic_or := _CRYPTO_atomic_or;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(CRYPTO_atomic_or_allownil)}
+    if FuncLoadError then
+      AFailed.Add('CRYPTO_atomic_or');
+    {$ifend}
+  end;
+
+  CRYPTO_atomic_load := LoadLibFunction(ADllHandle,CRYPTO_atomic_load_procname);
+  FuncLoadError := not assigned(CRYPTO_atomic_load);
+  if FuncLoadError then
+  begin
+    {$if not defined(CRYPTO_atomic_load_allownil)}
+    CRYPTO_atomic_load := ERR_CRYPTO_atomic_load;
+    {$ifend}
+    {$if declared(CRYPTO_atomic_load_introduced)}
+    if LibVersion < CRYPTO_atomic_load_introduced then
+    begin
+      {$if declared(FC_CRYPTO_atomic_load)}
+      CRYPTO_atomic_load := FC_CRYPTO_atomic_load;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(CRYPTO_atomic_load_removed)}
+    if CRYPTO_atomic_load_removed <= LibVersion then
+    begin
+      {$if declared(_CRYPTO_atomic_load)}
+      CRYPTO_atomic_load := _CRYPTO_atomic_load;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(CRYPTO_atomic_load_allownil)}
+    if FuncLoadError then
+      AFailed.Add('CRYPTO_atomic_load');
+    {$ifend}
+  end;
+
+  CRYPTO_atomic_load_int := LoadLibFunction(ADllHandle, CRYPTO_atomic_load_int_procname);
+  FuncLoadError := not assigned(CRYPTO_atomic_load_int);
+  if FuncLoadError then
+  begin
+    {$if not defined(CRYPTO_atomic_load_int_allownil)}
+    CRYPTO_atomic_load_int := ERR_CRYPTO_atomic_load_int;
+    {$ifend}
+    {$if declared(CRYPTO_atomic_load_int_introduced)}
+    if LibVersion < CRYPTO_atomic_load_int_introduced then
+    begin
+      {$if declared(FC_CRYPTO_atomic_load_int)}
+      CRYPTO_atomic_load_int := FC_CRYPTO_atomic_load_int;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(CRYPTO_atomic_load_int_removed)}
+    if CRYPTO_atomic_load_int_removed <= LibVersion then
+    begin
+      {$if declared(_CRYPTO_atomic_load_int)}
+      CRYPTO_atomic_load_int := _CRYPTO_atomic_load_int;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(CRYPTO_atomic_load_int_allownil)}
+    if FuncLoadError then
+      AFailed.Add('CRYPTO_atomic_load_int');
+    {$ifend}
+  end;
+
+  CRYPTO_atomic_store := LoadLibFunction(ADllHandle, CRYPTO_atomic_store_procname);
+  FuncLoadError := not assigned(CRYPTO_atomic_store);
+  if FuncLoadError then
+  begin
+    {$if not defined(CRYPTO_atomic_store_allownil)}
+    CRYPTO_atomic_store := ERR_CRYPTO_atomic_store;
+    {$ifend}
+    {$if declared(CRYPTO_atomic_store_introduced)}
+    if LibVersion < CRYPTO_atomic_store_introduced then
+    begin
+      {$if declared(FC_CRYPTO_atomic_store)}
+      CRYPTO_atomic_store := FC_CRYPTO_atomic_store;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(CRYPTO_atomic_store_removed)}
+    if CRYPTO_atomic_store_removed <= LibVersion then
+    begin
+      {$if declared(_CRYPTO_atomic_store)}
+      CRYPTO_atomic_store := _CRYPTO_atomic_store;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(CRYPTO_atomic_store_allownil)}
+    if FuncLoadError then
+      AFailed.Add('CRYPTO_atomic_store');
+    {$ifend}
+  end;
+
+  CRYPTO_atomic_store_int := LoadLibFunction(ADllHandle, CRYPTO_atomic_store_int_procname);
+  FuncLoadError := not assigned(CRYPTO_atomic_store_int);
+  if FuncLoadError then
+  begin
+    {$if not defined(CRYPTO_atomic_store_int_allownil)}
+    CRYPTO_atomic_store_int := ERR_CRYPTO_atomic_store_int;
+    {$ifend}
+    {$if declared(CRYPTO_atomic_store_int_introduced)}
+    if LibVersion < CRYPTO_atomic_store_int_introduced then
+    begin
+      {$if declared(FC_CRYPTO_atomic_store_int)}
+      CRYPTO_atomic_store_int := FC_CRYPTO_atomic_store_int;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(CRYPTO_atomic_store_int_removed)}
+    if CRYPTO_atomic_store_int_removed <= LibVersion then
+    begin
+      {$if declared(_CRYPTO_atomic_store)}
+      CRYPTO_atomic_store_int := _CRYPTO_atomic_store_int;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(CRYPTO_atomic_store_int_allownil)}
+    if FuncLoadError then
+      AFailed.Add('CRYPTO_atomic_store_int');
+    {$ifend}
+  end;
+
+  CRYPTO_atomic_load_ptr := LoadLibFunction(ADllHandle, CRYPTO_atomic_load_ptr_procname);
+  FuncLoadError := not assigned(CRYPTO_atomic_load_ptr);
+  if FuncLoadError then
+  begin
+    {$if not defined(CRYPTO_atomic_load_ptr_allownil)}
+    CRYPTO_atomic_load_ptr := ERR_CRYPTO_atomic_load_ptr;
+    {$ifend}
+    {$if declared(CRYPTO_atomic_load_ptr_introduced)}
+    if LibVersion < CRYPTO_atomic_load_ptr_introduced then
+    begin
+      {$if declared(FC_CRYPTO_atomic_load_ptr)}
+      CRYPTO_atomic_load_ptr := FC_CRYPTO_atomic_load_ptr;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(CRYPTO_atomic_load_ptr_removed)}
+    if CRYPTO_atomic_load_ptr_removed <= LibVersion then
+    begin
+      {$if declared(_CRYPTO_atomic_load_ptr)}
+      CRYPTO_atomic_load_ptr := _CRYPTO_atomic_load_ptr;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(CRYPTO_atomic_store_int_allownil)}
+    if FuncLoadError then
+      AFailed.Add('CRYPTO_atomic_load_ptr');
+    {$ifend}
+  end;
+
+  CRYPTO_atomic_store_ptr := LoadLibFunction(ADllHandle, CRYPTO_atomic_store_ptr_procname);
+  FuncLoadError := not assigned(CRYPTO_atomic_store_ptr);
+  if FuncLoadError then
+  begin
+    {$if not defined(CRYPTO_atomic_store_int_allownil)}
+    CRYPTO_atomic_store_ptr := ERR_CRYPTO_atomic_store_ptr;
+    {$ifend}
+    {$if declared(CRYPTO_atomic_store_ptr_introduced)}
+    if LibVersion < CRYPTO_atomic_store_ptr_introduced then
+    begin
+      {$if declared(FC_CRYPTO_atomic_store_ptr)}
+      CRYPTO_atomic_store_ptr := FC_CRYPTO_atomic_store_ptr;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(CRYPTO_atomic_store_ptr_removed)}
+    if CRYPTO_atomic_store_int_removed <= LibVersion then
+    begin
+      {$if declared(_CRYPTO_atomic_store_ptr)}
+      CRYPTO_atomic_store_int := _CRYPTO_atomic_store_ptr;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(CRYPTO_atomic_store_ptr_allownil)}
+    if FuncLoadError then
+      AFailed.Add('CRYPTO_atomic_store_ptr');
+    {$ifend}
+  end;
+
+  CRYPTO_atomic_cmp_exch_ptr := LoadLibFunction(ADllHandle, CRYPTO_atomic_cmp_exch_ptr_procname);
+  FuncLoadError := not assigned(CRYPTO_atomic_cmp_exch_ptr);
+  if FuncLoadError then
+  begin
+    {$if not defined(CRYPTO_atomic_cmp_exch_ptr_allownil)}
+    CRYPTO_atomic_cmp_exch_ptr := ERR_CRYPTO_atomic_cmp_exch_ptr;
+    {$ifend}
+    {$if declared(CRYPTO_atomic_cmp_exch_ptr_introduced)}
+    if LibVersion < CRYPTO_atomic_cmp_exch_ptr_introduced then
+    begin
+      {$if declared(FC_CRYPTO_atomic_cmp_exch_ptr)}
+      CRYPTO_atomic_cmp_exch_ptr := FC_CRYPTO_atomic_cmp_exch_ptr;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(CRYPTO_atomic_cmp_exch_ptr_removed)}
+    if CRYPTO_atomic_cmp_exch_ptr_removed <= LibVersion then
+    begin
+      {$if declared(_CRYPTO_atomic_cmp_exch_ptr)}
+      CRYPTO_atomic_cmp_exch_ptr := _CRYPTO_atomic_cmp_exch_ptr;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(CRYPTO_atomic_cmp_exch_ptr_allownil)}
+    if FuncLoadError then
+      AFailed.Add('CRYPTO_atomic_cmp_exch_ptr');
+    {$ifend}
+  end;
  {introduced 1.1.0}
   CRYPTO_mem_ctrl := LoadLibFunction(ADllHandle, CRYPTO_mem_ctrl_procname);
   FuncLoadError := not assigned(CRYPTO_mem_ctrl);
@@ -4943,6 +5359,16 @@ begin
   CRYPTO_THREAD_unlock := nil; {introduced 1.1.0}
   CRYPTO_THREAD_lock_free := nil; {introduced 1.1.0}
   CRYPTO_atomic_add := nil; {introduced 1.1.0}
+  CRYPTO_atomic_add64 := nil;
+  CRYPTO_atomic_and := nil;
+  CRYPTO_atomic_or := nil;
+  CRYPTO_atomic_load := nil;
+  CRYPTO_atomic_load_int := nil;
+  CRYPTO_atomic_store := nil;
+  CRYPTO_atomic_store_int := nil;
+  CRYPTO_atomic_load_ptr := nil;
+  CRYPTO_atomic_store_ptr := nil;
+  CRYPTO_atomic_cmp_exch_ptr := nil;
   CRYPTO_mem_ctrl := nil; {removed 3.0.0}
   OPENSSL_strlcpy := nil; {introduced 1.1.0}
   OPENSSL_strlcat := nil; {introduced 1.1.0}

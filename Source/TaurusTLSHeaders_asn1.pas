@@ -1,4 +1,4 @@
-/// <exclude />
+ï»¿/// <exclude />
   (* This unit was generated using the script genTaurusTLSHdrs.sh from the source file TaurusTLSHeaders_asn1.h2pas
      It should not be modified directly. All changes should be made to TaurusTLSHeaders_asn1.h2pas
      and this file regenerated. TaurusTLSHeaders_asn1.h2pas is distributed with the full Indy
@@ -16,8 +16,8 @@
 {*                                                                            *}
 {*  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              *}
 {*                                                                            *}
-{* Portions of this software are Copyright (c) 1993 – 2018,                   *}
-{* Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  *}
+{* Portions of this software are Copyright (c) 1993 â€“ 2018,                   *}
+{* Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  *}
 {******************************************************************************}
 unit TaurusTLSHeaders_asn1;
 
@@ -621,6 +621,9 @@ var
   ASN1_STRING_dup: function (const a: PASN1_STRING): PASN1_STRING; cdecl = nil;
   {$EXTERNALSYM ASN1_STRING_type_new}
   ASN1_STRING_type_new: function (type_: TIdC_INT): PASN1_STRING; cdecl = nil;
+  {$EXTERNALSYM ASN1_STRING_new_not_owned}
+  ASN1_STRING_new_not_owned: function(type_: TIdC_INT; const data: Pointer;
+    length: TIdC_SIZET): PASN1_STRING; cdecl = nil;
   {$EXTERNALSYM ASN1_STRING_cmp}
   ASN1_STRING_cmp: function (const a: PASN1_STRING; const b: PASN1_STRING): TIdC_INT; cdecl = nil;
 
@@ -632,8 +635,15 @@ var
   ASN1_STRING_set: function (_str: PASN1_STRING; const data: Pointer; len: TIdC_INT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM ASN1_STRING_set0}
   ASN1_STRING_set0: procedure (_str: PASN1_STRING; data: Pointer; len: TIdC_INT); cdecl = nil;
+  {$EXTERNALSYM ASN1_STRING_set1_data}
+  ASN1_STRING_set1_data: function (_str : PASN1_STRING; data : Pointer; len : TIdC_SIZET) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM ASN1_STRING_set1_string}
+  ASN1_STRING_set1_string : function (_str : PASN1_STRING; _cstring : PIdAnsiChar) : TIdC_INT; cdecl = nil;
   {$EXTERNALSYM ASN1_STRING_length}
   ASN1_STRING_length: function (const x: PASN1_STRING): TIdC_INT; cdecl = nil;
+
+  {$EXTERNALSYM ASN1_STRING_get_length}
+  ASN1_STRING_get_length: function (const x : PASN1_STRING) : TIdC_SIZET; cdecl = nil;
   {$EXTERNALSYM ASN1_STRING_length_set}
   ASN1_STRING_length_set: procedure (x: PASN1_STRING; n: TIdC_INT); cdecl = nil;
   {$EXTERNALSYM ASN1_STRING_type}
@@ -1137,6 +1147,10 @@ var
   function ASN1_STRING_dup(const a: PASN1_STRING): PASN1_STRING cdecl; external CLibCrypto;
   {$EXTERNALSYM ASN1_STRING_type_new}
   function ASN1_STRING_type_new(type_: TIdC_INT): PASN1_STRING cdecl; external CLibCrypto;
+  {$EXTERNALSYM ASN1_STRING_new_not_owned}
+  function ASN1_STRING_new_not_owned(type_: TIdC_INT; const data: Pointer;
+    length: TIdC_SIZET): PASN1_STRING; cdecl; external CLibCrypto;
+
   {$EXTERNALSYM ASN1_STRING_cmp}
   function ASN1_STRING_cmp(const a: PASN1_STRING; const b: PASN1_STRING): TIdC_INT cdecl; external CLibCrypto;
 
@@ -1148,8 +1162,15 @@ var
   function ASN1_STRING_set(_str: PASN1_STRING; const data: Pointer; len: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM ASN1_STRING_set0}
   procedure ASN1_STRING_set0(_str: PASN1_STRING; data: Pointer; len: TIdC_INT) cdecl; external CLibCrypto;
+  {$EXTERNALSYM ASN1_STRING_set1_data}
+  function ASN1_STRING_set1_data(_str : PASN1_STRING; data : Pointer; len : TIdC_SIZET) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ASN1_STRING_set1_string}
+  function ASN1_STRING_set1_string(_str : PASN1_STRING; _cstring : PIdAnsiChar) : TIdC_INT cdecl; external CLibCrypto;
+
   {$EXTERNALSYM ASN1_STRING_length}
   function ASN1_STRING_length(const x: PASN1_STRING): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM ASN1_STRING_get_length}
+  function ASN1_STRING_get_length(const x : PASN1_STRING) : TIdC_SIZET cdecl; external CLibCrypto;
   {$EXTERNALSYM ASN1_STRING_length_set}
   procedure ASN1_STRING_length_set(x: PASN1_STRING; n: TIdC_INT) cdecl; external CLibCrypto;
   {$EXTERNALSYM ASN1_STRING_type}
@@ -2000,6 +2021,11 @@ const
     //implying they were in earlier versions.
   ASN1_BIT_STRING_get_length_introduced = (byte(4) shl 8 or byte(0)) shl 8 or byte(0);
   ASN1_BIT_STRING_set1_introduced = (byte(4) shl 8 or byte(0)) shl 8 or byte(0);
+  ASN1_STRING_new_not_owned_introduced = (byte(4) shl 8 or byte(1)) shl 8 or byte(0);
+  ASN1_STRING_set1_data_introduced = (byte(4) shl 8 or byte(1)) shl 8 or byte(0);
+  ASN1_STRING_set1_string_introduced = (byte(4) shl 8 or byte(1)) shl 8 or byte(0);
+  ASN1_STRING_get_length_introduced = (byte(4) shl 8 or byte(1)) shl 8 or byte(0);
+
   {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 const
   ASN1_TYPE_get_procname = 'ASN1_TYPE_get';
@@ -2027,6 +2053,7 @@ const
   ASN1_STRING_copy_procname = 'ASN1_STRING_copy';
   ASN1_STRING_dup_procname = 'ASN1_STRING_dup';
   ASN1_STRING_type_new_procname = 'ASN1_STRING_type_new';
+  ASN1_STRING_new_not_owned_procname = 'ASN1_STRING_new_not_owned';  {introduced 4.1.0}
   ASN1_STRING_cmp_procname = 'ASN1_STRING_cmp';
 
   (*
@@ -2035,7 +2062,11 @@ const
    *)
   ASN1_STRING_set_procname = 'ASN1_STRING_set';
   ASN1_STRING_set0_procname = 'ASN1_STRING_set0';
+  ASN1_STRING_set1_data_procname = 'ASN1_STRING_set1_data';
+  ASN1_STRING_set1_string_procname = 'ASN1_STRING_set1_string';
+
   ASN1_STRING_length_procname = 'ASN1_STRING_length';
+  ASN1_STRING_get_length_procname = 'ASN1_STRING_get_length';
   ASN1_STRING_length_set_procname = 'ASN1_STRING_length_set';
   ASN1_STRING_type_procname = 'ASN1_STRING_type';
   ASN1_STRING_get0_data_procname = 'ASN1_STRING_get0_data'; {introduced 1.1.0}
@@ -2448,6 +2479,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_STRING_type_new_procname);
 end;
 
+function ERR_ASN1_STRING_new_not_owned(type_ : TIdC_INT; const data : Pointer;
+  length: TIdC_SIZET): PASN1_STRING; cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_STRING_new_not_owned_procname);
+end;
+
 
 function  ERR_ASN1_STRING_cmp(const a: PASN1_STRING; const b: PASN1_STRING): TIdC_INT; cdecl;
 begin
@@ -2471,10 +2508,26 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_STRING_set0_procname);
 end;
 
+function ERR_ASN1_STRING_set1_data(_str : PASN1_STRING; data : Pointer;
+  len : TIdC_SIZET) : TIdC_INT; cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException( ASN1_STRING_set1_data_procname);
+end;
+
+function ERR_ASN1_STRING_set1_string(_str : PASN1_STRING; _cstring : PIdAnsiChar) : TIdC_INT; cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException( ASN1_STRING_set1_string_procname);
+end;
+
 
 function  ERR_ASN1_STRING_length(const x: PASN1_STRING): TIdC_INT; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_STRING_length_procname);
+end;
+
+function ERR_ASN1_STRING_get_length(const x : PASN1_STRING) : TIdC_SIZET; cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_STRING_get_length_procname);
 end;
 
 
@@ -4175,6 +4228,36 @@ begin
     {$ifend}
   end;
 
+  ASN1_STRING_new_not_owned := LoadLibFunction(ADllHandle, ASN1_STRING_new_not_owned_procname);
+  FuncLoadError := not assigned(ASN1_STRING_new_not_owned);
+  if FuncLoadError then
+  begin
+    {$if not defined(ASN1_STRING_new_not_owned_allownil)}
+    ASN1_STRING_new_not_owned := ERR_ASN1_STRING_new_not_owned;
+    {$ifend}
+    {$if declared(ASN1_STRING_new_not_owned_introduced)}
+    if LibVersion < ASN1_STRING_new_not_owned_introduced then
+    begin
+      {$if declared(FC_ASN1_STRING_new_not_owned)}
+      ASN1_STRING_new_not_owned := FC_ASN1_STRING_new_not_owned;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(ASN1_STRING_new_not_owned_removed)}
+    if ASN1_STRING_new_not_owned_removed <= LibVersion then
+    begin
+      {$if declared(_ASN1_STRING_new_not_owned)}
+      ASN1_STRING_new_not_owned := _ASN1_STRING_new_not_owned;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(ASN1_STRING_new_not_owned_allownil)}
+    if FuncLoadError then
+      AFailed.Add('ASN1_STRING_new_not_owned');
+    {$ifend}
+  end;
 
   ASN1_STRING_cmp := LoadLibFunction(ADllHandle, ASN1_STRING_cmp_procname);
   FuncLoadError := not assigned(ASN1_STRING_cmp);
@@ -4271,6 +4354,67 @@ begin
     {$ifend}
   end;
 
+  ASN1_STRING_set1_data := LoadLibFunction(ADllHandle, ASN1_STRING_set1_data_procname);
+  FuncLoadError := not assigned(ASN1_STRING_set1_data);
+  if FuncLoadError then
+  begin
+    {$if not defined(ASN1_STRING_set1_data_allownil)}
+    ASN1_STRING_set1_data := ERR_ASN1_STRING_set1_data;
+    {$ifend}
+    {$if declared(ASN1_STRING_set1_data_introduced)}
+    if LibVersion < ASN1_STRING_set1_data_introduced then
+    begin
+      {$if declared(FC_ASN1_STRING_set1_data)}
+      ASN1_STRING_set1_data := FC_ASN1_STRING_set1_data;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(ASN1_STRING_set1_data_removed)}
+    if   ASN1_STRING_set1_data_removed <= LibVersion then
+    begin
+      {$if declared(_ASN1_STRING_set1_data)}
+      ASN1_STRING_set1_data := _ASN1_STRING_set1_data;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(ASN1_STRING_set1_data_allownil)}
+    if FuncLoadError then
+      AFailed.Add('ASN1_STRING_set1_data');
+    {$ifend}
+  end;
+
+  ASN1_STRING_set1_string := LoadLibFunction(ADllHandle, ASN1_STRING_set1_string_procname);
+  FuncLoadError := not assigned(ASN1_STRING_set1_string);
+  if FuncLoadError then
+  begin
+    {$if not defined(ASN1_STRING_set1_string )}
+    ASN1_STRING_set1_string := ERR_ASN1_STRING_set1_string;
+    {$ifend}
+    {$if declared(ASN1_STRING_set1_string_introduced)}
+    if LibVersion < ASN1_STRING_set1_string_introduced then
+    begin
+      {$if declared(FC_ASN1_STRING_set1_string)}
+      ASN1_STRING_set1_string := FC_ASN1_STRING_set1_string;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(ASN1_STRING_set1_string_removed)}
+    if  ASN1_STRING_set1_string_removed <= LibVersion then
+    begin
+      {$if declared(_ASN1_STRING_set1_string)}
+      ASN1_STRING_set1_string := _ASN1_STRING_set1_string;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(ASN1_STRING_set1_string_allownil)}
+    if FuncLoadError then
+      AFailed.Add('ASN1_STRING_set1_string');
+    {$ifend}
+  end;
 
   ASN1_STRING_length := LoadLibFunction(ADllHandle, ASN1_STRING_length_procname);
   FuncLoadError := not assigned(ASN1_STRING_length);
@@ -4303,6 +4447,36 @@ begin
     {$ifend}
   end;
 
+  ASN1_STRING_get_length := LoadLibFunction(ADllHandle, ASN1_STRING_get_length_procname);
+  FuncLoadError := not assigned(ASN1_STRING_get_length);
+  if FuncLoadError then
+  begin
+    {$if not defined(ASN1_STRING_get_length_allownil)}
+    ASN1_STRING_get_length := ERR_ASN1_STRING_get_length;
+    {$ifend}
+    {$if declared(ASN1_STRING_get_length_introduced)}
+    if LibVersion < ASN1_STRING_get_length_introduced then
+    begin
+      {$if declared(FC_ASN1_STRING_get_length_introduced)}
+      ASN1_STRING_get_length := FC_ASN1_STRING_get_length;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(ASN1_STRING_get_length_removed)}
+    if ASN1_STRING_length_removed <= LibVersion then
+    begin
+      {$if declared(_ASN1_STRING_length)}
+      ASN1_STRING_get_length := _ASN1_STRING_get_length;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(ASN1_STRING_get_length_allownil)}
+    if FuncLoadError then
+      AFailed.Add('ASN1_STRING_get_length');
+    {$ifend}
+  end;
 
   ASN1_STRING_length_set := LoadLibFunction(ADllHandle, ASN1_STRING_length_set_procname);
   FuncLoadError := not assigned(ASN1_STRING_length_set);
@@ -9535,10 +9709,14 @@ begin
   ASN1_STRING_copy := nil;
   ASN1_STRING_dup := nil;
   ASN1_STRING_type_new := nil;
+  ASN1_STRING_new_not_owned := nil;
   ASN1_STRING_cmp := nil;
   ASN1_STRING_set := nil;
   ASN1_STRING_set0 := nil;
+  ASN1_STRING_set1_data := nil;
+  ASN1_STRING_set1_string := nil;
   ASN1_STRING_length := nil;
+  ASN1_STRING_get_length := nil;
   ASN1_STRING_length_set := nil;
   ASN1_STRING_type := nil;
   ASN1_STRING_get0_data := nil; {introduced 1.1.0}

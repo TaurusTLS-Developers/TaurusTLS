@@ -16,8 +16,8 @@
 {*                                                                            *}
 {*  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              *}
 {*                                                                            *}
-{* Portions of this software are Copyright (c) 1993 – 2018,                   *}
-{* Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  *}
+{* Portions of this software are Copyright (c) 1993 â€“ 2018,                   *}
+{* Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  *}
 {******************************************************************************}
 unit TaurusTLSHeaders_stack;
 
@@ -60,8 +60,14 @@ uses
   TOPENSSL_sk_compfunc = function (_para1:pointer; _para2:pointer):TIdC_INT;cdecl;
   {$EXTERNALSYM TOPENSSL_sk_freefunc}
   TOPENSSL_sk_freefunc = procedure (_para1:pointer);cdecl;
+  {$EXTERNALSYM TOPENSSL_sk_freefunc_thunk}
+  TOPENSSL_sk_freefunc_thunk = function (_para1 : TOPENSSL_sk_freefunc; _para2 : Pointer) : Pointer;cdecl;
   {$EXTERNALSYM TOPENSSL_sk_copyfunc}
   TOPENSSL_sk_copyfunc = function (_para1:pointer):pointer;cdecl;
+  {$EXTERNALSYM OPENSSL_sk_copyfunc_thunk}
+  OPENSSL_sk_copyfunc_thunk = function (_para1 : TOPENSSL_sk_copyfunc; _para2 : Pointer):pointer; cdecl;
+  {$EXTERNALSYM OPENSSL_sk_set_cmp_thunks_c_thunk}
+  OPENSSL_sk_set_cmp_thunks_c_thunk = function(cmp: TOPENSSL_sk_compfunc; const a, b: Pointer): TIdC_INT; cdecl;
 
     { The EXTERNALSYM directive is ignored by FPC, however, it is used by Delphi as follows:
 
@@ -83,6 +89,12 @@ var
   OPENSSL_sk_new_null: function :POPENSSL_STACK; cdecl = nil; {introduced 1.1.0}
   {$EXTERNALSYM OPENSSL_sk_new_reserve}
   OPENSSL_sk_new_reserve: function (c:TOPENSSL_sk_compfunc; n:TIdC_INT):POPENSSL_STACK; cdecl = nil; {introduced 1.1.0}
+  {$EXTERNALSYM OPENSSL_sk_set_thunks}
+  OPENSSL_sk_set_thunks : function(st : POPENSSL_STACK; f_thunk : TOPENSSL_sk_freefunc_thunk) :POPENSSL_STACK; cdecl = nil;
+  {$EXTERNALSYM OPENSSL_sk_set_cmp_thunks}
+  OPENSSL_sk_set_cmp_thunks : function(st : POPENSSL_STACK; c_thunk : OPENSSL_sk_set_cmp_thunks_c_thunk) : POPENSSL_STACK; cdecl = nil;
+  {$EXTERNALSYM OPENSSL_sk_set_copy_thunks}
+  OPENSSL_sk_set_copy_thunks : function(st : POPENSSL_STACK; cp_func : OPENSSL_sk_copyfunc_thunk) : POPENSSL_STACK; cdecl = nil;
   {$EXTERNALSYM OPENSSL_sk_reserve}
   OPENSSL_sk_reserve: function (st:POPENSSL_STACK; n:TIdC_INT):TIdC_INT; cdecl = nil; {introduced 1.1.0}
   {$EXTERNALSYM OPENSSL_sk_free}
@@ -184,6 +196,13 @@ var
   function OPENSSL_sk_new_null:POPENSSL_STACK cdecl; external CLibCrypto; {introduced 1.1.0}
   {$EXTERNALSYM OPENSSL_sk_new_reserve}
   function OPENSSL_sk_new_reserve(c:TOPENSSL_sk_compfunc; n:TIdC_INT):POPENSSL_STACK cdecl; external CLibCrypto; {introduced 1.1.0}
+  {$EXTERNALSYM OPENSSL_sk_set_thunks}
+  function OPENSSL_sk_set_thunks(st : POPENSSL_STACK; f_thunk : TOPENSSL_sk_freefunc_thunk) :POPENSSL_STACK cdecl; external CLibCrypto;
+  {$EXTERNALSYM OPENSSL_sk_set_cmp_thunks}
+  function OPENSSL_sk_set_cmp_thunks(st : POPENSSL_STACK; c_thunk : OPENSSL_sk_set_cmp_thunks_c_thunk) : POPENSSL_STACK cdecl; external CLibCrypto;
+  {$EXTERNALSYM OPENSSL_sk_set_copy_thunks}
+  function OPENSSL_sk_set_copy_thunks(st : POPENSSL_STACK; cp_func : OPENSSL_sk_copyfunc_thunk) : POPENSSL_STACK cdecl; external CLibCrypto;
+
   {$EXTERNALSYM OPENSSL_sk_reserve}
   function OPENSSL_sk_reserve(st:POPENSSL_STACK; n:TIdC_INT):TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
   {$EXTERNALSYM OPENSSL_sk_free}
@@ -284,6 +303,9 @@ const
   OPENSSL_sk_new_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
   OPENSSL_sk_new_null_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
   OPENSSL_sk_new_reserve_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
+  OPENSSL_sk_set_thunks_introduced = (byte(3) shl 8 or byte(6)) shl 8 or byte(0);
+  OPENSSL_sk_set_cmp_thunks_introduced = (byte(4) shl 8 or byte(0)) shl 8 or byte(0);
+  OPENSSL_sk_set_copy_thunks_introduced = (byte(4) shl 8 or byte(1)) shl 8 or byte(0);
   OPENSSL_sk_reserve_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
   OPENSSL_sk_free_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
   OPENSSL_sk_pop_free_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
@@ -335,6 +357,9 @@ const
   OPENSSL_sk_new_procname = 'OPENSSL_sk_new'; {introduced 1.1.0}
   OPENSSL_sk_new_null_procname = 'OPENSSL_sk_new_null'; {introduced 1.1.0}
   OPENSSL_sk_new_reserve_procname = 'OPENSSL_sk_new_reserve'; {introduced 1.1.0}
+  OPENSSL_sk_set_thunks_procname = 'OPENSSL_sk_set_thunks';
+  OPENSSL_sk_set_cmp_thunks_procname = 'OPENSSL_sk_set_cmp_thunks';
+  OPENSSL_sk_set_copy_thunks_procname = 'OPENSSL_sk_set_copy_thunks';
   OPENSSL_sk_reserve_procname = 'OPENSSL_sk_reserve'; {introduced 1.1.0}
   OPENSSL_sk_free_procname = 'OPENSSL_sk_free'; {introduced 1.1.0}
   OPENSSL_sk_pop_free_procname = 'OPENSSL_sk_pop_free'; {introduced 1.1.0}
@@ -537,6 +562,21 @@ end;
 function  ERR_OPENSSL_sk_new_reserve(c:TOPENSSL_sk_compfunc; n:TIdC_INT):POPENSSL_STACK; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_sk_new_reserve_procname);
+end;
+
+function ERR_OPENSSL_sk_set_thunks(st : POPENSSL_STACK; f_thunk : TOPENSSL_sk_freefunc_thunk) :POPENSSL_STACK cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_sk_set_thunks_procname);
+end;
+
+function ERR_OPENSSL_sk_set_cmp_thunks(st : POPENSSL_STACK; c_thunk : OPENSSL_sk_set_cmp_thunks_c_thunk) : POPENSSL_STACK cdecl;
+begin
+   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_sk_set_cmp_thunks_procname);
+end;
+
+function ERR_OPENSSL_sk_set_copy_thunks(st : POPENSSL_STACK; cp_func : OPENSSL_sk_copyfunc_thunk) : POPENSSL_STACK cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_sk_set_copy_thunks_procname);
 end;
 
  {introduced 1.1.0}
@@ -938,6 +978,108 @@ begin
 {$IF not defined(OPENSSL_sk_new_allownil)}
       if FuncLoadError then
         AFailed.Add('OPENSSL_sk_new');
+{$IFEND}
+    end;
+  end;
+
+  if not Assigned(OPENSSL_sk_set_thunks) then
+  begin
+    OPENSSL_sk_set_thunks := LoadLibFunction(ADllHandle, OPENSSL_sk_set_thunks_procname);
+    FuncLoadError := not Assigned(OPENSSL_sk_set_thunks);
+    if FuncLoadError then
+    begin
+{$IF not defined(OPENSSL_sk_set_thunks_allownil)}
+      OPENSSL_sk_set_thunks := ERR_OPENSSL_sk_set_thunks;
+{$IFEND}
+{$IF declared(OPENSSL_sk_set_thunks_introduced)}
+      if LibVersion < OPENSSL_sk_set_thunks_introduced then
+      begin
+{$IF declared(FC_OPENSSL_sk_set_thunks)}
+        OPENSSL_sk_set_thunks := FC_OPENSSL_sk_set_thunks;
+{$IFEND}
+        FuncLoadError := false;
+      end;
+{$IFEND}
+{$IF declared(OPENSSL_sk_set_thunks_removed)}
+      if OPENSSL_sk_set_thunks_removed <= LibVersion then
+      begin
+{$IF declared(_OPENSSL_sk_set_thunks)}
+        OPENSSL_sk_set_thunks := _OPENSSL_sk_set_thunks;
+{$IFEND}
+        FuncLoadError := false;
+      end;
+{$IFEND}
+{$IF not defined(OPENSSL_sk_set_thunks_allownil)}
+      if FuncLoadError then
+        AFailed.Add('OPENSSL_sk_set_thunks');
+{$IFEND}
+    end;
+  end;
+
+  if not Assigned(OPENSSL_sk_set_cmp_thunks) then
+  begin
+    OPENSSL_sk_set_cmp_thunks := LoadLibFunction(ADllHandle, OPENSSL_sk_set_cmp_thunks_procname);
+    FuncLoadError := not Assigned(OPENSSL_sk_set_cmp_thunks);
+    if FuncLoadError then
+    begin
+{$IF not defined(OPENSSL_sk_set_cmp_thunks_allownil)}
+      OPENSSL_sk_set_cmp_thunks := ERR_OPENSSL_sk_set_cmp_thunks;
+{$IFEND}
+{$IF declared(OPENSSL_sk_set_cmp_thunks_introduced)}
+      if LibVersion < OPENSSL_sk_set_cmp_thunks_introduced then
+      begin
+{$IF declared(FC_OPENSSL_sk_set_cmp_thunks)}
+        OPENSSL_sk_set_cmp_thunks := FC_OPENSSL_sk_set_cmp_thunks;
+{$IFEND}
+        FuncLoadError := false;
+      end;
+{$IFEND}
+{$IF declared(OPENSSL_sk_set_cmp_thunks_removed)}
+      if OPENSSL_sk_set_cmp_thunks_removed <= LibVersion then
+      begin
+{$IF declared(_OPENSSL_sk_set_cmp_thunks)}
+        OPENSSL_sk_set_cmp_thunks := _OPENSSL_sk_set_cmp_thunks;
+{$IFEND}
+        FuncLoadError := false;
+      end;
+{$IFEND}
+{$IF not defined(OPENSSL_sk_set_cmp_thunks_allownil)}
+      if FuncLoadError then
+        AFailed.Add('OPENSSL_sk_set_cmp_thunks');
+{$IFEND}
+    end;
+  end;
+
+  if not Assigned(OPENSSL_sk_set_copy_thunks) then
+  begin
+    OPENSSL_sk_set_copy_thunks := LoadLibFunction(ADllHandle, OPENSSL_sk_set_copy_thunks_procname);
+    FuncLoadError := not Assigned(OPENSSL_sk_set_copy_thunks);
+    if FuncLoadError then
+    begin
+{$IF not defined(OPENSSL_sk_set_copy_thunks_allownil)}
+      OPENSSL_sk_set_copy_thunks := ERR_OPENSSL_sk_set_copy_thunks;
+{$IFEND}
+{$IF declared(OPENSSL_sk_set_copy_thunks_introduced)}
+      if LibVersion < OPENSSL_sk_set_copy_thunks_introduced then
+      begin
+{$IF declared(FC_OPENSSL_sk_set_copy_thunks)}
+        OPENSSL_sk_set_copy_thunks := FC_OPENSSL_sk_set_copy_thunks;
+{$IFEND}
+        FuncLoadError := false;
+      end;
+{$IFEND}
+{$IF declared(OPENSSL_sk_set_copy_thunks_removed)}
+      if OPENSSL_sk_set_copy_thunks_removed <= LibVersion then
+      begin
+{$IF declared(_OPENSSL_sk_set_copy_thunks)}
+        OPENSSL_sk_set_copy_thunks := _OPENSSL_sk_set_copy_thunks;
+{$IFEND}
+        FuncLoadError := false;
+      end;
+{$IFEND}
+{$IF not defined(OPENSSL_sk_set_copy_thunks_allownil)}
+      if FuncLoadError then
+        AFailed.Add('OPENSSL_sk_set_copy_thunks');
 {$IFEND}
     end;
   end;
@@ -2464,6 +2606,9 @@ begin
   OPENSSL_sk_new := nil; {introduced 1.1.0}
   OPENSSL_sk_new_null := nil; {introduced 1.1.0}
   OPENSSL_sk_new_reserve := nil; {introduced 1.1.0}
+  OPENSSL_sk_set_thunks := nil;
+  OPENSSL_sk_set_cmp_thunks := nil;
+  OPENSSL_sk_set_copy_thunks := nil;
   OPENSSL_sk_reserve := nil; {introduced 1.1.0}
   OPENSSL_sk_free := nil; {introduced 1.1.0}
   OPENSSL_sk_pop_free := nil; {introduced 1.1.0}

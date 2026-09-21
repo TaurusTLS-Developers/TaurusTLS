@@ -4,8 +4,8 @@
 { *                                                                            * }
 { *  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              * }
 { *                                                                            * }
-{ * Portions of this software are Copyright (c) 1993 – 2018,                   * }
-{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  * }
+{ * Portions of this software are Copyright (c) 1993 â€“ 2018,                   * }
+{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  * }
 { ****************************************************************************** }
 
 {$I TaurusTLSCompilerDefines.inc}
@@ -264,7 +264,7 @@ type
     always accurately describe the issue involved. }
 
 const
-   MSG_MAX = 63;
+   MSG_MAX = 72;
    ErrorRecords : array [0..MSG_MAX] of TErrMsgRec = (
      (ErrCode: X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT; Msg:  RSMSG_X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT),
      (ErrCode: X509_V_ERR_UNABLE_TO_GET_CRL; Msg: RSMSG_X509_V_ERR_UNABLE_TO_GET_CRL),
@@ -329,7 +329,16 @@ const
      (ErrCode: X509_V_ERR_SIGNATURE_ALGORITHM_MISMATCH; Msg: RSMSG_X509_V_ERR_SIGNATURE_ALGORITHM_MISMATCH),
      (ErrCode: X509_V_ERR_SIGNATURE_ALGORITHM_INCONSISTENCY; Msg: RSMSG_X509_V_ERR_SIGNATURE_ALGORITHM_INCONSISTENCY),
      (ErrCode: X509_V_ERR_INVALID_CA; Msg: RSMSG_X509_V_ERR_INVALID_CA),
-     (ErrCode: X509_V_ERR_RPK_UNTRUSTED; Msg: RSMSG_X509_V_ERR_RPK_UNTRUSTED));
+     (ErrCode: X509_V_ERR_RPK_UNTRUSTED; Msg: RSMSG_X509_V_ERR_RPK_UNTRUSTED),
+     (ErrCode: X509_V_ERR_OCSP_RESP_INVALID; Msg: RSMSG_X509_V_ERR_OCSP_RESP_INVALID),
+     (ErrCode: X509_V_ERR_OCSP_SIGNATURE_FAILURE; Msg: RSMSG_X509_V_ERR_OCSP_SIGNATURE_FAILURE),
+     (ErrCode: X509_V_ERR_OCSP_NOT_YET_VALID; Msg: RSMSG_X509_V_ERR_OCSP_NOT_YET_VALID),
+     (ErrCode: X509_V_ERR_OCSP_HAS_EXPIRED; Msg: RSMSG_X509_V_ERR_OCSP_HAS_EXPIRED),
+     (ErrCode: X509_V_ERR_OCSP_NO_RESPONSE; Msg: RSMSG_X509_V_ERR_OCSP_NO_RESPONSE),
+     (ErrCode: X509_V_ERR_CRL_VERIFY_FAILED; Msg: RSMSG_X509_V_ERR_CRL_VERIFY_FAILED),
+     (ErrCode: X509_V_ERR_EMPTY_AUTHORITY_KEY_IDENTIFIER; Msg: RSMSG_X509_V_ERR_EMPTY_AUTHORITY_KEY_IDENTIFIER),
+     (ErrCode: X509_V_ERR_AKID_ISSUER_SERIAL_NOT_PAIRED; Msg: RSMSG_X509_V_ERR_AKID_ISSUER_SERIAL_NOT_PAIRED),
+     (ErrCode: X509_V_ERR_DUPLICATE_EXTENSION; Msg: RSMSG_X509_V_ERR_DUPLICATE_EXTENSION ));
 
 function CertErrorToLongDescr(ACertError: TIdC_LONG): String;
 var i : Integer;

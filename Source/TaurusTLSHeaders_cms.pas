@@ -16,8 +16,8 @@
 {*                                                                            *}
 {*  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              *}
 {*                                                                            *}
-{* Portions of this software are Copyright (c) 1993 – 2018,                   *}
-{* Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  *}
+{* Portions of this software are Copyright (c) 1993 â€“ 2018,                   *}
+{* Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  *}
 {******************************************************************************}
 
 unit TaurusTLSHeaders_cms;
@@ -34,6 +34,7 @@ uses
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSConsts,
   {$ENDIF}
+  TaurusTLSHeaders_asn1,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_x509;
 
@@ -135,6 +136,18 @@ const
   CMS_RECIPINFO_PASS              = 3;
   {$EXTERNALSYM CMS_RECIPINFO_OTHER}
   CMS_RECIPINFO_OTHER             = 4;
+  {$EXTERNALSYM CMS_RECIPINFO_KEM}
+  CMS_RECIPINFO_KEM               = 5;
+
+  {$EXTERNALSYM CMS_VERIFY_RESULT}
+  CMS_VERIFY_RESULT               = 0;
+  {$EXTERNALSYM CMS_VERIFY_CERT}
+  CMS_VERIFY_CERT                 = 1;
+  {$EXTERNALSYM CMS_VERIFY_ATTR}
+  CMS_VERIFY_ATTR                 = 2;
+  {$EXTERNALSYM CMS_VERIFY_CONTENT}
+  CMS_VERIFY_CONTENT              = 3;
+
 
 // S/MIME related flags /
 
@@ -182,6 +195,14 @@ const
   CMS_KEY_PARAM                   = $40000;
   {$EXTERNALSYM CMS_ASCIICRLF}
   CMS_ASCIICRLF                   = $80000;
+  {$EXTERNALSYM CMS_CADES}
+  CMS_CADES                       = $100000;
+  {$EXTERNALSYM CMS_USE_ORIGINATOR_KEYID}
+  CMS_USE_ORIGINATOR_KEYID        = $200000;
+  {$EXTERNALSYM CMS_NO_SIGNING_TIME}
+  CMS_NO_SIGNING_TIME             = $400000;
+  {$EXTERNALSYM CMS_VERIFY_PARTIAL}
+  CMS_VERIFY_PARTIAL              = $800000;
 
     { The EXTERNALSYM directive is ignored by FPC, however, it is used by Delphi as follows:
 		
@@ -347,6 +368,8 @@ var
 
   {$EXTERNALSYM CMS_SignerInfo_set1_signer_cert}
   CMS_SignerInfo_set1_signer_cert: procedure (si: PCMS_SignerInfo; signer: PX509); cdecl = nil;
+  {$EXTERNALSYM CMS_SignerInfo_get0_signer_cert}
+  CMS_SignerInfo_get0_signer_cert: function (si : PCMS_SignerInfo): PX509; cdecl = nil;
   {$EXTERNALSYM CMS_SignerInfo_get0_signer_id}
   CMS_SignerInfo_get0_signer_id: function (si: PCMS_SignerInfo; keyid: PPASN1_OCTET_STRING; issuer: PPX509_NAME; sno: PPASN1_INTEGER): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CMS_SignerInfo_cert_cmp}
@@ -356,6 +379,8 @@ var
   CMS_SignerInfo_get0_algs: procedure (si: PCMS_SignerInfo; pk: PPEVP_PKEY; signer: PPX509; pdig: PPX509_ALGOR; psig: PPX509_ALGOR); cdecl = nil;
   {$EXTERNALSYM CMS_SignerInfo_get0_signature}
   CMS_SignerInfo_get0_signature: function (si: PCMS_SignerInfo): PASN1_OCTET_STRING; cdecl = nil;
+  {$EXTERNALSYM CMS_SignerInfo_get_verification_result}
+  CMS_SignerInfo_get_verification_result : function(si : PCMS_SignerInfo; type_ : TIdC_INT) : TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CMS_SignerInfo_sign}
   CMS_SignerInfo_sign: function (si: PCMS_SignerInfo): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CMS_SignerInfo_verify}
@@ -363,9 +388,14 @@ var
   {$EXTERNALSYM CMS_SignerInfo_verify_content}
   CMS_SignerInfo_verify_content: function (si: PCMS_SignerInfo; chain: PBIO): TIdC_INT; cdecl = nil;
 
-//  function CMS_add_smimecap(si: PCMS_SignerInfo{; STACK_OF(X509_ALGOR) *algs}): TIdC_INT;
-//  function CMS_add_simple_smimecap({STACK_OF(X509_ALGOR) **algs;} algnid: TIdC_INT; keysize: TIdC_INT): TIdC_INT;
-//  function CMS_add_standard_smimecap({STACK_OF(X509_ALGOR) **smcap}): TIdC_INT;
+  {$EXTERNALSYM CMS_add_smimecap}
+  CMS_add_smimecap : function(si: PCMS_SignerInfo; algs : PSTACK_OF_X509_ALGOR): TIdC_INT;  cdecl = nil;
+  {$EXTERNALSYM CMS_add_simple_smimecap}
+  CMS_add_simple_smimecap : function(var algs : PSTACK_OF_X509_ALGOR; algnid: TIdC_INT; keysize: TIdC_INT): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CMS_add_standard_smimecap_ex}
+  CMS_add_standard_smimecap_ex : function(var smcap : PSTACK_OF_X509_ALGOR; libctx : POSSL_LIB_CTX; propq : PIdAnsiChar) : TIdC_INT;  cdecl = nil;
+  {$EXTERNALSYM CMS_add_standard_smimecap}
+  CMS_add_standard_smimecap : function(var smcap : PSTACK_OF_X509_ALGOR): TIdC_INT;  cdecl = nil;
 
   {$EXTERNALSYM CMS_signed_get_attr_count}
   CMS_signed_get_attr_count: function (const si: PCMS_SignerInfo): TIdC_INT; cdecl = nil;
@@ -603,6 +633,9 @@ var
 
   {$EXTERNALSYM CMS_SignerInfo_set1_signer_cert}
   procedure CMS_SignerInfo_set1_signer_cert(si: PCMS_SignerInfo; signer: PX509) cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_SignerInfo_get0_signer_cert}
+  function CMS_SignerInfo_get0_signer_cert(si : PCMS_SignerInfo): PX509 cdecl; external CLibCrypto;
+
   {$EXTERNALSYM CMS_SignerInfo_get0_signer_id}
   function CMS_SignerInfo_get0_signer_id(si: PCMS_SignerInfo; keyid: PPASN1_OCTET_STRING; issuer: PPX509_NAME; sno: PPASN1_INTEGER): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM CMS_SignerInfo_cert_cmp}
@@ -612,6 +645,8 @@ var
   procedure CMS_SignerInfo_get0_algs(si: PCMS_SignerInfo; pk: PPEVP_PKEY; signer: PPX509; pdig: PPX509_ALGOR; psig: PPX509_ALGOR) cdecl; external CLibCrypto;
   {$EXTERNALSYM CMS_SignerInfo_get0_signature}
   function CMS_SignerInfo_get0_signature(si: PCMS_SignerInfo): PASN1_OCTET_STRING cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_SignerInfo_get_verification_result}
+  function CMS_SignerInfo_get_verification_result(si : PCMS_SignerInfo; type_ : TIdC_INT) : TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM CMS_SignerInfo_sign}
   function CMS_SignerInfo_sign(si: PCMS_SignerInfo): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM CMS_SignerInfo_verify}
@@ -619,9 +654,15 @@ var
   {$EXTERNALSYM CMS_SignerInfo_verify_content}
   function CMS_SignerInfo_verify_content(si: PCMS_SignerInfo; chain: PBIO): TIdC_INT cdecl; external CLibCrypto;
 
-//  function CMS_add_smimecap(si: PCMS_SignerInfo{; STACK_OF(X509_ALGOR) *algs}): TIdC_INT;
-//  function CMS_add_simple_smimecap({STACK_OF(X509_ALGOR) **algs;} algnid: TIdC_INT; keysize: TIdC_INT): TIdC_INT;
-//  function CMS_add_standard_smimecap({STACK_OF(X509_ALGOR) **smcap}): TIdC_INT;
+  {$EXTERNALSYM CMS_add_smimecap}
+  function CMS_add_smimecap(si: PCMS_SignerInfo; algs : PSTACK_OF_X509_ALGOR): TIdC_INT  cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_add_simple_smimecap}
+   function CMS_add_simple_smimecap(var algs : PSTACK_OF_X509_ALGOR; algnid: TIdC_INT; keysize: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CMS_add_standard_smimecap_ex}
+  function CMS_add_standard_smimecap_ex(var smcap : PSTACK_OF_X509_ALGOR; libctx : POSSL_LIB_CTX; propq : PIdAnsiChar) : TIdC_INT cdecl; external CLibCrypto;
+
+  {$EXTERNALSYM CMS_add_standard_smimecap}
+  function CMS_add_standard_smimecap(var smcap : PSTACK_OF_X509_ALGOR) : TIdC_INT cdecl; external CLibCrypto;
 
   {$EXTERNALSYM CMS_signed_get_attr_count}
   function CMS_signed_get_attr_count(const si: PCMS_SignerInfo): TIdC_INT cdecl; external CLibCrypto;
@@ -716,6 +757,10 @@ implementation
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 const
+  CMS_SignerInfo_get0_signer_cert_introduced = (byte(4) shl 8 or byte(1)) shl 8 or byte(0);
+  CMS_SignerInfo_get_verification_result_introduced = (byte(4) shl 8 or byte(1)) shl 8 or byte(0);
+  CMS_add_standard_smimecap_ex_introduced = (byte(4) shl 8 or byte(1)) shl 8 or byte(0);
+
   CMS_get0_type_procname = 'CMS_get0_type';
 
   CMS_dataInit_procname = 'CMS_dataInit';
@@ -815,18 +860,21 @@ const
   // STACK_OF(CMS_SignerInfo) *CMS_get0_SignerInfos(CMS_ContentInfo *cms);
 
   CMS_SignerInfo_set1_signer_cert_procname = 'CMS_SignerInfo_set1_signer_cert';
+  CMS_SignerInfo_get0_signer_cert_procname = 'CMS_SignerInfo_get0_signer_cert';
   CMS_SignerInfo_get0_signer_id_procname = 'CMS_SignerInfo_get0_signer_id';
   CMS_SignerInfo_cert_cmp_procname = 'CMS_SignerInfo_cert_cmp';
 //  function CMS_set1_signers_certs(cms: PCMS_ContentInfo; {STACK_OF(X509) *certs;} flags: TIdC_UINT): TIdC_INT;
   CMS_SignerInfo_get0_algs_procname = 'CMS_SignerInfo_get0_algs';
   CMS_SignerInfo_get0_signature_procname = 'CMS_SignerInfo_get0_signature';
+  CMS_SignerInfo_get_verification_result_procname = 'CMS_SignerInfo_get_verification_result';
   CMS_SignerInfo_sign_procname = 'CMS_SignerInfo_sign';
   CMS_SignerInfo_verify_procname = 'CMS_SignerInfo_verify';
   CMS_SignerInfo_verify_content_procname = 'CMS_SignerInfo_verify_content';
 
-//  function CMS_add_smimecap(si: PCMS_SignerInfo{; STACK_OF(X509_ALGOR) *algs}): TIdC_INT;
-//  function CMS_add_simple_smimecap({STACK_OF(X509_ALGOR) **algs;} algnid: TIdC_INT; keysize: TIdC_INT): TIdC_INT;
-//  function CMS_add_standard_smimecap({STACK_OF(X509_ALGOR) **smcap}): TIdC_INT;
+  CMS_add_smimecap_procname = 'CMS_add_smimecap';
+  CMS_add_simple_smimecap_procname = 'CMS_add_simple_smimecap';
+  CMS_add_standard_smimecap_ex_procname = 'CMS_add_standard_smimecap_ex';
+  CMS_add_standard_smimecap_procname = 'CMS_add_standard_smimecap';
 
   CMS_signed_get_attr_count_procname = 'CMS_signed_get_attr_count';
   CMS_signed_get_attr_by_NID_procname = 'CMS_signed_get_attr_by_NID';
@@ -1277,6 +1325,11 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_SignerInfo_set1_signer_cert_procname);
 end;
 
+function ERR_CMS_SignerInfo_get0_signer_cert(si : PCMS_SignerInfo): PX509 cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_SignerInfo_get0_signer_cert_procname);
+end;
+
 
 function  ERR_CMS_SignerInfo_get0_signer_id(si: PCMS_SignerInfo; keyid: PPASN1_OCTET_STRING;
   issuer: PPX509_NAME; sno: PPASN1_INTEGER): TIdC_INT; cdecl;
@@ -1304,6 +1357,10 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_SignerInfo_get0_signature_procname);
 end;
 
+function ERR_CMS_SignerInfo_get_verification_result(si : PCMS_SignerInfo; type_ : TIdC_INT) : TIdC_INT; cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_SignerInfo_get_verification_result_procname);
+end;
 
 function  ERR_CMS_SignerInfo_sign(si: PCMS_SignerInfo): TIdC_INT; cdecl;
 begin
@@ -1322,11 +1379,25 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_SignerInfo_verify_content_procname);
 end;
 
+function ERR_CMS_add_smimecap(si: PCMS_SignerInfo; algs : PSTACK_OF_X509_ALGOR): TIdC_INT; cdecl;
+begin
+   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_add_smimecap_procname);
+end;
 
+function ERR_CMS_add_simple_smimecap(var algs : PSTACK_OF_X509_ALGOR; algnid: TIdC_INT; keysize: TIdC_INT): TIdC_INT cdecl;
+begin
+   ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_add_simple_smimecap_procname);
+end;
 
-//  function CMS_add_smimecap(si: PCMS_SignerInfo{; STACK_OF(X509_ALGOR) *algs}): TIdC_INT;
-//  function CMS_add_simple_smimecap({STACK_OF(X509_ALGOR) **algs;} algnid: TIdC_INT; keysize: TIdC_INT): TIdC_INT;
-//  function CMS_add_standard_smimecap({STACK_OF(X509_ALGOR) **smcap}): TIdC_INT;
+function ERR_CMS_add_standard_smimecap_ex(var smcap : PSTACK_OF_X509_ALGOR; libctx : POSSL_LIB_CTX; propq : PIdAnsiChar) : TIdC_INT cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_add_standard_smimecap_ex_procname);
+end;
+
+function ERR_CMS_add_standard_smimecap(var smcap : PSTACK_OF_X509_ALGOR) : TIdC_INT cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(CMS_add_standard_smimecap_procname);
+end;
 
 function  ERR_CMS_signed_get_attr_count(const si: PCMS_SignerInfo): TIdC_INT; cdecl;
 begin
@@ -3373,6 +3444,37 @@ begin
     {$ifend}
   end;
 
+  CMS_SignerInfo_get0_signer_cert := LoadLibFunction(ADllHandle, CMS_SignerInfo_get0_signer_cert_procname);
+  FuncLoadError := not assigned(CMS_SignerInfo_get0_signer_cert);
+  if FuncLoadError then
+  begin
+    {$if not defined(CMS_SignerInfo_get0_signer_cert_allownil)}
+    CMS_SignerInfo_get0_signer_cert := ERR_CMS_SignerInfo_get0_signer_cert;
+    {$ifend}
+    {$if declared(CMS_SignerInfo_get0_signer_cert_introduced)}
+    if LibVersion < CMS_SignerInfo_get0_signer_cert_introduced then
+    begin
+      {$if declared(FC_CMS_SignerInfo_get0_signer_cert)}
+      CMS_SignerInfo_get0_signer_cert := FC_CMS_SignerInfo_get0_signer_cert;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(CMS_SignerInfo_get0_signer_cert_removed)}
+    if CMS_SignerInfo_get0_signer_cert_removed <= LibVersion then
+    begin
+      {$if declared(_CMS_SignerInfo_get0_signer_cert)}
+      CMS_SignerInfo_get0_signer_cert := _CMS_SignerInfo_get0_signer_cert;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(CMS_SignerInfo_get0_signer_cert_allownil)}
+    if FuncLoadError then
+      AFailed.Add('CMS_SignerInfo_get0_signer_cert');
+    {$ifend}
+  end;
+
 
   CMS_SignerInfo_get0_signer_id := LoadLibFunction(ADllHandle, CMS_SignerInfo_get0_signer_id_procname);
   FuncLoadError := not assigned(CMS_SignerInfo_get0_signer_id);
@@ -3501,6 +3603,36 @@ begin
     {$ifend}
   end;
 
+  CMS_SignerInfo_get_verification_result := LoadLibFunction(ADllHandle, CMS_SignerInfo_get_verification_result_procname);
+  FuncLoadError := not assigned(CMS_SignerInfo_get_verification_result);
+  if FuncLoadError then
+  begin
+    {$if not defined(CMS_SignerInfo_get_verification_result_allownil)}
+    CMS_SignerInfo_get_verification_result := ERR_CMS_SignerInfo_get_verification_result;
+    {$ifend}
+    {$if declared(CMS_SignerInfo_get_verification_result_introduced)}
+    if LibVersion < CMS_SignerInfo_get_verification_result_introduced then
+    begin
+      {$if declared(FC_CMS_SignerInfo_get_verification_result)}
+      CMS_SignerInfo_get_verification_resultre := FC_CMS_SignerInfo_get_verification_result;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(CMS_SignerInfo_get_verification_result_removed)}
+    if CMS_SignerInfo_get_verification_result_removed <= LibVersion then
+    begin
+      {$if declared(CMS_SignerInfo_get_verification_result)}
+      CMS_SignerInfo_get_verification_result := _CMS_SignerInfo_get_verification_result;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(CMS_SignerInfo_get_verification_result_allownil)}
+    if FuncLoadError then
+      AFailed.Add('CMS_SignerInfo_get_verification_result');
+    {$ifend}
+  end;
 
   CMS_SignerInfo_sign := LoadLibFunction(ADllHandle, CMS_SignerInfo_sign_procname);
   FuncLoadError := not assigned(CMS_SignerInfo_sign);
@@ -3597,6 +3729,129 @@ begin
     {$ifend}
   end;
 
+  CMS_add_smimecap := LoadLibFunction(ADllHandle, CMS_add_smimecap_procname);
+  FuncLoadError := not assigned(CMS_add_smimecap);
+  if FuncLoadError then
+  begin
+    {$if not defined(CMS_add_smimecap_allownil)}
+    CMS_add_smimecap := ERR_CMS_add_smimecap;
+    {$ifend}
+    {$if declared(CMS_add_smimecap_introduced)}
+    if LibVersion < CMS_add_smimecap_introduced then
+    begin
+      {$if declared(FC_CMS_add_smimecap)}
+      CMS_add_smimecap := FC_CMS_add_smimecap;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(CMS_add_smimecap_removed)}
+    if CMS_add_smimecap_removed <= LibVersion then
+    begin
+      {$if declared(_CMS_add_smimecap)}
+      CMS_add_smimecap  := _CMS_add_smimecap;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(CMS_add_smimecap_allownil)}
+    if FuncLoadError then
+      AFailed.Add('CMS_add_smimecap');
+    {$ifend}
+  end;
+
+  CMS_add_simple_smimecap := LoadLibFunction(ADllHandle, CMS_add_simple_smimecap_procname);
+  FuncLoadError := not assigned(CMS_add_simple_smimecap);
+  if FuncLoadError then
+  begin
+    {$if not defined(CMS_add_simple_smimecap_allownil)}
+    CMS_add_simple_smimecap := ERR_CMS_add_simple_smimecap;
+    {$ifend}
+    {$if declared(CMS_add_simple_smimecap_introduced)}
+    if LibVersion < CMS_add_simple_smimecap_introduced then
+    begin
+      {$if declared(FC_CMS_add_simple_smimecap)}
+      CMS_add_simple_smimecap := FC_CMS_add_simple_smimecap;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(CMS_add_simple_smimecap_removed)}
+    if CMS_add_simple_smimecap_removed <= LibVersion then
+    begin
+      {$if declared(_CMS_add_simple_smimecap)}
+      CMS_add_simple_smimecap := _CMS_add_simple_smimecap;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(CMS_add_simple_smimecap_allownil)}
+    if FuncLoadError then
+      AFailed.Add('CMS_add_simple_smimecap');
+    {$ifend}
+  end;
+
+  CMS_add_standard_smimecap_ex := LoadLibFunction(ADllHandle, CMS_add_standard_smimecap_ex_procname);
+  FuncLoadError := not assigned(CMS_add_standard_smimecap_ex);
+  if FuncLoadError then
+  begin
+    {$if not defined(CMS_add_standard_smimecap_ex_allownil)}
+    CMS_add_standard_smimecap_ex := ERR_CMS_add_standard_smimecap_ex;
+    {$ifend}
+    {$if declared(CMS_add_standard_smimecap_ex_introduced)}
+    if LibVersion < CMS_add_standard_smimecap_ex_introduced then
+    begin
+      {$if declared(FC_CMS_add_standard_smimecap_ex)}
+      CMS_add_standard_smimecap_ex := FC_CMS_add_standard_smimecap_ex;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(CMS_add_standard_smimecap_ex_removed)}
+    if CMS_add_standard_smimecap_ex_removed <= LibVersion then
+    begin
+      {$if declared(_CMS_add_standard_smimecap_ex)}
+      CMS_add_standard_smimecap_ex := _CMS_add_standard_smimecap_ex;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(CMS_add_standard_smimecap_ex_allownil)}
+    if FuncLoadError then
+      AFailed.Add('CMS_add_standard_smimecap_ex');
+    {$ifend}
+  end;
+
+  CMS_add_standard_smimecap := LoadLibFunction(ADllHandle, CMS_add_standard_smimecap_procname);
+  FuncLoadError := not assigned(CMS_add_standard_smimecap);
+  if FuncLoadError then
+  begin
+    {$if not defined(CMS_add_standard_smimecap_allownil)}
+    CMS_add_standard_smimecap := ERR_CMS_add_standard_smimecap;
+    {$ifend}
+    {$if declared(CMS_add_standard_smimecap_introduced)}
+    if LibVersion < CMS_add_standard_smimecap_introduced then
+    begin
+      {$if declared(FC_CMS_add_standard_smimecap)}
+      CMS_add_standard_smimecap := FC_CMS_add_standard_smimecap;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(CMS_add_standard_smimecap_removed)}
+    if CMS_add_smimecap_removed <= LibVersion then
+    begin
+      {$if declared(_CMS_add_smimecap)}
+      CMS_add_smimecap_content := _CMS_add_smimecap
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(CMS_add_standard_smimecap_allownil)}
+    if FuncLoadError then
+      AFailed.Add('CMS_add_standard_smimecap');
+    {$ifend}
+  end;
 
   CMS_signed_get_attr_count := LoadLibFunction(ADllHandle, CMS_signed_get_attr_count_procname);
   FuncLoadError := not assigned(CMS_signed_get_attr_count);
@@ -4617,10 +4872,12 @@ begin
   CMS_SignerInfo_get0_pkey_ctx := nil;
   CMS_SignerInfo_get0_md_ctx := nil;
   CMS_SignerInfo_set1_signer_cert := nil;
+  CMS_SignerInfo_get0_signer_cert := nil;
   CMS_SignerInfo_get0_signer_id := nil;
   CMS_SignerInfo_cert_cmp := nil;
   CMS_SignerInfo_get0_algs := nil;
   CMS_SignerInfo_get0_signature := nil;
+  CMS_SignerInfo_get_verification_result := nil;
   CMS_SignerInfo_sign := nil;
   CMS_SignerInfo_verify := nil;
   CMS_SignerInfo_verify_content := nil;
@@ -4654,6 +4911,10 @@ begin
   CMS_RecipientInfo_kari_get0_ctx := nil;
   CMS_RecipientInfo_kari_decrypt := nil;
   CMS_SharedInfo_encode := nil;
+  CMS_add_smimecap := nil;
+  CMS_add_simple_smimecap := nil;
+  CMS_add_standard_smimecap_ex := nil;
+  CMS_add_standard_smimecap := nil;
 end;
   {$ENDIF}
 {$ENDIF}

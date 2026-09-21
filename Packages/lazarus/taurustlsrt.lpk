@@ -200,6 +200,10 @@
 				<UnitName Value="TaurusTLSHeaders_dsaerr"/>
 			</Item>
 			<Item>
+				<Filename Value="..\..\Source\TaurusTLSHeaders_dtls.pas"/>
+				<UnitName Value="TaurusTLSHeaders_dtls"/>
+			</Item>
+			<Item>
 				<Filename Value="..\..\Source\TaurusTLSHeaders_ebcdic.pas"/>
 				<UnitName Value="TaurusTLSHeaders_ebcdic"/>
 			</Item>
@@ -246,6 +250,10 @@
 			<Item>
 				<Filename Value="..\..\Source\TaurusTLSHeaders_idea.pas"/>
 				<UnitName Value="TaurusTLSHeaders_idea"/>
+			</Item>
+			<Item>
+				<Filename Value="..\..\Source\TaurusTLSHeaders_kdf.pas"/>
+				<UnitName Value="TaurusTLSHeaders_kdf"/>
 			</Item>
 			<Item>
 				<Filename Value="..\..\Source\TaurusTLSHeaders_kdferr.pas"/>
@@ -310,6 +318,10 @@
 			<Item>
 				<Filename Value="..\..\Source\TaurusTLSHeaders_provider.pas"/>
 				<UnitName Value="TaurusTLSHeaders_provider"/>
+			</Item>
+			<Item>
+				<Filename Value="..\..\Source\TaurusTLSHeaders_prov_ssl.pas"/>
+				<UnitName Value="TaurusTLSHeaders_prov_ssl"/>
 			</Item>
 			<Item>
 				<Filename Value="..\..\Source\TaurusTLSHeaders_quic.pas"/>

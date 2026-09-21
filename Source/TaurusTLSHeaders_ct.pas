@@ -12,8 +12,8 @@ unit TaurusTLSHeaders_ct;
 { *                                                                            * }
 { *  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              * }
 { *                                                                            * }
-{ * Portions of this software are Copyright (c) 1993 – 2018,                   * }
-{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  * }
+{ * Portions of this software are Copyright (c) 1993 â€“ 2018,                   * }
+{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  * }
 { ****************************************************************************** }
 
 interface
@@ -278,6 +278,8 @@ var
    CTLOG_STORE_new : function : PCTLOG_STORE; cdecl = nil;
   {$EXTERNALSYM CTLOG_STORE_free}
    CTLOG_STORE_free : procedure(store : PCTLOG_STORE); cdecl = nil;
+  {$EXTERNALSYM CTLOG_STORE_add0_log}
+  CTLOG_STORE_add0_log : function (store : PCTLOG_STORE; log : PCTLOG) : TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CTLOG_STORE_get0_log_by_id}
    CTLOG_STORE_get0_log_by_id : function(const store : PCTLOG_STORE;
                                          const log_id : PIdAnsiChar;
@@ -410,6 +412,9 @@ function CTLOG_get0_public_key(const log : PCTLOG) : PEVP_PKEY cdecl; external C
 function CTLOG_STORE_new : PCTLOG_STORE cdecl; external CLibCrypto;
   {$EXTERNALSYM CTLOG_STORE_free}
 procedure CTLOG_STORE_free(store : PCTLOG_STORE) cdecl; external CLibCrypto;
+  {$EXTERNALSYM CTLOG_STORE_add0_log}
+function CTLOG_STORE_add0_log(store : PCTLOG_STORE; log : PCTLOG) : TIdC_INT cdecl; external CLibCrypto;
+
   {$EXTERNALSYM CTLOG_STORE_get0_log_by_id}
 function CTLOG_STORE_get0_log_by_id(const store : PCTLOG_STORE;
                                     const log_id : PIdAnsiChar;
@@ -554,6 +559,7 @@ uses
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 
 const
+  CTLOG_STORE_add0_log_introduced = (byte(4) shl 8 or byte(1)) shl 8 or byte(0);
   CT_POLICY_EVAL_CTX_new_procname = 'CT_POLICY_EVAL_CTX_new';
   CT_POLICY_EVAL_CTX_free_procname = 'CT_POLICY_EVAL_CTX_free';
   CT_POLICY_EVAL_CTX_get0_cert_procname = 'CT_POLICY_EVAL_CTX_get0_cert';
@@ -611,6 +617,7 @@ const
 
   CTLOG_STORE_new_procname = 'CTLOG_STORE_new';
   CTLOG_STORE_free_procname = 'CTLOG_STORE_free';
+  CTLOG_STORE_add0_log_procname = 'CTLOG_STORE_add0_log';
   CTLOG_STORE_get0_log_by_id_procname = 'CTLOG_STORE_get0_log_by_id';
   CTLOG_STORE_load_file_procname = 'CTLOG_STORE_load_file';
   CTLOG_STORE_load_default_file_procname = 'CTLOG_STORE_load_default_file';
@@ -897,6 +904,11 @@ end;
 procedure ERR_CTLOG_STORE_free(store : PCTLOG_STORE); cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException( CTLOG_STORE_free_procname);
+end;
+
+function ERR_CTLOG_STORE_add0_log(store : PCTLOG_STORE; log : PCTLOG) : TIdC_INT; cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(CTLOG_STORE_add0_log_procname);
 end;
 
 function ERR_CTLOG_STORE_get0_log_by_id(const store : PCTLOG_STORE;
@@ -2561,6 +2573,36 @@ begin
       AFailed.Add('CTLOG_STORE_free');
     {$ifend}
   end;
+  CTLOG_STORE_add0_log := LoadLibFunction(ADllHandle, CTLOG_STORE_add0_log_procname);
+  FuncLoadError := not assigned(CTLOG_STORE_add0_log);
+  if FuncLoadError then
+  begin
+    {$if not defined(CTLOG_STORE_add0_log_allownil)}
+    CTLOG_STORE_add0_log := ERR_CTLOG_STORE_add0_log;
+    {$ifend}
+    {$if declared(CTLOG_STORE_add0_log_introduced)}
+    if LibVersion < CTLOG_STORE_add0_log_introduced then
+    begin
+      {$if declared(FC_CTLOG_STORE_add0_log)}
+      CTLOG_STORE_add0_log := FC_CTLOG_STORE_add0_log;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(CTLOG_STORE_add0_log_removed)}
+    if CTLOG_STORE_free_removed <= LibVersion then
+    begin
+      {$if declared(_CTLOG_STORE_add0_log)}
+      CTLOG_STORE_add0_log := _CTLOG_STORE_add0_log;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(CTLOG_STORE_add0_log_allownil)}
+    if FuncLoadError then
+      AFailed.Add('CTLOG_STORE_add0_log');
+    {$ifend}
+  end;
   CTLOG_STORE_get0_log_by_id := LoadLibFunction(ADllHandle, CTLOG_STORE_get0_log_by_id_procname);
   FuncLoadError := not assigned(CTLOG_STORE_get0_log_by_id);
   if FuncLoadError then
@@ -2766,6 +2808,7 @@ begin
 
   CTLOG_STORE_new := nil;
   CTLOG_STORE_free := nil;
+  CTLOG_STORE_add0_log := nil;
   CTLOG_STORE_get0_log_by_id := nil;
   CTLOG_STORE_load_file := nil;
   CTLOG_STORE_load_default_file := nil;
