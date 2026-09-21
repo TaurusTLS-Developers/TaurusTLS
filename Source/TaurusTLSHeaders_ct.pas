@@ -12,8 +12,8 @@ unit TaurusTLSHeaders_ct;
 { *                                                                            * }
 { *  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              * }
 { *                                                                            * }
-{ * Portions of this software are Copyright (c) 1993 – 2018,                   * }
-{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  * }
+{ * Portions of this software are Copyright (c) 1993 â€“ 2018,                   * }
+{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  * }
 { ****************************************************************************** }
 
 interface
@@ -2577,7 +2577,7 @@ begin
   FuncLoadError := not assigned(CTLOG_STORE_add0_log);
   if FuncLoadError then
   begin
-    {$if not defined(CTLOG_STORE_free_allownil)}
+    {$if not defined(CTLOG_STORE_add0_log_allownil)}
     CTLOG_STORE_add0_log := ERR_CTLOG_STORE_add0_log;
     {$ifend}
     {$if declared(CTLOG_STORE_add0_log_introduced)}
