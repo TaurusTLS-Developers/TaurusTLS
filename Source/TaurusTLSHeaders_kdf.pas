@@ -16,8 +16,8 @@
 {*                                                                            *}
 {*  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              *}
 {*                                                                            *}
-{* Portions of this software are Copyright (c) 1993 – 2018,                   *}
-{* Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  *}
+{* Portions of this software are Copyright (c) 1993 â€“ 2018,                   *}
+{* Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  *}
 {******************************************************************************}
 unit TaurusTLSHeaders_kdf;
 
@@ -986,7 +986,7 @@ begin
       FuncLoadError := false;
     end;
     {$ifend}
-    {$if declaredEVP_KDF_derive_SKEY_removed)}
+    {$if declared(EVP_KDF_derive_SKEY_removed)}
     if EVP_KDF_derive_SKEY_removed <= LibVersion then
     begin
       {$if declared(_EVP_KDF_derive_SKEY)}
@@ -1167,7 +1167,7 @@ begin
     if LibVersion < EVP_KDF_settable_ctx_params_introduced then
     begin
       {$if declared(FC_EVP_KDF_settable_ctx_params)}
-      EVP_KDF_settable_ctx_paramss := FC_EVP_KDF_settable_ctx_params;
+      EVP_KDF_settable_ctx_params := FC_EVP_KDF_settable_ctx_params;
       {$ifend}
       FuncLoadError := false;
     end;
@@ -1237,7 +1237,7 @@ begin
     {$if declared(EVP_KDF_CTX_settable_params_removed)}
     if EVP_KDF_CTX_settable_params_removed <= LibVersion then
     begin
-      {$if declared(_EVP_KDF_CTX_settable_paramss)}
+      {$if declared(_EVP_KDF_CTX_settable_params)}
       EVP_KDF_CTX_settable_params := _EVP_KDF_CTX_settable_params;
       {$ifend}
       FuncLoadError := false;
@@ -1296,7 +1296,7 @@ begin
       FuncLoadError := false;
     end;
     {$ifend}
-    {$if declared(EVP_KDF_names_do_alls_removed)}
+    {$if declared(EVP_KDF_names_do_all_removed)}
     if EVP_KDF_names_do_all_removed <= LibVersion then
     begin
       {$if declared(_EVP_KDF_names_do_all)}
@@ -1414,7 +1414,7 @@ begin
     {$if declared(EVP_PKEY_CTX_set_hkdf_md_introduced)}
     if LibVersion < EVP_PKEY_CTX_set_hkdf_md_introduced then
     begin
-      {$if declared(FC_EVP_PKEY_CTX_set_hkdf_mdd)}
+      {$if declared(FC_EVP_PKEY_CTX_set_hkdf_md)}
       EVP_PKEY_CTX_set_hkdf_md:= FC_EVP_PKEY_CTX_set_hkdf_md;
       {$ifend}
       FuncLoadError := false;
@@ -1699,8 +1699,8 @@ begin
       FuncLoadError := false;
     end;
     {$ifend}
-    {$if declared(EVP_PKEY_CTX_set_scrypt_p_pemoved)}
-    if EVP_PKEY_CTX_set_scrypt_p_pemoved <= LibVersion then
+    {$if declared(EVP_PKEY_CTX_set_scrypt_p_removed)}
+    if EVP_PKEY_CTX_set_scrypt_p_removed <= LibVersion then
     begin
       {$if declared(_EVP_PKEY_CTX_set_scrypt_p)}
       EVP_PKEY_CTX_set_scrypt_p := _EVP_PKEY_CTX_set_scrypt_p;
@@ -1763,7 +1763,6 @@ begin
   EVP_KDF_CTX_reset := nil;
   EVP_KDF_CTX_get_kdf_size := nil;
   EVP_KDF_derive := nil;
-  EVP_KDF_CTX_set_SKEY := nil;
   EVP_KDF_CTX_set_SKEY := nil;
   EVP_KDF_derive_SKEY := nil;
   EVP_KDF_get_params := nil;
