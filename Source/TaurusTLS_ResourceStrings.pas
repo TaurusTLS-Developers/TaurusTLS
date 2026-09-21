@@ -231,7 +231,7 @@ resourcestring
   RSMSG_X509_V_ERR_OCSP_SIGNATURE_FAILURE = 'Online Certificate Status Protocol '+
     '(OCSP) response signature verification failed.';
   RSMSG_X509_V_ERR_OCSP_NOT_YET_VALID = 'Online Certificate Status Protocol  '+
-    '(OCSP) response has a thisUpdate date in the future.';
+    '(OCSP) response has a this Update date in the future.';
   RSMSG_X509_V_ERR_OCSP_HAS_EXPIRED = 'Online Certificate Status Protocol  '+
     '(OCSP) response has expired.';
   RSMSG_X509_V_ERR_OCSP_NO_RESPONSE = 'No Online Certificate Status Protocol '+
