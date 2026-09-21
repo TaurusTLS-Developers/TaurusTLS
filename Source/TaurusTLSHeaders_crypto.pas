@@ -1607,7 +1607,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_atomic_load_procname);
 end;
 
-function ERR_CRYPTO_atomic_load_int(_val : PIdC_UINT64; ret : PIdC_INT; lock : PCRYPTO_RWLOCK) : TIdC_INT cdecl;
+function ERR_CRYPTO_atomic_load_int(_val : PIdC_INT; ret : PIdC_INT; lock : PCRYPTO_RWLOCK) : TIdC_INT cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CRYPTO_atomic_load_int_procname);
 end;
