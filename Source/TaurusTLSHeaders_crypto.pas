@@ -1,4 +1,4 @@
-/// <exclude />
+﻿/// <exclude />
   (* This unit was generated using the script genTaurusTLSHdrs.sh from the source file TaurusTLSHeaders_crypto.h2pas
      It should not be modified directly. All changes should be made to TaurusTLSHeaders_crypto.h2pas
      and this file regenerated. TaurusTLSHeaders_crypto.h2pas is distributed with the full Indy
@@ -528,10 +528,12 @@ var
   {$EXTERNALSYM OPENSSL_init}
   OPENSSL_init: procedure ; cdecl = nil;
 
-  // struct tm *OPENSSL_gmtime(const TIdC_TIMET *timer, struct tm *result);
-
-  //function OPENSSL_gmtime_adj(struct tm *tm, int offset_day, long offset_sec): TIdC_INT;
-  //function OPENSSL_gmtime_diff(int *pday, int *psec, const struct tm *from, const struct tm *to): TIdC_INT;
+  {$EXTERNALSYM OPENSSL_gmtime}
+  OPENSSL_gmtime : function(timer : TIdC_TIMET; Result_ : PIdC_TM) : TIdC_TM; cdecl = nil;
+  {$EXTERNALSYM OPENSSL_gmtime_adj}
+  OPENSSL_gmtime_adj : function(tm : PIdC_TM; offset_day : TIdC_INT; offset_sec : TIdC_LONG) : TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM OPENSSL_gmtime_diff}
+  OPENSSL_gmtime_diff : function(var pday, psec : TIdC_INT; const from_, to_ : PIdC_TM) : TIdC_INT; cdecl = nil;
 
   (*
    * CRYPTO_memcmp returns zero iff the |len| bytes at |a| and |b| are equal.
@@ -815,10 +817,13 @@ var
   {$EXTERNALSYM OPENSSL_init}
   procedure OPENSSL_init cdecl; external CLibCrypto;
 
-  // struct tm *OPENSSL_gmtime(const TIdC_TIMET *timer, struct tm *result);
+  {$EXTERNALSYM OPENSSL_gmtime}
+  function OPENSSL_gmtime(timer : TIdC_TIMET; Result_ : PIdC_TM) : TIdC_TM cdecl; external CLibCrypto;
+  {$EXTERNALSYM OPENSSL_gmtime_adj}
+  function OPENSSL_gmtime_adj(tm : PIdC_TM; offset_day : TIdC_INT; offset_sec : TIdC_LONG) : TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM OPENSSL_gmtime_diff}
+  function OPENSSL_gmtime_diff(var pday, psec : TIdC_INT; const from_, to_ : PIdC_TM) : TIdC_INT cdecl; external CLibCrypto;
 
-  //function OPENSSL_gmtime_adj(struct tm *tm, int offset_day, long offset_sec): TIdC_INT;
-  //function OPENSSL_gmtime_diff(int *pday, int *psec, const struct tm *from, const struct tm *to): TIdC_INT;
 
   (*
    * CRYPTO_memcmp returns zero iff the |len| bytes at |a| and |b| are equal.
@@ -1219,10 +1224,9 @@ const
 
   OPENSSL_init_procname = 'OPENSSL_init';
 
-  // struct tm *OPENSSL_gmtime(const TIdC_TIMET *timer, struct tm *result);
-
-  //function OPENSSL_gmtime_adj(struct tm *tm, int offset_day, long offset_sec): TIdC_INT;
-  //function OPENSSL_gmtime_diff(int *pday, int *psec, const struct tm *from, const struct tm *to): TIdC_INT;
+  OPENSSL_gmtime_procname = 'OPENSSL_gmtime';
+  OPENSSL_gmtime_adj_procname = 'OPENSSL_gmtime_adj';
+  OPENSSL_gmtime_diff_procname = 'OPENSSL_gmtime_diff';
 
   (*
    * CRYPTO_memcmp returns zero iff the |len| bytes at |a| and |b| are equal.
@@ -2027,6 +2031,20 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_init_procname);
 end;
 
+function ERR_OPENSSL_gmtime(timer : TIdC_TIMET; Result_ : PIdC_TM) : TIdC_TM; cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_gmtime_procname);
+end;
+
+function ERR_OPENSSL_gmtime_adj(tm : PIdC_TM; offset_day : TIdC_INT; offset_sec : TIdC_LONG) : TIdC_INT; cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_gmtime_adj_procname);
+end;
+
+function ERR_OPENSSL_gmtime_diff(var pday, psec : TIdC_INT; const from_, to_ : PIdC_TM) : TIdC_INT; cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_gmtime_diff_procname);
+end;
 
 
   // struct tm *OPENSSL_gmtime(const TIdC_TIMET *timer, struct tm *result);
@@ -4671,6 +4689,98 @@ begin
     {$ifend}
   end;
 
+  OPENSSL_gmtime := LoadLibFunction(ADllHandle, OPENSSL_gmtime_procname);
+  FuncLoadError := not assigned(OPENSSL_gmtime);
+  if FuncLoadError then
+  begin
+    {$if not defined(OPENSSL_gmtime_allownil)}
+    OPENSSL_gmtime := ERR_OPENSSL_gmtime;
+    {$ifend}
+    {$if declared(OPENSSL_gmtime_introduced)}
+    if LibVersion < OPENSSL_gmtime_introduced then
+    begin
+      {$if declared(FC_OPENSSL_gmtime)}
+      OPENSSL_init := FC_OPENSSL_gmtime;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(OPENSSL_gmtime_removed)}
+    if OPENSSL_gmtime_removed <= LibVersion then
+    begin
+      {$if declared(_OPENSSL_init)}
+      OPENSSL_gmtime := _OPENSSL_gmtime;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(OPENSSL_gmtime_allownil)}
+    if FuncLoadError then
+      AFailed.Add('OPENSSL_gmtime');
+    {$ifend}
+  end;
+
+  OPENSSL_gmtime_adj := LoadLibFunction(ADllHandle, OPENSSL_gmtime_adj_procname);
+  FuncLoadError := not assigned(OPENSSL_gmtime_adj);
+  if FuncLoadError then
+  begin
+    {$if not defined(OPENSSL_gmtime_adj)}
+    OPENSSL_gmtime_adj := ERR_OPENSSL_gmtime_adj;
+    {$ifend}
+    {$if declared(OPENSSL_gmtime_adj_introduced)}
+    if LibVersion < OPENSSL_gmtime_adj_introduced then
+    begin
+      {$if declared(FC_OPENSSL_gmtime_adj)}
+      OPENSSL_gmtime_adj := FC_OPENSSL_gmtime_adj;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(OPENSSL_gmtime_adj_removed)}
+    if OPENSSL_gmtime_adj_removed <= LibVersion then
+    begin
+      {$if declared(_OPENSSL_gmtime_adj)}
+      OPENSSL_gmtime_adj := _OPENSSL_gmtime_adj;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(OPENSSL_gmtime_adj_allownil)}
+    if FuncLoadError then
+      AFailed.Add('OPENSSL_gmtime_adj');
+    {$ifend}
+  end;
+
+  OPENSSL_gmtime_diff := LoadLibFunction(ADllHandle, OPENSSL_gmtime_diff_procname);
+  FuncLoadError := not assigned(OPENSSL_gmtime_diff);
+  if FuncLoadError then
+  begin
+    {$if not defined(OPENSSL_gmtime_diff_allownil)}
+    OPENSSL_gmtime_diff := ERR_OPENSSL_gmtime_diff;
+    {$ifend}
+    {$if declared(OPENSSL_gmtime_diff_introduced)}
+    if LibVersion < OPENSSL_gmtime_diff_introduced then
+    begin
+      {$if declared(FC_OPENSSL_gmtime_diff)}
+      OPENSSL_gmtime_diff := FC_OPENSSL_gmtime_diff;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(OPENSSL_gmtime_diff_removed)}
+    if OPENSSL_gmtime_diff_removed <= LibVersion then
+    begin
+      {$if declared(_OPENSSL_gmtime_diff)}
+      OPENSSL_gmtime_diff := _OPENSSL_gmtime_diff;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(OPENSSL_gmtime_diff_allownil)}
+    if FuncLoadError then
+      AFailed.Add('OPENSSL_gmtime_diff');
+    {$ifend}
+  end;
 
   CRYPTO_memcmp := LoadLibFunction(ADllHandle, CRYPTO_memcmp_procname);
   FuncLoadError := not assigned(CRYPTO_memcmp);
@@ -5417,6 +5527,9 @@ begin
   FIPS_mode := nil; {removed 3.0.0}
   FIPS_mode_set := nil; {removed 3.0.0}
   OPENSSL_init := nil;
+  OPENSSL_gmtime := nil;
+  OPENSSL_gmtime_adj := nil;
+  OPENSSL_gmtime_diff := nil;
   CRYPTO_memcmp := nil;
   OPENSSL_cleanup := nil; {introduced 1.1.0}
   OPENSSL_init_crypto := nil; {introduced 1.1.0}
