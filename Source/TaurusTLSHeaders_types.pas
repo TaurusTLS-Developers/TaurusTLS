@@ -160,7 +160,9 @@ type
   PIdC_SSIZET = ^TIdC_SSIZET;
   {$ENDIF}
 {$IFEND}
-{$IF NOT DECLARED(TIdC_TIMET)}
+
+ // Modern LibC declares time_t type as 64bit integer on all platforms.
+{$IF NOT DECLARED(TIdC_TIMET) or (SizeOf(TIdC_TIMET) < 8)}
   {$IFDEF HAS_TIME_T}
   {$EXTERNALSYM TIdC_TIMET}
   TIdC_TIMET = time_t;
@@ -169,14 +171,9 @@ type
   {$EXTERNALSYM TIdC_TIMET}
   TIdC_TIMET = PtrInt;
     {$ELSE}
-      {$IFDEF CPU32}
-  {$EXTERNALSYM TIdC_TIMET}
-  TIdC_TIMET = TIdC_INT32;
-      {$ENDIF}
-      {$IFDEF CPU64}
   {$EXTERNALSYM TIdC_TIMET}
   TIdC_TIMET = TIdC_INT64;
-      {$ENDIF}
+  PIdC_TIMET = ^TIdC_TIMET;
     {$ENDIF}
   {$ENDIF}
 {$IFEND}
