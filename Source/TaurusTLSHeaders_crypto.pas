@@ -2031,7 +2031,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_init_procname);
 end;
 
-function ERR_OPENSSL_gmtime(timer : TIdC_TIMET; Result_ : PIdC_TM) : TIdC_TM; cdecl;
+function ERR_OPENSSL_gmtime(timer : TIdC_TIMET; Result_ : PIdC_TM) : PIdC_TM; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_gmtime_procname);
 end;
