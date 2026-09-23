@@ -529,7 +529,7 @@ var
   OPENSSL_init: procedure ; cdecl = nil;
 
   {$EXTERNALSYM OPENSSL_gmtime}
-  OPENSSL_gmtime : function(timer : TIdC_TIMET; Result_ : PIdC_TM) : TIdC_TM; cdecl = nil;
+  OPENSSL_gmtime : function(timer : TIdC_TIMET; Result_ : PIdC_TM) : PIdC_TM; cdecl = nil;
   {$EXTERNALSYM OPENSSL_gmtime_adj}
   OPENSSL_gmtime_adj : function(tm : PIdC_TM; offset_day : TIdC_INT; offset_sec : TIdC_LONG) : TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OPENSSL_gmtime_diff}
