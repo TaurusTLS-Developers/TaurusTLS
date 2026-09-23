@@ -818,7 +818,7 @@ var
   procedure OPENSSL_init cdecl; external CLibCrypto;
 
   {$EXTERNALSYM OPENSSL_gmtime}
-  function OPENSSL_gmtime(timer : TIdC_TIMET; Result_ : PIdC_TM) : TIdC_TM cdecl; external CLibCrypto;
+  function OPENSSL_gmtime(timer : TIdC_TIMET; Result_ : PIdC_TM) : PIdC_TM cdecl; external CLibCrypto;
   {$EXTERNALSYM OPENSSL_gmtime_adj}
   function OPENSSL_gmtime_adj(tm : PIdC_TM; offset_day : TIdC_INT; offset_sec : TIdC_LONG) : TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM OPENSSL_gmtime_diff}
