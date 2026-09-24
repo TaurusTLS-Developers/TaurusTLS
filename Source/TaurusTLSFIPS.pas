@@ -187,38 +187,39 @@ begin
 end;
 
 function TaurusTLSIsMD4HashIntfAvail: Boolean;
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
+  LMD: PEVP_MD;
   LCtx: PEVP_MD_CTX;
-{$ENDIF}
 begin
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   Result := Assigned(EVP_md4);
+{$ELSE}
+  Result := true;
+{$ENDIF}
   // Fix from: zencode1
   // OpenSSL 3 only provides MD4 in the legacy provider, so EVP_md4 is assigned but
   // EVP_DigestInit_ex fails when the legacy provider is not loaded.  Report MD4 as
   // unavailable in that case so Indy uses its native MD4 implementation (needed by NTLM).
   if Result then
   begin
+    LMD := nil;
     try
+      LMD := EVP_md4;
       LCtx := EVP_MD_CTX_new;
     except
-      // OpenSSL 1.0.2 has no EVP_MD_CTX_new, so TaurusTLS cannot create any digest context
+      // OpenSSL 1.0.2 has no EVP_MD_CTX_new, and the static link model has no EVP_md4
       on ETaurusTLSAPIFunctionNotPresent do
         LCtx := nil;
     end;
     Result := Assigned(LCtx);
     if Result then
     begin
-      Result := EVP_DigestInit_ex(LCtx, EVP_md4, nil) = 1;
+      Result := EVP_DigestInit_ex(LCtx, LMD, nil) = 1;
       EVP_MD_CTX_free(LCtx);
       if not Result then
         ERR_clear_error;
     end;
   end;
-{$ELSE}
-  Result := true;
-{$ENDIF}
 end;
 
 function TaurusTLSGetMD4HashInst: TIdHashIntCtx;
