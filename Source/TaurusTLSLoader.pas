@@ -525,7 +525,9 @@ begin
   try
     if FLibraryLoaded.Value then
     begin
-      for i := 0 to GUnLoadList.Count - 1 do
+      // Reverse order so that unloaders registered after the header units
+      // run while the OpenSSL functions are still assigned.
+      for i := GUnLoadList.Count - 1 downto 0 do
         TOpenSSLUnloadProc(GUnLoadList[i]);
 
       FFailed.Clear();
