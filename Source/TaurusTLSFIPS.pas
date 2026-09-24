@@ -45,6 +45,23 @@ uses
 /// </remarks>
 procedure InstallFIPSHooks;
 
+type
+  /// <summary>
+  /// A procedure that assigns additional IdFIPS hooks.
+  /// </summary>
+  TFIPSHooksInstaller = procedure;
+
+/// <summary>
+/// Adds a procedure that InstallFIPSHooks calls after installing the hash and HMAC hooks.
+/// </summary>
+/// <remarks>
+/// Optional units that assign other IdFIPS hooks (for example TaurusTLS_NTLM) register here
+/// from their initialization sections so their hooks are reinstalled along with the hash and
+/// HMAC hooks.  The procedure is also called immediately if the TaurusTLS hooks are currently
+/// installed.
+/// </remarks>
+procedure RegisterFIPSHooksInstaller(const AInstaller: TFIPSHooksInstaller);
+
 implementation
 
 uses
@@ -499,6 +516,22 @@ end;
 
 // ****************************************************
 
+var
+  GFIPSHooksInstallers: array of TFIPSHooksInstaller;
+
+procedure CallFIPSHooksInstallers;
+var
+  I: Integer;
+begin
+  for I := 0 to High(GFIPSHooksInstallers) do
+    GFIPSHooksInstallers[I]();
+end;
+
+function FIPSHooksInstalled: Boolean;
+begin
+  Result := @IsHashingIntfAvail = @TaurusTLSIsHashingIntfAvail;
+end;
+
 procedure InstallFIPSHooks;
 begin
   SetFIPSMode := TaurusTLSSetFIPSMode;
@@ -537,6 +570,16 @@ begin
   GetHMACSHA512HashInst := TaurusTLSGetHMACSHA512Inst;
   UpdateHMACInst := TaurusTLSUpdateHMACInst;
   FinalHMACInst := TaurusTLSFinalHMACInst;
+
+  CallFIPSHooksInstallers;
+end;
+
+procedure RegisterFIPSHooksInstaller(const AInstaller: TFIPSHooksInstaller);
+begin
+  SetLength(GFIPSHooksInstallers, Length(GFIPSHooksInstallers) + 1);
+  GFIPSHooksInstallers[High(GFIPSHooksInstallers)] := AInstaller;
+  if FIPSHooksInstalled then
+    AInstaller;
 end;
 
 initialization
