@@ -200,7 +200,13 @@ begin
   // unavailable in that case so Indy uses its native MD4 implementation (needed by NTLM).
   if Result then
   begin
-    LCtx := EVP_MD_CTX_new;
+    try
+      LCtx := EVP_MD_CTX_new;
+    except
+      // OpenSSL 1.0.2 has no EVP_MD_CTX_new, so TaurusTLS cannot create any digest context
+      on ETaurusTLSAPIFunctionNotPresent do
+        LCtx := nil;
+    end;
     Result := Assigned(LCtx);
     if Result then
     begin
