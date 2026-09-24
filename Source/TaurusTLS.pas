@@ -3352,6 +3352,10 @@ begin
     CRYPTO_THREADID_set_callback(@_threadid_func);
 {$ENDIF}
 {$ENDIF}
+    // Another unit's initialization section may have replaced the Indy hash
+    // hooks after TaurusTLSFIPS installed them
+    InstallFIPSHooks;
+
     SSLIsLoaded.Value := True;
   finally
     SSLIsLoaded.Unlock;

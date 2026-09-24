@@ -33,6 +33,18 @@ interface
 uses
   Classes;
 
+/// <summary>
+/// Points Indy's IdFIPS hash and HMAC hooks at the TaurusTLS implementations.
+/// </summary>
+/// <remarks>
+/// This is called from this unit's initialization section and from TaurusTLS.LoadOpenSSLLibrary.
+/// Other units assign the same hooks from their initialization sections (for example
+/// IdSSLOpenSSLHeaders) and the unit initialization order is not guaranteed, notably in
+/// statically linked C++Builder applications, so the hooks are reinstalled when the
+/// OpenSSL library is loaded.
+/// </remarks>
+procedure InstallFIPSHooks;
+
 implementation
 
 uses
@@ -487,43 +499,48 @@ end;
 
 // ****************************************************
 
+procedure InstallFIPSHooks;
+begin
+  SetFIPSMode := TaurusTLSSetFIPSMode;
+  GetFIPSMode := TaurusTLSGetFIPSMode;
+  IsHashingIntfAvail := TaurusTLSIsHashingIntfAvail;
+  IsMD2HashIntfAvail := TaurusTLSIsMD2HashIntfAvail;
+  GetMD2HashInst := TaurusTLSGetMD2HashInst;
+  IsMD4HashIntfAvail := TaurusTLSIsMD4HashIntfAvail;
+  GetMD4HashInst := TaurusTLSGetMD4HashInst;
+  IsMD5HashIntfAvail := TaurusTLSIsMD5HashIntfAvail;
+  GetMD5HashInst := TaurusTLSGetMD5HashInst;
+  IsSHA1HashIntfAvail := TaurusTLSIsSHA1HashIntfAvail;
+  GetSHA1HashInst := TaurusTLSGetSHA1HashInst;
+  IsSHA224HashIntfAvail := TaurusTLSIsSHA224HashIntfAvail;
+  GetSHA224HashInst := TaurusTLSGetSHA224HashInst;
+  IsSHA256HashIntfAvail := TaurusTLSIsSHA256HashIntfAvail;
+  GetSHA256HashInst := TaurusTLSGetSHA256HashInst;
+  IsSHA384HashIntfAvail := TaurusTLSIsSHA384HashIntfAvail;
+  GetSHA384HashInst := TaurusTLSGetSHA384HashInst;
+  IsSHA512HashIntfAvail := TaurusTLSIsSHA512HashIntfAvail;
+  GetSHA512HashInst := TaurusTLSGetSHA512HashInst;
+  UpdateHashInst := TaurusTLSUpdateHashInst;
+  FinalHashInst := TaurusTLSFinalHashInst;
+  IsHMACAvail := TaurusTLSIsHMACAvail;
+  IsHMACMD5Avail := TaurusTLSIsHMACMD5Avail;
+  GetHMACMD5HashInst := TaurusTLSGetHMACMD5Inst;
+  IsHMACSHA1Avail := TaurusTLSIsHMACSHA1Avail;
+  GetHMACSHA1HashInst := TaurusTLSGetHMACSHA1Inst;
+  IsHMACSHA224Avail := TaurusTLSIsHMACSHA224Avail;
+  GetHMACSHA224HashInst := TaurusTLSGetHMACSHA224Inst;
+  IsHMACSHA256Avail := TaurusTLSIsHMACSHA256Avail;
+  GetHMACSHA256HashInst := TaurusTLSGetHMACSHA256Inst;
+  IsHMACSHA384Avail := TaurusTLSIsHMACSHA384Avail;
+  GetHMACSHA384HashInst := TaurusTLSGetHMACSHA384Inst;
+  IsHMACSHA512Avail := TaurusTLSIsHMACSHA512Avail;
+  GetHMACSHA512HashInst := TaurusTLSGetHMACSHA512Inst;
+  UpdateHMACInst := TaurusTLSUpdateHMACInst;
+  FinalHMACInst := TaurusTLSFinalHMACInst;
+end;
+
 initialization
 
-SetFIPSMode := TaurusTLSSetFIPSMode;
-GetFIPSMode := TaurusTLSGetFIPSMode;
-IsHashingIntfAvail := TaurusTLSIsHashingIntfAvail;
-IsMD2HashIntfAvail := TaurusTLSIsMD2HashIntfAvail;
-GetMD2HashInst := TaurusTLSGetMD2HashInst;
-IsMD4HashIntfAvail := TaurusTLSIsMD4HashIntfAvail;
-GetMD4HashInst := TaurusTLSGetMD4HashInst;
-IsMD5HashIntfAvail := TaurusTLSIsMD5HashIntfAvail;
-GetMD5HashInst := TaurusTLSGetMD5HashInst;
-IsSHA1HashIntfAvail := TaurusTLSIsSHA1HashIntfAvail;
-GetSHA1HashInst := TaurusTLSGetSHA1HashInst;
-IsSHA224HashIntfAvail := TaurusTLSIsSHA224HashIntfAvail;
-GetSHA224HashInst := TaurusTLSGetSHA224HashInst;
-IsSHA256HashIntfAvail := TaurusTLSIsSHA256HashIntfAvail;
-GetSHA256HashInst := TaurusTLSGetSHA256HashInst;
-IsSHA384HashIntfAvail := TaurusTLSIsSHA384HashIntfAvail;
-GetSHA384HashInst := TaurusTLSGetSHA384HashInst;
-IsSHA512HashIntfAvail := TaurusTLSIsSHA512HashIntfAvail;
-GetSHA512HashInst := TaurusTLSGetSHA512HashInst;
-UpdateHashInst := TaurusTLSUpdateHashInst;
-FinalHashInst := TaurusTLSFinalHashInst;
-IsHMACAvail := TaurusTLSIsHMACAvail;
-IsHMACMD5Avail := TaurusTLSIsHMACMD5Avail;
-GetHMACMD5HashInst := TaurusTLSGetHMACMD5Inst;
-IsHMACSHA1Avail := TaurusTLSIsHMACSHA1Avail;
-GetHMACSHA1HashInst := TaurusTLSGetHMACSHA1Inst;
-IsHMACSHA224Avail := TaurusTLSIsHMACSHA224Avail;
-GetHMACSHA224HashInst := TaurusTLSGetHMACSHA224Inst;
-IsHMACSHA256Avail := TaurusTLSIsHMACSHA256Avail;
-GetHMACSHA256HashInst := TaurusTLSGetHMACSHA256Inst;
-IsHMACSHA384Avail := TaurusTLSIsHMACSHA384Avail;
-GetHMACSHA384HashInst := TaurusTLSGetHMACSHA384Inst;
-IsHMACSHA512Avail := TaurusTLSIsHMACSHA512Avail;
-GetHMACSHA512HashInst := TaurusTLSGetHMACSHA512Inst;
-UpdateHMACInst := TaurusTLSUpdateHMACInst;
-FinalHMACInst := TaurusTLSFinalHMACInst;
+InstallFIPSHooks;
 
 end.
