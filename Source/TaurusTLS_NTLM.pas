@@ -201,11 +201,9 @@ end;
 
 initialization
 
-{$IFDEF GETURIHOST_SUPPORTED}
 IdFIPS.LoadNTLMLibrary := LoadTaurusTLS;
 IdFIPS.IsNTLMFuncsAvail := IsNTLMFuncsAvail;
 IdFIPS.NTLMGetLmChallengeResponse := SetupLanManagerPassword;
 IdFIPS.NTLMGetNtChallengeResponse := CreateNTPassword;
-{$ENDIF}
 
 end.
