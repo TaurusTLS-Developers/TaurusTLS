@@ -2632,6 +2632,54 @@ function OpenSSLModulesDir : String;  {$IFDEF USE_INLINE}inline; {$ENDIF}
 ///  </returns>
 function OpenSSLEnginesDir : String; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
+/// <summary>
+/// True if the OpenSSL 3 legacy provider was loaded by <see
+/// cref="LoadLegacyProvider" />.
+/// </summary>
+function IsLegacyProviderLoaded: Boolean;
+/// <summary>
+/// Loads the OpenSSL 3 legacy provider so that legacy algorithms such as MD4,
+/// DES, RC2, RC4 and Blowfish can be used. The OpenSSL library is loaded
+/// first if it is not already loaded.
+/// </summary>
+/// <param name="AModulePath">
+/// Optional. Either the full file name of the legacy provider module or a
+/// directory to search for it. If empty, the directory set in the <see
+/// cref="TaurusTLSLoader|IOpenSSLLoader.OpenSSLPath" /> property and the
+/// directory that libcrypto was loaded from are searched, followed by
+/// OpenSSL's own search (the <c>OPENSSL_MODULES</c> environment variable or
+/// the modules directory compiled into OpenSSL).
+/// </param>
+/// <returns>
+/// True if the legacy algorithms are available. This includes OpenSSL
+/// versions before 3.0, where they are built into libcrypto. False if the
+/// provider could not be loaded.
+/// </returns>
+/// <remarks>
+/// <para>
+/// A directory is searched, along with its "providers" and "ossl-modules"
+/// subdirectories, for a module named for the platform first and then for
+/// the generic name. On Windows the platform names are "legacy-x64.dll" and
+/// "legacy-arm64.dll" and the generic name is "legacy.dll". Renaming the
+/// 64-bit module lets 32-bit and 64-bit modules share a directory in the
+/// same way that "libcrypto-3.dll" and "libcrypto-3-x64.dll" do.
+/// </para>
+/// <para>
+/// The default provider remains available after the legacy provider is
+/// loaded. Legacy algorithms are not FIPS approved.
+/// </para>
+/// </remarks>
+/// <seealso href="https://docs.openssl.org/3.0/man7/OSSL_PROVIDER-legacy/">
+/// OSSL_PROVIDER-legacy
+/// </seealso>
+function LoadLegacyProvider(const AModulePath: string = ''): Boolean;
+/// <summary>
+/// Unloads the OpenSSL 3 legacy provider if it was loaded by <see
+/// cref="LoadLegacyProvider" />. It is also unloaded when <see
+/// cref="UnLoadOpenSSLLibrary" /> unloads the OpenSSL libraries.
+/// </summary>
+procedure UnloadLegacyProvider;
+
 implementation
 
 uses
@@ -2658,6 +2706,7 @@ uses
 {$ENDIF}
   IdURI,
   SyncObjs,
+  TaurusTLSConsts,
   TaurusTLSHeaders_asn1,
   TaurusTLSHeaders_bn,
   TaurusTLSHeaders_x509_vfy,
@@ -2668,6 +2717,7 @@ uses
   TaurusTLSHeaders_evp,
   TaurusTLSHeaders_bio,
   TaurusTLSHeaders_pem,
+  TaurusTLSHeaders_provider,
   TaurusTLSHeaders_stack,
   TaurusTLSHeaders_crypto,
   TaurusTLSHeaders_objects,
@@ -2695,6 +2745,8 @@ var
   LockVerifyCB: TIdCriticalSection = nil; //PALOFF - Created and freed objects
   Lock_SNI_CB: TIdCriticalSection = nil;  //PALOFF - Created and freed objects
   CallbackLockList: TIdCriticalSectionThreadList = nil;  //PALOFF - Created and freed objects
+  LegacyProvider: POSSL_PROVIDER = nil;
+  LegacyProviderUnloaderRegistered: Boolean = False;
 
 procedure GetStateVars(const SSLSocket: PSSL; const AWhere, Aret: TIdC_INT;
   out VTypeStr, VMsg: String);
@@ -3357,6 +3409,178 @@ begin
     SSLIsLoaded.Unlock;
   end;
 
+end;
+
+const
+  CLegacyProviderName = 'legacy';
+{$IFDEF WINDOWS}
+  CLegacyProviderFile = 'legacy.dll';
+  {$IFDEF CPU64}
+    {$IFDEF CPUARM64}
+  CLegacyProviderPlatformFile = 'legacy-arm64.dll';
+    {$ELSE}
+  CLegacyProviderPlatformFile = 'legacy-x64.dll';
+    {$ENDIF}
+  {$ELSE}
+  CLegacyProviderPlatformFile = '';
+  {$ENDIF}
+{$ELSE}
+  {$IFDEF OSX_OR_IOS}
+  CLegacyProviderFile = 'legacy.dylib';
+  {$ELSE}
+  CLegacyProviderFile = 'legacy.so';
+  {$ENDIF}
+  CLegacyProviderPlatformFile = '';
+{$ENDIF}
+
+procedure DoUnloadLegacyProvider;
+begin
+  if LegacyProvider <> nil then
+  begin
+    OSSL_PROVIDER_unload(LegacyProvider); //PALOFF - Functions called as procedures
+    LegacyProvider := nil;
+  end;
+end;
+
+function IsLegacyProviderLoaded: Boolean;
+begin
+  Result := LegacyProvider <> nil;
+end;
+
+function TryLoadLegacyProviderModule(const AModule: string): POSSL_PROVIDER;
+begin
+  // retain_fallbacks = 1 keeps the default provider available
+  Result := OSSL_PROVIDER_try_load(nil, PIdAnsiChar(AnsiString(AModule)), 1);
+  if Result = nil then
+    ERR_clear_error;
+end;
+
+function TryLoadLegacyProviderFromDir(const ADir: string): POSSL_PROVIDER;
+const
+  CSubDirs: array[0..2] of string = ('', 'providers', 'ossl-modules');
+var
+  LDir: string;
+  i: Integer;
+begin
+  Result := nil;
+  if ADir = '' then
+    Exit;
+
+  for i := Low(CSubDirs) to High(CSubDirs) do
+  begin
+    LDir := IncludeTrailingPathDelimiter(ADir);
+    if CSubDirs[i] <> '' then
+      LDir := LDir + CSubDirs[i] + PathDelim;
+
+    if (CLegacyProviderPlatformFile <> '') and
+       FileExists(LDir + CLegacyProviderPlatformFile) then
+    begin
+      Result := TryLoadLegacyProviderModule(LDir + CLegacyProviderPlatformFile);
+      if Result <> nil then
+        Exit;
+    end;
+
+    if FileExists(LDir + CLegacyProviderFile) then
+    begin
+      Result := TryLoadLegacyProviderModule(LDir + CLegacyProviderFile);
+      if Result <> nil then
+        Exit;
+    end;
+  end;
+end;
+
+{$IFDEF WINDOWS}
+function LibCryptoDir: string;
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+var
+  LVersions: TStringList;  //PALOFF - Created and freed objects
+  LHandle: HMODULE;
+  LFileName: array[0..MAX_PATH] of Char;
+  i: Integer;
+{$ENDIF}
+begin
+  Result := '';
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  LVersions := TStringList.Create;
+  try
+    LVersions.Delimiter := DirListDelimiter;
+    LVersions.StrictDelimiter := True;
+    LVersions.DelimitedText := GetOpenSSLLoader.SSLLibVersions;
+    for i := 0 to LVersions.Count - 1 do
+    begin
+      LHandle := GetModuleHandle(PChar(CLibCryptoBase + LibSuffix + LVersions[i]));
+      if (LHandle <> 0) and
+         (GetModuleFileName(LHandle, LFileName, Length(LFileName)) > 0) then
+      begin
+        Result := ExtractFilePath(LFileName);
+        Exit;
+      end;
+    end;
+  finally
+    LVersions.Free;
+  end;
+{$ENDIF}
+end;
+{$ENDIF}
+
+function LoadLegacyProvider(const AModulePath: string = ''): Boolean;
+begin
+  Result := LoadOpenSSLLibrary;
+  if not Result then
+    Exit;
+
+  SSLIsLoaded.Lock;
+  try
+    if LegacyProvider <> nil then
+      Exit;
+
+    // Before OpenSSL 3.0 the legacy algorithms are built into libcrypto.
+    if OpenSSL_version_num < $30000000 then
+      Exit;
+
+    if AModulePath <> '' then
+    begin
+      if DirectoryExists(AModulePath) then
+        LegacyProvider := TryLoadLegacyProviderFromDir(AModulePath)
+      else
+        LegacyProvider := TryLoadLegacyProviderModule(AModulePath);
+    end
+    else
+    begin
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+      LegacyProvider := TryLoadLegacyProviderFromDir(GetOpenSSLLoader.OpenSSLPath);
+{$ENDIF}
+{$IFDEF WINDOWS}
+      if LegacyProvider = nil then
+        LegacyProvider := TryLoadLegacyProviderFromDir(LibCryptoDir);
+{$ENDIF}
+      // OpenSSL searches OPENSSL_MODULES or its compiled in modules directory
+      if LegacyProvider = nil then
+        LegacyProvider := TryLoadLegacyProviderModule(CLegacyProviderName);
+    end;
+
+    Result := LegacyProvider <> nil;
+
+    // Registered here instead of being called from UnLoadOpenSSLLibrary so
+    // that programs that never load the legacy provider do not link it in.
+    if Result and not LegacyProviderUnloaderRegistered then
+    begin
+      Register_SSLUnloader(DoUnloadLegacyProvider);
+      LegacyProviderUnloaderRegistered := True;
+    end;
+  finally
+    SSLIsLoaded.Unlock;
+  end;
+end;
+
+procedure UnloadLegacyProvider;
+begin
+  SSLIsLoaded.Lock;
+  try
+    DoUnloadLegacyProvider;
+  finally
+    SSLIsLoaded.Unlock;
+  end;
 end;
 
 procedure UnLoadOpenSSLLibrary;
