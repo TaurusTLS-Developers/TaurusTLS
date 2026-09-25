@@ -30,6 +30,7 @@ uses
   TaurusTLSExceptionHandlers,
   TaurusTLSLoader,
   TaurusTLSHeaders_des,
+  TaurusTLSFIPS,
   SysUtils;
 
 function LoadTaurusTLS: Boolean;
@@ -199,13 +200,18 @@ begin
   Move(Lnt_resp[1], Result[0], SizeOf(Lnt_resp));
 end;
 
+procedure InstallNTLMHooks;
+begin
+  IdFIPS.LoadNTLMLibrary := LoadTaurusTLS;
+  IdFIPS.IsNTLMFuncsAvail := IsNTLMFuncsAvail;
+  IdFIPS.NTLMGetLmChallengeResponse := SetupLanManagerPassword;
+  IdFIPS.NTLMGetNtChallengeResponse := CreateNTPassword;
+end;
+
 initialization
 
 {$IFDEF GETURIHOST_SUPPORTED}
-IdFIPS.LoadNTLMLibrary := LoadTaurusTLS;
-IdFIPS.IsNTLMFuncsAvail := IsNTLMFuncsAvail;
-IdFIPS.NTLMGetLmChallengeResponse := SetupLanManagerPassword;
-IdFIPS.NTLMGetNtChallengeResponse := CreateNTPassword;
+RegisterFIPSHooksInstaller(InstallNTLMHooks);
 {$ENDIF}
 
 end.
