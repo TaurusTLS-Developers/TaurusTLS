@@ -57,7 +57,7 @@ var
   {$EXTERNALSYM OSSL_PARAM_construct_size_t}
   OSSL_PARAM_construct_size_t : function(const key : PIdAnsiChar; buf : PIdC_SIZET) : OSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_construct_time_t}
-  OSSL_PARAM_construct_time_t : function(const key : PIdAnsiChar; buf : PIdC_TIMET) : OSSL_PARAM; cdecl = nil;
+  OSSL_PARAM_construct_time_t : function(const key : PIdAnsiChar; buf : POSSL_TIMET) : OSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_construct_BN}
   OSSL_PARAM_construct_BN : function(const key : PIdAnsiChar; buf : PIdAnsiChar; bsize : TIdC_SIZET) : OSSL_PARAM; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_construct_double}
@@ -98,7 +98,7 @@ var
   {$EXTERNALSYM OSSL_PARAM_get_size_t}
   OSSL_PARAM_get_size_t : function(const p : POSSL_PARAM; _val : PIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_get_time_t}
-  OSSL_PARAM_get_time_t : function(const p : POSSL_PARAM; _val : PIdC_TIMET): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_get_time_t : function(const p : POSSL_PARAM; _val : POSSL_TIMET): TIdC_INT; cdecl = nil;
 
   {$EXTERNALSYM OSSL_PARAM_set_int}
   OSSL_PARAM_set_int : function(p : POSSL_PARAM; _val : TIdC_INT): TIdC_INT; cdecl = nil;
@@ -119,7 +119,7 @@ var
   {$EXTERNALSYM OSSL_PARAM_set_size_t}
   OSSL_PARAM_set_size_t : function(p : POSSL_PARAM; _val : TIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OSSL_PARAM_set_time_t}
-  OSSL_PARAM_set_time_t : function(p : POSSL_PARAM; _val : TIdC_TIMET): TIdC_INT; cdecl = nil;
+  OSSL_PARAM_set_time_t : function(p : POSSL_PARAM; _val : TOSSL_TIMET): TIdC_INT; cdecl = nil;
 
   {$EXTERNALSYM OSSL_PARAM_get_double}
   OSSL_PARAM_get_double : function(const p : POSSL_PARAM; _val : PIdC_DOUBLE) : TIdC_INT; cdecl = nil;
@@ -195,7 +195,7 @@ var
   {$EXTERNALSYM OSSL_PARAM_construct_size_t}
   function OSSL_PARAM_construct_size_t(const key : PIdAnsiChar; buf : PIdC_SIZET) : OSSL_PARAM cdecl; external CLibCrypto;
   {$EXTERNALSYM OSSL_PARAM_construct_time_t}
-  function OSSL_PARAM_construct_time_t(const key : PIdAnsiChar; buf : PIdC_TIMET) : OSSL_PARAM cdecl; external CLibCrypto;
+  function OSSL_PARAM_construct_time_t(const key : PIdAnsiChar; buf : POSSL_TIMET) : OSSL_PARAM cdecl; external CLibCrypto;
   {$EXTERNALSYM OSSL_PARAM_construct_BN}
   function OSSL_PARAM_construct_BN(const key : PIdAnsiChar; buf : PIdAnsiChar; bsize : TIdC_SIZET) : OSSL_PARAM cdecl; external CLibCrypto;
   {$EXTERNALSYM OSSL_PARAM_construct_double}
@@ -236,7 +236,7 @@ var
   {$EXTERNALSYM OSSL_PARAM_get_size_t}
   function OSSL_PARAM_get_size_t(const p : POSSL_PARAM; _val : PIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM OSSL_PARAM_get_time_t}
-  function OSSL_PARAM_get_time_t(const p : POSSL_PARAM; _val : PIdC_TIMET): TIdC_INT cdecl; external CLibCrypto;
+  function OSSL_PARAM_get_time_t(const p : POSSL_PARAM; _val : POSSL_TIMET): TIdC_INT cdecl; external CLibCrypto;
 
   {$EXTERNALSYM OSSL_PARAM_set_int}
   function OSSL_PARAM_set_int(p : POSSL_PARAM; _val : TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
@@ -257,7 +257,7 @@ var
   {$EXTERNALSYM OSSL_PARAM_set_size_t}
   function OSSL_PARAM_set_size_t(p : POSSL_PARAM; _val : TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM OSSL_PARAM_set_time_t}
-  function OSSL_PARAM_set_time_t(p : POSSL_PARAM; _val : TIdC_TIMET): TIdC_INT cdecl; external CLibCrypto;
+  function OSSL_PARAM_set_time_t(p : POSSL_PARAM; _val : TOSSL_TIMET): TIdC_INT cdecl; external CLibCrypto;
 
   {$EXTERNALSYM OSSL_PARAM_get_double}
   function OSSL_PARAM_get_double(const p : POSSL_PARAM; _val : PIdC_DOUBLE) : TIdC_INT cdecl; external CLibCrypto;
@@ -503,7 +503,7 @@ const
   begin
      ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_construct_size_t_procname);
   end;
-  function ERR_OSSL_PARAM_construct_time_t(const key : PIdAnsiChar; buf : PIdC_TIMET) : OSSL_PARAM; cdecl;
+  function ERR_OSSL_PARAM_construct_time_t(const key : PIdAnsiChar; buf : POSSL_TIMET) : OSSL_PARAM; cdecl;
   begin
      ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_construct_time_t_procname);
   end;
@@ -581,7 +581,7 @@ const
   begin
     ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_get_size_t_procname);
   end;
-  function ERR_OSSL_PARAM_get_time_t(const p : POSSL_PARAM; _val : PIdC_TIMET): TIdC_INT; cdecl;
+  function ERR_OSSL_PARAM_get_time_t(const p : POSSL_PARAM; _val : POSSL_TIMET): TIdC_INT; cdecl;
   begin
     ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_get_time_t_procname);
   end;
@@ -623,7 +623,7 @@ const
   begin
     ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_set_size_t_procname);
   end;
-  function ERR_OSSL_PARAM_set_time_t(p : POSSL_PARAM; _val : TIdC_TIMET): TIdC_INT; cdecl;
+  function ERR_OSSL_PARAM_set_time_t(p : POSSL_PARAM; _val : TOSSL_TIMET): TIdC_INT; cdecl;
   begin
     ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PARAM_set_time_t_procname);
   end;

@@ -1481,7 +1481,7 @@ var
   X509_NAME_ENTRY_dup: function (ne: PX509_NAME_ENTRY): PX509_NAME_ENTRY; cdecl = nil;
 
   {$EXTERNALSYM X509_cmp_time}
-  X509_cmp_time: function (const s: PASN1_TIME; t: PIdC_TIMET): TIdC_INT; cdecl = nil;
+  X509_cmp_time: function (const s: PASN1_TIME; t: POSSL_TIMET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM X509_cmp_current_time}
   X509_cmp_current_time: function (const s: PASN1_TIME): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM X509_cmp_timeframe}
@@ -1491,9 +1491,9 @@ var
   X509_check_certificate_times : function(const vpm : PX509_VERIFY_PARAM; X : PX509; _error : TIdC_INT) : TIdC_INT; cdecl = nil;
 
   {$EXTERNALSYM X509_time_adj}
-  X509_time_adj: function (s: PASN1_TIME; adj: TIdC_LONG; t: PIdC_TIMET): PASN1_TIME; cdecl = nil;
+  X509_time_adj: function (s: PASN1_TIME; adj: TIdC_LONG; t: POSSL_TIMET): PASN1_TIME; cdecl = nil;
   {$EXTERNALSYM X509_time_adj_ex}
-  X509_time_adj_ex: function (s: PASN1_TIME; offset_day: TIdC_INT; offset_sec: TIdC_LONG; t: PIdC_TIMET): PASN1_TIME; cdecl = nil;
+  X509_time_adj_ex: function (s: PASN1_TIME; offset_day: TIdC_INT; offset_sec: TIdC_LONG; t: POSSL_TIMET): PASN1_TIME; cdecl = nil;
   {$EXTERNALSYM X509_gmtime_adj}
   X509_gmtime_adj: function (s: PASN1_TIME; adj: TIdC_LONG): PASN1_TIME; cdecl = nil;
 
@@ -2493,7 +2493,7 @@ var
   function X509_NAME_ENTRY_dup(ne: PX509_NAME_ENTRY): PX509_NAME_ENTRY cdecl; external CLibCrypto;
 
   {$EXTERNALSYM X509_cmp_time}
-  function X509_cmp_time(const s: PASN1_TIME; t: PIdC_TIMET): TIdC_INT cdecl; external CLibCrypto;
+  function X509_cmp_time(const s: PASN1_TIME; t: POSSL_TIMET): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM X509_cmp_current_time}
   function X509_cmp_current_time(const s: PASN1_TIME): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM X509_cmp_timeframe}
@@ -2503,9 +2503,9 @@ var
   function X509_check_certificate_times(const vpm : PX509_VERIFY_PARAM; X : PX509; _error : TIdC_INT) : TIdC_INT cdecl; external CLibCrypto;
 
   {$EXTERNALSYM X509_time_adj}
-  function X509_time_adj(s: PASN1_TIME; adj: TIdC_LONG; t: PIdC_TIMET): PASN1_TIME cdecl; external CLibCrypto;
+  function X509_time_adj(s: PASN1_TIME; adj: TIdC_LONG; t: POSSL_TIMET): PASN1_TIME cdecl; external CLibCrypto;
   {$EXTERNALSYM X509_time_adj_ex}
-  function X509_time_adj_ex(s: PASN1_TIME; offset_day: TIdC_INT; offset_sec: TIdC_LONG; t: PIdC_TIMET): PASN1_TIME cdecl; external CLibCrypto;
+  function X509_time_adj_ex(s: PASN1_TIME; offset_day: TIdC_INT; offset_sec: TIdC_LONG; t: POSSL_TIMET): PASN1_TIME cdecl; external CLibCrypto;
   {$EXTERNALSYM X509_gmtime_adj}
   function X509_gmtime_adj(s: PASN1_TIME; adj: TIdC_LONG): PASN1_TIME cdecl; external CLibCrypto;
 
@@ -4484,7 +4484,7 @@ end;
 
 
 
-function  ERR_X509_cmp_time(const s: PASN1_TIME; t: PIdC_TIMET): TIdC_INT; cdecl;
+function  ERR_X509_cmp_time(const s: PASN1_TIME; t: POSSL_TIMET): TIdC_INT; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_cmp_time_procname);
 end;
@@ -4505,13 +4505,13 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_check_certificate_times_procname);
 end;
 
-function  ERR_X509_time_adj(s: PASN1_TIME; adj: TIdC_LONG; t: PIdC_TIMET): PASN1_TIME;  cdecl;
+function  ERR_X509_time_adj(s: PASN1_TIME; adj: TIdC_LONG; t: POSSL_TIMET): PASN1_TIME;  cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_time_adj_procname);
 end;
 
 
-function  ERR_X509_time_adj_ex(s: PASN1_TIME; offset_day: TIdC_INT; offset_sec: TIdC_LONG; t: PIdC_TIMET): PASN1_TIME;  cdecl;
+function  ERR_X509_time_adj_ex(s: PASN1_TIME; offset_day: TIdC_INT; offset_sec: TIdC_LONG; t: POSSL_TIMET): PASN1_TIME;  cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509_time_adj_ex_procname);
 end;

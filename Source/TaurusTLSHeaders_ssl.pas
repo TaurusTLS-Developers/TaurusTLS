@@ -2464,7 +2464,7 @@ var
   SSL_CTX_set1_cert_store: procedure (v1: PSSL_CTX; v2: PX509_STORE); cdecl = nil; {introduced 1.1.0}
 
   {$EXTERNALSYM SSL_CTX_flush_sessions_ex}
-  SSL_CTX_flush_sessions_ex: procedure(ctx : PSSL_CTX; tm : TIdC_TIMET); cdecl = nil; {introduced 3.4.0}
+  SSL_CTX_flush_sessions_ex: procedure(ctx : PSSL_CTX; tm : TOSSL_TIMET); cdecl = nil; {introduced 3.4.0}
   {$EXTERNALSYM SSL_CTX_flush_sessions}
   SSL_CTX_flush_sessions: procedure (ctx: PSSL_CTX; tm: TIdC_LONG); cdecl = nil;
 
@@ -2616,9 +2616,9 @@ var
   {$EXTERNALSYM SSL_rstate_string_long}
   SSL_rstate_string_long: function (const s: PSSL): PIdAnsiChar; cdecl = nil;
   {$EXTERNALSYM SSL_SESSION_get_time_ex}
-  SSL_SESSION_get_time_ex: function (const s : PSSL_SESSION) : TIdC_TIMET; cdecl = nil; {introduced 3.3.0}
+  SSL_SESSION_get_time_ex: function (const s : PSSL_SESSION) : TOSSL_TIMET; cdecl = nil; {introduced 3.3.0}
   {$EXTERNALSYM SSL_SESSION_set_time_ex}
-  SSL_SESSION_set_time_ex: function(s : PSSL_SESSION; t : TIdC_TIMET) : TIdC_TIMET; cdecl = nil; {introduced 3.3.0}
+  SSL_SESSION_set_time_ex: function(s : PSSL_SESSION; t : TOSSL_TIMET) : TOSSL_TIMET; cdecl = nil; {introduced 3.3.0}
   {$EXTERNALSYM SSL_SESSION_get_time}
   SSL_SESSION_get_time: function (const s: PSSL_SESSION): TIdC_LONG; cdecl = nil;
   {$EXTERNALSYM SSL_SESSION_set_time}
@@ -3888,7 +3888,7 @@ var
   procedure SSL_CTX_set1_cert_store(v1: PSSL_CTX; v2: PX509_STORE) cdecl; external CLibSSL; {introduced 1.1.0}
 
   {$EXTERNALSYM SSL_CTX_flush_sessions_ex}
-  procedure SSL_CTX_flush_sessions_ex(ctx : PSSL_CTX; tm : TIdC_TIMET); cdecl; external CLibSSL; {introduced 3.4.0}
+  procedure SSL_CTX_flush_sessions_ex(ctx : PSSL_CTX; tm : TOSSL_TIMET); cdecl; external CLibSSL; {introduced 3.4.0}
   {$EXTERNALSYM SSL_CTX_flush_sessions}
   procedure SSL_CTX_flush_sessions(ctx: PSSL_CTX; tm: TIdC_LONG) cdecl; external CLibSSL;
 
@@ -4038,9 +4038,9 @@ var
   {$EXTERNALSYM SSL_rstate_string_long}
   function SSL_rstate_string_long(const s: PSSL): PIdAnsiChar cdecl; external CLibSSL;
   {$EXTERNALSYM SSL_SESSION_get_time_ex}
-  function SSL_SESSION_get_time_ex(const s : PSSL_SESSION) : TIdC_TIMET cdecl; external CLibSSL;
+  function SSL_SESSION_get_time_ex(const s : PSSL_SESSION) : TOSSL_TIMET cdecl; external CLibSSL;
   {$EXTERNALSYM SSL_SESSION_set_time_ex}
-  function SSL_SESSION_set_time_ex(s : PSSL_SESSION; t : TIdC_TIMET) : TIdC_TIMET cdecl; external CLibSSL;
+  function SSL_SESSION_set_time_ex(s : PSSL_SESSION; t : TOSSL_TIMET) : TOSSL_TIMET cdecl; external CLibSSL;
   {$EXTERNALSYM SSL_SESSION_get_time}
   function SSL_SESSION_get_time(const s: PSSL_SESSION): TIdC_LONG cdecl; external CLibSSL;
   {$EXTERNALSYM SSL_SESSION_set_time}
@@ -8868,7 +8868,7 @@ begin
 end;
 
  {introduced 3.4.0}
-procedure ERR_SSL_CTX_flush_sessions_ex(ctx : PSSL_CTX; tm : TIdC_TIMET); cdecl;
+procedure ERR_SSL_CTX_flush_sessions_ex(ctx : PSSL_CTX; tm : TOSSL_TIMET); cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SSL_CTX_flush_sessions_ex_procname);
 end;
@@ -9284,12 +9284,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SSL_rstate_string_long_procname);
 end;
 
-function ERR_SSL_SESSION_get_time_ex(const s : PSSL_SESSION) : TIdC_TIMET; cdecl;
+function ERR_SSL_SESSION_get_time_ex(const s : PSSL_SESSION) : TOSSL_TIMET; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SSL_SESSION_get_time_ex_procname);
 end;
 
-function ERR_SSL_SESSION_set_time_ex(s : PSSL_SESSION; t : TIdC_TIMET) : TIdC_TIMET; cdecl;
+function ERR_SSL_SESSION_set_time_ex(s : PSSL_SESSION; t : TOSSL_TIMET) : TOSSL_TIMET; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(SSL_SESSION_set_time_ex_procname);
 end;

@@ -118,7 +118,7 @@ var
   {$EXTERNALSYM OSSL_ECHSTORE_read_echconfiglist}
   OSSL_ECHSTORE_read_echconfiglist : function(es : POSSL_ECHSTORE; _in : PBIO) : TIdC_INT ; cdecl = nil;
   {$EXTERNALSYM OSSL_ECHSTORE_get1_info}
-  OSSL_ECHSTORE_get1_info : function(es : POSSL_ECHSTORE; index : TIdC_INT; loaded_secs : PIdC_TIMET;
+  OSSL_ECHSTORE_get1_info : function(es : POSSL_ECHSTORE; index : TIdC_INT; loaded_secs : POSSL_TIMET;
     public_name, echconfig : PPIdAnsiChar;
     has_private, for_retry : PIdC_INT) : TIdC_INT ; cdecl = nil;
   {$EXTERNALSYM OSSL_ECHSTORE_downselect}
@@ -133,7 +133,7 @@ var
   {$EXTERNALSYM OSSL_ECHSTORE_num_keys}
   OSSL_ECHSTORE_num_keys : function(es : POSSL_ECHSTORE; numkeys : PIdC_INT) : TIdC_INT ; cdecl = nil;
   {$EXTERNALSYM OSSL_ECHSTORE_flush_keys}
-  OSSL_ECHSTORE_flush_keys : function(es : POSSL_ECHSTORE; age : TIdC_TIMET) : TIdC_INT ; cdecl = nil;
+  OSSL_ECHSTORE_flush_keys : function(es : POSSL_ECHSTORE; age : TOSSL_TIMET) : TIdC_INT ; cdecl = nil;
 
 {*
  * APIs relating OSSL_ECHSTORE to SSL/SSL_CTX
@@ -199,7 +199,7 @@ var
   {$EXTERNALSYM OSSL_ECHSTORE_read_echconfiglist}
   function OSSL_ECHSTORE_read_echconfiglist(es : POSSL_ECHSTORE; _in : PBIO) : TIdC_INT cdecl; external CLibSSL;
   {$EXTERNALSYM OSSL_ECHSTORE_get1_info}
-  function OSSL_ECHSTORE_get1_info(es : POSSL_ECHSTORE; index : TIdC_INT; loaded_secs : PIdC_TIMET;
+  function OSSL_ECHSTORE_get1_info(es : POSSL_ECHSTORE; index : TIdC_INT; loaded_secs : POSSL_TIMET;
     public_name, echconfig : PPIdAnsiChar;
     has_private, for_retry : PIdC_INT) : TIdC_INT cdecl; external CLibSSL;
   {$EXTERNALSYM OSSL_ECHSTORE_downselect}
@@ -214,7 +214,7 @@ var
   {$EXTERNALSYM OSSL_ECHSTORE_num_keys}
   function OSSL_ECHSTORE_num_keys(es : POSSL_ECHSTORE; numkeys : PIdC_INT) : TIdC_INT cdecl; external CLibSSL;
   {$EXTERNALSYM OSSL_ECHSTORE_flush_keys}
-  function OSSL_ECHSTORE_flush_keys(es : POSSL_ECHSTORE; age : TIdC_TIMET) : TIdC_INT  cdecl; external CLibSSL;
+  function OSSL_ECHSTORE_flush_keys(es : POSSL_ECHSTORE; age : TOSSL_TIMET) : TIdC_INT  cdecl; external CLibSSL;
 
 {*
  * APIs relating OSSL_ECHSTORE to SSL/SSL_CTX
@@ -365,7 +365,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ECHSTORE_read_echconfiglist_procname);
 end;
 
-function ERR_OSSL_ECHSTORE_get1_info(es : POSSL_ECHSTORE; index : TIdC_INT; loaded_secs : PIdC_TIMET;
+function ERR_OSSL_ECHSTORE_get1_info(es : POSSL_ECHSTORE; index : TIdC_INT; loaded_secs : POSSL_TIMET;
     public_name, echconfig : PPIdAnsiChar;
     has_private, for_retry : PIdC_INT) : TIdC_INT cdecl;
 begin
@@ -398,7 +398,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ECHSTORE_num_keys_procname);
 end;
 
-function ERR_OSSL_ECHSTORE_flush_keys(es : POSSL_ECHSTORE; age : TIdC_TIMET) : TIdC_INT  cdecl;
+function ERR_OSSL_ECHSTORE_flush_keys(es : POSSL_ECHSTORE; age : TOSSL_TIMET) : TIdC_INT  cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_ECHSTORE_flush_keys_procname);
 end;
