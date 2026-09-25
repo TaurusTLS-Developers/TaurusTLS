@@ -732,7 +732,7 @@ type
     function GetX509: PX509;
   public
     /// <summary>
-    /// Creates a new TTaurus​TLSX509File object with Collection as the owner.
+    ///   Creates a new TTaurus​TLSX509File object with Collection as the owner.
     /// </summary>
     constructor Create(Collection: TCollection); override;
     /// <summary>
@@ -782,11 +782,11 @@ type
   public
 
     /// <summary>
-    /// Creates a new TTaurus​TLSX509Files object with AOwner as the owner
-    /// of the collection.
+    ///   Creates a new TTaurus​TLSX509Files object with AOwner as the owner of
+    ///   the collection.
     /// </summary>
     /// <param name="AOwner">
-    /// The owner of the collection being created.
+    ///   The owner of the collection being created.
     /// </param>
     constructor Create(AOwner: TPersistent);
 
@@ -1082,7 +1082,7 @@ type
   public
 
     /// <summary>
-    /// Creates a new instance of TTaurusTLSContext.
+    ///   Creates a new instance of TTaurusTLSContext.
     /// </summary>
     constructor Create;
     /// <summary>
@@ -1337,7 +1337,7 @@ type
    sslUnrecoverableError);
   { TTaurusTLSSocket }
   /// <summary>
-  /// Properties and methods for dealing with a TLS Socket.
+  ///   Properties and methods for dealing with a TLS Socket.
   /// </summary>
   TTaurusTLSSocket = class(TObject)
 {$IFDEF SIGPIPE_MASK}
@@ -1384,7 +1384,7 @@ type
 { BUGFIX: Fixes issue #217 and #240 }
     /// <summary>
     /// Initialized the <c>FSigSet</c> variable once on application starts.
-    /// </summary?
+    /// </summary>
     class constructor Create;
 {$ENDIF}
     /// <summary>
@@ -6030,3 +6030,4 @@ UnLoadOpenSSLLibrary;
 FreeAndNil(SSLIsLoaded);
 
 end.
+

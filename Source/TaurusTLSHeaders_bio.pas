@@ -988,7 +988,7 @@ var
   {$EXTERNALSYM BIO_set_send_flags}
   BIO_set_send_flags: function(b : PBIO; flags : TIdC_INT): TIdC_LONG; cdecl = nil;  {introduced in OpenSSL 4.0.0}
   {$EXTERNALSYM BIO_wait}
-  BIO_wait : function(bio_ : PBIO; max_time : TIdC_TIMET; nap_milliseconds : TIdC_UINT) : TIdC_INT; cdecl = nil;
+  BIO_wait : function(bio_ : PBIO; max_time : TOSSL_TIMET; nap_milliseconds : TIdC_UINT) : TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_do_connect_retry}
   BIO_do_connect_retry : function(bio_ : PBIO; timeout, nap_milliseconds : TIdC_INT) : TIdC_INT; cdecl = nil;
 
@@ -1043,7 +1043,7 @@ var
   {$EXTERNALSYM BIO_fd_non_fatal_error}
   BIO_fd_non_fatal_error: function (_error: TIdC_INT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_socket_wait}
-  BIO_socket_wait : function(fd : TIdC_INT; for_read : TIdC_INT; max_time : TIdC_TIMET) : TIdC_INT; cdecl = nil;
+  BIO_socket_wait : function(fd : TIdC_INT; for_read : TIdC_INT; max_time : TOSSL_TIMET) : TIdC_INT; cdecl = nil;
   {$EXTERNALSYM BIO_socket_ready}
   BIO_socket_ready : function(fd : TIdC_INT; for_read : TIdC_INT) : TIdC_INT; cdecl = nil;
 //  function BIO_dump_cb(
@@ -1516,7 +1516,7 @@ var
   {$EXTERNALSYM BIO_set_send_flags}
   function BIO_set_send_flags(b : PBIO; flags : TIdC_INT): TIdC_LONG cdecl; external CLibCrypto; {introduced 4.0.0}
   {$EXTERNALSYM BIO_wait}
-  function BIO_wait(bio_ : PBIO; max_time : TIdC_TIMET; nap_milliseconds : TIdC_UINT) : TIdC_INT; cdecl; external CLibCrypto;
+  function BIO_wait(bio_ : PBIO; max_time : TOSSL_TIMET; nap_milliseconds : TIdC_UINT) : TIdC_INT; cdecl; external CLibCrypto;
   {$EXTERNALSYM BIO_do_connect_retry}
   function BIO_do_connect_retry(bio_ : PBIO; timeout, nap_milliseconds : TIdC_INT) : TIdC_INT; cdecl; external CLibCrypto;
 
@@ -1548,7 +1548,7 @@ var
   {$EXTERNALSYM BIO_dgram_non_fatal_error}
   function BIO_dgram_non_fatal_error(_error: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM BIO_socket_wait}
-  function BIO_socket_wait(fd : TIdC_INT; for_read : TIdC_INT; max_time : TIdC_TIMET) : TIdC_INT cdecl; external CLibCrypto;
+  function BIO_socket_wait(fd : TIdC_INT; for_read : TIdC_INT; max_time : TOSSL_TIMET) : TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM BIO_socket_ready}
   function BIO_socket_ready(fd : TIdC_INT; for_read : TIdC_INT) : TIdC_INT cdecl; external CLibCrypto;
 
@@ -3108,7 +3108,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_set_send_flags_procname);
 end;
 
-function ERR_BIO_wait(bio_ : PBIO; max_time : TIdC_TIMET; nap_milliseconds : TIdC_UINT) : TIdC_INT; cdecl;
+function ERR_BIO_wait(bio_ : PBIO; max_time : TOSSL_TIMET; nap_milliseconds : TIdC_UINT) : TIdC_INT; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_wait_procname);
 end;
@@ -3237,7 +3237,7 @@ begin
    ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_err_is_non_fatal_procname);
 end;
 
-function ERR_BIO_socket_wait(fd : TIdC_INT; for_read : TIdC_INT; max_time : TIdC_TIMET) : TIdC_INT; cdecl;
+function ERR_BIO_socket_wait(fd : TIdC_INT; for_read : TIdC_INT; max_time : TOSSL_TIMET) : TIdC_INT; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(BIO_socket_wait_procname);
 end;

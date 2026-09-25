@@ -161,31 +161,42 @@ type
   {$ENDIF}
 {$IFEND}
 
- // Modern LibC declares time_t type as 64bit integer on all platforms.
-{$IF NOT DECLARED(TIdC_TIMET) or (SizeOf(TIdC_TIMET) < 8)}
-  {$IFDEF HAS_TIME_T}
-  {$EXTERNALSYM TIdC_TIMET}
-  TIdC_TIMET = time_t;
+
+// Select the platform-specific size of the C/Clang `time_t` type.
+//
+// TaurusTLS originally used Indy's TIdC_TIMET declaration, but its size does
+// not match the C/Clang `time_t` ABI on some supported platforms, including
+// 32-bit Windows, macOS and iOS.
+//
+// Using a type with the wrong size for an OpenSSL routine that accepts or
+// returns `time_t` can cause an ABI mismatch, resulting in value truncation,
+// incorrect parameter/return-value handling, or memory corruption.
+//
+// TOSSL_TIMET explicitly represents the C/Clang `time_t` type used by OpenSSL
+// and replaces TIdC_TIMET in TaurusTLS APIs and OpenSSL declarations.
+//
+// On 32-bit Linux, where `time_t` may be either 32 or 64 bits depending on
+// the C library ABI, the OSSL_TIMET_64BIT conditional compilation flag can
+// be used to select a 64-bit `time_t` when TaurusTLS is compiled for a
+// 64-bit-time Linux environment.
+  TOSSL_TIMET_32 = Int32;
+  TOSSL_TIMET_64 = Int64;
+
+{$IF Defined(CPU64)}
+  {$EXTERNALSYM TOSSL_TIMET}
+  TOSSL_TIMET = TOSSL_TIMET_64;
+{$ELSE}
+  {$IF (Defined(Android) OR Defined(Linux)) AND (NOT Defined(OSSL_TIMET_64BIT))}
+  {$EXTERNALSYM TOSSL_TIMET}
+  TOSSL_TIMET = TOSSL_TIMET_32;
   {$ELSE}
-    {$IFDEF HAS_PtrInt}
-  {$EXTERNALSYM TIdC_TIMET}
-  TIdC_TIMET = PtrInt;
-    {$ELSE}
-  {$EXTERNALSYM TIdC_TIMET}
-  TIdC_TIMET = TIdC_INT64;
-  PIdC_TIMET = ^TIdC_TIMET;
-    {$ENDIF}
-  {$ENDIF}
+  {$EXTERNALSYM TOSSL_TIMET}
+  TOSSL_TIMET = TOSSL_TIMET_64;
+  {$IFEND}
 {$IFEND}
-{$IF NOT DECLARED(PIdC_TIMET)}
-  {$IFDEF HAS_PTIME_T}
-  {$EXTERNALSYM PIdC_TIMET}
-  PIdC_TIMET = ptime_t;
-  {$ELSE}
-  {$EXTERNALSYM PIdC_TIMET}
-  PIdC_TIMET = ^TIdC_TIMET;
-  {$ENDIF}
-{$IFEND}
+  {$EXTERNALSYM POSSL_TIMET}
+  POSSL_TIMET = ^TOSSL_TIMET;
+
 {$IF NOT DECLARED(PByte)}
   {$EXTERNALSYM PByte}
   PByte = ^Byte;

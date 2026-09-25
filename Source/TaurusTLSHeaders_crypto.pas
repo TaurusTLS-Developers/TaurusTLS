@@ -529,7 +529,7 @@ var
   OPENSSL_init: procedure ; cdecl = nil;
 
   {$EXTERNALSYM OPENSSL_gmtime}
-  OPENSSL_gmtime : function(timer : TIdC_TIMET; Result_ : PIdC_TM) : PIdC_TM; cdecl = nil;
+  OPENSSL_gmtime : function(timer : TOSSL_TIMET; Result_ : PIdC_TM) : PIdC_TM; cdecl = nil;
   {$EXTERNALSYM OPENSSL_gmtime_adj}
   OPENSSL_gmtime_adj : function(tm : PIdC_TM; offset_day : TIdC_INT; offset_sec : TIdC_LONG) : TIdC_INT; cdecl = nil;
   {$EXTERNALSYM OPENSSL_gmtime_diff}
@@ -818,7 +818,7 @@ var
   procedure OPENSSL_init cdecl; external CLibCrypto;
 
   {$EXTERNALSYM OPENSSL_gmtime}
-  function OPENSSL_gmtime(timer : TIdC_TIMET; Result_ : PIdC_TM) : PIdC_TM cdecl; external CLibCrypto;
+  function OPENSSL_gmtime(timer : TOSSL_TIMET; Result_ : PIdC_TM) : PIdC_TM cdecl; external CLibCrypto;
   {$EXTERNALSYM OPENSSL_gmtime_adj}
   function OPENSSL_gmtime_adj(tm : PIdC_TM; offset_day : TIdC_INT; offset_sec : TIdC_LONG) : TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM OPENSSL_gmtime_diff}
@@ -2031,7 +2031,7 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_init_procname);
 end;
 
-function ERR_OPENSSL_gmtime(timer : TIdC_TIMET; Result_ : PIdC_TM) : PIdC_TM; cdecl;
+function ERR_OPENSSL_gmtime(timer : TOSSL_TIMET; Result_ : PIdC_TM) : PIdC_TM; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OPENSSL_gmtime_procname);
 end;
@@ -2047,7 +2047,7 @@ begin
 end;
 
 
-  // struct tm *OPENSSL_gmtime(const TIdC_TIMET *timer, struct tm *result);
+  // struct tm *OPENSSL_gmtime(const TOSSL_TIMET *timer, struct tm *result);
 
   //function OPENSSL_gmtime_adj(struct tm *tm, int offset_day, long offset_sec): TIdC_INT;
   //function OPENSSL_gmtime_diff(int *pday, int *psec, const struct tm *from, const struct tm *to): TIdC_INT;

@@ -693,20 +693,20 @@ var
   {$EXTERNALSYM ASN1_UTCTIME_check}
   ASN1_UTCTIME_check: function (const a: PASN1_UTCTIME): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM ASN1_UTCTIME_set}
-  ASN1_UTCTIME_set: function (s: PASN1_UTCTIME; t: TIdC_TIMET): PASN1_UTCTIME; cdecl = nil;
+  ASN1_UTCTIME_set: function (s: PASN1_UTCTIME; t: TOSSL_TIMET): PASN1_UTCTIME; cdecl = nil;
   {$EXTERNALSYM ASN1_UTCTIME_adj}
-  ASN1_UTCTIME_adj: function (s: PASN1_UTCTIME; t: TIdC_TIMET; offset_day: TIdC_INT; offset_sec: TIdC_LONG): PASN1_UTCTIME; cdecl = nil;
+  ASN1_UTCTIME_adj: function (s: PASN1_UTCTIME; t: TOSSL_TIMET; offset_day: TIdC_INT; offset_sec: TIdC_LONG): PASN1_UTCTIME; cdecl = nil;
   {$EXTERNALSYM ASN1_UTCTIME_set_string}
   ASN1_UTCTIME_set_string: function (s: PASN1_UTCTIME; const _str: PIdAnsiChar): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM ASN1_UTCTIME_cmp_time_t}
-  ASN1_UTCTIME_cmp_time_t: function (const s: PASN1_UTCTIME; t: TIdC_TIMET): TIdC_INT; cdecl = nil;
+  ASN1_UTCTIME_cmp_time_t: function (const s: PASN1_UTCTIME; t: TOSSL_TIMET): TIdC_INT; cdecl = nil;
 
   {$EXTERNALSYM ASN1_GENERALIZEDTIME_check}
   ASN1_GENERALIZEDTIME_check: function (const a: PASN1_GENERALIZEDTIME): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM ASN1_GENERALIZEDTIME_set}
-  ASN1_GENERALIZEDTIME_set: function (s: PASN1_GENERALIZEDTIME; t: TIdC_TIMET): PASN1_GENERALIZEDTIME; cdecl = nil;
+  ASN1_GENERALIZEDTIME_set: function (s: PASN1_GENERALIZEDTIME; t: TOSSL_TIMET): PASN1_GENERALIZEDTIME; cdecl = nil;
   {$EXTERNALSYM ASN1_GENERALIZEDTIME_adj}
-  ASN1_GENERALIZEDTIME_adj: function (s: PASN1_GENERALIZEDTIME; t: TIdC_TIMET; offset_day: TIdC_INT; offset_sec: TIdC_LONG): PASN1_GENERALIZEDTIME; cdecl = nil;
+  ASN1_GENERALIZEDTIME_adj: function (s: PASN1_GENERALIZEDTIME; t: TOSSL_TIMET; offset_day: TIdC_INT; offset_sec: TIdC_LONG): PASN1_GENERALIZEDTIME; cdecl = nil;
   {$EXTERNALSYM ASN1_GENERALIZEDTIME_set_string}
   ASN1_GENERALIZEDTIME_set_string: function (s: pASN1_GENERALIZEDTIME; const _str: PIdAnsiChar): TIdC_INT; cdecl = nil;
 
@@ -776,9 +776,9 @@ var
   // DECLARE_ASN1_ITEM(ASN1_OCTET_STRING_NDEF)
 
   {$EXTERNALSYM ASN1_TIME_set}
-  ASN1_TIME_set: function (s: PASN1_TIME; t: TIdC_TIMET): PASN1_TIME; cdecl = nil;
+  ASN1_TIME_set: function (s: PASN1_TIME; t: TOSSL_TIMET): PASN1_TIME; cdecl = nil;
   {$EXTERNALSYM ASN1_TIME_adj}
-  ASN1_TIME_adj: function (s: PASN1_TIME; t: TIdC_TIMET; offset_day: TIdC_INT; offset_sec: TIdC_LONG): PASN1_TIME; cdecl = nil;
+  ASN1_TIME_adj: function (s: PASN1_TIME; t: TOSSL_TIMET; offset_day: TIdC_INT; offset_sec: TIdC_LONG): PASN1_TIME; cdecl = nil;
   {$EXTERNALSYM ASN1_TIME_check}
   ASN1_TIME_check: function (const t: PASN1_TIME): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM ASN1_TIME_to_generalizedtime}
@@ -792,7 +792,7 @@ var
   {$EXTERNALSYM ASN1_TIME_normalize}
   ASN1_TIME_normalize: function (s: PASN1_TIME): TIdC_INT; cdecl = nil; {introduced 1.1.0}
   {$EXTERNALSYM ASN1_TIME_cmp_time_t}
-  ASN1_TIME_cmp_time_t: function (const s: PASN1_TIME; t: TIdC_TIMET): TIdC_INT; cdecl = nil; {introduced 1.1.0}
+  ASN1_TIME_cmp_time_t: function (const s: PASN1_TIME; t: TOSSL_TIMET): TIdC_INT; cdecl = nil; {introduced 1.1.0}
   {$EXTERNALSYM ASN1_TIME_compare}
   ASN1_TIME_compare: function (const a: PASN1_TIME; const b: PASN1_TIME): TIdC_INT; cdecl = nil; {introduced 1.1.0}
 
@@ -1220,20 +1220,20 @@ var
   {$EXTERNALSYM ASN1_UTCTIME_check}
   function ASN1_UTCTIME_check(const a: PASN1_UTCTIME): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM ASN1_UTCTIME_set}
-  function ASN1_UTCTIME_set(s: PASN1_UTCTIME; t: TIdC_TIMET): PASN1_UTCTIME cdecl; external CLibCrypto;
+  function ASN1_UTCTIME_set(s: PASN1_UTCTIME; t: TOSSL_TIMET): PASN1_UTCTIME cdecl; external CLibCrypto;
   {$EXTERNALSYM ASN1_UTCTIME_adj}
-  function ASN1_UTCTIME_adj(s: PASN1_UTCTIME; t: TIdC_TIMET; offset_day: TIdC_INT; offset_sec: TIdC_LONG): PASN1_UTCTIME cdecl; external CLibCrypto;
+  function ASN1_UTCTIME_adj(s: PASN1_UTCTIME; t: TOSSL_TIMET; offset_day: TIdC_INT; offset_sec: TIdC_LONG): PASN1_UTCTIME cdecl; external CLibCrypto;
   {$EXTERNALSYM ASN1_UTCTIME_set_string}
   function ASN1_UTCTIME_set_string(s: PASN1_UTCTIME; const _str: PIdAnsiChar): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM ASN1_UTCTIME_cmp_time_t}
-  function ASN1_UTCTIME_cmp_time_t(const s: PASN1_UTCTIME; t: TIdC_TIMET): TIdC_INT cdecl; external CLibCrypto;
+  function ASN1_UTCTIME_cmp_time_t(const s: PASN1_UTCTIME; t: TOSSL_TIMET): TIdC_INT cdecl; external CLibCrypto;
 
   {$EXTERNALSYM ASN1_GENERALIZEDTIME_check}
   function ASN1_GENERALIZEDTIME_check(const a: PASN1_GENERALIZEDTIME): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM ASN1_GENERALIZEDTIME_set}
-  function ASN1_GENERALIZEDTIME_set(s: PASN1_GENERALIZEDTIME; t: TIdC_TIMET): PASN1_GENERALIZEDTIME cdecl; external CLibCrypto;
+  function ASN1_GENERALIZEDTIME_set(s: PASN1_GENERALIZEDTIME; t: TOSSL_TIMET): PASN1_GENERALIZEDTIME cdecl; external CLibCrypto;
   {$EXTERNALSYM ASN1_GENERALIZEDTIME_adj}
-  function ASN1_GENERALIZEDTIME_adj(s: PASN1_GENERALIZEDTIME; t: TIdC_TIMET; offset_day: TIdC_INT; offset_sec: TIdC_LONG): PASN1_GENERALIZEDTIME cdecl; external CLibCrypto;
+  function ASN1_GENERALIZEDTIME_adj(s: PASN1_GENERALIZEDTIME; t: TOSSL_TIMET; offset_day: TIdC_INT; offset_sec: TIdC_LONG): PASN1_GENERALIZEDTIME cdecl; external CLibCrypto;
   {$EXTERNALSYM ASN1_GENERALIZEDTIME_set_string}
   function ASN1_GENERALIZEDTIME_set_string(s: pASN1_GENERALIZEDTIME; const _str: PIdAnsiChar): TIdC_INT cdecl; external CLibCrypto;
 
@@ -1304,9 +1304,9 @@ var
   // DECLARE_ASN1_ITEM(ASN1_OCTET_STRING_NDEF)
 
   {$EXTERNALSYM ASN1_TIME_set}
-  function ASN1_TIME_set(s: PASN1_TIME; t: TIdC_TIMET): PASN1_TIME cdecl; external CLibCrypto;
+  function ASN1_TIME_set(s: PASN1_TIME; t: TOSSL_TIMET): PASN1_TIME cdecl; external CLibCrypto;
   {$EXTERNALSYM ASN1_TIME_adj}
-  function ASN1_TIME_adj(s: PASN1_TIME; t: TIdC_TIMET; offset_day: TIdC_INT; offset_sec: TIdC_LONG): PASN1_TIME cdecl; external CLibCrypto;
+  function ASN1_TIME_adj(s: PASN1_TIME; t: TOSSL_TIMET; offset_day: TIdC_INT; offset_sec: TIdC_LONG): PASN1_TIME cdecl; external CLibCrypto;
   {$EXTERNALSYM ASN1_TIME_check}
   function ASN1_TIME_check(const t: PASN1_TIME): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM ASN1_TIME_to_generalizedtime}
@@ -1320,7 +1320,7 @@ var
   {$EXTERNALSYM ASN1_TIME_normalize}
   function ASN1_TIME_normalize(s: PASN1_TIME): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
   {$EXTERNALSYM ASN1_TIME_cmp_time_t}
-  function ASN1_TIME_cmp_time_t(const s: PASN1_TIME; t: TIdC_TIMET): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
+  function ASN1_TIME_cmp_time_t(const s: PASN1_TIME; t: TOSSL_TIMET): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
   {$EXTERNALSYM ASN1_TIME_compare}
   function ASN1_TIME_compare(const a: PASN1_TIME; const b: PASN1_TIME): TIdC_INT cdecl; external CLibCrypto; {introduced 1.1.0}
 
@@ -2659,13 +2659,13 @@ begin
 end;
 
 
-function  ERR_ASN1_UTCTIME_set(s: PASN1_UTCTIME; t: TIdC_TIMET): PASN1_UTCTIME; cdecl;
+function  ERR_ASN1_UTCTIME_set(s: PASN1_UTCTIME; t: TOSSL_TIMET): PASN1_UTCTIME; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_UTCTIME_set_procname);
 end;
 
 
-function  ERR_ASN1_UTCTIME_adj(s: PASN1_UTCTIME; t: TIdC_TIMET; offset_day: TIdC_INT;
+function  ERR_ASN1_UTCTIME_adj(s: PASN1_UTCTIME; t: TOSSL_TIMET; offset_day: TIdC_INT;
   offset_sec: TIdC_LONG): PASN1_UTCTIME; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_UTCTIME_adj_procname);
@@ -2678,7 +2678,7 @@ begin
 end;
 
 
-function  ERR_ASN1_UTCTIME_cmp_time_t(const s: PASN1_UTCTIME; t: TIdC_TIMET): TIdC_INT; cdecl;
+function  ERR_ASN1_UTCTIME_cmp_time_t(const s: PASN1_UTCTIME; t: TOSSL_TIMET): TIdC_INT; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_UTCTIME_cmp_time_t_procname);
 end;
@@ -2691,13 +2691,13 @@ begin
 end;
 
 
-function  ERR_ASN1_GENERALIZEDTIME_set(s: PASN1_GENERALIZEDTIME; t: TIdC_TIMET): PASN1_GENERALIZEDTIME; cdecl;
+function  ERR_ASN1_GENERALIZEDTIME_set(s: PASN1_GENERALIZEDTIME; t: TOSSL_TIMET): PASN1_GENERALIZEDTIME; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_GENERALIZEDTIME_set_procname);
 end;
 
 
-function  ERR_ASN1_GENERALIZEDTIME_adj(s: PASN1_GENERALIZEDTIME; t: TIdC_TIMET;
+function  ERR_ASN1_GENERALIZEDTIME_adj(s: PASN1_GENERALIZEDTIME; t: TOSSL_TIMET;
   offset_day: TIdC_INT; offset_sec: TIdC_LONG): PASN1_GENERALIZEDTIME; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_GENERALIZEDTIME_adj_procname);
@@ -2859,13 +2859,13 @@ end;
 
   // DECLARE_ASN1_ITEM(ASN1_OCTET_STRING_NDEF)
 
-function  ERR_ASN1_TIME_set(s: PASN1_TIME; t: TIdC_TIMET): PASN1_TIME; cdecl;
+function  ERR_ASN1_TIME_set(s: PASN1_TIME; t: TOSSL_TIMET): PASN1_TIME; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_TIME_set_procname);
 end;
 
 
-function  ERR_ASN1_TIME_adj(s: PASN1_TIME; t: TIdC_TIMET; offset_day: TIdC_INT;
+function  ERR_ASN1_TIME_adj(s: PASN1_TIME; t: TOSSL_TIMET; offset_day: TIdC_INT;
   offset_sec: TIdC_LONG): PASN1_TIME; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_TIME_adj_procname);
@@ -2909,7 +2909,7 @@ begin
 end;
 
  {introduced 1.1.0}
-function  ERR_ASN1_TIME_cmp_time_t(const s: PASN1_TIME; t: TIdC_TIMET): TIdC_INT; cdecl;
+function  ERR_ASN1_TIME_cmp_time_t(const s: PASN1_TIME; t: TOSSL_TIMET): TIdC_INT; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(ASN1_TIME_cmp_time_t_procname);
 end;
