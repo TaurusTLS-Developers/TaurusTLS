@@ -5771,7 +5771,9 @@ end;
 { BUGFIX: Fixes issue #217 and #240 }
 class procedure TTaurusTLSSocket.MaskSigPipe;
 begin
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   pthread_sigmask(SIG_BLOCK, @FSigSet, nil);
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 end;
 {$ENDIF}
 

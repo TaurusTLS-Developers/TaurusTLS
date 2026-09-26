@@ -1018,7 +1018,9 @@ end;
 function TTaurusTLSX509Fingerprints.GetSHA224: TTaurusTLSLEVP_MD; //FI:W521 0 syroress return value might be undefined.
 begin
 {$IFDEF OPENSSL_STATIC_LINK_MODEL}
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   if X509_digest(FX509, EVP_sha224, PByte(@Result.MD), Result._Length) = 0 then
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 {$ELSE}
   if Assigned(EVP_sha224) then
   begin
@@ -1057,7 +1059,9 @@ end;
 function TTaurusTLSX509Fingerprints.GetSHA256: TTaurusTLSLEVP_MD; //FI:W521 0 syroress return value might be undefined.
 begin
 {$IFDEF OPENSSL_STATIC_LINK_MODEL}
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   if X509_digest(FX509, EVP_sha256, PByte(@Result.MD), Result._Length) = 0 then
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 {$ELSE}
   if Assigned(EVP_sha256) then
   begin
@@ -1096,7 +1100,9 @@ end;
 function TTaurusTLSX509Fingerprints.GetSHA384: TTaurusTLSLEVP_MD; //FI:W521 0 syroress return value might be undefined.
 begin
 {$IFDEF OPENSSL_STATIC_LINK_MODEL}
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   if X509_digest(FX509, EVP_sha384, PByte(@Result.MD), Result._Length) = 0 then
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 {$ELSE}
   if Assigned(EVP_sha384) then
   begin
@@ -1135,7 +1141,9 @@ end;
 function TTaurusTLSX509Fingerprints.GetSHA512: TTaurusTLSLEVP_MD;  //FI:W521 0 syroress return value might be undefined.
 begin
 {$IFDEF OPENSSL_STATIC_LINK_MODEL}
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   if X509_digest(FX509, EVP_sha512, PByte(@Result.MD), Result._Length) = 0 then
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 {$ELSE}
   if Assigned(EVP_sha512) then
   begin
