@@ -197,7 +197,9 @@ begin
   LM := TMemoryStream.Create;
   try
     LM.LoadFromFile(AFileName);
+    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
     LB := BIO_new_mem_buf(LM.Memory^, LM.Size);
+    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     if Assigned(LB) then
     begin
       Result := PEM_read_bio_X509(LB, nil, nil, nil);
@@ -211,7 +213,9 @@ end;
 
 function xname_cmp(const a, b: PPX509_NAME): TIdC_INT; cdecl;
 begin
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   Result := X509_NAME_cmp(a^, b^);
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 end;
 
 
@@ -247,7 +251,9 @@ begin
   end;
 
   try
+    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
     b := BIO_new_mem_buf(LM.Memory^, LM.Size);
+    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     if not Assigned(b) then
     begin
       SSLerr(SSL_F_SSL_CTX_USE_PRIVATEKEY_FILE, ERR_R_BUF_LIB);
@@ -259,8 +265,10 @@ begin
       Ldefault_passwd_cb := SSL_CTX_get_default_passwd_cb(ctx);
       if Assigned(Ldefault_passwd_cb) then
       begin
+        {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
         if Ldefault_passwd_cb(@LPassword[0], MAX_SSL_PASSWORD_LENGTH, 0,
           SSL_CTX_get_default_passwd_cb_userdata(ctx)) < 0 then
+        {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
         begin
           ERR_set_error(ERR_LIB_PEM, PEM_R_BAD_PASSWORD_READ, nil);
           Exit;
@@ -281,7 +289,9 @@ begin
       end;
       try
         LCertChain := nil;
+        {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
         if PKCS12_parse(LP12, @LPassword[0], LKey, LCert, @LCertChain) <> 1 then
+        {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
         begin
           SSLerr(SSL_F_SSL_CTX_USE_CERTIFICATE_FILE, ERR_R_PKCS12_LIB);
           Exit;
@@ -335,7 +345,9 @@ begin
   end;
 
   try
+    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
     Lb := BIO_new_mem_buf(LM.Memory^, LM.Size);
+    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     if not Assigned(Lb) then
     begin
       SSLerr(SSL_F_SSL_CTX_USE_CERTIFICATE_FILE, ERR_R_BUF_LIB);
@@ -347,8 +359,10 @@ begin
       Ldefault_passwd_callback := SSL_CTX_get_default_passwd_cb(ctx);
       if Assigned(Ldefault_passwd_callback) then
       begin
+        {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
         if Ldefault_passwd_callback(@LPassword[0], MAX_SSL_PASSWORD_LENGTH, 0,
           SSL_CTX_get_default_passwd_cb_userdata(ctx)) < 0 then
+        {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
         begin
           ERR_set_error(ERR_LIB_PEM, PEM_R_BAD_PASSWORD_READ, nil);
           Exit;
@@ -367,7 +381,9 @@ begin
       end;
       try
         LCertChain := nil;
+        {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
         if PKCS12_parse(LP12, @LPassword[0], LKey, LCert, @LCertChain) <> 1 then
+        {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
         begin
           SSLerr(SSL_F_SSL_CTX_USE_CERTIFICATE_FILE, ERR_R_PKCS12_LIB);
           Exit;
@@ -377,7 +393,9 @@ begin
         finally
           if Assigned(LCertChain) then
           begin
+            {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
             sk_pop_free(LCertChain, @X509_free);
+            {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
           end;
           X509_free(LCert);
           EVP_PKEY_free(LKey);
@@ -498,7 +516,9 @@ begin
   end;
 
   try
+    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
     Lin := BIO_new_mem_buf(LM.Memory^, LM.Size);
+    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     if not Assigned(Lin) then
     begin
       X509err(X509_F_X509_LOAD_CERT_FILE, ERR_R_SYS_LIB);
@@ -591,7 +611,9 @@ begin
   end;
 
   try
+    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
     Lin := BIO_new_mem_buf(LM.Memory^, LM.Size);
+    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     if not Assigned(Lin) then
     begin
       X509err(X509_F_X509_LOAD_CERT_CRL_FILE, ERR_R_SYS_LIB);
@@ -610,6 +632,8 @@ begin
     X509err(X509_F_X509_LOAD_CERT_CRL_FILE, ERR_R_PEM_LIB);
     Exit;
   end;
+
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   try
     for i := 0 to sk_X509_INFO_num(Linf) - 1 do
     begin
@@ -628,6 +652,7 @@ begin
   finally
     sk_X509_INFO_pop_free(Linf, @X509_INFO_free);
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
   Result := count;
 end;
 
@@ -669,7 +694,9 @@ begin
         Exit;
       end;
       try
+        {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
         LB := BIO_new_mem_buf(LM.Memory^, LM.Size);
+        {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
         if Assigned(LB) then
         begin
           try
@@ -777,7 +804,9 @@ begin
   end;
 
   try
+    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
     b := BIO_new_mem_buf(LM.Memory^, LM.Size);
+    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     if not Assigned(b) then
     begin
       SSLerr(SSL_F_SSL_CTX_USE_PRIVATEKEY_FILE, ERR_R_BUF_LIB);
@@ -844,7 +873,9 @@ begin
     Exit;
   end;
   try
+    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
     b := BIO_new_mem_buf(LM.Memory^, LM.Size);
+    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     if not Assigned(b) then
     begin
       SSLerr(SSL_F_SSL_CTX_USE_CERTIFICATE_FILE, ERR_R_BUF_LIB);
@@ -991,7 +1022,9 @@ begin
   end;
 
   try
+    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
     b := BIO_new_mem_buf(LM.Memory^, LM.Size);
+    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     if not Assigned(b) then
     begin
       SSLerr(SSL_F_SSL3_CTRL, ERR_R_BUF_LIB);

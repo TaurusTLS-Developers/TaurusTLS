@@ -61,6 +61,7 @@ Type
   }
 
   {$EXTERNALSYM DES_ks}
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE OFF}{$ENDIF}
   DES_ks = record
     ks: array [0 .. 15] of record
     case longint of
@@ -68,6 +69,7 @@ Type
     1: (deslong: array [0 .. 1] of DES_LONG);
     end;
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE DEFAULT}{$ENDIF}
 
   {$EXTERNALSYM DES_key_schedule}
   DES_key_schedule = DES_ks;

@@ -32,6 +32,7 @@ type
   ///   A 4-byte value for retreiving a value as 4 bytes, 2 words, an integer,
   ///   and as an unsigned integer.
   /// </summary>
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE OFF}{$ENDIF}
   TTaurusTLSULong = packed record
     case Byte of
       0:
@@ -43,6 +44,7 @@ type
       3:
         (C1: UInt32);
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE DEFAULT}{$ENDIF}
 
   /// <summary>
   ///   A record that includes a length and pointer to bytes.
@@ -874,7 +876,9 @@ begin
   end
   else
   begin
+    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
     LPtr := X509_NAME_oneline(fX509Name, @LOneLine[0], SizeOf(LOneLine));
+    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     Result := String(LPtr);
   end;
 end;
@@ -890,6 +894,7 @@ begin
   end
   else
   begin
+    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
     if X509_NAME_get_text_by_NID(fX509Name, ANid, @LBuffer[0], 256) > -1 then
     begin
       // PIdAnsiChar typecast is necessary to force the RTL
@@ -901,6 +906,7 @@ begin
     begin
       Result := '';
     end;
+    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
   end;
 end;
 
@@ -1012,12 +1018,16 @@ end;
 function TTaurusTLSX509Fingerprints.GetSHA224: TTaurusTLSLEVP_MD; //FI:W521 0 syroress return value might be undefined.
 begin
 {$IFDEF OPENSSL_STATIC_LINK_MODEL}
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   if X509_digest(FX509, EVP_sha224, PByte(@Result.MD), Result._Length) = 0 then
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 {$ELSE}
   if Assigned(EVP_sha224) then
   begin
 {$ENDIF}
+    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
     if X509_digest(FX509, EVP_sha224, PByte(@Result.MD), Result._Length) = 0 then
+    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     begin
       raise ETaurusTLSX509DigestFailed.Create(RSOSSLX509DigestFailed);
     end;
@@ -1049,12 +1059,16 @@ end;
 function TTaurusTLSX509Fingerprints.GetSHA256: TTaurusTLSLEVP_MD; //FI:W521 0 syroress return value might be undefined.
 begin
 {$IFDEF OPENSSL_STATIC_LINK_MODEL}
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   if X509_digest(FX509, EVP_sha256, PByte(@Result.MD), Result._Length) = 0 then
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 {$ELSE}
   if Assigned(EVP_sha256) then
   begin
 {$ENDIF}
+    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
     if X509_digest(FX509, EVP_sha256, PByte(@Result.MD), Result._Length) = 0 then
+    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     begin
       raise ETaurusTLSX509DigestFailed.Create(RSOSSLX509DigestFailed);
     end;
@@ -1086,12 +1100,16 @@ end;
 function TTaurusTLSX509Fingerprints.GetSHA384: TTaurusTLSLEVP_MD; //FI:W521 0 syroress return value might be undefined.
 begin
 {$IFDEF OPENSSL_STATIC_LINK_MODEL}
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   if X509_digest(FX509, EVP_sha384, PByte(@Result.MD), Result._Length) = 0 then
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 {$ELSE}
   if Assigned(EVP_sha384) then
   begin
 {$ENDIF}
+    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
     if X509_digest(FX509, EVP_sha512, PByte(@Result.MD), Result._Length) = 0 then
+    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     begin
       raise ETaurusTLSX509DigestFailed.Create(RSOSSLX509DigestFailed);
     end;
@@ -1123,12 +1141,16 @@ end;
 function TTaurusTLSX509Fingerprints.GetSHA512: TTaurusTLSLEVP_MD;  //FI:W521 0 syroress return value might be undefined.
 begin
 {$IFDEF OPENSSL_STATIC_LINK_MODEL}
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   if X509_digest(FX509, EVP_sha512, PByte(@Result.MD), Result._Length) = 0 then
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 {$ELSE}
   if Assigned(EVP_sha512) then
   begin
 {$ENDIF}
+    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
     if X509_digest(FX509, EVP_sha512, PByte(@Result.MD), Result._Length) = 0 then
+    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     begin
       raise ETaurusTLSX509DigestFailed.Create(RSOSSLX509DigestFailed);
     end;
@@ -1175,7 +1197,9 @@ begin
     X509_get0_signature(Fsignature, Fsig_alg, FX509);
   end;
   lalgorithm := nil;
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   X509_ALGOR_get0(@lalgorithm, nil, nil, Fsig_alg);
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
   Result := ASN1_OBJECT_ToStr(lalgorithm);
 end;
 
@@ -1364,6 +1388,7 @@ begin
           if (LLen > 0) and (LBufPtr <> nil) then
           begin
             {$ifndef fpc}
+            {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
             FDisplayInfo.Text := IndyTextEncoding_UTF8.GetString(
 {$IFNDEF VCL_6_OR_ABOVE}
               // RLebeau: for some reason, Delphi 5 causes a "There is no overloaded
@@ -1376,6 +1401,7 @@ begin
               @LBufPtr^, LLen
 {$ENDIF}
               );
+            {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
             {$else}
               FDisplayInfo.Text := BytesToString(RawToBytes(LBufPtr^, LLen));
             {$endif}
@@ -1555,7 +1581,9 @@ end;
 
 function TTaurusTLSX509.GetFingerprint: TTaurusTLSLEVP_MD; //FI:W521 0 syroress return value might be undefined.
 begin
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   if X509_digest(FX509, EVP_md5, PByte(@Result.MD), Result._Length) = 0 then
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
   begin
     raise ETaurusTLSX509DigestFailed.Create(RSOSSLX509DigestFailed);
   end;
@@ -1605,8 +1633,10 @@ function TTaurusTLSX509PublicKey.GetAlgorithm: String;
 var
   lalgorithm: PASN1_OBJECT;
 begin
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   if X509_PUBKEY_get0_param(@lalgorithm, nil, nil, nil,
     X509_get_X509_PUBKEY(FX509)) <> 0 then
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
   begin
     Result := ASN1_OBJECT_ToStr(lalgorithm);
   end
@@ -1621,6 +1651,7 @@ var
   LLen: TIdC_INT;
   LKey: array [0 .. 2048] of TIdAnsiChar;
 begin
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   if X509_PUBKEY_get0_param(nil, @LKey[0], @LLen, nil,
     X509_get_X509_PUBKEY(FX509)) <> 0 then
   begin
@@ -1630,17 +1661,20 @@ begin
   begin
     Result := '';
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 end;
 
 function TTaurusTLSX509PublicKey.GetEncodingSize: TIdC_INT;
 var
   LKey: array [0 .. 2048] of TIdAnsiChar;
 begin
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   if X509_PUBKEY_get0_param(nil, @LKey[0], @Result, nil,
     X509_get_X509_PUBKEY(FX509)) <> 0 then
   begin
     Result := 0;
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 end;
 
 function TTaurusTLSX509PublicKey.GetExponent_: String;
@@ -1652,7 +1686,9 @@ begin
   LKey := X509_PUBKEY_get0(X509_get_X509_PUBKEY(FX509));
   if EVP_PKEY_base_id(LKey) = EVP_PKEY_RSA then
   begin
+    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
     RSA_get0_key(EVP_PKEY_get0_RSA(LKey), nil, @LBN, nil);
+    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     Result := AnsiStringToString(BN_bn2hex(LBN));
   end;
 end;
@@ -1666,7 +1702,9 @@ begin
   LKey := X509_PUBKEY_get0(X509_get_X509_PUBKEY(FX509));
   if EVP_PKEY_base_id(LKey) = EVP_PKEY_RSA then
   begin
+    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
     RSA_get0_key(EVP_PKEY_get0_RSA(LKey), @LBN, nil, nil);
+    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     Result := AnsiStringToString(BN_bn2hex(LBN));
   end;
 end;
@@ -1727,10 +1765,12 @@ end;
 
 function TTaurusTLSX509AuthorityKeyID.GetSerial: TIdC_INT64;
 begin
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   if ASN1_INTEGER_get_int64(@Result, X509_get0_authority_serial(FX509)) = 0 then
   begin
     Result :=  0;
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 end;
 
 { TTaurusTLSX509Warnings }

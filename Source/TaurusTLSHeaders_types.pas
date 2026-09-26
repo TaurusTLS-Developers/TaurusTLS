@@ -970,6 +970,7 @@ const
 
 type
   {$EXTERNALSYM asn1_type_st}
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE OFF}{$ENDIF}
   asn1_type_st = record
     case type_: TIdC_INT of
 //      (_ptr: PIdAnsichar);
@@ -1010,6 +1011,7 @@ type
 //      V_ASN1_GRAPHICSTRING: ;
 //      V_ASN1_ISO64STRING: ;
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE DEFAULT}{$ENDIF}
   {$EXTERNALSYM ASN1_TYPE}
   ASN1_TYPE = asn1_type_st;
   {$EXTERNALSYM PASN1_TYPE}

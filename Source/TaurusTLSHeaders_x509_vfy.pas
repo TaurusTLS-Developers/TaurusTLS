@@ -2125,7 +2125,9 @@ const
    {$I TaurusTLSUnusedParamOff.inc}
 function  FC_X509_LOOKUP_meth_new(const name: PIdAnsiChar): PX509_LOOKUP_METHOD; cdecl;
 begin
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   Result := @Indy_x509_unicode_file_lookup;
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 end;
 
 procedure  FC_X509_LOOKUP_meth_free(method: PX509_LOOKUP_METHOD); cdecl;
@@ -2158,7 +2160,9 @@ type
 {$I TaurusTLSUnusedParamOff.inc}
 function  FC_X509_LOOKUP_get_store(const ctx: PX509_LOOKUP): PX509_STORE; cdecl;
 begin
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   Result := _PX509_LOOKUP(ctx)^.store_ctx;
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 end;
 
 function FC_X509_STORE_load_locations_ex(ctx : PX509_STORE; const file_: PIdAnsiChar; const dir: PIdAnsiChar;

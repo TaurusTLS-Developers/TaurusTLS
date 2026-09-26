@@ -57,11 +57,13 @@ type
   KEY_TABLE_TYPE = array[0 .. CAMELLIA_TABLE_WORD_LEN - 1] of TIdC_UINT;
 
   {$EXTERNALSYM camellia_key_st_u}
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE OFF}{$ENDIF}
   camellia_key_st_u = record
     case Integer of
     0: (d: TIdC_DOUBLE);
     1: (rd_key: KEY_TABLE_TYPE);
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE DEFAULT}{$ENDIF}
 
   {$EXTERNALSYM camellia_key_st}
   camellia_key_st = record

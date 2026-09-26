@@ -1,4 +1,4 @@
-{ ****************************************************************************** }
+﻿{ ****************************************************************************** }
 { *  TaurusTLS                                                                 * }
 { *           https://github.com/JPeterMugaas/TaurusTLS                        * }
 { *                                                                            * }
@@ -370,7 +370,9 @@ begin
       begin
         Result := Result + ':'; { Do not Localize }
       end;
+      {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
       Result := Result + IndyFormat('%.2x', [LPtr^]);
+      {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
       Inc(LPtr);
     end;
   end;
@@ -486,10 +488,12 @@ begin
     {$else}
     FillChar(LBuf, 1024, 0);
     {$endif}
+    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
     if OBJ_obj2txt(@LBuf[0], 1024, a, 0) > 0 then
     begin
       Result := AnsiStringToString(PIdAnsiChar(@LBuf));   //PALOFF - bad pointer usage - [LBuf : TBa cast to PAnsiChar]
     end;
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
   end;
 end;
 
@@ -635,8 +639,10 @@ begin
     LData := PTBa(ASN1_STRING_get0_data(PASN1_STRING(a))); //PALOFF - Possible bad typecast
     if ASN1_STRING_length(PASN1_STRING(a)) = 4 then   //PALOFF - Possible bad typecast
     begin
+      {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
       Result := IntToStr(LData^[0]) + '.' + IntToStr(LData^[1]) + '.'
         + IntToStr(LData^[2]) + '.' + IntToStr(LData^[3]);
+      {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     end
     else
     begin
@@ -644,7 +650,9 @@ begin
       begin
         for i := 0 to 7 do
         begin
+          {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
           LIPv6[i] := (LData^[i * 2] shl 8) + (LData^[(i * 2) + 1]);
+          {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
         end;
         Result := IdGlobal.IPv6AddressToStr(LIPv6);
       end;

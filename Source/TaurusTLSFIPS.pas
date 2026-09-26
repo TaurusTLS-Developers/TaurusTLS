@@ -338,12 +338,14 @@ begin
 {$ENDIF}
   SetLength(Result, EVP_MAX_MD_SIZE);
   LLen := 0; // unneeded but we get FPC warnings if we don't
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   if ETaurusTLSDigestFinalEx.CheckResult(EVP_DigestFinal_ex(ACtx,
     PByte(@Result[0]), LLen), RSOSSLEVPDigestError) then
   begin
     SetLength(Result, LLen);
     EVP_MD_CTX_free(PEVP_MD_CTX(ACtx));
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 end;
 
 function TaurusTLSIsHMACAvail: Boolean;
@@ -506,8 +508,10 @@ begin
   LLen := EVP_MAX_MD_SIZE;
   Result := nil;
   SetLength(Result, LLen);
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   if ETaurusTLSHMACFinal.CheckResult(HMAC_Final(ACtx, PByte(@Result[0]), @LLen),
     RSOSSLHMACFinalError) then
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
   begin
     SetLength(Result, LLen);
     HMAC_CTX_free(ACtx);
