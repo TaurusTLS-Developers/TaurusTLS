@@ -584,6 +584,7 @@ type
 
   // Define a union type for the value field
   {$EXTERNALSYM TValueUnion}
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE OFF}{$ENDIF}
   TValueUnion = record
     case Integer of
       0: (fd: TIdC_INT);
@@ -591,6 +592,7 @@ type
       2: (custom_ui: TIdC_SIZET); //Todo: use something besides TIdC_SIZET
       3: (ssl: PSSL);
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE DEFAULT}{$ENDIF}
   {$EXTERNALSYM bio_poll_descriptor_st}
   bio_poll_descriptor_st = record
     _type : TIdC_UINT32;
@@ -1789,7 +1791,9 @@ implementation
 
 function BIO_dgram_get_local_addr_enable(b : PBIO; out penable : TIdC_INT) : TIdC_INT;
 begin
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   Result := BIO_ctrl(b, BIO_CTRL_DGRAM_GET_LOCAL_ADDR_ENABLE, 0, @penable);
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 end;
 
 function BIO_dgram_set_local_addr_enable(b : PBIO; enable : TIdC_INT) : TIdC_INT;
@@ -2391,7 +2395,9 @@ end;
 //# define BIO_get_mem_data(b,pp)  BIO_ctrl(b,BIO_CTRL_INFO,0,(char (pp))
 function  _BIO_get_mem_data(b: PBIO; var pp: Pointer) : TIdC_INT; cdecl;   //PALOFF Parameter is "var", can be changed to "out"
 begin
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   Result := BIO_ctrl(b, BIO_CTRL_INFO, 0, @pp);
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 end;
 
 //# define BIO_set_mem_buf(b,bm,c) BIO_ctrl(b,BIO_C_SET_BUF_MEM,c,(char (bm))
@@ -2405,7 +2411,9 @@ end;
 //# define BIO_get_mem_ptr(b,pp)   BIO_ctrl(b,BIO_C_GET_BUF_MEM_PTR,0,(char (pp))
 function  _BIO_get_mem_ptr(b: PBIO; var pp: PBUF_MEM): TIdC_INT; cdecl; //PALOFF Parameter is "var", can be changed to "out"
 begin
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   Result := BIO_ctrl(b, BIO_C_GET_BUF_MEM_PTR, 0, @pp);
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 end;
 
 //# define BIO_set_mem_eof_return(b,v) BIO_ctrl(b,BIO_C_SET_BUF_MEM_EOF_RETURN,v,0)

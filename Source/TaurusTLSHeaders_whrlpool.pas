@@ -47,12 +47,14 @@ const
 
 type
   {$EXTERNALSYM WHIRLPOOL_CTX_union}
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE OFF}{$ENDIF}
   WHIRLPOOL_CTX_union = record
     case Byte of
       0: (c: array[0 .. WHIRLPOOL_DIGEST_LENGTH -1] of Byte);
       (* double q is here to ensure 64-bit alignment *)
       1: (q: array[0 .. (WHIRLPOOL_DIGEST_LENGTH div SizeOf(TIdC_DOUBLE)) -1] of TIdC_DOUBLE);
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE DEFAULT}{$ENDIF}
   {$EXTERNALSYM WHIRLPOOL_CTX}
   WHIRLPOOL_CTX = record
     H: WHIRLPOOL_CTX_union;

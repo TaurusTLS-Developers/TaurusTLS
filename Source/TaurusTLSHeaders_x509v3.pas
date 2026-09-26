@@ -1,4 +1,4 @@
-/// <exclude />
+﻿/// <exclude />
   (* This unit was generated using the script genTaurusTLSHdrs.sh from the source file TaurusTLSHeaders_x509v3.h2pas
      It should not be modified directly. All changes should be made to TaurusTLSHeaders_x509v3.h2pas
      and this file regenerated. TaurusTLSHeaders_x509v3.h2pas is distributed with the full Indy
@@ -500,6 +500,7 @@ type
   PEDIPARTYNAME = ^EDIPARTYNAME;
 
   {$EXTERNALSYM GENERAL_NAME_st_union}
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE OFF}{$ENDIF}
   GENERAL_NAME_st_union = record
     case TIdC_INT of
       0: (_ptr: PIdAnsiChar);
@@ -520,6 +521,7 @@ type
       13: (rid: PASN1_OBJECT);       (* registeredID *)
       14: (other: PASN1_TYPE);       (* x400Address *)
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE DEFAULT}{$ENDIF}
   {$EXTERNALSYM GENERAL_NAME_st}
   GENERAL_NAME_st = record
     type_: TIdC_INT;
@@ -560,11 +562,13 @@ type
   TLS_FEATURE = PSTACK_OF_ASN1_INTEGER;
 
   {$EXTERNALSYM DIST_POINT_NAME_st_union}
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE OFF}{$ENDIF}
   DIST_POINT_NAME_st_union = record
     case TIdC_INT of
       0: (fullname : PGENERAL_NAMES);
       1: (relativename : PSTACK_OF_X509_NAME_ENTRY);
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE DEFAULT}{$ENDIF}
   {$EXTERNALSYM DIST_POINT_NAME_st}
   DIST_POINT_NAME_st = record
     type_: TIdC_INT;
@@ -646,12 +650,14 @@ type
   PUSERNOTICE = ^USERNOTICE;
 
   {$EXTERNALSYM POLICYQUALINFO_st_union}
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE OFF}{$ENDIF}
   POLICYQUALINFO_st_union = record
     case TIdC_INT of
       0: (cpsuri: PASN1_IA5STRING);
       1: (usernotice: PUSERNOTICE);
       2: (other: PASN1_TYPE);
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE DEFAULT}{$ENDIF}
   {$EXTERNALSYM POLICYQUALINFO_st}
   POLICYQUALINFO_st = record
     pqualid: PASN1_OBJECT;
@@ -828,12 +834,14 @@ type
   PASRange = ^ASRange;
 
   {$EXTERNALSYM ASIdOrRange_st}
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE OFF}{$ENDIF}
   ASIdOrRange_st = record
     type_: TIdC_INT;
     case u: TIdC_INT of
       0: (id: PASN1_INTEGER);
       1: (range: PASRange);
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE DEFAULT}{$ENDIF}
   {$EXTERNALSYM ASIdOrRange}
   ASIdOrRange = ASIdOrRange_st;
   {$EXTERNALSYM PASIdOrRange}
@@ -842,12 +850,14 @@ type
   ASIdOrRanges = PSTACK_OF_ASIdOrRange;
 
   {$EXTERNALSYM ASIdentifierChoice_st}
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE OFF}{$ENDIF}
   ASIdentifierChoice_st = record
     type_: TIdC_INT;
     case u: TIdC_INT of
       0: (inherit: PASN1_NULL);
       1: (asIdsOrRanges: PASIdOrRanges);
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE DEFAULT}{$ENDIF}
   {$EXTERNALSYM ASIdentifierChoice}
   ASIdentifierChoice = ASIdentifierChoice_st;
   {$EXTERNALSYM PASIdentifierChoice}
@@ -877,12 +887,14 @@ type
   PIPAddressRange = ^IPAddressRange;
 
   {$EXTERNALSYM IPAddressOrRange_st}
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE OFF}{$ENDIF}
   IPAddressOrRange_st = record
     type_: TIdC_INT;
     case u: TIdC_INT of
       0: (addressPrefix: PASN1_BIT_STRING);
       1: (addressRange: PIPAddressRange);
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE DEFAULT}{$ENDIF}
   {$EXTERNALSYM IPAddressOrRange}
   IPAddressOrRange = IPAddressOrRange_st;
   {$EXTERNALSYM PIPAddressOrRange}
@@ -896,12 +908,14 @@ type
   PIPAddressOrRanges = PSTACK_OF_IPAddressOrRange;
 
   {$EXTERNALSYM IPAddressChoice_st}
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE OFF}{$ENDIF}
   IPAddressChoice_st = record
     type_: TIdC_INT;
     case u: TIdC_INT of
       0: (inherit: PASN1_NULL);
       1: (addressesOrRanges: PIPAddressOrRanges);
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE DEFAULT}{$ENDIF}
   {$EXTERNALSYM IPAddressChoice}
   IPAddressChoice = IPAddressChoice_st;
   {$EXTERNALSYM PIPAddressChoice}

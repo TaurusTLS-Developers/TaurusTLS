@@ -721,11 +721,13 @@ type
   PASIdOrRanges = PSTACK_OF_ASIdOrRange;
 
   {$EXTERNALSYM ASIdentifierChoice_union}
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE OFF}{$ENDIF}
   ASIdentifierChoice_union = record
   case byte of
    ASIdentifierChoice_inherit : (inherit : PASN1_NULL);
    ASIdentifierChoice_asIdsOrRanges : (asIdsOrRanges : PASIdOrRanges);
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE DEFAULT}{$ENDIF}
 
   {$EXTERNALSYM PASIdentifierChoice}
   PASIdentifierChoice = ^ASIdentifierChoice;

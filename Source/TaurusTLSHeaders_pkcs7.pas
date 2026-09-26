@@ -251,6 +251,7 @@ type
   PPPKCS7_ENCRYPT_STRUCT = ^PPKCS7_ENCRYPT_STRUCT;
 
   {$EXTERNALSYM pkcs7_st_d}
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE OFF}{$ENDIF}
   pkcs7_st_d = record
     case Integer of
     0: (_ptr: PIdAnsiChar);
@@ -262,6 +263,7 @@ type
     6: (encrypted: PPKCS7_ENCRYPT_STRUCT);
     7: (other: PASN1_TYPE);
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE DEFAULT}{$ENDIF}
   {$EXTERNALSYM pkcs7_st}
   pkcs7_st = record
     asn1: PByte;

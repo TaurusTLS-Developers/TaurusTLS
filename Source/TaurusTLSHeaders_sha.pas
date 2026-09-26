@@ -93,11 +93,13 @@ type
   SHA_LONG64 = TIdC_UINT64;
 
   {$EXTERNALSYM SHA512state_st_u}
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE OFF}{$ENDIF}
   SHA512state_st_u = record
     case Integer of
     0: (d: array[0 .. SHA_LBLOCK - 1] of SHA_LONG64);
     1: (p: array[0 .. SHA512_CBLOCK - 1] of Byte);
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_TYPE DEFAULT}{$ENDIF}
 
   {$EXTERNALSYM SHA512state_st}
   SHA512state_st = record

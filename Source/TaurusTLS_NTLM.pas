@@ -77,11 +77,13 @@ begin
   Lkey[6] := ((Akey_56[5] SHL 2) and $FF) or (Akey_56[6] SHR 6);
   Lkey[7] := (Akey_56[6] SHL 1) and $FF;
 
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   DES_set_odd_parity(@Lkey);
   case DES_set_key(@Lkey, Vks) of
     -1 : raise ETaurusTLSDesSetKeyWrongParity.Create(RSMsg_DES_set_key_wrong_key_parity);
     -2 : raise ETaurusTLSDesSetKeyWeakKey.Create(RSMsg_DES_weak_key);
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 end;
 
 { /*
@@ -95,6 +97,7 @@ Var
   Lks: des_key_schedule;  //PALOFF - Local variables that are set but not later used
   Lnonce: des_cblock;  //PALOFF - Local variables that are set but not later used
 begin
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   FillChar(LKs,SizeOf(LKs),0);
   setup_des_key(Vkeys^, Lks);
   Move(ANonce[0], Lnonce, 8);
@@ -107,6 +110,7 @@ begin
   setup_des_key(PDES_cblock(PtrUInt(Vkeys) + 14)^, Lks);
   DES_ecb_encrypt(@Lnonce, PDES_cblock(PtrUInt(Vresults) + 16), @Lks,
     DES_ENCRYPT);
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 end;
 
 Const
@@ -143,6 +147,7 @@ begin
 
   // * create LanManager hashed password */
 
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   setup_des_key(PDES_cblock(@lm_pw[0])^, ks);
   DES_ecb_encrypt(@Magic, PDES_cblock(@lm_hpw[0]), @ks, DES_ENCRYPT);
 
@@ -154,6 +159,7 @@ begin
 
   FillChar(lm_resp[0], 23, 0);
   calc_resp(PDES_cblock(@lm_hpw[0]), ANonce, Pdes_key_schedule(@lm_resp[0]));
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 
   SetLength(Result, SizeOf(lm_resp));
   Move(lm_resp[0], Result[0], SizeOf(lm_resp));
@@ -194,7 +200,9 @@ begin
   FillChar(Lnt_hpw[17], 5, 0);
 
   FillChar(Lnt_resp[1], 20, 0);
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   calc_resp(PDES_cblock(@Lnt_hpw[1]), ANonce, Pdes_key_schedule(@Lnt_resp[1]));
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 
   SetLength(Result, SizeOf(Lnt_resp));
   Move(Lnt_resp[1], Result[0], SizeOf(Lnt_resp));
