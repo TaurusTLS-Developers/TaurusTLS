@@ -76,6 +76,9 @@
 		<VerInfo_Locale>1033</VerInfo_Locale>
 		<VerInfo_Keys>CompanyName=TaurusTLS Developers;FileDescription=$(MSBuildProjectName);FileVersion=1.0.11.53;InternalName=TaurusTLS_DTForIndy250.bpl;LegalCopyright=Copyright (c) 2026 TaurusTLS Developers.  All Rights Reserved.;LegalTrademarks=;OriginalFilename=TaurusTLS_DTForIndy250.bpl;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.11.53;Comments=</VerInfo_Keys>
 		<DesignOnlyPackage>true</DesignOnlyPackage>
+		<DCC_UNSAFE_CODE>true</DCC_UNSAFE_CODE>
+		<DCC_UNSAFE_TYPE>true</DCC_UNSAFE_TYPE>
+		<DCC_UNSAFE_CAST>true</DCC_UNSAFE_CAST>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Base_Android)'!=''">
 		<DCC_CBuilderOutput>None</DCC_CBuilderOutput>

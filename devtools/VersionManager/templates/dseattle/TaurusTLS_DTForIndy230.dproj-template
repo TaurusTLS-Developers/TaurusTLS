@@ -54,6 +54,9 @@
 		<DCC_K>false</DCC_K>
 		<SanitizedProjectName>TaurusTLS_DTForIndy230</SanitizedProjectName>
 		<GenDll>true</GenDll>
+		<DCC_UNSAFE_CODE>true</DCC_UNSAFE_CODE>
+        <DCC_UNSAFE_TYPE>true</DCC_UNSAFE_TYPE>
+        <DCC_UNSAFE_CAST>true</DCC_UNSAFE_CAST>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Base_Android)'!=''">
 		<EnabledSysJars>android-support-v4.dex.jar;apk-expansion.dex.jar;cloud-messaging.dex.jar;fmx.dex.jar;google-analytics-v2.dex.jar;google-play-billing.dex.jar;google-play-licensing.dex.jar;google-play-services.dex.jar</EnabledSysJars>

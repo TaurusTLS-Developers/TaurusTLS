@@ -72,6 +72,9 @@
 		<DCC_CBuilderOutput>All</DCC_CBuilderOutput>
 		<SanitizedProjectName>TaurusTLS_DT</SanitizedProjectName>
 		<DesignOnlyPackage>true</DesignOnlyPackage>
+		<DCC_UNSAFE_CODE>true</DCC_UNSAFE_CODE>
+		<DCC_UNSAFE_TYPE>true</DCC_UNSAFE_TYPE>
+		<DCC_UNSAFE_CAST>true</DCC_UNSAFE_CAST>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Base_Android)'!=''">
 		<DCC_CBuilderOutput>None</DCC_CBuilderOutput>
