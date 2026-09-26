@@ -493,6 +493,11 @@ const
   /// TTaurusTLSContext.UseBidirectionalShutdown properties.
   /// </summary>
   DEF_USE_BIDIRECTIONAL_SHUTDOWN = False;
+  /// <summary>
+  /// The default value for the TTaurusTLSOptions.CipherServerPreference and
+  /// TTaurusTLSContext.CipherServerPreference properties.
+  /// </summary>
+  DEF_CIPHER_SERVER_PREFERENCE = False;
 
 type
   /// <summary>
@@ -843,6 +848,7 @@ type
     fVerifyDirs: String;
     fCipherList: String;
     fCipherSuites: String;
+    fCipherServerPreference: Boolean;
     fVerifyMode: TTaurusTLSVerifyModeSet;
     procedure AssignTo(Destination: TPersistent); override;
     procedure SetMinTLSVersion(const AValue: TTaurusTLSSSLVersion);
@@ -1030,6 +1036,18 @@ type
     /// SSL_CTX_set_ciphersuites
     /// </seealso>
     property CipherSuites: String read fCipherSuites write fCipherSuites;
+    /// <summary>
+    /// When True, and this end of the connection is a TLS server, the
+    /// server's cipher preference order is used to select the cipher instead
+    /// of the client's. When False, the server follows the client's cipher
+    /// preference order instead. Default is False.
+    /// </summary>
+    /// <seealso
+    /// href="https://docs.openssl.org/3.0/man3/SSL_CTX_set_options/">
+    /// SSL_CTX_set_options
+    /// </seealso>
+    property CipherServerPreference: Boolean read fCipherServerPreference
+      write fCipherServerPreference default DEF_CIPHER_SERVER_PREFERENCE;
   end;
 
   /// <summary>
@@ -1053,6 +1071,7 @@ type
     fVerifyDirs: String;
     fCipherList: String;
     fCipherSuites: String;
+    fCipherServerPreference: Boolean;
     fContext: PSSL_CTX;
     fStatusInfoOn: Boolean;
     fMessageCBOn: Boolean;
@@ -1231,6 +1250,18 @@ type
     /// SSL_CTX_set_ciphersuites
     /// </seealso>
     property CipherSuites: String read fCipherSuites write fCipherSuites;
+    /// <summary>
+    /// When True, and this context is used as a TLS server, the server's
+    /// cipher preference order is used to select the cipher instead of the
+    /// client's. When False, the server follows the client's cipher
+    /// preference order instead. Default is False.
+    /// </summary>
+    /// <seealso
+    /// href="https://docs.openssl.org/3.0/man3/SSL_CTX_set_options/">
+    /// SSL_CTX_set_options
+    /// </seealso>
+    property CipherServerPreference: Boolean read fCipherServerPreference
+      write fCipherServerPreference default DEF_CIPHER_SERVER_PREFERENCE;
     /// <summary>
     /// Private Key file.
     /// </summary>
@@ -3820,6 +3851,7 @@ begin
   fVerifyDepth := DEFAULT_VERIFY_DEPTH;
   fVerifyHostname := DEF_VERIFY_HOSTNAME;
   fUseBidirectionalShutdown := DEF_USE_BIDIRECTIONAL_SHUTDOWN;
+  fCipherServerPreference := DEF_CIPHER_SERVER_PREFERENCE;
 end;
 
 procedure TTaurusTLSOptions.SetMinTLSVersion(const AValue
@@ -3852,6 +3884,7 @@ begin
     LDest.VerifyDirs := VerifyDirs;
     LDest.CipherList := CipherList;
     LDest.CipherSuites := CipherSuites;
+    LDest.CipherServerPreference := CipherServerPreference;
   end
   else
   begin
@@ -3932,6 +3965,7 @@ begin
   fSSLContext.UseBidirectionalShutdown := SSLOptions.UseBidirectionalShutdown;
   fSSLContext.CipherList := LCipherList;
   fSSLContext.CipherSuites := LCipherSuites;
+  fSSLContext.CipherServerPreference := SSLOptions.CipherServerPreference;
   fSSLContext.VerifyOn := Assigned(fOnVerifyCallback);
   fSSLContext.StatusInfoOn := Assigned(FOnStatusInfo);
   fSSLContext.SecurityLevelCBOn := Assigned(fOnSecurityLevel);
@@ -3974,6 +4008,7 @@ begin
       LContext.UseBidirectionalShutdown := SSLOptions.UseBidirectionalShutdown;
       LContext.CipherList := LCipherList;
       LContext.CipherSuites := LCipherSuites;
+      LContext.CipherServerPreference := SSLOptions.CipherServerPreference;
       LContext.VerifyOn := Assigned(fOnVerifyCallback);
       LContext.StatusInfoOn := Assigned(FOnStatusInfo);
       LContext.SecurityLevelCBOn := Assigned(fOnSecurityLevel);
@@ -4460,6 +4495,7 @@ begin
     fSSLContext.VerifyDirs := SSLOptions.VerifyDirs;
     fSSLContext.CipherList := SSLOptions.CipherList;
     fSSLContext.CipherSuites := SSLOptions.CipherSuites;
+    fSSLContext.CipherServerPreference := SSLOptions.CipherServerPreference;
     fSSLContext.VerifyOn := Assigned(fOnVerifyCallback);
     fSSLContext.StatusInfoOn := Assigned(FOnStatusInfo);
     fSSLContext.SecurityLevelCBOn := Assigned(fOnSecurityLevel);
@@ -5143,6 +5179,10 @@ begin
     begin
       ETaurusTLSSettingCipherSuitesError.RaiseWithMessage(RSSSLSettingCipherSuitesError);
     end;
+  end;
+  if fCipherServerPreference then
+  begin
+    SSL_CTX_set_options(fContext, SSL_OP_CIPHER_SERVER_PREFERENCE);  //PALOFF - Functions called as procedures
   end;
   if fVerifyMode <> [] then
   begin
