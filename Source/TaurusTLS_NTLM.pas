@@ -42,7 +42,7 @@ begin
 {$ENDIF}
 end;
 
-function IsNTLMFuncsAvail: Boolean;
+function TaurusTLSIsNTLMFuncsAvail: Boolean;
 begin
 {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   Result := true;
@@ -210,18 +210,24 @@ end;
 
 procedure InstallNTLMHooks;
 begin
-  {$IFDEF GETURIHOST_SUPPORTED}
+  {$IF DECLARED(LoadNTLMLibrary)}
   IdFIPS.LoadNTLMLibrary := LoadTaurusTLS;
-  IdFIPS.IsNTLMFuncsAvail := IsNTLMFuncsAvail;
+  {$IFEND}
+  {$IF DECLARED(IdFIPS.IsNTLMFuncsAvail)}
+  IdFIPS.IsNTLMFuncsAvail := TaurusTLSIsNTLMFuncsAvail;
+  {$IFEND}
+  {$IF DECLARED(NTLMGetLmChallengeResponse)}
   IdFIPS.NTLMGetLmChallengeResponse := SetupLanManagerPassword;
+  {$IFEND}
+  {$IF DECLARED(NTLMGetNtChallengeResponse)}
   IdFIPS.NTLMGetNtChallengeResponse := CreateNTPassword;
-  {$ENDIF}
+  {$IFEND}
 end;
 
 initialization
 
-{$IFDEF GETURIHOST_SUPPORTED}
+{$IF DECLARED(RegisterFIPSHooksInstaller)}
 RegisterFIPSHooksInstaller(InstallNTLMHooks);
-{$ENDIF}
+{$IFEND}
 
 end.

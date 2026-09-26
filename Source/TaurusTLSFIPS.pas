@@ -72,6 +72,7 @@ uses
   TaurusTLS_ResourceStrings,
   TaurusTLSHeaders_evp,
   TaurusTLSHeaders_crypto,
+  TaurusTLSHeaders_err,
   TaurusTLSHeaders_hmac,
   TaurusTLSHeaders_types;
 
@@ -186,9 +187,28 @@ begin
 end;
 
 function TaurusTLSIsMD4HashIntfAvail: Boolean;
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+var
+  LCtx: PEVP_MD_CTX;
+{$ENDIF}
 begin
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   Result := Assigned(EVP_md4);
+  // OpenSSL 3 only provides MD4 in the legacy provider, so EVP_md4 is assigned but
+  // EVP_DigestInit_ex fails when the legacy provider is not loaded.  Report MD4 as
+  // unavailable in that case so Indy uses its native MD4 implementation (needed by NTLM).
+  if Result then
+  begin
+    LCtx := EVP_MD_CTX_new;
+    Result := Assigned(LCtx);
+    if Result then
+    begin
+      Result := EVP_DigestInit_ex(LCtx, EVP_md4, nil) = 1;
+      EVP_MD_CTX_free(LCtx);
+      if not Result then
+        ERR_clear_error;
+    end;
+  end;
 {$ELSE}
   Result := true;
 {$ENDIF}
