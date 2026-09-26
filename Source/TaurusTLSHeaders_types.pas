@@ -179,7 +179,9 @@ type
 // the C library ABI, the OSSL_TIMET_64BIT conditional compilation flag can
 // be used to select a 64-bit `time_t` when TaurusTLS is compiled for a
 // 64-bit-time Linux environment.
+  {$EXTERNALSYM TOSSL_TIMET_32}
   TOSSL_TIMET_32 = Int32;
+  {$EXTERNALSYM TOSSL_TIMET_64}
   TOSSL_TIMET_64 = Int64;
 
 {$IF Defined(CPU64)}
