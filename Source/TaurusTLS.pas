@@ -4522,7 +4522,7 @@ begin
     fSSLContext.MessageCBOn := Assigned(FOnDebugMessage);
 
     // fSSLContext.PasswordRoutineOn := Assigned(fOnGetPassword);
-    fSSLContext.MinTLSVersion := SSLOptions.MinTLSVersion;;
+    fSSLContext.MinTLSVersion := SSLOptions.MinTLSVersion;
     fSSLContext.Mode := SSLOptions.Mode;
     fSSLContext.SecurityLevel := SSLOptions.SecurityLevel;
     fSSLContext.OnContextLoaderCustom:=self.OnContextLoaderCustom;
