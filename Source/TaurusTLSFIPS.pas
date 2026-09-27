@@ -194,6 +194,7 @@ var
 begin
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   Result := Assigned(EVP_md4);
+  // Fix from: zencode1
   // OpenSSL 3 only provides MD4 in the legacy provider, so EVP_md4 is assigned but
   // EVP_DigestInit_ex fails when the legacy provider is not loaded.  Report MD4 as
   // unavailable in that case so Indy uses its native MD4 implementation (needed by NTLM).
