@@ -5074,8 +5074,8 @@ begin
     // load key and certificate files
     if (RootPublicKey <> '') or (VerifyDirs <> '') then
     begin { Do not Localize }
-      if not TaurusTLS_SSL_CTX_load_verify_locations(fContext, RootPublicKey,
-        VerifyDirs) > 0 then
+      if TaurusTLS_SSL_CTX_load_verify_locations(fContext, RootPublicKey,
+        VerifyDirs) <= 0 then
       begin
         ETaurusTLSLoadingRootCertError.RaiseWithMessage
           (RSSSLLoadingRootCertError);
@@ -5129,8 +5129,8 @@ begin
     end;
     if DHParamsFile <> '' then
     begin { Do not Localize }
-      if not TaurusTLS_SSL_CTX_use_DHparams_file(fContext, fsDHParamsFile,
-        SSL_FILETYPE_PEM) > 0 then
+      if TaurusTLS_SSL_CTX_use_DHparams_file(fContext, fsDHParamsFile,
+        SSL_FILETYPE_PEM) <= 0 then
       begin
         ETaurusTLSLoadingDHParamsError.RaiseWithMessage
           (RSSSLLoadingDHParamsError);
