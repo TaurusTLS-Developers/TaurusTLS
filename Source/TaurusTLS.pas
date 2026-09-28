@@ -4553,7 +4553,7 @@ var
 {$ENDIF}
 
 begin
-  if not Assigned(Binding) then
+  if not BindingAllocated then
     Exit;
 
   if ATimeout <= 0 then
