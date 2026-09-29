@@ -19,8 +19,11 @@ to avoid TaurusTLS.UT.Utils.TFastMM5Log class initialization on start-up.
 
 {$STRONGLINKTYPES ON}
 *)
+
+{$I TaurusTLSUTCompilerDefines.inc}
+
 uses
-  {$IFDEF MSWINDOWS}
+  {$IFDEF USE_FASTMM5}
   FastMM5,
   {$ENDIF }
   System.SysUtils,

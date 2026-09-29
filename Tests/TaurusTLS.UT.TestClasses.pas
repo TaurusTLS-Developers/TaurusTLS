@@ -311,7 +311,7 @@ begin
 end;
 
 procedure TOsslBaseFixture.SetupFixture;
-{$IFDEF MSWINDOWS}
+{$IFDEF USE_FASTMM5}
   {$IFNDEF MEMLEAK_DETAILS}
 var
   lDebugActive: boolean;
@@ -319,7 +319,7 @@ var
 {$ENDIF}
 
 begin
-{$IFDEF MSWINDOWS}
+{$IFDEF USE_FASTMM5}
   {$IFDEF MEMLEAK_DETAILS}
   TFastMMDebugLog.DebugModeActive:=True;
   {$ELSE}
