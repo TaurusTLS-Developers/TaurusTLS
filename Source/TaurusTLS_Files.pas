@@ -198,6 +198,10 @@ uses
   SysUtils,
   {$IFDEF STRING_IS_UNICODE}
   TaurusTLS_Utils,
+  {$IFDEF WINDOWS}
+  SyncObjs,
+  TaurusTLSLoader,
+  {$ENDIF}
   {$ENDIF}
   TaurusTLSHeaders_asn1,
   TaurusTLSHeaders_dh,
@@ -1025,6 +1029,67 @@ begin
   Result := True;
 end;
 
+var
+  { An X509_LOOKUP_METHOD is NOT reference counted. The X509_LOOKUP that
+    X509_STORE_add_lookup builds from it keeps using it for as long as the
+    X509_STORE lives, so the method cannot be freed after a load either. One
+    instance is therefore shared, and freed when OpenSSL is unloaded or this unit
+    is finalized, instead of a new one being created - and leaked - on every
+    call. Sharing it also lets X509_STORE_add_lookup find the lookup it already
+    added to a store, rather than adding another one on each call. }
+  GFileLookupMethod: PX509_LOOKUP_METHOD = nil;
+  GFileLookupMethodLock: TCriticalSection = nil;
+
+/// <summary>
+/// Returns the shared lookup method for Unicode file names, creating it on
+/// first use.
+/// </summary>
+/// <returns>The shared method, or nil if OpenSSL could not create one.</returns>
+function TaurusTLSFileLookupMethod: PX509_LOOKUP_METHOD;
+begin
+  GFileLookupMethodLock.Acquire;
+  try
+    if not Assigned(GFileLookupMethod) then
+    begin
+      GFileLookupMethod := X509_LOOKUP_meth_new('Load file into cache');
+      if Assigned(GFileLookupMethod) then
+      begin
+        X509_LOOKUP_meth_set_ctrl(GFileLookupMethod,
+          @by_TaurusTLS_unicode_file_ctrl);
+      end;
+    end;
+    Result := GFileLookupMethod;
+  finally
+    GFileLookupMethodLock.Release;
+  end;
+end;
+
+/// <summary>
+/// Frees the shared lookup method. Registered as an OpenSSL unloader, so it
+/// runs before the library is freed, while the OpenSSL functions are still
+/// assigned; a later load then creates a new method rather than using one
+/// that lived in the freed library.
+/// </summary>
+procedure TaurusTLSFreeFileLookupMethod;
+begin
+  { Unload can be called after this unit is finalized, by a unit finalized
+    later; finalization has dealt with the method by then. }
+  if not Assigned(GFileLookupMethodLock) then
+  begin
+    Exit;
+  end;
+  GFileLookupMethodLock.Acquire;
+  try
+    if Assigned(GFileLookupMethod) then
+    begin
+      X509_LOOKUP_meth_free(GFileLookupMethod);
+      GFileLookupMethod := nil;
+    end;
+  finally
+    GFileLookupMethodLock.Release;
+  end;
+end;
+
 /// <summary>
 /// Adds a hashed CA directory to a store: through OpenSSL's own lookup when the
 /// path can be given to it, otherwise by loading its hashed files through the
@@ -1063,13 +1128,16 @@ begin
   begin
     Exit;
   end;
-  method := X509_LOOKUP_meth_new('Load file into cache');
+  method := TaurusTLSFileLookupMethod;
+  if not Assigned(method) then
+  begin
+    Exit;
+  end;
   lookup := X509_STORE_add_lookup(ctx, method);
   if not Assigned(lookup) then
   begin
     Exit;
   end;
-  X509_LOOKUP_meth_set_ctrl(method, @by_TaurusTLS_unicode_file_ctrl);
   LDir := IncludeTrailingPathDelimiter(APathName);
   LLoaded := 0;
   if FindFirst(LDir + '*', faAnyFile, LSearch) = 0 then
@@ -1109,18 +1177,21 @@ function TaurusTLS_X509_STORE_load_locations(ctx: PX509_STORE;
   const AFileName, APathName: String): TIdC_INT;
 var
   lookup: PX509_LOOKUP;
-  method: PX509_LOOKUP_METHOD; { reference counted }
+  method: PX509_LOOKUP_METHOD; { shared; see GFileLookupMethod }
 begin
   Result := 0;
   if AFileName <> '' then
   begin
-    method := X509_LOOKUP_meth_new('Load file into cache');
+    method := TaurusTLSFileLookupMethod;
+    if not Assigned(method) then
+    begin
+      Exit;
+    end;
     lookup := X509_STORE_add_lookup(ctx, method);
     if not Assigned(lookup) then
     begin
       Exit;
     end;
-    X509_LOOKUP_meth_set_ctrl(method, @by_TaurusTLS_unicode_file_ctrl);
     // RLebeau: the PAnsiChar(Pointer(...)) cast below looks weird, but it is
     // intentional. X509_LOOKUP_load_file() takes a PAnsiChar as input, but
     // we are using Unicode strings here.  So casting the UnicodeString to a
@@ -1496,6 +1567,34 @@ begin
   end;
 end;
 
+{$ENDIF}
+
+{$IFDEF STRING_IS_UNICODE}
+{$IFDEF WINDOWS}
+
+initialization
+  GFileLookupMethodLock := TCriticalSection.Create;
+  { Registered after the header units, so the loader runs it before theirs, while
+    X509_LOOKUP_meth_free is still assigned. }
+  Register_SSLUnloader(TaurusTLSFreeFileLookupMethod);
+
+finalization
+  { Normally the unloader has already freed the method. If OpenSSL is still
+    loaded, free it here. If the library has already gone without the unloader
+    running, the method went with it, and calling into the library would fault. }
+  if Assigned(GFileLookupMethod) then
+  begin
+    {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+    if (GetOpenSSLLoader <> nil) and GetOpenSSLLoader.IsLoaded then
+    {$ENDIF}
+    begin
+      X509_LOOKUP_meth_free(GFileLookupMethod);
+    end;
+    GFileLookupMethod := nil;
+  end;
+  FreeAndNil(GFileLookupMethodLock);
+
+{$ENDIF}
 {$ENDIF}
 
 end.

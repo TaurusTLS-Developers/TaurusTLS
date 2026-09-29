@@ -4,7 +4,8 @@ unit TaurusTLS.UT.InputRanges;
 ///   Inputs the library mishandled at the edge of a type's range or encoding:
 ///   a buffer too large for OpenSSL's int length (#294), a CA directory whose
 ///   path is not ANSI (#295), certificate names that are not ANSI (#296), and
-///   common names that are not hostnames (#297).
+///   common names that are not hostnames (#297). Also the shared file lookup
+///   method, which replaced one leaked per load.
 /// </summary>
 
 interface
@@ -63,6 +64,20 @@ type
     /// </summary>
     [Test]
     procedure HashedDir_NonAnsiPath_IgnoresOtherFiles;
+    /// <summary>
+    ///   The file lookup method is shared, not created per call, so loading
+    ///   the same file into one store twice, and into a second store, must
+    ///   still succeed and leave one certificate in each.
+    /// </summary>
+    [Test]
+    procedure FileLookup_RepeatedLoads_StillLoad;
+    /// <summary>
+    ///   The shared lookup method is freed when OpenSSL is unloaded. A load
+    ///   after OpenSSL is unloaded and loaded again must create a new one,
+    ///   not use the one that lived in the freed library.
+    /// </summary>
+    [Test]
+    procedure FileLookup_AfterOpenSSLReload_StillLoads;
 {$ENDIF}
   end;
 
@@ -71,6 +86,7 @@ implementation
 uses
   {$IFDEF MSWINDOWS}
   IdIDN,
+  TaurusTLSLoader,
   {$ENDIF}
   System.SysUtils,
   System.IOUtils,
@@ -380,6 +396,72 @@ begin
     end;
   finally
     TDirectory.Delete(LDir, True);
+  end;
+end;
+
+/// <summary>Writes cCertOne to a new temporary file and returns its name.</summary>
+function MakeCertFile: string;
+begin
+  Result := TPath.GetTempFileName;
+  TFile.WriteAllBytes(Result, TEncoding.ASCII.GetBytes(cCertOne));
+end;
+
+/// <summary>
+///   Loads AFileName into a new store and returns how many objects the store
+///   then holds, or -1 if the load reported failure.
+/// </summary>
+function LoadFileIntoNewStore(const AFileName: string): Integer;
+var
+  LStore: PX509_STORE;
+begin
+  LStore := X509_STORE_new;
+  Assert.IsNotNull(LStore);
+  try
+    if TaurusTLS_X509_STORE_load_locations(LStore, AFileName, '') <> 1 then
+      Result := -1
+    else
+      Result := StoreObjectCount(LStore);
+  finally
+    X509_STORE_free(LStore);
+  end;
+end;
+
+procedure TTaurusTLSInputRangesFixture.FileLookup_RepeatedLoads_StillLoad;
+var
+  LFile: string;
+  LStore: PX509_STORE;
+begin
+  LFile := MakeCertFile;
+  try
+    LStore := X509_STORE_new;
+    Assert.IsNotNull(LStore);
+    try
+      Assert.AreEqual(1, TaurusTLS_X509_STORE_load_locations(LStore, LFile, ''));
+      Assert.AreEqual(1, TaurusTLS_X509_STORE_load_locations(LStore, LFile, ''),
+        'a second load into the same store failed');
+      Assert.AreEqual(1, StoreObjectCount(LStore));
+    finally
+      X509_STORE_free(LStore);
+    end;
+    Assert.AreEqual(1, LoadFileIntoNewStore(LFile), 'a load into a second store failed');
+  finally
+    TFile.Delete(LFile);
+  end;
+end;
+
+procedure TTaurusTLSInputRangesFixture.FileLookup_AfterOpenSSLReload_StillLoads;
+var
+  LFile: string;
+begin
+  LFile := MakeCertFile;
+  try
+    Assert.AreEqual(1, LoadFileIntoNewStore(LFile));
+    GetOpenSSLLoader.Unload;
+    Assert.IsTrue(GetOpenSSLLoader.Load, 'OpenSSL did not load again');
+    Assert.AreEqual(1, LoadFileIntoNewStore(LFile),
+      'a load after OpenSSL was reloaded failed');
+  finally
+    TFile.Delete(LFile);
   end;
 end;
 {$ENDIF}
