@@ -496,8 +496,11 @@ begin
 
   AEncryptor.Encrypt(lPlain, lEnc);
   Assert.AreNotEqual<NativeUInt>(0, Length(lEnc), 'Encrypted size is Zero.');
-  Assert.IsFalse(CompareBytes(lPlain, lEnc),
-    'Content of Plan and Encrypted data is partially or fully equal.');
+
+  // A few bytes of encrypted data can match the plain data by chance
+  if ADataSize >= SizeOf(Integer) then
+    Assert.IsFalse(CompareBytes(lPlain, lEnc),
+      'Content of Plan and Encrypted data is partially or fully equal.');
 
   AEncryptor.Decrypt(lEnc, lDec);
   Assert.AreNotEqual<NativeUInt>(0, Length(lEnc),  'Decrypted size is Zero.');

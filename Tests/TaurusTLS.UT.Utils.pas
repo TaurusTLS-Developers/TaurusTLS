@@ -77,7 +77,7 @@ type
     class property Path: string read GetPath write SetPath;
   end;
 
-  {$IFDEF WINDOWS}
+  {$IFDEF USE_FASTMM5}
   TFastMMDebugLog = class
   public const
     cEnvVarNameDll = 'FASTMM_DEBUG_DLL';
@@ -113,7 +113,7 @@ resourcestring
   rcOssLoaderHelp = 'Specify path to OpenSSL library folder';
   rcFastMMDebugEnableHelp = 'Enable or disable detailed memory leak';
   rcFastMMLogHelp = 'Memory leak report file name.';
-{$IFDEF WINDOWS}
+{$IFDEF USE_FASTMM5}
   {$IFDEF WIN32}
   rcFastMMDllNamelHelp = 'Path to FastMM_FullDebugMode.dll';
   {$ENDIF}
@@ -125,7 +125,7 @@ resourcestring
 implementation
 
 uses
-  {$IFDEF WINDOWS}
+  {$IFDEF USE_FASTMM5}
   FastMM5,
   {$ENDIF}
   System.SyncObjs, DUnitX.CommandLine.Options;
@@ -208,7 +208,7 @@ begin
   FLoader.OpenSSLPath:=Value;
 end;
 
-{$IFDEF WINDOWS}
+{$IFDEF USE_FASTMM5}
 
 { TFastMMDebugLoader }
 

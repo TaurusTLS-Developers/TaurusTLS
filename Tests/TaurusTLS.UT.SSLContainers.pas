@@ -501,8 +501,10 @@ begin
   Assert.AreNotEqual<NativeUInt>(0, lLen, 'ADataLen must be greater than Zero.');
   if lLen > ADataLen then
     lLen:=ADataLen;
-  Assert.AreNotEqualMemory(@FData[0], AData, lLen,
-    'Plain and Encrypted data looks the same...');
+  // A few bytes of encrypted data can match the plain data by chance.
+  if lLen >= SizeOf(Integer) then
+    Assert.AreNotEqualMemory(@FData[0], AData, lLen,
+      'Plain and Encrypted data looks the same...');
 end;
 
 procedure TBytesVaultFixture.IsEncrypted(const ABytes: TBytes);
