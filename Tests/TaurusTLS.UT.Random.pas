@@ -117,6 +117,7 @@ type
       Msg: string = ''); static;
     class procedure CompareFalse<T: record>(const A, B: T;
       Msg: string = ''); static;
+    class procedure CompareListNotAllEqual<T: record>(const List: TList<T>); static;
     class procedure CompareListTrue<T: record>(const List: TList<T>); static;
     class procedure CompareListFalse<T: record>(const List: TList<T>); static;
   end;
@@ -165,6 +166,18 @@ end;
 class procedure TTools.CompareFalse<T>(const A, B: T; Msg: string = '');
 begin
   CompareMemFalse(A, B, SizeOf(T), Msg);
+end;
+
+class procedure TTools.CompareListNotAllEqual<T>(const List: TList<T>);
+begin
+  var lA := List.Items[0];
+  for var x := 1 to List.Count - 1 do
+  begin
+    var lB := List.Items[x];
+    if not CompareMem(lA, lB, SizeOf(T)) then
+      Exit;
+  end;
+  Assert.Fail(Format('All %d List.Items are equal.', [List.Count]));
 end;
 
 class procedure TTools.CompareListTrue<T>(const List: TList<T>);
@@ -393,6 +406,13 @@ begin
       lList.Add(lVal);
     end;
 
+    if SizeOf(T) < SizeOf(Integer) then
+    begin
+      // A small type has too few values for the items to be reliably distinct
+      TTools.CompareListNotAllEqual<T>(lList);
+      Exit;      
+    end;
+
     for x := 0 to Items-2 do
       for y := Succ(x) to Items-1 do
         Assert.AreNotEqual(lList[x], lList[y],
@@ -546,6 +566,13 @@ begin
     begin
       var lVal:=GetRandom(Source).Random<T>;
       lList.Add(lVal);
+    end;
+
+    if SizeOf(T) < SizeOf(Integer) then
+    begin
+      // A small type has too few values for the items to be reliably distinct
+      TTools.CompareListNotAllEqual<T>(lList);
+      Exit;
     end;
 
     for x := 0 to Items-2 do
