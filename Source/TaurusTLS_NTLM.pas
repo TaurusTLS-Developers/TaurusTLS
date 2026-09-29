@@ -211,16 +211,16 @@ end;
 procedure InstallNTLMHooks;
 begin
   {$IF DECLARED(LoadNTLMLibrary)}
-  IdFIPS.LoadNTLMLibrary := LoadTaurusTLS;
+  LoadNTLMLibrary := LoadTaurusTLS;
   {$IFEND}
-  {$IF DECLARED(IdFIPS.IsNTLMFuncsAvail)}
-  IdFIPS.IsNTLMFuncsAvail := TaurusTLSIsNTLMFuncsAvail;
+  {$IF DECLARED(IsNTLMFuncsAvail)}
+  IsNTLMFuncsAvail := TaurusTLSIsNTLMFuncsAvail;
   {$IFEND}
   {$IF DECLARED(NTLMGetLmChallengeResponse)}
-  IdFIPS.NTLMGetLmChallengeResponse := SetupLanManagerPassword;
+  NTLMGetLmChallengeResponse := SetupLanManagerPassword;
   {$IFEND}
   {$IF DECLARED(NTLMGetNtChallengeResponse)}
-  IdFIPS.NTLMGetNtChallengeResponse := CreateNTPassword;
+  NTLMGetNtChallengeResponse := CreateNTPassword;
   {$IFEND}
 end;
 
