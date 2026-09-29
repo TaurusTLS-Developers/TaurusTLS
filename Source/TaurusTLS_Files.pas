@@ -20,6 +20,7 @@ interface
 
 uses
   IdCTypes,
+  TaurusTLSHeaders_bio,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_x509;
 
@@ -28,6 +29,30 @@ const
   /// Maximum password length.
   /// </summary>
   MAX_SSL_PASSWORD_LENGTH = 128;
+
+/// <summary>
+/// Wraps a buffer in a read-only OpenSSL memory BIO, or returns nil when the
+/// buffer is too large for one.
+/// </summary>
+/// <param name="ABuffer">
+/// The bytes to wrap. The BIO reads them in place, so they must outlive it.
+/// </param>
+/// <param name="ASize">
+/// Their length.
+/// </param>
+/// <returns>
+/// The BIO, or nil when <c>ASize</c> is negative or above <c>MaxInt</c>.
+/// </returns>
+/// <remarks>
+/// <c>BIO_new_mem_buf</c> takes an <c>int</c> length, and the file loaders
+/// pass it a <c>TMemoryStream.Size</c>, which is an Int64. Narrowed unchecked,
+/// a file of 2 GiB up to 4 GiB becomes a negative length, which OpenSSL reads
+/// as "NUL-terminated", so it runs <c>strlen</c> off the end of the buffer. A
+/// file of 4 GiB or more wraps round, and only a prefix of it is parsed.
+/// Returning nil sends each caller down the path it already has for a BIO that
+/// could not be created.
+/// </remarks>
+function TaurusTLS_BIO_new_mem_buf(const ABuffer; const ASize: Int64): PBIO;
 
   /// <summary>
   /// Load a certificate in PEM format into an OpenSSL X509 Certificate Object.
@@ -173,9 +198,12 @@ uses
   SysUtils,
   {$IFDEF STRING_IS_UNICODE}
   TaurusTLS_Utils,
+  {$IFDEF WINDOWS}
+  SyncObjs,
+  TaurusTLSLoader,
+  {$ENDIF}
   {$ENDIF}
   TaurusTLSHeaders_asn1,
-  TaurusTLSHeaders_bio,
   TaurusTLSHeaders_dh,
   TaurusTLSHeaders_err,
   TaurusTLSHeaders_evp,
@@ -185,6 +213,17 @@ uses
   TaurusTLSHeaders_sslerr,
   TaurusTLSHeaders_stack,
   TaurusTLSHeaders_x509_vfy;
+
+function TaurusTLS_BIO_new_mem_buf(const ABuffer; const ASize: Int64): PBIO;
+begin
+  if (ASize < 0) or (ASize > MaxInt) then
+  begin
+    Result := nil;
+    Exit;
+  end;
+  { In range, so the narrowing cannot lose anything. }
+  Result := BIO_new_mem_buf(ABuffer, TIdC_INT(ASize));
+end;
 
 // ** General certificate loading **//
 function LoadCertificate(const AFileName: String): PX509;
@@ -198,7 +237,7 @@ begin
   try
     LM.LoadFromFile(AFileName);
     {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-    LB := BIO_new_mem_buf(LM.Memory^, LM.Size);
+    LB := TaurusTLS_BIO_new_mem_buf(LM.Memory^, LM.Size);
     {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     if Assigned(LB) then
     begin
@@ -252,7 +291,7 @@ begin
 
   try
     {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-    b := BIO_new_mem_buf(LM.Memory^, LM.Size);
+    b := TaurusTLS_BIO_new_mem_buf(LM.Memory^, LM.Size);
     {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     if not Assigned(b) then
     begin
@@ -346,7 +385,7 @@ begin
 
   try
     {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-    Lb := BIO_new_mem_buf(LM.Memory^, LM.Size);
+    Lb := TaurusTLS_BIO_new_mem_buf(LM.Memory^, LM.Size);
     {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     if not Assigned(Lb) then
     begin
@@ -517,7 +556,7 @@ begin
 
   try
     {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-    Lin := BIO_new_mem_buf(LM.Memory^, LM.Size);
+    Lin := TaurusTLS_BIO_new_mem_buf(LM.Memory^, LM.Size);
     {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     if not Assigned(Lin) then
     begin
@@ -612,7 +651,7 @@ begin
 
   try
     {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-    Lin := BIO_new_mem_buf(LM.Memory^, LM.Size);
+    Lin := TaurusTLS_BIO_new_mem_buf(LM.Memory^, LM.Size);
     {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     if not Assigned(Lin) then
     begin
@@ -695,7 +734,7 @@ begin
       end;
       try
         {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-        LB := BIO_new_mem_buf(LM.Memory^, LM.Size);
+        LB := TaurusTLS_BIO_new_mem_buf(LM.Memory^, LM.Size);
         {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
         if Assigned(LB) then
         begin
@@ -805,7 +844,7 @@ begin
 
   try
     {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-    b := BIO_new_mem_buf(LM.Memory^, LM.Size);
+    b := TaurusTLS_BIO_new_mem_buf(LM.Memory^, LM.Size);
     {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     if not Assigned(b) then
     begin
@@ -874,7 +913,7 @@ begin
   end;
   try
     {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-    b := BIO_new_mem_buf(LM.Memory^, LM.Size);
+    b := TaurusTLS_BIO_new_mem_buf(LM.Memory^, LM.Size);
     {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     if not Assigned(b) then
     begin
@@ -949,22 +988,210 @@ begin
   end;
 end;
 
+/// <summary>
+/// Whether a file name has the shape of an OpenSSL hashed store entry.
+/// </summary>
+/// <param name="AName">The file name, without its directory.</param>
+/// <returns>True for names such as <c>5ad8a5d6.0</c> or <c>5ad8a5d6.r1</c>.</returns>
+function IsHashedStoreFileName(const AName: String): Boolean;
+var
+  I: Integer;
+  LStart: Integer;
+begin
+  Result := False;
+  if (Length(AName) < 10) or (AName[9] <> '.') then
+  begin
+    Exit;
+  end;
+  for I := 1 to 8 do
+  begin
+    if not CharInSet(AName[I], ['0'..'9', 'a'..'f', 'A'..'F']) then
+    begin
+      Exit;
+    end;
+  end;
+  LStart := 10;
+  if CharInSet(AName[LStart], ['r', 'R']) then
+  begin
+    Inc(LStart);
+  end;
+  if LStart > Length(AName) then
+  begin
+    Exit;
+  end;
+  for I := LStart to Length(AName) do
+  begin
+    if not CharInSet(AName[I], ['0'..'9']) then
+    begin
+      Exit;
+    end;
+  end;
+  Result := True;
+end;
+
+var
+  { An X509_LOOKUP_METHOD is NOT reference counted. The X509_LOOKUP that
+    X509_STORE_add_lookup builds from it keeps using it for as long as the
+    X509_STORE lives, so the method cannot be freed after a load either. One
+    instance is therefore shared, and freed when OpenSSL is unloaded or this unit
+    is finalized, instead of a new one being created - and leaked - on every
+    call. Sharing it also lets X509_STORE_add_lookup find the lookup it already
+    added to a store, rather than adding another one on each call. }
+  GFileLookupMethod: PX509_LOOKUP_METHOD = nil;
+  GFileLookupMethodLock: TCriticalSection = nil;
+
+/// <summary>
+/// Returns the shared lookup method for Unicode file names, creating it on
+/// first use.
+/// </summary>
+/// <returns>The shared method, or nil if OpenSSL could not create one.</returns>
+function TaurusTLSFileLookupMethod: PX509_LOOKUP_METHOD;
+begin
+  GFileLookupMethodLock.Acquire;
+  try
+    if not Assigned(GFileLookupMethod) then
+    begin
+      GFileLookupMethod := X509_LOOKUP_meth_new('Load file into cache');
+      if Assigned(GFileLookupMethod) then
+      begin
+        X509_LOOKUP_meth_set_ctrl(GFileLookupMethod,
+          @by_TaurusTLS_unicode_file_ctrl);
+      end;
+    end;
+    Result := GFileLookupMethod;
+  finally
+    GFileLookupMethodLock.Release;
+  end;
+end;
+
+/// <summary>
+/// Frees the shared lookup method. Registered as an OpenSSL unloader, so it
+/// runs before the library is freed, while the OpenSSL functions are still
+/// assigned; a later load then creates a new method rather than using one
+/// that lived in the freed library.
+/// </summary>
+procedure TaurusTLSFreeFileLookupMethod;
+begin
+  { Unload can be called after this unit is finalized, by a unit finalized
+    later; finalization has dealt with the method by then. }
+  if not Assigned(GFileLookupMethodLock) then
+  begin
+    Exit;
+  end;
+  GFileLookupMethodLock.Acquire;
+  try
+    if Assigned(GFileLookupMethod) then
+    begin
+      X509_LOOKUP_meth_free(GFileLookupMethod);
+      GFileLookupMethod := nil;
+    end;
+  finally
+    GFileLookupMethodLock.Release;
+  end;
+end;
+
+/// <summary>
+/// Adds a hashed CA directory to a store: through OpenSSL's own lookup when the
+/// path can be given to it, otherwise by loading its hashed files through the
+/// Unicode file lookup.
+/// </summary>
+/// <param name="ctx">The store to load into.</param>
+/// <param name="APathName">The directory.</param>
+/// <returns>1 on success, otherwise 0.</returns>
+function TaurusTLS_load_hashed_dir(ctx: PX509_STORE;
+  const APathName: String): TIdC_INT;
+var
+  lookup: PX509_LOOKUP;
+  method: PX509_LOOKUP_METHOD;
+  LDir: String;
+  LFile: String;
+  LSearch: TSearchRec;
+  LLoaded: Integer;
+  LBytes: TBytes;
+  LAnsiPath: AnsiString;
+begin
+  Result := 0;
+  { OpenSSL's by_dir lookup takes a narrow path, so it can have the path only
+    when the ANSI code page holds every character of it. The round trip catches
+    best-fit substitutions ( an accented letter mapped to its base letter ) as
+    well as outright '?' replacement. }
+  LBytes := TEncoding.ANSI.GetBytes(APathName);
+  if TEncoding.ANSI.GetString(LBytes) = APathName then
+  begin
+    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
+    SetString(LAnsiPath, PIdAnsiChar(PByte(LBytes)), Length(LBytes));
+    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
+    Result := X509_STORE_load_locations(ctx, nil, PIdAnsiChar(LAnsiPath));
+    Exit;
+  end;
+  if not DirectoryExists(APathName) then
+  begin
+    Exit;
+  end;
+  method := TaurusTLSFileLookupMethod;
+  if not Assigned(method) then
+  begin
+    Exit;
+  end;
+  lookup := X509_STORE_add_lookup(ctx, method);
+  if not Assigned(lookup) then
+  begin
+    Exit;
+  end;
+  LDir := IncludeTrailingPathDelimiter(APathName);
+  LLoaded := 0;
+  if FindFirst(LDir + '*', faAnyFile, LSearch) = 0 then
+  begin
+    try
+      repeat
+        { The names OpenSSL's by_dir lookup reads: 8 hex digits, '.', an
+          optional 'r' for a CRL, and a sequence number. Anything else in the
+          directory is not part of the store. }
+        if ((LSearch.Attr and faDirectory) = 0) and
+          IsHashedStoreFileName(LSearch.Name) then
+        begin
+          LFile := LDir + LSearch.Name;
+          // The same Unicode hand-off as in TaurusTLS_X509_STORE_load_locations:
+          // see the note there.
+          if X509_LOOKUP_load_file(lookup, PIdAnsiChar(Pointer(LFile)),
+            X509_FILETYPE_PEM) = 1 then
+          begin
+            Inc(LLoaded);
+          end;
+        end;
+      until FindNext(LSearch) <> 0;
+    finally
+      FindClose(LSearch);
+    end;
+  end;
+  { A file that failed to load leaves an entry on the error queue that is not
+    this call's to report once another file has loaded. }
+  if LLoaded > 0 then
+  begin
+    ERR_clear_error;
+    Result := 1;
+  end;
+end;
+
 function TaurusTLS_X509_STORE_load_locations(ctx: PX509_STORE;
   const AFileName, APathName: String): TIdC_INT;
 var
   lookup: PX509_LOOKUP;
-  method: PX509_LOOKUP_METHOD; { reference counted }
+  method: PX509_LOOKUP_METHOD; { shared; see GFileLookupMethod }
 begin
   Result := 0;
   if AFileName <> '' then
   begin
-    method := X509_LOOKUP_meth_new('Load file into cache');
+    method := TaurusTLSFileLookupMethod;
+    if not Assigned(method) then
+    begin
+      Exit;
+    end;
     lookup := X509_STORE_add_lookup(ctx, method);
     if not Assigned(lookup) then
     begin
       Exit;
     end;
-    X509_LOOKUP_meth_set_ctrl(method, @by_TaurusTLS_unicode_file_ctrl);
     // RLebeau: the PAnsiChar(Pointer(...)) cast below looks weird, but it is
     // intentional. X509_LOOKUP_load_file() takes a PAnsiChar as input, but
     // we are using Unicode strings here.  So casting the UnicodeString to a
@@ -978,9 +1205,14 @@ begin
   end;
   if APathName <> '' then
   begin
-    { TODO: Figure out how to do the hash dir lookup with a Unicode path. }
-    if X509_STORE_load_locations(ctx, nil, PIdAnsiChar(AnsiString(APathName))) <> 1
-    then
+    { OpenSSL's hashed-directory lookup takes a narrow path. Converted with
+      AnsiString(APathName), every character outside the ANSI code page became
+      '?', so OpenSSL looked in a directory that does not exist, found no CA
+      certificates, and still reported success, because the lookup is lazy.
+      TaurusTLS_load_hashed_dir keeps OpenSSL's lookup for a path that survives
+      the ANSI round trip, and loads the directory's hashed files through the
+      Unicode file lookup otherwise. }
+    if TaurusTLS_load_hashed_dir(ctx, APathName) <> 1 then
     begin
       Exit;
     end;
@@ -1023,7 +1255,7 @@ begin
 
   try
     {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-    b := BIO_new_mem_buf(LM.Memory^, LM.Size);
+    b := TaurusTLS_BIO_new_mem_buf(LM.Memory^, LM.Size);
     {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
     if not Assigned(b) then
     begin
@@ -1335,6 +1567,34 @@ begin
   end;
 end;
 
+{$ENDIF}
+
+{$IFDEF STRING_IS_UNICODE}
+{$IFDEF WINDOWS}
+
+initialization
+  GFileLookupMethodLock := TCriticalSection.Create;
+  { Registered after the header units, so the loader runs it before theirs, while
+    X509_LOOKUP_meth_free is still assigned. }
+  Register_SSLUnloader(TaurusTLSFreeFileLookupMethod);
+
+finalization
+  { Normally the unloader has already freed the method. If OpenSSL is still
+    loaded, free it here. If the library has already gone without the unloader
+    running, the method went with it, and calling into the library would fault. }
+  if Assigned(GFileLookupMethod) then
+  begin
+    {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+    if (GetOpenSSLLoader <> nil) and GetOpenSSLLoader.IsLoaded then
+    {$ENDIF}
+    begin
+      X509_LOOKUP_meth_free(GFileLookupMethod);
+    end;
+    GFileLookupMethod := nil;
+  end;
+  FreeAndNil(GFileLookupMethodLock);
+
+{$ENDIF}
 {$ENDIF}
 
 end.
