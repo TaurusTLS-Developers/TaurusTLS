@@ -62,11 +62,14 @@ type
   TTaurusTLSX509Name = class(TObject)
 {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
     fX509Name: PX509_NAME;
-    function GetStrByNID(const ANid: TIdC_INT): String; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    { Not inline: it calls the ASN.1 string API, and inlining it would oblige
+      every caller of the inline Get* accessors to use TaurusTLSHeaders_asn1. }
+    function GetStrByNID(const ANid: TIdC_INT): String;
     function GetOneLine: String; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetHash: TTaurusTLSULong; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetHashAsString: String; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetCommonName: String; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    { Not inline: it holds a try/except. }
+    function GetCommonName: String;
     function GetOrganization: String; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function Get_Unit: String; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetEMail: String; {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -855,6 +858,7 @@ uses
   TaurusTLSHeaders_asn1,
   TaurusTLSHeaders_bio,
   TaurusTLSHeaders_bn,
+  TaurusTLSHeaders_crypto,
   TaurusTLSHeaders_objects,
   TaurusTLSHeaders_rsa,
   TaurusTLSHeaders_x509_vfy,
@@ -886,28 +890,57 @@ end;
 
 function TTaurusTLSX509Name.GetStrByNID(const ANid: TIdC_INT): String;
 var
-  LBuffer: array [0 .. 2048] of TIdAnsiChar;
+  LIndex: TIdC_INT;
+  LData: PASN1_STRING;
+  LUtf8: PByte;
+  LLen: TIdC_INT;
+{$IFDEF STRING_IS_UNICODE}
+  LBytes: TBytes;
+{$ENDIF}
 begin
+  Result := ''; { Do not Localize }
   if fX509Name = nil then
   begin
-    Result := ''; { Do not Localize }
-  end
-  else
-  begin
-    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-    if X509_NAME_get_text_by_NID(fX509Name, ANid, @LBuffer[0], 256) > -1 then
-    begin
-      // PIdAnsiChar typecast is necessary to force the RTL
-      // to read it as a PAnsiChar for conversion for a
-      // string.
-      Result := String(PIdAnsiChar(@LBuffer[0]));
-    end
-    else
-    begin
-      Result := '';
-    end;
-    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
+    Exit;
   end;
+  { X509_NAME_get_text_by_NID copies the entry's RAW ASN.1 bytes, which were
+    then decoded as ANSI: a UTF8String entry - what RFC 5280 requires of new
+    certificates - came back as mojibake ( 'Müller' as 'MÃ¼ller' ), and a
+    BMPString stopped at its first zero byte. ASN1_STRING_to_UTF8 converts every
+    ASN.1 string type to UTF-8. }
+  LIndex := X509_NAME_get_index_by_NID(fX509Name, ANid, -1);
+  if LIndex < 0 then
+  begin
+    Exit;
+  end;
+  LData := X509_NAME_ENTRY_get_data(X509_NAME_get_entry(fX509Name, LIndex));
+  if LData = nil then
+  begin
+    Exit;
+  end;
+  LUtf8 := nil;
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
+  LLen := ASN1_STRING_to_UTF8(@LUtf8, LData);
+  if LLen < 0 then
+  begin
+    Exit;
+  end;
+  try
+    {$IFDEF STRING_IS_UNICODE}
+    SetLength(LBytes, LLen);
+    if LLen > 0 then
+    begin
+      Move(LUtf8^, LBytes[0], LLen);
+    end;
+    Result := TEncoding.UTF8.GetString(LBytes);
+    {$ELSE}
+    { string is UTF-8 here, so the bytes are used as they are. }
+    SetString(Result, PIdAnsiChar(LUtf8), LLen);
+    {$ENDIF}
+  finally
+    OPENSSL_free(LUtf8);
+  end;
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 end;
 
 function TTaurusTLSX509Name.GetCity: String;
@@ -916,18 +949,40 @@ begin
 end;
 
 function TTaurusTLSX509Name.GetCommonName: String;
+{$IFDEF WINDOWS}
+var
+  I: Integer;
+{$ENDIF}
 begin
-  {$IFDEF WINDOWS}
-  if Assigned(IdnToUnicode) then
-  begin
-    Result := PunnyCodeToIDN(GetStrByNID(NID_commonName));
-  end
-  else
-  begin
-    Result := GetStrByNID(NID_commonName);
-  end;
-  {$ELSE}
   Result := GetStrByNID(NID_commonName);
+  {$IFDEF WINDOWS}
+  { PunnyCodeToIDN wraps the Windows IdnToUnicode API and raises when it fails,
+    and it fails for anything that is not an ASCII hostname: an empty name, a
+    person's name ( what a client certificate typically carries ), any non-ASCII
+    name. So only a name that IS Punycode - all ASCII, with an 'xn--' label - is
+    converted; every other name is returned as the certificate states it. }
+  if (Result = '') or not Assigned(IdnToUnicode) or
+    (Pos('xn--', LowerCase(Result)) = 0) then
+  begin
+    Exit;
+  end;
+  for I := 1 to Length(Result) do
+  begin
+    if Ord(Result[I]) > $7F then
+    begin
+      Exit;
+    end;
+  end;
+  try
+    Result := PunnyCodeToIDN(Result);
+  except
+    { Malformed Punycode, from a certificate the peer sent: the name stays as
+      stated rather than the property raising on input nobody here controls. }
+    on EOSError do
+    begin
+      Result := GetStrByNID(NID_commonName);
+    end;
+  end;
   {$ENDIF}
 end;
 
