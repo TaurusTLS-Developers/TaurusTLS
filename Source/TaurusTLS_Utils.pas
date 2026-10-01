@@ -267,37 +267,36 @@ function IDNStrToUnicode(const AIDNStr : String) : String;
 {$IFDEF WINDOWS}
 var
   I: Integer;
+  LResult: string;
 {$ENDIF}
 begin
-  Result := AIDNStr;
+  LResult := AIDNStr;
   {$IFDEF WINDOWS}
   { PunnyCodeToIDN wraps the Windows IdnToUnicode API and raises when it fails,
     and it fails for anything that is not an ASCII hostname: an empty name, a
     person's name ( what a client certificate typically carries ), any non-ASCII
     name. So only a name that IS Punycode - all ASCII, with an 'xn--' label - is
     converted; every other name is returned as the certificate states it. }
-  if (Result = '') or not Assigned(IdnToUnicode) or
-    (Pos('xn--', LowerCase(Result)) = 0) then
+  if (LResult = '') or not Assigned(IdnToUnicode) or
+    (Pos('xn--', LowerCase(LResult)) = 0) then
   begin
-    Exit;
+    Exit(LResult);
   end;
-  for I := 1 to Length(Result) do
+  for I := 1 to Length(LResult) do
   begin
-    if Ord(Result[I]) > $7F then
+    if Ord(LResult[I]) > $7F then
     begin
-      Exit;
+      Exit(LResult);
     end;
   end;
   try
-    Result := PunnyCodeToIDN(Result);
+    LResult := PunnyCodeToIDN(LResult);
   except
     { Malformed Punycode, from a certificate the peer sent: the name stays as
       stated rather than the property raising on input nobody here controls. }
-    on EOSError do
-    begin
-      Result := AIDNStr;
-    end;
+    on EOSError do ; // To stop raising the exception up.
   end;
+  Result := LResult;
   {$ENDIF}
 end;
 
