@@ -849,9 +849,6 @@ implementation
 
 uses
   IdFIPS,
-  {$IFDEF WINDOWS}
-  IdIDN,
-  {$ENDIF}
   TaurusTLS_ResourceStrings,
   TaurusTLSExceptionHandlers,
   TaurusTLSHeaders_obj_mac,
@@ -949,41 +946,9 @@ begin
 end;
 
 function TTaurusTLSX509Name.GetCommonName: String;
-{$IFDEF WINDOWS}
-var
-  I: Integer;
-{$ENDIF}
+
 begin
-  Result := GetStrByNID(NID_commonName);
-  {$IFDEF WINDOWS}
-  { PunnyCodeToIDN wraps the Windows IdnToUnicode API and raises when it fails,
-    and it fails for anything that is not an ASCII hostname: an empty name, a
-    person's name ( what a client certificate typically carries ), any non-ASCII
-    name. So only a name that IS Punycode - all ASCII, with an 'xn--' label - is
-    converted; every other name is returned as the certificate states it. }
-  if (Result = '') or not Assigned(IdnToUnicode) or
-    (Pos('xn--', LowerCase(Result)) = 0) then
-  begin
-    Exit;
-  end;
-  for I := 1 to Length(Result) do
-  begin
-    if Ord(Result[I]) > $7F then
-    begin
-      Exit;
-    end;
-  end;
-  try
-    Result := PunnyCodeToIDN(Result);
-  except
-    { Malformed Punycode, from a certificate the peer sent: the name stays as
-      stated rather than the property raising on input nobody here controls. }
-    on EOSError do
-    begin
-      Result := GetStrByNID(NID_commonName);
-    end;
-  end;
-  {$ENDIF}
+  Result := IDNStrToUnicode(GetStrByNID(NID_commonName));
 end;
 
 function TTaurusTLSX509Name.GetCountry: String;
@@ -993,18 +958,7 @@ end;
 
 function TTaurusTLSX509Name.GetEMail: String;
 begin
-{$IFDEF WINDOWS}
-  if Assigned(IdnToUnicode) then
-  begin
-    Result := PunnyCodeToIDN(GetStrByNID(NID_pkcs9_emailAddress));
-  end
-  else
-  begin
-    Result := GetStrByNID(NID_pkcs9_emailAddress);
-  end;
-{$ELSE}
-  Result := GetStrByNID(NID_pkcs9_emailAddress);
-{$ENDIF}
+  Result := IDNStrToUnicode(GetStrByNID(NID_pkcs9_emailAddress));
 end;
 
 function TTaurusTLSX509Name.GetHash: TTaurusTLSULong; //FI:W521 - Return value of function might be undefined.
