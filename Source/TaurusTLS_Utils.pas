@@ -270,8 +270,8 @@ var
   LResult: string;
 {$ENDIF}
 begin
-  LResult := AIDNStr;
   {$IFDEF WINDOWS}
+  LResult := AIDNStr;
   { PunnyCodeToIDN wraps the Windows IdnToUnicode API and raises when it fails,
     and it fails for anything that is not an ASCII hostname: an empty name, a
     person's name ( what a client certificate typically carries ), any non-ASCII
