@@ -43,6 +43,7 @@ uses
   TaurusTLS.UT.Headers.Bio in 'TaurusTLS.UT.Headers.Bio.pas',
   TaurusTLS.UT.SSLContainers in 'TaurusTLS.UT.SSLContainers.pas',
   TaurusTLS.UT.Encryptors in 'TaurusTLS.UT.Encryptors.pas',
+  TaurusTLS.UT.LegacyProviders in 'TaurusTLS.UT.LegacyProviders.pas',
   TaurusTLS.UT.SSLContainersHelpers in 'TaurusTLS.UT.SSLContainersHelpers.pas',
   TaurusTLS.UT.Context in 'TaurusTLS.UT.Context.pas',
   TaurusTLS.UT.InputRanges in 'TaurusTLS.UT.InputRanges.pas';
