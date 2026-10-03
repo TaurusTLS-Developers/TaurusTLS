@@ -2769,7 +2769,6 @@ type
 {$ENDIF}
 
 var
-  SSLIsLoaded: TIdThreadSafeBoolean = nil;  //PALOFF - Created and freed objects
   LockInfoCB: TIdCriticalSection = nil;   //PALOFF - Created and freed objects
   LockLevelCB: TIdCriticalSection = nil;  //PALOFF - Created and freed objects
   LockPassCB: TIdCriticalSection = nil;  //PALOFF - Created and freed objects
@@ -6093,9 +6092,6 @@ end;
 
 initialization
 
-Assert(SSLIsLoaded = nil);
-SSLIsLoaded := TIdThreadSafeBoolean.Create;
-
 {$I TaurusTLSSymbolDeprecatedOff.inc}
 RegisterSSL('TaurusTLS', 'TaurusTLS Developers', { do not localize }
   'Copyright ' + Char(169) + ' 2025'#10#13 + { do not localize }
@@ -6112,8 +6108,6 @@ finalization
 
 // TODO: TTaurusTLSIOHandlerSocket.UnregisterIOHandler;
 UnLoadOpenSSLLibrary;
-// free the lock last as unload makes calls that use it
-FreeAndNil(SSLIsLoaded);
 
 end.
 
