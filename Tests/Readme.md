@@ -24,7 +24,15 @@ The `TaurusTLS.UT.dpr` is the habitat of all unit tests for the **TaurusTLS**  p
 
 For a smooth start, consider inheriting a test class from the `TOsslBaseFixture` found in the `TaurusTLS.UT.TestClasses` unit. This class will automatically load the `OpenSSL` library during `Fixture Setup` and unload it during `Fixture Teardown`. If there's ever a hiccup loading the OpenSSL library, your tests derived from `TOsslBaseFixture` will gracefully fail with the `EOsslBaseFixture` exception, keeping your testing experience clear and informative.
 
-The `TOsslBaseFixture.SetupFixture` and `TOsslBaseFixture.TearDownFixture` are virtual methods. You can override them in your new Fixtures, but do not forget to call inherited methods to keep loading and unloading the OpenSSL library.
+The `TOsslBaseFixture.SetupFixture` and `TOsslBaseFixture.TearDownFixture` are virtual methods. You can override them in your new Fixtures, but do not forget to call inherited methods to keep loading and unloading the OpenSSL library. Repeat the `[SetupFixture]` and `[TearDownFixture]` attributes on your overrides. **DUnitX** calls the first method it finds with the attribute by its address, not through the virtual method table, so an override without the attribute is never called and only the inherited method runs:
+
+```pascal
+  public
+    [SetupFixture]
+    procedure SetupFixture; override;
+    [TearDownFixture]
+    procedure TearDownFixture; override;
+```
 
 And remember, new fixtures must be registered explicitly in the DUnitX framework. Add the following code snippet to your unit initialization section:
 
