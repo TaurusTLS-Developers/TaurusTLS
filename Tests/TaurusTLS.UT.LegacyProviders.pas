@@ -24,6 +24,7 @@ type
     FIsOpenSSL3: Boolean;
     FModuleFound: Boolean;
     FMD4WithoutProvider: Boolean;
+    FSHA256AfterFirstLoad: Boolean;
     FEmptyDir: string;
     FModuleFile: string;
     function DigestWorks(AMD: Pointer): Boolean;
@@ -60,6 +61,19 @@ type
     /// <summary>Loading the provider makes MD4 available.</summary>
     [Test]
     procedure Load_MakesMD4Available;
+    /// <summary>
+    ///   Loading the provider keeps the default provider available, so
+    ///   SHA-256 still works.
+    /// </summary>
+    /// <remarks>
+    ///   OpenSSL keeps the default provider once anything has used it, even
+    ///   when a later load disables the fallback providers. So SetupFixture
+    ///   checks SHA-256 straight after the first load. That only catches a
+    ///   lost default provider when no earlier fixture in the run used
+    ///   OpenSSL, as when this fixture is run on its own.
+    /// </remarks>
+    [Test]
+    procedure Load_KeepsDefaultProvider;
     /// <summary>Loading again keeps the provider that is already loaded.</summary>
     [Test]
     procedure Load_Twice_KeepsProvider;
@@ -175,6 +189,8 @@ begin
   if FIsOpenSSL3 then
   begin
     FModuleFound := LoadLegacyProvider;
+    if FModuleFound then
+      FSHA256AfterFirstLoad := DigestWorks(EVP_sha256);
 {$IFDEF MSWINDOWS}
     FModuleFile := LoadedModuleFile;
 {$ENDIF}
@@ -234,6 +250,14 @@ begin
   Assert.IsTrue(LoadLegacyProvider);
   Assert.IsTrue(IsLegacyProviderLoaded);
   Assert.IsTrue(MD4Works);
+end;
+
+procedure TTaurusTLSLegacyProvidersFixture.Load_KeepsDefaultProvider;
+begin
+  RequireModule;
+  Assert.IsTrue(FSHA256AfterFirstLoad, 'SHA-256 after the first load');
+  Assert.IsTrue(LoadLegacyProvider);
+  Assert.IsTrue(DigestWorks(EVP_sha256));
 end;
 
 procedure TTaurusTLSLegacyProvidersFixture.Load_Twice_KeepsProvider;
