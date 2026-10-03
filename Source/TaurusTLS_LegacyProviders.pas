@@ -26,8 +26,8 @@ interface
 function IsLegacyProviderLoaded: Boolean;
 /// <summary>
 /// Loads the OpenSSL 3 legacy provider so that legacy algorithms such as MD4,
-/// DES, RC2, RC4 and Blowfish can be used. The OpenSSL library is loaded
-/// first if it is not already loaded.
+/// DES, RC2, RC4 and Blowfish can be used. The OpenSSL libraries are loaded
+/// first if they are not already loaded.
 /// </summary>
 /// <param name="AModulePath">
 /// Optional. Either the full file name of the legacy provider module or a
@@ -63,7 +63,8 @@ function LoadLegacyProvider(const AModulePath: string = ''): Boolean;
 /// <summary>
 /// Unloads the OpenSSL 3 legacy provider if it was loaded by <see
 /// cref="LoadLegacyProvider" />. It is also unloaded when <see
-/// cref="UnLoadOpenSSLLibrary" /> unloads the OpenSSL libraries.
+/// cref="TaurusTLSLoader|IOpenSSLLoader.Unload" /> unloads the OpenSSL
+/// libraries, which <see cref="TaurusTLS|UnLoadOpenSSLLibrary" /> does.
 /// </summary>
 procedure UnloadLegacyProvider;
 
@@ -80,7 +81,6 @@ uses
   Classes,
   SysUtils,
   IdGlobal,
-  TaurusTLS,
   TaurusTLSConsts,
   TaurusTLSHeaders_crypto,
   TaurusTLSHeaders_err,
@@ -205,18 +205,35 @@ end;
 
 function LoadLegacyProvider(const AModulePath: string = ''): Boolean;
 begin
-  Result := LoadOpenSSLLibrary;
-  if not Result then
-    Exit;
-
   SSLIsLoaded.Lock;
   try
+    // Only the libraries are loaded so that this unit does not depend on the
+    // TaurusTLS unit. TaurusTLS.LoadOpenSSLLibrary does its own setup when it
+    // is called.
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+    Result := GetOpenSSLLoader.Load;
+  if not Result then
+    Exit;
+{$ELSE}
+    Result := True;
+{$ENDIF}
+
     if LegacyProvider <> nil then
       Exit;
 
     // Before OpenSSL 3.0 the legacy algorithms are built into libcrypto.
     if OpenSSL_version_num < $30000000 then
       Exit;
+
+    // Load the configuration file before the provider, as
+    // TaurusTLS.LoadOpenSSLLibrary does, so that any providers it activates
+    // are in place first.
+    if OPENSSL_init_crypto(OPENSSL_INIT_LOAD_CONFIG, nil) < 1 then
+    begin
+      ERR_clear_error;
+      Result := False;
+      Exit;
+    end;
 
     if AModulePath <> '' then
     begin
@@ -241,8 +258,8 @@ begin
 
     Result := LegacyProvider <> nil;
 
-    // Registered here instead of being called from UnLoadOpenSSLLibrary so
-    // that programs that never load the legacy provider do not link it in.
+    // IOpenSSLLoader.Unload runs the unloaders in reverse order, so this one
+    // runs while the OpenSSL functions are still assigned.
     if Result and not LegacyProviderUnloaderRegistered then
     begin
       Register_SSLUnloader(DoUnloadLegacyProvider);
