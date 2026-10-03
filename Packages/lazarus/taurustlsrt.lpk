@@ -440,6 +440,10 @@
 				<UnitName Value="TaurusTLS_Files"/>
 			</Item>
 			<Item>
+				<Filename Value="..\..\Source\TaurusTLS_LegacyProviders.pas"/>
+				<UnitName Value="TaurusTLS_LegacyProviders"/>
+			</Item>
+			<Item>
 				<Filename Value="..\..\Source\TaurusTLS_NTLM.pas"/>
 				<UnitName Value="TaurusTLS_NTLM"/>
 			</Item>
