@@ -25,9 +25,12 @@ type
     FModuleFound: Boolean;
     FMD4WithoutProvider: Boolean;
     FEmptyDir: string;
+    FModuleFile: string;
+    function DigestWorks(AMD: Pointer): Boolean;
     function MD4Works: Boolean;
     procedure RequireOpenSSL3;
     procedure RequireModule;
+    procedure RequireModuleFile;
   public
     // DUnitX calls the first method it finds with the attribute, by its
     // address rather than through the VMT, so an override needs the attribute
@@ -75,11 +78,25 @@ type
     /// </summary>
     [Test]
     procedure Load_LoadsLibraries;
+{$IFDEF MSWINDOWS}
+    /// <summary>
+    ///   A relative module file name is relative to the current directory.
+    ///   OpenSSL resolves relative paths against its modules directory.
+    /// </summary>
+    [Test]
+    procedure RelativeFile_IsRelativeToCurrentDir;
+    /// <summary>A relative directory is relative to the current directory.</summary>
+    [Test]
+    procedure RelativeDirectory_IsRelativeToCurrentDir;
+{$ENDIF}
   end;
 
 implementation
 
 uses
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF}
   System.SysUtils,
   System.IOUtils,
   TaurusTLSLoader,
@@ -89,20 +106,46 @@ uses
   TaurusTLSHeaders_evp,
   TaurusTLS_LegacyProviders;
 
+{$IFDEF MSWINDOWS}
+/// <summary>The file name of the legacy provider module, if it is loaded.</summary>
+function LoadedModuleFile: string;
+const
+  CNames: array[0..2] of string = ('legacy-x64.dll', 'legacy-arm64.dll', 'legacy.dll');
+var
+  LName: string;
+  LHandle: HMODULE;
+  LFileName: array[0..MAX_PATH] of Char;
+begin
+  for LName in CNames do
+  begin
+    LHandle := GetModuleHandle(PChar(LName));
+    if (LHandle <> 0) and
+       (GetModuleFileName(LHandle, LFileName, Length(LFileName)) > 0) then
+      Exit(LFileName);
+  end;
+  Result := '';
+end;
+{$ENDIF}
+
 { TTaurusTLSLegacyProvidersFixture }
 
-function TTaurusTLSLegacyProvidersFixture.MD4Works: Boolean;
+function TTaurusTLSLegacyProvidersFixture.DigestWorks(AMD: Pointer): Boolean;
 var
   LCtx: PEVP_MD_CTX;
 begin
   LCtx := EVP_MD_CTX_new;
   Assert.IsNotNull(LCtx, 'EVP_MD_CTX_new');
   try
-    Result := EVP_DigestInit_ex(LCtx, EVP_md4, nil) = 1;
+    Result := EVP_DigestInit_ex(LCtx, AMD, nil) = 1;
   finally
     EVP_MD_CTX_free(LCtx);
   end;
   ERR_clear_error;
+end;
+
+function TTaurusTLSLegacyProvidersFixture.MD4Works: Boolean;
+begin
+  Result := DigestWorks(EVP_md4);
 end;
 
 procedure TTaurusTLSLegacyProvidersFixture.RequireOpenSSL3;
@@ -118,17 +161,27 @@ begin
     Assert.Pass('The legacy provider module was not found');
 end;
 
+procedure TTaurusTLSLegacyProvidersFixture.RequireModuleFile;
+begin
+  RequireModule;
+  if FModuleFile = '' then
+    Assert.Pass('The legacy provider module file name is not known');
+end;
+
 procedure TTaurusTLSLegacyProvidersFixture.SetupFixture;
 begin
   inherited;
   FIsOpenSSL3 := OpenSSL_version_num >= $30000000;
   if FIsOpenSSL3 then
   begin
-    // Measured before the provider is loaded, because an OpenSSL
-    // configuration file can activate the legacy provider by itself
-    FMD4WithoutProvider := MD4Works;
     FModuleFound := LoadLegacyProvider;
+{$IFDEF MSWINDOWS}
+    FModuleFile := LoadedModuleFile;
+{$ENDIF}
     UnloadLegacyProvider;
+    // An OpenSSL configuration file can activate the legacy provider by
+    // itself, so MD4 can work without this provider
+    FMD4WithoutProvider := MD4Works;
   end;
   FEmptyDir := TPath.Combine(TPath.GetTempPath, TPath.GetGUIDFileName);
   TDirectory.CreateDirectory(FEmptyDir);
@@ -223,6 +276,47 @@ begin
   Assert.IsTrue(GetOpenSSLLoader.IsLoaded);
   Assert.IsTrue(MD4Works);
 end;
+
+{$IFDEF MSWINDOWS}
+procedure TTaurusTLSLegacyProvidersFixture.RelativeFile_IsRelativeToCurrentDir;
+var
+  LModuleDir: string;
+  LOldDir: string;
+begin
+  RequireModuleFile;
+  // The path has a directory part, which OpenSSL would look for under its
+  // modules directory
+  LModuleDir := ExtractFileDir(FModuleFile);
+  LOldDir := GetCurrentDir;
+  Assert.IsTrue(SetCurrentDir(ExtractFileDir(LModuleDir)));
+  try
+    Assert.IsTrue(LoadLegacyProvider(TPath.Combine(ExtractFileName(LModuleDir),
+      ExtractFileName(FModuleFile))));
+  finally
+    SetCurrentDir(LOldDir);
+  end;
+  Assert.IsTrue(IsLegacyProviderLoaded);
+  Assert.IsTrue(MD4Works);
+end;
+
+procedure TTaurusTLSLegacyProvidersFixture.RelativeDirectory_IsRelativeToCurrentDir;
+var
+  LModuleDir: string;
+  LOldDir: string;
+begin
+  RequireModuleFile;
+  LModuleDir := ExtractFileDir(FModuleFile);
+  LOldDir := GetCurrentDir;
+  Assert.IsTrue(SetCurrentDir(ExtractFileDir(LModuleDir)));
+  try
+    Assert.IsTrue(LoadLegacyProvider(ExtractFileName(LModuleDir)));
+  finally
+    SetCurrentDir(LOldDir);
+  end;
+  Assert.IsTrue(IsLegacyProviderLoaded);
+  Assert.IsTrue(MD4Works);
+end;
+{$ENDIF}
 
 initialization
   TDUnitX.RegisterTestFixture(TTaurusTLSLegacyProvidersFixture);

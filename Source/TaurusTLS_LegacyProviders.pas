@@ -30,8 +30,9 @@ function IsLegacyProviderLoaded: Boolean;
 /// first if they are not already loaded.
 /// </summary>
 /// <param name="AModulePath">
-/// Optional. Either the full file name of the legacy provider module or a
-/// directory to search for it. If empty, the directory set in the <see
+/// Optional. Either the file name of the legacy provider module or a
+/// directory to search for it. A relative path is relative to the current
+/// directory. If empty, the directory set in the <see
 /// cref="TaurusTLSLoader|IOpenSSLLoader.OpenSSLPath" /> property and the
 /// directory that libcrypto was loaded from are searched, followed by
 /// OpenSSL's own search (the <c>OPENSSL_MODULES</c> environment variable or
@@ -127,6 +128,8 @@ begin
   Result := LegacyProvider <> nil;
 end;
 
+// OpenSSL resolves a relative path against its modules directory rather than
+// the current directory, so pass it a path from ExpandFileName or a bare name
 function TryLoadLegacyProviderModule(const AModule: string): POSSL_PROVIDER;
 begin
   // retain_fallbacks = 1 keeps the default provider available
@@ -139,6 +142,7 @@ function TryLoadLegacyProviderFromDir(const ADir: string): POSSL_PROVIDER;
 const
   CSubDirs: array[0..2] of string = ('', 'providers', 'ossl-modules');
 var
+  LBaseDir: string;
   LDir: string;
   i: Integer;
 begin
@@ -146,9 +150,10 @@ begin
   if ADir = '' then
     Exit;
 
+  LBaseDir := IncludeTrailingPathDelimiter(ExpandFileName(ADir));
   for i := Low(CSubDirs) to High(CSubDirs) do
   begin
-    LDir := IncludeTrailingPathDelimiter(ADir);
+    LDir := LBaseDir;
     if CSubDirs[i] <> '' then
       LDir := LDir + CSubDirs[i] + PathDelim;
 
@@ -240,7 +245,7 @@ begin
       if DirectoryExists(AModulePath) then
         LegacyProvider := TryLoadLegacyProviderFromDir(AModulePath)
       else
-        LegacyProvider := TryLoadLegacyProviderModule(AModulePath);
+        LegacyProvider := TryLoadLegacyProviderModule(ExpandFileName(AModulePath));
     end
     else
     begin
