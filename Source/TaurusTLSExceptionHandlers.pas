@@ -8,6 +8,7 @@
 {* Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  *}
 {******************************************************************************}
 {$I TaurusTLSCompilerDefines.inc}
+{$I TaurusTLSLinkDefines.inc}
 /// <summary>
 ///   Exception classes for TaurusTLS.
 /// </summary>
@@ -324,6 +325,23 @@ type
   ///   distribution.
   /// </remarks>
   ETaurusTLSNTLMRequiresLegacy = class(ETaurusTLSError);
+  {$IFDEF OPENSSL_STATIC_LINK_MODEL}
+  /// <summary>
+  ///   Base exception class for when a provider can not be loaded. Present only
+  ///   if statically loading the provider.
+  /// </summary>
+  ETaurusTLSProviderNotLoaded = class(ETaurusTLSError);
+  /// <summary>
+  ///   Raised if the <c>legacy</c> provider can not be loaded when providers
+  ///   are statically linked.
+  /// </summary>
+  ETaurusTLSLegacyProviderNotLoaded = class(ETaurusTLSProviderNotLoaded);
+  /// <summary>
+  ///   Raised if the <c>Default</c> provider can not be loaded when providers
+  ///   are statically linked.
+  /// </summary>
+  ETaurusTLSDefaultProviderNotLoaded = class(ETaurusTLSProviderNotLoaded);
+  {$ENDIF}
 
 implementation
 

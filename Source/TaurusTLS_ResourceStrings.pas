@@ -9,6 +9,7 @@
 { * Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  * }
 { ****************************************************************************** }
 {$I TaurusTLSCompilerDefines.inc}
+{$I TaurusTLSLinkDefines.inc}
 unit TaurusTLS_ResourceStrings;
 
 interface
@@ -249,7 +250,11 @@ resourcestring
   RSMsg_DES_set_key_wrong_key_parity = 'DES_set_key: Wrong Key Parity';
   RSMsg_DES_weak_key = 'DES_set_key: Weak key';
   RSMsg_NTLM_Requires_legacy = 'NTLM support requires the legacy provider.';
-
+  //LegacyProviders
+  {$IFDEF OPENSSL_STATIC_LINK_MODEL}
+  RSMsg_LegacyProviderNotLoaded = 'Legacy Provider not Loaded.';
+  RSMsg_DefaultProviderNotLoaded = 'Default Provider not loaded.';
+  {$ENDIF}
 implementation
 
 end.
