@@ -496,7 +496,7 @@ var
 begin
   lLen:=Length(AData);
   if lLen > 0 then
-    CheckWiped(AData, Low(AData), High(AData));
+    CheckWiped(AData, Low(AData), lLen);
 end;
 
 class procedure TWipeTestTool.CheckWiped(AData: TBytes; AOffset,
@@ -504,7 +504,7 @@ class procedure TWipeTestTool.CheckWiped(AData: TBytes; AOffset,
 begin
   if Length(AData) = 0 then
     Exit;
-  Assert.IsTrue(Length(AData) >= (AOffset+ASize),
+  Assert.IsTrue(NativeUInt(Length(AData)) >= (AOffset+ASize),
     'Read out of array bounary.');
   CheckWiped(PByte(@AData[AOffset]), ASize*SizeOf(Byte));
 end;

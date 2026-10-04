@@ -108,8 +108,10 @@ begin
 end;
 
 class function T00OsslLoaderTests.CanExecLoadedFuncs: boolean;
+{$IFDEF OPENSSL_STATIC_LINK_MODEL}
 var
   lPtr: PBUF_MEM;
+{$ENDIF}
 
 begin
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
