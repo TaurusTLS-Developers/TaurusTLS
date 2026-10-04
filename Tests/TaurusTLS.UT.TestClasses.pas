@@ -56,18 +56,22 @@ type
     ///  or increments internal library refrerence counter otherwise.
     ///  </summary>
     ///  <remark>
-    ///  This method can be overritten by inherited class
+    ///  A descendant class can declare its own <c>SetupFixture</c> with the
+    ///  <c>[SetupFixture]</c> attribute. It must call <c>inherited</c> first
+    ///  so the OpenSSL library is loaded.
     ///  </remark>
-    procedure SetupFixture; virtual;
+    procedure SetupFixture;
     [TearDownFixture]
     ///  <summary>
     ///  The <c>TearDownFixture</c> method decrements internal library refrerence counter
     ///  and unloads the OpenSSL library when it reaches Zero.
     ///  </summary>
     ///  <remark>
-    ///  This method can be overritten by inherited class
+    ///  A descendant class can declare its own <c>TearDownFixture</c> with the
+    ///  <c>[TearDownFixture]</c> attribute. It must call <c>inherited</c> last
+    ///  so the OpenSSL library is unloaded.
     ///  </remark>
-    procedure TearDownFixture; virtual;
+    procedure TearDownFixture;
 
     ///  <summary>
     ///  The <c>CheckLoaded</c> method checks if the OpenSSL library
