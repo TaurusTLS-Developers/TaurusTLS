@@ -239,7 +239,8 @@ begin
       Exit;
 
     // Before OpenSSL 3.0 the legacy algorithms are built into libcrypto.
-    if OpenSSL_version_num < $30000000 then
+    // OpenSSL 1.0.2 has no OpenSSL_version_num, and SSLeay works on all versions.
+    if SSLeay < $30000000 then
       Exit;
 
     // Load the configuration file before the provider, as

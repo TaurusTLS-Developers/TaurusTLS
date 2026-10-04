@@ -227,7 +227,8 @@ begin
   inherited;
   FEmptyDir := TPath.Combine(TPath.GetTempPath, TPath.GetGUIDFileName);
   TDirectory.CreateDirectory(FEmptyDir);
-  FIsOpenSSL3 := OpenSSL_version_num >= $30000000;
+  // OpenSSL 1.0.2 has no OpenSSL_version_num
+  FIsOpenSSL3 := SSLeay >= $30000000;
   if FIsOpenSSL3 then
   begin
     FBuiltIn := IsBuiltIn;
