@@ -21,7 +21,9 @@ type
   protected
     function GetCipher(ACipherName: string): TTaurusTLS_Cipher;
     procedure DoWithOSSLCipher(AOSSLCipherProc: TProc<PEVP_CIPHER>);
+    {currently unused
     function CheckRandomFactor(ABytes: TBytes): NativeInt;
+    }
 
     procedure CheckCipherKeyLen(const ACipherName: string; ALen: TIdC_UINT);
     procedure CheckCipherIVLen(const ACipherName: string; ALen: TIdC_UINT);
@@ -246,6 +248,7 @@ begin
   Result:=FCipher;
 end;
 
+(*currently unused
 function TCipherFixture.CheckRandomFactor(ABytes: TBytes): NativeInt;
 var
   i, lChunkStart, lChunkEnd: NativeInt;
@@ -277,6 +280,7 @@ begin
 
 
 end;
+*)
 
 procedure TCipherFixture.DoWithOSSLCipher(AOSSLCipherProc: TProc<PEVP_CIPHER>);
 var
