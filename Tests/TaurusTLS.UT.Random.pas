@@ -290,7 +290,7 @@ begin
         FillChar(buf, num, $00);
       end;
     Assert.AreEqual<TIdC_INT>(1, lRandomBytes.Random(lData, SizeOf(lData)));
-    Assert.AreEqual<NativeUInt>(0, lData, 'lRandomBytes.Radndom did not update ''lData''.')
+    Assert.AreEqual<NativeUInt>(0, lData, 'lRandomBytes.Random did not update ''lData''.')
   finally
     lRandomBytes.Free;
   end;
@@ -342,7 +342,7 @@ begin
         end;
       lRandom:=TTaurusTLS_OSSLRandom.NewRandom(lRandomBytes);
       lRandom.Random(lData, SizeOf(lData));
-      Assert.AreEqual<NativeUInt>(0, lData, 'lRandomBytes.Radndom did not update ''lData''.')
+      Assert.AreEqual<NativeUInt>(0, lData, 'lRandom.Random did not update ''lData''.')
     finally
       if Assigned(lRandom) then
         lRandom.Free
@@ -620,7 +620,7 @@ begin
         end;
       lRandom:=TTaurusTLS_Random.NewRandom(lRandomBytes);
       lRandom.Random(lData, SizeOf(lData));
-      Assert.AreEqual<NativeUInt>(0, lData, 'lRandomBytes.Radndom did not update ''lData''.')
+      Assert.AreEqual<NativeUInt>(0, lData, 'lRandom.Random did not update ''lData''.')
     finally
       if Assigned(lRandom) then
         lRandom.Free

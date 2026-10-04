@@ -215,7 +215,7 @@ begin
       Exit(lKeySize);
   Result:=Low(TTaurusTLS_AESKeySize); // never used: Assert.Fail always raises
   Assert.FailFmt('Unable to convert string value ''%s'' to the value '+
-    'of ''TTaurusTLS_EncodeMode'' type.', [AName]);
+    'of ''TTaurusTLS_AESKeySize'' type.', [AName]);
 end;
 
 class function TSimpleAESEnums.GetKeySizeNameToInt(
@@ -537,7 +537,7 @@ begin
     if CompareStr(FEncoderModeNames[lMode], AEncoderModeName) = 0 then
       Exit(lMode);
   Result:=Low(TTaurusTLS_EncodeMode); // never used: Assert.Fail always raises
-  Assert.Fail(Format('Unknown TTaurusTLS_AESKeySize name ''%s''.',
+  Assert.Fail(Format('Unknown TTaurusTLS_EncodeMode name ''%s''.',
     [AEncoderModeName]));
 end;
 
