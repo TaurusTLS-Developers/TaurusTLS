@@ -53,7 +53,7 @@ type
     POSSL_provider_init_fn  = ^OSSL_provider_init_fn;
 
   {$EXTERNALSYM TDo_AllCallback}
-    TDo_AllCallback = function (provider:POSSL_PROVIDER; cbdata:pointer):TIdC_LONG; cdecl;
+    TDo_AllCallback = function (provider:POSSL_PROVIDER; cbdata:pointer):TIdC_INT; cdecl;
 
 {$IFDEF FPC}
 {$PACKRECORDS C}
@@ -83,32 +83,32 @@ var
   {$EXTERNALSYM OSSL_PROVIDER_load}
   OSSL_PROVIDER_load: function (_para1:POSSL_LIB_CTX; name: PIdAnsiChar):POSSL_PROVIDER; cdecl = nil; {introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_try_load}
-  OSSL_PROVIDER_try_load: function (_para1:POSSL_LIB_CTX; name: PIdAnsiChar; retain_fallbacks: TIdC_LONG):POSSL_PROVIDER; cdecl = nil; {introduced 3.0.0}
+  OSSL_PROVIDER_try_load: function (_para1:POSSL_LIB_CTX; name: PIdAnsiChar; retain_fallbacks: TIdC_INT):POSSL_PROVIDER; cdecl = nil; {introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_unload}
-  OSSL_PROVIDER_unload: function (prov:POSSL_PROVIDER):TIdC_LONG; cdecl = nil; {introduced 3.0.0}
+  OSSL_PROVIDER_unload: function (prov:POSSL_PROVIDER):TIdC_INT; cdecl = nil; {introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_available}
-  OSSL_PROVIDER_available: function (_para1:POSSL_LIB_CTX; name:PIdAnsiChar):TIdC_LONG; cdecl = nil; {introduced 3.0.0}
+  OSSL_PROVIDER_available: function (_para1:POSSL_LIB_CTX; name:PIdAnsiChar):TIdC_INT; cdecl = nil; {introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_do_all}
-  OSSL_PROVIDER_do_all: function (ctx:POSSL_LIB_CTX; cb:TDo_AllCallback; cbdata:pointer):TIdC_LONG; cdecl = nil; {introduced 3.0.0}
+  OSSL_PROVIDER_do_all: function (ctx:POSSL_LIB_CTX; cb:TDo_AllCallback; cbdata:pointer):TIdC_INT; cdecl = nil; {introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_gettable_params}
   OSSL_PROVIDER_gettable_params: function (prov:POSSL_PROVIDER):POSSL_PARAM; cdecl = nil; {introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_get_params}
-  OSSL_PROVIDER_get_params: function (prov:POSSL_PROVIDER; params:POSSL_PARAM):TIdC_LONG; cdecl = nil; {introduced 3.0.0}
+  OSSL_PROVIDER_get_params: function (prov:POSSL_PROVIDER; params:POSSL_PARAM):TIdC_INT; cdecl = nil; {introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_self_test}
-  OSSL_PROVIDER_self_test: function (prov:POSSL_PROVIDER):TIdC_LONG; cdecl = nil;{introduced 3.0.0}
+  OSSL_PROVIDER_self_test: function (prov:POSSL_PROVIDER):TIdC_INT; cdecl = nil;{introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_get_capabilities}
-  OSSL_PROVIDER_get_capabilities: function (prov:POSSL_PROVIDER; capability:PIdAnsiChar; cb:POSSL_CALLBACK; arg:pointer):TIdC_LONG; cdecl = nil;{introduced 3.0.0}
+  OSSL_PROVIDER_get_capabilities: function (prov:POSSL_PROVIDER; capability:PIdAnsiChar; cb:POSSL_CALLBACK; arg:pointer):TIdC_INT; cdecl = nil;{introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_query_operation}
-  OSSL_PROVIDER_query_operation: function (prov:POSSL_PROVIDER; operation_id:TIdC_LONG; no_cache:PIdC_LONG):POSSL_ALGORITHM; cdecl = nil; {introduced 3.0.0}
+  OSSL_PROVIDER_query_operation: function (prov:POSSL_PROVIDER; operation_id:TIdC_INT; no_cache:PIdC_INT):POSSL_ALGORITHM; cdecl = nil; {introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_unquery_operation}
-  OSSL_PROVIDER_unquery_operation: procedure (prov:POSSL_PROVIDER; operation_id:TIdC_LONG; algs:POSSL_ALGORITHM); cdecl = nil; {introduced 3.0.0}
+  OSSL_PROVIDER_unquery_operation: procedure (prov:POSSL_PROVIDER; operation_id:TIdC_INT; algs:POSSL_ALGORITHM); cdecl = nil; {introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_get0_provider_ctx}
   OSSL_PROVIDER_get0_provider_ctx: function (prov:POSSL_PROVIDER):pointer; cdecl = nil; {introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_get0_dispatch}
   OSSL_PROVIDER_get0_dispatch: function (prov:POSSL_PROVIDER):POSSL_DISPATCH; cdecl = nil; {introduced 3.0.0}
     { Add a built in providers  }
   {$EXTERNALSYM OSSL_PROVIDER_add_builtin}
-  OSSL_PROVIDER_add_builtin: function (_para1:POSSL_LIB_CTX; name:PIdAnsiChar; init_fn:POSSL_provider_init_fn):TIdC_LONG; cdecl = nil; {introduced 3.0.0}
+  OSSL_PROVIDER_add_builtin: function (_para1:POSSL_LIB_CTX; name:PIdAnsiChar; init_fn:POSSL_provider_init_fn):TIdC_INT; cdecl = nil; {introduced 3.0.0}
 
     { Information  }
   {$EXTERNALSYM OSSL_PROVIDER_get0_name}
@@ -116,7 +116,7 @@ var
   {$EXTERNALSYM OSSL_PROVIDER_get0_default_search_path}
   OSSL_PROVIDER_get0_default_search_path: function (libctx: POSSL_LIB_CTX): PIdAnsiChar; cdecl = nil; {introduced 3.2.0}
   {$EXTERNALSYM OSSL_PROVIDER_try_load_ex}
-  OSSL_PROVIDER_try_load_ex: function (_para1:POSSL_LIB_CTX; name: PIdAnsiChar; params:POSSL_PARAM; retain_fallbacks:TIdC_LONG):POSSL_PROVIDER; cdecl = nil; {introduced 3.2.0}
+  OSSL_PROVIDER_try_load_ex: function (_para1:POSSL_LIB_CTX; name: PIdAnsiChar; params:POSSL_PARAM; retain_fallbacks:TIdC_INT):POSSL_PROVIDER; cdecl = nil; {introduced 3.2.0}
   {$EXTERNALSYM OSSL_PROVIDER_load_ex}
   OSSL_PROVIDER_load_ex: function (_para1:POSSL_LIB_CTX; name: PIdAnsiChar; params: POSSL_PARAM):POSSL_PROVIDER; cdecl = nil; {introduced 3.2.0}
 
@@ -127,32 +127,32 @@ var
   {$EXTERNALSYM OSSL_PROVIDER_load}
   function OSSL_PROVIDER_load(_para1:POSSL_LIB_CTX; name: PIdAnsiChar):POSSL_PROVIDER cdecl; external CLibCrypto; {introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_try_load}
-  function OSSL_PROVIDER_try_load(_para1:POSSL_LIB_CTX; name: PIdAnsiChar; retain_fallbacks: TIdC_LONG):POSSL_PROVIDER cdecl; external CLibCrypto; {introduced 3.0.0}
+  function OSSL_PROVIDER_try_load(_para1:POSSL_LIB_CTX; name: PIdAnsiChar; retain_fallbacks: TIdC_INT):POSSL_PROVIDER cdecl; external CLibCrypto; {introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_unload}
-  function OSSL_PROVIDER_unload(prov:POSSL_PROVIDER):TIdC_LONG cdecl; external CLibCrypto; {introduced 3.0.0}
+  function OSSL_PROVIDER_unload(prov:POSSL_PROVIDER):TIdC_INT cdecl; external CLibCrypto; {introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_available}
-  function OSSL_PROVIDER_available(_para1:POSSL_LIB_CTX; name:PIdAnsiChar):TIdC_LONG cdecl; external CLibCrypto; {introduced 3.0.0}
+  function OSSL_PROVIDER_available(_para1:POSSL_LIB_CTX; name:PIdAnsiChar):TIdC_INT cdecl; external CLibCrypto; {introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_do_all}
-  function OSSL_PROVIDER_do_all(ctx:POSSL_LIB_CTX; cb:TDo_AllCallback; cbdata:pointer):TIdC_LONG cdecl; external CLibCrypto; {introduced 3.0.0}
+  function OSSL_PROVIDER_do_all(ctx:POSSL_LIB_CTX; cb:TDo_AllCallback; cbdata:pointer):TIdC_INT cdecl; external CLibCrypto; {introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_gettable_params}
   function OSSL_PROVIDER_gettable_params(prov:POSSL_PROVIDER):POSSL_PARAM cdecl; external CLibCrypto; {introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_get_params}
-  function OSSL_PROVIDER_get_params(prov:POSSL_PROVIDER; params:POSSL_PARAM):TIdC_LONG cdecl; external CLibCrypto; {introduced 3.0.0}
+  function OSSL_PROVIDER_get_params(prov:POSSL_PROVIDER; params:POSSL_PARAM):TIdC_INT cdecl; external CLibCrypto; {introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_self_test}
-  function OSSL_PROVIDER_self_test(prov:POSSL_PROVIDER):TIdC_LONG cdecl; external CLibCrypto;{introduced 3.0.0}
+  function OSSL_PROVIDER_self_test(prov:POSSL_PROVIDER):TIdC_INT cdecl; external CLibCrypto;{introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_get_capabilities}
-  function OSSL_PROVIDER_get_capabilities(prov:POSSL_PROVIDER; capability:PIdAnsiChar; cb:POSSL_CALLBACK; arg:pointer):TIdC_LONG cdecl; external CLibCrypto;{introduced 3.0.0}
+  function OSSL_PROVIDER_get_capabilities(prov:POSSL_PROVIDER; capability:PIdAnsiChar; cb:POSSL_CALLBACK; arg:pointer):TIdC_INT cdecl; external CLibCrypto;{introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_query_operation}
-  function OSSL_PROVIDER_query_operation(prov:POSSL_PROVIDER; operation_id:TIdC_LONG; no_cache:PIdC_LONG):POSSL_ALGORITHM cdecl; external CLibCrypto; {introduced 3.0.0}
+  function OSSL_PROVIDER_query_operation(prov:POSSL_PROVIDER; operation_id:TIdC_INT; no_cache:PIdC_INT):POSSL_ALGORITHM cdecl; external CLibCrypto; {introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_unquery_operation}
-  procedure OSSL_PROVIDER_unquery_operation(prov:POSSL_PROVIDER; operation_id:TIdC_LONG; algs:POSSL_ALGORITHM) cdecl; external CLibCrypto; {introduced 3.0.0}
+  procedure OSSL_PROVIDER_unquery_operation(prov:POSSL_PROVIDER; operation_id:TIdC_INT; algs:POSSL_ALGORITHM) cdecl; external CLibCrypto; {introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_get0_provider_ctx}
   function OSSL_PROVIDER_get0_provider_ctx(prov:POSSL_PROVIDER):pointer cdecl; external CLibCrypto; {introduced 3.0.0}
   {$EXTERNALSYM OSSL_PROVIDER_get0_dispatch}
   function OSSL_PROVIDER_get0_dispatch(prov:POSSL_PROVIDER):POSSL_DISPATCH cdecl; external CLibCrypto; {introduced 3.0.0}
     { Add a built in providers  }
   {$EXTERNALSYM OSSL_PROVIDER_add_builtin}
-  function OSSL_PROVIDER_add_builtin(_para1:POSSL_LIB_CTX; name:PIdAnsiChar; init_fn:POSSL_provider_init_fn):TIdC_LONG cdecl; external CLibCrypto; {introduced 3.0.0}
+  function OSSL_PROVIDER_add_builtin(_para1:POSSL_LIB_CTX; name:PIdAnsiChar; init_fn:POSSL_provider_init_fn):TIdC_INT cdecl; external CLibCrypto; {introduced 3.0.0}
 
     { Information  }
   {$EXTERNALSYM OSSL_PROVIDER_get0_name}
@@ -161,7 +161,7 @@ var
   {$EXTERNALSYM OSSL_PROVIDER_get0_default_search_path}
   function OSSL_PROVIDER_get0_default_search_path(libctx: POSSL_LIB_CTX): PIdAnsiChar cdecl; external CLibCrypto; {introduced 3.2.0}
   {$EXTERNALSYM OSSL_PROVIDER_try_load_ex}
-  function OSSL_PROVIDER_try_load_ex(_para1:POSSL_LIB_CTX; name: PIdAnsiChar; params:POSSL_PARAM; retain_fallbacks:TIdC_LONG):POSSL_PROVIDER cdecl; external CLibCrypto; {introduced 3.2.0}
+  function OSSL_PROVIDER_try_load_ex(_para1:POSSL_LIB_CTX; name: PIdAnsiChar; params:POSSL_PARAM; retain_fallbacks:TIdC_INT):POSSL_PROVIDER cdecl; external CLibCrypto; {introduced 3.2.0}
   {$EXTERNALSYM OSSL_PROVIDER_load_ex}
   function OSSL_PROVIDER_load_ex(_para1:POSSL_LIB_CTX; name: PIdAnsiChar; params: POSSL_PARAM):POSSL_PROVIDER cdecl; external CLibCrypto; {introduced 3.2.0}
     {$ENDIF}
@@ -239,25 +239,25 @@ end;
 
  {introduced 3.0.0}
 function  ERR_OSSL_PROVIDER_try_load(_para1:POSSL_LIB_CTX; name: PIdAnsiChar;
-  retain_fallbacks: TIdC_LONG):POSSL_PROVIDER; cdecl;
+  retain_fallbacks: TIdC_INT):POSSL_PROVIDER; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PROVIDER_try_load_procname);
 end;
 
  {introduced 3.0.0}
-function  ERR_OSSL_PROVIDER_unload(prov:POSSL_PROVIDER):TIdC_LONG; cdecl;
+function  ERR_OSSL_PROVIDER_unload(prov:POSSL_PROVIDER):TIdC_INT; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PROVIDER_unload_procname);
 end;
 
  {introduced 3.0.0}
-function  ERR_OSSL_PROVIDER_available(_para1:POSSL_LIB_CTX; name:PIdAnsiChar):TIdC_LONG; cdecl;
+function  ERR_OSSL_PROVIDER_available(_para1:POSSL_LIB_CTX; name:PIdAnsiChar):TIdC_INT; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PROVIDER_available_procname);
 end;
 
  {introduced 3.0.0}
-function  ERR_OSSL_PROVIDER_do_all(ctx:POSSL_LIB_CTX; cb:TDo_AllCallback; cbdata:pointer):TIdC_LONG; cdecl;
+function  ERR_OSSL_PROVIDER_do_all(ctx:POSSL_LIB_CTX; cb:TDo_AllCallback; cbdata:pointer):TIdC_INT; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PROVIDER_do_all_procname);
 end;
@@ -269,33 +269,33 @@ begin
 end;
 
  {introduced 3.0.0}
-function  ERR_OSSL_PROVIDER_get_params(prov:POSSL_PROVIDER; params:POSSL_PARAM):TIdC_LONG; cdecl;
+function  ERR_OSSL_PROVIDER_get_params(prov:POSSL_PROVIDER; params:POSSL_PARAM):TIdC_INT; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PROVIDER_get_params_procname);
 end;
 
  {introduced 3.0.0}
-function  ERR_OSSL_PROVIDER_self_test(prov:POSSL_PROVIDER):TIdC_LONG; cdecl;
+function  ERR_OSSL_PROVIDER_self_test(prov:POSSL_PROVIDER):TIdC_INT; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PROVIDER_self_test_procname);
 end;
 
 {introduced 3.0.0}
 function  ERR_OSSL_PROVIDER_get_capabilities(prov:POSSL_PROVIDER; capability:PIdAnsiChar;
-  cb:POSSL_CALLBACK; arg:pointer):TIdC_LONG; cdecl;
+  cb:POSSL_CALLBACK; arg:pointer):TIdC_INT; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PROVIDER_get_capabilities_procname);
 end;
 
 {introduced 3.0.0}
-function  ERR_OSSL_PROVIDER_query_operation(prov:POSSL_PROVIDER; operation_id:TIdC_LONG;
-  no_cache:PIdC_LONG):POSSL_ALGORITHM; cdecl;
+function  ERR_OSSL_PROVIDER_query_operation(prov:POSSL_PROVIDER; operation_id:TIdC_INT;
+  no_cache:PIdC_INT):POSSL_ALGORITHM; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PROVIDER_query_operation_procname);
 end;
 
  {introduced 3.0.0}
-procedure  ERR_OSSL_PROVIDER_unquery_operation(prov:POSSL_PROVIDER; operation_id:TIdC_LONG;
+procedure  ERR_OSSL_PROVIDER_unquery_operation(prov:POSSL_PROVIDER; operation_id:TIdC_INT;
   algs:POSSL_ALGORITHM); cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PROVIDER_unquery_operation_procname);
@@ -316,7 +316,7 @@ end;
  {introduced 3.0.0}
     { Add a built in providers  }
 function  ERR_OSSL_PROVIDER_add_builtin(_para1:POSSL_LIB_CTX; name:PIdAnsiChar;
-  init_fn:POSSL_provider_init_fn):TIdC_LONG; cdecl;
+  init_fn:POSSL_provider_init_fn):TIdC_INT; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PROVIDER_add_builtin_procname);
 end;
@@ -337,7 +337,7 @@ end;
 
  {introduced 3.2.0}
 function  ERR_OSSL_PROVIDER_try_load_ex(_para1:POSSL_LIB_CTX; name: PIdAnsiChar; params:POSSL_PARAM;
-  retain_fallbacks:TIdC_LONG):POSSL_PROVIDER; cdecl;
+  retain_fallbacks:TIdC_INT):POSSL_PROVIDER; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PROVIDER_try_load_ex_procname);
 end;
