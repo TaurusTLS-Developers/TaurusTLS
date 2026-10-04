@@ -492,7 +492,7 @@ var
 begin
   lLen:=Length(AData);
   if lLen > 0 then
-    CheckWiped(AData, Low(AData), High(AData));
+    CheckWiped(AData, Low(AData), lLen);
 end;
 
 class procedure TWipeTestTool.CheckWiped(AData: TBytes; AOffset,
