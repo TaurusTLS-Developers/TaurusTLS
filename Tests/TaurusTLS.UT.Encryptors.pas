@@ -412,7 +412,6 @@ var
   lCipher: PEVP_CIPHER;
 
 begin
-{
   lCipher:=TTaurusTLS_Cipher.GetCipherByName(ACipherName);
   try
     Assert.IsNull(lCipher,
@@ -422,7 +421,6 @@ begin
     if Assigned(lCipher) then
       EVP_CIPHER_free(lCipher);
   end;
-}
 end;
 
 procedure TCipherFixture.NewKey(const ACipherName: string);
