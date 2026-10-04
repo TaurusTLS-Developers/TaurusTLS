@@ -79,10 +79,8 @@ uses
   Windows,
   {$ENDIF}
 {$ENDIF}
-  Classes,
   SysUtils,
   IdGlobal,
-  TaurusTLSConsts,
   TaurusTLSHeaders_crypto,
   TaurusTLSHeaders_err,
   TaurusTLSHeaders_provider,
@@ -175,36 +173,18 @@ begin
 end;
 
 {$IFDEF WINDOWS}
+// OpenSSL_version returns a string held in libcrypto, so the module that holds
+// the string is libcrypto, in either link model. When libcrypto is a static
+// library, that module is the program.
 function LibCryptoDir: string;
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
-  LVersions: TStringList;  //PALOFF - Created and freed objects
-  LHandle: HMODULE;
+  LInfo: TMemoryBasicInformation;
   LFileName: array[0..MAX_PATH] of Char;
-  i: Integer;
-{$ENDIF}
 begin
   Result := '';
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  LVersions := TStringList.Create;
-  try
-    LVersions.Delimiter := DirListDelimiter;
-    LVersions.StrictDelimiter := True;
-    LVersions.DelimitedText := GetOpenSSLLoader.SSLLibVersions;
-    for i := 0 to LVersions.Count - 1 do
-    begin
-      LHandle := GetModuleHandle(PChar(CLibCryptoBase + LibSuffix + LVersions[i]));
-      if (LHandle <> 0) and
-         (GetModuleFileName(LHandle, LFileName, Length(LFileName)) > 0) then
-      begin
-        Result := ExtractFilePath(LFileName);
-        Exit;
-      end;
-    end;
-  finally
-    LVersions.Free;
-  end;
-{$ENDIF}
+  if (VirtualQuery(OpenSSL_version(OPENSSL_VERSION_CONST), LInfo, SizeOf(LInfo)) <> 0) and
+     (GetModuleFileName(HMODULE(LInfo.AllocationBase), LFileName, Length(LFileName)) > 0) then
+    Result := ExtractFilePath(LFileName);
 end;
 {$ENDIF}
 
