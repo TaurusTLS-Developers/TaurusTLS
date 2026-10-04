@@ -344,7 +344,10 @@ begin
       lRandom.Random(lData, SizeOf(lData));
       Assert.AreEqual<NativeUInt>(0, lData, 'lRandomBytes.Radndom did not update ''lData''.')
     finally
-       lRandom.Free;
+      if Assigned(lRandom) then
+        lRandom.Free
+      else
+        lRandomBytes.Free;
     end;
   end;
 end;
@@ -619,7 +622,10 @@ begin
       lRandom.Random(lData, SizeOf(lData));
       Assert.AreEqual<NativeUInt>(0, lData, 'lRandomBytes.Radndom did not update ''lData''.')
     finally
-       lRandom.Free;
+      if Assigned(lRandom) then
+        lRandom.Free
+      else
+        lRandomBytes.Free;
     end;
   end;
 end;
