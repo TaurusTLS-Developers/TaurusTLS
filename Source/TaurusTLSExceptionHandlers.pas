@@ -314,6 +314,17 @@ type
   /// </seealso>
   EVPCipherCTXNew = class(ETaurusTLSEVPCipherCTXError);
 
+  /// <summary>
+  ///   Exception that is raised if an attempt is made to use NTLM without the l
+  ///   <c>egacy</c> provider being installed.
+  /// </summary>
+  /// <remarks>
+  ///   The TaurusTLS_NTLM functionality requires the DES and MD4 algorithms so
+  ///   it requires that you deploy the <c>Providers</c> folder from the OpenSSL
+  ///   distribution.
+  /// </remarks>
+  ETaurusTLSNTLMRequiresLegacy = class(ETaurusTLSError);
+
 implementation
 
 uses IdGlobal, IdStack, IdResourceStringsProtocols,

@@ -1,4 +1,4 @@
-/// <exclude />
+﻿/// <exclude />
 { ****************************************************************************** }
 { *  TaurusTLS                                                                 * }
 { *           https://github.com/JPeterMugaas/TaurusTLS                        * }
@@ -248,7 +248,7 @@ resourcestring
   //NTLM Messages - DES_set_key
   RSMsg_DES_set_key_wrong_key_parity = 'DES_set_key: Wrong Key Parity';
   RSMsg_DES_weak_key = 'DES_set_key: Weak key';
-
+  RSMsg_NTLM_Requires_legacy = 'NTLM support requires the legacy provider.';
 
 implementation
 
