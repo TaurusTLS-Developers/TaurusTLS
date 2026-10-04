@@ -68,7 +68,7 @@ uses
 
 class function TBioReadWriteFixture.GetRandomStr(ALen: TIdC_SIZET): RawByteString;
 begin
-  Result:=THash.GetRandomString(ALen);
+  Result:=RawByteString(THash.GetRandomString(ALen));
 end;
 
 procedure TBioReadWriteFixture.Do_BIO_read(const AValue: RawByteString;
@@ -91,7 +91,7 @@ begin
     Assert.IsNotNull(lBio, 'lBio is ''nil''');
     lPos:=1;
     lRemainLen:=lLen;
-    if AChunkLen > lLen then
+    if AChunkLen > TIdC_SIZET(lLen) then
       AChunkLen:=lLen;
     repeat
       lTestLen:=lRemainLen;
@@ -147,7 +147,7 @@ begin
       Assert.AreEqual<TIdC_SIZET>(lTestLen, lWriteLen, 'BIO_write');
       lBufLen:=BIO_get_mem_data(lBio, lBufPtr);
       Inc(lPos, lWriteLen);
-      Assert.IsTrue(lPos <= lBufLen,
+      Assert.IsTrue(TIdC_SIZET(lPos) <= lBufLen,
         'Write Buffer shoreter than current position (lPos > lBufLen)');
       Assert.IsTrue(CompareMem(@AValue[1], lBufPtr, lPos),
         'Source and Write Buffer are not equal.)');
@@ -193,7 +193,6 @@ var
   lBio: PBIO;
   lLen: TIdC_INT;
   lRef: PBUF_MEM;
-  lData: PIdAnsiChar;
 
 begin
   lBio:=nil;
@@ -271,9 +270,8 @@ begin
     begin
       lResult:=BIO_write(ABio, AData, AChunkLen);
       if lResult < 0 then
-        ETaurusTLSAPICryptoError.RaiseException
-      else
-        Result:=lResult;
+        ETaurusTLSAPICryptoError.RaiseException;
+      Result:=lResult;
     end
   );
 end;
@@ -304,9 +302,8 @@ begin
     begin
       lResult:=BIO_write(ABio, AData, AChunkLen);
       if lResult < 0 then
-        ETaurusTLSAPICryptoError.RaiseException
-      else
-        Result:=lResult;
+        ETaurusTLSAPICryptoError.RaiseException;
+      Result:=lResult;
     end
   );
 end;
@@ -342,7 +339,7 @@ procedure TBioReadWriteFixture.Test_BIO_parse_hostserv(
           '''%s'' <> ''%s''', [AItem, AChars, AStr]));
     end
     else
-      Assert.IsEmpty(AStr,
+      Assert.IsEmpty(string(AStr),
         Format('Returned %s part is empty, but should be ''%s''', [AItem, AStr]));
   end;
 
@@ -354,7 +351,7 @@ var
   lLen: integer;
 
 begin
-  lPair:=AHostServicePair;
+  lPair:=string(AHostServicePair);
   lLen:=Length(lPair);
   Assert.AreNotEqual<TIdC_INT>(0, lLen, 'Lenght(AHostServicePair) = 0');
   Assert.AreNotEqual(':', lPair, 'AHostServicePair should not be '':''');
@@ -363,8 +360,8 @@ begin
   Assert.AreEqual(2, lLen,
     Format('AHostServicePair should consists of 1 or 2 elements'+
       ' devided by '':''. Actually it consists of %d elements', [lLen]));
-  lHost:=lStrings[0];
-  lService:=lStrings[1];
+  lHost:=RawByteString(lStrings[0]);
+  lService:=RawByteString(lStrings[1]);
   try
     Assert.AreEqual<TIdC_INT>(1, BIO_parse_hostserv(PIdAnsiChar(AHostServicePair),
       lHostOut, lServiceOut, APriority), 'BIO_parse_hostserv');

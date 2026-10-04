@@ -145,6 +145,7 @@ implementation
 
 uses
   System.RTTI, System.NetEncoding, System.TypInfo, TaurusTLSHeaders_bio,
+  TaurusTLSExceptionHandlers,
   TaurusTLSHeaders_evp, TaurusTLSHeaders_evperr, TaurusTLS_Random;
 
 type
@@ -181,10 +182,13 @@ type
 
 class function TSimpleAESEnums.GetEncodeModeNameToEnum(
   AName: string): TTaurusTLS_EncodeMode;
+var
+  lMode: TTaurusTLS_EncodeMode;
 begin
-  for Result:=Low(TTaurusTLS_EncodeMode) to High(TTaurusTLS_EncodeMode) do
-    if AName.CompareTo(cEncoderModes[Result]) = 0 then
-      Exit;
+  for lMode:=Low(TTaurusTLS_EncodeMode) to High(TTaurusTLS_EncodeMode) do
+    if AName.CompareTo(cEncoderModes[lMode]) = 0 then
+      Exit(lMode);
+  Result:=Low(TTaurusTLS_EncodeMode); // never used: Assert.Fail always raises
   Assert.FailFmt('Unable to convert string value ''%s'' to the value '+
     'of ''TTaurusTLS_EncodeMode'' type.', [AName]);
 end;
@@ -203,10 +207,13 @@ end;
 
 class function TSimpleAESEnums.GetKeySizeNameToEnum(
   AName: string): TTaurusTLS_AESKeySize;
+var
+  lKeySize: TTaurusTLS_AESKeySize;
 begin
-  for Result:=Low(TTaurusTLS_AESKeySize) to High(TTaurusTLS_AESKeySize) do
-    if AName.CompareTo(cKeySizes[Result]) = 0 then
-      Exit;
+  for lKeySize:=Low(TTaurusTLS_AESKeySize) to High(TTaurusTLS_AESKeySize) do
+    if AName.CompareTo(cKeySizes[lKeySize]) = 0 then
+      Exit(lKeySize);
+  Result:=Low(TTaurusTLS_AESKeySize); // never used: Assert.Fail always raises
   Assert.FailFmt('Unable to convert string value ''%s'' to the value '+
     'of ''TTaurusTLS_EncodeMode'' type.', [AName]);
 end;
@@ -280,7 +287,7 @@ begin
   if not Assigned(AOSSLCipherProc) then
     Assert.Fail(ClassName+'.DoWithOSSLCipher: AOSSLCipherProc should not be ''nil''.');
   lOSSLCipher:=nil;
-  lCipherName:=FCipherName;
+  lCipherName:=AnsiString(FCipherName);
   try
     lOSSLCipher:=EVP_Cipher_fetch(nil, PIdAnsiChar(lCipherName), nil);
     if not Assigned(lOSSLCipher) then
@@ -512,20 +519,26 @@ end;
 
 function TSimpleAESEncryptorFixture.GetKeySizeByName(
   AKeySizeName: string): TTaurusTLS_AESKeySize;
+var
+  lKeySize: TTaurusTLS_AESKeySize;
 begin
-  for Result:=Low(Result) to High(Result) do
-    if CompareStr(FKeySizeNames[Result], AKeySizeName) = 0 then
-      Exit;
+  for lKeySize:=Low(TTaurusTLS_AESKeySize) to High(TTaurusTLS_AESKeySize) do
+    if CompareStr(FKeySizeNames[lKeySize], AKeySizeName) = 0 then
+      Exit(lKeySize);
+  Result:=Low(TTaurusTLS_AESKeySize); // never used: Assert.Fail always raises
   Assert.Fail(Format('Unknown TTaurusTLS_AESKeySize name ''%s''.',
     [AKeySizeName]));
 end;
 
 function TSimpleAESEncryptorFixture.GetEncodingModeByName(
   AEncoderModeName: string): TTaurusTLS_EncodeMode;
+var
+  lMode: TTaurusTLS_EncodeMode;
 begin
-  for Result:=Low(Result) to High(Result) do
-    if CompareStr(FEncoderModeNames[Result], AEncoderModeName) = 0 then
-      Exit;
+  for lMode:=Low(TTaurusTLS_EncodeMode) to High(TTaurusTLS_EncodeMode) do
+    if CompareStr(FEncoderModeNames[lMode], AEncoderModeName) = 0 then
+      Exit(lMode);
+  Result:=Low(TTaurusTLS_EncodeMode); // never used: Assert.Fail always raises
   Assert.Fail(Format('Unknown TTaurusTLS_AESKeySize name ''%s''.',
     [AEncoderModeName]));
 end;
