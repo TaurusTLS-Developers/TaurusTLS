@@ -14,7 +14,9 @@ type
     procedure InitWith(const ARootPublicKey, ADHParamsFile: string);
     function WriteFile(const AName, AContent: string): string;
   public
+    [SetupFixture]
     procedure SetupFixture; override;
+    [TearDownFixture]
     procedure TearDownFixture; override;
 
     [Test]
