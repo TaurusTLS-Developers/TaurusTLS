@@ -56,7 +56,9 @@ type
     ///  or increments internal library refrerence counter otherwise.
     ///  </summary>
     ///  <remark>
-    ///  This method can be overritten by inherited class
+    ///  This method can be overridden by inherited class. The override must
+    ///  have the <c>[SetupFixture]</c> attribute too, because DUnitX calls the
+    ///  method by its address rather than through the VMT.
     ///  </remark>
     procedure SetupFixture; virtual;
     [TearDownFixture]
@@ -65,7 +67,9 @@ type
     ///  and unloads the OpenSSL library when it reaches Zero.
     ///  </summary>
     ///  <remark>
-    ///  This method can be overritten by inherited class
+    ///  This method can be overridden by inherited class. The override must
+    ///  have the <c>[TearDownFixture]</c> attribute too, because DUnitX calls
+    ///  the method by its address rather than through the VMT.
     ///  </remark>
     procedure TearDownFixture; virtual;
 
