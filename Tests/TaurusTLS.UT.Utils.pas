@@ -109,6 +109,10 @@ type
   end;
   {$ENDIF}
 
+  TTestEnumHelperRec<T> = record
+    class function ToString(const AValue: T): string; static;
+  end;
+
 resourcestring
   rcOssLoaderHelp = 'Specify path to OpenSSL library folder';
   rcFastMMDebugEnableHelp = 'Enable or disable detailed memory leak';
@@ -128,7 +132,8 @@ uses
   {$IFDEF USE_FASTMM5}
   FastMM5,
   {$ENDIF}
-  System.SyncObjs, DUnitX.CommandLine.Options;
+  System.TypInfo, System.SyncObjs,
+  DUnitX.CommandLine.Options;
 
 { TOsslLoader }
 
@@ -282,5 +287,36 @@ begin
 end;
 
 {$ENDIF}
+
+{ TTestEnumHelperRec<T> }
+
+class function TTestEnumHelperRec<T>.ToString(const AValue: T): string;
+var
+  lTI: PTypeInfo ;
+  lValue: integer;
+
+begin
+  lTI:=TypeInfo(T);
+  if Assigned(lTI) then
+  begin
+    if lTI^.Kind = tkEnumeration then
+    begin
+      case SizeOf(AValue) of
+        1: lValue:=PByte(@AValue)^;
+        2: lValue:=PWord(@AValue)^;
+        4: lValue:=PInteger(@AValue)^;
+      else
+        raise EConvertError.CreateFmt(
+          'Enumeration type ''%s'' has unsupported data size.', [lTI^.Name]);
+      end;
+      Result:=GetEnumName(lTI, lValue) // this type cast is safe
+    end
+    else
+      raise EConvertError.CreateFmt(
+        'Unable to get Value Name for non-enum type ''%s''.', [lTI^.Name]);
+  end
+  else
+    raise EConvertError.Create('Unable to get type information.');
+end;
 
 end.
