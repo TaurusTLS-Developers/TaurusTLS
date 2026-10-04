@@ -37,9 +37,9 @@ type
     // address rather than through the VMT, so an override needs the attribute
     // too or it is never called
     [SetupFixture]
-    procedure SetupFixture; override;
+    procedure SetupFixture;
     [TearDownFixture]
-    procedure TearDownFixture; override;
+    procedure TearDownFixture;
     /// <summary>Each test starts and ends with the provider unloaded.</summary>
     [TearDown]
     procedure TearDown;

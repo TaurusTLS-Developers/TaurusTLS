@@ -15,9 +15,9 @@ type
     function WriteFile(const AName, AContent: string): string;
   public
     [SetupFixture]
-    procedure SetupFixture; override;
+    procedure SetupFixture;
     [TearDownFixture]
-    procedure TearDownFixture; override;
+    procedure TearDownFixture;
 
     [Test]
     procedure DHParamsFile_Missing_Raises;
