@@ -27,11 +27,14 @@ type
     FSHA256AfterFirstLoad: Boolean;
     FEmptyDir: string;
     FModuleFile: string;
+    FBuiltIn: Boolean;
     function DigestWorks(AMD: Pointer): Boolean;
     function MD4Works: Boolean;
+    function IsBuiltIn: Boolean;
     procedure RequireOpenSSL3;
     procedure RequireModule;
     procedure RequireModuleFile;
+    procedure RequireNotBuiltIn;
   public
     // DUnitX calls the first method it finds with the attribute, by its
     // address rather than through the VMT, so an override needs the attribute
@@ -49,6 +52,12 @@ type
     /// </summary>
     [Test]
     procedure BeforeOpenSSL3_ReportsAvailable;
+    /// <summary>
+    ///   When the provider is built into libcrypto (OpenSSL built with
+    ///   no-module), it is loaded whatever the module path is.
+    /// </summary>
+    [Test]
+    procedure BuiltIn_IsLoadedWhateverThePath;
     /// <summary>A module file that does not exist is not loaded.</summary>
     [Test]
     procedure MissingFile_IsNotLoaded;
@@ -118,6 +127,7 @@ uses
   TaurusTLSHeaders_crypto,
   TaurusTLSHeaders_err,
   TaurusTLSHeaders_evp,
+  TaurusTLSHeaders_provider,
   TaurusTLS_LegacyProviders;
 
 {$IFDEF MSWINDOWS}
@@ -157,6 +167,29 @@ begin
   ERR_clear_error;
 end;
 
+// OpenSSL loads a provider by name from the providers built into libcrypto
+// before it looks for a module. A separate library context whose module search
+// path does not exist can only find a built-in provider.
+function TTaurusTLSLegacyProvidersFixture.IsBuiltIn: Boolean;
+var
+  LCtx: POSSL_LIB_CTX;
+  LProvider: POSSL_PROVIDER;
+begin
+  LCtx := OSSL_LIB_CTX_new;
+  Assert.IsNotNull(LCtx, 'OSSL_LIB_CTX_new');
+  try
+    Assert.AreEqual(1, OSSL_PROVIDER_set_default_search_path(LCtx,
+      PAnsiChar(AnsiString(TPath.Combine(FEmptyDir, 'no-modules')))));
+    LProvider := OSSL_PROVIDER_try_load(LCtx, 'legacy', 0);
+    Result := LProvider <> nil;
+    if Result then
+      OSSL_PROVIDER_unload(LProvider);
+  finally
+    OSSL_LIB_CTX_free(LCtx);
+  end;
+  ERR_clear_error;
+end;
+
 function TTaurusTLSLegacyProvidersFixture.MD4Works: Boolean;
 begin
   Result := DigestWorks(EVP_md4);
@@ -182,12 +215,22 @@ begin
     Assert.Pass('The legacy provider module file name is not known');
 end;
 
+procedure TTaurusTLSLegacyProvidersFixture.RequireNotBuiltIn;
+begin
+  RequireOpenSSL3;
+  if FBuiltIn then
+    Assert.Pass('The legacy provider is built into libcrypto');
+end;
+
 procedure TTaurusTLSLegacyProvidersFixture.SetupFixture;
 begin
   inherited;
+  FEmptyDir := TPath.Combine(TPath.GetTempPath, TPath.GetGUIDFileName);
+  TDirectory.CreateDirectory(FEmptyDir);
   FIsOpenSSL3 := OpenSSL_version_num >= $30000000;
   if FIsOpenSSL3 then
   begin
+    FBuiltIn := IsBuiltIn;
     FModuleFound := LoadLegacyProvider;
     if FModuleFound then
       FSHA256AfterFirstLoad := DigestWorks(EVP_sha256);
@@ -199,8 +242,6 @@ begin
     // itself, so MD4 can work without this provider
     FMD4WithoutProvider := MD4Works;
   end;
-  FEmptyDir := TPath.Combine(TPath.GetTempPath, TPath.GetGUIDFileName);
-  TDirectory.CreateDirectory(FEmptyDir);
 end;
 
 procedure TTaurusTLSLegacyProvidersFixture.TearDownFixture;
@@ -223,16 +264,29 @@ begin
   Assert.IsFalse(IsLegacyProviderLoaded);
 end;
 
-procedure TTaurusTLSLegacyProvidersFixture.MissingFile_IsNotLoaded;
+procedure TTaurusTLSLegacyProvidersFixture.BuiltIn_IsLoadedWhateverThePath;
 begin
   RequireOpenSSL3;
+  if not FBuiltIn then
+    Assert.Pass('The legacy provider is not built into libcrypto');
+  Assert.IsTrue(LoadLegacyProvider(FEmptyDir), 'Directory with no module');
+  Assert.IsTrue(MD4Works);
+  UnloadLegacyProvider;
+  Assert.IsTrue(LoadLegacyProvider(TPath.Combine(FEmptyDir, 'missing-legacy.dll')),
+    'Missing module file');
+  Assert.IsTrue(MD4Works);
+end;
+
+procedure TTaurusTLSLegacyProvidersFixture.MissingFile_IsNotLoaded;
+begin
+  RequireNotBuiltIn;
   Assert.IsFalse(LoadLegacyProvider(TPath.Combine(FEmptyDir, 'missing-legacy.dll')));
   Assert.IsFalse(IsLegacyProviderLoaded);
 end;
 
 procedure TTaurusTLSLegacyProvidersFixture.DirectoryWithoutModule_IsNotLoaded;
 begin
-  RequireOpenSSL3;
+  RequireNotBuiltIn;
   Assert.IsFalse(LoadLegacyProvider(FEmptyDir));
   Assert.IsFalse(IsLegacyProviderLoaded);
 end;

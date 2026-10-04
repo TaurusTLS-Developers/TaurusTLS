@@ -36,7 +36,8 @@ function IsLegacyProviderLoaded: Boolean;
 /// cref="TaurusTLSLoader|IOpenSSLLoader.OpenSSLPath" /> property and the
 /// directory that libcrypto was loaded from are searched, followed by
 /// OpenSSL's own search (the <c>OPENSSL_MODULES</c> environment variable or
-/// the modules directory compiled into OpenSSL).
+/// the modules directory compiled into OpenSSL). Ignored when the legacy
+/// provider is built into libcrypto.
 /// </param>
 /// <returns>
 /// True if the legacy algorithms are available. This includes OpenSSL
@@ -51,6 +52,11 @@ function IsLegacyProviderLoaded: Boolean;
 /// "legacy-arm64.dll" and the generic name is "legacy.dll". Renaming the
 /// 64-bit module lets 32-bit and 64-bit modules share a directory in the
 /// same way that "libcrypto-3.dll" and "libcrypto-3-x64.dll" do.
+/// </para>
+/// <para>
+/// When OpenSSL is built with the <c>no-module</c> option, the legacy
+/// provider is built into libcrypto and there is no module to load. The
+/// built-in provider is then loaded, whatever <c>AModulePath</c> is.
 /// </para>
 /// <para>
 /// The default provider remains available after the legacy provider is
@@ -84,6 +90,7 @@ uses
   TaurusTLSHeaders_crypto,
   TaurusTLSHeaders_err,
   TaurusTLSHeaders_provider,
+  TaurusTLSHeaders_types,
   TaurusTLSLoader;
 
 var
@@ -172,6 +179,31 @@ begin
   end;
 end;
 
+// OpenSSL loads a provider that is built into libcrypto (OpenSSL built with
+// no-module) by name before it searches for a module. Load the name in a
+// separate library context whose module search path does not exist, so that
+// only a built-in provider can be found. The path is absolute so that the
+// module is not searched for on the PATH or in the current directory.
+function IsLegacyProviderBuiltIn: Boolean;
+var
+  LNoModules: AnsiString;
+  LCtx: POSSL_LIB_CTX;
+  LProvider: POSSL_PROVIDER;
+begin
+  LNoModules := AnsiString(ExtractFilePath(ExpandFileName(ParamStr(0))) +
+    'TaurusTLS-no-modules-0b9f2c6e');
+  LProvider := nil;
+  LCtx := OSSL_LIB_CTX_new;
+  if (LCtx <> nil) and
+     (OSSL_PROVIDER_set_default_search_path(LCtx, PIdAnsiChar(LNoModules)) = 1) then
+    LProvider := OSSL_PROVIDER_try_load(LCtx, CLegacyProviderName, 0);
+  Result := LProvider <> nil;
+  if Result then
+    OSSL_PROVIDER_unload(LProvider); //PALOFF - Functions called as procedures
+  OSSL_LIB_CTX_free(LCtx); // Does nothing when LCtx is nil
+  ERR_clear_error;
+end;
+
 {$IFDEF WINDOWS}
 // OpenSSL_version returns a string held in libcrypto, so the module that holds
 // the string is libcrypto, in either link model. When libcrypto is a static
@@ -220,7 +252,11 @@ begin
       Exit;
     end;
 
-    if AModulePath <> '' then
+    if IsLegacyProviderBuiltIn then
+    begin
+      LegacyProvider := TryLoadLegacyProviderModule(CLegacyProviderName);
+    end
+    else if AModulePath <> '' then
     begin
       if DirectoryExists(AModulePath) then
         LegacyProvider := TryLoadLegacyProviderFromDir(AModulePath)
