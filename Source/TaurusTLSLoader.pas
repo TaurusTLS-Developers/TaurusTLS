@@ -19,7 +19,7 @@ unit TaurusTLSLoader;
 interface
 
 uses
-  Classes, IdGlobal, IdCTypes;
+  Classes, IdGlobal, IdCTypes, IdThreadSafe;
 
 {$IF NOT DECLARED(TIdLibHandle)}
 type
@@ -144,6 +144,14 @@ type
   /// </summary>
   TOpenSSLUnloadProc = procedure;
 
+var
+  /// <summary>
+  ///   Lock that serializes loading and unloading the OpenSSL libraries and
+  ///   the providers. Its value is True after <see
+  ///   cref="TaurusTLS|LoadOpenSSLLibrary" /> has initialized the libraries.
+  /// </summary>
+  SSLIsLoaded: TIdThreadSafeBoolean = nil;  //PALOFF - Created and freed objects
+
   /// <summary>
   ///   Creates the library loader interface if it was not already created.
   /// </summary>
@@ -205,8 +213,7 @@ uses
   {$IFDEF VCL_2010_OR_ABOVE}, System.IOUtils
   {$ENDIF}
 {$ENDIF}
-    , TaurusTLSConsts,
-  IdThreadSafe
+  , TaurusTLSConsts
 {$ENDIF}
   ,SysUtils;
 
@@ -550,6 +557,8 @@ end;
 
 initialization
 
+  Assert(SSLIsLoaded = nil);
+  SSLIsLoaded := TIdThreadSafeBoolean.Create;
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   GOpenSSLLoader := TOpenSSLLoader.Create();
 {$ENDIF}
@@ -569,4 +578,7 @@ finalization
   begin
     FreeAndNil(GUnLoadList);
   end;
+  // Freed last because TaurusTLS.UnLoadOpenSSLLibrary uses it from the
+  // TaurusTLS finalization section
+  FreeAndNil(SSLIsLoaded);
 end.

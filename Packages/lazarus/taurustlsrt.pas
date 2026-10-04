@@ -110,6 +110,7 @@ uses
   TaurusTLSHeaders_x509_vfy,
   TaurusTLSLoader,
   TaurusTLS_Files,
+  TaurusTLS_LegacyProviders,
   TaurusTLS_NTLM,
   TaurusTLS_ResourceStrings,
   TaurusTLS_Unicode_Log,
