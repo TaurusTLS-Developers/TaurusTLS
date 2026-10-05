@@ -698,8 +698,10 @@ begin
         TOpenSSLLoadProc(GLibSSLLoadList[i])(FLibSSL, LSSLVersionNo, FFailed);
 
       // Configure path for loading provider shared libraries
+      // OpenSSL require UTF-8 encoded paths.
       if (EffectiveProvidersPath <> '') then
-        OSSL_PROVIDER_set_default_search_path(nil, PIdAnsiChar(AnsiString(EffectiveProvidersPath)));
+        OSSL_PROVIDER_set_default_search_path(nil,
+          PIdAnsiChar(UTF8Encode(EffectiveProvidersPath)));
 
       for i := 0 to GOnLoadActionList.Count - 1 do
         GOnLoadActionList[i](osaLoad);
