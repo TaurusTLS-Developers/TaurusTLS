@@ -693,12 +693,14 @@ begin
 
       LSSLVersionNo := LSSLVersionNo shr 12;
 
-      for i := 0 to GLibCryptoLoadList.Count - 1 do
-        TOpenSSLLoadProc(GLibCryptoLoadList[i])
-          (FLibCrypto, LSSLVersionNo, FFailed);
+      if Assigned(GLibCryptoLoadList) then
+        for i := 0 to GLibCryptoLoadList.Count - 1 do
+          TOpenSSLLoadProc(GLibCryptoLoadList[i])
+            (FLibCrypto, LSSLVersionNo, FFailed);
 
-      for i := 0 to GLibSSLLoadList.Count - 1 do
-        TOpenSSLLoadProc(GLibSSLLoadList[i])(FLibSSL, LSSLVersionNo, FFailed);
+      if Assigned(GLibSSLLoadList) then
+        for i := 0 to GLibSSLLoadList.Count - 1 do
+          TOpenSSLLoadProc(GLibSSLLoadList[i])(FLibSSL, LSSLVersionNo, FFailed);
 
       // Configure path for loading provider shared libraries
       // OpenSSL require UTF-8 encoded paths.
@@ -706,8 +708,9 @@ begin
         OSSL_PROVIDER_set_default_search_path(nil,
           PIdAnsiChar(UTF8Encode(EffectiveProvidersPath)));
 
-      for i := 0 to GOnLoadActionList.Count - 1 do
-        GOnLoadActionList[i](osaLoad);
+      if Assigned(GOnLoadActionList) then
+        for i := 0 to GOnLoadActionList.Count - 1 do
+          GOnLoadActionList[i](osaLoad);
 
     end;
     FLibraryLoaded.Value := true;
@@ -795,13 +798,15 @@ begin
   try
     if FLibraryLoaded.Value then
     begin
-      for i := GOnLoadActionList.Count - 1 downto 0 do
-        GOnLoadActionList[i](osaUnLoad);
+      if Assigned(GOnLoadActionList) then
+        for i := GOnLoadActionList.Count - 1 downto 0 do
+          GOnLoadActionList[i](osaUnLoad);
 
       // Reverse order so that unloaders registered after the header units
       // run while the OpenSSL functions are still assigned.
-      for i := GUnLoadList.Count - 1 downto 0 do
-        TOpenSSLUnloadProc(GUnLoadList[i]);
+      if Assigned(GUnLoadList) then
+        for i := GUnLoadList.Count - 1 downto 0 do
+          TOpenSSLUnloadProc(GUnLoadList[i]);
 
       FFailed.Clear();
 
