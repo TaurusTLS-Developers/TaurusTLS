@@ -49,8 +49,6 @@ type
     POSSL_PARAM  = ^OSSL_PARAM;
   {$EXTERNALSYM POSSL_PROVIDER}
     POSSL_PROVIDER  = pointer;
-  {$EXTERNALSYM POSSL_provider_init_fn}
-    POSSL_provider_init_fn  = ^OSSL_provider_init_fn;
 
   {$EXTERNALSYM TDo_AllCallback}
     TDo_AllCallback = function (provider:POSSL_PROVIDER; cbdata:pointer):TIdC_INT; cdecl;
@@ -108,7 +106,7 @@ var
   OSSL_PROVIDER_get0_dispatch: function (prov:POSSL_PROVIDER):POSSL_DISPATCH; cdecl = nil; {introduced 3.0.0}
     { Add a built in providers  }
   {$EXTERNALSYM OSSL_PROVIDER_add_builtin}
-  OSSL_PROVIDER_add_builtin: function (_para1:POSSL_LIB_CTX; name:PIdAnsiChar; init_fn:POSSL_provider_init_fn):TIdC_INT; cdecl = nil; {introduced 3.0.0}
+  OSSL_PROVIDER_add_builtin: function (_para1:POSSL_LIB_CTX; name:PIdAnsiChar; init_fn: OSSL_provider_init_fn):TIdC_INT; cdecl = nil; {introduced 3.0.0}
 
     { Information  }
   {$EXTERNALSYM OSSL_PROVIDER_get0_name}
@@ -152,7 +150,7 @@ var
   function OSSL_PROVIDER_get0_dispatch(prov:POSSL_PROVIDER):POSSL_DISPATCH cdecl; external CLibCrypto; {introduced 3.0.0}
     { Add a built in providers  }
   {$EXTERNALSYM OSSL_PROVIDER_add_builtin}
-  function OSSL_PROVIDER_add_builtin(_para1:POSSL_LIB_CTX; name:PIdAnsiChar; init_fn:POSSL_provider_init_fn):TIdC_INT cdecl; external CLibCrypto; {introduced 3.0.0}
+  function OSSL_PROVIDER_add_builtin(_para1:POSSL_LIB_CTX; name:PIdAnsiChar; init_fn: OSSL_provider_init_fn):TIdC_INT cdecl; external CLibCrypto; {introduced 3.0.0}
 
     { Information  }
   {$EXTERNALSYM OSSL_PROVIDER_get0_name}
@@ -316,7 +314,7 @@ end;
  {introduced 3.0.0}
     { Add a built in providers  }
 function  ERR_OSSL_PROVIDER_add_builtin(_para1:POSSL_LIB_CTX; name:PIdAnsiChar;
-  init_fn:POSSL_provider_init_fn):TIdC_INT; cdecl;
+  init_fn: OSSL_provider_init_fn):TIdC_INT; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(OSSL_PROVIDER_add_builtin_procname);
 end;
