@@ -51,6 +51,32 @@ type
   { IOpenSSLLoader }
 
   /// <summary>
+  ///   Indicates OpenSSL library load action
+  /// </summary>
+  TOpenSSLLoadAction = (
+    /// <summary>
+    ///   OpenSSL Library loaded
+    /// </summary>
+    osaLoad,
+    /// <summary>
+    ///   OpenSSL Library is being unloaded
+    /// </summary>
+    osaUnload);
+  /// <summary>
+  ///   Definitiion for the class instance event called by loader in OpenSSL
+  ///   library loading or unloading.
+  /// </summary>
+  /// <param name="AAction">
+  ///   Indicates the action is executed.
+  /// </param>
+  /// <remarks>
+  ///   The registered callbacks executed after OpenSSL library is loaded and
+  ///   the OpenSSL routines registered or right before the OpenSSL routines
+  ///   unregistered and the OpenSSL library is unloaded.
+  /// </remarks>
+  TTaurusTLSOnLoadAction = procedure(AAction: TOpenSSLLoadAction) of object;
+
+  /// <summary>
   ///   Library Loader for TaurusTLS.
   /// </summary>
   IOpenSSLLoader = interface
@@ -185,6 +211,16 @@ procedure Register_SSLLoader(LoadProc: TOpenSSLLoadProc;
 /// </remarks>
 procedure Register_SSLUnloader(UnloadProc: TOpenSSLUnloadProc);
 
+/// <summary>
+///   Registers the class event hook that called after OpenSSL library loading
+///   and before its unloading.
+/// </summary>
+/// <param name="AActionProc">
+///   Event method that will be called on <see
+///   cref="TaurusTLSLoader|IOpenSSLLoader" /> event. <br />
+/// </param>
+procedure Register_SSLLoaderAction(const AActionProc: TTaurusTLSOnLoadAction);
+
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 {$IF NOT DECLARED( LoadLibFunction)}
 //Have to do things this way because LoadLibFunction is now "declared" even though
@@ -217,8 +253,138 @@ uses
 {$ENDIF}
   ,SysUtils;
 
-{$IF not declared(NilHandle)}
+{$IFNDEF HAS_UNIT_Generics_Collections}
+type
+  TMethodList = class
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} private
+    FList: TList;
+    function Get(Index: NativeInt): TTaurusTLSOnLoadAction;
+    procedure Put(Index: NativeInt; const Value: TTaurusTLSOnLoadAction);
+    function NewItem(const AItem: TTaurusTLSOnLoadAction): PMethod;
+    procedure ReleaseItem(AItem: PMethod);
+    function GetCount: NativeInt;
+  public
+    constructor Create;
+    destructor Destroy; override;
 
+    function Add(Item: TTaurusTLSOnLoadAction): NativeInt;
+    procedure Delete(Index: NativeInt);
+
+    property Count: NativeInt read GetCount;
+    property Items[Index: NativeInt]: TTaurusTLSOnLoadAction
+      read Get write Put; default;
+
+  end;
+
+{ TMethodList }
+
+constructor TMethodList.Create;
+begin
+  FList:=TList.Create;
+end;
+
+destructor TMethodList.Destroy;
+var
+  i: NativeInt;
+
+begin
+  for i := 0 to FList.Count - 1 do
+    ReleaseItem(FList[i]);
+
+  FreeAndNil(FList);
+  inherited;
+end;
+
+{$IFDEF DCC}{$WARN UNSAFE_CAST OFF}{$ENDIF}
+{$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
+
+function TMethodList.Add(Item: TTaurusTLSOnLoadAction): NativeInt;
+begin
+  if Assigned(TMethod(Item).Code) and Assigned(TMethod(Item).Data) then
+    Result:=FList.Add(NewItem(Item))
+  else
+    Result:=-1;
+end;
+
+procedure TMethodList.Delete(Index: NativeInt);
+var
+  lItem: PMethod;
+
+begin
+  if (Index >= 0) and (Index < Count) then
+  begin
+    lItem:=FList.Items[Index];
+    try
+      FList.Delete(Index);
+    finally
+       ReleaseItem(lItem);
+    end;
+  end;
+end;
+
+function TMethodList.GetCount: NativeInt;
+begin
+  Result:=FList.Count;
+end;
+
+function TMethodList.Get(Index: NativeInt): TTaurusTLSOnLoadAction;
+var
+  lItem: PMethod;
+
+begin
+  lItem:=FList[Index];
+  if Assigned(lItem) then
+  begin
+    TMethod(Result).Code:=lItem^.Code;
+    TMethod(Result).Data:=lItem^.Data;
+  end
+  else
+  begin
+    TMethod(Result).Code:=nil;
+    TMethod(Result).Data:=nil;
+  end
+end;
+
+procedure TMethodList.Put(Index: NativeInt; const Value: TTaurusTLSOnLoadAction);
+var
+  lItem: PMethod;
+
+begin
+  if Assigned(TMethod(Value).Code) and Assigned(TMethod(Value).Data) then
+  begin
+    lItem:=FList[Index];
+    if Assigned(lItem) then
+      ReleaseItem(lItem);
+    FList[Index]:=NewItem(Value);
+  end
+  else
+    Delete(Index);
+end;
+
+function TMethodList.NewItem(const AItem: TTaurusTLSOnLoadAction): PMethod;
+begin
+  Result:=nil;
+  try
+    New(Result);
+    Result^.Code:=TMethod(AItem).Code;
+    Result^.Data:=TMethod(AItem).Data;
+  except
+    ReleaseItem(Result);
+    raise;
+  end;
+end;
+
+procedure TMethodList.ReleaseItem(AItem: PMethod);
+begin
+  if Assigned(AItem) then
+    Dispose(AItem);
+end;
+
+{$IFDEF DCC}{$WARN UNSAFE_CAST DEFAULT}{$ENDIF}
+{$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
+{$ENDIF}
+
+{$IF not declared(NilHandle)}
 const
   NilHandle: TIdLibHandle = 0;
 {$IFEND}
@@ -229,10 +395,12 @@ var
   GLibCryptoLoadList: TList<TOpenSSLLoadProc> = nil;
   GLibSSLLoadList: TList<TOpenSSLLoadProc> = nil;
   GUnLoadList: TList<TOpenSSLUnloadProc> = nil;
+  GOnLoadActionList: TList<TTaurusTLSOnLoadAction> = nil;
 {$ELSE}
   GLibCryptoLoadList: TList = nil;  //PALOFF - Created and freed objects
   GLibSSLLoadList: TList = nil;  //PALOFF - Created and freed objects
   GUnLoadList: TList = nil;  //PALOFF - Created and freed objects
+  GOnLoadActionList: TMethodList = nil;   //PALOFF - Created and freed objects
 {$ENDIF}
 
 function GetOpenSSLLoader: IOpenSSLLoader;
@@ -273,6 +441,17 @@ begin
     GUnLoadList := TList.Create;
 {$ENDIF}
   GUnLoadList.Add(@UnloadProc);
+end;
+
+procedure Register_SSLLoaderAction(const AActionProc: TTaurusTLSOnLoadAction);
+begin
+  if GOnLoadActionList = nil then
+{$IFDEF HAS_UNIT_Generics_Collections}
+    GOnLoadActionList := TList<TTaurusTLSOnLoadAction>.Create;
+{$ELSE}
+    GOnLoadActionList := GOnLoadActionList.Create;
+{$ENDIF}
+  GOnLoadActionList.Add(AActionProc);
 end;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
@@ -484,6 +663,9 @@ begin
       for i := 0 to GLibSSLLoadList.Count - 1 do
         TOpenSSLLoadProc(GLibSSLLoadList[i])(FLibSSL, LSSLVersionNo, FFailed);
 
+      for i := 0 to GOnLoadActionList.Count - 1 do
+        GOnLoadActionList[i](osaLoad);
+
     end;
     FLibraryLoaded.Value := true;
   finally
@@ -532,6 +714,9 @@ begin
   try
     if FLibraryLoaded.Value then
     begin
+      for i := GOnLoadActionList.Count - 1 downto 0 do
+        GOnLoadActionList[i](osaUnLoad);
+
       // Reverse order so that unloaders registered after the header units
       // run while the OpenSSL functions are still assigned.
       for i := GUnLoadList.Count - 1 downto 0 do
@@ -566,19 +751,10 @@ initialization
 finalization
   //IMPORTANT!!! Pointers should be set to nil just in case
   //the TaurusTLS library is being reloaded.
-  if GLibCryptoLoadList <> nil then
-  begin
-    FreeAndNil(GLibCryptoLoadList);
-  end;
-  if GLibSSLLoadList <> nil then
-  begin
-    FreeAndNil(GLibSSLLoadList);
-  end;
-  if GUnLoadList <> nil then
-  begin
-    FreeAndNil(GUnLoadList);
-  end;
-  // Freed last because TaurusTLS.UnLoadOpenSSLLibrary uses it from the
-  // TaurusTLS finalization section
+  FreeAndNil(GOnLoadActionList);
+  FreeAndNil(GLibCryptoLoadList);
+  FreeAndNil(GLibSSLLoadList);
+  FreeAndNil(GUnLoadList);
   FreeAndNil(SSLIsLoaded);
 end.
+
