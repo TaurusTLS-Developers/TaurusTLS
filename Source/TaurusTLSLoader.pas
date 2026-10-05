@@ -497,6 +497,8 @@ type
   { TOpenSSLLoader }
 
   TOpenSSLLoader = class(TInterfacedObject, IOpenSSLLoader)
+  const
+    cDefaultProvidersPath = 'providers';
 {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FLibCrypto: TIdLibHandle;
     FLibSSL: TIdLibHandle;
@@ -537,7 +539,8 @@ begin
   FFailed := TStringList.Create();
   FLibraryLoaded := TIdThreadSafeBoolean.Create;
   FSSLLibVersions := DefaultLibVersions;
-  OpenSSLPath := GetEnvironmentVariable(TaurusTLSLibraryPath)
+  OpenSSLPath := GetEnvironmentVariable(TaurusTLSLibraryPath);
+  FProvidersPath:=cDefaultProvidersPath;
 end;
 
 destructor TOpenSSLLoader.Destroy;
