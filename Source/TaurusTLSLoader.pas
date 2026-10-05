@@ -347,15 +347,15 @@ end;
 
 procedure TMethodList.Put(Index: NativeInt; const Value: TTaurusTLSOnLoadAction);
 var
-  lItem: PMethod;
+  lItem, lNewItem: PMethod;
 
 begin
   if Assigned(TMethod(Value).Code) and Assigned(TMethod(Value).Data) then
   begin
+    lNewItem:=NewItem(Value);
     lItem:=FList[Index];
-    if Assigned(lItem) then
-      ReleaseItem(lItem);
-    FList[Index]:=NewItem(Value);
+    FList[Index]:=lNewItem;
+    ReleaseItem(lItem);
   end
   else
     Delete(Index);
@@ -449,7 +449,7 @@ begin
 {$IFDEF HAS_UNIT_Generics_Collections}
     GOnLoadActionList := TList<TTaurusTLSOnLoadAction>.Create;
 {$ELSE}
-    GOnLoadActionList := GOnLoadActionList.Create;
+    GOnLoadActionList := TMethodList.Create;
 {$ENDIF}
   GOnLoadActionList.Add(AActionProc);
 end;
