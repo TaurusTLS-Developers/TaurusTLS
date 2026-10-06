@@ -51,32 +51,6 @@ type
   { IOpenSSLLoader }
 
   /// <summary>
-  ///   Indicates OpenSSL library load action
-  /// </summary>
-  TOpenSSLLoadAction = (
-    /// <summary>
-    ///   OpenSSL Library loaded
-    /// </summary>
-    osaLoad,
-    /// <summary>
-    ///   OpenSSL Library is being unloaded
-    /// </summary>
-    osaUnload);
-  /// <summary>
-  ///   Definitiion for the class instance event called by loader in OpenSSL
-  ///   library loading or unloading.
-  /// </summary>
-  /// <param name="AAction">
-  ///   Indicates the action is executed.
-  /// </param>
-  /// <remarks>
-  ///   The registered callbacks executed after OpenSSL library is loaded and
-  ///   the OpenSSL routines registered or right before the OpenSSL routines
-  ///   unregistered and the OpenSSL library is unloaded.
-  /// </remarks>
-  TTaurusTLSOnLoadAction = procedure(AAction: TOpenSSLLoadAction) of object;
-
-  /// <summary>
   ///   Library Loader for TaurusTLS.
   /// </summary>
   IOpenSSLLoader = interface
@@ -93,24 +67,6 @@ type
     ///   Property set procedure for OpenSSLPath.
     /// </summary>
     procedure SetOpenSSLPath(const Value: string);
-    /// <summary>
-    ///   Property get function for ProvidersPath.
-    /// </summary>
-    /// <returns>
-    ///   The configured path for OpenSSL providers, which may be absolute,
-    ///   relative to OpenSSLPath, or empty.
-    /// </returns>
-    function GetProvidersPath: string;
-    /// <summary>
-    ///   Property set procedure for ProvidersPath.
-    /// </summary>
-    /// <param name="Value">
-    ///   The path where external OpenSSL providers (such as the legacy provider
-    ///   module) should be located. Can be an absolute path or relative to
-    ///   OpenSSLPath. If empty, the loader defaults to OpenSSLPath.
-    /// </param>
-    procedure SetProvidersPath(const Value: string);
-
     /// <summary>
     ///   Property get function for FailedToLoad.
     /// </summary>
@@ -158,15 +114,6 @@ type
     ///   pathes.
     /// </value>
     property OpenSSLPath: string read GetOpenSSLPath write SetOpenSSLPath;
-    /// <summary>
-    ///   The search path for OpenSSL external providers (such as legacy.dll/so).
-    /// </summary>
-    /// <value>
-    ///   The directory path where provider modules reside. Can be an absolute
-    ///   path or relative to <see cref="OpenSSLPath" />. If not specified,
-    ///   the search path defaults to <see cref="OpenSSLPath" />.
-    /// </value>
-    property ProvidersPath: string read GetProvidersPath write SetProvidersPath;
     /// <summary>
     ///   Lists alll of the functions that failed to load.
     /// </summary>
@@ -238,16 +185,6 @@ procedure Register_SSLLoader(LoadProc: TOpenSSLLoadProc;
 /// </remarks>
 procedure Register_SSLUnloader(UnloadProc: TOpenSSLUnloadProc);
 
-/// <summary>
-///   Registers the class event hook that called after OpenSSL library loading
-///   and before its unloading.
-/// </summary>
-/// <param name="AActionProc">
-///   Event method that will be called on <see
-///   cref="TaurusTLSLoader|IOpenSSLLoader" /> event. <br />
-/// </param>
-procedure Register_SSLLoaderAction(const AActionProc: TTaurusTLSOnLoadAction);
-
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 {$IF NOT DECLARED( LoadLibFunction)}
 //Have to do things this way because LoadLibFunction is now "declared" even though
@@ -275,144 +212,13 @@ uses
 {$IFDEF FPC}, dynlibs{$ELSE}
   {$IFDEF VCL_2010_OR_ABOVE}, System.IOUtils
   {$ENDIF}
-  , TaurusTLSHeaders_provider
 {$ENDIF}
   , TaurusTLSConsts
 {$ENDIF}
   ,SysUtils;
 
-{$IFNDEF HAS_UNIT_Generics_Collections}
-type
-  TMethodList = class
-  {$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} private
-    FList: TList;
-    function Get(Index: NativeInt): TTaurusTLSOnLoadAction;
-    procedure Put(Index: NativeInt; const Value: TTaurusTLSOnLoadAction);
-    function NewItem(const AItem: TTaurusTLSOnLoadAction): PMethod;
-    procedure ReleaseItem(AItem: PMethod);
-    function GetCount: NativeInt;
-  public
-    constructor Create;
-    destructor Destroy; override;
-
-    function Add(Item: TTaurusTLSOnLoadAction): NativeInt;
-    procedure Delete(Index: NativeInt);
-
-    property Count: NativeInt read GetCount;
-    property Items[Index: NativeInt]: TTaurusTLSOnLoadAction
-      read Get write Put; default;
-
-  end;
-
-{ TMethodList }
-
-constructor TMethodList.Create;
-begin
-  FList:=TList.Create;
-end;
-
-destructor TMethodList.Destroy;
-var
-  i: NativeInt;
-
-begin
-  for i := 0 to FList.Count - 1 do
-    ReleaseItem(FList[i]);
-
-  FreeAndNil(FList);
-  inherited;
-end;
-
-{$IFDEF DCC}{$WARN UNSAFE_CAST OFF}{$ENDIF}
-{$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-
-function TMethodList.Add(Item: TTaurusTLSOnLoadAction): NativeInt;
-begin
-  if Assigned(TMethod(Item).Code) and Assigned(TMethod(Item).Data) then
-    Result:=FList.Add(NewItem(Item))
-  else
-    Result:=-1;
-end;
-
-procedure TMethodList.Delete(Index: NativeInt);
-var
-  lItem: PMethod;
-
-begin
-  if (Index >= 0) and (Index < Count) then
-  begin
-    lItem:=FList.Items[Index];
-    try
-      FList.Delete(Index);
-    finally
-       ReleaseItem(lItem);
-    end;
-  end;
-end;
-
-function TMethodList.GetCount: NativeInt;
-begin
-  Result:=FList.Count;
-end;
-
-function TMethodList.Get(Index: NativeInt): TTaurusTLSOnLoadAction;
-var
-  lItem: PMethod;
-
-begin
-  lItem:=FList[Index];
-  if Assigned(lItem) then
-  begin
-    TMethod(Result).Code:=lItem^.Code;
-    TMethod(Result).Data:=lItem^.Data;
-  end
-  else
-  begin
-    TMethod(Result).Code:=nil;
-    TMethod(Result).Data:=nil;
-  end
-end;
-
-procedure TMethodList.Put(Index: NativeInt; const Value: TTaurusTLSOnLoadAction);
-var
-  lItem, lNewItem: PMethod;
-
-begin
-  if Assigned(TMethod(Value).Code) and Assigned(TMethod(Value).Data) then
-  begin
-    lNewItem:=NewItem(Value);
-    lItem:=FList[Index];
-    FList[Index]:=lNewItem;
-    ReleaseItem(lItem);
-  end
-  else
-    Delete(Index);
-end;
-
-function TMethodList.NewItem(const AItem: TTaurusTLSOnLoadAction): PMethod;
-begin
-  Result:=nil;
-  try
-    New(Result);
-    Result^.Code:=TMethod(AItem).Code;
-    Result^.Data:=TMethod(AItem).Data;
-  except
-    ReleaseItem(Result);
-    raise;
-  end;
-end;
-
-procedure TMethodList.ReleaseItem(AItem: PMethod);
-begin
-  if Assigned(AItem) then
-    Dispose(AItem);
-end;
-
-{$IFDEF DCC}{$WARN UNSAFE_CAST DEFAULT}{$ENDIF}
-{$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
-{$ENDIF}
-
 {$IF not declared(NilHandle)}
+
 const
   NilHandle: TIdLibHandle = 0;
 {$IFEND}
@@ -423,12 +229,10 @@ var
   GLibCryptoLoadList: TList<TOpenSSLLoadProc> = nil;
   GLibSSLLoadList: TList<TOpenSSLLoadProc> = nil;
   GUnLoadList: TList<TOpenSSLUnloadProc> = nil;
-  GOnLoadActionList: TList<TTaurusTLSOnLoadAction> = nil;
 {$ELSE}
   GLibCryptoLoadList: TList = nil;  //PALOFF - Created and freed objects
   GLibSSLLoadList: TList = nil;  //PALOFF - Created and freed objects
   GUnLoadList: TList = nil;  //PALOFF - Created and freed objects
-  GOnLoadActionList: TMethodList = nil;   //PALOFF - Created and freed objects
 {$ENDIF}
 
 function GetOpenSSLLoader: IOpenSSLLoader;
@@ -471,17 +275,6 @@ begin
   GUnLoadList.Add(@UnloadProc);
 end;
 
-procedure Register_SSLLoaderAction(const AActionProc: TTaurusTLSOnLoadAction);
-begin
-  if GOnLoadActionList = nil then
-{$IFDEF HAS_UNIT_Generics_Collections}
-    GOnLoadActionList := TList<TTaurusTLSOnLoadAction>.Create;
-{$ELSE}
-    GOnLoadActionList := TMethodList.Create;
-{$ENDIF}
-  GOnLoadActionList.Add(AActionProc);
-end;
-
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 
 {$IFDEF LOADLIB_UNAVAIL}
@@ -497,13 +290,10 @@ type
   { TOpenSSLLoader }
 
   TOpenSSLLoader = class(TInterfacedObject, IOpenSSLLoader)
-  const
-    cDefaultProvidersPath = 'providers';
 {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FLibCrypto: TIdLibHandle;
     FLibSSL: TIdLibHandle;
     FOpenSSLPath: string;
-    FProvidersPath: string;
     FFailed: TStringList;  //PALOFF - Created and freed objects
     FSSLLibVersions: string;
     FLibraryLoaded: TIdThreadSafeBoolean;  //PALOFF - Created and freed objects
@@ -513,11 +303,8 @@ type
     procedure SetSSLLibVersions(const AValue: string);
     function GetOpenSSLPath: string;
     procedure SetOpenSSLPath(const Value: string);
-    function IsAbsolutePath(const APath: string): Boolean;
-    function GetProvidersPath: string;
-    procedure SetProvidersPath(const Value: string);
-    function GetEffectiveProvidersPath: string;
     function GetFailedToLoad: TStringList;
+
   public
     constructor Create;
     destructor Destroy; override;
@@ -526,8 +313,6 @@ type
     procedure Unload;
     function IsLoaded : Boolean;
     property OpenSSLPath: string read GetOpenSSLPath write SetOpenSSLPath;
-    property ProvidersPath: string read GetProvidersPath write SetProvidersPath;
-    property EffectiveProvidersPath: string read GetEffectiveProvidersPath;
     property FailedToLoad: TStringList read GetFailedToLoad;
   end;
 
@@ -539,8 +324,7 @@ begin
   FFailed := TStringList.Create();
   FLibraryLoaded := TIdThreadSafeBoolean.Create;
   FSSLLibVersions := DefaultLibVersions;
-  OpenSSLPath := GetEnvironmentVariable(TaurusTLSLibraryPath);
-  FProvidersPath:=cDefaultProvidersPath;
+  OpenSSLPath := GetEnvironmentVariable(TaurusTLSLibraryPath)
 end;
 
 destructor TOpenSSLLoader.Destroy;
@@ -693,24 +477,12 @@ begin
 
       LSSLVersionNo := LSSLVersionNo shr 12;
 
-      if Assigned(GLibCryptoLoadList) then
-        for i := 0 to GLibCryptoLoadList.Count - 1 do
-          TOpenSSLLoadProc(GLibCryptoLoadList[i])
-            (FLibCrypto, LSSLVersionNo, FFailed);
+      for i := 0 to GLibCryptoLoadList.Count - 1 do
+        TOpenSSLLoadProc(GLibCryptoLoadList[i])
+          (FLibCrypto, LSSLVersionNo, FFailed);
 
-      if Assigned(GLibSSLLoadList) then
-        for i := 0 to GLibSSLLoadList.Count - 1 do
-          TOpenSSLLoadProc(GLibSSLLoadList[i])(FLibSSL, LSSLVersionNo, FFailed);
-
-      // Configure path for loading provider shared libraries
-      // OpenSSL require UTF-8 encoded paths.
-      if (EffectiveProvidersPath <> '') then
-        OSSL_PROVIDER_set_default_search_path(nil,
-          PIdAnsiChar(UTF8Encode(EffectiveProvidersPath)));
-
-      if Assigned(GOnLoadActionList) then
-        for i := 0 to GOnLoadActionList.Count - 1 do
-          GOnLoadActionList[i](osaLoad);
+      for i := 0 to GLibSSLLoadList.Count - 1 do
+        TOpenSSLLoadProc(GLibSSLLoadList[i])(FLibSSL, LSSLVersionNo, FFailed);
 
     end;
     FLibraryLoaded.Value := true;
@@ -734,11 +506,6 @@ begin
   Result := FOpenSSLPath
 end;
 
-function TOpenSSLLoader.GetProvidersPath: string;
-begin
-  Result := FProvidersPath;
-end;
-
 procedure TOpenSSLLoader.SetOpenSSLPath(const Value: string);
 begin
   if Value = '' then
@@ -747,42 +514,9 @@ begin
     FOpenSSLPath := IncludeTrailingPathDelimiter(Value);
 end;
 
-function TOpenSSLLoader.GetEffectiveProvidersPath: string;
-begin
-  if FProvidersPath = '' then
-    Result := FOpenSSLPath
-  else if IsAbsolutePath(FProvidersPath) then
-    Result := FProvidersPath
-  else
-    Result := FOpenSSLPath + FProvidersPath;
-end;
-
-procedure TOpenSSLLoader.SetProvidersPath(const Value: string);
-begin
-  if Value = '' then
-    FProvidersPath := ''
-  else
-    FProvidersPath := IncludeTrailingPathDelimiter(Value);
-end;
-
 function TOpenSSLLoader.GetFailedToLoad: TStringList;
 begin
   Result := FFailed;
-end;
-
-function TOpenSSLLoader.IsAbsolutePath(const APath: string): Boolean;
-begin
-  if APath = '' then
-    Result := False
-  else
-  {$IFDEF WINDOWS}
-    // Matches "C:\...", "\\server\...", "\root\..."
-    Result := ((Length(APath) >= 2) and (APath[2] = ':')) or
-              ((Length(APath) >= 1) and ((APath[1] = '\') or (APath[1] = '/')));
-  {$ELSE}
-    // Unix/POSIX absolute path starts with '/'
-    Result := (Length(APath) >= 1) and (APath[1] = '/');
-  {$ENDIF}
 end;
 
 function TOpenSSLLoader.IsLoaded: Boolean;
@@ -798,15 +532,10 @@ begin
   try
     if FLibraryLoaded.Value then
     begin
-      if Assigned(GOnLoadActionList) then
-        for i := GOnLoadActionList.Count - 1 downto 0 do
-          GOnLoadActionList[i](osaUnLoad);
-
       // Reverse order so that unloaders registered after the header units
       // run while the OpenSSL functions are still assigned.
-      if Assigned(GUnLoadList) then
-        for i := GUnLoadList.Count - 1 downto 0 do
-          TOpenSSLUnloadProc(GUnLoadList[i]);
+      for i := GUnLoadList.Count - 1 downto 0 do
+        TOpenSSLUnloadProc(GUnLoadList[i]);
 
       FFailed.Clear();
 
@@ -837,10 +566,19 @@ initialization
 finalization
   //IMPORTANT!!! Pointers should be set to nil just in case
   //the TaurusTLS library is being reloaded.
-  FreeAndNil(GOnLoadActionList);
-  FreeAndNil(GLibCryptoLoadList);
-  FreeAndNil(GLibSSLLoadList);
-  FreeAndNil(GUnLoadList);
+  if GLibCryptoLoadList <> nil then
+  begin
+    FreeAndNil(GLibCryptoLoadList);
+  end;
+  if GLibSSLLoadList <> nil then
+  begin
+    FreeAndNil(GLibSSLLoadList);
+  end;
+  if GUnLoadList <> nil then
+  begin
+    FreeAndNil(GUnLoadList);
+  end;
+  // Freed last because TaurusTLS.UnLoadOpenSSLLibrary uses it from the
+  // TaurusTLS finalization section
   FreeAndNil(SSLIsLoaded);
 end.
-

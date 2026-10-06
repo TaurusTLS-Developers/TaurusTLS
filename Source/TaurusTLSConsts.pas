@@ -62,7 +62,6 @@ const
     {$IFDEF STATICLOAD_OPENSSL}
     CLibCrypto = 'libcrypto.a';
     CLibSSL = 'libssl.a';
-    CLibLegacyProvider = 'liblegacy.a';
     {$ENDIF}
   {$ENDIF}
   
