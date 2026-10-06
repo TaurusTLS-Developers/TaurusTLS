@@ -30,6 +30,7 @@ implementation
 uses
   IdGlobal,
   IdCTypes,
+  TaurusTLSConsts,
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSHeaders_core,
   {$ENDIF}
@@ -52,7 +53,7 @@ end;
 {$IFDEF OPENSSL_STATIC_LINK_MODEL}
 function ossl_legacy_provider_init(const handle: POSSL_CORE_HANDLE;
   const in_struct: POSSL_DISPATCH; out out_struct: POSSL_DISPATCH;
-  prov_ctx: pointer): TIdC_INT; cdecl; external;
+  prov_ctx: pointer): TIdC_INT; cdecl; external CLibLegacyProvider;
 {$ENDIF}
 
 type
