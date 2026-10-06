@@ -1,4 +1,4 @@
-/// <exclude />
+ï»¿/// <exclude />
   (* This unit was generated using the script genTaurusTLSHdrs.sh from the source file TaurusTLSHeaders_evp.h2pas
      It should not be modified directly. All changes should be made to TaurusTLSHeaders_evp.h2pas
      and this file regenerated. TaurusTLSHeaders_evp.h2pas is distributed with the full Indy
@@ -16,8 +16,8 @@
 {*                                                                            *}
 {*  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              *}
 {*                                                                            *}
-{* Portions of this software are Copyright (c) 1993 – 2018,                   *}
-{* Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  *}
+{* Portions of this software are Copyright (c) 1993 ï¿½ 2018,                   *}
+{* Chad Z. Hower (Kudzu) and the Indy Pit Crew ï¿½ http://www.IndyProject.org/  *}
 {******************************************************************************}
 unit TaurusTLSHeaders_evp;
 
@@ -999,6 +999,17 @@ var
   {$EXTERNALSYM EVP_MD_flags}
   EVP_MD_flags: function (const md: PEVP_MD): PIdC_ULONG; cdecl = nil; {removed 3.0.0}
 
+  {$EXTERNALSYM EVP_MD_fetch}
+  EVP_MD_fetch: function (ctx: POSSL_LIB_CTX; const algorithm, properties: PIdAnsiChar): PEVP_MD; cdecl = nil; {introduced 3.0.0}
+  {$EXTERNALSYM EVP_MD_get_size}
+  EVP_MD_get_size: function (const md: PEVP_MD): TIdC_INT; cdecl = nil; {introduced 3.0.0}
+  {$EXTERNALSYM EVP_MD_get_block_size}
+  EVP_MD_get_block_size: function (const md: PEVP_MD): TIdC_INT; cdecl = nil; {introduced 3.0.0}
+  {$EXTERNALSYM EVP_MD_up_ref}
+  EVP_MD_up_ref: function (md: PEVP_MD): TIdC_INT; cdecl = nil; {introduced 3.0.0}
+  {$EXTERNALSYM EVP_MD_free}
+  EVP_MD_free: procedure (md: PEVP_MD); cdecl = nil; {introduced 3.0.0}
+
   {$EXTERNALSYM EVP_MD_CTX_md}
   EVP_MD_CTX_md: function (ctx: PEVP_MD_CTX): PEVP_MD; cdecl = nil;
   {$EXTERNALSYM EVP_MD_CTX_update_fn}
@@ -1167,6 +1178,9 @@ var
   EVP_DigestFinal_ex: function (ctx: PEVP_MD_CTX; md: PByte; var s: TIdC_UINT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_Digest}
   EVP_Digest: function (const data: Pointer; count: TIdC_SIZET; md: PByte; size: PIdC_UINT; const type_: PEVP_MD; impl: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM EVP_Q_digest}
+  EVP_Q_digest: function (libctx: POSSL_LIB_CTX; name, propq: PIdAnsiChar;
+    data: Pointer; data_len: TIdC_SIZET; md: PByte; mdlen: PIdC_SIZET): TIdC_INT; cdecl = nil;
 
   {$EXTERNALSYM EVP_MD_CTX_copy}
   EVP_MD_CTX_copy: function (out_: PEVP_MD_CTX; const in_: PEVP_MD_CTX): TIdC_INT; cdecl = nil;
@@ -2433,6 +2447,9 @@ var
   function EVP_DigestFinal_ex(ctx: PEVP_MD_CTX; md: PByte; var s: TIdC_UINT): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM EVP_Digest}
   function EVP_Digest(const data: Pointer; count: TIdC_SIZET; md: PByte; size: PIdC_UINT; const type_: PEVP_MD; impl: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM EVP_Q_digest}
+  function EVP_Q_digest(libctx: POSSL_LIB_CTX; name, propq: PIdAnsiChar;
+    data: Pointer; data_len: TIdC_SIZET; md: PByte; mdlen: PIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
 
   {$EXTERNALSYM EVP_MD_CTX_copy}
   function EVP_MD_CTX_copy(out_: PEVP_MD_CTX; const in_: PEVP_MD_CTX): TIdC_INT cdecl; external CLibCrypto;
@@ -3672,6 +3689,11 @@ const
   EVP_MD_meth_get_cleanup_removed = (byte(4) shl 8 or byte(0)) shl 8 or byte(0);
   EVP_MD_meth_get_ctrl_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
   EVP_MD_meth_get_ctrl_removed = (byte(4) shl 8 or byte(0)) shl 8 or byte(0);
+  EVP_MD_fetch_introduced = (byte(3) shl 8 or byte(0)) shl 8 or byte(0);  {introduced 3.0.0}
+  EVP_MD_get_size_introduced = (byte(3) shl 8 or byte(0)) shl 8 or byte(0);  {introduced 3.0.0}
+  EVP_MD_get_block_size_introduced = (byte(3) shl 8 or byte(0)) shl 8 or byte(0);  {introduced 3.0.0}
+  EVP_MD_up_ref_introduced = (byte(3) shl 8 or byte(0)) shl 8 or byte(0);  {introduced 3.0.0}
+  EVP_MD_free_introduced = (byte(3) shl 8 or byte(0)) shl 8 or byte(0);  {introduced 3.0.0}
   EVP_CIPHER_get0_name_introduced = (byte(3) shl 8 or byte(0)) shl 8 or byte(0);  {introduced 3.0.0}
   EVP_CIPHER_meth_new_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
   EVP_CIPHER_meth_new_removed = (byte(4) shl 8 or byte(0)) shl 8 or byte(0);
@@ -3738,6 +3760,7 @@ const
   EVP_DigestFinalXOF_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
   EVP_DigestSign_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
   EVP_DigestVerify_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
+  EVP_Q_digest_introduced = (byte(3) shl 8 or byte(0)) shl 8 or byte(0);
   EVP_ENCODE_CTX_new_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
   EVP_ENCODE_CTX_free_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
   EVP_ENCODE_CTX_copy_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
@@ -4083,6 +4106,11 @@ const
   EVP_MD_size_procname = 'EVP_MD_size'; {removed 3.0.0}
   EVP_MD_block_size_procname = 'EVP_MD_block_size'; {removed 3.0.0}
   EVP_MD_flags_procname = 'EVP_MD_flags'; {removed 3.0.0}
+  EVP_MD_fetch_procname = 'EVP_MD_fetch'; {introduced 3.0.0}
+  EVP_MD_get_size_procname = 'EVP_MD_get_size'; {introduced 3.0.0}
+  EVP_MD_get_block_size_procname = 'EVP_MD_get_block_size'; {introduced 3.0.0}
+  EVP_MD_up_ref_procname = 'EVP_MD_up_ref'; {introduced 3.0.0}
+  EVP_MD_free_procname = 'EVP_MD_free'; {introduced 3.0.0}
 
   EVP_MD_CTX_md_procname = 'EVP_MD_CTX_md';
   EVP_MD_CTX_update_fn_procname = 'EVP_MD_CTX_update_fn'; {introduced 1.1.0}
@@ -4190,6 +4218,7 @@ const
   EVP_DigestUpdate_procname = 'EVP_DigestUpdate';
   EVP_DigestFinal_ex_procname = 'EVP_DigestFinal_ex';
   EVP_Digest_procname = 'EVP_Digest';
+  EVP_Q_digest_procname = 'EVP_Q_digest'; { introduced 3.0.0 }
 
   EVP_MD_CTX_copy_procname = 'EVP_MD_CTX_copy';
   EVP_DigestInit_procname = 'EVP_DigestInit';
@@ -5354,7 +5383,30 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MD_flags_procname);
 end;
 
+function  ERR_EVP_MD_fetch(ctx: POSSL_LIB_CTX; const algorithm, properties: PIdAnsiChar): PEVP_MD;  cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MD_fetch_procname);
+end;
 
+function  ERR_EVP_MD_get_size(const md: PEVP_MD): TIdC_INT;  cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MD_get_size_procname);
+end;
+
+function  ERR_EVP_MD_get_block_size(const md: PEVP_MD): TIdC_INT;  cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MD_get_block_size_procname);
+end;
+
+function  ERR_EVP_MD_up_ref(md: PEVP_MD): TIdC_INT;  cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MD_up_ref_procname);
+end;
+
+procedure  ERR_EVP_MD_free(md: PEVP_MD);  cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MD_free_procname);
+end;
 
 function  ERR_EVP_MD_CTX_md(ctx: PEVP_MD_CTX): PEVP_MD;  cdecl;
 begin
@@ -5733,6 +5785,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_Digest_procname);
 end;
 
+function  ERR_EVP_Q_Digest(libctx: POSSL_LIB_CTX; name, propq: PIdAnsiChar;
+  data: Pointer; data_len: TIdC_SIZET;
+  md: PByte; mdlen: PIdC_SIZET): TIdC_INT; cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_Q_Digest_procname);
+end;
 
 
 function  ERR_EVP_MD_CTX_copy(out_: PEVP_MD_CTX; const in_: PEVP_MD_CTX): TIdC_INT;  cdecl;
@@ -10246,7 +10304,117 @@ begin
     {$ifend}
   end;
 
- 
+  EVP_MD_fetch := LoadLibFunction(ADllHandle, EVP_MD_fetch_procname);
+  FuncLoadError := not assigned(EVP_MD_fetch);
+  if FuncLoadError then
+  begin
+    {$if not defined(EVP_MD_fetch_allownil)}
+    EVP_MD_fetch := ERR_EVP_MD_fetch;
+    {$ifend}
+    {$if declared(EVP_MD_fetch_introduced)}
+    if LibVersion < EVP_MD_fetch_introduced then
+    begin
+      {$if declared(FC_EVP_MD_fetch)}
+      EVP_MD_fetch := FC_EVP_MD_fetch;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(EVP_MD_fetch_allownil)}
+    if FuncLoadError then
+      AFailed.Add('EVP_MD_fetch');
+    {$ifend}
+  end;
+
+  EVP_MD_get_size := LoadLibFunction(ADllHandle, EVP_MD_get_size_procname);
+  FuncLoadError := not assigned(EVP_MD_get_size);
+  if FuncLoadError then
+  begin
+    {$if not defined(EVP_MD_get_size_allownil)}
+    EVP_MD_get_size := ERR_EVP_MD_get_size;
+    {$ifend}
+    {$if declared(EVP_MD_get_size_introduced)}
+    if LibVersion < EVP_MD_get_size_introduced then
+    begin
+      {$if declared(FC_EVP_MD_get_size)}
+      EVP_MD_get_size := FC_EVP_MD_get_size;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(EVP_MD_get_size_allownil)}
+    if FuncLoadError then
+      AFailed.Add('EVP_MD_get_size');
+    {$ifend}
+  end;
+
+  EVP_MD_get_block_size := LoadLibFunction(ADllHandle, EVP_MD_get_block_size_procname);
+  FuncLoadError := not assigned(EVP_MD_get_block_size);
+  if FuncLoadError then
+  begin
+    {$if not defined(EVP_MD_get_block_size_allownil)}
+    EVP_MD_get_block_size := ERR_EVP_MD_get_block_size;
+    {$ifend}
+    {$if declared(EVP_MD_get_block_size_introduced)}
+    if LibVersion < EVP_MD_get_block_size_introduced then
+    begin
+      {$if declared(FC_EVP_MD_get_block_size)}
+      EVP_MD_get_block_size := FC_EVP_MD_get_block_size;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(EVP_MD_get_block_size_allownil)}
+    if FuncLoadError then
+      AFailed.Add('EVP_MD_get_block_size');
+    {$ifend}
+  end;
+
+  EVP_MD_up_ref := LoadLibFunction(ADllHandle, EVP_MD_up_ref_procname);
+  FuncLoadError := not assigned(EVP_MD_up_ref);
+  if FuncLoadError then
+  begin
+    {$if not defined(EVP_MD_up_ref_allownil)}
+    EVP_MD_up_ref := ERR_EVP_MD_up_ref;
+    {$ifend}
+    {$if declared(EVP_MD_up_ref_introduced)}
+    if LibVersion < EVP_MD_up_ref_introduced then
+    begin
+      {$if declared(FC_EVP_MD_up_ref)}
+      EVP_MD_up_ref := FC_EVP_MD_up_ref;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(EVP_MD_up_ref_allownil)}
+    if FuncLoadError then
+      AFailed.Add('EVP_MD_up_ref');
+    {$ifend}
+  end;
+
+  EVP_MD_free := LoadLibFunction(ADllHandle, EVP_MD_free_procname);
+  FuncLoadError := not assigned(EVP_MD_free);
+  if FuncLoadError then
+  begin
+    {$if not defined(EVP_MD_free_allownil)}
+    EVP_MD_free := ERR_EVP_MD_free;
+    {$ifend}
+    {$if declared(EVP_MD_free_introduced)}
+    if LibVersion < EVP_MD_free_introduced then
+    begin
+      {$if declared(FC_EVP_MD_free)}
+      EVP_MD_free := FC_EVP_MD_free;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(EVP_MD_free_allownil)}
+    if FuncLoadError then
+      AFailed.Add('EVP_MD_free');
+    {$ifend}
+  end;
+
+
   EVP_MD_CTX_md := LoadLibFunction(ADllHandle, EVP_MD_CTX_md_procname);
   FuncLoadError := not assigned(EVP_MD_CTX_md);
   if FuncLoadError then
@@ -12085,6 +12253,36 @@ begin
     {$ifend}
   end;
 
+  EVP_Q_digest := LoadLibFunction(ADllHandle, EVP_Q_digest_procname);
+  FuncLoadError := not assigned(EVP_Q_digest);
+  if FuncLoadError then
+  begin
+    {$if not defined(EVP_Q_digest_allownil)}
+    EVP_Q_digest := ERR_EVP_Q_digest;
+    {$ifend}
+    {$if declared(EVP_Q_digest_introduced)}
+    if LibVersion < EVP_Q_digest_introduced then
+    begin
+      {$if declared(FC_EVP_Q_digest)}
+      EVP_Q_digest := FC_EVP_Q_digest;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(EVP_Q_digest_removed)}
+    if EVP_Q_digest_removed <= LibVersion then
+    begin
+      {$if declared(_EVP_Q_digest)}
+      EVP_Q_digest := _EVP_Q_digest;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(EVP_Q_digest_allownil)}
+    if FuncLoadError then
+      AFailed.Add('EVP_Q_digest');
+    {$ifend}
+  end;
 
   EVP_MD_CTX_copy := LoadLibFunction(ADllHandle, EVP_MD_CTX_copy_procname);
   FuncLoadError := not assigned(EVP_MD_CTX_copy);
@@ -26531,6 +26729,11 @@ begin
   EVP_MD_size := nil; {removed 3.0.0}
   EVP_MD_block_size := nil; {removed 3.0.0}
   EVP_MD_flags := nil; {removed 3.0.0}
+  EVP_MD_fetch := nil; {introduced 3.0.0}
+  EVP_MD_get_size := nil; {introduced 3.0.0}
+  EVP_MD_get_block_size := nil; {introduced 3.0.0}
+  EVP_MD_up_ref := nil; {introduced 3.0.0}
+  EVP_MD_free := nil; {introduced 3.0.0}
   EVP_MD_CTX_md := nil;
   EVP_MD_CTX_update_fn := nil; {introduced 1.1.0}
   EVP_MD_CTX_set_update_fn := nil; {introduced 1.1.0}
