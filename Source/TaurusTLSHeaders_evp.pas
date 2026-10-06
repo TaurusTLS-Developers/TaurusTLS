@@ -1167,6 +1167,9 @@ var
   EVP_DigestFinal_ex: function (ctx: PEVP_MD_CTX; md: PByte; var s: TIdC_UINT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_Digest}
   EVP_Digest: function (const data: Pointer; count: TIdC_SIZET; md: PByte; size: PIdC_UINT; const type_: PEVP_MD; impl: PENGINE): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM EVP_Q_digest}
+  EVP_Q_digest: function (libctx: POSSL_LIB_CTX; name, propq: PIdAnsiChar;
+    data: Pointer; data_len: TIdC_SIZET; md: PByte; mdlen: PIdC_SIZET): TIdC_INT; cdecl = nil;
 
   {$EXTERNALSYM EVP_MD_CTX_copy}
   EVP_MD_CTX_copy: function (out_: PEVP_MD_CTX; const in_: PEVP_MD_CTX): TIdC_INT; cdecl = nil;
@@ -2433,6 +2436,9 @@ var
   function EVP_DigestFinal_ex(ctx: PEVP_MD_CTX; md: PByte; var s: TIdC_UINT): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM EVP_Digest}
   function EVP_Digest(const data: Pointer; count: TIdC_SIZET; md: PByte; size: PIdC_UINT; const type_: PEVP_MD; impl: PENGINE): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM EVP_Q_digest}
+  function EVP_Q_digest(libctx: POSSL_LIB_CTX; name, propq: PIdAnsiChar;
+    data: Pointer; data_len: TIdC_SIZET; md: PByte; mdlen: PIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
 
   {$EXTERNALSYM EVP_MD_CTX_copy}
   function EVP_MD_CTX_copy(out_: PEVP_MD_CTX; const in_: PEVP_MD_CTX): TIdC_INT cdecl; external CLibCrypto;
@@ -3738,6 +3744,7 @@ const
   EVP_DigestFinalXOF_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
   EVP_DigestSign_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
   EVP_DigestVerify_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
+  EVP_Q_digest_introduced = (byte(3) shl 8 or byte(0)) shl 8 or byte(0);
   EVP_ENCODE_CTX_new_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
   EVP_ENCODE_CTX_free_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
   EVP_ENCODE_CTX_copy_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
@@ -4190,6 +4197,7 @@ const
   EVP_DigestUpdate_procname = 'EVP_DigestUpdate';
   EVP_DigestFinal_ex_procname = 'EVP_DigestFinal_ex';
   EVP_Digest_procname = 'EVP_Digest';
+  EVP_Q_digest_procname = 'EVP_Q_digest'; { introduced 3.0.0 }
 
   EVP_MD_CTX_copy_procname = 'EVP_MD_CTX_copy';
   EVP_DigestInit_procname = 'EVP_DigestInit';
@@ -5733,6 +5741,12 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_Digest_procname);
 end;
 
+function  ERR_EVP_Q_Digest(libctx: POSSL_LIB_CTX; name, propq: PIdAnsiChar;
+  data: Pointer; data_len: TIdC_SIZET;
+  md: PByte; mdlen: PIdC_SIZET): TIdC_INT; cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_Q_Digest_procname);
+end;
 
 
 function  ERR_EVP_MD_CTX_copy(out_: PEVP_MD_CTX; const in_: PEVP_MD_CTX): TIdC_INT;  cdecl;
@@ -12085,6 +12099,36 @@ begin
     {$ifend}
   end;
 
+  EVP_Q_digest := LoadLibFunction(ADllHandle, EVP_Q_digest_procname);
+  FuncLoadError := not assigned(EVP_Q_digest);
+  if FuncLoadError then
+  begin
+    {$if not defined(EVP_Q_digest_allownil)}
+    EVP_Q_digest := ERR_EVP_Q_digest;
+    {$ifend}
+    {$if declared(EVP_Q_digest_introduced)}
+    if LibVersion < EVP_Q_digest_introduced then
+    begin
+      {$if declared(FC_EVP_Q_digest)}
+      EVP_Q_digest := FC_EVP_Q_digest;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(EVP_Q_digest_removed)}
+    if EVP_Q_digest_removed <= LibVersion then
+    begin
+      {$if declared(_EVP_Q_digest)}
+      EVP_Q_digest := _EVP_Q_digest;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(EVP_Q_digest_allownil)}
+    if FuncLoadError then
+      AFailed.Add('EVP_Q_digest');
+    {$ifend}
+  end;
 
   EVP_MD_CTX_copy := LoadLibFunction(ADllHandle, EVP_MD_CTX_copy_procname);
   FuncLoadError := not assigned(EVP_MD_CTX_copy);
