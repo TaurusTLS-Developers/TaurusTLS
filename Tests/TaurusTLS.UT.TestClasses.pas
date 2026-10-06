@@ -226,10 +226,19 @@ type
       var AOffset, ACount: Int64); overload; static;
   end;
 
+  TTestEnumHelperRec<T> = record
+    class function ToString(const AValue: T): string; static;
+  end;
+
+  TBytesHelper = record helper for TBytes
+    class function FromBase64Str(AValue: string): TBytes;
+    class function FromHexStr(AValue: string): TBytes;
+  end;
+
 implementation
 
 uses
-  System.SyncObjs;
+  System.TypInfo, System.SyncObjs, System.NetEncoding;
 
 { TOsslTestBase }
 
@@ -551,81 +560,6 @@ begin
   Assert.AreEqualMemory(PByte(ABytes), PAnsiChar(AStr), lBLen);
 end;
 
-(*
-class procedure TBytesValidator.AreEqual(const ABytes, ASrcBytes: TBytes;
-  AOffset: Int64; ATrailingNulls: TTrailingNulls; AllowOutOfBounds: boolean);
-var
-  lALen, lBLen, lSrcLen: NativeUInt;
-  i: integer;
-
-begin
-  lALen:=Length(ABytes);
-  Assert.IsTrue(lALen-ATrailingNulls >= 0,
-    Format('Length(ABytes): "%d" should be greater or equal ATrailingNulls: "%d".',
-    [lALen, ATrailingNulls]));
-  if lALen > ATrailingNulls then
-  begin
-    lBLen:=lALen-ATrailingNulls;
-    lSrcLen:=Length(ASrcBytes);
-    if not AllowOutOfBounds then
-      Assert.IsTrue(lSrcLen >= AOffset+lBLen,
-        Format('Trying to read outside of ASrcBytes boundary. '+
-        'Length(ASrcBytes): %d bytes, less than Length(ASrcBytes)+ACount: %d bytes(s)',
-        [lSrcLen, AOffset+lBLen]));
-    if (lSrcLen-AOffset) > 0 then
-    begin
-      lSrcLen:=lSrcLen-AOffset;
-      if lSrcLen > lBLen then
-        lSrcLen:=lBLen;
-    end
-    else
-      lSrcLen:=0;
-    Assert.AreEqual(lSrcLen, lBLen,
-      'Length(ABytes) is not equal expected read length.');
-    if lSrcLen > 0 then
-      Assert.AreEqualMemory(PByte(ABytes), PByte(@ASrcBytes[AOffset]), lBLen,
-        'ASrcBytes and ABytes are not equal.');
-  end;
-  for i := ATrailingNulls-1 downto Low(TTrailingNulls) do
-    Assert.AreEqual<byte>(0, ABytes[lALen-i-1],
-      Format('No trailing null at position', [lALen-i-1]));
-end;
-
-class procedure TBytesValidator.AreEqual(const ABytes: TBytes;
-  const AStream: TStream; AOffset: Int64; ATrailingNulls: TTrailingNulls);
-var
-  lALen, lBLen: NativeUInt;
-  lBytes: TBytes;
-  lStreamPos, lStreamSize: Int64;
-  i: integer;
-
-begin
-  Assert.IsNotNull(AStream, 'AStream must not be ''nil''.');
-  lALen:=Length(ABytes);
-  Assert.IsTrue(lALen-ATrailingNulls >= 0,
-    Format('Length(ABytes): "%d" should be greater or equal ATrailingNulls: "%d".',
-    [lALen, ATrailingNulls]));
-  lStreamSize:=AStream.Size;
-  SetLength(lBytes, lALen);
-  if lALen > ATrailingNulls then
-  begin
-    lBLen:=lALen-ATrailingNulls;
-    Assert.IsTrue(lStreamSize >= AOffset+lBLen,
-      Format('Trying to read behind the End of File. File Size: %d bytes '+
-      'less than File Size+ACount: %d byte(s)', [lStreamSize, AOffset+lBLen]));
-    lStreamPos:=AStream.Position;
-    try
-      Assert.AreEqual<Int64>(lBLen, AStream.Read(lBytes, lBLen),
-        'Data has read less than reguested.');
-    finally
-      AStream.Position:=lStreamPos;
-    end;
-  end;
-  Assert.AreEqualMemory(PByte(lBytes), PByte(ABytes), lALen,
-    'ABytes and content of AStream are not equal.');
-end;
-*)
-
 class procedure TBytesValidator.AreEqual(const ABytes, ASrcBytes: TBytes;
   AOffset, ASrcOffset, ACount: Int64);
 begin
@@ -685,6 +619,63 @@ begin
   else
     lSize:=0;
   CalcOffsetAndSize(lSize, AOffset, ACount);
+end;
+
+{ TTestEnumHelperRec<T> }
+
+class function TTestEnumHelperRec<T>.ToString(const AValue: T): string;
+var
+  lTI: PTypeInfo ;
+  lValue: integer;
+
+begin
+  lTI:=TypeInfo(T);
+  if Assigned(lTI) then
+  begin
+    if lTI^.Kind = tkEnumeration then
+    begin
+      case SizeOf(AValue) of
+        1: lValue:=PByte(@AValue)^;
+        2: lValue:=PWord(@AValue)^;
+        4: lValue:=PInteger(@AValue)^;
+      else
+        raise EConvertError.CreateFmt(
+          'Enumeration type ''%s'' has unsupported data size.', [lTI^.Name]);
+      end;
+      Result:=GetEnumName(lTI, lValue) // this type cast is safe
+    end
+    else
+      raise EConvertError.CreateFmt(
+        'Unable to get Value Name for non-enum type ''%s''.', [lTI^.Name]);
+  end
+  else
+    raise EConvertError.Create('Unable to get type information.');
+end;
+
+{ TBytesHelper }
+
+class function TBytesHelper.FromBase64Str(AValue: string): TBytes;
+begin
+  Assert.AreNotEqual(0, Length(AValue),
+    'Parameter ''AValue'' must be grater than Zero.');
+  Result:=BytesOf(TNetEncoding.Base64.Decode(AValue));
+end;
+
+class function TBytesHelper.FromHexStr(AValue: string): TBytes;
+var
+  lLen: NativeUInt;
+
+begin
+  lLen:=Length(AValue);
+  if lLen > 0 then
+  begin
+    Assert.IsFalse(Odd(lLen mod 2), 'HEX String must be divisible by 2.');
+    lLen:=lLen div 2;
+    SetLength(Result, lLen);
+    HexToBin(PChar(AValue), 0, Result, 0, lLen);
+  end
+  else
+    SetLength(Result, 0);
 end;
 
 initialization
