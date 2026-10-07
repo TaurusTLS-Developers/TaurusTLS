@@ -145,17 +145,11 @@ function MDAsString(const AMD: TTaurusTLSLEVP_MD): String;  {$IFDEF USE_INLINE} 
 /// <param name="sec">
 /// Returns the second of the minute.
 /// </param>
-/// <param name="tz_hour">
-/// Returns the Time Zone offset hour
-/// </param>
-/// <param name="tz_min">
-/// Returns the Time Zone offset minute.
-/// </param>
 /// <returns>
 /// True if parsing was successful or False if failed.
 /// </returns>
 function ASN1_Time_Decode(const a: PASN1_TIME; out year, month, day, hour, min,
-  sec: Word; out tz_hour, tz_min: Integer): Boolean;
+  sec: Word): Boolean;
 
 /// <summary>
 /// Converts a ASN1_TIME to a TDateTime time stamp.
@@ -556,96 +550,19 @@ begin
 end;
 
 function ASN1_Time_Decode(const a: PASN1_TIME; out year, month, day, hour, min,
-  sec: Word; out tz_hour, tz_min: Integer): Boolean;
-var
-  i, tz_dir: Integer;
-{$IFDEF FPC}
-  time_str: AnsiString;
-{$ELSE}
-  time_str: string;
-{$ENDIF}
-{$IFNDEF USE_MARSHALLED_PTRS}
-{$IFNDEF STRING_IS_ANSI}
-  LTemp: AnsiString;
-{$ENDIF}
-{$ENDIF}
+  sec: Word): Boolean;
+var ltm : PIdC_TM;
 begin
-  year := 0;
-  month := 1;
-  day := 1;
-  hour := 0;
-  min := 0;
-  sec := 0;
-  tz_hour := 0;
-  tz_min := 0;
-  Result := False; { default is to return with an error indication }
-  if ASN1_STRING_length(PASN1_STRING(a)) < 12 then //PALOFF - Possible bad typecast
+  Result := ASN1_TIME_to_tm(a,ltm) = 1;
+  if Result then
   begin
-    Exit;
+    Year := ltm.tm_year + 1900;
+    Month := ltm.tm_mon;
+    day := ltm.tm_mday;
+    hour := ltm.tm_hour;
+    min := ltm.tm_min;
+    sec := ltm.tm_sec;
   end;
-{$IFDEF USE_MARSHALLED_PTRS}
-  time_str := TMarshal.ReadStringAsAnsi(TPtrWrapper.Create(ASN1_STRING_get0_data(PASN1_STRING(a))),
-    ASN1_STRING_length(PASN1_STRING(a)));
-{$ELSE}
-{$IFDEF STRING_IS_ANSI}
-  SetString(time_str, PIdAnsiChar(ASN1_STRING_get0_data(PASN1_STRING(a))), ASN1_STRING_length(PASN1_STRING(a)));
-{$ELSE}
-  SetString(LTemp, PIdAnsiChar(ASN1_STRING_get0_data(PASN1_STRING(a))), ASN1_STRING_length(PASN1_STRING(a)));  //PALOFF - Possible bad pointer usage [data : PByte cast to PAnsiChar]
-  { Note: UTCtime is a type defined by OpenSSL and hence is ansistring and not UCS-2 }
-  // TODO: do we need to use SetCodePage() here?
-  time_str := String(LTemp); // explicit convert to Unicode
-{$ENDIF}
-{$ENDIF}
-  // Check if first 12 chars are numbers
-  if not IsNumeric(time_str, 12) then
-  begin
-    Exit;
-  end;
-  // Convert time from string to number
-  if Length(time+str) >= 14 then
-  begin
-    year := IndyStrToInt(Copy(time_str, 1, 4));
-    month := IndyStrToInt(Copy(time_str, 5, 2));
-    day := IndyStrToInt(Copy(time_str, 7, 2));
-    hour := IndyStrToInt(Copy(time_str, 9, 2));
-    min := IndyStrToInt(Copy(time_str, 11, 2));
-    sec := IndyStrToInt(Copy(time_str, 13, 2));
-  end
-  else
-  begin
-    year := IndyStrToInt(Copy(time_str, 1, 2)) + 1900;
-    month := IndyStrToInt(Copy(time_str, 3, 2));
-    day := IndyStrToInt(Copy(time_str, 5, 2));
-    hour := IndyStrToInt(Copy(time_str, 7, 2));
-    min := IndyStrToInt(Copy(time_str, 9, 2));
-    sec := IndyStrToInt(Copy(time_str, 11, 2));
-    // Fix year. This function is Y2k but isn't compatible with Y2k5 :-(    {Do not Localize}
-    if year < 1950 then
-    begin
-      Inc(year, 100);
-    end;
-  end;
-  // Check TZ
-  tz_hour := 0;
-  tz_min := 0;
-  if CharIsInSet(time_str, 13, '-+') then
-  begin { Do not Localize }
-    tz_dir := iif(CharEquals(time_str, 13, '-'), -1, 1); { Do not Localize }
-    for i := 14 to 18 do
-    begin // Check if numbers are numbers
-      if i = 16 then
-      begin
-        Continue;
-      end;
-      if not IsNumeric(time_str[i]) then
-      begin
-        Exit;
-      end;
-    end;
-    tz_hour := IndyStrToInt(Copy(time_str, 14, 15)) * tz_dir;
-    tz_min := IndyStrToInt(Copy(time_str, 17, 18)) * tz_dir;
-  end;
-  Result := True; { everthing OK }
 end;
 
 function ASN1TimeToDateTime(a: PASN1_TIME): TDateTime;
@@ -656,15 +573,11 @@ var
   hour: Word;
   min: Word;
   sec: Word;
-  tz_h: Integer;
-  tz_m: Integer;
 begin
   Result := 0;
-  if ASN1_Time_Decode(a, year, month, day, hour, min, sec, tz_h, tz_m) then
+  if ASN1_Time_Decode(a, year, month, day, hour, min, sec) then
   begin
     Result := EncodeDate(year, month, day) + EncodeTime(hour, min, sec, 0);
-    Result := Result + (tz_m / (60 * 24));
-    Result := Result + (tz_h / 24.0);
     Result := UTCTimeToLocalTime(Result);
   end;
 end;
