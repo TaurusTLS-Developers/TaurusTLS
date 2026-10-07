@@ -2316,6 +2316,17 @@ var
   //# define EVP_MD_nid(e)                   EVP_MD_type(e)
   //# define EVP_MD_name(e)                  OBJ_nid2sn(EVP_MD_nid(e))
 
+  {$EXTERNALSYM EVP_MD_fetch}
+  function EVP_MD_fetch(ctx: POSSL_LIB_CTX; const algorithm, properties: PIdAnsiChar): PEVP_MD cdecl; external CLibCrypto; {introduced 3.0.0}
+  {$EXTERNALSYM EVP_MD_get_size}
+  function EVP_MD_get_size(const md: PEVP_MD): TIdC_INT cdecl; external CLibCrypto; {introduced 3.0.0}
+  {$EXTERNALSYM EVP_MD_get_block_size}
+  function EVP_MD_get_block_size(const md: PEVP_MD): TIdC_INT cdecl; external CLibCrypto; {introduced 3.0.0}
+  {$EXTERNALSYM EVP_MD_up_ref}
+  function EVP_MD_up_ref(md: PEVP_MD): TIdC_INT cdecl; external CLibCrypto; {introduced 3.0.0}
+  {$EXTERNALSYM EVP_MD_free}
+  procedure EVP_MD_free(md: PEVP_MD) cdecl; external CLibCrypto; {introduced 3.0.0}
+
   {$EXTERNALSYM EVP_MD_CTX_md}
   function EVP_MD_CTX_md(ctx: PEVP_MD_CTX): PEVP_MD cdecl; external CLibCrypto;
   {$EXTERNALSYM EVP_MD_CTX_update_fn}
