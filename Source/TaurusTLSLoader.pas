@@ -275,8 +275,8 @@ uses
 {$IFDEF FPC}, dynlibs{$ELSE}
   {$IFDEF VCL_2010_OR_ABOVE}, System.IOUtils
   {$ENDIF}
-  , TaurusTLSHeaders_provider
 {$ENDIF}
+  , TaurusTLSHeaders_provider
   , TaurusTLSConsts
 {$ENDIF}
   ,SysUtils;
