@@ -149,7 +149,7 @@ function MDAsString(const AMD: TTaurusTLSLEVP_MD): String;  {$IFDEF USE_INLINE} 
 /// True if parsing was successful or False if failed.
 /// </returns>
 function ASN1_Time_Decode(const a: PASN1_TIME; out year, month, day, hour, min,
-  sec: Word): Boolean;
+  sec: Word; out tz_hour, tz_min: Integer): Boolean;
 
 /// <summary>
 /// Converts a ASN1_TIME to a TDateTime time stamp.
@@ -550,20 +550,161 @@ begin
   end;
 end;
 
-function ASN1_Time_Decode(const a: PASN1_TIME; out year, month, day, hour, min,
-  sec: Word): Boolean;
-var ltm : PIdC_TM;
+// Inline helper function for `ASN1_Time_Decode`
+function CharArrayToWord(AChars: PIdAnsiChar; AStart, AEnd: TIdC_INT;
+  out AResult: Word): Boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
+var
+  i: TIdC_INT;
+  lChar: AnsiChar;
+  lResult: Word;
 begin
-  Result := ASN1_TIME_to_tm(a,ltm) = 1;
+  Result := Assigned(AChars) and (AStart >= 0) and (AEnd >= AStart);
   if Result then
   begin
-    Year := ltm.tm_year + 1900;
-    Month := ltm.tm_mon;
-    day := ltm.tm_mday;
-    hour := ltm.tm_hour;
-    min := ltm.tm_min;
-    sec := ltm.tm_sec;
+    lResult := 0;
+    for i := AStart to AEnd do
+    begin
+      lChar := AChars[i];
+      if lChar in ['0'..'9'] then
+        lResult := (lResult * 10) + (Byte(lChar) - Byte('0'))
+      else
+        Exit(False);
+    end;
+    AResult := lResult;
   end;
+end;
+
+// Note: ASN1TimeToDateTime was previously the sole consumer of this function.
+// While ASN1TimeToDateTime has been refactored to use native OpenSSL routines
+// and ASN1_Time_Decode is no longer used internally within TaurusTLS, this function
+// remains part of the public API contract and must be preserved for compatibility.
+//
+// The legacy implementation relied on multiple temporary string allocations and
+// lacked adequate input validation for malformed time strings, making it inefficient
+// and prone to unexpected failures.
+//
+// The refactored version below provides a highly optimized, low-footprint parser
+// that extracts raw ASN.1 time components into local time values safely.
+function ASN1_Time_Decode(const a: PASN1_TIME; out year, month, day, hour, min,
+  sec: Word; out tz_hour, tz_min: Integer): Boolean;
+var
+  lStr: PASN1_STRING;
+  lTime: PIdAnsiChar;
+  lLen: TIdC_INT;
+  lIdx: TIdC_INT;
+  lIsGeneralized: Boolean;
+  lRawYear: Word;
+  lSignIdx: TIdC_INT;
+  lPositiveTZ: Boolean;
+  lTZH, lTZM: Word;
+
+begin
+  year := 0; month := 0; day := 0;
+  hour := 0; min := 0; sec := 0;
+  tz_hour := 0; tz_min := 0;
+
+  lStr := PASN1_STRING(a);
+  if not Assigned(lStr) then
+    Exit(False);
+
+  lLen := ASN1_STRING_length(lStr);
+  lTime := PIdAnsiChar(ASN1_STRING_get0_data(lStr));
+
+  if not Assigned(lTime) or (lLen < 11) then
+    Exit(False);
+
+  // Determine if UTCTime (2-digit year) or GeneralizedTime (4-digit year)
+  // ASN1_STRING_type(lStr) can be checked, or infer from string length/format.
+  lIsGeneralized := (ASN1_STRING_type(lStr) = V_ASN1_GENERALIZEDTIME) or
+                    ((lLen >= 15) and (lTime[14] in ['Z', 'z', '+', '-', '.', ',']));
+
+  lIdx := 0;
+
+  // 1. Parse Year
+  if lIsGeneralized then
+  begin
+    if not CharArrayToWord(lTime, lIdx, lIdx + 3, year) then Exit(False);
+    Inc(lIdx, 4);
+  end
+  else
+  begin
+    if not CharArrayToWord(lTime, lIdx, lIdx + 1, lRawYear) then Exit(False);
+    // UTCTime sliding window rule (RFC 5280): YY >= 50 -> 19YY, YY < 50 -> 20YY
+    if lRawYear >= 50 then
+      year := 1900 + lRawYear
+    else
+      year := 2000 + lRawYear;
+    Inc(lIdx, 2);
+  end;
+
+  // 2. Parse Month, Day, Hour, Minute
+  if not CharArrayToWord(lTime, lIdx,     lIdx + 1, month) then Exit(False);
+  if not CharArrayToWord(lTime, lIdx + 2, lIdx + 3, day)   then Exit(False);
+  if not CharArrayToWord(lTime, lIdx + 4, lIdx + 5, hour)  then Exit(False);
+  if not CharArrayToWord(lTime, lIdx + 6, lIdx + 7, min)   then Exit(False);
+  Inc(lIdx, 8);
+
+  // 3. Parse Seconds (optional in some BER structures, standard in DER)
+  if (lIdx + 1 < lLen) and (lTime[lIdx] in ['0'..'9']) then
+  begin
+    if not CharArrayToWord(lTime, lIdx, lIdx + 1, sec) then Exit(False);
+    Inc(lIdx, 2);
+  end
+  else
+    sec := 0;
+
+  // 4. Skip Fractional Seconds (.sss or ,sss if present in GeneralizedTime)
+  if (lIdx < lLen) and (lTime[lIdx] in ['.', ',']) then
+  begin
+    Inc(lIdx);
+    while (lIdx < lLen) and (lTime[lIdx] in ['0'..'9']) do
+      Inc(lIdx);
+  end;
+
+  // 5. Parse Timezone Portion
+  if (lIdx >= lLen) or (lTime[lIdx] in ['Z', 'z']) then
+  begin
+    // UTC / Zulu time
+    tz_hour := 0;
+    tz_min := 0;
+    Exit(True);
+  end;
+
+  // Scan for offset sign '+' or '-'
+  lSignIdx := lIdx;
+  while (lSignIdx < lLen) and not (lTime[lSignIdx] in ['+', '-']) do
+    Inc(lSignIdx);
+
+  if lSignIdx >= lLen then
+    Exit(True); // Implicit local time or no explicit offset provided
+
+  lPositiveTZ := (lTime[lSignIdx] = '+');
+
+  // Parse TZ Hours (2 digits)
+  if not CharArrayToWord(lTime, lSignIdx + 1, lSignIdx + 2, lTZH) then
+    Exit(False);
+
+  // Parse TZ Minutes (2 digits, if available)
+  if (lSignIdx + 4 < lLen) and (lTime[lSignIdx + 3] in ['0'..'9']) then
+  begin
+    if not CharArrayToWord(lTime, lSignIdx + 3, lSignIdx + 4, lTZM) then
+      Exit(False);
+  end
+  else
+    lTZM := 0;
+
+  if lPositiveTZ then
+  begin
+    tz_hour := lTZH;
+    tz_min  := lTZM;
+  end
+  else
+  begin
+    tz_hour := -Integer(lTZH);
+    tz_min  := -Integer(lTZM);
+  end;
+
+  Result := True;
 end;
 
 function ASN1TimeToDateTime(a: PASN1_TIME): TDateTime;
