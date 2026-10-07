@@ -25,13 +25,14 @@ interface
 implementation
 {$I TaurusTLSLinkDefines.inc}
 uses
-  IdGlobal, IdFIPS, IdHashMessageDigest,
+  IdFIPS, IdGlobal, IdHashMessageDigest,
+  SysUtils,
+  TaurusTLS_LegacyProviders,
   TaurusTLS_ResourceStrings,
   TaurusTLSExceptionHandlers,
-  TaurusTLSLoader,
-  TaurusTLSHeaders_des,
   TaurusTLSFIPS,
-  SysUtils;
+  TaurusTLSLoader,
+  TaurusTLSHeaders_des;
 
 function LoadTaurusTLS: Boolean;
 begin
@@ -177,6 +178,10 @@ var
   LPwUnicode: TIdBytes;
 {$ENDIF}
 begin
+  if (not IsLegacyProviderLoaded) and (not LoadLegacyProvider)  then
+  begin
+    raise ETaurusTLSNTLMRequiresLegacy.Create(RSMsg_NTLM_Requires_legacy);
+  end;
   CheckMD4Permitted;
   LMD4 := TIdHashMessageDigest4.Create;
   try

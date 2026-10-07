@@ -83,6 +83,10 @@ uses
   SysUtils,
   IdGlobal,
   TaurusTLSConsts,
+{$IFDEF OPENSSL_STATIC_LINK_MODEL}
+  TaurusTLSExceptionHandlers,
+  TaurusTLS_ResourceStrings,
+{$ENDIF}
   TaurusTLSHeaders_crypto,
   TaurusTLSHeaders_err,
   TaurusTLSHeaders_provider,
@@ -91,6 +95,9 @@ uses
 var
   LegacyProvider: POSSL_PROVIDER = nil;
   LegacyProviderUnloaderRegistered: Boolean = False;
+  {$IFDEF OPENSSL_STATIC_LINK_MODEL}
+  DefaultProvider: POSSL_PROVIDER = nil;
+  {$ENDIF}
 
 const
   CLegacyProviderName = 'legacy';
@@ -239,7 +246,7 @@ begin
       Result := False;
       Exit;
     end;
-
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
     if AModulePath <> '' then
     begin
       if DirectoryExists(AModulePath) then
@@ -249,18 +256,23 @@ begin
     end
     else
     begin
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+
       LegacyProvider := TryLoadLegacyProviderFromDir(GetOpenSSLLoader.OpenSSLPath);
-{$ENDIF}
-{$IFDEF WINDOWS}
+
       if LegacyProvider = nil then
         LegacyProvider := TryLoadLegacyProviderFromDir(LibCryptoDir);
-{$ENDIF}
       // OpenSSL searches OPENSSL_MODULES or its compiled in modules directory
       if LegacyProvider = nil then
         LegacyProvider := TryLoadLegacyProviderModule(CLegacyProviderName);
     end;
-
+{$ELSE}
+    LegacyProvider := OSSL_PROVIDER_load(nil, 'legacy');
+    if LegacyProvider = nil then
+       raise ETaurusTLSLegacyProviderNotLoaded.Create(RSMsg_LegacyProviderNotLoaded);
+    DefaultProvider := OSSL_PROVIDER_load(nil, 'default');
+    if DefaultProvider = nil then
+      raise ETaurusTLSDefaultProviderNotLoaded.Create(RSMsg_DefaultProviderNotLoaded);
+{$ENDIF}
     Result := LegacyProvider <> nil;
 
     // IOpenSSLLoader.Unload runs the unloaders in reverse order, so this one
@@ -285,4 +297,20 @@ begin
   end;
 end;
 
+{$IFDEF  OPENSSL_STATIC_LINK_MODEL}
+initialization
+  LegacyProvider := nil;
+  DefaultProvider := nil;
+finalization
+  if Assigned(LegacyProvider) then
+  begin
+    OSSL_PROVIDER_unload(LegacyProvider);
+    LegacyProvider := nil;
+  end;
+  if Assigned(DefaultProvider) then
+  begin
+    OSSL_PROVIDER_unload(DefaultProvider);
+    DefaultProvider := nil;
+  end;
+{$ENDIF}
 end.
