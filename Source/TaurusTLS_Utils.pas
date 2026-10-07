@@ -254,6 +254,7 @@ uses
   {$IFDEF WINDOWS}
   IdIDN,
   {$ENDIF}
+  DateUtils,
   TaurusTLS_ResourceStrings, TaurusTLSHeaders_bio, TaurusTLSHeaders_objects,
   TaurusTLSHeaders_x509, TaurusTLSHeaders_x509_vfy, SysUtils;
 
@@ -567,19 +568,31 @@ end;
 
 function ASN1TimeToDateTime(a: PASN1_TIME): TDateTime;
 var
-  year: Word;
-  month: Word;
-  day: Word;
-  hour: Word;
-  min: Word;
-  sec: Word;
+  lTm: TIdC_TM;
+  lUtcDT: TDateTime;
+  lSec: Word;
+
 begin
   Result := 0;
-  if ASN1_Time_Decode(a, year, month, day, hour, min, sec) then
+  if not Assigned(a) then
+    Exit;
+
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
+  if ASN1_TIME_to_tm(a, @lTm) = 1 then
   begin
-    Result := EncodeDate(year, month, day) + EncodeTime(hour, min, sec, 0);
-    Result := UTCTimeToLocalTime(Result);
+    // Handle leap seconds safely (clamp sec = 60 to 59)
+    lSec := lTm.tm_sec;
+    if lSec > 59 then
+      lSec := 59;
+
+    // Safely encode UTC DateTime without throwing exceptions on edge cases
+    if TryEncodeDateTime(lTm.tm_year + 1900, lTm.tm_mon + 1, lTm.tm_mday,
+                         lTm.tm_hour, lTm.tm_min, lSec, 0, lUtcDT) then
+    begin
+      Result := UTCTimeToLocalTime(lUtcDT);
+    end;
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 end;
 
 function DirName(const ADirName: PX509_NAME): String;
