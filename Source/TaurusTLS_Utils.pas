@@ -602,16 +602,28 @@ begin
     Exit;
   end;
   // Convert time from string to number
-  year := IndyStrToInt(Copy(time_str, 1, 2)) + 1900;
-  month := IndyStrToInt(Copy(time_str, 3, 2));
-  day := IndyStrToInt(Copy(time_str, 5, 2));
-  hour := IndyStrToInt(Copy(time_str, 7, 2));
-  min := IndyStrToInt(Copy(time_str, 9, 2));
-  sec := IndyStrToInt(Copy(time_str, 11, 2));
-  // Fix year. This function is Y2k but isn't compatible with Y2k5 :-(    {Do not Localize}
-  if year < 1950 then
+  if Length(time+str) >= 14 then
   begin
-    Inc(year, 100);
+    year := IndyStrToInt(Copy(time_str, 1, 4));
+    month := IndyStrToInt(Copy(time_str, 5, 2));
+    day := IndyStrToInt(Copy(time_str, 7, 2));
+    hour := IndyStrToInt(Copy(time_str, 9, 2));
+    min := IndyStrToInt(Copy(time_str, 11, 2));
+    sec := IndyStrToInt(Copy(time_str, 13, 2));
+  end
+  else
+  begin
+    year := IndyStrToInt(Copy(time_str, 1, 2)) + 1900;
+    month := IndyStrToInt(Copy(time_str, 3, 2));
+    day := IndyStrToInt(Copy(time_str, 5, 2));
+    hour := IndyStrToInt(Copy(time_str, 7, 2));
+    min := IndyStrToInt(Copy(time_str, 9, 2));
+    sec := IndyStrToInt(Copy(time_str, 11, 2));
+    // Fix year. This function is Y2k but isn't compatible with Y2k5 :-(    {Do not Localize}
+    if year < 1950 then
+    begin
+      Inc(year, 100);
+    end;
   end;
   // Check TZ
   tz_hour := 0;
