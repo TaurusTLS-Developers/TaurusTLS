@@ -17,7 +17,7 @@
 /// <remarks>
 ///   The legacy provider is needed only if you arfe interoperating with legacy
 ///   systems that use the algorithms in the legacy provider such as the NTLM
-///   Protocol.
+///   Protocol. using the <see cref="TaurusTLS_NTLM" /> support unit.
 /// </remarks>
 /// <seealso href="https://docs.openssl.org/3.0/man7/OSSL_PROVIDER-legacy/">
 ///   OpenSSL Legacy Provider
