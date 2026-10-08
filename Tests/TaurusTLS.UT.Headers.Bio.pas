@@ -178,21 +178,11 @@ begin
   end;
 end;
 
-type
-  // https://github.com/openssl/openssl/blob/bde55d421b1f49e31248c240efe50ff1f0d24141/include/openssl/buffer.h#L42
-  PBUF_MEMM = ^TBUF_MEMM;
-  TBUF_MEMM = record
-    length: TIdC_SIZET;
-    data: PIdAnsiChar;
-    max: TIdC_SIZET;
-    flags: TIdC_UINT;
-  end;
-
 procedure TBioReadWriteFixture.Test_BIO_new_mem_ref(const AValue: RawByteString);
 var
   lBio: PBIO;
-  lLen: TIdC_INT;
-  lRef: PBUF_MEM;
+  lLen, lBioLen: TIdC_INT;
+  lBioData: pointer;
 
 begin
   lBio:=nil;
@@ -201,11 +191,11 @@ begin
   try
     lBio:=BIO_new_mem_buf(AValue[1], lLen);
     Assert.IsNotNull(lBio, 'lBio is ''nil''');
-    Assert.AreEqual<TIdC_INT>(1, BIO_get_mem_ptr(lBio, lRef), 'BIO_get_mem_ptr');
-    Assert.AreEqual<TIdC_INT>(lLen, PBUF_MEMM(lRef)^.length,
-      '@AValue[1] <> PBUF_MEMM(lRef)^.length');
-    Assert.AreEqual<pointer>(@AValue[1], PBUF_MEMM(lRef)^.data,
-      '@AValue[1] <> PBUF_MEMM(lRef)^.data');
+    lBioLen:=BIO_get_mem_data(lBio, lBioData);
+    Assert.AreEqual<TIdC_INT>(lLen, lBioLen,
+      'BIO Lengths and Original Data Lengths are not equal.');
+    Assert.AreEqual<pointer>(@AValue[1], lBioData,
+      'BIO does not refer Origonal data');
   finally
     BIO_free(lBio);
   end;
