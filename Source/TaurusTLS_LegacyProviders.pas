@@ -9,10 +9,19 @@
 { ****************************************************************************** }
 {$I TaurusTLSCompilerDefines.inc}
 /// <summary>
-/// Loads and unloads the OpenSSL 3 legacy provider. This unit does not depend
-/// on the TaurusTLS components, so units such as TaurusTLS_NTLM can use it as
-/// well as TaurusTLS.
+///   This unit automatically loads or links to the Loads or links the OpenSSL 3
+///   <c>legacy</c> provider. To use, just incclude it in one of your program's
+///   units Using this unit requires that you deploy the <c>providers</c>
+///   directory along with your program if dynamically loading OpenSSL..
 /// </summary>
+/// <remarks>
+///   The legacy provider is needed only if you arfe interoperating with legacy
+///   systems that use the algorithms in the legacy provider such as the NTLM
+///   Protocol.
+/// </remarks>
+/// <seealso href="https://docs.openssl.org/3.0/man7/OSSL_PROVIDER-legacy/">
+///   OpenSSL Legacy Provider
+/// </seealso>
 unit TaurusTLS_LegacyProviders;
 
 {$I TaurusTLSLinkDefines.inc}
@@ -20,8 +29,7 @@ unit TaurusTLS_LegacyProviders;
 interface
 
 /// <summary>
-/// True if the OpenSSL 3 legacy provider was loaded by <see
-/// cref="LoadLegacyProvider" />.
+/// True if the OpenSSL 3 legacy provider was loaded.
 /// </summary>
 function IsLegacyProviderLoaded: Boolean;
 
