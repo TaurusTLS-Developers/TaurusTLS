@@ -28,9 +28,13 @@ type
   ///  </summary>
   TOsslLoader = class
   public const
-    cEnvVarName = 'OPENSSL_PATH';
-    cShortOptName = 'osp';
-    cLongOptName = 'opensslpath';
+    cEnvVarPathName = 'OPENSSL_PATH';
+    cShortOptPathName = 'osp';
+    cLongOptPathName = 'opensslpath';
+
+    cEnvVarModulesPathName = 'OPENSSL_MODULES';
+    cShortOptModulesPathName = 'osmp';
+    cLongOptModulesPathName = 'opensslmodulespath';
   private class var
     FLoader: IOpenSSLLoader;
     FLoadCount: FixedUInt;
@@ -40,6 +44,8 @@ type
     class procedure SetPath(const Value: string); static;
     class function GetPath: string; static;
     class function GetLoaded: boolean; static;
+    class function GetProvidersPath: string; static;
+    class procedure SetProvidersPath(const Value: string); static;
   public
     class constructor Create;
     class destructor Destroy;
@@ -75,6 +81,9 @@ type
     ///  </remarks>
     ///  </summary>
     class property Path: string read GetPath write SetPath;
+
+    class property ProvidersPath: string read GetProvidersPath
+      write SetProvidersPath;
   end;
 
   {$IFDEF USE_FASTMM5}
@@ -110,7 +119,8 @@ type
   {$ENDIF}
 
 resourcestring
-  rcOssLoaderHelp = 'Specify path to OpenSSL library folder';
+  rcOssLoaderPathHelp = 'Specify path to OpenSSL library folder';
+  rcOssLoaderModulesPathHelp = 'Specify path to OpenSSL module provider libraries'' folder';
   rcFastMMDebugEnableHelp = 'Enable or disable detailed memory leak';
   rcFastMMLogHelp = 'Memory leak report file name.';
 {$IFDEF USE_FASTMM5}
@@ -146,7 +156,7 @@ end;
 
 class function TOsslLoader.GetFromEnvVar: string;
 begin
-  Result:=GetEnvironmentVariable(cEnvVarName);
+  Result:=GetEnvironmentVariable(cEnvVarPathName);
 end;
 
 class function TOsslLoader.GetLoaded: boolean;
@@ -189,11 +199,19 @@ end;
 
 class procedure TOsslLoader.RegisterOptions;
 begin
-  TOptionsRegistry.RegisterOption<string>(cLongOptName, cShortOptName,
-    rcOssLoaderHelp,
+  TOptionsRegistry.RegisterOption<string>(cLongOptPathName, cShortOptPathName,
+    rcOssLoaderPathHelp,
     procedure(Value: string)
     begin
       Path:=Value;
+    end
+  );
+
+  TOptionsRegistry.RegisterOption<string>(cLongOptModulesPathName,
+    cShortOptModulesPathName, rcOssLoaderModulesPathHelp,
+    procedure(Value: string)
+    begin
+      ProvidersPath:=Value;
     end
   );
 end;
@@ -203,9 +221,19 @@ begin
   Result:=FLoader.OpenSSLPath;
 end;
 
+class function TOsslLoader.GetProvidersPath: string;
+begin
+  Result:=FLoader.ProvidersPath;
+end;
+
 class procedure TOsslLoader.SetPath(const Value: string);
 begin
   FLoader.OpenSSLPath:=Value;
+end;
+
+class procedure TOsslLoader.SetProvidersPath(const Value: string);
+begin
+  FLoader.ProvidersPath:=Value;
 end;
 
 {$IFDEF USE_FASTMM5}
