@@ -8552,7 +8552,7 @@ end;
 //# define BIO_get_mem_data(b,pp)  BIO_ctrl(b,BIO_CTRL_INFO,0,(char (pp))
 function BIO_get_mem_data(b: PBIO; var pp: Pointer) : TIdC_INT;
 begin
-  Result := BIO_ctrl(b, BIO_CTRL_INFO, 0, pp);
+  Result := BIO_ctrl(b, BIO_CTRL_INFO, 0, @pp);
 end;
 
 //# define BIO_set_mem_buf(b,bm,c) BIO_ctrl(b,BIO_C_SET_BUF_MEM,c,(char (bm))
