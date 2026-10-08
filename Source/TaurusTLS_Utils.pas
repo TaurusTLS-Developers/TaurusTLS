@@ -145,12 +145,6 @@ function MDAsString(const AMD: TTaurusTLSLEVP_MD): String;  {$IFDEF USE_INLINE} 
 /// <param name="sec">
 /// Returns the second of the minute.
 /// </param>
-/// <param name="tz_hour">
-/// Returns the Time Zone offset hour
-/// </param>
-/// <param name="tz_min">
-/// Returns the Time Zone offset minute.
-/// </param>
 /// <returns>
 /// True if parsing was successful or False if failed.
 /// </returns>
@@ -260,6 +254,7 @@ uses
   {$IFDEF WINDOWS}
   IdIDN,
   {$ENDIF}
+  DateUtils,
   TaurusTLS_ResourceStrings, TaurusTLSHeaders_bio, TaurusTLSHeaders_objects,
   TaurusTLSHeaders_x509, TaurusTLSHeaders_x509_vfy, SysUtils;
 
@@ -555,106 +550,190 @@ begin
   end;
 end;
 
+// Inline helper function for `ASN1_Time_Decode`
+function CharArrayToWord(AChars: PIdAnsiChar; AStart, AEnd: TIdC_INT;
+  out AResult: Word): Boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
+var
+  i: TIdC_INT;
+  lChar: AnsiChar;
+  lResult: Word;
+begin
+  Result := Assigned(AChars) and (AStart >= 0) and (AEnd >= AStart);
+  if Result then
+  begin
+    lResult := 0;
+    for i := AStart to AEnd do
+    begin
+      lChar := AChars[i];
+      if lChar in ['0'..'9'] then
+        lResult := (lResult * 10) + (Byte(lChar) - Byte('0'))
+      else
+        Exit(False);
+    end;
+    AResult := lResult;
+  end;
+end;
+
+// Note: ASN1TimeToDateTime was previously the sole consumer of this function.
+// While ASN1TimeToDateTime has been refactored to use native OpenSSL routines
+// and ASN1_Time_Decode is no longer used internally within TaurusTLS, this function
+// remains part of the public API contract and must be preserved for compatibility.
+//
+// The legacy implementation relied on multiple temporary string allocations and
+// lacked adequate input validation for malformed time strings, making it inefficient
+// and prone to unexpected failures.
+//
+// The refactored version below provides a highly optimized, low-footprint parser
+// that extracts raw ASN.1 time components into local time values safely.
 function ASN1_Time_Decode(const a: PASN1_TIME; out year, month, day, hour, min,
   sec: Word; out tz_hour, tz_min: Integer): Boolean;
 var
-  i, tz_dir: Integer;
-{$IFDEF FPC}
-  time_str: AnsiString;
-{$ELSE}
-  time_str: string;
-{$ENDIF}
-{$IFNDEF USE_MARSHALLED_PTRS}
-{$IFNDEF STRING_IS_ANSI}
-  LTemp: AnsiString;
-{$ENDIF}
-{$ENDIF}
+  lStr: PASN1_STRING;
+  lTime: PIdAnsiChar;
+  lLen: TIdC_INT;
+  lIdx: TIdC_INT;
+  lIsGeneralized: Boolean;
+  lRawYear: Word;
+  lSignIdx: TIdC_INT;
+  lPositiveTZ: Boolean;
+  lTZH, lTZM: Word;
+
 begin
-  year := 0;
-  month := 1;
-  day := 1;
-  hour := 0;
-  min := 0;
-  sec := 0;
-  tz_hour := 0;
-  tz_min := 0;
-  Result := False; { default is to return with an error indication }
-  if ASN1_STRING_length(PASN1_STRING(a)) < 12 then //PALOFF - Possible bad typecast
+  year := 0; month := 0; day := 0;
+  hour := 0; min := 0; sec := 0;
+  tz_hour := 0; tz_min := 0;
+
+  lStr := PASN1_STRING(a);
+  if not Assigned(lStr) then
+    Exit(False);
+
+  lLen := ASN1_STRING_length(lStr);
+  lTime := PIdAnsiChar(ASN1_STRING_get0_data(lStr));
+
+  if not Assigned(lTime) or (lLen < 11) then
+    Exit(False);
+
+  // Determine if UTCTime (2-digit year) or GeneralizedTime (4-digit year)
+  // ASN1_STRING_type(lStr) can be checked, or infer from string length/format.
+  lIsGeneralized := (ASN1_STRING_type(lStr) = V_ASN1_GENERALIZEDTIME) or
+                    ((lLen >= 15) and (lTime[14] in ['Z', 'z', '+', '-', '.', ',']));
+
+  lIdx := 0;
+
+  // 1. Parse Year
+  if lIsGeneralized then
   begin
-    Exit;
-  end;
-{$IFDEF USE_MARSHALLED_PTRS}
-  time_str := TMarshal.ReadStringAsAnsi(TPtrWrapper.Create(ASN1_STRING_get0_data(PASN1_STRING(a))),
-    ASN1_STRING_length(PASN1_STRING(a)));
-{$ELSE}
-{$IFDEF STRING_IS_ANSI}
-  SetString(time_str, PIdAnsiChar(ASN1_STRING_get0_data(PASN1_STRING(a))), ASN1_STRING_length(PASN1_STRING(a)));
-{$ELSE}
-  SetString(LTemp, PIdAnsiChar(ASN1_STRING_get0_data(PASN1_STRING(a))), ASN1_STRING_length(PASN1_STRING(a)));  //PALOFF - Possible bad pointer usage [data : PByte cast to PAnsiChar]
-  { Note: UTCtime is a type defined by OpenSSL and hence is ansistring and not UCS-2 }
-  // TODO: do we need to use SetCodePage() here?
-  time_str := String(LTemp); // explicit convert to Unicode
-{$ENDIF}
-{$ENDIF}
-  // Check if first 12 chars are numbers
-  if not IsNumeric(time_str, 12) then
+    if not CharArrayToWord(lTime, lIdx, lIdx + 3, year) then Exit(False);
+    Inc(lIdx, 4);
+  end
+  else
   begin
-    Exit;
+    if not CharArrayToWord(lTime, lIdx, lIdx + 1, lRawYear) then Exit(False);
+    // UTCTime sliding window rule (RFC 5280): YY >= 50 -> 19YY, YY < 50 -> 20YY
+    if lRawYear >= 50 then
+      year := 1900 + lRawYear
+    else
+      year := 2000 + lRawYear;
+    Inc(lIdx, 2);
   end;
-  // Convert time from string to number
-  year := IndyStrToInt(Copy(time_str, 1, 2)) + 1900;
-  month := IndyStrToInt(Copy(time_str, 3, 2));
-  day := IndyStrToInt(Copy(time_str, 5, 2));
-  hour := IndyStrToInt(Copy(time_str, 7, 2));
-  min := IndyStrToInt(Copy(time_str, 9, 2));
-  sec := IndyStrToInt(Copy(time_str, 11, 2));
-  // Fix year. This function is Y2k but isn't compatible with Y2k5 :-(    {Do not Localize}
-  if year < 1950 then
+
+  // 2. Parse Month, Day, Hour, Minute
+  if not CharArrayToWord(lTime, lIdx,     lIdx + 1, month) then Exit(False);
+  if not CharArrayToWord(lTime, lIdx + 2, lIdx + 3, day)   then Exit(False);
+  if not CharArrayToWord(lTime, lIdx + 4, lIdx + 5, hour)  then Exit(False);
+  if not CharArrayToWord(lTime, lIdx + 6, lIdx + 7, min)   then Exit(False);
+  Inc(lIdx, 8);
+
+  // 3. Parse Seconds (optional in some BER structures, standard in DER)
+  if (lIdx + 1 < lLen) and (lTime[lIdx] in ['0'..'9']) then
   begin
-    Inc(year, 100);
+    if not CharArrayToWord(lTime, lIdx, lIdx + 1, sec) then Exit(False);
+    Inc(lIdx, 2);
+  end
+  else
+    sec := 0;
+
+  // 4. Skip Fractional Seconds (.sss or ,sss if present in GeneralizedTime)
+  if (lIdx < lLen) and (lTime[lIdx] in ['.', ',']) then
+  begin
+    Inc(lIdx);
+    while (lIdx < lLen) and (lTime[lIdx] in ['0'..'9']) do
+      Inc(lIdx);
   end;
-  // Check TZ
-  tz_hour := 0;
-  tz_min := 0;
-  if CharIsInSet(time_str, 13, '-+') then
-  begin { Do not Localize }
-    tz_dir := iif(CharEquals(time_str, 13, '-'), -1, 1); { Do not Localize }
-    for i := 14 to 18 do
-    begin // Check if numbers are numbers
-      if i = 16 then
-      begin
-        Continue;
-      end;
-      if not IsNumeric(time_str[i]) then
-      begin
-        Exit;
-      end;
-    end;
-    tz_hour := IndyStrToInt(Copy(time_str, 14, 15)) * tz_dir;
-    tz_min := IndyStrToInt(Copy(time_str, 17, 18)) * tz_dir;
+
+  // 5. Parse Timezone Portion
+  if (lIdx >= lLen) or (lTime[lIdx] in ['Z', 'z']) then
+  begin
+    // UTC / Zulu time
+    tz_hour := 0;
+    tz_min := 0;
+    Exit(True);
   end;
-  Result := True; { everthing OK }
+
+  // Scan for offset sign '+' or '-'
+  lSignIdx := lIdx;
+  while (lSignIdx < lLen) and not (lTime[lSignIdx] in ['+', '-']) do
+    Inc(lSignIdx);
+
+  if lSignIdx >= lLen then
+    Exit(True); // Implicit local time or no explicit offset provided
+
+  lPositiveTZ := (lTime[lSignIdx] = '+');
+
+  // Parse TZ Hours (2 digits)
+  if not CharArrayToWord(lTime, lSignIdx + 1, lSignIdx + 2, lTZH) then
+    Exit(False);
+
+  // Parse TZ Minutes (2 digits, if available)
+  if (lSignIdx + 4 < lLen) and (lTime[lSignIdx + 3] in ['0'..'9']) then
+  begin
+    if not CharArrayToWord(lTime, lSignIdx + 3, lSignIdx + 4, lTZM) then
+      Exit(False);
+  end
+  else
+    lTZM := 0;
+
+  if lPositiveTZ then
+  begin
+    tz_hour := lTZH;
+    tz_min  := lTZM;
+  end
+  else
+  begin
+    tz_hour := -Integer(lTZH);
+    tz_min  := -Integer(lTZM);
+  end;
+
+  Result := True;
 end;
 
 function ASN1TimeToDateTime(a: PASN1_TIME): TDateTime;
 var
-  year: Word;
-  month: Word;
-  day: Word;
-  hour: Word;
-  min: Word;
-  sec: Word;
-  tz_h: Integer;
-  tz_m: Integer;
+  lTm: TIdC_TM;
+  lUtcDT: TDateTime;
+  lSec: Word;
+
 begin
   Result := 0;
-  if ASN1_Time_Decode(a, year, month, day, hour, min, sec, tz_h, tz_m) then
+  if not Assigned(a) then
+    Exit;
+
+  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
+  if ASN1_TIME_to_tm(a, @lTm) = 1 then
   begin
-    Result := EncodeDate(year, month, day) + EncodeTime(hour, min, sec, 0);
-    Result := Result + (tz_m / (60 * 24));
-    Result := Result + (tz_h / 24.0);
-    Result := UTCTimeToLocalTime(Result);
+    // Handle leap seconds safely (clamp sec = 60 to 59)
+    lSec := lTm.tm_sec;
+    if lSec > 59 then
+      lSec := 59;
+
+    // Safely encode UTC DateTime without throwing exceptions on edge cases
+    if TryEncodeDateTime(lTm.tm_year + 1900, lTm.tm_mon + 1, lTm.tm_mday,
+                         lTm.tm_hour, lTm.tm_min, lSec, 0, lUtcDT) then
+    begin
+      Result := UTCTimeToLocalTime(lUtcDT);
+    end;
   end;
+  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 end;
 
 function DirName(const ADirName: PX509_NAME): String;
