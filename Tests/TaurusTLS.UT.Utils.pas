@@ -38,7 +38,10 @@ type
   private class var
     FLoader: IOpenSSLLoader;
     FLoadCount: FixedUInt;
+    FLock: TObject;
   private
+    class procedure Lock; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    class procedure Unlock; {$IFDEF USE_INLINE}inline; {$ENDIF}
     class procedure RegisterOptions; static;
     class function GetFromEnvVar: string; static;
     class procedure SetPath(const Value: string); static;
@@ -144,6 +147,7 @@ uses
 
 class constructor TOsslLoader.Create;
 begin
+  FLock:=TObject.Create;
   FLoader:=GetOpenSSLLoader;
   Path:=GetFromEnvVar;
   RegisterOptions;
@@ -152,6 +156,17 @@ end;
 class destructor TOsslLoader.Destroy;
 begin
   Unload;
+  FreeAndNil(FLock);
+end;
+
+class procedure TOsslLoader.Lock;
+begin
+  TMonitor.Enter(FLock);
+end;
+
+class procedure TOsslLoader.Unlock;
+begin
+  TMonitor.Exit(FLock);
 end;
 
 class function TOsslLoader.GetFromEnvVar: string;
@@ -166,35 +181,44 @@ end;
 
 class function TOsslLoader.Load: boolean;
 begin
-  Result:=Loaded;
-  if Result then
-  begin
-    TInterlocked.Increment(FLoadCount);
-    Exit(True);
+  Lock;
+  try
+    if FLoadCount = 0 then
+    begin
+      if FLoader = nil then
+        FLoader:=GetOpenSSLLoader;
+
+      Result := FLoader.Load;
+      if not Result then
+        Exit(False);
+    end
+    else
+      Result := True;
+
+    Inc(FLoadCount);
+  finally
+    Unlock;
   end;
-  FLoader:=GetOpenSSLLoader;
-  Result:=FLoader.Load;
-  if Result then
-    TInterlocked.Increment(FLoadCount);
 end;
 
 class procedure TOsslLoader.Unload;
-var
-  lLoadCount: cardinal;
-  lSpinW: TSpinWait;
-
 begin
-  lSpinW.Reset;
-  repeat
-    lLoadCount:=FLoadCount;
-    if lLoadCount = 0 then
-      break;
-    if TInterlocked.CompareExchange(FLoadCount, lLoadCount-1, lLoadCount) = lLoadCount then
-      break;
-    lSpinW.SpinCycle;
-  until False;
-  if lLoadCount > 0 then
-    FLoader.Unload;
+  Lock;
+  try
+  if FLoadCount > 0 then
+    begin
+      Dec(FLoadCount);
+      if FLoadCount = 0 then
+      begin
+        if Assigned(FLoader) then
+        begin
+          FLoader.Unload;
+        end;
+      end;
+    end;
+  finally
+    Unlock;
+  end;
 end;
 
 class procedure TOsslLoader.RegisterOptions;
