@@ -30,9 +30,8 @@ uses
   TaurusTLSExceptionHandlers,
   TaurusTLSLoader,
   TaurusTLSHeaders_des,
-{$IF DECLARED(RegisterFIPSHooksInstaller)}
   TaurusTLS_LegacyProviders,
-{$IFEND}
+  TaurusTLSFIPS,
   SysUtils;
 
 function LoadTaurusTLS: Boolean;
@@ -228,8 +227,6 @@ end;
 
 initialization
 
-{$IF DECLARED(RegisterFIPSHooksInstaller)}
 RegisterFIPSHooksInstaller(InstallNTLMHooks);
-{$IFEND}
 
 end.
