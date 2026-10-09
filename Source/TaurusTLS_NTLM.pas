@@ -30,7 +30,9 @@ uses
   TaurusTLSExceptionHandlers,
   TaurusTLSLoader,
   TaurusTLSHeaders_des,
-  TaurusTLSFIPS,
+{$IF DECLARED(RegisterFIPSHooksInstaller)}
+  TaurusTLS_LegacyProviders,
+{$IFEND}
   SysUtils;
 
 function LoadTaurusTLS: Boolean;
