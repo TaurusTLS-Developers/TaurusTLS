@@ -118,7 +118,9 @@ end;
 
 
 initialization
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+{$IFDEF OPENSSL_STATIC_LINK_MODEL}
+  TTaurusTLSLegacyProviderManager.InitLegacyProvider;
+{$ELSE}
   Register_SSLLoaderAction(TTaurusTLSLegacyProviderManager.OnLoadAction);
 {$ENDIF}
 
