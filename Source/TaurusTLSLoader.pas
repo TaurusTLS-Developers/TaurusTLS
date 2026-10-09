@@ -497,8 +497,10 @@ type
   { TOpenSSLLoader }
 
   TOpenSSLLoader = class(TInterfacedObject, IOpenSSLLoader)
+{$IFDEF WINDOWS}
   const
     cDefaultProvidersPath = 'providers';
+{$ENDIF}
 {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FLibCrypto: TIdLibHandle;
     FLibSSL: TIdLibHandle;
@@ -513,11 +515,10 @@ type
     procedure SetSSLLibVersions(const AValue: string);
     function GetOpenSSLPath: string;
     procedure SetOpenSSLPath(const Value: string);
-    function IsAbsolutePath(const APath: string): Boolean;
     function GetProvidersPath: string;
     procedure SetProvidersPath(const Value: string);
-    function GetEffectiveProvidersPath: string;
     function GetFailedToLoad: TStringList;
+
   public
     constructor Create;
     destructor Destroy; override;
@@ -527,7 +528,6 @@ type
     function IsLoaded : Boolean;
     property OpenSSLPath: string read GetOpenSSLPath write SetOpenSSLPath;
     property ProvidersPath: string read GetProvidersPath write SetProvidersPath;
-    property EffectiveProvidersPath: string read GetEffectiveProvidersPath;
     property FailedToLoad: TStringList read GetFailedToLoad;
   end;
 
@@ -540,7 +540,9 @@ begin
   FLibraryLoaded := TIdThreadSafeBoolean.Create;
   FSSLLibVersions := DefaultLibVersions;
   OpenSSLPath := GetEnvironmentVariable(TaurusTLSLibraryPath);
+{$IFDEF WINDOWS}
   FProvidersPath:=cDefaultProvidersPath;
+{$ENDIF}
 end;
 
 destructor TOpenSSLLoader.Destroy;
@@ -704,9 +706,9 @@ begin
 
       // Configure path for loading provider shared libraries
       // OpenSSL require UTF-8 encoded paths.
-      if (EffectiveProvidersPath <> '') then
+      if (FProvidersPath <> '') then
         OSSL_PROVIDER_set_default_search_path(nil,
-          PIdAnsiChar(UTF8Encode(EffectiveProvidersPath)));
+          PIdAnsiChar(UTF8Encode(FProvidersPath)));
 
       if Assigned(GOnLoadActionList) then
         for i := 0 to GOnLoadActionList.Count - 1 do
@@ -736,7 +738,17 @@ end;
 
 function TOpenSSLLoader.GetProvidersPath: string;
 begin
-  Result := FProvidersPath;
+  if IsLoaded then
+  begin
+    if FProvidersPath <> '' then
+      Result := FProvidersPath
+    else
+    begin
+      Result:=string(OSSL_PROVIDER_get0_default_search_path(nil));
+    end;
+  end
+  else
+    Result:=FProvidersPath;
 end;
 
 procedure TOpenSSLLoader.SetOpenSSLPath(const Value: string);
@@ -745,16 +757,6 @@ begin
     FOpenSSLPath := ''
   else
     FOpenSSLPath := IncludeTrailingPathDelimiter(Value);
-end;
-
-function TOpenSSLLoader.GetEffectiveProvidersPath: string;
-begin
-  if FProvidersPath = '' then
-    Result := FOpenSSLPath
-  else if IsAbsolutePath(FProvidersPath) then
-    Result := FProvidersPath
-  else
-    Result := FOpenSSLPath + FProvidersPath;
 end;
 
 procedure TOpenSSLLoader.SetProvidersPath(const Value: string);
@@ -768,21 +770,6 @@ end;
 function TOpenSSLLoader.GetFailedToLoad: TStringList;
 begin
   Result := FFailed;
-end;
-
-function TOpenSSLLoader.IsAbsolutePath(const APath: string): Boolean;
-begin
-  if APath = '' then
-    Result := False
-  else
-  {$IFDEF WINDOWS}
-    // Matches "C:\...", "\\server\...", "\root\..."
-    Result := ((Length(APath) >= 2) and (APath[2] = ':')) or
-              ((Length(APath) >= 1) and ((APath[1] = '\') or (APath[1] = '/')));
-  {$ELSE}
-    // Unix/POSIX absolute path starts with '/'
-    Result := (Length(APath) >= 1) and (APath[1] = '/');
-  {$ENDIF}
 end;
 
 function TOpenSSLLoader.IsLoaded: Boolean;
