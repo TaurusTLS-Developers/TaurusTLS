@@ -74,7 +74,8 @@ uses
   TaurusTLSHeaders_crypto,
   TaurusTLSHeaders_err,
   TaurusTLSHeaders_hmac,
-  TaurusTLSHeaders_types;
+  TaurusTLSHeaders_types,
+  TaurusTLSLoader;
 
 {$I TaurusTLSUnusedParamOff.inc}
 
@@ -149,6 +150,15 @@ end;
 function TaurusTLSGetFIPSMode: Boolean;
 begin
   Result := FIPS_mode <> 0;
+end;
+
+function TaurusTLSLoadHashLibrary: Boolean;
+begin
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  Result := GetOpenSSLLoader.Load;
+{$ELSE}
+  Result := true;
+{$ENDIF}
 end;
 
 function TaurusTLSSetFIPSMode(const AMode: Boolean): Boolean;
@@ -602,6 +612,7 @@ begin
   GetHMACSHA512HashInst := TaurusTLSGetHMACSHA512Inst;
   UpdateHMACInst := TaurusTLSUpdateHMACInst;
   FinalHMACInst := TaurusTLSFinalHMACInst;
+  LoadHashLibrary := TaurusTLSLoadHashLibrary;
 
   CallFIPSHooksInstallers;
 end;
