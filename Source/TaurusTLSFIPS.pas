@@ -166,7 +166,7 @@ end;
 
 function TaurusIsHashAvail(const AHashName : PIdAnsiChar) : Boolean; {$IFDEF USE_INLINE} inline; {$ENDIF}
 var
-  lMeth: Pointer;
+  lMeth: PEVP_MD;
 begin
   lMeth := nil;
   try
