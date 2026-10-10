@@ -164,18 +164,24 @@ begin
   end;
 end;
 
+function TaurusIsHashAvail(const AHashName : PIdAnsiChar) : Boolean; {$IFDEF USE_INLINE} inline; {$ENDIF}
+var
+  lMeth: Pointer;
+begin
+  lMeth := nil;
+  try
+    lMeth := EVP_MD_fetch(nil, AHashName, nil);
+    Result := Assigned(lMeth);
+  finally
+    EVP_MD_free(lMeth);
+  end;
+end;
+
 function TaurusTLSIsMD2HashIntfAvail: Boolean;
 begin
-{$IFDEF OPENSSL_NO_MD2}
-  Result := False;
-{$ELSE}
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Result := Assigned(EVP_md2);
-{$ELSE}
-  Result := true;
-{$ENDIF}
-{$ENDIF}
+  Result := TaurusIsHashAvail('MD2')
 end;
+
 
 function TaurusTLSGetMD2HashInst: TIdHashIntCtx;
 begin
@@ -187,39 +193,8 @@ begin
 end;
 
 function TaurusTLSIsMD4HashIntfAvail: Boolean;
-var
-  LMD: PEVP_MD;
-  LCtx: PEVP_MD_CTX;
 begin
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Result := Assigned(EVP_md4);
-{$ELSE}
-  Result := true;
-{$ENDIF}
-  // Fix from: zencode1
-  // OpenSSL 3 only provides MD4 in the legacy provider, so EVP_md4 is assigned but
-  // EVP_DigestInit_ex fails when the legacy provider is not loaded.  Report MD4 as
-  // unavailable in that case so Indy uses its native MD4 implementation (needed by NTLM).
-  if Result then
-  begin
-    LMD := nil;
-    try
-      LMD := EVP_md4;
-      LCtx := EVP_MD_CTX_new;
-    except
-      // OpenSSL 1.0.2 has no EVP_MD_CTX_new, and the static link model has no EVP_md4
-      on ETaurusTLSAPIFunctionNotPresent do
-        LCtx := nil;
-    end;
-    Result := Assigned(LCtx);
-    if Result then
-    begin
-      Result := EVP_DigestInit_ex(LCtx, LMD, nil) = 1;
-      EVP_MD_CTX_free(LCtx);
-      if not Result then
-        ERR_clear_error;
-    end;
-  end;
+  Result := TaurusIsHashAvail('MD4');
 end;
 
 function TaurusTLSGetMD4HashInst: TIdHashIntCtx;
@@ -229,12 +204,9 @@ end;
 
 function TaurusTLSIsMD5HashIntfAvail: Boolean;
 begin
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Result := Assigned(EVP_md5);
-{$ELSE}
-  Result := true;
-{$ENDIF}
+  Result := TaurusIsHashAvail('MD5');
 end;
+
 
 function TaurusTLSGetMD5HashInst: TIdHashIntCtx;
 begin
@@ -243,15 +215,7 @@ end;
 
 function TaurusTLSIsSHA1HashIntfAvail: Boolean;
 begin
-{$IFDEF OPENSSL_NO_SHA}
-  Result := False;
-{$ELSE}
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Result := Assigned(EVP_sha1);
-{$ELSE}
-  Result := true;
-{$ENDIF}
-{$ENDIF}
+  Result := TaurusIsHashAvail('SHA1');
 end;
 
 function TaurusTLSGetSHA1HashInst: TIdHashIntCtx;
@@ -265,15 +229,7 @@ end;
 
 function TaurusTLSIsSHA224HashIntfAvail: Boolean;
 begin
-{$IFDEF OPENSSL_NO_SHA256}
-  Result := False;
-{$ELSE}
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Result := Assigned(EVP_sha224);
-{$ELSE}
-  Result := true;
-{$ENDIF}
-{$ENDIF}
+  Result := TaurusIsHashAvail('SHA224');
 end;
 
 function TaurusTLSGetSHA224HashInst: TIdHashIntCtx;
@@ -287,15 +243,7 @@ end;
 
 function TaurusTLSIsSHA256HashIntfAvail: Boolean;
 begin
-{$IFDEF OPENSSL_NO_SHA256}
-  Result := False;
-{$ELSE}
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Result := Assigned(EVP_sha256);
-{$ELSE}
-  Result := true;
-{$ENDIF}
-{$ENDIF}
+  Result := TaurusIsHashAvail('SHA256');
 end;
 
 function TaurusTLSGetSHA256HashInst: TIdHashIntCtx;
@@ -309,15 +257,7 @@ end;
 
 function TaurusTLSIsSHA384HashIntfAvail: Boolean;
 begin
-{$IFDEF OPENSSL_NO_SHA512}
-  Result := False;
-{$ELSE}
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Result := Assigned(EVP_sha384);
-{$ELSE}
-  Result := true;
-{$ENDIF}
-{$ENDIF}
+   Result := TaurusIsHashAvail('SHA384');
 end;
 
 function TaurusTLSGetSHA384HashInst: TIdHashIntCtx;
@@ -331,15 +271,7 @@ end;
 
 function TaurusTLSIsSHA512HashIntfAvail: Boolean;
 begin
-{$IFDEF OPENSSL_NO_SHA512}
-  Result := nil;
-{$ELSE}
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Result := Assigned(EVP_sha512);
-{$ELSE}
-  Result := true;
-{$ENDIF}
-{$ENDIF}
+  Result := TaurusIsHashAvail('SHA512');
 end;
 
 function TaurusTLSGetSHA512HashInst: TIdHashIntCtx;
