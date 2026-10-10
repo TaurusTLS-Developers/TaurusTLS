@@ -96,14 +96,12 @@ end;
 function FIPS_mode(): TIdC_INT; {$IFDEF USE_INLINE}inline; {$ENDIF}
 begin
   Result := 0;
-{$IFDEF OPENSSL_FIPS}
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   if Assigned(TaurusTLSHeaders_crypto.FIPS_mode) then
 {$ENDIF}
   begin
     Result := TaurusTLSHeaders_crypto.FIPS_mode;
   end;
-{$ENDIF}
 end;
 
 // **************** Digest Common Code *********************
