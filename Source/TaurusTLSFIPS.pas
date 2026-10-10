@@ -82,10 +82,10 @@ function FIPS_mode_set(onoff: TIdC_INT): TIdC_INT; //FI:O804 - Method parameter 
   {$IFDEF USE_INLINE}inline; {$ENDIF}
 begin
   Result := 0;
-{$IFDEF OPENSSL_FIPS}
+  //We can't support this when statically linking because the function
+  //Is not present in the .a files for OpenSSL 3.x and 4.x.
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   if Assigned(TaurusTLSHeaders_crypto.FIPS_mode_set) then
-{$ENDIF}
   begin
     Result := TaurusTLSHeaders_crypto.FIPS_mode_set(onoff);
   end;
@@ -96,10 +96,8 @@ end;
 function FIPS_mode(): TIdC_INT; {$IFDEF USE_INLINE}inline; {$ENDIF}
 begin
   Result := 0;
-{$IFDEF OPENSSL_FIPS}
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   if Assigned(TaurusTLSHeaders_crypto.FIPS_mode) then
-{$ENDIF}
   begin
     Result := TaurusTLSHeaders_crypto.FIPS_mode;
   end;
@@ -185,11 +183,7 @@ end;
 
 function TaurusTLSGetMD2HashInst: TIdHashIntCtx;
 begin
-{$IFDEF OPENSSL_NO_MD2}
-  Result := nil;
-{$ELSE}
-  Result := TaurusTLSGetDigestCtx(EVP_md2);
-{$ENDIF}
+  Result := TaurusTLSGetDigestCtx(EVP_MD_fetch(nil,'MD2',nil));
 end;
 
 function TaurusTLSIsMD4HashIntfAvail: Boolean;
@@ -199,7 +193,7 @@ end;
 
 function TaurusTLSGetMD4HashInst: TIdHashIntCtx;
 begin
-  Result := TaurusTLSGetDigestCtx(EVP_md4);
+  Result := TaurusTLSGetDigestCtx(EVP_MD_fetch(nil,'MD4',nil));
 end;
 
 function TaurusTLSIsMD5HashIntfAvail: Boolean;
@@ -210,7 +204,7 @@ end;
 
 function TaurusTLSGetMD5HashInst: TIdHashIntCtx;
 begin
-  Result := TaurusTLSGetDigestCtx(EVP_md5);
+  Result := TaurusTLSGetDigestCtx(EVP_MD_fetch(nil,'MD5',nil));
 end;
 
 function TaurusTLSIsSHA1HashIntfAvail: Boolean;
@@ -220,11 +214,7 @@ end;
 
 function TaurusTLSGetSHA1HashInst: TIdHashIntCtx;
 begin
-{$IFDEF OPENSSL_NO_SHA}
-  Result := nil;
-{$ELSE}
-  Result := TaurusTLSGetDigestCtx(EVP_sha1);
-{$ENDIF}
+  Result := TaurusTLSGetDigestCtx(EVP_MD_fetch(nil,'SHA1',nil));
 end;
 
 function TaurusTLSIsSHA224HashIntfAvail: Boolean;
@@ -234,11 +224,7 @@ end;
 
 function TaurusTLSGetSHA224HashInst: TIdHashIntCtx;
 begin
-{$IFDEF OPENSSL_NO_SHA256}
-  Result := nil;
-{$ELSE}
-  Result := TaurusTLSGetDigestCtx(EVP_sha224);
-{$ENDIF}
+  Result := TaurusTLSGetDigestCtx(EVP_MD_fetch(nil,'SHA224',nil));
 end;
 
 function TaurusTLSIsSHA256HashIntfAvail: Boolean;
@@ -248,11 +234,7 @@ end;
 
 function TaurusTLSGetSHA256HashInst: TIdHashIntCtx;
 begin
-{$IFDEF OPENSSL_NO_SHA256}
-  Result := nil;
-{$ELSE}
-  Result := TaurusTLSGetDigestCtx(EVP_sha256);
-{$ENDIF}
+  Result := TaurusTLSGetDigestCtx(EVP_MD_fetch(nil,'SHA256',nil));
 end;
 
 function TaurusTLSIsSHA384HashIntfAvail: Boolean;
@@ -262,11 +244,7 @@ end;
 
 function TaurusTLSGetSHA384HashInst: TIdHashIntCtx;
 begin
-{$IFDEF OPENSSL_NO_SHA512}
-  Result := nil;
-{$ELSE}
-  Result := TaurusTLSGetDigestCtx(EVP_sha384);
-{$ENDIF}
+  Result := TaurusTLSGetDigestCtx(EVP_MD_fetch(nil,'SHA384',nil));
 end;
 
 function TaurusTLSIsSHA512HashIntfAvail: Boolean;
@@ -276,11 +254,7 @@ end;
 
 function TaurusTLSGetSHA512HashInst: TIdHashIntCtx;
 begin
-{$IFDEF OPENSSL_NO_SHA512}
-  Result := nil;
-{$ELSE}
-  Result := TaurusTLSGetDigestCtx(EVP_sha512);
-{$ENDIF}
+  Result := TaurusTLSGetDigestCtx(EVP_MD_fetch(nil,'SHA512',nil));
 end;
 
 procedure TaurusTLSUpdateHashInst(ACtx: TIdHashIntCtx; const AIn: TIdBytes);
@@ -324,15 +298,7 @@ end;
 
 function TaurusTLSIsHMACMD5Avail: Boolean;
 begin
-{$IFDEF OPENSSL_NO_MD5}
-  Result := False;
-{$ELSE}
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Result := Assigned(EVP_md5);
-{$ELSE}
-  Result := true;
-{$ENDIF}
-{$ENDIF}
+  Result := TaurusIsHashAvail('MD5');
 end;
 
 function TaurusTLSGetHMACMD5Inst(const AKey: TIdBytes): TIdHMACIntCtx;
@@ -346,15 +312,8 @@ end;
 
 function TaurusTLSIsHMACSHA1Avail: Boolean;
 begin
-{$IFDEF OPENSSL_NO_SHA}
-  Result := False;
-{$ELSE}
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Result := Assigned(EVP_sha1);
-{$ELSE}
-  Result := true;
-{$ENDIF}
-{$ENDIF}
+
+  Result :=  TaurusIsHashAvail('SHA1');
 end;
 
 function TaurusTLSGetHMACSHA1Inst(const AKey: TIdBytes): TIdHMACIntCtx;
@@ -369,15 +328,7 @@ end;
 function TaurusTLSIsHMACSHA224Avail: Boolean;
 
 begin
-{$IFDEF OPENSSL_NO_SHA256}
-  Result := False;
-{$ELSE}
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Result := Assigned(EVP_sha224);
-{$ELSE}
-  Result := true;
-{$ENDIF}
-{$ENDIF}
+  Result :=  TaurusIsHashAvail('SHA224');
 end;
 
 function TaurusTLSGetHMACSHA224Inst(const AKey: TIdBytes): TIdHMACIntCtx;
@@ -391,15 +342,7 @@ end;
 
 function TaurusTLSIsHMACSHA256Avail: Boolean;
 begin
-{$IFDEF OPENSSL_NO_SHA256}
-  Result := False;
-{$ELSE}
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Result := Assigned(EVP_sha256);
-{$ELSE}
-  Result := true;
-{$ENDIF}
-{$ENDIF}
+  Result :=  TaurusIsHashAvail('SHA256');
 end;
 
 function TaurusTLSGetHMACSHA256Inst(const AKey: TIdBytes): TIdHMACIntCtx;
@@ -413,15 +356,7 @@ end;
 
 function TaurusTLSIsHMACSHA384Avail: Boolean;
 begin
-{$IFDEF OPENSSL_NO_SHA512}
-  Result := False;
-{$ELSE}
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Result := Assigned(EVP_sha384);
-{$ELSE}
-  Result := true;
-{$ENDIF}
-{$ENDIF}
+  Result :=  TaurusIsHashAvail('SHA384');
 end;
 
 function TaurusTLSGetHMACSHA384Inst(const AKey: TIdBytes): TIdHMACIntCtx;
@@ -435,15 +370,7 @@ end;
 
 function TaurusTLSIsHMACSHA512Avail: Boolean;
 begin
-{$IFDEF OPENSSL_NO_SHA512}
-  Result := False;
-{$ELSE}
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Result := Assigned(EVP_sha512);
-{$ELSE}
-  Result := true;
-{$ENDIF}
-{$ENDIF}
+  Result :=  TaurusIsHashAvail('SHA512');
 end;
 
 function TaurusTLSGetHMACSHA512Inst(const AKey: TIdBytes): TIdHMACIntCtx;
