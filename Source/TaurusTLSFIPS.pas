@@ -82,10 +82,10 @@ function FIPS_mode_set(onoff: TIdC_INT): TIdC_INT; //FI:O804 - Method parameter 
   {$IFDEF USE_INLINE}inline; {$ENDIF}
 begin
   Result := 0;
-{$IFDEF OPENSSL_FIPS}
+  //We can't support this when statically linking because the function
+  //Is not present in the .a files for OpenSSL 3.x and 4.x.
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   if Assigned(TaurusTLSHeaders_crypto.FIPS_mode_set) then
-{$ENDIF}
   begin
     Result := TaurusTLSHeaders_crypto.FIPS_mode_set(onoff);
   end;
@@ -98,10 +98,10 @@ begin
   Result := 0;
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   if Assigned(TaurusTLSHeaders_crypto.FIPS_mode) then
-{$ENDIF}
   begin
     Result := TaurusTLSHeaders_crypto.FIPS_mode;
   end;
+{$ENDIF}
 end;
 
 // **************** Digest Common Code *********************
