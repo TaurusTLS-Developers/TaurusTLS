@@ -68,6 +68,9 @@ uses
   IdGlobal,
   IdCTypes,
   IdFIPS,
+  {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  TaurusTLSLoader,
+  {$ENDIF}
   TaurusTLSExceptionHandlers,
   TaurusTLS_ResourceStrings,
   TaurusTLSHeaders_evp,
@@ -153,8 +156,7 @@ end;
 function TaurusTLSIsHashingIntfAvail: Boolean;
 begin
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Result := Assigned(EVP_DigestInit_ex) and Assigned(EVP_DigestUpdate) and
-    Assigned(EVP_DigestFinal_ex);
+  Result := GetOpenSSLLoader.IsLoaded;
 {$ELSE}
   Result := true;
 {$ENDIF}
@@ -317,8 +319,7 @@ end;
 function TaurusTLSIsHMACAvail: Boolean;
 begin
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Result := Assigned(HMAC_CTX_new) and Assigned(HMAC_Init_ex) and
-    Assigned(HMAC_Update) and Assigned(HMAC_Final) and Assigned(HMAC_CTX_free);
+  Result := GetOpenSSLLoader.IsLoaded;
 {$ELSE}
   Result := true;
 {$ENDIF}
