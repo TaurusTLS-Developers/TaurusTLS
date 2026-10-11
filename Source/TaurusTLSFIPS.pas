@@ -397,23 +397,27 @@ end;
 
 procedure TaurusTLSUpdateHMACInst(ACtx: TIdHMACIntCtx; const AIn: TIdBytes);
 begin
-  ETaurusTLSHMACUpdate.RaiseIfError(HMAC_Update(ACtx, PByte(AIn), Length(AIn)),
-    RSOSSLHMACUpdateError);
+  ETaurusTLSHMACUpdate.RaiseIfError(EVP_MAC_update(ACtx, PIdAnsiChar(AIn),
+    Length(AIn)), RSOSSLHMACUpdateError);
 end;
 
 function TaurusTLSFinalHMACInst(ACtx: TIdHMACIntCtx): TIdBytes;
 var
-  LLen: TIdC_UInt;
+  LBufLen, LActualLen: TIdC_SIZET;
 begin
-  LLen := EVP_MAX_MD_SIZE;
   Result := nil;
-  SetLength(Result, LLen);
+  // calculating the final buffer length
+  if (EVP_MAC_final(ACtx, nil, LBufLen, 0) <= 0) and (LBufLen <= 0) then
+    Exit;
+  SetLength(Result, LBufLen);
   {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-  if ETaurusTLSHMACFinal.CheckResult(HMAC_Final(ACtx, PByte(@Result[0]), @LLen),
+  if ETaurusTLSHMACFinal.CheckResult(
+    EVP_MAC_final(ACtx, PIdAnsiChar(Result), LActualLen, LBufLen),
     RSOSSLHMACFinalError) then
   {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
   begin
-    SetLength(Result, LLen);
+    if LActualLen < LBufLen then
+      SetLength(Result, LActualLen);
     HMAC_CTX_free(ACtx);
   end;
 end;
