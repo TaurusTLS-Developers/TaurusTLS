@@ -132,6 +132,21 @@ begin
     Length(AKey), AInst, nil), RSOSSLHMACInitExError);
 end;
 
+function  TaurusTLSHACMACInit(AKey : TIdBytes; const ACipher : PIdAnsiChar;
+  AExceptionClass : ETaurusTLSHMACMD5NotFoundClass; const AMsg : String) : TIdHMACIntCtx;
+var LMD : PEVP_MD;
+begin
+  LMD := EVP_MD_fetch(nil, ACipher,nil);
+  if Assigned(LMD) then
+  begin
+    Result := TaurusTLSHMACInit(AKey, LMD);
+  end
+  else
+  begin
+    raise AExceptionClass.Create(AMsg);
+  end;
+end;
+
 // **************** FIPS Support backend *******************
 
 function TaurusTLSIsHashingIntfAvail: Boolean;
@@ -164,7 +179,7 @@ end;
 
 function TaurusIsHashAvail(const AHashName : PIdAnsiChar) : Boolean; {$IFDEF USE_INLINE} inline; {$ENDIF}
 var
-  lMeth: PEVP_MD;
+  lMeth: Pointer;
 begin
   lMeth := nil;
   try
@@ -303,11 +318,8 @@ end;
 
 function TaurusTLSGetHMACMD5Inst(const AKey: TIdBytes): TIdHMACIntCtx;
 begin
-{$IFDEF OPENSSL_NO_MD5}
-  Result := nil;
-{$ELSE}
-  Result := TaurusTLSHMACInit(AKey, EVP_md5);
-{$ENDIF}
+  Result := TaurusTLSHACMACInit(AKey, 'MD5', ETaurusTLSHMACMD5NotFound,
+    RSSSLHACMD5NotFound);
 end;
 
 function TaurusTLSIsHMACSHA1Avail: Boolean;
@@ -317,12 +329,10 @@ begin
 end;
 
 function TaurusTLSGetHMACSHA1Inst(const AKey: TIdBytes): TIdHMACIntCtx;
+
 begin
-{$IFDEF OPENSSL_NO_SHA}
-  Result := nil;
-{$ELSE}
-  Result := TaurusTLSHMACInit(AKey, EVP_sha1);
-{$ENDIF}
+  Result := TaurusTLSHACMACInit(AKey, 'SHA1', ETaurusTLSHMACSHA1NotFound,
+    RSSSLHACSHA1NotFound);
 end;
 
 function TaurusTLSIsHMACSHA224Avail: Boolean;
@@ -333,11 +343,8 @@ end;
 
 function TaurusTLSGetHMACSHA224Inst(const AKey: TIdBytes): TIdHMACIntCtx;
 begin
-{$IFDEF OPENSSL_NO_SHA256}
-  Result := nil;
-{$ELSE}
-  Result := TaurusTLSHMACInit(AKey, EVP_sha224);
-{$ENDIF}
+  Result := TaurusTLSHACMACInit(AKey, 'SHA224', ETaurusTLSHMACSHA224NotFound,
+    RSSSLHACSHA224NotFound);
 end;
 
 function TaurusTLSIsHMACSHA256Avail: Boolean;
@@ -347,12 +354,10 @@ end;
 
 function TaurusTLSGetHMACSHA256Inst(const AKey: TIdBytes): TIdHMACIntCtx;
 begin
-{$IFDEF OPENSSL_NO_SHA256}
-  Result := nil;
-{$ELSE}
-  Result := TaurusTLSHMACInit(AKey, EVP_sha256);
-{$ENDIF}
+  Result := TaurusTLSHACMACInit(AKey, 'SHA256', ETaurusTLSHMACSHA256NotFound,
+    RSSSLHACSHA256NotFound);
 end;
+
 
 function TaurusTLSIsHMACSHA384Avail: Boolean;
 begin
@@ -361,11 +366,8 @@ end;
 
 function TaurusTLSGetHMACSHA384Inst(const AKey: TIdBytes): TIdHMACIntCtx;
 begin
-{$IFDEF OPENSSL_NO_SHA512}
-  Result := nil;
-{$ELSE}
-  Result := TaurusTLSHMACInit(AKey, EVP_sha384);
-{$ENDIF}
+  Result := TaurusTLSHACMACInit(AKey, 'SHA384', ETaurusTLSHMACSHA384NotFound,
+    RSSSLHACSHA384NotFound);
 end;
 
 function TaurusTLSIsHMACSHA512Avail: Boolean;
@@ -375,11 +377,8 @@ end;
 
 function TaurusTLSGetHMACSHA512Inst(const AKey: TIdBytes): TIdHMACIntCtx;
 begin
-{$IFDEF OPENSSL_NO_SHA512}
-  Result := nil;
-{$ELSE}
-  Result := TaurusTLSHMACInit(AKey, EVP_sha512);
-{$ENDIF}
+  Result := TaurusTLSHACMACInit(AKey, 'SHA512', ETaurusTLSHMACSHA512NotFound,
+    RSSSLHACSHA512NotFound);
 end;
 
 procedure TaurusTLSUpdateHMACInst(ACtx: TIdHMACIntCtx; const AIn: TIdBytes);

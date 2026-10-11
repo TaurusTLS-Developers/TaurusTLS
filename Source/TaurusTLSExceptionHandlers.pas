@@ -275,7 +275,45 @@ type
   ///   HMAC_Final
   /// </seealso>
   ETaurusTLSHMACFinal = class(ETaurusTLSHMACError);
-
+  /// <summary>
+  ///   Base class for exceptions raised if an algorithm can not be found when
+  ///   HMAC is attempted.
+  /// </summary>
+  ETaurusTLSHMACAlgorithmNotFound = class(ETaurusTLSHMACError);
+  /// <summary>
+  ///   Defined for passing a class type to some common code. Used internally.
+  /// </summary>
+  ETaurusTLSHMACMD5NotFoundClass = class of ETaurusTLSHMACAlgorithmNotFound;
+  /// <summary>
+  ///   Raised if the MD5 algorithm can not be found when attempting to use HMAC
+  ///   functions.
+  /// </summary>
+  ETaurusTLSHMACMD5NotFound = class(ETaurusTLSHMACAlgorithmNotFound);
+  /// <summary>
+  ///   Raised if the SHA1 algorithm can not be found when attempting to use HMAC
+  ///   functions.
+  /// </summary>
+  ETaurusTLSHMACSHA1NotFound = class(ETaurusTLSHMACAlgorithmNotFound);
+  /// <summary>
+  ///   Raised if the SHA224 algorithm can not be found when attempting to use HMAC
+  ///   functions.
+  /// </summary>
+  ETaurusTLSHMACSHA224NotFound = class(ETaurusTLSHMACAlgorithmNotFound);
+  /// <summary>
+  ///   Raised if the SHA256 algorithm can not be found when attempting to use HMAC
+  ///   functions.
+  /// </summary>
+  ETaurusTLSHMACSHA256NotFound = class(ETaurusTLSHMACAlgorithmNotFound);
+  /// <summary>
+  ///   Raised if the SHA384 algorithm can not be found when attempting to use HMAC
+  ///   functions.
+  /// </summary>
+  ETaurusTLSHMACSHA384NotFound = class(ETaurusTLSHMACAlgorithmNotFound);
+  /// <summary>
+  ///   Raised if the SHA512 algorithm can not be found when attempting to use HMAC
+  ///   functions.
+  /// </summary>
+  ETaurusTLSHMACSHA512NotFound = class(ETaurusTLSHMACAlgorithmNotFound);
   /// <summary>
   ///   Anscestor of exceptions that are raised if an EVP_CIPHER_* functions fails.
   /// </summary>
