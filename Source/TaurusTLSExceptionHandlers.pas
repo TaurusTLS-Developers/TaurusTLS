@@ -166,6 +166,10 @@ type
   /// </seealso>
   ETaurusTLSAlgorithmNotFound = class(ETaurusTLSAPICryptoError)
   public
+    /// <summary>
+    ///   Creates an an object of this class with a message from the <c>
+    ///   TaurusTLS_ResourceStrings</c> unit.
+    /// </summary>
     constructor CreateResMsg; virtual;
   end;
   /// <summary>
