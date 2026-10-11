@@ -1,4 +1,4 @@
-{ ****************************************************************************** }
+﻿{ ****************************************************************************** }
 { *  TaurusTLS                                                                 * }
 { *           https://github.com/JPeterMugaas/TaurusTLS                        * }
 { *                                                                            * }
@@ -201,7 +201,7 @@ function  TaurusTLSInternalGetHash(const AHashNamne : PIdAnsiChar;
   const AErrMsg : String): TIdHashIntCtx;
 var LMD : PEVP_MD;
 begin
-  LMD := EVP_MD_fetch(nil,'MD2',nil);
+  LMD := EVP_MD_fetch(nil,AHashNamne,nil);
   if assigned(LMD) then
   begin
     Result := TaurusTLSGetDigestCtx(LMD);
