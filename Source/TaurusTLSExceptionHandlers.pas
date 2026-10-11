@@ -4,8 +4,8 @@
 {*                                                                            *}
 {*  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              *}
 {*                                                                            *}
-{* Portions of this software are Copyright (c) 1993 – 2018,                   *}
-{* Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  *}
+{* Portions of this software are Copyright (c) 1993 â€“ 2018,                   *}
+{* Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  *}
 {******************************************************************************}
 {$I TaurusTLSCompilerDefines.inc}
 /// <summary>
@@ -157,6 +157,85 @@ type
     /// </summary>
     property ErrorCode : TIdC_ULONG read FErrorCode;
   end;
+  /// <summary>
+  ///   Base class for exceptions that are raised when the <c>EVP_MD_fetch</c>
+  ///   function. can not find an algorithm.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
+  ///   EVP_MD_fetch
+  /// </seealso>
+  ETaurusTLSAlgorithmNotFound = class(ETaurusTLSAPICryptoError);
+  /// <summary>
+  ///   Defined for passing a <c>ETaurusTLSAlgorithmNotFound</c> class type to
+  ///   some common code. <br />
+  /// </summary>
+  ETaurusTLSAlgorithmNotFoundClass = class of ETaurusTLSAlgorithmNotFound;
+  /// <summary>
+  ///   Raised if the MD2 algorithm can not be found when attempting to use the
+  ///   EVP_MD_fetch function.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
+  ///   EVP_MD_fetch
+  /// </seealso>
+  ETaurusTLSMD2NotFound = class(ETaurusTLSAlgorithmNotFound);
+
+  /// <summary>
+  ///   Raised if the MD4 algorithm can not be found when attempting to use the
+  ///   EVP_MD_fetch function.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
+  ///   EVP_MD_fetch
+  /// </seealso>
+  ETaurusTLSMD4NotFound = class(ETaurusTLSAlgorithmNotFound);
+
+  /// <summary>
+  ///   Raised if the MD5 algorithm can not be found when attempting to use the
+  ///   EVP_MD_fetch function.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
+  ///   EVP_MD_fetch
+  /// </seealso>
+  ETaurusTLSMD5NotFound = class(ETaurusTLSAlgorithmNotFound);
+  /// <summary>
+  ///   Raised if the SHA1 algorithm can not be found when attempting to use the
+  ///   EVP_MD_fetch function.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
+  ///   EVP_MD_fetch
+  /// </seealso>
+  ETaurusTLSSHA1NotFound = class(ETaurusTLSAlgorithmNotFound);
+  /// <summary>
+  ///   Raised if the SHA2224 algorithm can not be found when attempting to use the
+  ///   EVP_MD_fetch function.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
+  ///   EVP_MD_fetch
+  /// </seealso>
+  ETaurusTLSSHA224NotFound = class(ETaurusTLSAlgorithmNotFound);
+  /// <summary>
+  ///   Raised if the SHA256 algorithm can not be found when attempting to use the
+  ///   EVP_MD_fetch function.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
+  ///   EVP_MD_fetch
+  /// </seealso>
+  ETaurusTLSSHA256NotFound = class(ETaurusTLSAlgorithmNotFound);
+  /// <summary>
+  ///   Raised if the SHA384 algorithm can not be found when attempting to use the
+  ///   EVP_MD_fetch function.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
+  ///   EVP_MD_fetch
+  /// </seealso>
+  ETaurusTLSSHA384NotFound = class(ETaurusTLSAlgorithmNotFound);
+  /// <summary>
+  ///   Raised if the SHA512 algorithm can not be found when attempting to use the
+  ///   EVP_MD_fetch function.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
+  ///   EVP_MD_fetch
+  /// </seealso>
+  ETaurusTLSSHA512NotFound = class(ETaurusTLSAlgorithmNotFound);
 
   /// <summary>
   ///   Raised if the X509_digest function failed.
@@ -275,7 +354,6 @@ type
   ///   HMAC_Final
   /// </seealso>
   ETaurusTLSHMACFinal = class(ETaurusTLSHMACError);
-
   /// <summary>
   ///   Anscestor of exceptions that are raised if an EVP_CIPHER_* functions fails.
   /// </summary>

@@ -1,4 +1,4 @@
-/// <exclude />
+﻿/// <exclude />
 { ****************************************************************************** }
 { *  TaurusTLS                                                                 * }
 { *           https://github.com/JPeterMugaas/TaurusTLS                        * }
@@ -63,6 +63,14 @@ resourcestring
   RSOSSLHMACInitExError = 'HMAC_Init_ex error';
   RSOSSLHMACUpdateError = 'HMAC_Update error';
   RSOSSLHMACFinalError = 'HMAC_Final error';
+  RSSSLMD2NotFound = 'MD2 not found';
+  RSSSLMD4NotFound = 'MD4 not found';
+  RSSSLMD5NotFound = 'MD5 not found';
+  RSSSLSHA1NotFound = 'SHA1 not found';
+  RSSSLSHA224NotFound = 'SHA224 not found';
+  RSSSLSHA256NotFound = 'SHA256 not found';
+  RSSSLSHA384NotFound = 'SHA384 not found';
+  RSSSLSHA512NotFound = 'SHA512 not found';
   RSOSSLX509DigestFailed = 'X509_digest failed';
   
   RSOSSCouldNotCreateSSLObject = 'Could not create SSL object';
