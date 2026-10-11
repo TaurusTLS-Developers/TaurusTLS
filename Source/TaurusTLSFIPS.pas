@@ -155,11 +155,7 @@ end;
 
 function TaurusTLSLoadHashLibrary: Boolean;
 begin
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Result := GetOpenSSLLoader.Load;
-{$ELSE}
-  Result := true;
-{$ENDIF}
+  Result := IsLegacyProviderLoaded;
 end;
 
 function TaurusTLSSetFIPSMode(const AMode: Boolean): Boolean;
