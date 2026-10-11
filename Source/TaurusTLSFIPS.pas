@@ -133,7 +133,7 @@ begin
 end;
 
 function  TaurusTLSHACMACInit(AKey : TIdBytes; const ACipher : PIdAnsiChar;
-  AExceptionClass : ETaurusTLSMD5NotFoundClass; const AMsg : String) : TIdHMACIntCtx;
+  AExceptionClass : ETaurusTLSAlgorithmNotFoundClass; const AMsg : String) : TIdHMACIntCtx;
 var LMD : PEVP_MD;
 begin
   LMD := EVP_MD_fetch(nil, ACipher,nil);
