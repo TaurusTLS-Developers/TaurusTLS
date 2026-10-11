@@ -4,8 +4,8 @@
 {*                                                                            *}
 {*  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              *}
 {*                                                                            *}
-{* Portions of this software are Copyright (c) 1993 – 2018,                   *}
-{* Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  *}
+{* Portions of this software are Copyright (c) 1993 â€“ 2018,                   *}
+{* Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  *}
 {******************************************************************************}
 {$I TaurusTLSCompilerDefines.inc}
 /// <summary>
@@ -169,7 +169,7 @@ type
   ///   Defined for passing a <c>ETaurusTLSAlgorithmNotFound</c> class type to
   ///   some common code. <br />
   /// </summary>
-  ETaurusTLSMD5NotFoundClass = class of ETaurusTLSAlgorithmNotFound;
+  ETaurusTLSAlgorithmNotFoundClass = class of ETaurusTLSAlgorithmNotFound;
   /// <summary>
   ///   Raised if the MD2 algorithm can not be found when attempting to use the
   ///   EVP_MD_fetch function.
