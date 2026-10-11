@@ -4,8 +4,8 @@
 { *                                                                            * }
 { *  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              * }
 { *                                                                            * }
-{ * Portions of this software are Copyright (c) 1993 – 2018,                   * }
-{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  * }
+{ * Portions of this software are Copyright (c) 1993 â€“ 2018,                   * }
+{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  * }
 { ****************************************************************************** }
 {$I TaurusTLSCompilerDefines.inc}
 /// <summary>
@@ -197,7 +197,7 @@ begin
 end;
 
 function  TaurusTLSInternalGetHash(const AHashNamne : PIdAnsiChar;
-  AExceptionClass : ETaurusTLSMD5NotFoundClass;
+  AExceptionClass : ETaurusTLSAlgorithmNotFoundClass;
   const AErrMsg : String): TIdHashIntCtx;
 var LMD : PEVP_MD;
 begin
