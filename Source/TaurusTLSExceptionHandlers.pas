@@ -1,4 +1,4 @@
-{******************************************************************************}
+﻿{******************************************************************************}
 {*  TaurusTLS                                                                 *}
 {*           https://github.com/JPeterMugaas/TaurusTLS                        *}
 {*                                                                            *}
@@ -164,7 +164,10 @@ type
   /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
   ///   EVP_MD_fetch
   /// </seealso>
-  ETaurusTLSAlgorithmNotFound = class(ETaurusTLSAPICryptoError);
+  ETaurusTLSAlgorithmNotFound = class(ETaurusTLSAPICryptoError)
+  public
+    constructor CreateResMsg; virtual;
+  end;
   /// <summary>
   ///   Defined for passing a <c>ETaurusTLSAlgorithmNotFound</c> class type to
   ///   some common code. <br />
@@ -177,7 +180,10 @@ type
   /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
   ///   EVP_MD_fetch
   /// </seealso>
-  ETaurusTLSMD2NotFound = class(ETaurusTLSAlgorithmNotFound);
+  ETaurusTLSMD2NotFound = class(ETaurusTLSAlgorithmNotFound)
+  public
+    constructor CreateResMsg; override;
+  end;
 
   /// <summary>
   ///   Raised if the MD4 algorithm can not be found when attempting to use the
@@ -186,7 +192,10 @@ type
   /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
   ///   EVP_MD_fetch
   /// </seealso>
-  ETaurusTLSMD4NotFound = class(ETaurusTLSAlgorithmNotFound);
+  ETaurusTLSMD4NotFound = class(ETaurusTLSAlgorithmNotFound)
+  public
+    constructor CreateResMsg; override;
+  end;
 
   /// <summary>
   ///   Raised if the MD5 algorithm can not be found when attempting to use the
@@ -195,7 +204,10 @@ type
   /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
   ///   EVP_MD_fetch
   /// </seealso>
-  ETaurusTLSMD5NotFound = class(ETaurusTLSAlgorithmNotFound);
+  ETaurusTLSMD5NotFound = class(ETaurusTLSAlgorithmNotFound)
+  public
+    constructor CreateResMsg; override;
+  end;
   /// <summary>
   ///   Raised if the SHA1 algorithm can not be found when attempting to use the
   ///   EVP_MD_fetch function.
@@ -203,7 +215,11 @@ type
   /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
   ///   EVP_MD_fetch
   /// </seealso>
-  ETaurusTLSSHA1NotFound = class(ETaurusTLSAlgorithmNotFound);
+  ETaurusTLSSHA1NotFound = class(ETaurusTLSAlgorithmNotFound)
+  public
+    constructor CreateResMsg; override;
+  end;
+
   /// <summary>
   ///   Raised if the SHA2224 algorithm can not be found when attempting to use the
   ///   EVP_MD_fetch function.
@@ -211,7 +227,11 @@ type
   /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
   ///   EVP_MD_fetch
   /// </seealso>
-  ETaurusTLSSHA224NotFound = class(ETaurusTLSAlgorithmNotFound);
+  ETaurusTLSSHA224NotFound = class(ETaurusTLSAlgorithmNotFound)
+  public
+    constructor CreateResMsg;  override;
+  end;
+
   /// <summary>
   ///   Raised if the SHA256 algorithm can not be found when attempting to use the
   ///   EVP_MD_fetch function.
@@ -219,7 +239,10 @@ type
   /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
   ///   EVP_MD_fetch
   /// </seealso>
-  ETaurusTLSSHA256NotFound = class(ETaurusTLSAlgorithmNotFound);
+  ETaurusTLSSHA256NotFound = class(ETaurusTLSAlgorithmNotFound)
+  public
+    constructor CreateResMsg; override;
+  end;
   /// <summary>
   ///   Raised if the SHA384 algorithm can not be found when attempting to use the
   ///   EVP_MD_fetch function.
@@ -227,7 +250,10 @@ type
   /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
   ///   EVP_MD_fetch
   /// </seealso>
-  ETaurusTLSSHA384NotFound = class(ETaurusTLSAlgorithmNotFound);
+  ETaurusTLSSHA384NotFound = class(ETaurusTLSAlgorithmNotFound)
+  public
+    constructor CreateResMsg; override;
+  end;
   /// <summary>
   ///   Raised if the SHA512 algorithm can not be found when attempting to use the
   ///   EVP_MD_fetch function.
@@ -235,7 +261,10 @@ type
   /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
   ///   EVP_MD_fetch
   /// </seealso>
-  ETaurusTLSSHA512NotFound = class(ETaurusTLSAlgorithmNotFound);
+  ETaurusTLSSHA512NotFound = class(ETaurusTLSAlgorithmNotFound)
+  public
+    constructor CreateResMsg; override;
+  end;
 
   /// <summary>
   ///   Raised if the X509_digest function failed.
@@ -548,6 +577,69 @@ class procedure ETaurusTLSError.RaiseWithMessage(const AMsg: String);
 {$IFDEF USE_NORETURN}noreturn;{$ENDIF}
 begin
   raise Create(AMsg);
+end;
+
+{ ETaurusTLSMD2NotFound }
+
+constructor ETaurusTLSMD2NotFound.CreateResMsg;
+begin
+  Create(RSSSLMD2NotFound);
+end;
+
+{ ETaurusTLSMD4NotFound }
+
+constructor ETaurusTLSMD4NotFound.CreateResMsg;
+begin
+  Create(RSSSLMD4NotFound);
+end;
+
+{ ETaurusTLSMD5NotFound }
+
+constructor ETaurusTLSMD5NotFound.CreateResMsg;
+begin
+  Create(RSSSLMD5NotFound);
+end;
+
+{ ETaurusTLSSHA1NotFound }
+
+constructor ETaurusTLSSHA1NotFound.CreateResMsg;
+begin
+  Create(RSSSLSHA1NotFound);
+end;
+
+{ ETaurusTLSSHA224NotFound }
+
+constructor ETaurusTLSSHA224NotFound.CreateResMsg;
+begin
+  inherited Create(RSSSLSHA224NotFound);
+end;
+
+{ ETaurusTLSSHA256NotFound }
+
+constructor ETaurusTLSSHA256NotFound.CreateResMsg;
+begin
+  inherited Create(RSSSLSHA256NotFound);
+end;
+
+{ ETaurusTLSAlgorithmNotFound }
+
+constructor ETaurusTLSAlgorithmNotFound.CreateResMsg;
+begin
+  inherited Create('');
+end;
+
+{ ETaurusTLSSHA384NotFound }
+
+constructor ETaurusTLSSHA384NotFound.CreateResMsg;
+begin
+  inherited Create(RSSSLSHA384NotFound);
+end;
+
+{ ETaurusTLSSHA512NotFound }
+
+constructor ETaurusTLSSHA512NotFound.CreateResMsg;
+begin
+  inherited Create(RSSSLSHA512NotFound);
 end;
 
 end.

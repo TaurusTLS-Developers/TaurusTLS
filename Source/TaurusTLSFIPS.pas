@@ -136,7 +136,7 @@ begin
 end;
 
 function  TaurusTLSHACMACInit(AKey : TIdBytes; const ACipher : PIdAnsiChar;
-  AExceptionClass : ETaurusTLSAlgorithmNotFoundClass; const AMsg : String) : TIdHMACIntCtx;
+  AExceptionClass : ETaurusTLSAlgorithmNotFoundClass) : TIdHMACIntCtx;
 var LMD : PEVP_MD;
 begin
   LMD := EVP_MD_fetch(nil, ACipher,nil);
@@ -147,7 +147,7 @@ begin
   end
   else
   begin
-    raise AExceptionClass.Create(AMsg);
+    raise AExceptionClass.CreateResMsg;
   end;
 end;
 
@@ -198,12 +198,11 @@ begin
   Result := TaurusIsHashAvail('MD2')
 end;
 
-function  TaurusTLSInternalGetHash(const AHashNamne : PIdAnsiChar;
-  AExceptionClass : ETaurusTLSAlgorithmNotFoundClass;
-  const AErrMsg : String): TIdHashIntCtx;
+function  TaurusTLSInternalGetHash(const AHashName : PIdAnsiChar;
+  AExceptionClass : ETaurusTLSAlgorithmNotFoundClass): TIdHashIntCtx;
 var LMD : PEVP_MD;
 begin
-  LMD := EVP_MD_fetch(nil,AHashNamne,nil);
+  LMD := EVP_MD_fetch(nil,AHashName,nil);
   if assigned(LMD) then
   begin
     Result := TaurusTLSGetDigestCtx(LMD);
@@ -211,13 +210,13 @@ begin
   end
   else
   begin
-    raise ETaurusTLSMD2NotFound.Create(RSSSLMD2NotFound);
+    raise AExceptionClass.CreateResMsg;
   end;
 end;
 
 function TaurusTLSGetMD2HashInst: TIdHashIntCtx;
 begin
-  Result := TaurusTLSInternalGetHash('MD2',ETaurusTLSMD2NotFound,RSSSLMD2NotFound);
+  Result := TaurusTLSInternalGetHash('MD2',ETaurusTLSMD2NotFound);
 end;
 
 function TaurusTLSIsMD4HashIntfAvail: Boolean;
@@ -227,7 +226,7 @@ end;
 
 function TaurusTLSGetMD4HashInst: TIdHashIntCtx;
 begin
-  Result := TaurusTLSInternalGetHash('MD4',ETaurusTLSMD4NotFound,RSSSLMD4NotFound);
+  Result := TaurusTLSInternalGetHash('MD4',ETaurusTLSMD4NotFound);
 end;
 
 function TaurusTLSIsMD5HashIntfAvail: Boolean;
@@ -238,7 +237,7 @@ end;
 
 function TaurusTLSGetMD5HashInst: TIdHashIntCtx;
 begin
-  Result := TaurusTLSInternalGetHash('MD5',ETaurusTLSMD5NotFound,RSSSLMD5NotFound);
+  Result := TaurusTLSInternalGetHash('MD5',ETaurusTLSMD5NotFound);
 end;
 
 function TaurusTLSIsSHA1HashIntfAvail: Boolean;
@@ -248,7 +247,7 @@ end;
 
 function TaurusTLSGetSHA1HashInst: TIdHashIntCtx;
 begin
-  Result := TaurusTLSInternalGetHash('SHA1',ETaurusTLSSHA1NotFound,RSSSLSHA1NotFound);
+  Result := TaurusTLSInternalGetHash('SHA1',ETaurusTLSSHA1NotFound);
 end;
 
 function TaurusTLSIsSHA224HashIntfAvail: Boolean;
@@ -258,7 +257,7 @@ end;
 
 function TaurusTLSGetSHA224HashInst: TIdHashIntCtx;
 begin
-  Result := TaurusTLSInternalGetHash('SHA224',ETaurusTLSSHA224NotFound,RSSSLSHA224NotFound);
+  Result := TaurusTLSInternalGetHash('SHA224',ETaurusTLSSHA224NotFound);
 end;
 
 function TaurusTLSIsSHA256HashIntfAvail: Boolean;
@@ -268,7 +267,7 @@ end;
 
 function TaurusTLSGetSHA256HashInst: TIdHashIntCtx;
 begin
-  Result := TaurusTLSInternalGetHash('SHA256',ETaurusTLSSHA256NotFound,RSSSLSHA256NotFound);
+  Result := TaurusTLSInternalGetHash('SHA256',ETaurusTLSSHA256NotFound);
 end;
 
 function TaurusTLSIsSHA384HashIntfAvail: Boolean;
@@ -278,7 +277,7 @@ end;
 
 function TaurusTLSGetSHA384HashInst: TIdHashIntCtx;
 begin
-  Result := TaurusTLSInternalGetHash('SHA384',ETaurusTLSSHA384NotFound,RSSSLSHA384NotFound);
+  Result := TaurusTLSInternalGetHash('SHA384',ETaurusTLSSHA384NotFound);
 end;
 
 function TaurusTLSIsSHA512HashIntfAvail: Boolean;
@@ -288,7 +287,7 @@ end;
 
 function TaurusTLSGetSHA512HashInst: TIdHashIntCtx;
 begin
-  Result := TaurusTLSInternalGetHash('SHA512',ETaurusTLSSHA512NotFound,RSSSLSHA512NotFound);
+  Result := TaurusTLSInternalGetHash('SHA512',ETaurusTLSSHA512NotFound);
 end;
 
 procedure TaurusTLSUpdateHashInst(ACtx: TIdHashIntCtx; const AIn: TIdBytes);
@@ -332,8 +331,7 @@ end;
 
 function TaurusTLSGetHMACMD5Inst(const AKey: TIdBytes): TIdHMACIntCtx;
 begin
-  Result := TaurusTLSHACMACInit(AKey, 'MD5', ETaurusTLSMD5NotFound,
-    RSSSLMD5NotFound);
+  Result := TaurusTLSHACMACInit(AKey, 'MD5', ETaurusTLSMD5NotFound);
 end;
 
 function TaurusTLSIsHMACSHA1Avail: Boolean;
@@ -345,8 +343,7 @@ end;
 function TaurusTLSGetHMACSHA1Inst(const AKey: TIdBytes): TIdHMACIntCtx;
 
 begin
-  Result := TaurusTLSHACMACInit(AKey, 'SHA1', ETaurusTLSSHA1NotFound,
-    RSSSLSHA1NotFound);
+  Result := TaurusTLSHACMACInit(AKey, 'SHA1', ETaurusTLSSHA1NotFound);
 end;
 
 function TaurusTLSIsHMACSHA224Avail: Boolean;
@@ -357,8 +354,7 @@ end;
 
 function TaurusTLSGetHMACSHA224Inst(const AKey: TIdBytes): TIdHMACIntCtx;
 begin
-  Result := TaurusTLSHACMACInit(AKey, 'SHA224', ETaurusTLSSHA224NotFound,
-    RSSSLSHA224NotFound);
+  Result := TaurusTLSHACMACInit(AKey, 'SHA224', ETaurusTLSSHA224NotFound);
 end;
 
 function TaurusTLSIsHMACSHA256Avail: Boolean;
@@ -368,8 +364,7 @@ end;
 
 function TaurusTLSGetHMACSHA256Inst(const AKey: TIdBytes): TIdHMACIntCtx;
 begin
-  Result := TaurusTLSHACMACInit(AKey, 'SHA256', ETaurusTLSSHA256NotFound,
-    RSSSLSHA256NotFound);
+  Result := TaurusTLSHACMACInit(AKey, 'SHA256', ETaurusTLSSHA256NotFound);
 end;
 
 
@@ -380,8 +375,7 @@ end;
 
 function TaurusTLSGetHMACSHA384Inst(const AKey: TIdBytes): TIdHMACIntCtx;
 begin
-  Result := TaurusTLSHACMACInit(AKey, 'SHA384', ETaurusTLSSHA384NotFound,
-    RSSSLSHA384NotFound);
+  Result := TaurusTLSHACMACInit(AKey, 'SHA384', ETaurusTLSSHA384NotFound);
 end;
 
 function TaurusTLSIsHMACSHA512Avail: Boolean;
@@ -391,8 +385,7 @@ end;
 
 function TaurusTLSGetHMACSHA512Inst(const AKey: TIdBytes): TIdHMACIntCtx;
 begin
-  Result := TaurusTLSHACMACInit(AKey, 'SHA512', ETaurusTLSSHA512NotFound,
-    RSSSLSHA512NotFound);
+  Result := TaurusTLSHACMACInit(AKey, 'SHA512', ETaurusTLSSHA512NotFound);
 end;
 
 procedure TaurusTLSUpdateHMACInst(ACtx: TIdHMACIntCtx; const AIn: TIdBytes);
