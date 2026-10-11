@@ -133,13 +133,14 @@ begin
 end;
 
 function  TaurusTLSHACMACInit(AKey : TIdBytes; const ACipher : PIdAnsiChar;
-  AExceptionClass : ETaurusTLSHMACMD5NotFoundClass; const AMsg : String) : TIdHMACIntCtx;
+  AExceptionClass : ETaurusTLSMD5NotFoundClass; const AMsg : String) : TIdHMACIntCtx;
 var LMD : PEVP_MD;
 begin
   LMD := EVP_MD_fetch(nil, ACipher,nil);
   if Assigned(LMD) then
   begin
     Result := TaurusTLSHMACInit(AKey, LMD);
+     EVP_MD_free(LMD);
   end
   else
   begin
@@ -179,7 +180,7 @@ end;
 
 function TaurusIsHashAvail(const AHashName : PIdAnsiChar) : Boolean; {$IFDEF USE_INLINE} inline; {$ENDIF}
 var
-  lMeth: Pointer;
+  lMeth: PEVP_MD;
 begin
   lMeth := nil;
   try
@@ -195,10 +196,26 @@ begin
   Result := TaurusIsHashAvail('MD2')
 end;
 
+function  TaurusTLSInternalGetHash(const AHashNamne : PIdAnsiChar;
+  AExceptionClass : ETaurusTLSMD5NotFoundClass;
+  const AErrMsg : String): TIdHashIntCtx;
+var LMD : PEVP_MD;
+begin
+  LMD := EVP_MD_fetch(nil,'MD2',nil);
+  if assigned(LMD) then
+  begin
+    Result := TaurusTLSGetDigestCtx(LMD);
+    EVP_MD_Free(LMD);
+  end
+  else
+  begin
+    raise ETaurusTLSMD2NotFound.Create(RSSSLMD2NotFound);
+  end;
+end;
 
 function TaurusTLSGetMD2HashInst: TIdHashIntCtx;
 begin
-  Result := TaurusTLSGetDigestCtx(EVP_MD_fetch(nil,'MD2',nil));
+  Result := TaurusTLSInternalGetHash('MD2',ETaurusTLSMD2NotFound,RSSSLMD2NotFound);
 end;
 
 function TaurusTLSIsMD4HashIntfAvail: Boolean;
@@ -208,7 +225,7 @@ end;
 
 function TaurusTLSGetMD4HashInst: TIdHashIntCtx;
 begin
-  Result := TaurusTLSGetDigestCtx(EVP_MD_fetch(nil,'MD4',nil));
+  Result := TaurusTLSInternalGetHash('MD4',ETaurusTLSMD4NotFound,RSSSLMD4NotFound);
 end;
 
 function TaurusTLSIsMD5HashIntfAvail: Boolean;
@@ -219,7 +236,7 @@ end;
 
 function TaurusTLSGetMD5HashInst: TIdHashIntCtx;
 begin
-  Result := TaurusTLSGetDigestCtx(EVP_MD_fetch(nil,'MD5',nil));
+  Result := TaurusTLSInternalGetHash('MD5',ETaurusTLSMD5NotFound,RSSSLMD5NotFound);
 end;
 
 function TaurusTLSIsSHA1HashIntfAvail: Boolean;
@@ -229,7 +246,7 @@ end;
 
 function TaurusTLSGetSHA1HashInst: TIdHashIntCtx;
 begin
-  Result := TaurusTLSGetDigestCtx(EVP_MD_fetch(nil,'SHA1',nil));
+  Result := TaurusTLSInternalGetHash('SHA1',ETaurusTLSSHA1NotFound,RSSSLSHA1NotFound);
 end;
 
 function TaurusTLSIsSHA224HashIntfAvail: Boolean;
@@ -239,7 +256,7 @@ end;
 
 function TaurusTLSGetSHA224HashInst: TIdHashIntCtx;
 begin
-  Result := TaurusTLSGetDigestCtx(EVP_MD_fetch(nil,'SHA224',nil));
+  Result := TaurusTLSInternalGetHash('SHA224',ETaurusTLSSHA224NotFound,RSSSLSHA224NotFound);
 end;
 
 function TaurusTLSIsSHA256HashIntfAvail: Boolean;
@@ -249,7 +266,7 @@ end;
 
 function TaurusTLSGetSHA256HashInst: TIdHashIntCtx;
 begin
-  Result := TaurusTLSGetDigestCtx(EVP_MD_fetch(nil,'SHA256',nil));
+  Result := TaurusTLSInternalGetHash('SHA256',ETaurusTLSSHA256NotFound,RSSSLSHA256NotFound);
 end;
 
 function TaurusTLSIsSHA384HashIntfAvail: Boolean;
@@ -259,7 +276,7 @@ end;
 
 function TaurusTLSGetSHA384HashInst: TIdHashIntCtx;
 begin
-  Result := TaurusTLSGetDigestCtx(EVP_MD_fetch(nil,'SHA384',nil));
+  Result := TaurusTLSInternalGetHash('SHA384',ETaurusTLSSHA384NotFound,RSSSLSHA384NotFound);
 end;
 
 function TaurusTLSIsSHA512HashIntfAvail: Boolean;
@@ -269,7 +286,7 @@ end;
 
 function TaurusTLSGetSHA512HashInst: TIdHashIntCtx;
 begin
-  Result := TaurusTLSGetDigestCtx(EVP_MD_fetch(nil,'SHA512',nil));
+  Result := TaurusTLSInternalGetHash('SHA512',ETaurusTLSSHA512NotFound,RSSSLSHA512NotFound);
 end;
 
 procedure TaurusTLSUpdateHashInst(ACtx: TIdHashIntCtx; const AIn: TIdBytes);
@@ -299,15 +316,11 @@ end;
 
 function TaurusTLSIsHMACAvail: Boolean;
 begin
-{$IFDEF OPENSSL_NO_HMAC}
-  Result := False;
-{$ELSE}
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   Result := Assigned(HMAC_CTX_new) and Assigned(HMAC_Init_ex) and
     Assigned(HMAC_Update) and Assigned(HMAC_Final) and Assigned(HMAC_CTX_free);
 {$ELSE}
   Result := true;
-{$ENDIF}
 {$ENDIF}
 end;
 
@@ -318,8 +331,8 @@ end;
 
 function TaurusTLSGetHMACMD5Inst(const AKey: TIdBytes): TIdHMACIntCtx;
 begin
-  Result := TaurusTLSHACMACInit(AKey, 'MD5', ETaurusTLSHMACMD5NotFound,
-    RSSSLHACMD5NotFound);
+  Result := TaurusTLSHACMACInit(AKey, 'MD5', ETaurusTLSMD5NotFound,
+    RSSSLMD5NotFound);
 end;
 
 function TaurusTLSIsHMACSHA1Avail: Boolean;
@@ -331,8 +344,8 @@ end;
 function TaurusTLSGetHMACSHA1Inst(const AKey: TIdBytes): TIdHMACIntCtx;
 
 begin
-  Result := TaurusTLSHACMACInit(AKey, 'SHA1', ETaurusTLSHMACSHA1NotFound,
-    RSSSLHACSHA1NotFound);
+  Result := TaurusTLSHACMACInit(AKey, 'SHA1', ETaurusTLSSHA1NotFound,
+    RSSSLSHA1NotFound);
 end;
 
 function TaurusTLSIsHMACSHA224Avail: Boolean;
@@ -343,8 +356,8 @@ end;
 
 function TaurusTLSGetHMACSHA224Inst(const AKey: TIdBytes): TIdHMACIntCtx;
 begin
-  Result := TaurusTLSHACMACInit(AKey, 'SHA224', ETaurusTLSHMACSHA224NotFound,
-    RSSSLHACSHA224NotFound);
+  Result := TaurusTLSHACMACInit(AKey, 'SHA224', ETaurusTLSSHA224NotFound,
+    RSSSLSHA224NotFound);
 end;
 
 function TaurusTLSIsHMACSHA256Avail: Boolean;
@@ -354,8 +367,8 @@ end;
 
 function TaurusTLSGetHMACSHA256Inst(const AKey: TIdBytes): TIdHMACIntCtx;
 begin
-  Result := TaurusTLSHACMACInit(AKey, 'SHA256', ETaurusTLSHMACSHA256NotFound,
-    RSSSLHACSHA256NotFound);
+  Result := TaurusTLSHACMACInit(AKey, 'SHA256', ETaurusTLSSHA256NotFound,
+    RSSSLSHA256NotFound);
 end;
 
 
@@ -366,8 +379,8 @@ end;
 
 function TaurusTLSGetHMACSHA384Inst(const AKey: TIdBytes): TIdHMACIntCtx;
 begin
-  Result := TaurusTLSHACMACInit(AKey, 'SHA384', ETaurusTLSHMACSHA384NotFound,
-    RSSSLHACSHA384NotFound);
+  Result := TaurusTLSHACMACInit(AKey, 'SHA384', ETaurusTLSSHA384NotFound,
+    RSSSLSHA384NotFound);
 end;
 
 function TaurusTLSIsHMACSHA512Avail: Boolean;
@@ -377,8 +390,8 @@ end;
 
 function TaurusTLSGetHMACSHA512Inst(const AKey: TIdBytes): TIdHMACIntCtx;
 begin
-  Result := TaurusTLSHACMACInit(AKey, 'SHA512', ETaurusTLSHMACSHA512NotFound,
-    RSSSLHACSHA512NotFound);
+  Result := TaurusTLSHACMACInit(AKey, 'SHA512', ETaurusTLSSHA512NotFound,
+    RSSSLSHA512NotFound);
 end;
 
 procedure TaurusTLSUpdateHMACInst(ACtx: TIdHMACIntCtx; const AIn: TIdBytes);

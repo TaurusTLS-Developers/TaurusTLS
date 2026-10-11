@@ -63,12 +63,14 @@ resourcestring
   RSOSSLHMACInitExError = 'HMAC_Init_ex error';
   RSOSSLHMACUpdateError = 'HMAC_Update error';
   RSOSSLHMACFinalError = 'HMAC_Final error';
-  RSSSLHACMD5NotFound = 'MD5 not found';
-  RSSSLHACSHA1NotFound = 'SHA1 not found';
-  RSSSLHACSHA224NotFound = 'SHA224 not found';
-  RSSSLHACSHA256NotFound = 'SHA256 not found';
-  RSSSLHACSHA384NotFound = 'SHA384 not found';
-  RSSSLHACSHA512NotFound = 'SHA512 not found';
+  RSSSLMD2NotFound = 'MD2 not found';
+  RSSSLMD4NotFound = 'MD4 not found';
+  RSSSLMD5NotFound = 'MD5 not found';
+  RSSSLSHA1NotFound = 'SHA1 not found';
+  RSSSLSHA224NotFound = 'SHA224 not found';
+  RSSSLSHA256NotFound = 'SHA256 not found';
+  RSSSLSHA384NotFound = 'SHA384 not found';
+  RSSSLSHA512NotFound = 'SHA512 not found';
   RSOSSLX509DigestFailed = 'X509_digest failed';
   
   RSOSSCouldNotCreateSSLObject = 'Could not create SSL object';
