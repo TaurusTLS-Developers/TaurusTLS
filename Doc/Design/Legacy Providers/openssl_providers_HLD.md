@@ -30,11 +30,11 @@ Include loader/provider ownership, configuration, FIPS hooks, legacy facade and 
 
 | Component | Responsibility |
 |---|---|
-| OpenSSL header units | Correct ABI, imports, version-aware binding and capability reporting; no provider ownership |
-| TaurusTLSLoader | Library binding, serialized lifecycle, configuration and public provider extension |
-| New TaurusTLS_Providers unit | Shared internal manager for provider registrations, owned handles, FIPS policy and diagnostics |
-| TaurusTLSFIPS | Install Indy hooks and enforce policy at hook boundaries; route mode calls to loader service |
-| TaurusTLS_LegacyProviders | Compatibility facade requesting default + legacy support; preserve IsLegacyProviderLoaded |
+| OpenSSL header units | API declarations/imports, version-aware binding and compatibility stubs; no TaurusTLS capability helpers or provider ownership |
+| TaurusTLSLoader | Cache actual API capabilities once during library binding, invalidate them on unload; expose constant-time getters and coordinate lifecycle |
+| New TaurusTLS_Providers unit | Shared provider registration, loading, reference ownership, teardown and diagnostics |
+| TaurusTLSFIPS / FIPS manager | FIPS-specific configuration, fips/base initialization, algorithm verification and policy control; Indy hook integration |
+| TaurusTLS_LegacyProviders / legacy manager | Optional default/legacy initialization and validation; compatibility facade preserving IsLegacyProviderLoaded |
 | TaurusTLS_NTLM | Preserve hook registration; reject prohibited operations before low-level DES execution |
 
 Extend IOpenSSLLoader directly under the planned API version bump, updating its GUID for the changed contract and documenting changed or deprecated members. ProvidersPath has not shipped and has no released compatibility obligation. The loader singleton implements the revised interface in every linking model. Static Load initializes managed state; it does not load already linked libraries. Static Unload releases owned provider references without unloading startup-linked libraries.
@@ -46,6 +46,8 @@ Extend IOpenSSLLoader directly under the planned API version bump, updating its 
 | Actual archive build | At startup | External modules where the build supports them, or supplied built-in entry points |
 
 Do not invent a static FIPS archive or hardcode its private entry point. Built-in FIPS support is generic registration capability; end-to-end validation requires an actual supported artifact and applicable policy. Link directives remain platform/compiler specific.
+
+API availability, provider initialization and FIPS-enabled policy are separate states. Loader getters read cached flags without scanning FailedToLoad, resolving symbols or invoking crypto APIs. Shared provider management does not impose FIPS-specific validation on legacy or other providers; each manager owns its requirements. Failure to initialize a FIPS module does not mean the underlying property APIs are unavailable.
 
 ## 4. Initialization, FIPS and legacy behavior
 

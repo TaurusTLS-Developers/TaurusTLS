@@ -15,6 +15,7 @@ function GetConfigFile: string;
 procedure SetConfigFile(const AValue: string);
 function GetEffectiveProvidersPath: string;
 function GetProvidersSupported: Boolean;
+function GetFIPSPropertiesAvailable: Boolean;
 function RegisterBuiltinProvider(const AName: string;
   AInit: OSSL_provider_init_fn): Boolean;
 function LoadProvider(const AName: string): Boolean;
@@ -26,6 +27,7 @@ function GetProviderDiagnostics: string;
 property ConfigFile: string read GetConfigFile write SetConfigFile;
 property EffectiveProvidersPath: string read GetEffectiveProvidersPath;
 property ProvidersSupported: Boolean read GetProvidersSupported;
+property FIPSPropertiesAvailable: Boolean read GetFIPSPropertiesAvailable;
 property ProviderDiagnostics: string read GetProviderDiagnostics;
 ~~~
 
@@ -48,6 +50,10 @@ TaurusTLS_Providers exposes its manager to loader implementation only. Place pro
 ## 2. State, configuration and locking
 
 Internal state: Uninitialized, Initializing, Ready, Unloading. Track full OpenSSL version, provider capabilities, owned references indexed by provider name, registrations, last diagnostics, legacy request and the initial/current FIPS property. IsLoaded means complete library/manager readiness, not a nonzero libcrypto handle. In static mode it becomes true after managed Load completes.
+
+FIPSPropertiesAvailable is a cached loader API capability, not provider health or FIPS mode. Its getter reads a Boolean under the lifecycle lock, with no list search, symbol lookup or OpenSSL call. Dynamic capture uses genuine libcrypto exports, not Assigned on header variables after binding. False before readiness, after failed load or unload, and on pre-3.0; recompute for each new library load. Do not derive it from mutable FailedToLoad diagnostics. Static Load publishes capability from required imports without loading a FIPS module. Changes to diagnostics or application-owned header pointers do not mutate the cached binding snapshot; concurrent rebinding remains unsupported.
+
+Provider-specific managers use cached APIs but perform their own configuration/initialization/validation: FIPS requires fips/base and FIPS algorithm checks; legacy retains default and treats missing optional legacy as nonfatal. Their state must not overwrite API capability flags. Remove TaurusTLSFIPSPropertiesAvailable; consumers and tests use GetOpenSSLLoader.FIPSPropertiesAvailable.
 
 ProvidersPath getter returns configured text, consistently before/after load. EffectiveProvidersPath is a separate resolved value. Preserve Windows default configured value 'providers'; other platforms start empty.
 
@@ -77,7 +83,7 @@ FIPS property mutation and teardown require application quiescence. Do not claim
 
 1. Install configured TaurusTLS memory callbacks before any OpenSSL allocation. For dynamic mode, bind the necessary functions first; move allocator setup into the common loader readiness path so hash-only Load does not bypass it.
 2. Dynamic mode acquires libcrypto and libssl, verifies supported version and binds registered headers. Static mode uses imports and obtains version directly.
-3. Publish capability flags from actual binding/version results. Assigned(pointer) is insufficient when headers install error stubs. Record provider/FIPS-property/configuration capabilities explicitly. On pre-3.0, skip all provider APIs.
+3. Capture genuine export availability in the loader before header binding replaces missing exports with exception stubs. For A04, resolve the two FIPS property export names directly against the acquired libcrypto handle and cache their combined availability, gated by OpenSSL >=3.0. Static linking establishes API presence through required imports. Publish flags only after successful readiness and clear them on failed initialization/unload. Broader provider/configuration capabilities follow the same model during B. On pre-3.0, skip all provider APIs.
 4. Apply the effective module path and register supplied built-ins, including an artifact-selected legacy built-in. Check both operations before configuration can activate any provider.
 5. Initialize OpenSSL configuration according to section 2. Fail required initialization if configuration loading fails; built-ins must already be discoverable.
 6. Activate requested normal providers: default first, legacy if opted in. Missing legacy is optional; preserve default reference and report the failure. FIPS provider is not implicitly requested merely because TaurusTLSFIPS installs hooks.
