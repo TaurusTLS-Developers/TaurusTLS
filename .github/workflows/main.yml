@@ -1,0 +1,52 @@
+name: Telegram Internal Workload Alerts
+
+on:
+  pull_request:
+    types: [opened, closed, review_requested]
+#  workflow_run:
+#    workflows: ["CI"] # Adjust to match your main CI workflow name
+#    types: [completed]
+  security_advisory:
+    types: [published]
+
+jobs:
+  notify-telegram:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Determine event context for dynamic messaging
+      - name: Set Event Details
+        id: event-info
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "TITLE=Pull Request ${{ github.event.action }}: ${{ github.event.pull_request.title }}" >> $GITHUB_OUTPUT
+            echo "URL=${{ github.event.pull_request.html_url }}" >> $GITHUB_OUTPUT
+            echo "AUTHOR=${{ github.event.pull_request.user.login }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" == "workflow_run" ]; then
+            echo "TITLE=CI Build Failed for ${{ github.repository }}" >> $GITHUB_OUTPUT
+            echo "URL=${{ github.event.workflow_run.html_url }}" >> $GITHUB_OUTPUT
+            echo "AUTHOR=GitHub Actions" >> $GITHUB_OUTPUT
+          else
+            echo "TITLE=Security Advisory Published in ${{ github.repository }}" >> $GITHUB_OUTPUT
+            echo "URL=https://github.com/${{ github.repository }}/security/advisories" >> $GITHUB_OUTPUT
+            echo "AUTHOR=GitHub Security" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Telegram Notification
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TLG_CHAT_ID_TAURUSTLS_ALERTS }}
+          token: ${{ secrets.TLG_BOT_TKN_TAURUSTLSDEV_BOT }}
+          message_thread_id: ${{ vars.TLG_THRD_ID_TAURUSTLS_ALERTS }}
+          disable_web_page_preview: true
+          format: markdown
+          message: |
+            🛠️ *TaurusTLS Internal Workload Alert*
+            
+            *Event:* ${{ steps.event-info.outputs.TITLE }}
+            *Repository:* `TaurusTLS/${{ github.event.repository.name }}`
+            *Triggered by:* @${{ steps.event-info.outputs.AUTHOR }}
+            
+            [🔗 View on GitHub](${{ steps.event-info.outputs.URL }})
