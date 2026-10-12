@@ -6,8 +6,6 @@ on:
 #  workflow_run:
 #    workflows: ["CI"] # Adjust to match your main CI workflow name
 #    types: [completed]
-  security_advisory:
-    types: [published]
 
 jobs:
   notify-telegram:
@@ -24,14 +22,10 @@ jobs:
             echo "TITLE=Pull Request ${{ github.event.action }}: ${{ github.event.pull_request.title }}" >> $GITHUB_OUTPUT
             echo "URL=${{ github.event.pull_request.html_url }}" >> $GITHUB_OUTPUT
             echo "AUTHOR=${{ github.event.pull_request.user.login }}" >> $GITHUB_OUTPUT
-          elif [ "${{ github.event_name }}" == "workflow_run" ]; then
+          else [ "${{ github.event_name }}" == "workflow_run" ]; then
             echo "TITLE=CI Build Failed for ${{ github.repository }}" >> $GITHUB_OUTPUT
             echo "URL=${{ github.event.workflow_run.html_url }}" >> $GITHUB_OUTPUT
             echo "AUTHOR=GitHub Actions" >> $GITHUB_OUTPUT
-          else
-            echo "TITLE=Security Advisory Published in ${{ github.repository }}" >> $GITHUB_OUTPUT
-            echo "URL=https://github.com/${{ github.repository }}/security/advisories" >> $GITHUB_OUTPUT
-            echo "AUTHOR=GitHub Security" >> $GITHUB_OUTPUT
           fi
 
       - name: Send Telegram Notification
