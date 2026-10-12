@@ -1,169 +1,160 @@
-﻿# TaurusTLS OpenSSL Loader and Provider Support — DDD
+﻿# TaurusTLS OpenSSL Configuration, FIPS and Legacy Support — DDD
 
-Status: Proposed implementation contract.
-Date: 2026-10-11.
-Architecture: [HLD](openssl_providers_HLD.md). Execution: [plan](openssl_providers_plan.md).
+Status: Revised implementation specification for developer review.
+Revision date: 2026-10-12.
+Architecture: [HLD](openssl_providers_HLD.md). Progress: [plan](openssl_providers_plan.md).
 
-## 1. Public contracts and unit dependencies
+## 1. Public API and linking boundaries
 
-Extend IOpenSSLLoader directly under the planned API version bump, using a new interface GUID for the changed contract. GetOpenSSLLoader returns the revised singleton interface in both linking models; do not introduce IOpenSSLProviderLoader or GetOpenSSLProviderLoader. Existing members may be revised or deprecated with documented migration guidance. ProvidersPath has not shipped and has no released compatibility obligation; retain its proposed name and resolution contract for this design.
-
-Add the following methods and properties to IOpenSSLLoader:
+Keep the existing dynamic IOpenSSLLoader and its library-path/version/loading/diagnostic members. Remove GetProvidersPath, SetProvidersPath and ProvidersPath, including the proposed EffectiveProvidersPath. Add:
 
 ~~~pascal
 function GetConfigFile: string;
 procedure SetConfigFile(const AValue: string);
-function GetEffectiveProvidersPath: string;
-function GetProvidersSupported: Boolean;
-function GetFIPSPropertiesAvailable: Boolean;
-function RegisterBuiltinProvider(const AName: string;
-  AInit: OSSL_provider_init_fn): Boolean;
-function LoadProvider(const AName: string): Boolean;
-function IsProviderLoaded(const AName: string): Boolean;
-function SetFIPSMode(const AEnabled: Boolean): Boolean;
-function GetFIPSMode: Boolean;
-function GetProviderDiagnostics: string;
 
 property ConfigFile: string read GetConfigFile write SetConfigFile;
-property EffectiveProvidersPath: string read GetEffectiveProvidersPath;
-property ProvidersSupported: Boolean read GetProvidersSupported;
-property FIPSPropertiesAvailable: Boolean read GetFIPSPropertiesAvailable;
-property ProviderDiagnostics: string read GetProviderDiagnostics;
 ~~~
 
-No public raw provider handles or independent UnloadProvider API: managed references live until loader teardown. Boolean controls report expected OpenSSL failures through false plus diagnostics; argument misuse raises ETaurusTLSError. Existing Load failure/exception behavior remains documented, with complete rollback in both cases.
+Use a new GUID for the changed interface under the planned API version bump. The pending A04 GUID E835AF63-93CE-4C79-B3AB-B782F8E06CCD describes an uncommitted intermediate contract; generate a fresh GUID when finalizing the revised member set. Do not preserve unreleased ProvidersPath solely for binary compatibility.
 
-Name arguments must be nonempty ASCII provider identifiers (letters, digits, underscore, hyphen, period); reject module paths and embedded NUL. Deploy modules through ProvidersPath/configuration. Built-in callback must be non-nil. Repeated registration of the same name/callback succeeds without another OpenSSL registration; a different callback for the same name is rejected. Registration is permitted only before manager initialization; late registration raises ETaurusTLSError. Record built-ins by name and callback until initialization.
+GetOpenSSLLoader returns the dynamic singleton; it remains nil in static mode. Static call sites must use the compile-time branch and never dereference it. Remove TOpenSSLStaticLoader and its dependencies.
 
-OSSL_provider_init_fn uses cdecl and output parameters by reference:
+Do not add public LoadProvider/RegisterBuiltinProvider/FIPS-mode methods to IOpenSSLLoader. Preserve the Indy SetFIPSMode/GetFIPSMode signatures. Their backend remains in TaurusTLSFIPS, with dynamic-only internal FIPS management. IsLegacyProviderLoaded remains the legacy facade's public status function.
+
+Headers remain OpenSSL-only. A03's two property API imports stay valid, including static import declarations; their existence does not imply TaurusTLS supports static FIPS. Add CONF_modules_load_file_ex to TaurusTLSHeaders_conf with exact C ABI, dynamic load/unload/error handling and OpenSSL 3.0 introduction metadata. Legacy configuration routines remain available.
+
+## 2. Configuration lifecycle
+
+ConfigFile defaults to empty. Set it before dynamic library initialization; reject changes once loading has started or succeeded. Its getter returns the configured value, not an inferred active configuration filename. Normalize a nonempty relative filename against the executable directory and pass a UTF-8 buffer to OpenSSL. Leave OpenSSL's own include/module path semantics unchanged.
+
+Configuration behavior:
+
+| Input | Required behavior |
+|---|---|
+| Empty ConfigFile | Preserve normal OpenSSL configuration and OPENSSL_CONF behavior; no required new customer calls |
+| Nonempty ConfigFile | Suppress implicit default configuration loading; explicitly apply the selected file to nil/default context |
+| Invalid/missing explicit file path | Raise ETaurusTLSConfigFilePathError before provider callbacks |
+| OpenSSL configuration-loading failure | Raise ETaurusTLSConfigFileLoadError with effective filename and OpenSSL error details |
+| Existing external initialization | Document the default-context ownership precondition; do not promise that prior configuration can be replaced |
+| Static model | No loader configuration API, external provider loading or FIPS initialization |
+
+Dynamic sequence:
+1. Bind library APIs without invoking providers. Install configured memory callbacks before OpenSSL allocations.
+2. Finish header binding; do not publish FIPS-specific capabilities through the loader.
+3. If ConfigFile is specified, call OPENSSL_init_crypto(OPENSSL_INIT_NO_LOAD_CONFIG, nil) before any provider operation can trigger implicit configuration, then CONF_modules_load_file_ex(nil, UTF8Filename, nil, 0). Require a positive result.
+4. If ConfigFile is empty, preserve the existing normal/default configuration route.
+5. Dispatch existing osaLoad callbacks only after the configuration decision is complete.
+6. Publish successful loader readiness.
+
+Ensure later TaurusTLS.OPENSSL_init_ssl calls do not load a different configuration after the explicit path; initialization options must be coordinated in the common dynamic entry path, including hash-only/NTLM loads.
+
+### Configuration exceptions
+
+Declare these in TaurusTLSExceptionHandlers.pas:
 
 ~~~pascal
-function(const AHandle: POSSL_CORE_HANDLE;
-  const AIn: POSSL_DISPATCH; var AOut: POSSL_DISPATCH;
-  var AProviderContext: Pointer): TIdC_INT; cdecl;
+ETaurusTLSConfigFilePathError = class(ETaurusTLSAPICryptoError);
+ETaurusTLSConfigFileLoadError = class(ETaurusTLSAPICryptoError);
 ~~~
 
-Use the existing header type; correct local imports to match it. Built-in declarations compile only when the corresponding artifact is explicitly selected. No blanket archive import under OPENSSL_STATIC_LINK_MODEL.
+Use ETaurusTLSAPICryptoError because configuration APIs belong to libcrypto. ETaurusTLSAPISSLError uses SSL_get_error with an SSL object/return code and is inappropriate for this operation.
 
-TaurusTLS_Providers exposes its manager to loader implementation only. Place provider callback types in a dependency-safe header/core type unit if necessary; avoid interface-level cycles. Headers may reference loader registration in implementation. Crypto compatibility wrappers call the same service and never own handles.
+Validate the normalized explicit path before loading: reject embedded NUL, invalid path syntax, missing file or a directory. Raise ETaurusTLSConfigFilePathError with the effective filename and reason. Construct that exception directly with the existing exception constructor; do not consume an unrelated OpenSSL error queue for a filesystem-validation failure. Its OpenSSL ErrorCode remains zero.
 
-## 2. State, configuration and locking
+When CONF_modules_load_file_ex returns <=0, call ETaurusTLSConfigFileLoadError.RaiseException with a message naming the operation and effective filename. The inherited class method retrieves the OpenSSL error and formats it using existing TaurusTLS conventions. Raise immediately, before rollback can alter the error queue; preserve and re-raise the same exception after cleanup. A file that passes path validation but cannot be read, parsed or applied is a configuration-load failure. Error reporting still includes the filename if OpenSSL supplies no error code.
 
-Internal state: Uninitialized, Initializing, Ready, Unloading. Track full OpenSSL version, provider capabilities, owned references indexed by provider name, registrations, last diagnostics, legacy request and the initial/current FIPS property. IsLoaded means complete library/manager readiness, not a nonzero libcrypto handle. In static mode it becomes true after managed Load completes.
+Add resource strings in TaurusTLS_ResourceStrings for both stages. Do not collapse these exceptions into false or suppress them at the loader boundary. The FIPS mode backend must preserve configuration exceptions while reporting provider/policy enablement failures through its existing Boolean/diagnostic contract.
 
-FIPSPropertiesAvailable is a cached loader API capability, not provider health or FIPS mode. Its getter reads a Boolean under the lifecycle lock, with no list search, symbol lookup or OpenSSL call. Dynamic capture uses genuine libcrypto exports, not Assigned on header variables after binding. False before readiness, after failed load or unload, and on pre-3.0; recompute for each new library load. Do not derive it from mutable FailedToLoad diagnostics. Static Load publishes capability from required imports without loading a FIPS module. Changes to diagnostics or application-owned header pointers do not mutate the cached binding snapshot; concurrent rebinding remains unsupported.
+Tests must assert the specific exception class and filename for invalid/missing/directory paths and malformed/unreadable/module-failing configuration, with configuration failures isolated in fresh processes.
 
-Provider-specific managers use cached APIs but perform their own configuration/initialization/validation: FIPS requires fips/base and FIPS algorithm checks; legacy retains default and treats missing optional legacy as nonfatal. Their state must not overwrite API capability flags. Remove TaurusTLSFIPSPropertiesAvailable; consumers and tests use GetOpenSSLLoader.FIPSPropertiesAvailable.
+For an explicit file, do not use IGNORE_ERRORS, IGNORE_RETURN_CODES or IGNORE_MISSING_FILE. Do not add SILENT or rewrite the customer's configuration. If configuration deliberately soft-loads a provider, successful file loading still does not establish FIPS readiness; FIPS validation must catch a missing/unusable provider.
 
-ProvidersPath getter returns configured text, consistently before/after load. EffectiveProvidersPath is a separate resolved value. Preserve Windows default configured value 'providers'; other platforms start empty.
+ConfigFile is a full OpenSSL configuration with openssl_conf/provider/algorithm sections and references to installation data where appropriate. A standalone fipsmodule.cnf is not assumed sufficient. Do not run fipsinstall or synthesize integrity values.
 
-| Setting | Resolution |
+CONF_get1_default_config_file is diagnostic/discovery support only. Its caller owns the returned string and frees it with OPENSSL_free. It does not select or change configuration. CONF_modules_load_file_ex is the chosen explicit loader; do not redundantly call both it and OSSL_LIB_CTX_load_config for the same file. [Configuration loading API](https://docs.openssl.org/3.0/man3/CONF_modules_load_file/).
+
+Do not promise complete rollback of config-activated providers/properties on failure. Preserve failure state, report it and prevent further crypto use until the failed initialization is safely torn down. Tests for failed global initialization run in fresh processes. Preserve existing non-FIPS defaults; full readiness/partial-library cleanup is implemented in the loader lifecycle tasks.
+
+## 3. Discovery, ownership and legacy support
+
+OSSL_PROVIDER_load receives a provider name, not a TaurusTLS-resolved path. Module discovery belongs to OpenSSL configuration or standard search rules, including OPENSSL_MODULES. Remove loader search-path overrides and all calls made for ProvidersPath.
+
+In OpenSSL 4.0 activate is Boolean; in 3.0, presence alone activates. Omit activate when deferring activation in cross-version configuration. A configured module path is also available to explicit loading by provider name. Do not parse provider sections in Delphi or reproduce OpenSSL configuration semantics. [OpenSSL 4.0 provider configuration](https://docs.openssl.org/4.0/man5/config/#provider-configuration), [OpenSSL 3.0 configuration](https://docs.openssl.org/3.0/man5/config/#provider-configuration).
+
+The optional TaurusTLS_LegacyProviders unit remains the request for TaurusTLS legacy functionality. Configuration may already have activated providers; acquire one additional owned reference per requested provider rather than inferring ownership from OSSL_PROVIDER_available.
+
+Dynamic legacy lifecycle:
+- Existing osaLoad callback retains default first, then requests legacy by name.
+- Missing optional legacy records diagnostics and leaves default available; no FIPS fallback is introduced.
+- osaUnload releases owned legacy/default references before header unbinding.
+
+Static legacy lifecycle:
+- Import the linked liblegacy.a initialization symbol only under the existing artifact/platform configuration that supplies it; do not require an extra define from existing customers.
+- Correct callback ABI: cdecl; var output dispatch pointer and var provider context.
+- Check OSSL_PROVIDER_add_builtin registration, then retain default and load legacy by name.
+- Unit finalization releases owned handles while linked APIs remain callable. No IOpenSSLLoader or external module is used.
+
+OSSL_PROVIDER_add_builtin alone does not initialize a provider; both static and dynamic lifecycles require load/unload. Make registration/acquisition idempotent and serialize manager access; release only owned references. Preserve the existing automatic static startup behavior.
+
+Normal TLS and hashing use default-provider algorithms. Explicitly loading legacy must retain default rather than suppressing its fallback unintentionally. The legacy unit remains useful outside FIPS and is required by TaurusTLS_NTLM's MD4-based path.
+
+## 4. Dynamic FIPS manager and Indy policy
+
+Use an internal manager in TaurusTLSFIPS and the existing loader lifecycle integration. Inclusion installs hooks but does not itself request FIPS activation.
+
+FIPS API validation is private to TaurusTLSFIPS; IOpenSSLLoader has no FIPSPropertiesAvailable getter/property and exposes no FIPS-specific cache. A private function validates readiness, version and the two property APIs during FIPS manager initialization. It must distinguish actual exports from binding stubs using the existing binding/version diagnostics; inspect those once per initialization, not on each hash/HMAC operation. Cache the result inside the FIPS manager if repeated mode queries need it, reset on osaUnload, and revalidate on a new library initialization. No public header helper or loader resolver test seam remains.
+
+Keep genuine older FIPS_mode/FIPS_mode_set behavior where supported in dynamic builds; modern property APIs are unavailable before 3.0. Internal availability is separate from provider health and enabled policy. Test the private validation at the FIPS-unit boundary rather than mutating a public loader capability.
+
+Modern dynamic GetFIPSMode:
+- Return false before library readiness.
+- After readiness, use the FIPS module's internal API validation and EVP_default_properties_is_fips_enabled(nil).
+- Report actual default-context FIPS policy, independently of owned provider handles.
+
+Modern dynamic SetFIPSMode(true):
+1. Ensure successful dynamic Load/configuration and required genuine APIs.
+2. Obtain owned fips/base references once. Config-activated providers still need an owned reference for explicit lifetime management.
+3. Verify SHA256/HMAC implementations under FIPS selection, provider provenance and permitted positive-test parameters.
+4. Apply EVP_default_properties_enable_fips(nil, 1), preserving unrelated default properties.
+5. Verify ordinary effective fetches use FIPS and return true only after success.
+
+Failure returns false with diagnostics, restores the previous FIPS property when safely possible and releases only references acquired by that attempt. Never claim success or silently downgrade already-configured FIPS policy. If restoration fails, preserve restrictive state/needed handles and report the failure.
+
+SetFIPSMode(false) retains default before clearing the FIPS property and verifying it. Keep fips/base references until teardown rather than unloading/reloading for every toggle. Provider loading does not certify individual operations or algorithm parameters.
+
+For static mode GetFIPSMode returns false and SetFIPSMode returns false (unsupported for both enable/disable requests). No provider probing, external module load, capability getter or library loader is called. Static hash/HMAC/legacy hooks remain functional.
+
+Active FIPS restrictions apply at prohibited MD2/MD4/MD5 digest and HMAC-MD5 availability AND instance hooks, raising EIdFIPSAlgorithmNotAllowed before Indy can choose native fallback. Guard both NTLM response entry points before low-level DES/hash operations. Preserve hook reinstallation and optional installer behavior. Correct modern HMAC contexts to EVP_MAC consistently; older supported dynamic branches use matching legacy HMAC operations.
+
+Mode changes require application-enforced quiescence and retirement of previously fetched contexts. Internal serialization does not make default-property mutation safe alongside external crypto threads. [OpenSSL default properties](https://docs.openssl.org/4.0/man3/EVP_set_default_properties/).
+
+At osaUnload release FIPS-owned references before unbinding; preserve config-owned references. Coordinate existing managers without introducing a generic public registry. No OPENSSL_cleanup in a reloadable teardown path; live external objects/threads prohibit library unload.
+
+## 5. Tests and review gates
+
+Add tests to existing TaurusTLS.UT, inherit fixtures from TOsslBaseFixture, call inherited SetupFixture first and inherited TearDownFixture last, and register with TDUnitX.RegisterTestFixture. Global initialization/configuration/policy scenarios use isolated processes and configure before inherited setup loads OpenSSL.
+
+Preserve the runner interface:
+- Win32 uses the supplied -osp:<folder> -osmp:providers parameters.
+- Refactor TOsslLoader's -osmp handling to test-process preparation: resolve a relative value against -osp and set OPENSSL_MODULES before loading. Do not expose a product ProvidersPath replacement.
+- Test infrastructure alone changes its environment; customer loader code does not.
+- Static tests do not use IOpenSSLLoader; verify legacy readiness/algorithms and unsupported FIPS hooks.
+- Compile through Kai in the open group and ask the developer to execute MacOS64 tests.
+
+Acceptance matrix:
+
+| Case | Expected result |
 |---|---|
-| Absolute ProvidersPath | Use normalized absolute directory |
-| Relative ProvidersPath + nonempty OpenSSLPath | Resolve against normalized OpenSSLPath |
-| Relative ProvidersPath + empty OpenSSLPath | Resolve against executable directory |
-| Empty ProvidersPath + nonempty OpenSSLPath | Use OpenSSLPath |
-| Both empty | Leave OpenSSL search defaults/environment unchanged |
-| Nonempty ConfigFile | Normalize absolute file path; relative values resolve against executable directory |
-| Empty ConfigFile | Use normal OpenSSL configuration/environment |
+| Internal FIPS availability before readiness/after unload | False |
+| Genuine/missing property exports | Private FIPS validation distinguishes exports/stubs; repeated operations do not rescan diagnostics |
+| Internal FIPS validation lifecycle | Revalidate at initialization; invalidate on unload |
+| Explicit valid configuration/module paths | Default context configured before callbacks; configured provider is usable |
+| Invalid explicit config, missing/tampered FIPS data | Initialization/enable fails visibly; no silent downgrade |
+| Default configuration | Existing non-FIPS setup continues to work |
+| Dynamic legacy opt-in | default/legacy references managed; MD4 works with FIPS off |
+| Static legacy | Linked callback registered, provider initialized and algorithms usable |
+| Static FIPS request | Unsupported, no external loading |
+| Dynamic FIPS + legacy/NTLM | Prohibited operations cannot escape via native fallback or DES |
+| Disable/re-enable and teardown | Policy preserved appropriately; no duplicate owned references or premature unbinding |
 
-Use platform path APIs; Windows drive-relative paths such as C:folder are not absolute and must be rejected. Preserve UNC handling. Convert configured C API paths to UTF-8 using a named local buffer. Check every path-setting result. Do not call the 3.2-only search-path getter to support OpenSSL 3.0.
-
-Configuration setters are allowed only while Uninitialized. Resolve paths when initialization begins. Explicit ConfigFile must be a full OpenSSL configuration containing the provider-section wiring and installed FIPS data, not an assumed standalone fipsmodule.cnf. Load it once through OSSL_LIB_CTX_load_config(nil, ...). Empty uses OpenSSL default loading. Set OPENSSL_INIT_NO_LOAD_CONFIG when using explicit configuration before any implicit initialization; otherwise use normal configuration loading. Never generate integrity MACs or run fipsinstall in application code.
-
-Use one recursive lifecycle critical section shared by loader and provider manager. Internal initialization/shutdown routines require that lock and never call public Load recursively. Public provider operations initialize outside callback dispatch then use locked internal routines. During load callbacks, already-ready APIs/manager permit provider acquisition on the same thread without restarting Load. Nested Load, Unload or FIPS switching during callback dispatch is rejected explicitly. Register lifecycle callbacks before initialization; preserve forward load and reverse unload order.
-
-Non-FIPS applications require no new configuration calls, initialization calls, provider artifacts or application-defined build symbols. Preserve automatic initialization and existing deployment defaults; optional provider/FIPS APIs are not prerequisites for ordinary Load. FIPS-specific configuration and policy-switch obligations apply only after FIPS opt-in. Package rebuilds for the API version bump are release engineering work, not new application setup requirements.
-
-FIPS property mutation and teardown require application quiescence. Do not claim that this lock protects third-party OpenSSL callers. Read-only getters acquire the same lock. Never change default policy concurrently with fetches or TLS handshakes.
-
-## 3. Library and provider lifecycle
-
-### Initialization
-
-1. Install configured TaurusTLS memory callbacks before any OpenSSL allocation. For dynamic mode, bind the necessary functions first; move allocator setup into the common loader readiness path so hash-only Load does not bypass it.
-2. Dynamic mode acquires libcrypto and libssl, verifies supported version and binds registered headers. Static mode uses imports and obtains version directly.
-3. Capture genuine export availability in the loader before header binding replaces missing exports with exception stubs. For A04, resolve the two FIPS property export names directly against the acquired libcrypto handle and cache their combined availability, gated by OpenSSL >=3.0. Static linking establishes API presence through required imports. Publish flags only after successful readiness and clear them on failed initialization/unload. Broader provider/configuration capabilities follow the same model during B. On pre-3.0, skip all provider APIs.
-4. Apply the effective module path and register supplied built-ins, including an artifact-selected legacy built-in. Check both operations before configuration can activate any provider.
-5. Initialize OpenSSL configuration according to section 2. Fail required initialization if configuration loading fails; built-ins must already be discoverable.
-6. Activate requested normal providers: default first, legacy if opted in. Missing legacy is optional; preserve default reference and report the failure. FIPS provider is not implicitly requested merely because TaurusTLSFIPS installs hooks.
-7. Dispatch osaLoad callbacks with manager/API readiness established. Mark public Ready only after all required initialization and callbacks succeed.
-
-Config-activated providers may already exist. Obtain an explicit owned reference with OSSL_PROVIDER_load when adopting a provider; never assume ownership from OSSL_PROVIDER_available.
-
-LoadProvider is idempotent per name for this manager: one owned reference per provider. Loading legacy also ensures default. Explicit calls return false on failure; optional unit activation records that failure without aborting normal loader readiness. IsProviderLoaded reports this manager's successful acquisition; it does not promise algorithm permission.
-
-### Rollback and teardown
-
-Maintain a completion ledger for newly acquired library handles, provider references and completed callbacks. If a callback raises, unwind that callback's partial work through its osaUnload handler, then completed callbacks in reverse. Each callback must support partial initialization. Continue cleanup after individual exceptions, preserving the original failure and recording cleanup errors.
-
-Release provider references in reverse acquisition order before clearing bindings. Clear state only after release succeeds; if OSSL_PROVIDER_unload fails, preserve handles and libraries, record an error and reject library unload. Do not retry blindly in finalization. Partial libcrypto/libssl acquisition must also be released if the second library fails. Clear the failed-attempt latch so a corrected configuration can retry.
-
-Unload requires no outstanding contexts or consumer threads. Run unload callbacks before provider release. Restore the initial FIPS property only if TaurusTLS changed it and it is safe to do so; a failed restoration prevents dynamic library unload. Do not change externally configured policy merely because a provider handle is released. Static teardown never frees imported libraries. Registration tracking survives static provider release because built-in registrations remain in the context; dynamic tracking is reset only with the actual library lifecycle.
-
-No OPENSSL_cleanup during reloadable teardown. Do not promise that arbitrary external references/configuration state disappear on DLL unload.
-
-## 4. FIPS enable, disable and compatibility wrappers
-
-Indy TGetFIPSMode/TSetFIPSMode signatures remain unchanged. Modern hooks and modern crypto compatibility wrappers delegate to the same manager. Remove header-global fips_provider/base_provider ownership and static local wrappers that always return zero.
-
-GetFIPSMode must not load libraries as a side effect. Before readiness it reports false; after readiness on OpenSSL 3/4 it reads EVP_default_properties_is_fips_enabled(nil). This is a policy query, not provider health or certification. On earlier versions call a genuinely bound legacy FIPS_mode, excluding missing-function stubs.
-
-SetFIPSMode(true), during an application-controlled quiescent phase:
-
-1. Ensure loader initialization and required modern capabilities. Snapshot the current FIPS property and manager-owned handles.
-2. Acquire fips and base exactly once. Provider load performs initialization/self-tests; do not run an extra self-test on every toggle.
-3. Probe SHA256 and HMAC with explicit fips=yes,provider=fips queries and free probe objects. A conflicting pre-existing property query must cause failure rather than being silently erased.
-4. Enable through EVP_default_properties_enable_fips(nil, 1), preserving unrelated properties.
-5. Verify the property and an ordinary nil-query SHA256 fetch resolves to fips; verify HMAC initialization with a permitted key and digest.
-6. Return true only after all checks. On failure restore the previous FIPS property, release only references added by this attempt and return false with diagnostics. If restoration fails, retain required handles, preserve the actual restrictive state, record a critical diagnostic and do not pretend the old state was restored.
-
-Repeat enable performs health/policy checks without duplicating references. If configuration already enabled FIPS, acquisition and verification still occur when explicit enable is requested. Load itself verifies configured FIPS with the same probes; if configuration demands FIPS but verification fails, fail initialization without downgrade.
-
-SetFIPSMode(false) ensures default is retained before removing the FIPS property via enable_fips(nil, 0). Leave fips/base references retained until shutdown; no active-provider churn during toggles. Preserve unrelated properties and verify the resulting flag. Repeat disable succeeds when policy is already disabled. GetFIPSMode may legitimately remain true after a failed disable.
-
-On OpenSSL <3, use genuinely available legacy functions only. FIPS provider methods report unsupported. Retain the repository's existing minimum-version policy; this change does not expand historical FIPS claims.
-
-Bind EVP_default_properties_enable_fips and EVP_default_properties_is_fips_enabled in both import models with proper 3.0 introduction metadata. Preserve the existing version encoding expected by header loaders. Test on 3.0 without requiring any 3.2+ provider functions. Static OpenSSL 4 support also requires configured import library names matching deployed libraries rather than hardcoded libcrypto-3 names.
-
-## 5. Indy algorithms, HMAC and legacy facade
-
-Preserve InstallFIPSHooks and optional hook installer behavior.
-
-- MD2/MD4/MD5 digest availability AND instance hooks call the corresponding Indy permission checks before fetching. A FIPS prohibition raises EIdFIPSAlgorithmNotAllowed; it never returns false and selects native fallback.
-- HMAC-MD5 availability AND instance hooks likewise reject with FIPSAlgorithmNotAllowed('HMAC-MD5').
-- Normal algorithm absence returns false from availability. Instance construction reports the existing algorithm-not-found exception. General hashing availability remains library readiness.
-- Other advertised algorithms query effective EVP availability. For an algorithm excluded by FIPS policy, an availability hook must raise before Indy can select its native implementation; distinguish exclusion using an explicit algorithm policy table for supported hook algorithms, not a fetch with fips=no.
-- Modern HMAC uses EVP_MAC_fetch('HMAC'), EVP_MAC_CTX_new, OSSL_PARAM digest parameters, EVP_MAC_init/update/final and EVP_MAC_CTX_free consistently. Legacy branches use HMAC_CTX with matching legacy operations throughout. Free allocated contexts and fetched methods on initialization/finalization errors.
-- NTLM availability reports policy prohibition by exception while FIPS is enabled. Both LM and NT response hooks reject before low-level DES or hashing; retain existing MD4 checks. Full NTLM EVP migration is outside this refactor.
-- TaurusTLS_LegacyProviders initialization requests legacy activation through the common service. Dynamic builds register the request before Load. Static builds initialize through common Load to preserve startup behavior. IsLegacyProviderLoaded delegates to managed state.
-- The facade imports a built-in legacy callback only when an actual archive artifact is selected. Derive the internal TAURUSTLS_BUILTIN_LEGACY_PROVIDER selection from existing supported archive/platform settings so current non-FIPS applications need no new define. Permit an explicit override for custom artifacts. Startup-linked shared builds do not import an archive callback.
-- Runtime packages containing the facade can activate it through package initialization; document that effective opt-in includes package composition.
-
-Do not add fips=no overrides or automatic dedicated non-FIPS contexts. Direct third-party calls into Indy native methods remain outside this provider integration's enforcement boundary; tests and documentation must not claim whole-application compliance.
-
-## 6. Diagnostics and acceptance
-
-ProviderDiagnostics is a locked string snapshot for the latest failed operation, including stage, provider, full OpenSSL version, effective path and relevant OpenSSL errors. Clear it at the start of a new control operation. Preserve all failure messages within that operation and cleanup. FailedToLoad remains the existing symbol-binding list; provider errors are separate. Do not clear the entire application error queue on successful status queries.
-
-Add new DUnitX fixtures to the existing Tests/TaurusTLS.UT project and inherit them from TOsslBaseFixture in TaurusTLS.UT.TestClasses.pas. Descendant fixture setup calls inherited SetupFixture first; fixture teardown calls inherited TearDownFixture last. Register each fixture with TDUnitX.RegisterTestFixture. Compile through Kai in the open project group using the plan's IDE-first build procedure. Global configuration/FIPS tests run in fresh processes; configure pre-load scenarios before inherited setup loads OpenSSL, and do not mutate shared suite policy concurrently.
-
-| Scenario | Acceptance |
-|---|---|
-| No FIPS opt-in | Existing application source, configuration, deployment, startup sequence and legacy build settings work unchanged; no FIPS module/config is required |
-| Legacy module/built-in available | default + legacy acquired once; MD4 works with FIPS off |
-| Missing optional legacy | normal Load succeeds; legacy false; diagnostic recorded |
-| FIPS installed correctly | enable true; flag true; SHA256/HMAC provenance is fips |
-| Missing/tampered FIPS config/module | enable false; no downgrade of existing policy; no new reference leak |
-| Legacy + FIPS | MD4/MD5/HMAC-MD5/LM/NTLM rejected before native/DES execution |
-| FIPS disable | unrelated properties retained; modern default operations restored |
-| Repeat load/enable/disable/unload | no duplicate acquisition; correct cleanup order |
-| Callback/path/binding failure | reverse rollback, no stale readiness or partial library handles |
-| Unicode/relative/UNC paths | deterministic resolution and UTF-8 bridge |
-| OpenSSL 1.x without FIPS | safe unsupported result; provider APIs never invoked |
-| Startup shared/archive builds | no unconditional legacy archive; ABI-correct supplied built-in |
-| FIPS TLS | allowed TLS handshake and key decoding succeed in default context |
-
-Document missing artifact/platform validation as unverified, not passed. Static built-in FIPS acceptance requires an actual compatible artifact; generic registration tests alone do not establish it.
-
-Sources and constraints: see HLD references. OpenSSL property mutation is initialization-only in its thread-safety contract; this design requires application-enforced quiescence for any later switch.
+Record unresolved standard-discovery compatibility failures explicitly rather than claiming the no-customer-change requirement is met. Existing MacOS64 common-name test failure remains a known unrelated baseline issue. No certification claim is part of acceptance.
