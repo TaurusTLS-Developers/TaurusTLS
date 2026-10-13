@@ -215,6 +215,8 @@ var
   CONF_modules_load: function (const cnf: PCONF; const appname: PIdAnsiChar; flags: TIdC_ULONG): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CONF_modules_load_file}
   CONF_modules_load_file: function (const filename: PIdAnsiChar; const appname: PIdAnsiChar; flags: TIdC_ULONG): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CONF_modules_load_file_ex}
+  CONF_modules_load_file_ex: function (libctx: POSSL_LIB_CTX; const filename: PIdAnsiChar; const appname: PIdAnsiChar; flags: TIdC_ULONG): TIdC_INT; cdecl = nil; {introduced 3.0.0}
 
   {$EXTERNALSYM CONF_modules_unload}
   CONF_modules_unload: procedure (all: TIdC_INT); cdecl = nil;
@@ -323,6 +325,8 @@ var
   function CONF_modules_load(const cnf: PCONF; const appname: PIdAnsiChar; flags: TIdC_ULONG): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM CONF_modules_load_file}
   function CONF_modules_load_file(const filename: PIdAnsiChar; const appname: PIdAnsiChar; flags: TIdC_ULONG): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CONF_modules_load_file_ex}
+  function CONF_modules_load_file_ex(libctx: POSSL_LIB_CTX; const filename: PIdAnsiChar; const appname: PIdAnsiChar; flags: TIdC_ULONG): TIdC_INT cdecl; external CLibCrypto; {introduced 3.0.0}
 
   {$EXTERNALSYM CONF_modules_unload}
   procedure CONF_modules_unload(all: TIdC_INT) cdecl; external CLibCrypto;
@@ -605,9 +609,11 @@ const
   //#define NCONF_get_number(c,g,n,r) NCONF_get_number_e(c,g,n,r)
 
   //* Module functions */
+  CONF_modules_load_file_ex_introduced = (byte(3) shl 8 or byte(0)) shl 8 or byte(0); {introduced 3.0.0}
 
   CONF_modules_load_procname = 'CONF_modules_load';
   CONF_modules_load_file_procname = 'CONF_modules_load_file';
+  CONF_modules_load_file_ex_procname = 'CONF_modules_load_file_ex';
 
   CONF_modules_unload_procname = 'CONF_modules_unload';
   CONF_modules_finish_procname = 'CONF_modules_finish';
@@ -756,6 +762,12 @@ function  ERR_CONF_modules_load_file(const filename: PIdAnsiChar; const appname:
   flags: TIdC_ULONG): TIdC_INT; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CONF_modules_load_file_procname);
+end;
+
+function  ERR_CONF_modules_load_file_ex(libctx: POSSL_LIB_CTX; const filename: PIdAnsiChar; const appname: PIdAnsiChar;
+  flags: TIdC_ULONG): TIdC_INT; cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(CONF_modules_load_file_ex_procname);
 end;
 
 
@@ -1268,6 +1280,37 @@ begin
     {$ifend}
   end;
 
+  CONF_modules_load_file_ex := LoadLibFunction(ADllHandle, CONF_modules_load_file_ex_procname);
+  FuncLoadError := not assigned(CONF_modules_load_file_ex);
+  if FuncLoadError then
+  begin
+    {$if not defined(CONF_modules_load_file_ex_allownil)}
+    CONF_modules_load_file_ex := ERR_CONF_modules_load_file_ex;
+    {$ifend}
+    {$if declared(CONF_modules_load_file_ex_introduced)}
+    if LibVersion < CONF_modules_load_file_ex_introduced then
+    begin
+      {$if declared(FC_CONF_modules_load_file_ex)}
+      CONF_modules_load_file_ex := FC_CONF_modules_load_file_ex;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(CONF_modules_load_file_ex_removed)}
+    if CONF_modules_load_file_ex_removed <= LibVersion then
+    begin
+      {$if declared(_CONF_modules_load_file_ex)}
+      CONF_modules_load_file_ex := _CONF_modules_load_file_ex;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(CONF_modules_load_file_ex_allownil)}
+    if FuncLoadError then
+      AFailed.Add('CONF_modules_load_file_ex');
+    {$ifend}
+  end;
+
 
   CONF_modules_unload := LoadLibFunction(ADllHandle, CONF_modules_unload_procname);
   FuncLoadError := not assigned(CONF_modules_unload);
@@ -1736,6 +1779,7 @@ begin
   NCONF_dump_bio := nil;
   CONF_modules_load := nil;
   CONF_modules_load_file := nil;
+  CONF_modules_load_file_ex := nil;
   CONF_modules_unload := nil;
   CONF_modules_finish := nil;
   CONF_module_add := nil;
