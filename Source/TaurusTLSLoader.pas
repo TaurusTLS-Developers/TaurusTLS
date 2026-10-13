@@ -94,22 +94,14 @@ type
     /// </summary>
     procedure SetOpenSSLPath(const Value: string);
     /// <summary>
-    ///   Property get function for ProvidersPath.
+    ///   Returns the configured OpenSSL configuration filename.
     /// </summary>
-    /// <returns>
-    ///   The configured path for OpenSSL providers, which may be absolute,
-    ///   relative to OpenSSLPath, or empty.
-    /// </returns>
-    function GetProvidersPath: string;
+    function GetConfigFile: string;
     /// <summary>
-    ///   Property set procedure for ProvidersPath.
+    ///   Selects an optional OpenSSL configuration file before initialization.
+    ///   An empty value preserves normal OpenSSL configuration behavior.
     /// </summary>
-    /// <param name="Value">
-    ///   The path where external OpenSSL providers (such as the legacy provider
-    ///   module) should be located. Can be an absolute path or relative to
-    ///   OpenSSLPath. If empty, the loader defaults to OpenSSLPath.
-    /// </param>
-    procedure SetProvidersPath(const Value: string);
+    procedure SetConfigFile(const Value: string);
 
     /// <summary>
     ///   Property get function for FailedToLoad.
@@ -159,14 +151,10 @@ type
     /// </value>
     property OpenSSLPath: string read GetOpenSSLPath write SetOpenSSLPath;
     /// <summary>
-    ///   The search path for OpenSSL external providers (such as legacy.dll/so).
+    ///   Optional OpenSSL configuration filename. Set before initialization.
+    ///   Empty preserves normal OpenSSL configuration behavior.
     /// </summary>
-    /// <value>
-    ///   The directory path where provider modules reside. Can be an absolute
-    ///   path or relative to <see cref="OpenSSLPath" />. If not specified,
-    ///   the search path defaults to <see cref="OpenSSLPath" />.
-    /// </value>
-    property ProvidersPath: string read GetProvidersPath write SetProvidersPath;
+    property ConfigFile: string read GetConfigFile write SetConfigFile;
     /// <summary>
     ///   Lists alll of the functions that failed to load.
     /// </summary>
@@ -506,6 +494,7 @@ type
     FLibSSL: TIdLibHandle;
     FOpenSSLPath: string;
     FProvidersPath: string;
+    FConfigFile: string;
     FFailed: TStringList;  //PALOFF - Created and freed objects
     FSSLLibVersions: string;
     FLibraryLoaded: TIdThreadSafeBoolean;  //PALOFF - Created and freed objects
@@ -515,8 +504,8 @@ type
     procedure SetSSLLibVersions(const AValue: string);
     function GetOpenSSLPath: string;
     procedure SetOpenSSLPath(const Value: string);
-    function GetProvidersPath: string;
-    procedure SetProvidersPath(const Value: string);
+    function GetConfigFile: string;
+    procedure SetConfigFile(const Value: string);
     function GetFailedToLoad: TStringList;
 
   public
@@ -527,7 +516,7 @@ type
     procedure Unload;
     function IsLoaded : Boolean;
     property OpenSSLPath: string read GetOpenSSLPath write SetOpenSSLPath;
-    property ProvidersPath: string read GetProvidersPath write SetProvidersPath;
+    property ConfigFile: string read GetConfigFile write SetConfigFile;
     property FailedToLoad: TStringList read GetFailedToLoad;
   end;
 
@@ -736,19 +725,9 @@ begin
   Result := FOpenSSLPath
 end;
 
-function TOpenSSLLoader.GetProvidersPath: string;
+function TOpenSSLLoader.GetConfigFile: string;
 begin
-  if IsLoaded then
-  begin
-    if FProvidersPath <> '' then
-      Result := FProvidersPath
-    else
-    begin
-      Result:=string(OSSL_PROVIDER_get0_default_search_path(nil));
-    end;
-  end
-  else
-    Result:=FProvidersPath;
+  Result := FConfigFile;
 end;
 
 procedure TOpenSSLLoader.SetOpenSSLPath(const Value: string);
@@ -759,12 +738,9 @@ begin
     FOpenSSLPath := IncludeTrailingPathDelimiter(Value);
 end;
 
-procedure TOpenSSLLoader.SetProvidersPath(const Value: string);
+procedure TOpenSSLLoader.SetConfigFile(const Value: string);
 begin
-  if Value = '' then
-    FProvidersPath := ''
-  else
-    FProvidersPath := IncludeTrailingPathDelimiter(Value);
+  FConfigFile := Value;
 end;
 
 function TOpenSSLLoader.GetFailedToLoad: TStringList;
