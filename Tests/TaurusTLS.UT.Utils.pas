@@ -47,8 +47,6 @@ type
     class function GetFromEnvVar: string; static;
     class procedure SetPath(const Value: string); static;
     class function GetPath: string; static;
-    class function GetProvidersPath: string; static;
-    class procedure SetProvidersPath(const Value: string); static;
     {$ENDIF}
     class function GetLoaded: boolean; static;
   public
@@ -89,14 +87,6 @@ type
     ///  </remarks>
     ///  </summary>
     class property Path: string read GetPath write SetPath;
-    ///  <summary>
-    ///  Allows to change path to the Openssl module provider libraries folder
-    ///  <remarks>
-    ///  Path can be changed if Openssl library unloaded, otherwise exception is rised.
-    ///  </remarks>
-    ///  </summary>
-    class property ProvidersPath: string read GetProvidersPath
-      write SetProvidersPath;
   {$ENDIF}
   end;
 
@@ -196,13 +186,6 @@ begin
     end
   );
 
-  TOptionsRegistry.RegisterOption<string>(cLongOptModulesPathName,
-    cShortOptModulesPathName, rcOssLoaderModulesPathHelp,
-    procedure(Value: string)
-    begin
-      ProvidersPath:=Value;
-    end
-  );
 end;
 
 class function TOsslLoader.GetPath: string;
@@ -210,20 +193,11 @@ begin
   Result:=FLoader.OpenSSLPath;
 end;
 
-class function TOsslLoader.GetProvidersPath: string;
-begin
-  Result:=FLoader.ProvidersPath;
-end;
-
 class procedure TOsslLoader.SetPath(const Value: string);
 begin
   FLoader.OpenSSLPath:=Value;
 end;
 
-class procedure TOsslLoader.SetProvidersPath(const Value: string);
-begin
-  FLoader.ProvidersPath:=Value;
-end;
 {$ENDIF}
 
 class function TOsslLoader.GetLoaded: boolean;
