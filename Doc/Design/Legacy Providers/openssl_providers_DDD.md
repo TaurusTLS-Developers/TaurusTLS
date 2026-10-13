@@ -19,6 +19,8 @@ Use a new GUID for the changed interface under the planned API version bump. The
 
 GetOpenSSLLoader returns the dynamic singleton; it remains nil in static mode. Static call sites must use the compile-time branch and never dereference it. Remove TOpenSSLStaticLoader and its dependencies.
 
+TaurusTLSLinkDefines.inc must reject simultaneous STATICLOAD_OPENSSL and OPENSSL_USE_SHARED_LIBRARY definitions on every target. STATICLOAD_OPENSSL selects linked archives; OPENSSL_USE_SHARED_LIBRARY selects startup shared-library imports. The Windows compiler-include example enables only OPENSSL_USE_SHARED_LIBRARY. Linked legacy callback imports and registration use IFDEF STATICLOAD_OPENSSL; OPENSSL_STATIC_LINK_MODEL alone also covers shared-library imports and is insufficient for selecting the archive callback.
+
 Do not add public LoadProvider/RegisterBuiltinProvider/FIPS-mode methods to IOpenSSLLoader. Preserve the Indy SetFIPSMode/GetFIPSMode signatures. Their backend remains in TaurusTLSFIPS, with dynamic-only internal FIPS management. IsLegacyProviderLoaded remains the legacy facade's public status function.
 
 Headers remain OpenSSL-only. A03's two property API imports stay valid, including static import declarations; their existence does not imply TaurusTLS supports static FIPS. Add CONF_modules_load_file_ex to TaurusTLSHeaders_conf with exact C ABI, dynamic load/unload/error handling and OpenSSL 3.0 introduction metadata. Legacy configuration routines remain available.

@@ -1187,9 +1187,8 @@
 {$UNDEF OPENSSL_USE_SHARED_LIBRARY}
 
 {$IFDEF WINDOWS}
-  //Define these two if you wish to have TaurusTLS staticly load the OpenSSL
-  //.DLL's instead of dynamically.
-    {/$DEFINE STATICLOAD_OPENSSL}
+  // Define only OPENSSL_USE_SHARED_LIBRARY to load the OpenSSL DLLs at startup.
+  // STATICLOAD_OPENSSL selects linked archives and cannot be combined with it.
     {/$DEFINE OPENSSL_USE_SHARED_LIBRARY}
 {$ENDIF}
 {$IFDEF IOS}

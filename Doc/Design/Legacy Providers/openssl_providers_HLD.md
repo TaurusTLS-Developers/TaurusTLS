@@ -15,7 +15,7 @@ The product supports two deployment models:
 | Pure dynamic | Explicitly loaded libcrypto/libssl; external provider modules discovered by OpenSSL | Normal crypto, optional legacy, FIPS when configured and validated |
 | Pure static | Library code and required provider code linked into the application | Normal crypto and optional linked legacy; FIPS unsupported |
 
-There is no supported static-library/external-provider combination. OPENSSL_STATIC_LINK_MODEL remains the existing compiler discriminator; it does not introduce permission for mixed provider deployment. Startup-linked shared-library configurations, where retained by existing platform settings, must follow the established platform arrangement and must not be presented as a new supported mixed-deployment model.
+There is no supported static-library/external-provider combination. OPENSSL_STATIC_LINK_MODEL remains the existing compiler discriminator; it does not introduce permission for mixed provider deployment. Startup-linked shared-library configurations, where retained by existing platform settings, must follow the established platform arrangement and must not be presented as a new supported mixed-deployment model. STATICLOAD_OPENSSL (linked archives) and OPENSSL_USE_SHARED_LIBRARY (startup shared-library imports) are mutually exclusive on all targets; TaurusTLSLinkDefines.inc rejects conflicting definitions.
 
 Non-FIPS applications require no new initialization calls, configuration file or FIPS assets. Preserve their existing source/setup/build behavior. The planned API version bump permits changing IOpenSSLLoader. ProvidersPath is unreleased and will be removed. The usual package rebuild requirement remains release engineering work.
 
