@@ -62,6 +62,15 @@ type
 /// </remarks>
 procedure RegisterFIPSHooksInstaller(const AInstaller: TFIPSHooksInstaller);
 
+{$IFDEF UNITTEST}
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+// Test-only access to implementation state; absent from production builds.
+function FIPSPropertyAPIsAvailableForTests: Boolean;
+function FIPSUsesPropertyAPIsForTests: Boolean;
+procedure RevalidateFIPSPropertyAPIsForTests;
+{$ENDIF}
+{$ENDIF}
+
 implementation
 
 uses
@@ -79,15 +88,77 @@ uses
   TaurusTLSHeaders_hmac,
   TaurusTLSHeaders_types;
 
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+var
+  GFIPSUsesPropertyAPIs: Boolean = False;
+  GFIPSPropertyAPIsAvailable: Boolean = False;
+
+type
+  TTaurusTLSFIPSAPIState = class
+  public
+    class procedure OnLoadAction(AAction: TOpenSSLLoadAction);
+  end;
+
+class procedure TTaurusTLSFIPSAPIState.OnLoadAction(AAction: TOpenSSLLoadAction);
+var
+  LLoader: IOpenSSLLoader;
+begin
+  // Invalidate first, including every unload notification.
+  GFIPSUsesPropertyAPIs := False;
+  GFIPSPropertyAPIsAvailable := False;
+  if AAction <> osaLoad then
+    Exit;
+  LLoader := GetOpenSSLLoader;
+  if LLoader = nil then
+    Exit;
+  if not Assigned(OpenSSL_version_num) then
+    Exit;
+  GFIPSUsesPropertyAPIs := OpenSSL_version_num() >= $30000000;
+  if not GFIPSUsesPropertyAPIs then
+    Exit;
+  // Headers have finished binding. Inspect failure diagnostics once here:
+  // a missing export may have a non-nil exception-stub address.
+  GFIPSPropertyAPIsAvailable :=
+    Assigned(EVP_default_properties_enable_fips) and
+    Assigned(EVP_default_properties_is_fips_enabled) and
+    (LLoader.FailedToLoad.IndexOf('EVP_default_properties_enable_fips') < 0) and
+    (LLoader.FailedToLoad.IndexOf('EVP_default_properties_is_fips_enabled') < 0);
+end;
+
+function TaurusTLSFIPSPropertyAPIsAvailable: Boolean;
+begin
+  // Repeated mode checks never scan the binding diagnostics.
+  Result := GFIPSPropertyAPIsAvailable;
+end;
+
+{$IFDEF UNITTEST}
+function FIPSPropertyAPIsAvailableForTests: Boolean;
+begin
+  Result := TaurusTLSFIPSPropertyAPIsAvailable;
+end;
+
+function FIPSUsesPropertyAPIsForTests: Boolean;
+begin
+  Result := GFIPSUsesPropertyAPIs;
+end;
+
+procedure RevalidateFIPSPropertyAPIsForTests;
+begin
+  TTaurusTLSFIPSAPIState.OnLoadAction(osaLoad);
+end;
+{$ENDIF}
+{$ENDIF}
+
 {$I TaurusTLSUnusedParamOff.inc}
 
 function FIPS_mode_set(onoff: TIdC_INT): TIdC_INT; //FI:O804 - Method parameter is declared but not used
   {$IFDEF USE_INLINE}inline; {$ENDIF}
 begin
   Result := 0;
-  //We can't support this when statically linking because the function
-  //Is not present in the .a files for OpenSSL 3.x and 4.x.
+  // FIPS is supported only by the dynamic linking model.
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  if GFIPSUsesPropertyAPIs and not TaurusTLSFIPSPropertyAPIsAvailable then
+    Exit;
   if Assigned(TaurusTLSHeaders_crypto.FIPS_mode_set) then
   begin
     Result := TaurusTLSHeaders_crypto.FIPS_mode_set(onoff);
@@ -100,6 +171,8 @@ function FIPS_mode(): TIdC_INT; {$IFDEF USE_INLINE}inline; {$ENDIF}
 begin
   Result := 0;
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  if GFIPSUsesPropertyAPIs and not TaurusTLSFIPSPropertyAPIsAvailable then
+    Exit;
   if Assigned(TaurusTLSHeaders_crypto.FIPS_mode) then
   begin
     Result := TaurusTLSHeaders_crypto.FIPS_mode;
@@ -484,6 +557,14 @@ begin
 end;
 
 initialization
+
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+Register_SSLLoaderAction(TTaurusTLSFIPSAPIState.OnLoadAction);
+// A dependency may have loaded the library before this unit initialized.
+if GetOpenSSLLoader <> nil then
+  if GetOpenSSLLoader.IsLoaded then
+    TTaurusTLSFIPSAPIState.OnLoadAction(osaLoad);
+{$ENDIF}
 
 InstallFIPSHooks;
 
