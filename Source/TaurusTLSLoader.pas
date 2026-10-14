@@ -264,7 +264,6 @@ uses
   {$IFDEF VCL_2010_OR_ABOVE}, System.IOUtils
   {$ENDIF}
 {$ENDIF}
-  , TaurusTLSHeaders_provider
   , TaurusTLSConsts
 {$ENDIF}
   ,SysUtils;
@@ -485,15 +484,10 @@ type
   { TOpenSSLLoader }
 
   TOpenSSLLoader = class(TInterfacedObject, IOpenSSLLoader)
-{$IFDEF WINDOWS}
-  const
-    cDefaultProvidersPath = 'providers';
-{$ENDIF}
 {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} private
     FLibCrypto: TIdLibHandle;
     FLibSSL: TIdLibHandle;
     FOpenSSLPath: string;
-    FProvidersPath: string;
     FConfigFile: string;
     FFailed: TStringList;  //PALOFF - Created and freed objects
     FSSLLibVersions: string;
@@ -529,9 +523,6 @@ begin
   FLibraryLoaded := TIdThreadSafeBoolean.Create;
   FSSLLibVersions := DefaultLibVersions;
   OpenSSLPath := GetEnvironmentVariable(TaurusTLSLibraryPath);
-{$IFDEF WINDOWS}
-  FProvidersPath:=cDefaultProvidersPath;
-{$ENDIF}
 end;
 
 destructor TOpenSSLLoader.Destroy;
@@ -692,12 +683,6 @@ begin
       if Assigned(GLibSSLLoadList) then
         for i := 0 to GLibSSLLoadList.Count - 1 do
           TOpenSSLLoadProc(GLibSSLLoadList[i])(FLibSSL, LSSLVersionNo, FFailed);
-
-      // Configure path for loading provider shared libraries
-      // OpenSSL require UTF-8 encoded paths.
-      if (FProvidersPath <> '') then
-        OSSL_PROVIDER_set_default_search_path(nil,
-          PIdAnsiChar(UTF8Encode(FProvidersPath)));
 
       if Assigned(GOnLoadActionList) then
         for i := 0 to GOnLoadActionList.Count - 1 do
