@@ -265,6 +265,8 @@ uses
   {$ENDIF}
 {$ENDIF}
   , TaurusTLSConsts
+  , TaurusTLSHeaders_crypto
+  , TaurusTLSHeaders_conf
 {$ENDIF}
   ,SysUtils;
 
@@ -489,6 +491,7 @@ type
     FLibSSL: TIdLibHandle;
     FOpenSSLPath: string;
     FConfigFile: string;
+    FDefaultConfigFile: string;
     FFailed: TStringList;  //PALOFF - Created and freed objects
     FSSLLibVersions: string;
     FLibraryLoaded: TIdThreadSafeBoolean;  //PALOFF - Created and freed objects
@@ -642,6 +645,8 @@ var
   i: integer;
   LOpenSSL_version_num: TOpenSSL_version_num;
   LSSLVersionNo: TIdC_ULONG;
+  LNormalizedConfig: string;
+  LDefaultConfig: PIdAnsiChar;
 
 begin
   Result := not FFailedToLoad;
@@ -684,9 +689,54 @@ begin
         for i := 0 to GLibSSLLoadList.Count - 1 do
           TOpenSSLLoadProc(GLibSSLLoadList[i])(FLibSSL, LSSLVersionNo, FFailed);
 
-      if Assigned(GOnLoadActionList) then
-        for i := 0 to GOnLoadActionList.Count - 1 do
-          GOnLoadActionList[i](osaLoad);
+      try
+        // OpenSSL configuration processing
+        LDefaultConfig := CONF_get1_default_config_file();
+        if Assigned(LDefaultConfig) then
+        try
+          FDefaultConfigFile := UTF8ToString(LDefaultConfig);
+        finally
+          OPENSSL_free(LDefaultConfig);
+        end;
+
+        if FConfigFile <> '' then
+        begin
+          {$IFDEF VCL_2010_OR_ABOVE}
+          LNormalizedConfig := TPath.GetFullPath(FConfigFile);
+
+          if TDirectory.Exists(LNormalizedConfig) then
+            raise ETaurusTLSConfigFilePathError.CreateFmt(
+              RSOSSLConfigFileIsDirectory, [LNormalizedConfig]);
+
+          if not TFile.Exists(LNormalizedConfig) then
+            raise ETaurusTLSConfigFilePathError.CreateFmt(
+              RSOSSLConfigFileNotFound, [LNormalizedConfig]);
+          {$ELSE}
+          LNormalizedConfig := ExpandFileName(FConfigFile);
+
+          if DirectoryExists(LNormalizedConfig) then
+            raise ETaurusTLSConfigFilePathError.CreateFmt(
+              RSOSSLConfigFileIsDirectory, [LNormalizedConfig]);
+
+          if not FileExists(LNormalizedConfig) then
+            raise ETaurusTLSConfigFilePathError.CreateFmt(
+              RSOSSLConfigFileNotFound, [LNormalizedConfig]);
+          {$ENDIF}
+
+          OPENSSL_init_crypto(OPENSSL_INIT_NO_LOAD_CONFIG, nil);
+
+          if CONF_modules_load_file_ex(nil, PIdAnsiChar(UTF8Encode(LNormalizedConfig)), nil, 0) <= 0 then
+            ETaurusTLSConfigFileLoadError.RaiseException(
+              Format(RSOSSLConfigFileLoadFailed, [LNormalizedConfig]));
+        end;
+
+        if Assigned(GOnLoadActionList) then
+          for i := 0 to GOnLoadActionList.Count - 1 do
+            GOnLoadActionList[i](osaLoad);
+      except
+        Unload;
+        raise;
+      end;
 
     end;
     FLibraryLoaded.Value := true;
@@ -712,7 +762,21 @@ end;
 
 function TOpenSSLLoader.GetConfigFile: string;
 begin
-  Result := FConfigFile;
+  if FConfigFile <> '' then
+  begin
+    if FLibraryLoaded.Value then
+    begin
+      {$IFDEF VCL_2010_OR_ABOVE}
+      Result := TPath.GetFullPath(FConfigFile);
+      {$ELSE}
+      Result := ExpandFileName(FConfigFile);
+      {$ENDIF}
+    end
+    else
+      Result := FConfigFile;
+  end
+  else
+    Result := FDefaultConfigFile;
 end;
 
 procedure TOpenSSLLoader.SetOpenSSLPath(const Value: string);
@@ -725,6 +789,18 @@ end;
 
 procedure TOpenSSLLoader.SetConfigFile(const Value: string);
 begin
+  if FLibraryLoaded.Value or (FLibCrypto <> IdNilHandle) then
+    raise ETaurusTLSConfigFilePathError.Create(RSOSSLConfigFileAlreadyLoaded);
+
+  if Value <> '' then
+  begin
+    {$IFDEF VCL_2010_OR_ABOVE}
+    if not TPath.HasValidPathChars(Value, False) then
+      raise ETaurusTLSConfigFilePathError.CreateFmt(
+        RSOSSLConfigFilePathInvalid, [Value]);
+    {$ENDIF}
+  end;
+
   FConfigFile := Value;
 end;
 
@@ -744,9 +820,9 @@ var
 begin
   FLibraryLoaded.Lock();
   try
-    if FLibraryLoaded.Value then
+    if FLibraryLoaded.Value or (FLibCrypto <> IdNilHandle) or (FLibSSL <> IdNilHandle) then
     begin
-      if Assigned(GOnLoadActionList) then
+      if FLibraryLoaded.Value and Assigned(GOnLoadActionList) then
         for i := GOnLoadActionList.Count - 1 downto 0 do
           GOnLoadActionList[i](osaUnLoad);
 
@@ -764,6 +840,7 @@ begin
         FreeLibrary(FLibCrypto);
       FLibSSL := NilHandle;
       FLibCrypto := NilHandle;
+      FDefaultConfigFile := '';
     end;
     FFailedToLoad := false;
     FLibraryLoaded.Value := false;

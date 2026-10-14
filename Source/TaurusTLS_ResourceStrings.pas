@@ -257,6 +257,13 @@ resourcestring
   RSMsg_DES_set_key_wrong_key_parity = 'DES_set_key: Wrong Key Parity';
   RSMsg_DES_weak_key = 'DES_set_key: Weak key';
 
+  // OpenSSL Configuration Messages
+  RSOSSLConfigFilePathInvalid = 'Invalid OpenSSL configuration file path: %s';
+  RSOSSLConfigFileNotFound = 'OpenSSL configuration file not found: %s';
+  RSOSSLConfigFileIsDirectory = 'OpenSSL configuration file path is a directory: %s';
+  RSOSSLConfigFileLoadFailed = 'CONF_modules_load_file_ex failed for configuration file: %s';
+  RSOSSLConfigFileAlreadyLoaded = 'OpenSSL configuration file cannot be set after library has loaded.';
+
 
 implementation
 
