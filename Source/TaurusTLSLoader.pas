@@ -491,11 +491,12 @@ type
     FLibSSL: TIdLibHandle;
     FOpenSSLPath: string;
     FConfigFile: string;
-    FDefaultConfigFile: string;
+    FEffectiveConfigFile: string;
     FFailed: TStringList;  //PALOFF - Created and freed objects
     FSSLLibVersions: string;
     FLibraryLoaded: TIdThreadSafeBoolean;  //PALOFF - Created and freed objects
     FFailedToLoad: Boolean;
+    FLastLoadActionIdx: NativeInt;
     function FindLibrary(const LibName, LibVersions: string): TIdLibHandle;
     function GetSSLLibVersions: string;
     procedure SetSSLLibVersions(const AValue: string);
@@ -510,7 +511,8 @@ type
     destructor Destroy; override;
 
     function Load: Boolean;
-    procedure Unload;
+    procedure Unload; overload;
+    procedure Unload(const AResetFailState: Boolean); overload;
     function IsLoaded : Boolean;
     property OpenSSLPath: string read GetOpenSSLPath write SetOpenSSLPath;
     property ConfigFile: string read GetConfigFile write SetConfigFile;
@@ -526,6 +528,7 @@ begin
   FLibraryLoaded := TIdThreadSafeBoolean.Create;
   FSSLLibVersions := DefaultLibVersions;
   OpenSSLPath := GetEnvironmentVariable(TaurusTLSLibraryPath);
+  FLastLoadActionIdx:=-1;
 end;
 
 destructor TOpenSSLLoader.Destroy;
@@ -689,16 +692,9 @@ begin
         for i := 0 to GLibSSLLoadList.Count - 1 do
           TOpenSSLLoadProc(GLibSSLLoadList[i])(FLibSSL, LSSLVersionNo, FFailed);
 
+      FLastLoadActionIdx:=-1;
       try
-        // OpenSSL configuration processing
-        LDefaultConfig := CONF_get1_default_config_file();
-        if Assigned(LDefaultConfig) then
-        try
-          FDefaultConfigFile := UTF8ToString(LDefaultConfig);
-        finally
-          OPENSSL_free(LDefaultConfig);
-        end;
-
+        LNormalizedConfig:='';
         if FConfigFile <> '' then
         begin
           {$IFDEF VCL_2010_OR_ABOVE}
@@ -728,18 +724,35 @@ begin
           if CONF_modules_load_file_ex(nil, PIdAnsiChar(UTF8Encode(LNormalizedConfig)), nil, 0) <= 0 then
             ETaurusTLSConfigFileLoadError.RaiseException(
               Format(RSOSSLConfigFileLoadFailed, [LNormalizedConfig]));
+        end
+        else
+        begin
+          // OpenSSL configuration processing
+          LDefaultConfig := CONF_get1_default_config_file();
+          if Assigned(LDefaultConfig) then
+          try
+            LNormalizedConfig := UTF8ToString(LDefaultConfig);
+          finally
+            OPENSSL_free(LDefaultConfig);
+          end;
         end;
 
         if Assigned(GOnLoadActionList) then
           for i := 0 to GOnLoadActionList.Count - 1 do
+          begin
             GOnLoadActionList[i](osaLoad);
+            Inc(FLastLoadActionIdx);
+          end;
+
+        FEffectiveConfigFile := LNormalizedConfig;
+        FLibraryLoaded.Value := True;
+        Result := True;
       except
-        Unload;
+        Unload(False);
         raise;
       end;
 
     end;
-    FLibraryLoaded.Value := true;
   finally
     FLibraryLoaded.Unlock();
   end;
@@ -760,25 +773,6 @@ begin
   Result := FOpenSSLPath
 end;
 
-function TOpenSSLLoader.GetConfigFile: string;
-begin
-  if FConfigFile <> '' then
-  begin
-    if FLibraryLoaded.Value then
-    begin
-      {$IFDEF VCL_2010_OR_ABOVE}
-      Result := TPath.GetFullPath(FConfigFile);
-      {$ELSE}
-      Result := ExpandFileName(FConfigFile);
-      {$ENDIF}
-    end
-    else
-      Result := FConfigFile;
-  end
-  else
-    Result := FDefaultConfigFile;
-end;
-
 procedure TOpenSSLLoader.SetOpenSSLPath(const Value: string);
 begin
   if Value = '' then
@@ -787,8 +781,19 @@ begin
     FOpenSSLPath := IncludeTrailingPathDelimiter(Value);
 end;
 
+function TOpenSSLLoader.GetConfigFile: string;
+begin
+  if FLibraryLoaded.Value then
+    Result := FEffectiveConfigFile
+  else
+    Result := FConfigFile;
+end;
+
 procedure TOpenSSLLoader.SetConfigFile(const Value: string);
 begin
+  if Value = FConfigFile then
+    Exit;
+
   if FLibraryLoaded.Value or (FLibCrypto <> IdNilHandle) then
     raise ETaurusTLSConfigFilePathError.Create(RSOSSLConfigFileAlreadyLoaded);
 
@@ -815,40 +820,66 @@ begin
 end;
 
 procedure TOpenSSLLoader.Unload;
+begin
+  Unload(True);
+end;
+
+procedure TOpenSSLLoader.Unload(const AResetFailState: Boolean);
 var
   i: integer;
 begin
   FLibraryLoaded.Lock();
   try
-    if FLibraryLoaded.Value or (FLibCrypto <> IdNilHandle) or (FLibSSL <> IdNilHandle) then
+    // 1. If library handles or callbacks are active, tear them down
+    if FLibraryLoaded.Value or (FLibCrypto <> IdNilHandle) or
+       (FLibSSL <> IdNilHandle) or (FLastLoadActionIdx >= 0) then
     begin
-      if FLibraryLoaded.Value and Assigned(GOnLoadActionList) then
-        for i := GOnLoadActionList.Count - 1 downto 0 do
-          GOnLoadActionList[i](osaUnLoad);
+      // Roll back callbacks that ran osaLoad
+      if (FLastLoadActionIdx >= 0) and Assigned(GOnLoadActionList) then
+      begin
+        for i := FLastLoadActionIdx downto 0 do
+          try
+            GOnLoadActionList[i](osaUnLoad);
+          except
+          end;
+      end;
+      FLastLoadActionIdx := -1;
 
-      // Reverse order so that unloaders registered after the header units
-      // run while the OpenSSL functions are still assigned.
+      // Unbind header functions
       if Assigned(GUnLoadList) then
         for i := GUnLoadList.Count - 1 downto 0 do
           TOpenSSLUnloadProc(GUnLoadList[i]);
 
-      FFailed.Clear();
-
-      if FLibSSL <> NilHandle then
+      // Free DLL handles
+      if FLibSSL <> IdNilHandle then
+      begin
         FreeLibrary(FLibSSL);
-      if FLibCrypto <> NilHandle then
+        FLibSSL := IdNilHandle;
+      end;
+      if FLibCrypto <> IdNilHandle then
+      begin
         FreeLibrary(FLibCrypto);
-      FLibSSL := NilHandle;
-      FLibCrypto := NilHandle;
-      FDefaultConfigFile := '';
+        FLibCrypto := IdNilHandle;
+      end;
+
+      FEffectiveConfigFile := '';
     end;
-    FFailedToLoad := false;
-    FLibraryLoaded.Value := false;
+
+    // 2. ALWAYS apply the failure state and diagnostic clearing,
+    //    even if DLL handles were already closed!
+    if AResetFailState then
+    begin
+      FFailed.Clear();
+      FFailedToLoad := False;
+    end
+    else
+      FFailedToLoad := True;
+
+    FLibraryLoaded.Value := False;
   finally
     FLibraryLoaded.Unlock();
   end;
 end;
-
 {$ENDIF}
 
 initialization
