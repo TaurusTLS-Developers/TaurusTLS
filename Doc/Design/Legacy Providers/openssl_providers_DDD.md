@@ -15,7 +15,7 @@ procedure SetConfigFile(const AValue: string);
 property ConfigFile: string read GetConfigFile write SetConfigFile;
 ~~~
 
-Use a new GUID for the changed interface under the planned API version bump. The pending A04 GUID E835AF63-93CE-4C79-B3AB-B782F8E06CCD describes an uncommitted intermediate contract; generate a fresh GUID when finalizing the revised member set. Do not preserve unreleased ProvidersPath solely for binary compatibility.
+Preserve the existing IOpenSSLLoader GUID {BBB0F670-CC26-42BC-A9E0-33647361941A} when replacing ProvidersPath with ConfigFile. ProvidersPath was never officially released; the developer explicitly directed that no GUID change be made at this point. The historical intermediate A04 GUID E835AF63-93CE-4C79-B3AB-B782F8E06CCD is not used.
 
 GetOpenSSLLoader returns the dynamic singleton; it remains nil in static mode. Static call sites must use the compile-time branch and never dereference it. Remove TOpenSSLStaticLoader and its dependencies.
 
@@ -27,28 +27,53 @@ Headers remain OpenSSL-only. A03's two property API imports stay valid, includin
 
 ## 2. Configuration lifecycle
 
-ConfigFile defaults to empty. Set it before dynamic library initialization; reject changes once loading has started or succeeded. Its getter returns the configured value, not an inferred active configuration filename. Normalize a nonempty relative filename against the executable directory and pass a UTF-8 buffer to OpenSSL. Leave OpenSSL's own include/module path semantics unchanged.
+ConfigFile defaults to empty. Set it before dynamic library initialization; reject changes once loading has started or succeeded. When the library is unloaded, `GetConfigFile` returns the configured value (`FConfigFile`). Once dynamic initialization succeeds, `GetConfigFile` reflects the effective active configuration (`FEffectiveConfigFile`):
+- For an explicit configuration, it returns the normalized full file path.
+- When `ConfigFile` is left empty, it returns the discovered default OpenSSL configuration path obtained via `CONF_get1_default_config_file()` and freed with `OPENSSL_free`.
+Upon library unload, `FEffectiveConfigFile` is cleared and `GetConfigFile` returns back to reporting `FConfigFile`.
+
+Normalize a nonempty relative filename against the current full path and pass a UTF-8 buffer to OpenSSL. Explicit `ConfigFile` loading uses `CONF_modules_load_file_ex` and requires OpenSSL 3.0 or higher; OpenSSL 1.1.x is excluded from support with this configuration mechanism. Leave OpenSSL's own include/module path semantics unchanged.
 
 Configuration behavior:
 
 | Input | Required behavior |
 |---|---|
-| Empty ConfigFile | Preserve normal OpenSSL configuration and OPENSSL_CONF behavior; no required new customer calls |
-| Nonempty ConfigFile | Suppress implicit default configuration loading; explicitly apply the selected file to nil/default context |
-| Invalid/missing explicit file path | Raise ETaurusTLSConfigFilePathError before provider callbacks |
-| OpenSSL configuration-loading failure | Raise ETaurusTLSConfigFileLoadError with effective filename and OpenSSL error details |
+| Empty ConfigFile | Preserve normal OpenSSL configuration and OPENSSL_CONF behavior; no required new customer calls. Active configuration resolves via `CONF_get1_default_config_file()` once loaded |
+| Nonempty ConfigFile | Suppress implicit default configuration loading; explicitly apply the selected file to nil/default context via `CONF_modules_load_file_ex` (requires OpenSSL 3.0+) |
+| Invalid/missing explicit file path | Raise ETaurusTLSConfigFilePathError before provider callbacks; engage failure circuit breaker |
+| OpenSSL configuration-loading failure | Capture OpenSSL error queue and raise ETaurusTLSConfigFileLoadError with effective filename; engage failure circuit breaker |
 | Existing external initialization | Document the default-context ownership precondition; do not promise that prior configuration can be replaced |
 | Static model | No loader configuration API, external provider loading or FIPS initialization |
 
 Dynamic sequence:
 1. Bind library APIs without invoking providers. Install configured memory callbacks before OpenSSL allocations.
 2. Finish header binding; do not publish FIPS-specific capabilities through the loader.
-3. If ConfigFile is specified, call OPENSSL_init_crypto(OPENSSL_INIT_NO_LOAD_CONFIG, nil) before any provider operation can trigger implicit configuration, then CONF_modules_load_file_ex(nil, UTF8Filename, nil, 0). Require a positive result.
-4. If ConfigFile is empty, preserve the existing normal/default configuration route.
-5. Dispatch existing osaLoad callbacks only after the configuration decision is complete.
-6. Publish successful loader readiness.
+3. If ConfigFile is specified:
+   - Validate file system path: reject invalid path characters, directories, or non-existent files via ETaurusTLSConfigFilePathError.
+   - Call OPENSSL_init_crypto(OPENSSL_INIT_NO_LOAD_CONFIG, nil) before any provider operation can trigger implicit configuration.
+   - Call CONF_modules_load_file_ex(nil, UTF8Filename, nil, 0). Require a positive result; on <= 0, extract the OpenSSL error and raise ETaurusTLSConfigFileLoadError.
+4. If ConfigFile is empty:
+   - Preserve the existing normal/default configuration route.
+   - Retrieve and cache the active configuration path from CONF_get1_default_config_file().
+5. Track callback execution with `FLastLoadActionIdx` and dispatch existing osaLoad callbacks in registration order only after the configuration decision is complete.
+6. Publish successful loader readiness (`FLibraryLoaded.Value := True`).
 
 Ensure later TaurusTLS.OPENSSL_init_ssl calls do not load a different configuration after the explicit path; initialization options must be coordinated in the common dynamic entry path, including hash-only/NTLM loads.
+
+### Failure handling, circuit breaker, and callback rollback
+
+If library loading fails at any point (validation error, OpenSSL configuration failure, or an exception inside an `osaLoad` callback):
+1. The loader captures the OpenSSL error details before executing teardown.
+2. An internal `Unload(False)` executes:
+   - Dispatches `osaUnload` in reverse order strictly to callbacks that already executed `osaLoad` (`FLastLoadActionIdx downto 0`). Callbacks that failed or have not yet run are not dispatched `osaUnload`.
+   - Executes header unloaders (`GUnLoadList`).
+   - Frees loaded library handles (`FLibSSL`, `FLibCrypto`).
+   - Clears `FEffectiveConfigFile`.
+   - Sets `FFailedToLoad := True` while preserving recorded diagnostics in `FailedToLoad`.
+3. The captured exception is raised to the caller.
+4. **Circuit Breaker:** While `FFailedToLoad` is active, any subsequent calls to `Load` immediately exit `False` without re-attempting initialization. Applications must explicitly call `Unload` (which resets `FFailedToLoad` and clears diagnostics) before attempting to load again.
+
+Do not promise transactional rollback of OpenSSL configuration modifications that OpenSSL core already applied prior to failure.
 
 ### Configuration exceptions
 
@@ -61,11 +86,20 @@ ETaurusTLSConfigFileLoadError = class(ETaurusTLSAPICryptoError);
 
 Use ETaurusTLSAPICryptoError because configuration APIs belong to libcrypto. ETaurusTLSAPISSLError uses SSL_get_error with an SSL object/return code and is inappropriate for this operation.
 
-Validate the normalized explicit path before loading: reject embedded NUL, invalid path syntax, missing file or a directory. Raise ETaurusTLSConfigFilePathError with the effective filename and reason. Construct that exception directly with the existing exception constructor; do not consume an unrelated OpenSSL error queue for a filesystem-validation failure. Its OpenSSL ErrorCode remains zero.
+Validate the normalized explicit path:
+- At `SetConfigFile` time, validate path character syntax (reject embedded NUL or invalid characters via `TPath.HasValidPathChars`). Reject changes if already loaded.
+- At `Load` time, validate the target: reject directories or non-existent files. Raise ETaurusTLSConfigFilePathError with the effective filename and reason. Construct that exception directly with the existing exception constructor; do not consume an unrelated OpenSSL error queue for a filesystem-validation failure. Its OpenSSL ErrorCode remains zero.
 
-When CONF_modules_load_file_ex returns <=0, call ETaurusTLSConfigFileLoadError.RaiseException with a message naming the operation and effective filename. The inherited class method retrieves the OpenSSL error and formats it using existing TaurusTLS conventions. Raise immediately, before rollback can alter the error queue; preserve and re-raise the same exception after cleanup. A file that passes path validation but cannot be read, parsed or applied is a configuration-load failure. Error reporting still includes the filename if OpenSSL supplies no error code.
+When CONF_modules_load_file_ex returns <=0, call ETaurusTLSConfigFileLoadError.RaiseException with a message naming the operation and effective filename. The inherited class method retrieves the OpenSSL error queue and formats it using existing TaurusTLS conventions. Raise immediately, before cleanup can alter the error queue; `Unload(False)` executes in the exception block while preserving the exception. Error reporting still includes the filename if OpenSSL supplies no error code.
 
-Add resource strings in TaurusTLS_ResourceStrings for both stages. Do not collapse these exceptions into false or suppress them at the loader boundary. The FIPS mode backend must preserve configuration exceptions while reporting provider/policy enablement failures through its existing Boolean/diagnostic contract.
+Add resource strings in TaurusTLS_ResourceStrings for both stages:
+- `RSOSSLConfigFileAlreadyLoaded`
+- `RSOSSLConfigFilePathInvalid`
+- `RSOSSLConfigFileIsDirectory`
+- `RSOSSLConfigFileNotFound`
+- `RSOSSLConfigFileLoadFailed`
+
+Do not collapse these exceptions into false or suppress them at the loader boundary. The FIPS mode backend must preserve configuration exceptions while reporting provider/policy enablement failures through its existing Boolean/diagnostic contract.
 
 Tests must assert the specific exception class and filename for invalid/missing/directory paths and malformed/unreadable/module-failing configuration, with configuration failures isolated in fresh processes.
 
@@ -74,9 +108,6 @@ For an explicit file, do not use IGNORE_ERRORS, IGNORE_RETURN_CODES or IGNORE_MI
 ConfigFile is a full OpenSSL configuration with openssl_conf/provider/algorithm sections and references to installation data where appropriate. A standalone fipsmodule.cnf is not assumed sufficient. Do not run fipsinstall or synthesize integrity values.
 
 CONF_get1_default_config_file is diagnostic/discovery support only. Its caller owns the returned string and frees it with OPENSSL_free. It does not select or change configuration. CONF_modules_load_file_ex is the chosen explicit loader; do not redundantly call both it and OSSL_LIB_CTX_load_config for the same file. [Configuration loading API](https://docs.openssl.org/3.0/man3/CONF_modules_load_file/).
-
-Do not promise complete rollback of config-activated providers/properties on failure. Preserve failure state, report it and prevent further crypto use until the failed initialization is safely torn down. Tests for failed global initialization run in fresh processes. Preserve existing non-FIPS defaults; full readiness/partial-library cleanup is implemented in the loader lifecycle tasks.
-
 ## 3. Discovery, ownership and legacy support
 
 OSSL_PROVIDER_load receives a provider name, not a TaurusTLS-resolved path. Module discovery belongs to OpenSSL configuration or standard search rules, including OPENSSL_MODULES. Remove loader search-path overrides and all calls made for ProvidersPath.
