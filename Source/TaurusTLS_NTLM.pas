@@ -25,11 +25,13 @@ interface
 implementation
 {$I TaurusTLSLinkDefines.inc}
 uses
+ IdCTypes,
   IdGlobal, IdFIPS, IdHashMessageDigest,
   TaurusTLS_ResourceStrings,
   TaurusTLSExceptionHandlers,
   TaurusTLSLoader,
-  TaurusTLSHeaders_des,
+  TaurusTLSHeaders_evp,
+  TaurusTLSHeaders_types,
   TaurusTLS_LegacyProviders,
   TaurusTLSFIPS,
   SysUtils;
@@ -45,31 +47,36 @@ end;
 
 function TaurusTLSIsNTLMFuncsAvail: Boolean;
 begin
-{$IFDEF OPENSSL_STATIC_LINK_MODEL}
-  Result := true;
-{$ELSE}
-  {$IFDEF OPENSSL_USE_SHARED_LIBRARY}
   Result := True;
-  {$ELSE}
-  Result := Assigned(DES_set_odd_parity) and Assigned(DES_set_key) and
-    Assigned(DES_ecb_encrypt);
-  {$ENDIF}
-{$ENDIF}
 end;
 
 type
+  DES_LONG = type cardinal;
+  DES_cblock = array [0 .. 7] of byte;
+  PDES_cblock = ^DES_cblock;
   Pdes_key_schedule = ^des_key_schedule;
+  DES_ks = record
+    ks: array [0 .. 15] of record
+    case longint of
+    0: (cblock: DES_cblock);
+    1: (deslong: array [0 .. 1] of DES_LONG);
+    end;
+  end;
+  DES_key_schedule = DES_ks;
 
+procedure Encrypt_DES(const Akey_56: des_cblock; VOut : Pointer; const AIn :  Pointer);
+Var
+  Lkey: des_cblock;  //PALOFF - Local variables that are set but not later used
+  LCipher : PEVP_CIPHER;
+  LContext : PEVP_CIPHER_CTX;
+  LOutLen,
+  LTmpLen  : TIdC_INT;
+begin
+  Lkey[0] := Akey_56[0];
   { /*
     * turns a 56 bit key into the 64 bit, odd parity key and sets the key.
     * The key schedule ks is also set.
     */ }
-procedure setup_des_key(const Akey_56: des_cblock; var Vks: des_key_schedule);
-Var
-  Lkey: des_cblock;  //PALOFF - Local variables that are set but not later used
-begin
-  Lkey[0] := Akey_56[0];
-
   Lkey[1] := ((Akey_56[0] SHL 7) and $FF) or (Akey_56[1] SHR 1);
   Lkey[2] := ((Akey_56[1] SHL 6) and $FF) or (Akey_56[2] SHR 2);
   Lkey[3] := ((Akey_56[2] SHL 5) and $FF) or (Akey_56[3] SHR 3);
@@ -78,14 +85,38 @@ begin
   Lkey[6] := ((Akey_56[5] SHL 2) and $FF) or (Akey_56[6] SHR 6);
   Lkey[7] := (Akey_56[6] SHL 1) and $FF;
 
-  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-  DES_set_odd_parity(@Lkey);
-  case DES_set_key(@Lkey, Vks) of
-    -1 : raise ETaurusTLSDesSetKeyWrongParity.Create(RSMsg_DES_set_key_wrong_key_parity);
-    -2 : raise ETaurusTLSDesSetKeyWeakKey.Create(RSMsg_DES_weak_key);
+  LCipher := EVP_CIPHER_fetch(nil,'DES-ECB',nil);
+  if Assigned(LCipher) then
+  begin
+    try
+      LContext := EVP_CIPHER_CTX_new;
+      if Assigned(LContext) then
+      begin
+        try
+          {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
+          EVP_CIPHER_CTX_ctrl(LContext, EVP_CTRL_RAND_KEY, 0, @LKey);
+          if EVP_EncryptInit_ex2( LContext, LCipher, @LKey[0], nil, nil) = 1 then
+          begin
+            if EVP_EncryptUpdate(LContext,VOut^,LOutLen,Ain, SizeOf(des_key_schedule)) =1 then
+            begin
+               EVP_EncryptFinal_ex(LContext, VOut^, LTmpLen);
+            end;
+          end;
+          {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
+        finally
+          EVP_CIPHER_CTX_free(LContext);
+        end;
+      end;
+    finally
+      EVP_CIPHER_free(LCipher);
+    end;
+  end
+  else
+  begin
+    raise ETaurusTLSDES_ECBNotFound.Create(RSSSLDES_ECBNotFound);
   end;
-  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 end;
+
 
 { /*
   * takes a 21 byte array and treats it as 3 56-bit DES keys. The
@@ -97,20 +128,18 @@ procedure calc_resp(Vkeys: PDES_cblock; const ANonce: TIdBytes;
 Var
   Lks: des_key_schedule;  //PALOFF - Local variables that are set but not later used
   Lnonce: des_cblock;  //PALOFF - Local variables that are set but not later used
+  LCurPtr : Pdes_key_schedule;
 begin
   {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   FillChar(LKs,SizeOf(LKs),0);
-  setup_des_key(Vkeys^, Lks);
   Move(ANonce[0], Lnonce, 8);
-  DES_ecb_encrypt(@Lnonce, PDES_cblock(@Vresults^), @Lks, DES_ENCRYPT);
-
-  setup_des_key(PDES_cblock(PtrUInt(Vkeys) + 7)^, Lks);
-  DES_ecb_encrypt(@Lnonce, PDES_cblock(PtrUInt(Vresults) + 8), @Lks,
-    DES_ENCRYPT);
-
-  setup_des_key(PDES_cblock(PtrUInt(Vkeys) + 14)^, Lks);
-  DES_ecb_encrypt(@Lnonce, PDES_cblock(PtrUInt(Vresults) + 16), @Lks,
-    DES_ENCRYPT);
+  Encrypt_DES(Lnonce, @Vresults^,@Lks);
+  Encrypt_DES(VKeys^, VResults,@lks);
+  LCurPtr := VResults;
+  Inc(LCurPtr,8);
+  Encrypt_DES(VKeys^, LCurPtr,@Lks);
+  Inc(LCurPtr,8);
+  Encrypt_DES(VKeys^, LCurPtr,@Lks);
   {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 end;
 
@@ -149,12 +178,9 @@ begin
   // * create LanManager hashed password */
 
   {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-  setup_des_key(PDES_cblock(@lm_pw[0])^, ks);
-  DES_ecb_encrypt(@Magic, PDES_cblock(@lm_hpw[0]), @ks, DES_ENCRYPT);
+  Encrypt_DES(Magic, PDES_cblock(@lm_hpw[0]), @ks);
 
-  setup_des_key(PDES_cblock(PtrUInt(@lm_pw[0]) + 7)^, ks);
-  DES_ecb_encrypt(@Magic, PDES_cblock(PtrUInt(@lm_hpw[0]) + 8), @ks,
-    DES_ENCRYPT);
+  Encrypt_DES(Magic, PDES_cblock(PtrUInt(@lm_hpw[0]) + 8),@ks);
 
   FillChar(lm_hpw[16], 5, 0);
 

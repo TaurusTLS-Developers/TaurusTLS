@@ -71,6 +71,7 @@ resourcestring
   RSSSLSHA256NotFound = 'SHA256 not found';
   RSSSLSHA384NotFound = 'SHA384 not found';
   RSSSLSHA512NotFound = 'SHA512 not found';
+  RSSSLDES_ECBNotFound = 'DES ECB not found';
   RSOSSLX509DigestFailed = 'X509_digest failed';
   
   RSOSSCouldNotCreateSSLObject = 'Could not create SSL object';
@@ -256,7 +257,8 @@ resourcestring
   //NTLM Messages - DES_set_key
   RSMsg_DES_set_key_wrong_key_parity = 'DES_set_key: Wrong Key Parity';
   RSMsg_DES_weak_key = 'DES_set_key: Weak key';
-
+  RSMsg_DES_key_too_short = 'Key too short';
+  RSMsg_DES_EVP_EncryptInit_ex2 = 'EVP_EncryptInit_ex2 failed';
 
 implementation
 

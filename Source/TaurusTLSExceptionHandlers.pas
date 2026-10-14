@@ -269,7 +269,17 @@ type
   public
     constructor CreateResMsg; override;
   end;
-
+  /// <summary>
+  ///   Raised if the DES ECB algorithm can not be found when attempting to use the
+  ///   EVP_CIPHER_fetch function.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.5/man3/EVP_EncryptInit/">
+  ///   EVP_CIPHER_fetch
+  /// </seealso>
+  ETaurusTLSDES_ECBNotFound = class(ETaurusTLSAlgorithmNotFound)
+  public
+    constructor CreateResMsg; override;
+  end;
   /// <summary>
   ///   Raised if the X509_digest function failed.
   /// </summary>
@@ -424,6 +434,8 @@ type
   ///  EVP_CIPHER_CTX_new
   /// </seealso>
   EVPCipherCTXNew = class(ETaurusTLSEVPCipherCTXError);
+
+  ETaurusTLSNTLMError = class(ETaurusTLSError);
 
 implementation
 
@@ -644,6 +656,14 @@ end;
 constructor ETaurusTLSSHA512NotFound.CreateResMsg;
 begin
   inherited Create(RSSSLSHA512NotFound);
+end;
+
+{ ETaurusTLSDES_ECBNotFound }
+
+constructor ETaurusTLSDES_ECBNotFound.CreateResMsg;
+begin
+  inherited Create(RSSSLDES_ECBNotFound);
+
 end;
 
 end.
