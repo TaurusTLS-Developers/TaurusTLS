@@ -402,40 +402,38 @@ type
   /// </summary>
   ETaurusTLSEVPCipherError = class(ETaurusTLSAPICryptoError);
   /// <summary>
-  ///   Raised if the EVP_CipherInit_ex function failed.
-  /// </summary>
-  /// <seealso href="https://docs.openssl.org/1.0.2/man3/EVP_EncryptInit/">
-  /// EVP_CipherInit_ex
-  /// </seealso>
-  ETaurusTLSEVPCipherInitEx = class(ETaurusTLSEVPCipherError);
-  /// <summary>
-  ///   Raised if the EVP_CipherUpdate function failed.
-  /// </summary>
-  /// <seealso href="https://docs.openssl.org/3.0/man3/EVP_EncryptInit/">
-  ///  EVP_CipherUpdate
-  /// </seealso>
-  ETaurusTLSEVPCipherUpdate = class(ETaurusTLSEVPCipherError);
-  /// <summary>
-  ///   Raised if the EVP_CipherFinal_ex function failed.
-  /// </summary>
-  /// <seealso href="https://docs.openssl.org/3.0/man3/EVP_EncryptInit/">
-  ///  EVP_CipherFinal_ex
-  /// </seealso>
-  ETaurusTLSEVPCipherFinalEx = class(ETaurusTLSEVPCipherError);
-
-  /// <summary>
   ///   Anscestor of exceptions that are raised if an EVP_CIPHER_CTX_* functions fails.
   /// </summary>
   ETaurusTLSEVPCipherCTXError = class(ETaurusTLSAPICryptoError);
   /// <summary>
-  ///   Raised if the EVP_CIPHER_CTX_new function failed.
+  ///   Raised if the <c>EVP_CIPHER_CTX_new</c> function failed.
   /// </summary>
   /// <seealso href="https://docs.openssl.org/3.0/man3/EVP_EncryptInit/">
-  ///  EVP_CIPHER_CTX_new
+  ///   EVP_CIPHER_CTX_new
   /// </seealso>
-  EVPCipherCTXNew = class(ETaurusTLSEVPCipherCTXError);
+  ETaurusTLSEVPCipherCTXNewFailed   = class(ETaurusTLSEVPCipherCTXError);
 
-  ETaurusTLSNTLMError = class(ETaurusTLSError);
+  /// <summary>
+  ///   Raised if a call to <c>EVP_EncryptInit_ex2</c> failed.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.0/man3/EVP_EncryptInit/">
+  ///   EVP_EncryptInit_ex2
+  /// </seealso>
+  ETaurusTLSEVPEncryptInitEx2Failed = class(ETaurusTLSAPICryptoError);
+  /// <summary>
+  ///   Raised if a call to <c>EVP_EncryptUpdate</c> failed.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.0/man3/EVP_EncryptInit/">
+  ///   EVP_EncryptUpdate
+  /// </seealso>
+  ETaurusTLSEVPEncryptUpdateFailed = class(ETaurusTLSAPICryptoError);
+  /// <summary>
+  ///   Raised if a call to <c>EVP_EncryptFinal_ex</c> failed.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.0/man3/EVP_EncryptInit/">
+  ///   EVP_EncryptFinal_ex
+  /// </seealso>
+  ETaurusTLSEVPEncryptFinalExFailed = class(ETaurusTLSAPICryptoError);
 
 implementation
 

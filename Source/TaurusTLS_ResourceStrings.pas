@@ -254,11 +254,11 @@ resourcestring
   RSMSG_X509_V_ERR_DUPLICATE_EXTENSION = 'Certificate verification failed '+
     'because a certificate extension appears more than once.';
 
-  //NTLM Messages - DES_set_key
-  RSMsg_DES_set_key_wrong_key_parity = 'DES_set_key: Wrong Key Parity';
-  RSMsg_DES_weak_key = 'DES_set_key: Weak key';
-  RSMsg_DES_key_too_short = 'Key too short';
+ 
   RSMsg_DES_EVP_EncryptInit_ex2 = 'EVP_EncryptInit_ex2 failed';
+  RSMsg_DES_EVP_EncryptUpdate = 'EVP_EncryptUpdate failed';
+  RSMsg_DES_EVP_EncryptFinalEx = 'EVP_EncryptFinal_ex failed';
+  RSMsg_DES_EVP_CIPHER_CTX_new_failed = 'EVP_CIPHER_CTX_new failed';
 
 implementation
 

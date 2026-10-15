@@ -51,6 +51,7 @@ begin
 end;
 
 type
+   {$IFDEF DCC}{$WARN UNSAFE_TYPE OFF}{$ENDIF}
   DES_LONG = type cardinal;
   DES_cblock = array [0 .. 7] of byte;
   PDES_cblock = ^DES_cblock;
@@ -63,6 +64,7 @@ type
     end;
   end;
   DES_key_schedule = DES_ks;
+   {$IFDEF DCC}{$WARN UNSAFE_TYPE DEFAULT}{$ENDIF}
 
 procedure Encrypt_DES(const Akey_56: des_cblock; VOut : Pointer; const AIn :  Pointer);
 Var
@@ -99,13 +101,28 @@ begin
           begin
             if EVP_EncryptUpdate(LContext,VOut^,LOutLen,Ain, SizeOf(des_key_schedule)) =1 then
             begin
-               EVP_EncryptFinal_ex(LContext, VOut^, LTmpLen);
+               if EVP_EncryptFinal_ex(LContext, VOut^, LTmpLen) <> 1 then
+               begin
+                 raise ETaurusTLSEVPEncryptFinalExFailed.Create(RSMsg_DES_EVP_EncryptFinalEx);
+               end;
+            end
+            else
+            begin
+              raise ETaurusTLSEVPEncryptUpdateFailed.Create(RSMsg_DES_EVP_EncryptUpdate);
             end;
+          end
+          else
+          begin
+            raise ETaurusTLSEVPEncryptInitEx2Failed.Create(RSMsg_DES_EVP_EncryptInit_ex2);
           end;
-          {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
+         {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
         finally
           EVP_CIPHER_CTX_free(LContext);
         end;
+      end
+      else
+      begin
+        raise ETaurusTLSEVPCipherCTXNewFailed.Create(RSMsg_DES_EVP_CIPHER_CTX_new_failed);
       end;
     finally
       EVP_CIPHER_free(LCipher);
@@ -133,8 +150,8 @@ begin
   {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
   FillChar(LKs,SizeOf(LKs),0);
   Move(ANonce[0], Lnonce, 8);
-  Encrypt_DES(Lnonce, @Vresults^,@Lks);
-  Encrypt_DES(VKeys^, VResults,@lks);
+  Encrypt_DES(Lnonce, Vresults,@Lks);
+  Encrypt_DES(VKeys^, Vresults,@lks);
   LCurPtr := VResults;
   Inc(LCurPtr,8);
   Encrypt_DES(VKeys^, LCurPtr,@Lks);
