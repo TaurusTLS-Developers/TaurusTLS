@@ -1,26 +1,25 @@
-{ Three ways to link to the OpenSSL library are supported:
+{ OpenSSL linking modes:
 
-  1. Dynamic linking at run time using calls to LoadLibrary and GetProcAddress.
-     This is the default and allows Indy to find the OpenSSL libraries and adjust
-     itself to suit the version found. Versions 1.0.2 to 3.x are currently supported.
+  1. Runtime loading of shared libraries through TaurusTLSLoader is the default
+     when none of the linking symbols below is defined.
 
-  2. Static loading of a shared library (.dll or .so). When your program is loaded
-     the loader searches for the shared library and links it to your program. Indy
-     can only support the 3.x OpenSSL libraries in this mode.
+  2. OPENSSL_USE_SHARED_LIBRARY selects startup loading of shared libraries
+     through direct external imports.
 
-  3. Statically linked to a static library at link time. Your program executable
-     includes the OpenSSL libraries which then do not have to be separately
-     installed on the target system. Supported only for the 3.x OpenSSL Libraries
-     and for the Free Pascal Compiler (FPC). Delphi does not support this link option.
+  3. STATICLOAD_OPENSSL selects linked archives for Delphi targets such as
+     macOS, iOS and Android. OPENSSL_USE_STATIC_LIBRARY selects the existing
+     Free Pascal archive-linking configuration.
 
-  Link Option 2 is selected if your program or the IndyOpenSSL package is compiled with
-  the OPENSSL_USE_SHARED_LIBRARY defined symbol. It is also selected if
-  IdCompilierDefines.inc sets the STATICLOAD_OPENSSL defined symbol (e.g. for IOS).
-
-  Link Option 3 is selected if your program or the IndyOpenSSL package is compiled with
-  the OPENSSL_USE_STATIC_LIBRARY defined symbol.
-
- }
+  STATICLOAD_OPENSSL and OPENSSL_USE_SHARED_LIBRARY are mutually exclusive
+  on every target. OPENSSL_STATIC_LINK_MODEL selects direct API imports for
+  either startup shared-library loading or archive linking; it does not by
+  itself identify an archive deployment.
+}
+{$IFDEF STATICLOAD_OPENSSL}
+{$IFDEF OPENSSL_USE_SHARED_LIBRARY}
+{$message Error:STATICLOAD_OPENSSL and OPENSSL_USE_SHARED_LIBRARY are mutually exclusive}
+{$ENDIF}
+{$ENDIF}
 {$IFDEF STATICLOAD_OPENSSL}
 {$DEFINE OPENSSL_STATIC_LINK_MODEL}
 {$UNDEF OPENSSL_USE_STATIC_LIBRARY}

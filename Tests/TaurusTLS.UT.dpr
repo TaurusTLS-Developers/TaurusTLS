@@ -46,7 +46,9 @@ uses
   TaurusTLS.UT.LegacyProviders in 'TaurusTLS.UT.LegacyProviders.pas',
   TaurusTLS.UT.SSLContainersHelpers in 'TaurusTLS.UT.SSLContainersHelpers.pas',
   TaurusTLS.UT.Context in 'TaurusTLS.UT.Context.pas',
-  TaurusTLS.UT.InputRanges in 'TaurusTLS.UT.InputRanges.pas';
+  TaurusTLS.UT.InputRanges in 'TaurusTLS.UT.InputRanges.pas',
+  TaurusTLS.UT.FIPSProperties in 'TaurusTLS.UT.FIPSProperties.pas',
+  TaurusTLS.UT.Loader in 'TaurusTLS.UT.Loader.pas';
 
 { keep comment here to protect the following conditional from being removed by the IDE when adding a unit }
 {$IFNDEF TESTINSIGHT}

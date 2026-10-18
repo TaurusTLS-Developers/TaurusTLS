@@ -999,6 +999,10 @@ var
   {$EXTERNALSYM EVP_MD_flags}
   EVP_MD_flags: function (const md: PEVP_MD): PIdC_ULONG; cdecl = nil; {removed 3.0.0}
 
+  {$EXTERNALSYM EVP_default_properties_enable_fips}
+  EVP_default_properties_enable_fips: function (ctx: POSSL_LIB_CTX; enable: TIdC_INT): TIdC_INT; cdecl = nil; {introduced 3.0.0}
+  {$EXTERNALSYM EVP_default_properties_is_fips_enabled}
+  EVP_default_properties_is_fips_enabled: function (ctx: POSSL_LIB_CTX): TIdC_INT; cdecl = nil; {introduced 3.0.0}
   {$EXTERNALSYM EVP_MD_fetch}
   EVP_MD_fetch: function (ctx: POSSL_LIB_CTX; const algorithm, properties: PIdAnsiChar): PEVP_MD; cdecl = nil; {introduced 3.0.0}
   {$EXTERNALSYM EVP_MD_get_size}
@@ -2318,6 +2322,10 @@ var
   //# define EVP_MD_nid(e)                   EVP_MD_type(e)
   //# define EVP_MD_name(e)                  OBJ_nid2sn(EVP_MD_nid(e))
 
+  {$EXTERNALSYM EVP_default_properties_enable_fips}
+  function EVP_default_properties_enable_fips(ctx: POSSL_LIB_CTX; enable: TIdC_INT): TIdC_INT cdecl; external CLibCrypto; {introduced 3.0.0}
+  {$EXTERNALSYM EVP_default_properties_is_fips_enabled}
+  function EVP_default_properties_is_fips_enabled(ctx: POSSL_LIB_CTX): TIdC_INT cdecl; external CLibCrypto; {introduced 3.0.0}
   {$EXTERNALSYM EVP_MD_fetch}
   function EVP_MD_fetch(ctx: POSSL_LIB_CTX; const algorithm, properties: PIdAnsiChar): PEVP_MD cdecl; external CLibCrypto; {introduced 3.0.0}
   {$EXTERNALSYM EVP_MD_get_size}
@@ -3704,6 +3712,8 @@ const
   EVP_MD_meth_get_cleanup_removed = (byte(4) shl 8 or byte(0)) shl 8 or byte(0);
   EVP_MD_meth_get_ctrl_introduced = (byte(1) shl 8 or byte(1)) shl 8 or byte(0);
   EVP_MD_meth_get_ctrl_removed = (byte(4) shl 8 or byte(0)) shl 8 or byte(0);
+  EVP_default_properties_enable_fips_introduced = (byte(3) shl 8 or byte(0)) shl 8 or byte(0); {introduced 3.0.0}
+  EVP_default_properties_is_fips_enabled_introduced = (byte(3) shl 8 or byte(0)) shl 8 or byte(0); {introduced 3.0.0}
   EVP_MD_fetch_introduced = (byte(3) shl 8 or byte(0)) shl 8 or byte(0);  {introduced 3.0.0}
   EVP_MD_get_size_introduced = (byte(3) shl 8 or byte(0)) shl 8 or byte(0);  {introduced 3.0.0}
   EVP_MD_get_block_size_introduced = (byte(3) shl 8 or byte(0)) shl 8 or byte(0);  {introduced 3.0.0}
@@ -4122,6 +4132,8 @@ const
   EVP_MD_size_procname = 'EVP_MD_size'; {removed 3.0.0}
   EVP_MD_block_size_procname = 'EVP_MD_block_size'; {removed 3.0.0}
   EVP_MD_flags_procname = 'EVP_MD_flags'; {removed 3.0.0}
+  EVP_default_properties_enable_fips_procname = 'EVP_default_properties_enable_fips'; {introduced 3.0.0}
+  EVP_default_properties_is_fips_enabled_procname = 'EVP_default_properties_is_fips_enabled'; {introduced 3.0.0}
   EVP_MD_fetch_procname = 'EVP_MD_fetch'; {introduced 3.0.0}
   EVP_MD_get_size_procname = 'EVP_MD_get_size'; {introduced 3.0.0}
   EVP_MD_get_block_size_procname = 'EVP_MD_get_block_size'; {introduced 3.0.0}
@@ -5398,6 +5410,16 @@ end;
 function  ERR_EVP_MD_flags(const md: PEVP_MD): PIdC_ULONG;  cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_MD_flags_procname);
+end;
+
+function  ERR_EVP_default_properties_enable_fips(ctx: POSSL_LIB_CTX; enable: TIdC_INT): TIdC_INT; cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_default_properties_enable_fips_procname);
+end;
+
+function  ERR_EVP_default_properties_is_fips_enabled(ctx: POSSL_LIB_CTX): TIdC_INT; cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_default_properties_is_fips_enabled_procname);
 end;
 
 function  ERR_EVP_MD_fetch(ctx: POSSL_LIB_CTX; const algorithm, properties: PIdAnsiChar): PEVP_MD;  cdecl;
@@ -10322,6 +10344,50 @@ begin
     {$if not defined(EVP_MD_flags_allownil)}
     if FuncLoadError then
       AFailed.Add('EVP_MD_flags');
+    {$ifend}
+  end;
+
+  EVP_default_properties_enable_fips := LoadLibFunction(ADllHandle, EVP_default_properties_enable_fips_procname);
+  FuncLoadError := not assigned(EVP_default_properties_enable_fips);
+  if FuncLoadError then
+  begin
+    {$if not defined(EVP_default_properties_enable_fips_allownil)}
+    EVP_default_properties_enable_fips := ERR_EVP_default_properties_enable_fips;
+    {$ifend}
+    {$if declared(EVP_default_properties_enable_fips_introduced)}
+    if LibVersion < EVP_default_properties_enable_fips_introduced then
+    begin
+      {$if declared(FC_EVP_default_properties_enable_fips)}
+      EVP_default_properties_enable_fips := FC_EVP_default_properties_enable_fips;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(EVP_default_properties_enable_fips_allownil)}
+    if FuncLoadError then
+      AFailed.Add('EVP_default_properties_enable_fips');
+    {$ifend}
+  end;
+
+  EVP_default_properties_is_fips_enabled := LoadLibFunction(ADllHandle, EVP_default_properties_is_fips_enabled_procname);
+  FuncLoadError := not assigned(EVP_default_properties_is_fips_enabled);
+  if FuncLoadError then
+  begin
+    {$if not defined(EVP_default_properties_is_fips_enabled_allownil)}
+    EVP_default_properties_is_fips_enabled := ERR_EVP_default_properties_is_fips_enabled;
+    {$ifend}
+    {$if declared(EVP_default_properties_is_fips_enabled_introduced)}
+    if LibVersion < EVP_default_properties_is_fips_enabled_introduced then
+    begin
+      {$if declared(FC_EVP_default_properties_is_fips_enabled)}
+      EVP_default_properties_is_fips_enabled := FC_EVP_default_properties_is_fips_enabled;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(EVP_default_properties_is_fips_enabled_allownil)}
+    if FuncLoadError then
+      AFailed.Add('EVP_default_properties_is_fips_enabled');
     {$ifend}
   end;
 
@@ -26783,6 +26849,8 @@ begin
   EVP_MD_size := nil; {removed 3.0.0}
   EVP_MD_block_size := nil; {removed 3.0.0}
   EVP_MD_flags := nil; {removed 3.0.0}
+  EVP_default_properties_enable_fips := nil; {introduced 3.0.0}
+  EVP_default_properties_is_fips_enabled := nil; {introduced 3.0.0}
   EVP_MD_fetch := nil; {introduced 3.0.0}
   EVP_MD_get_size := nil; {introduced 3.0.0}
   EVP_MD_get_block_size := nil; {introduced 3.0.0}
