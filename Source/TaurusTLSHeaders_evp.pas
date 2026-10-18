@@ -1217,6 +1217,8 @@ var
   EVP_EncryptInit: function (ctx: PEVP_CIPHER_CTX; const cipher: PEVP_CIPHER; const key: PByte; const iv: PByte): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_EncryptInit_ex}
   EVP_EncryptInit_ex: function (ctx: PEVP_CIPHER_CTX; const cipher: PEVP_CIPHER; impl: PENGINE; const key: PByte; const iv: PByte): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM EVP_EncryptInit_ex2}
+  EVP_EncryptInit_ex2: function(ctx: PEVP_CIPHER_CTX; _type : PEVP_CIPHER; key, iv : PByte; const  params : POSSL_PARAM_ARRAY) : TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_EncryptUpdate}
   EVP_EncryptUpdate: function (ctx: PEVP_CIPHER_CTX; var out_; var out1: TIdC_INT; const in_; in_1: TIdC_INT): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_EncryptFinal_ex}
@@ -2501,6 +2503,8 @@ var
   function EVP_EncryptInit(ctx: PEVP_CIPHER_CTX; const cipher: PEVP_CIPHER; const key: PByte; const iv: PByte): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM EVP_EncryptInit_ex}
   function EVP_EncryptInit_ex(ctx: PEVP_CIPHER_CTX; const cipher: PEVP_CIPHER; impl: PENGINE; const key: PByte; const iv: PByte): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM EVP_EncryptInit_ex2}
+  function EVP_EncryptInit_ex2(ctx: PEVP_CIPHER_CTX; _type : PEVP_CIPHER; key, iv : PByte; const  params : POSSL_PARAM_ARRAY) : TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM EVP_EncryptUpdate}
   function EVP_EncryptUpdate(ctx: PEVP_CIPHER_CTX; var out_; var out1: TIdC_INT; const in_; in_1: TIdC_INT): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM EVP_EncryptFinal_ex}
@@ -4058,6 +4062,7 @@ const
   d2i_KeyParams_bio_introduced = (byte(3) shl 8 or byte(0)) shl 8 or byte(0);
 
   BIO_f_reliable_removed = (byte(4) shl 8 or byte(0)) shl 8 or byte(0);
+  EVP_EncryptInit_ex2_introduced = (byte(3) shl 8 or byte(0)) shl 8 or byte(0);
 //#  define EVP_PKEY_assign_RSA(pkey,rsa) EVP_PKEY_assign((pkey),EVP_PKEY_RSA, (char *)(rsa))
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 const
@@ -4260,6 +4265,7 @@ const
 
   EVP_EncryptInit_procname = 'EVP_EncryptInit';
   EVP_EncryptInit_ex_procname = 'EVP_EncryptInit_ex';
+  EVP_EncryptInit_ex2_procname = 'EVP_EncryptInit_ex2';
   EVP_EncryptUpdate_procname = 'EVP_EncryptUpdate';
   EVP_EncryptFinal_ex_procname = 'EVP_EncryptFinal_ex';
   EVP_EncryptFinal_procname = 'EVP_EncryptFinal';
@@ -5912,6 +5918,10 @@ begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_EncryptInit_ex_procname);
 end;
 
+function ERR_EVP_EncryptInit_ex2(ctx: PEVP_CIPHER_CTX; _type : PEVP_CIPHER; key, iv : PByte; const  params : POSSL_PARAM_ARRAY) : TIdC_INT cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_EncryptInit_ex2_procname);
+end;
 
 function  ERR_EVP_EncryptUpdate(ctx: PEVP_CIPHER_CTX; var out_; var out1: TIdC_INT; const in_; in_1: TIdC_INT): TIdC_INT; cdecl;
 begin
@@ -12807,6 +12817,39 @@ begin
       AFailed.Add('EVP_EncryptInit_ex');
     {$ifend}
   end;
+
+
+  EVP_EncryptInit_ex2 := LoadLibFunction(ADllHandle, EVP_EncryptInit_ex2_procname);
+  FuncLoadError := not assigned(EVP_EncryptInit_ex2);
+  if FuncLoadError then
+  begin
+    {$if not defined(EVP_EncryptInit_ex_allownil)}
+    EVP_EncryptInit_ex2 := ERR_EVP_EncryptInit_ex2;
+    {$ifend}
+    {$if declared(EVP_EncryptInit_ex2_introduced)}
+    if LibVersion < EVP_EncryptInit_ex2_introduced then
+    begin
+      {$if declared(FC_EVP_EncryptInit_ex2)}
+      EVP_EncryptInit_ex2 := FC_EVP_EncryptInit_ex;2
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(EVP_EncryptInit_ex2_removed)}
+    if EVP_EncryptInit_ex2_removed <= LibVersion then
+    begin
+      {$if declared(_EVP_EncryptInit_ex2)}
+      EVP_EncryptInit_ex := _EVP_EncryptInit_ex2;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(EVP_EncryptInit_ex2_allownil)}
+    if FuncLoadError then
+      AFailed.Add('EVP_EncryptInit_ex2');
+    {$ifend}
+  end;
+
 
 
   EVP_EncryptUpdate := LoadLibFunction(ADllHandle, EVP_EncryptUpdate_procname);
@@ -26886,6 +26929,7 @@ begin
   EVP_CIPHER_CTX_test_flags := nil;
   EVP_EncryptInit := nil;
   EVP_EncryptInit_ex := nil;
+  EVP_EncryptInit_ex2 := nil;
   EVP_EncryptUpdate := nil;
   EVP_EncryptFinal_ex := nil;
   EVP_EncryptFinal := nil;
