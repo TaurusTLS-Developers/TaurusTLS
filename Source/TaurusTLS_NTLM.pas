@@ -22,11 +22,51 @@ unit TaurusTLS_NTLM;
 
 interface
 
+{$IFDEF UNITTEST}
+uses
+  IdCTypes,
+  IdGlobal,
+  IdFIPS;
+
+type
+   {$IFDEF DCC}{$WARN UNSAFE_TYPE OFF}{$ENDIF}
+  DES_LONG = type cardinal;
+  DES_cblock = array [0 .. 7] of byte;
+  PDES_cblock = ^DES_cblock;
+  Pdes_key_schedule = ^des_key_schedule;
+  DES_ks = record
+    ks: array [0 .. 15] of record
+    case longint of
+    0: (cblock: DES_cblock);
+    1: (deslong: array [0 .. 1] of DES_LONG);
+    end;
+  end;
+  DES_key_schedule = DES_ks;
+   {$IFDEF DCC}{$WARN UNSAFE_TYPE DEFAULT}{$ENDIF}
+
+
+procedure Encrypt_DES(const Akey_56: DES_cblock;
+  VOut: Pointer; const AIn: Pointer);
+
+procedure calc_resp(Vkeys: PDES_cblock;
+  const ANonce: TIdBytes; Vresults: Pdes_key_schedule);
+
+function SetupLanManagerPassword(const APassword: String;
+  const ANonce: TIdBytes): TIdBytes;
+
+function CreateNTPassword(const APassword: String;
+  const ANonce: TIdBytes): TIdBytes;
+{$ENDIF UNITTEST}
+
 implementation
 {$I TaurusTLSLinkDefines.inc}
 uses
- IdCTypes,
-  IdGlobal, IdFIPS, IdHashMessageDigest,
+{$IFNDEF UNITTEST}
+  IdCTypes,
+  IdGlobal,
+  IdFIPS,
+{$ENDIF UNITTEST}
+  IdHashMessageDigest,
   TaurusTLS_ResourceStrings,
   TaurusTLSExceptionHandlers,
   TaurusTLSLoader,
@@ -50,6 +90,7 @@ begin
   Result := True;
 end;
 
+{$IFNDEF UNITTEST}
 type
    {$IFDEF DCC}{$WARN UNSAFE_TYPE OFF}{$ENDIF}
   DES_LONG = type cardinal;
@@ -65,6 +106,8 @@ type
   end;
   DES_key_schedule = DES_ks;
    {$IFDEF DCC}{$WARN UNSAFE_TYPE DEFAULT}{$ENDIF}
+{$ENDIF UNITTEST}
+
 
 procedure Encrypt_DES(const Akey_56: des_cblock; VOut : Pointer; const AIn :  Pointer);
 Var
