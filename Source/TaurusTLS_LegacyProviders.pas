@@ -39,7 +39,7 @@ uses
   IdGlobal,
   IdCTypes,
   TaurusTLSConsts,
-  {$IFDEF OPENSSL_STATIC_LINK_MODEL}
+  {$IFDEF STATICLOAD_OPENSSL}
   TaurusTLSHeaders_core,
   {$ENDIF}
   TaurusTLSHeaders_provider,
@@ -58,10 +58,11 @@ begin
   Result := Assigned(FLegacyProvider);
 end;
 
-{$IFDEF OPENSSL_STATIC_LINK_MODEL}
+// Match the archive configuration that declares CLibLegacyProvider.
+{$IFDEF STATICLOAD_OPENSSL}
 function ossl_legacy_provider_init(const handle: POSSL_CORE_HANDLE;
-  const in_struct: POSSL_DISPATCH; out out_struct: POSSL_DISPATCH;
-  prov_ctx: pointer): TIdC_INT; cdecl; external CLibLegacyProvider;
+  const in_struct: POSSL_DISPATCH; var out_struct: POSSL_DISPATCH;
+  var prov_ctx: Pointer): TIdC_INT; cdecl; external CLibLegacyProvider;
 {$ENDIF}
 
 type
@@ -79,8 +80,8 @@ type
 
 class procedure TTaurusTLSLegacyProviderManager.InitLegacyProvider;
 begin
-  // 1. In static mode, register the built-in static entry point first
-  {$IFDEF OPENSSL_STATIC_LINK_MODEL}
+  // 1. When linking the legacy archive, register its entry point first.
+  {$IFDEF STATICLOAD_OPENSSL}
   OSSL_PROVIDER_add_builtin(nil, CLegacyProviderName, @ossl_legacy_provider_init);
   {$ENDIF}
 

@@ -435,6 +435,16 @@ type
   /// </seealso>
   ETaurusTLSEVPEncryptFinalExFailed = class(ETaurusTLSAPICryptoError);
 
+  /// <summary>
+  ///   Raised if the OpenSSL configuration file path is invalid, missing, or a directory.
+  /// </summary>
+  ETaurusTLSConfigFilePathError = class(ETaurusTLSAPICryptoError);
+
+  /// <summary>
+  ///   Raised if OpenSSL failed to load the specified configuration file.
+  /// </summary>
+  ETaurusTLSConfigFileLoadError = class(ETaurusTLSAPICryptoError);
+
 implementation
 
 uses IdGlobal, IdStack, IdResourceStringsProtocols,
