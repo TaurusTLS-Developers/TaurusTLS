@@ -15,6 +15,8 @@ type
   private
     class function HexBytes(const AHex: string): TIdBytes; static;
     class procedure AssertBytesEqual(const AExpected, AActual: TIdBytes); static;
+  protected
+    procedure CheckLegacyProvider;
   public
     // Independent NTLMv1 known-answer vector (password Password, challenge below).
     [AutoNameTestCase('Password,0123456789ABCDEF,67C43011F30298A2AD35ECE64F16331C44BDBED927841F94')]
@@ -35,6 +37,7 @@ type
 implementation
 
 uses
+  TaurusTLS_LegacyProviders,
   TaurusTLS_NTLM;
 
 const
@@ -64,12 +67,19 @@ begin
       Format('Mismatch at byte %d', [I]));
 end;
 
+procedure TOSSLNTLMFixture.CheckLegacyProvider;
+begin
+  Assert.IsTrue(IsLegacyProviderLoaded,
+    'Legacy Provider is not loaded. Unable to continue.')
+end;
+
 procedure TOSSLNTLMFixture.NTLMResponse(
   APassword, AChallengeHex, AExpectedHex: string);
 var
   LChallenge, LActual: TIdBytes;
 begin
   CheckAllFailures;
+  CheckLegacyProvider;
   LChallenge := HexBytes(AChallengeHex);
   Assert.AreEqual<Integer>(8, Length(LChallenge));
   LActual := CreateNTPassword(APassword, LChallenge);
@@ -82,6 +92,7 @@ var
   LChallenge, LActual: TIdBytes;
 begin
   CheckAllFailures;
+  CheckLegacyProvider;
   LChallenge := HexBytes(AChallengeHex);
   Assert.AreEqual<Integer>(8, Length(LChallenge));
   LActual := SetupLanManagerPassword(APassword, LChallenge);
