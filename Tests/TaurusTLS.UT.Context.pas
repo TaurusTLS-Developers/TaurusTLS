@@ -14,8 +14,10 @@ type
     procedure InitWith(const ARootPublicKey, ADHParamsFile: string);
     function WriteFile(const AName, AContent: string): string;
   public
-    procedure SetupFixture; override;
-    procedure TearDownFixture; override;
+    [SetupFixture]
+    procedure SetupFixture;
+    [TearDownFixture]
+    procedure TearDownFixture;
 
     [Test]
     procedure DHParamsFile_Missing_Raises;

@@ -183,6 +183,7 @@ implementation
 
 uses
   System.RTTI, System.NetEncoding, System.TypInfo, TaurusTLSHeaders_bio,
+  TaurusTLSExceptionHandlers,
   TaurusTLSHeaders_evp, TaurusTLSHeaders_evperr, TaurusTLS_Random;
 
 { TCustomBytesFixture }

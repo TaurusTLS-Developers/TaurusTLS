@@ -22,7 +22,7 @@ const
 
   TaurusTLSLibraryPath = 'OPENSSL_LIBRARY_PATH'; {environment variable name}
   {$IFNDEF OPENSSL_NO_MIN_VERSION}
-  min_supported_ssl_version =  (((byte(1) shl 8) + byte(0)) shl 8) shl 8 + byte(0); {1.0.0}
+  min_supported_ssl_version =  (((byte(3) shl 8) + byte(0)) shl 8) shl 8 + byte(0); {3.0.0}
   {$ELSE}
   min_supported_ssl_version = 0;
   {$ENDIF}
@@ -62,6 +62,7 @@ const
     {$IFDEF STATICLOAD_OPENSSL}
     CLibCrypto = 'libcrypto.a';
     CLibSSL = 'libssl.a';
+    CLibLegacyProvider = 'liblegacy.a';
     {$ENDIF}
   {$ENDIF}
   
@@ -72,20 +73,20 @@ const
     {$ELSE}
   LibSuffix = '.so';
     {$ENDIF}
-  DefaultLibVersions = '.4:.3:.1.1';
+  DefaultLibVersions = '.4:.3';
   {$ENDIF}
   {$IFDEF WINDOWS}
   DirListDelimiter = ';';
   LibSuffix = '';
     {$IFDEF CPU64}
       {$IFDEF CPUARM64}
-    DefaultLibVersions = '-4-arm64;-3-arm64;-1_1-arm64;-1-arm64;';
+    DefaultLibVersions = '-4-arm64;-3-arm64;';
       {$ELSE}
-    DefaultLibVersions = '-4-x64;-3-x64;-1_1-x64;-1-x64;';
+    DefaultLibVersions = '-4-x64;-3-x64;';
       {$ENDIF}
     {$ENDIF}
     {$IFDEF CPU32}
-    DefaultLibVersions = '-4;-3;-1_1;-1;';
+    DefaultLibVersions = '-4;-3;';
     {$ENDIF}
   {$ENDIF}
 

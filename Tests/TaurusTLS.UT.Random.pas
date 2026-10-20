@@ -30,8 +30,6 @@ type
   [Category('Random')]
   TOSSLRandomFixture = class(TOsslBaseFixture)
   private
-    function GetRandomBytes(ASource: TRandomSrc; ACtx: POSSL_LIB_CTX;
-      AStrength: TIdC_UINT): TTaurusTLS_CustomOSSLRandomBytes;
     function GetOSSLRandom(ASource: TRandomSrc): TTaurusTLS_OSSLRandom;
     procedure CheckOsslResult(AResult: TIdC_INT);
     procedure RandomT<T: record>(Source: TRandomSrc; Items: TIdC_SIZET);
@@ -68,8 +66,6 @@ type
   [Category('Random')]
   TRandomFixture = class(TOsslBaseFixture)
   private
-    function GetRandomBytes(ASource: TRandomSrc; ACtx: POSSL_LIB_CTX;
-      AStrength: TIdC_UINT): TTaurusTLS_CustomOSSLRandomBytes;
     function GetRandom(ASource: TRandomSrc): TTaurusTLS_Random;
     procedure RandomT<T: record>(Source: TRandomSrc; Items: TIdC_SIZET);
   public
@@ -237,7 +233,6 @@ type
 function TMockRandomBytes.DoRandom(ctx: POSSL_LIB_CTX; var buf; num: TIdC_SIZET;
   strength: TIdC_UINT): TIdC_INT;
 begin
-  Result:=-1;
   Assert.IsNotNull(@FMockProc, 'MockProc property must be assigned.');
   FMockProc(ctx, buf, num, strength);
   Result:=1;
@@ -253,6 +248,8 @@ begin
       Result:=TTaurusTLS_OSSLPrivateRandomBytes.Create(ACtx, AStrength);
     rsPublic:
       Result:=TTaurusTLS_OSSLPublicRandomBytes.Create(ACtx, AStrength);
+  else
+    raise EOSSLRandom.Create('Unknown TRandomSrc value');
   end;
 end;
 
@@ -293,19 +290,13 @@ begin
         FillChar(buf, num, $00);
       end;
     Assert.AreEqual<TIdC_INT>(1, lRandomBytes.Random(lData, SizeOf(lData)));
-    Assert.AreEqual<NativeUInt>(0, lData, 'lRandomBytes.Radndom did not update ''lData''.')
+    Assert.AreEqual<NativeUInt>(0, lData, 'lRandomBytes.Random did not update ''lData''.')
   finally
     lRandomBytes.Free;
   end;
 end;
 
 { TOSSLRandomFixture }
-
-function TOSSLRandomFixture.GetRandomBytes(ASource: TRandomSrc;
-  ACtx: POSSL_LIB_CTX; AStrength: TIdC_UINT): TTaurusTLS_CustomOSSLRandomBytes;
-begin
-  Result:=TOSSLRandomBytesFixture.GetRandomBytes(ASource, ACtx, AStrength);
-end;
 
 procedure TOSSLRandomFixture.NewRandomNegative;
 begin
@@ -351,9 +342,12 @@ begin
         end;
       lRandom:=TTaurusTLS_OSSLRandom.NewRandom(lRandomBytes);
       lRandom.Random(lData, SizeOf(lData));
-      Assert.AreEqual<NativeUInt>(0, lData, 'lRandomBytes.Radndom did not update ''lData''.')
+      Assert.AreEqual<NativeUInt>(0, lData, 'lRandom.Random did not update ''lData''.')
     finally
-       lRandom.Free;
+      if Assigned(lRandom) then
+        lRandom.Free
+      else
+        lRandomBytes.Free;
     end;
   end;
 end;
@@ -366,6 +360,8 @@ begin
       Result:=TTaurusTLS_OSSLRandom.PrivateRandom;
     rsPublic:
       Result:=TTaurusTLS_OSSLRandom.PublicRandom;
+  else
+    raise EOSSLRandom.Create('Unknown TRandomSrc value');
   end;
 end;
 
@@ -536,12 +532,6 @@ end;
 
 { TRandomFixture }
 
-function TRandomFixture.GetRandomBytes(ASource: TRandomSrc; ACtx: POSSL_LIB_CTX;
-  AStrength: TIdC_UINT): TTaurusTLS_CustomOSSLRandomBytes;
-begin
-  Result:=TOSSLRandomBytesFixture.GetRandomBytes(ASource, ACtx, AStrength);
-end;
-
 function TRandomFixture.GetRandom(
   ASource: TRandomSrc): TTaurusTLS_Random;
 begin
@@ -550,6 +540,8 @@ begin
       Result:=TTaurusTLS_Random.PrivateRandom;
     rsPublic:
       Result:=TTaurusTLS_Random.PublicRandom;
+  else
+    raise EOSSLRandom.Create('Unknown TRandomSrc value');
   end;
 end;
 
@@ -628,9 +620,12 @@ begin
         end;
       lRandom:=TTaurusTLS_Random.NewRandom(lRandomBytes);
       lRandom.Random(lData, SizeOf(lData));
-      Assert.AreEqual<NativeUInt>(0, lData, 'lRandomBytes.Radndom did not update ''lData''.')
+      Assert.AreEqual<NativeUInt>(0, lData, 'lRandom.Random did not update ''lData''.')
     finally
-       lRandom.Free;
+      if Assigned(lRandom) then
+        lRandom.Free
+      else
+        lRandomBytes.Free;
     end;
   end;
 end;

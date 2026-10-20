@@ -68,7 +68,7 @@ uses
 
 class function TBioReadWriteFixture.GetRandomStr(ALen: TIdC_SIZET): RawByteString;
 begin
-  Result:=THash.GetRandomString(ALen);
+  Result:=RawByteString(THash.GetRandomString(ALen));
 end;
 
 procedure TBioReadWriteFixture.Do_BIO_read(const AValue: RawByteString;
@@ -91,7 +91,7 @@ begin
     Assert.IsNotNull(lBio, 'lBio is ''nil''');
     lPos:=1;
     lRemainLen:=lLen;
-    if AChunkLen > lLen then
+    if AChunkLen > TIdC_SIZET(lLen) then
       AChunkLen:=lLen;
     repeat
       lTestLen:=lRemainLen;
@@ -147,7 +147,7 @@ begin
       Assert.AreEqual<TIdC_SIZET>(lTestLen, lWriteLen, 'BIO_write');
       lBufLen:=BIO_get_mem_data(lBio, lBufPtr);
       Inc(lPos, lWriteLen);
-      Assert.IsTrue(lPos <= lBufLen,
+      Assert.IsTrue(TIdC_SIZET(lPos) <= lBufLen,
         'Write Buffer shoreter than current position (lPos > lBufLen)');
       Assert.IsTrue(CompareMem(@AValue[1], lBufPtr, lPos),
         'Source and Write Buffer are not equal.)');
@@ -178,22 +178,11 @@ begin
   end;
 end;
 
-type
-  // https://github.com/openssl/openssl/blob/bde55d421b1f49e31248c240efe50ff1f0d24141/include/openssl/buffer.h#L42
-  PBUF_MEMM = ^TBUF_MEMM;
-  TBUF_MEMM = record
-    length: TIdC_SIZET;
-    data: PIdAnsiChar;
-    max: TIdC_SIZET;
-    flags: TIdC_UINT;
-  end;
-
 procedure TBioReadWriteFixture.Test_BIO_new_mem_ref(const AValue: RawByteString);
 var
   lBio: PBIO;
-  lLen: TIdC_INT;
-  lRef: PBUF_MEM;
-  lData: PIdAnsiChar;
+  lLen, lBioLen: TIdC_INT;
+  lBioData: pointer;
 
 begin
   lBio:=nil;
@@ -202,11 +191,11 @@ begin
   try
     lBio:=BIO_new_mem_buf(AValue[1], lLen);
     Assert.IsNotNull(lBio, 'lBio is ''nil''');
-    Assert.AreEqual<TIdC_INT>(1, BIO_get_mem_ptr(lBio, lRef), 'BIO_get_mem_ptr');
-    Assert.AreEqual<TIdC_INT>(lLen, PBUF_MEMM(lRef)^.length,
-      '@AValue[1] <> PBUF_MEMM(lRef)^.length');
-    Assert.AreEqual<pointer>(@AValue[1], PBUF_MEMM(lRef)^.data,
-      '@AValue[1] <> PBUF_MEMM(lRef)^.data');
+    lBioLen:=BIO_get_mem_data(lBio, lBioData);
+    Assert.AreEqual<TIdC_INT>(lLen, lBioLen,
+      'BIO Lengths and Original Data Lengths are not equal.');
+    Assert.AreEqual<pointer>(@AValue[1], lBioData,
+      'BIO does not refer Origonal data');
   finally
     BIO_free(lBio);
   end;
@@ -271,9 +260,8 @@ begin
     begin
       lResult:=BIO_write(ABio, AData, AChunkLen);
       if lResult < 0 then
-        ETaurusTLSAPICryptoError.RaiseException
-      else
-        Result:=lResult;
+        ETaurusTLSAPICryptoError.RaiseException;
+      Result:=lResult;
     end
   );
 end;
@@ -304,9 +292,8 @@ begin
     begin
       lResult:=BIO_write(ABio, AData, AChunkLen);
       if lResult < 0 then
-        ETaurusTLSAPICryptoError.RaiseException
-      else
-        Result:=lResult;
+        ETaurusTLSAPICryptoError.RaiseException;
+      Result:=lResult;
     end
   );
 end;
@@ -342,7 +329,7 @@ procedure TBioReadWriteFixture.Test_BIO_parse_hostserv(
           '''%s'' <> ''%s''', [AItem, AChars, AStr]));
     end
     else
-      Assert.IsEmpty(AStr,
+      Assert.IsEmpty(string(AStr),
         Format('Returned %s part is empty, but should be ''%s''', [AItem, AStr]));
   end;
 
@@ -354,7 +341,7 @@ var
   lLen: integer;
 
 begin
-  lPair:=AHostServicePair;
+  lPair:=string(AHostServicePair);
   lLen:=Length(lPair);
   Assert.AreNotEqual<TIdC_INT>(0, lLen, 'Lenght(AHostServicePair) = 0');
   Assert.AreNotEqual(':', lPair, 'AHostServicePair should not be '':''');
@@ -363,8 +350,8 @@ begin
   Assert.AreEqual(2, lLen,
     Format('AHostServicePair should consists of 1 or 2 elements'+
       ' devided by '':''. Actually it consists of %d elements', [lLen]));
-  lHost:=lStrings[0];
-  lService:=lStrings[1];
+  lHost:=RawByteString(lStrings[0]);
+  lService:=RawByteString(lStrings[1]);
   try
     Assert.AreEqual<TIdC_INT>(1, BIO_parse_hostserv(PIdAnsiChar(AHostServicePair),
       lHostOut, lServiceOut, APriority), 'BIO_parse_hostserv');
