@@ -100,10 +100,18 @@ begin
   Result := '';
 end;
 
+{$IFDEF OPENSSL_STATIC_LINK_MODEL}
 procedure TIOpenSSLLoader.StaticLoaderIsNil;
+var
+  LLoader: IOpenSSLLoader;
 begin
-  Assert.IsNull(GetOpenSSLLoader);
+  LLoader := GetOpenSSLLoader;
+  Assert.IsNotNull(LLoader, 'Static loader instance must be available');
+  Assert.IsFalse(LLoader.IsLoaded, 'Static loader must not be loaded before Load is called');
+  Assert.AreEqual('', LLoader.OpenSSLPath, 'OpenSSLPath must be empty in static mode');
+  Assert.AreEqual(0, LLoader.FailedToLoad.Count, 'FailedToLoad must be empty in static mode');
 end;
+{$ENDIF}
 
 {$ELSE}
 
