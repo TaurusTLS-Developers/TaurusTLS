@@ -994,7 +994,7 @@ begin
   {$else}
   if fX509Name = nil then
   begin
-    FillChar(Result, SizeOf(Result), 0)
+    FillChar(Result, SizeOf(Result), 0);
   end
   else
   {$endif}
