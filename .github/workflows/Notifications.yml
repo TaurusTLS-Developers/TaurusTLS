@@ -62,9 +62,12 @@ jobs:
           message: |
             🛠️ *TaurusTLS GitHub Notification*
             
-            *Event:* ${{ steps.event-info.outputs.TITLE }}
-            *Subject:* ${{ steps.event-info.outputs.SUBJECT }}
+            *Event:* `${{ steps.event-info.outputs.TITLE }}`
+            *Subject:*
+            ```
+            \${{ steps.event-info.outputs.SUBJECT }}
+            ```
             *Repository:* `TaurusTLS/${{ github.event.repository.name }}`
-            *Triggered by:* @${{ steps.event-info.outputs.AUTHOR }}
+            *Triggered by:* @\${{ steps.event-info.outputs.AUTHOR }}
             
-            [🔗 View on GitHub](${{ steps.event-info.outputs.URL }})
+            [🔗 View on GitHub](\${{ steps.event-info.outputs.URL }})
