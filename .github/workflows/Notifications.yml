@@ -58,13 +58,12 @@ jobs:
           token: ${{ secrets.TLG_BOT_TKN_TAURUSTLSDEV_BOT }}
           message_thread_id: ${{ vars.TLG_THRD_ID_TAURUSTLS_ALERTS }}
           disable_web_page_preview: true
-          format: markdown
+          fomat: html
           message: |
-            🛠️ *TaurusTLS GitHub Notification*
-            
-            *Event:* ${{ steps.event-info.outputs.TITLE }}
-            *Subject:* ${{ steps.event-info.outputs.SUBJECT }}
-            *Repository:* `TaurusTLS/${{ github.event.repository.name }}`
-            *Triggered by:* @${{ steps.event-info.outputs.AUTHOR }}
-            
-            [🔗 View on GitHub](${{ steps.event-info.outputs.URL }})
+            <b>🛠️ TaurusTLS GitHub Notification</b>
+            <br><br>
+            <b>Event:</b> ${{ steps.event-info.outputs.TITLE }}<br>
+            <b>Subject:</b> ${{ steps.event-info.outputs.SUBJECT }}<br>
+            <b>Repository:</b> <code>TaurusTLS/${{ github.event.repository.name }}</code><br>
+  <b>Triggered by:</b> @${{ steps.event-info.outputs.AUTHOR }}<br><br>
+  <a href="${{ steps.event-info.outputs.URL }}">🔗 View on GitHub</a>
