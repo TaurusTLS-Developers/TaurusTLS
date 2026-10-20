@@ -106,6 +106,7 @@ var
   I: Integer;
 begin
   CheckAllFailures;
+  CheckLegacyProvider;
   Assert.IsTrue((ALeftGuard > 0) and (ARightGuard > 0));
 
   // DES 64-bit key 133457799BBCDFF1 stripped of parity bits
