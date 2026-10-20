@@ -1,0 +1,73 @@
+name: TaurusTLS GitHub Notifications
+
+on:
+  pull_request:
+    types: [opened, reopened, closed, review_requested]
+    branches:
+      - main
+  issues:
+    types: [opened, reopened, closed]
+  issue_comment:
+    types: [created]
+
+jobs:
+  notify-telegram:
+    runs-on: ubuntu-latest
+    # Skip job if it's a comment on a PR (GitHub treats PRs as issues for comments)
+    if: ${{ github.event_name != 'issue_comment' || !github.event.issue.pull_request }}
+    
+    steps:
+      - name: Set Event Details
+        id: event-info
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "TITLE=Pull Request ${{ github.event.action }}" >> $GITHUB_OUTPUT
+            echo "SUBJECT=${{ github.event.pull_request.title }}" >> $GITHUB_OUTPUT
+            echo "URL=${{ github.event.pull_request.html_url }}" >> $GITHUB_OUTPUT
+            echo "AUTHOR=${{ github.event.pull_request.user.login }}" >> $GITHUB_OUTPUT
+            
+          elif [ "${{ github.event_name }}" == "issues" ]; then
+            echo "TITLE=Issue ${{ github.event.action }}" >> $GITHUB_OUTPUT
+            echo "SUBJECT=${{ github.event.issue.title }}" >> $GITHUB_OUTPUT
+            echo "URL=${{ github.event.issue.html_url }}" >> $GITHUB_OUTPUT
+            echo "AUTHOR=${{ github.event.issue.user.login }}" >> $GITHUB_OUTPUT
+            
+          elif [ "${{ github.event_name }}" == "issue_comment" ]; then
+            echo "TITLE=New Comment on Issue #${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
+            echo "SUBJECT=${{ github.event.issue.title }}" >> $GITHUB_OUTPUT
+            echo "URL=${{ github.event.comment.html_url }}" >> $GITHUB_OUTPUT
+            echo "AUTHOR=${{ github.event.comment.user.login }}" >> $GITHUB_OUTPUT
+            
+          elif [ "${{ github.event_name }}" == "workflow_run" ]; then
+            echo "TITLE=CI Build Failed" >> $GITHUB_OUTPUT
+            echo "SUBJECT=${{ github.repository }}" >> $GITHUB_OUTPUT
+            echo "URL=${{ github.event.workflow_run.html_url }}" >> $GITHUB_OUTPUT
+            echo "AUTHOR=GitHub Actions" >> $GITHUB_OUTPUT
+            
+          else
+            echo "TITLE=Event Triggered: ${{ github.event_name }}" >> $GITHUB_OUTPUT
+            echo "SUBJECT=${{ github.repository }}" >> $GITHUB_OUTPUT
+            echo "URL=https://github.com/${{ github.repository }}" >> $GITHUB_OUTPUT
+            echo "AUTHOR=${{ github.actor }}" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Send Telegram Notification
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TLG_CHAT_ID_TAURUSTLS_ALERTS }}
+          token: ${{ secrets.TLG_BOT_TKN_TAURUSTLSDEV_BOT }}
+          message_thread_id: ${{ vars.TLG_THRD_ID_TAURUSTLS_ALERTS }}
+          disable_web_page_preview: true
+          format: markdown
+          message: |
+            🛠️ *TaurusTLS GitHub Notification*
+            
+            *Event:* `${{ steps.event-info.outputs.TITLE }}`
+            *Subject:*
+            ```
+            \${{ steps.event-info.outputs.SUBJECT }}
+            ```
+            *Repository:* `TaurusTLS/${{ github.event.repository.name }}`
+            *Triggered by:* @\${{ steps.event-info.outputs.AUTHOR }}
+            
+            [🔗 View on GitHub](\${{ steps.event-info.outputs.URL }})
