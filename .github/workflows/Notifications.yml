@@ -3,8 +3,6 @@ name: TaurusTLS GitHub Notifications
 on:
   pull_request:
     types: [opened, reopened, closed, review_requested]
-    branches:
-      - main
   issues:
     types: [opened, reopened, closed]
   issue_comment:
