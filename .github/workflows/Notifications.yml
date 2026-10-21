@@ -2,6 +2,10 @@
 name: TaurusTLS GitHub Notifications
 
 on:
+  push:
+    branches:
+      - test/telegram-notifications
+      
   pull_request_target:
     types: [opened, reopened, closed, review_requested]
     branches:
