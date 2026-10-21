@@ -32,8 +32,9 @@ jobs:
       - name: Send Telegram Notification
         shell: python
         env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TELEGRAM_TO: ${{ secrets.TELEGRAM_TO }}
+          TELEGRAM_TOKEN: ${{ secrets.TLG_BOT_TKN_TAURUSTLSDEV_BOT }}
+          TELEGRAM_TO: ${{ secrets.TLG_CHAT_ID_TAURUSTLS_ALERTS }}
+          TELEGRAM_THREAD: ${{ vars.TLG_THRD_ID_TAURUSTLS_ALERTS }}
 
         run: |
           import html
@@ -106,9 +107,9 @@ jobs:
           """)
 
           # Validate configuration.
-          token = os.environ.get("TLG_BOT_TKN_TAURUSTLSDEV_BOT")
-          chat_id = os.environ.get("TLG_CHAT_ID_TAURUSTLS_ALERTS")
-          message_thread_id = os.environ.get("TLG_THRD_ID_TAURUSTLS_ALERTS")
+          token = os.environ.get("TELEGRAM_TOKEN")
+          chat_id = os.environ.get("TELEGRAM_TO")
+          message_thread_id = os.environ.get("TELEGRAM_THREAD")
 
           if not token or not chat_id:
               sys.exit("Missing Telegram token or chat ID.")
