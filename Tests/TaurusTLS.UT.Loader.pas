@@ -1,4 +1,4 @@
-unit TaurusTLS.UT.Loader;
+﻿unit TaurusTLS.UT.Loader;
 
 {$I ..\Source\TaurusTLSCompilerDefines.inc}
 {$I ..\Source\TaurusTLSLinkDefines.inc}
@@ -15,93 +15,443 @@ uses
   IdCTypes,
   TaurusTLSLoader,
   TaurusTLSExceptionHandlers,
-  TaurusTLS_ResourceStrings;
+  TaurusTLS_ResourceStrings,
+  TaurusTLSConsts;
 
 type
-  [TestFixture]
-  [Category('Loader')]
-  TIOpenSSLLoader = class
-  private
+  /// <summary>
+  ///   Base fixture providing shared setup, teardown, and temporary configuration file helpers.
+  /// </summary>
+  TLoaderBaseFixture = class
+  protected
     FLoader: IOpenSSLLoader;
     FTempDir: string;
     FValidConfigFile: string;
     FInvalidSyntaxConfigFile: string;
-    function CreateTempConfigFile(const AContent: string): string;
+    FOrigOpenSSLPath: string;
+    FOrigSSLLibVersions: string;
+
+    function CreateTempConfigFile(const AContent: string; const AFileName: string = ''): string;
+    function HexToBytes(const AHexStr: string): TBytes;
+    function HexToUnicodeString(const AHexStr: string): string;
+  public
+    [Setup]
+    procedure Setup;
+    [TearDown]
+    procedure Teardown;
+  end;
+
+  /// <summary>
+  ///   Group 1: Configuration file path validation, syntax errors, and expansion tests.
+  /// </summary>
+  [TestFixture]
+  [Category('Loader,Loader.Config')]
+  TLoaderConfigFixture = class(TLoaderBaseFixture)
+  public
+    /// <summary>Tests that ConfigFile is initially empty and loader is not loaded.</summary>
+    [Test]
+    procedure Config_Initial;
+
+    /// <summary>Tests that ConfigFile accepts valid path formats prior to loading.</summary>
+    [Test]
+    procedure Config_SetValid;
+
+    /// <summary>Tests that ConfigFile rejects invalid platform path characters.</summary>
+    // 'bad'#0'path.cnf'
+    [TestCase('EmbeddedNull', '620061006400000070006100740068002E0063006E006600')]
+    {$IFDEF MSWINDOWS}
+    // 'bad|path.cnf'
+    [TestCase('Pipe',         '6200610064007C0070006100740068002E0063006E006600')]
+    // 'bad<path.cnf'
+    [TestCase('LessAngle',    '6200610064003C0070006100740068002E0063006E006600')]
+    // 'bad>path.cnf'
+    [TestCase('GreaterAngle', '6200610064003E0070006100740068002E0063006E006600')]
+    // 'bad?path.cnf'
+    [TestCase('QuestionMark', '6200610064003F0070006100740068002E0063006E006600')]
+    // 'bad*path.cnf'
+    [TestCase('Asterisk',     '6200610064002A0070006100740068002E0063006E006600')]
+    // 'bad"path.cnf'
+    [TestCase('DoubleQuote',  '620061006400220070006100740068002E0063006E006600')]
+    {$ENDIF}
+    procedure Config_InvalidChars(const AHexPath: string);
+
+    /// <summary>Tests that passing a directory path to ConfigFile is rejected on Load.</summary>
+    [Test]
+    procedure Config_RejectDir;
+
+    /// <summary>Tests that passing a non-existent file path to ConfigFile is rejected on Load.</summary>
+    [Test]
+    procedure Config_RejectMissing;
+
+    /// <summary>Tests that loading with a valid configuration file succeeds.</summary>
+    [Test]
+    procedure Config_ValidLoad;
+
+    /// <summary>Tests that malformed configuration syntax raises ETaurusTLSConfigFileLoadError.</summary>
+    [Test]
+    procedure Config_InvalidSyntax;
+
+    /// <summary>Tests that Unload clears the active effective configuration filename.</summary>
+    [Test]
+    procedure Config_UnloadClears;
+
+    /// <summary>Tests that relative configuration paths expand to absolute paths on Load.</summary>
+    [TestCase('SubDir', 'sub/test.cnf')]
+    [TestCase('CurrentDir', './test.cnf')]
+    procedure Config_RelativePath(const ARelPath: string);
+
+    /// <summary>Tests that configuration paths containing Unicode characters are supported.</summary>
+    [TestCase('Accents', 'Conf_Test_Unicode.cnf')]
+    [TestCase('Cyrillic', 'Конфиг_Тест.cnf')]
+    procedure Config_UnicodePath(const AUnicodeFileName: string);
+  end;
+
+  /// <summary>
+  ///   Group 2: Lifecycle idempotency, state persistence, mutation guards, and circuit breaker tests.
+  /// </summary>
+  [TestFixture]
+  [Category('Loader,Loader.Lifecycle')]
+  TLoaderLifecycleFixture = class(TLoaderBaseFixture)
+  public
+    {$IFDEF OPENSSL_STATIC_LINK_MODEL}
+    /// <summary>Verifies that the static loader instance is non-nil, uninitialized, and inert.</summary>
+    [Test]
+    procedure Static_State;
+    {$ENDIF}
+
+    /// <summary>Tests that successive Load calls succeed idempotently.</summary>
+    [Test]
+    procedure Life_DoubleLoad;
+
+    /// <summary>Tests that successive Unload calls are safe no-ops.</summary>
+    [Test]
+    procedure Life_DoubleUnload;
+
+    /// <summary>Tests that idempotent Load calls preserve the active configuration.</summary>
+    [Test]
+    procedure Life_PreserveConfig;
+
+    /// <summary>Tests that failure circuit breaker persists until explicit Unload.</summary>
+    [Test]
+    procedure Life_CircuitBreaker;
+
+    /// <summary>Tests that ConfigFile modification is rejected while loaded.</summary>
+    [Test]
+    procedure Life_RejectConfigWhenLoaded;
+
+    /// <summary>Tests that property mutation while failed is accepted, but Load remains blocked.</summary>
+    [TestCase('ConfigFile', '0')]
+    {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+    [TestCase('OpenSSLPath', '1')]
+    [TestCase('SSLLibVersions', '2')]
+    {$ENDIF}
+    procedure Life_MutateWhenFailed(const APropId: Integer);
+  end;
+
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  /// <summary>
+  ///   Group 3: Lifecycle action callbacks, execution ordering, and rollback tests.
+  /// </summary>
+  [TestFixture]
+  [Category('Loader,Loader.Callbacks')]
+  TLoaderCallbacksFixture = class(TLoaderBaseFixture)
   public
     [Setup]
     procedure Setup;
     [TearDown]
     procedure Teardown;
 
-{$IFDEF OPENSSL_STATIC_LINK_MODEL}
+    /// <summary>Tests that osaLoad and osaUnload fire while handles/symbols are active.</summary>
     [Test]
-    procedure StaticLoaderIsNil;
-{$ELSE}
-    // Existing configuration & path validation tests
-    [Test]
-    procedure InitialConfigFileIsEmpty;
-    [Test]
-    procedure SetConfigFileValidatesInvalidPathCharacters;
-    [Test]
-    procedure SetConfigFileAcceptsValidFormatWhenUnloaded;
-    [Test]
-    procedure SetConfigFileRejectsModificationWhenLoaded;
-    [Test]
-    procedure LoadRejectsDirectoryPath;
-    [Test]
-    procedure LoadRejectsNonExistentFile;
-    [Test]
-    procedure LoadWithValidConfigFileSucceeds;
-    [Test]
-    procedure LoadWithInvalidConfigContentRaisesLoadError;
-    [Test]
-    procedure UnloadClearsDefaultConfigFile;
+    procedure CB_DispatchLive;
 
-    // Lifecycle & Idempotency tests
+    /// <summary>Tests that action callbacks execute in strict reverse registration order on unload.</summary>
     [Test]
-    procedure DoubleLoadSucceeds;
-    [Test]
-    procedure DoubleUnloadIsSafe;
-    [Test]
-    procedure LoadWhenAlreadyLoadedIsIdempotentAndPreservesConfig;
+    procedure CB_ReverseUnload;
 
-    // Failure & Circuit-Breaker tests
+    /// <summary>Tests that double load and unload cycles do not duplicate callback triggers.</summary>
     [Test]
-    procedure FailureStatePersistsUntilExplicitUnload;
-    [Test]
-    procedure UnloadPreservesDiagnosticsOnFailure;
+    procedure CB_NoDuplicates;
 
-    // Callback lifecycle, ordering & rollback tests
+    /// <summary>Tests that granular rollback fires only for executed callbacks on load failure.</summary>
     [Test]
-    procedure PostLoadAndPreUnloadLifecycleDispatchesCleanly;
+    procedure CB_RollbackOnFail;
+
+    /// <summary>Tests that internal failure teardown preserves FailedToLoad diagnostics.</summary>
     [Test]
-    procedure CallbacksExecuteInReverseOrderOnUnload;
-    [Test]
-    procedure DoubleLoadAndUnloadDoNotDuplicateCallbacks;
-    [Test]
-    procedure CallbackRollbackFiresOnLoadFailure;
-{$ENDIF}
+    procedure CB_PreserveDiag;
   end;
+{$ENDIF}
 
 implementation
 
+const
+  cMinimalValidOpenSSLConfig =
+    'openssl_conf = default_conf' + sLineBreak +
+    sLineBreak +
+    '[default_conf]' + sLineBreak +
+    'ssl_conf = ssl_sect' + sLineBreak +
+    sLineBreak +
+    '[ssl_sect]' + sLineBreak +
+    'system_default = system_default_sect' + sLineBreak +
+    sLineBreak +
+    '[system_default_sect]' + sLineBreak +
+    'MinProtocol = TLSv1.2' + sLineBreak;
+
+  cMinimalInvalidOpenSSLConfig =
+    '[invalid_syntax' + sLineBreak +
+    '= broken ===' + sLineBreak;
+
+{ TLoaderBaseFixture }
+
+function TLoaderBaseFixture.HexToBytes(const AHexStr: string): TBytes;
+var
+  lLen: NativeUInt;
+begin
+  Assert.IsNotEmpty(AHexStr, 'Parameter ''AHexStr'' must not be empty.');
+  lLen := Length(AHexStr);
+  Assert.IsFalse(Odd(lLen mod 2), 'HEX String must be divisible by 2.');
+  lLen := lLen div 2;
+  SetLength(Result, lLen);
+  HexToBin(PChar(AHexStr), 0, Result, 0, lLen);
+end;
+
+function TLoaderBaseFixture.HexToUnicodeString(const AHexStr: string): string;
+var
+  LBytes: TBytes;
+begin
+  LBytes := HexToBytes(AHexStr);
+  Result := TEncoding.Unicode.GetString(LBytes);
+end;
+
+procedure TLoaderBaseFixture.Setup;
+begin
+  FLoader := GetOpenSSLLoader;
+  if Assigned(FLoader) then
+  begin
+    FOrigOpenSSLPath := FLoader.OpenSSLPath;
+    FOrigSSLLibVersions := FLoader.SSLLibVersions;
+    try
+      FLoader.Unload;
+    except
+    end;
+    try
+      FLoader.ConfigFile := '';
+    except
+    end;
+  end;
+
+  FTempDir := TPath.Combine(TPath.GetTempPath, 'TaurusTLS_UT_Loader_' + TGuid.NewGuid.ToString);
+  TDirectory.CreateDirectory(FTempDir);
+
+  FValidConfigFile := CreateTempConfigFile(cMinimalValidOpenSSLConfig);
+  FInvalidSyntaxConfigFile := CreateTempConfigFile(cMinimalInvalidOpenSSLConfig);
+end;
+
+procedure TLoaderBaseFixture.Teardown;
+begin
+  if Assigned(FLoader) then
+  begin
+    try
+      FLoader.Unload;
+    except
+    end;
+    try
+      FLoader.ConfigFile := '';
+    except
+    end;
+    FLoader.OpenSSLPath := FOrigOpenSSLPath;
+    FLoader.SSLLibVersions := FOrigSSLLibVersions;
+  end;
+
+  if TDirectory.Exists(FTempDir) then
+  try
+    TDirectory.Delete(FTempDir, True);
+  except
+  end;
+end;
+
+function TLoaderBaseFixture.CreateTempConfigFile(const AContent,
+  AFileName: string): string;
+var
+  LName: string;
+begin
+  if AFileName = '' then
+    LName := 'cfg_' + TGuid.NewGuid.ToString + '.cnf'
+  else
+    LName := AFileName;
+  Result := TPath.Combine(FTempDir, LName);
+  TFile.WriteAllText(Result, AContent);
+end;
+
+{ TLoaderConfigFixture }
+
+procedure TLoaderConfigFixture.Config_Initial;
+begin
+  Assert.IsNotNull(FLoader);
+  Assert.IsFalse(FLoader.IsLoaded);
+  Assert.AreEqual('', FLoader.ConfigFile);
+end;
+
+procedure TLoaderConfigFixture.Config_SetValid;
+var
+  LPath: string;
+begin
+  LPath := 'some_relative/config.cnf';
+  FLoader.ConfigFile := LPath;
+  Assert.AreEqual(LPath, FLoader.ConfigFile);
+  FLoader.ConfigFile := '';
+end;
+
+procedure TLoaderConfigFixture.Config_InvalidChars(const AHexPath: string);
+var
+  LPath: string;
+begin
+  LPath := HexToUnicodeString(AHexPath);
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      FLoader.ConfigFile := LPath;
+    end,
+    ETaurusTLSConfigFilePathError,
+    Format(RSOSSLConfigFilePathInvalid, [LPath])
+  );
+end;
+
+procedure TLoaderConfigFixture.Config_RejectDir;
+var
+  LNormalizedDir: string;
+begin
+  LNormalizedDir := TPath.GetFullPath(FTempDir);
+  FLoader.ConfigFile := FTempDir;
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      FLoader.Load;
+    end,
+    ETaurusTLSConfigFilePathError,
+    Format(RSOSSLConfigFileIsDirectory, [LNormalizedDir])
+  );
+end;
+
+procedure TLoaderConfigFixture.Config_RejectMissing;
+var
+  LNonExistent: string;
+  LNormalized: string;
+begin
+  LNonExistent := TPath.Combine(FTempDir, 'does_not_exist_' + TGuid.NewGuid.ToString + '.cnf');
+  LNormalized := TPath.GetFullPath(LNonExistent);
+  FLoader.ConfigFile := LNonExistent;
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      FLoader.Load;
+    end,
+    ETaurusTLSConfigFilePathError,
+    Format(RSOSSLConfigFileNotFound, [LNormalized])
+  );
+end;
+
+procedure TLoaderConfigFixture.Config_ValidLoad;
+var
+  LNormalized: string;
+begin
+  LNormalized := TPath.GetFullPath(FValidConfigFile);
+  FLoader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(FLoader.Load, 'Loader.Load with valid config failed');
+  try
+    Assert.IsTrue(FLoader.IsLoaded);
+    Assert.AreEqual(LNormalized, FLoader.ConfigFile);
+  finally
+    FLoader.Unload;
+  end;
+end;
+
+procedure TLoaderConfigFixture.Config_InvalidSyntax;
+var
+  LNormalized: string;
+  LExMsgExpected: string;
+begin
+  LNormalized := TPath.GetFullPath(FInvalidSyntaxConfigFile);
+  LExMsgExpected := Format(RSOSSLConfigFileLoadFailed, [LNormalized]);
+  FLoader.ConfigFile := FInvalidSyntaxConfigFile;
+
+  try
+    FLoader.Load;
+    Assert.Fail('Expected ETaurusTLSConfigFileLoadError was not raised');
+  except
+    on E: ETaurusTLSConfigFileLoadError do
+    begin
+      Assert.IsTrue(E.Message.StartsWith(LExMsgExpected),
+        Format('Exception message "%s" should start with "%s"', [E.Message, LExMsgExpected]));
+    end;
+  end;
+
+  // Circuit breaker: subsequent call immediately returns False without re-attempting
+  Assert.IsFalse(FLoader.IsLoaded, 'Loader must not be in loaded state after failure');
+  Assert.IsFalse(FLoader.Load, 'Subsequent Load must return False due to FFailedToLoad circuit breaker');
+end;
+
+procedure TLoaderConfigFixture.Config_UnloadClears;
+begin
+  FLoader.ConfigFile := '';
+  Assert.IsTrue(FLoader.Load, 'Loader.Load failed');
+  try
+    Assert.IsTrue(FLoader.IsLoaded);
+    Assert.AreNotEqual('', FLoader.ConfigFile);
+  finally
+    FLoader.Unload;
+  end;
+  Assert.IsFalse(FLoader.IsLoaded);
+  Assert.AreEqual('', FLoader.ConfigFile);
+end;
+
+procedure TLoaderConfigFixture.Config_RelativePath(const ARelPath: string);
+var
+  LFullPath: string;
+  LSubDir: string;
+  LNormalized: string;
+begin
+  LFullPath := TPath.GetFullPath(TPath.Combine(FTempDir, ARelPath));
+  LSubDir := TPath.GetDirectoryName(LFullPath);
+  if not TDirectory.Exists(LSubDir) then
+    TDirectory.CreateDirectory(LSubDir);
+
+  TFile.WriteAllText(LFullPath, cMinimalValidOpenSSLConfig);
+  LNormalized := TPath.GetFullPath(LFullPath);
+
+  FLoader.ConfigFile := LFullPath;
+  Assert.IsTrue(FLoader.Load, 'Load failed for relative config path');
+  try
+    Assert.IsTrue(FLoader.IsLoaded);
+    Assert.AreEqual(LNormalized, FLoader.ConfigFile);
+  finally
+    FLoader.Unload;
+  end;
+end;
+
+procedure TLoaderConfigFixture.Config_UnicodePath(const AUnicodeFileName: string);
+var
+  LFilePath: string;
+  LNormalized: string;
+begin
+  LFilePath := CreateTempConfigFile(cMinimalValidOpenSSLConfig, AUnicodeFileName);
+  LNormalized := TPath.GetFullPath(LFilePath);
+
+  FLoader.ConfigFile := LFilePath;
+  Assert.IsTrue(FLoader.Load, 'Load failed with Unicode config filename');
+  try
+    Assert.IsTrue(FLoader.IsLoaded);
+    Assert.AreEqual(LNormalized, FLoader.ConfigFile);
+  finally
+    FLoader.Unload;
+  end;
+end;
+
+{ TLoaderLifecycleFixture }
+
 {$IFDEF OPENSSL_STATIC_LINK_MODEL}
-
-procedure TIOpenSSLLoader.SetUp;
-begin
-end;
-
-procedure TIOpenSSLLoader.TearDown;
-begin
-end;
-
-function TIOpenSSLLoader.CreateTempConfigFile(const AContent: string): string;
-begin
-  Result := '';
-end;
-
-{$IFDEF OPENSSL_STATIC_LINK_MODEL}
-procedure TIOpenSSLLoader.StaticLoaderIsNil;
+procedure TLoaderLifecycleFixture.Static_State;
 var
   LLoader: IOpenSSLLoader;
 begin
@@ -113,14 +463,165 @@ begin
 end;
 {$ENDIF}
 
-{$ELSE}
+procedure TLoaderLifecycleFixture.Life_DoubleLoad;
+begin
+  FLoader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(FLoader.Load, 'Initial Load failed');
+  try
+    Assert.IsTrue(FLoader.IsLoaded);
+    Assert.IsTrue(FLoader.Load, 'Second Load call should succeed idempotently');
+    Assert.IsTrue(FLoader.IsLoaded);
+  finally
+    FLoader.Unload;
+  end;
+end;
+
+procedure TLoaderLifecycleFixture.Life_DoubleUnload;
+begin
+  FLoader.Unload;
+  FLoader.Unload;
+  Assert.IsFalse(FLoader.IsLoaded);
+
+  FLoader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(FLoader.Load, 'Load failed');
+  FLoader.Unload;
+  Assert.IsFalse(FLoader.IsLoaded);
+  FLoader.Unload;
+  Assert.IsFalse(FLoader.IsLoaded);
+end;
+
+procedure TLoaderLifecycleFixture.Life_PreserveConfig;
+var
+  LNormalized: string;
+begin
+  LNormalized := TPath.GetFullPath(FValidConfigFile);
+  FLoader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(FLoader.Load, 'Initial Load failed');
+  try
+    Assert.AreEqual(LNormalized, FLoader.ConfigFile);
+    Assert.IsTrue(FLoader.Load, 'Second Load should succeed');
+    Assert.AreEqual(LNormalized, FLoader.ConfigFile, 'Effective config must be preserved on second Load');
+  finally
+    FLoader.Unload;
+  end;
+end;
+
+procedure TLoaderLifecycleFixture.Life_CircuitBreaker;
+begin
+  FLoader.ConfigFile := FInvalidSyntaxConfigFile;
+  try
+    FLoader.Load;
+    Assert.Fail('Expected ETaurusTLSConfigFileLoadError was not raised');
+  except
+    on ETaurusTLSConfigFileLoadError do ;
+  end;
+
+  Assert.IsFalse(FLoader.IsLoaded, 'Loader must not be loaded after failure');
+  Assert.IsFalse(FLoader.Load, 'Subsequent Load must return False while failure state is active');
+
+  FLoader.Unload;
+  Assert.IsFalse(FLoader.IsLoaded);
+
+  FLoader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(FLoader.Load, 'Load should succeed after explicit Unload resets failure state');
+  try
+    Assert.IsTrue(FLoader.IsLoaded);
+  finally
+    FLoader.Unload;
+  end;
+end;
+
+procedure TLoaderLifecycleFixture.Life_RejectConfigWhenLoaded;
+begin
+  // Load with default/empty configuration
+  FLoader.ConfigFile := '';
+  Assert.IsTrue(FLoader.Load, 'Initial Load failed');
+  try
+    Assert.IsTrue(FLoader.IsLoaded);
+    Assert.WillRaiseWithMessage(
+      procedure
+      begin
+        // Attempt to assign a new configuration while loaded
+        FLoader.ConfigFile := FValidConfigFile;
+      end,
+      ETaurusTLSConfigFilePathError,
+      RSOSSLConfigFileAlreadyLoaded
+    );
+  finally
+    FLoader.Unload;
+  end;
+end;
+
+procedure TLoaderLifecycleFixture.Life_MutateWhenFailed(const APropId: Integer);
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+var
+  LOrigPath: string;
+  LOrigVersions: string;
+{$ENDIF}
+begin
+  FLoader.ConfigFile := FInvalidSyntaxConfigFile;
+  try
+    FLoader.Load;
+    Assert.Fail('Expected ETaurusTLSConfigFileLoadError was not raised');
+  except
+    on ETaurusTLSConfigFileLoadError do ;
+  end;
+
+  Assert.IsFalse(FLoader.IsLoaded, 'Loader must not be in loaded state after failure');
+
+  case APropId of
+    0:
+      begin
+        FLoader.ConfigFile := FValidConfigFile;
+        Assert.AreEqual(FValidConfigFile, FLoader.ConfigFile);
+      end;
+    {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+    1:
+      begin
+        LOrigPath := FLoader.OpenSSLPath;
+        try
+          FLoader.OpenSSLPath := FTempDir;
+          Assert.AreEqual(IncludeTrailingPathDelimiter(FTempDir), FLoader.OpenSSLPath);
+        finally
+          FLoader.OpenSSLPath := LOrigPath; // Restore valid library path
+        end;
+      end;
+    2:
+      begin
+        LOrigVersions := FLoader.SSLLibVersions;
+        try
+          FLoader.SSLLibVersions := DefaultLibVersions;
+          Assert.AreEqual(DefaultLibVersions, FLoader.SSLLibVersions);
+        finally
+          FLoader.SSLLibVersions := LOrigVersions; // Restore valid versions
+        end;
+      end;
+    {$ENDIF}
+  end;
+
+  Assert.IsFalse(FLoader.Load, 'Subsequent Load must return False while circuit breaker is active');
+
+  FLoader.Unload;
+  Assert.IsFalse(FLoader.IsLoaded);
+
+  FLoader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(FLoader.Load, 'Load should succeed after explicit Unload resets failure state');
+  try
+    Assert.IsTrue(FLoader.IsLoaded);
+  finally
+    FLoader.Unload;
+  end;
+end;
+
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+
+{ TLoaderCallbacksFixture }
 
 var
   TTestCallbackLog: TStringList = nil;
   GTestSymbolInjectorActive: Boolean = False;
 
 type
-  // Observer A for callback ordering & rollback tests
   TTestCallbackObserverA = class
   public
     class var Active: Boolean;
@@ -128,7 +629,6 @@ type
     class procedure ActionProc(AAction: TOpenSSLLoadAction);
   end;
 
-  // Observer B for callback ordering & failure injection tests
   TTestCallbackObserverB = class
   public
     class var Active: Boolean;
@@ -136,7 +636,6 @@ type
     class procedure ActionProc(AAction: TOpenSSLLoadAction);
   end;
 
-  // Symbol injector for FailedToLoad diagnostic tests
   TTestSymbolInjector = class
   public
     class var Active: Boolean;
@@ -193,42 +692,12 @@ begin
     AFailed.Add('Fake_Diagnostic_Symbol');
 end;
 
-const
-  cMinimalValidOpenSSLConfig =
-    'openssl_conf = default_conf' + sLineBreak +
-    sLineBreak +
-    '[default_conf]' + sLineBreak +
-    'ssl_conf = ssl_sect' + sLineBreak +
-    sLineBreak +
-    '[ssl_sect]' + sLineBreak +
-    'system_default = system_default_sect' + sLineBreak +
-    sLineBreak +
-    '[system_default_sect]' + sLineBreak +
-    'MinProtocol = TLSv1.2' + sLineBreak;
-
-  cMinimalInvalidOpenSSLConfig =
-    '[invalid_syntax' + sLineBreak +
-    '= broken ===' + sLineBreak;
-
-procedure TIOpenSSLLoader.Setup;
+procedure TLoaderCallbacksFixture.Setup;
 begin
+  inherited Setup;
   GTestSymbolInjectorActive := False;
-  FLoader := GetOpenSSLLoader;
-  if Assigned(FLoader) then
-  begin
-    try
-      FLoader.Unload; // Resets FFailedToLoad and FFailed between tests
-    except
-    end;
-  end;
-
-  FTempDir := TPath.Combine(TPath.GetTempPath, 'TaurusTLS_UT_Loader_' + TGuid.NewGuid.ToString);
-  TDirectory.CreateDirectory(FTempDir);
-
-  FValidConfigFile := CreateTempConfigFile(cMinimalValidOpenSSLConfig);
-  FInvalidSyntaxConfigFile := CreateTempConfigFile(cMinimalInvalidOpenSSLConfig);
-
-  TTestCallbackLog.Clear;
+  if Assigned(TTestCallbackLog) then
+    TTestCallbackLog.Clear;
   TTestCallbackObserverA.Active := False;
   TTestCallbackObserverA.VerifyHandlesLive := False;
   TTestCallbackObserverB.Active := False;
@@ -236,300 +705,17 @@ begin
   TTestSymbolInjector.Active := False;
 end;
 
-procedure TIOpenSSLLoader.Teardown;
+procedure TLoaderCallbacksFixture.Teardown;
 begin
   TTestCallbackObserverA.Active := False;
   TTestCallbackObserverA.VerifyHandlesLive := False;
   TTestCallbackObserverB.Active := False;
   TTestCallbackObserverB.ThrowOnLoad := False;
   TTestSymbolInjector.Active := False;
-
-  if Assigned(FLoader) then
-  begin
-    try
-      FLoader.Unload; // Resets FFailedToLoad and FFailed between tests
-    except
-    end;
-  end;
-
-  if Assigned(FLoader) then
-  begin
-    try
-      FLoader.ConfigFile := '';
-    except
-    end;
-  end;
-
-  if TDirectory.Exists(FTempDir) then
-  try
-    TDirectory.Delete(FTempDir, True);
-  except
-  end;
+  inherited Teardown;
 end;
 
-function TIOpenSSLLoader.CreateTempConfigFile(const AContent: string): string;
-begin
-  Result := TPath.Combine(FTempDir, 'cfg_' + TGuid.NewGuid.ToString + '.cnf');
-  TFile.WriteAllText(Result, AContent);
-end;
-
-// ============================================================================
-// Configuration & Path Tests
-// ============================================================================
-
-procedure TIOpenSSLLoader.InitialConfigFileIsEmpty;
-begin
-  Assert.IsNotNull(FLoader);
-  Assert.IsFalse(FLoader.IsLoaded);
-  Assert.AreEqual('', FLoader.ConfigFile);
-end;
-
-procedure TIOpenSSLLoader.SetConfigFileValidatesInvalidPathCharacters;
-var
-  LInvalidPath: string;
-begin
-  LInvalidPath := 'bad'#0'path.cnf';
-  Assert.WillRaiseWithMessage(
-    procedure
-    begin
-      FLoader.ConfigFile := LInvalidPath;
-    end,
-    ETaurusTLSConfigFilePathError,
-    Format(RSOSSLConfigFilePathInvalid, [LInvalidPath])
-  );
-end;
-
-procedure TIOpenSSLLoader.SetConfigFileAcceptsValidFormatWhenUnloaded;
-var
-  LPath: string;
-begin
-  LPath := 'some_relative\config.cnf';
-  FLoader.ConfigFile := LPath;
-  Assert.AreEqual(LPath, FLoader.ConfigFile);
-  FLoader.ConfigFile := '';
-end;
-
-procedure TIOpenSSLLoader.SetConfigFileRejectsModificationWhenLoaded;
-begin
-  Assert.IsTrue(FLoader.Load, 'Loader.Load failed');
-  try
-    Assert.IsTrue(FLoader.IsLoaded);
-    Assert.WillRaiseWithMessage(
-      procedure
-      begin
-        FLoader.ConfigFile := FValidConfigFile;
-      end,
-      ETaurusTLSConfigFilePathError,
-      RSOSSLConfigFileAlreadyLoaded
-    );
-  finally
-    FLoader.Unload;
-  end;
-end;
-
-procedure TIOpenSSLLoader.LoadRejectsDirectoryPath;
-var
-  LNormalizedDir: string;
-begin
-  LNormalizedDir := TPath.GetFullPath(FTempDir);
-  FLoader.ConfigFile := FTempDir;
-  Assert.WillRaiseWithMessage(
-    procedure
-    begin
-      FLoader.Load;
-    end,
-    ETaurusTLSConfigFilePathError,
-    Format(RSOSSLConfigFileIsDirectory, [LNormalizedDir])
-  );
-end;
-
-procedure TIOpenSSLLoader.LoadRejectsNonExistentFile;
-var
-  LNonExistent: string;
-  LNormalized: string;
-begin
-  LNonExistent := TPath.Combine(FTempDir, 'does_not_exist_' + TGuid.NewGuid.ToString + '.cnf');
-  LNormalized := TPath.GetFullPath(LNonExistent);
-  FLoader.ConfigFile := LNonExistent;
-  Assert.WillRaiseWithMessage(
-    procedure
-    begin
-      FLoader.Load;
-    end,
-    ETaurusTLSConfigFilePathError,
-    Format(RSOSSLConfigFileNotFound, [LNormalized])
-  );
-end;
-
-procedure TIOpenSSLLoader.LoadWithValidConfigFileSucceeds;
-var
-  LNormalized: string;
-begin
-  LNormalized := TPath.GetFullPath(FValidConfigFile);
-  FLoader.ConfigFile := FValidConfigFile;
-  Assert.IsTrue(FLoader.Load, 'Loader.Load with valid config failed');
-  try
-    Assert.IsTrue(FLoader.IsLoaded);
-    Assert.AreEqual(LNormalized, FLoader.ConfigFile);
-  finally
-    FLoader.Unload;
-  end;
-end;
-
-procedure TIOpenSSLLoader.LoadWithInvalidConfigContentRaisesLoadError;
-var
-  LNormalized: string;
-  LExMsgExpected: string;
-begin
-  LNormalized := TPath.GetFullPath(FInvalidSyntaxConfigFile);
-  LExMsgExpected := Format(RSOSSLConfigFileLoadFailed, [LNormalized]);
-  FLoader.ConfigFile := FInvalidSyntaxConfigFile;
-
-  try
-    FLoader.Load;
-    Assert.Fail('Expected ETaurusTLSConfigFileLoadError was not raised');
-  except
-    on E: ETaurusTLSConfigFileLoadError do
-    begin
-      Assert.IsTrue(E.Message.StartsWith(LExMsgExpected),
-        Format('Exception message "%s" should start with "%s"', [E.Message, LExMsgExpected]));
-    end;
-  end;
-
-  // Circuit breaker check: subsequent call immediately returns False without re-attempting
-  Assert.IsFalse(FLoader.IsLoaded, 'Loader must not be in loaded state after failure');
-  Assert.IsFalse(FLoader.Load, 'Subsequent Load call must immediately return False due to FFailedToLoad circuit breaker');
-end;
-
-procedure TIOpenSSLLoader.UnloadClearsDefaultConfigFile;
-begin
-  FLoader.ConfigFile := '';
-  Assert.IsTrue(FLoader.Load, 'Loader.Load failed');
-  try
-    Assert.IsTrue(FLoader.IsLoaded);
-    Assert.AreNotEqual('', FLoader.ConfigFile);
-  finally
-    FLoader.Unload;
-  end;
-  Assert.IsFalse(FLoader.IsLoaded);
-  Assert.AreEqual('', FLoader.ConfigFile);
-end;
-
-// ============================================================================
-// Lifecycle & Idempotency Tests
-// ============================================================================
-
-procedure TIOpenSSLLoader.DoubleLoadSucceeds;
-begin
-  FLoader.ConfigFile := FValidConfigFile;
-  Assert.IsTrue(FLoader.Load, 'Initial Load failed');
-  try
-    Assert.IsTrue(FLoader.IsLoaded);
-    // Second load must be a safe, idempotent success
-    Assert.IsTrue(FLoader.Load, 'Second Load call should succeed idempotently');
-    Assert.IsTrue(FLoader.IsLoaded);
-  finally
-    FLoader.Unload;
-  end;
-end;
-
-procedure TIOpenSSLLoader.DoubleUnloadIsSafe;
-begin
-  // Unload when already unloaded must be a safe no-op
-  FLoader.Unload;
-  FLoader.Unload;
-  Assert.IsFalse(FLoader.IsLoaded);
-
-  // Load and then double-unload
-  FLoader.ConfigFile := FValidConfigFile;
-  Assert.IsTrue(FLoader.Load, 'Load failed');
-  FLoader.Unload;
-  Assert.IsFalse(FLoader.IsLoaded);
-  FLoader.Unload;
-  Assert.IsFalse(FLoader.IsLoaded);
-end;
-
-procedure TIOpenSSLLoader.LoadWhenAlreadyLoadedIsIdempotentAndPreservesConfig;
-var
-  LNormalized: string;
-begin
-  LNormalized := TPath.GetFullPath(FValidConfigFile);
-  FLoader.ConfigFile := FValidConfigFile;
-  Assert.IsTrue(FLoader.Load, 'Initial Load failed');
-  try
-    Assert.AreEqual(LNormalized, FLoader.ConfigFile);
-    // Second Load must not overwrite or wipe out FEffectiveConfigFile
-    Assert.IsTrue(FLoader.Load, 'Second Load should succeed');
-    Assert.AreEqual(LNormalized, FLoader.ConfigFile, 'FEffectiveConfigFile must be preserved on second Load call');
-  finally
-    FLoader.Unload;
-  end;
-end;
-
-// ============================================================================
-// Failure & Circuit-Breaker Tests
-// ============================================================================
-
-procedure TIOpenSSLLoader.FailureStatePersistsUntilExplicitUnload;
-begin
-  FLoader.ConfigFile := FInvalidSyntaxConfigFile;
-  try
-    FLoader.Load;
-    Assert.Fail('Expected ETaurusTLSConfigFileLoadError was not raised');
-  except
-    on ETaurusTLSConfigFileLoadError do ;
-  end;
-
-  // 1. IsLoaded is False
-  Assert.IsFalse(FLoader.IsLoaded, 'Loader must not be loaded after failure');
-
-  // 2. Subsequent Load calls immediately return False
-  Assert.IsFalse(FLoader.Load, 'Subsequent Load must return False while failure state is active');
-
-  // 3. Explicit Unload clears failure circuit breaker
-  FLoader.Unload;
-  Assert.IsFalse(FLoader.IsLoaded);
-
-  // 4. Subsequent valid load now succeeds
-  FLoader.ConfigFile := FValidConfigFile;
-  Assert.IsTrue(FLoader.Load, 'Load should succeed after explicit Unload resets failure state');
-  try
-    Assert.IsTrue(FLoader.IsLoaded);
-  finally
-    FLoader.Unload;
-  end;
-end;
-
-procedure TIOpenSSLLoader.UnloadPreservesDiagnosticsOnFailure;
-begin
-  GTestSymbolInjectorActive := True;
-  try
-    FLoader.ConfigFile := FInvalidSyntaxConfigFile;
-    try
-      FLoader.Load;
-    except
-      on ETaurusTLSConfigFileLoadError do ;
-    end;
-
-    // Internal Unload(False) preserved FailedToLoad entries
-    Assert.IsTrue(FLoader.FailedToLoad.IndexOf('Fake_Diagnostic_Symbol') >= 0,
-      'Internal failure teardown must preserve FailedToLoad diagnostics');
-
-    // Deliberate public Unload() clears FailedToLoad
-    FLoader.Unload;
-    Assert.AreEqual(0, FLoader.FailedToLoad.Count,
-      'Public Unload must clear FailedToLoad diagnostics');
-  finally
-    GTestSymbolInjectorActive := False;
-    FLoader.Unload;
-  end;
-end;
-
-// ============================================================================
-// Callback Lifecycle, Ordering & Rollback Tests
-// ============================================================================
-
-procedure TIOpenSSLLoader.PostLoadAndPreUnloadLifecycleDispatchesCleanly;
+procedure TLoaderCallbacksFixture.CB_DispatchLive;
 begin
   TTestCallbackLog.Clear;
   TTestCallbackObserverA.Active := True;
@@ -539,22 +725,20 @@ begin
     Assert.IsTrue(FLoader.Load, 'Load failed');
     try
       Assert.AreEqual(1, TTestCallbackLog.Count);
-      Assert.AreEqual('A:Load:Live', TTestCallbackLog[0],
-        'osaLoad must execute post-load while library handles and symbols are active');
+      Assert.AreEqual('A:Load:Live', TTestCallbackLog[0]);
     finally
       FLoader.Unload;
     end;
 
     Assert.AreEqual(2, TTestCallbackLog.Count);
-    Assert.AreEqual('A:Unload:Live', TTestCallbackLog[1],
-      'osaUnload must execute pre-unload while library handles and symbols are still active');
+    Assert.AreEqual('A:Unload:Live', TTestCallbackLog[1]);
   finally
     TTestCallbackObserverA.Active := False;
     TTestCallbackObserverA.VerifyHandlesLive := False;
   end;
 end;
 
-procedure TIOpenSSLLoader.CallbacksExecuteInReverseOrderOnUnload;
+procedure TLoaderCallbacksFixture.CB_ReverseUnload;
 begin
   TTestCallbackLog.Clear;
   TTestCallbackObserverA.Active := True;
@@ -563,7 +747,6 @@ begin
     FLoader.ConfigFile := FValidConfigFile;
     Assert.IsTrue(FLoader.Load, 'Load failed');
     try
-      // Load order must be registration order: A then B
       Assert.AreEqual(2, TTestCallbackLog.Count);
       Assert.AreEqual('A:Load', TTestCallbackLog[0]);
       Assert.AreEqual('B:Load', TTestCallbackLog[1]);
@@ -571,7 +754,6 @@ begin
       FLoader.Unload;
     end;
 
-    // Unload order must be strict reverse registration order: B then A
     Assert.AreEqual(4, TTestCallbackLog.Count);
     Assert.AreEqual('A:Load', TTestCallbackLog[0]);
     Assert.AreEqual('B:Load', TTestCallbackLog[1]);
@@ -583,7 +765,7 @@ begin
   end;
 end;
 
-procedure TIOpenSSLLoader.DoubleLoadAndUnloadDoNotDuplicateCallbacks;
+procedure TLoaderCallbacksFixture.CB_NoDuplicates;
 begin
   TTestCallbackLog.Clear;
   TTestCallbackObserverA.Active := True;
@@ -592,14 +774,12 @@ begin
     Assert.IsTrue(FLoader.Load, 'Initial Load failed');
     Assert.IsTrue(FLoader.Load, 'Second Load call should succeed');
 
-    // Only one osaLoad should have been dispatched
     Assert.AreEqual(1, TTestCallbackLog.Count);
     Assert.AreEqual('A:Load', TTestCallbackLog[0]);
 
     FLoader.Unload;
-    FLoader.Unload; // Second Unload call
+    FLoader.Unload;
 
-    // Only one osaUnload should have been dispatched
     Assert.AreEqual(2, TTestCallbackLog.Count);
     Assert.AreEqual('A:Load', TTestCallbackLog[0]);
     Assert.AreEqual('A:Unload', TTestCallbackLog[1]);
@@ -609,7 +789,7 @@ begin
   end;
 end;
 
-procedure TIOpenSSLLoader.CallbackRollbackFiresOnLoadFailure;
+procedure TLoaderCallbacksFixture.CB_RollbackOnFail;
 begin
   TTestCallbackLog.Clear;
   TTestCallbackObserverA.Active := True;
@@ -625,13 +805,9 @@ begin
         Assert.AreEqual('Simulated action failure in Observer B', E.Message);
     end;
 
-    // Observer A ran osaLoad, then Observer B threw during osaLoad.
-    // Rollback must have dispatched osaUnload to Observer A.
     Assert.AreEqual(2, TTestCallbackLog.Count);
     Assert.AreEqual('A:Load', TTestCallbackLog[0]);
     Assert.AreEqual('A:Unload', TTestCallbackLog[1]);
-
-    // Loader must be left in unloaded state
     Assert.IsFalse(FLoader.IsLoaded);
   finally
     TTestCallbackObserverB.ThrowOnLoad := False;
@@ -641,11 +817,36 @@ begin
   end;
 end;
 
+procedure TLoaderCallbacksFixture.CB_PreserveDiag;
+begin
+  GTestSymbolInjectorActive := True;
+  try
+    FLoader.ConfigFile := FInvalidSyntaxConfigFile;
+    try
+      FLoader.Load;
+    except
+      on ETaurusTLSConfigFileLoadError do ;
+    end;
+
+    Assert.IsTrue(FLoader.FailedToLoad.IndexOf('Fake_Diagnostic_Symbol') >= 0,
+      'Internal failure teardown must preserve FailedToLoad diagnostics');
+
+    FLoader.Unload;
+    Assert.AreEqual(0, FLoader.FailedToLoad.Count,
+      'Public Unload must clear FailedToLoad diagnostics');
+  finally
+    GTestSymbolInjectorActive := False;
+    FLoader.Unload;
+  end;
+end;
+
 {$ENDIF}
 
 initialization
-  TDUnitX.RegisterTestFixture(TIOpenSSLLoader);
+  TDUnitX.RegisterTestFixture(TLoaderConfigFixture);
+  TDUnitX.RegisterTestFixture(TLoaderLifecycleFixture);
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  TDUnitX.RegisterTestFixture(TLoaderCallbacksFixture);
   TTestCallbackLog := TStringList.Create;
   Register_SSLLoaderAction(TTestCallbackObserverA.ActionProc);
   Register_SSLLoaderAction(TTestCallbackObserverB.ActionProc);
