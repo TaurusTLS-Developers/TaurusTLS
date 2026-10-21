@@ -1,3 +1,4 @@
+
 name: TaurusTLS GitHub Notifications
 
 on:
@@ -5,95 +6,99 @@ on:
     types: [opened, reopened, closed, review_requested]
     branches:
       - main
+
   issues:
     types: [opened, reopened, closed]
+
   issue_comment:
     types: [created]
+
+permissions:
+  contents: read
 
 jobs:
   notify-telegram:
     runs-on: ubuntu-latest
-    # Skip job if it's a comment on a PR (GitHub treats PRs as issues for comments)
+
+    # GitHub treats PR comments as issue comments.
+    # Skip comments on pull requests.
     if: ${{ github.event_name != 'issue_comment' || !github.event.issue.pull_request }}
-    
+
     steps:
-      - name: Set Event Details
-        id: event-info
-        run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            echo "TITLE=Pull Request ${{ github.event.action }}" >> $GITHUB_OUTPUT
-            echo "SUBJECT=${{ github.event.pull_request.title }}" >> $GITHUB_OUTPUT
-            echo "URL=${{ github.event.pull_request.html_url }}" >> $GITHUB_OUTPUT
-            echo "AUTHOR=${{ github.event.pull_request.user.login }}" >> $GITHUB_OUTPUT
-            
-          elif [ "${{ github.event_name }}" == "issues" ]; then
-            echo "TITLE=Issue ${{ github.event.action }}" >> $GITHUB_OUTPUT
-            echo "SUBJECT=${{ github.event.issue.title }}" >> $GITHUB_OUTPUT
-            echo "URL=${{ github.event.issue.html_url }}" >> $GITHUB_OUTPUT
-            echo "AUTHOR=${{ github.event.issue.user.login }}" >> $GITHUB_OUTPUT
-            
-          elif [ "${{ github.event_name }}" == "issue_comment" ]; then
-            echo "TITLE=New Comment on Issue #${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
-            echo "SUBJECT=${{ github.event.issue.title }}" >> $GITHUB_OUTPUT
-            echo "URL=${{ github.event.comment.html_url }}" >> $GITHUB_OUTPUT
-            echo "AUTHOR=${{ github.event.comment.user.login }}" >> $GITHUB_OUTPUT
-            
-          elif [ "${{ github.event_name }}" == "workflow_run" ]; then
-            echo "TITLE=CI Build Failed" >> $GITHUB_OUTPUT
-            echo "SUBJECT=${{ github.repository }}" >> $GITHUB_OUTPUT
-            echo "URL=${{ github.event.workflow_run.html_url }}" >> $GITHUB_OUTPUT
-            echo "AUTHOR=GitHub Actions" >> $GITHUB_OUTPUT
-            
-          else
-            echo "TITLE=Event Triggered: ${{ github.event_name }}" >> $GITHUB_OUTPUT
-            echo "SUBJECT=${{ github.repository }}" >> $GITHUB_OUTPUT
-            echo "URL=https://github.com/${{ github.repository }}" >> $GITHUB_OUTPUT
-            echo "AUTHOR=${{ github.actor }}" >> $GITHUB_OUTPUT
-          fi
-          
       - name: Build and Sanitize Telegram Payload
         id: payload
-        env:
-          RAW_TITLE: ${{ steps.event-info.outputs.TITLE }}
-          RAW_SUBJECT: ${{ steps.event-info.outputs.SUBJECT }}
-          RAW_AUTHOR: ${{ steps.event-info.outputs.AUTHOR }}
-          REPO_NAME: ${{ github.event.repository.name }}
-          URL: ${{ steps.event-info.outputs.URL }}
+        shell: python
         run: |
           import html
           import inspect
+          import json
           import os
+          import uuid
 
-          # Fetch raw inputs safely
-          title = html.escape(os.environ.get("RAW_TITLE", ""))
-          subject = html.escape(os.environ.get("RAW_SUBJECT", ""))
-          author = html.escape(os.environ.get("RAW_AUTHOR", ""))
-          repo = os.environ.get("REPO_NAME", "")
-          url = os.environ.get("URL", "")
+          # Read GitHub event data directly to avoid shell injection.
+          with open(os.environ["GITHUB_EVENT_PATH"], encoding="utf-8") as f:
+              event = json.load(f)
 
-          # Indent naturally! Your editor will be happy now.
-          raw_message = f"""
-          <b>🛠️ TaurusTLS GitHub Notification</b>
+          event_name = os.environ["GITHUB_EVENT_NAME"]
+          action = event.get("action", "")
+          repository = event["repository"]["full_name"]
 
-          <b>Event:</b> {title}
-          <b>Subject:</b> {subject}
-          <b>Repository:</b> <code>TaurusTLS/{repo}</code>
-          <b>Triggered by:</b> @{author}
+          if event_name == "pull_request":
+              pr = event["pull_request"]
+              title = f"Pull Request {action}"
+              subject = pr["title"]
+              url = pr["html_url"]
+              author = pr["user"]["login"]
 
-          <a href="{url}">🔗 View on GitHub</a>
-          """
+          elif event_name == "issues":
+              issue = event["issue"]
+              title = f"Issue {action}"
+              subject = issue["title"]
+              url = issue["html_url"]
+              author = issue["user"]["login"]
 
-          # Clean up the leading whitespace automatically
-          message = inspect.cleandoc(raw_message)
+          elif event_name == "issue_comment":
+              issue = event["issue"]
+              comment = event["comment"]
+              title = f"New Comment on Issue #{issue['number']}"
+              subject = issue["title"]
+              url = comment["html_url"]
+              author = comment["user"]["login"]
 
-          # Export the finalized payload string
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-              f.write("message<<EOF\n")
+          else:
+              title = f"Event Triggered: {event_name}"
+              subject = repository
+              url = event["repository"]["html_url"]
+              author = os.environ["GITHUB_ACTOR"]
+
+          # Escape values for Telegram HTML formatting.
+          title = html.escape(title)
+          subject = html.escape(subject)
+          author = html.escape(author)
+          repository = html.escape(repository)
+          url = html.escape(url, quote=True)
+
+          message = inspect.cleandoc(f"""
+              <b>🛠️ TaurusTLS GitHub Notification</b>
+
+              <b>Event:</b> {title}
+              <b>Subject:</b> {subject}
+              <b>Repository:</b> <code>{repository}</code>
+              <b>Triggered by:</b> @{author}
+
+              <a href="{url}">🔗 View on GitHub</a>
+          """)
+
+          # Use a unique delimiter for multiline GitHub Actions output.
+          delimiter = f"EOF_{uuid.uuid4().hex}"
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
+              f.write(f"message<<{delimiter}\n")
               f.write(message + "\n")
-              f.write("EOF\n")
+              f.write(f"{delimiter}\n")
 
       - name: Send Telegram Message
-        uses: appleboy/telegram-action@master
+        uses: appleboy/telegram-action@214f06cfa3d3a588c1472116889437e7c6fd29b1 # v1.1.1
         with:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
