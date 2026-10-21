@@ -436,6 +436,11 @@ type
   ETaurusTLSEVPEncryptFinalExFailed = class(ETaurusTLSAPICryptoError);
 
   /// <summary>
+  ///   Raised on OpenSSL Libray loading errors.
+  /// </summary>
+  ETaurusTLSLoaderError = class(ETaurusTLSError);
+
+  /// <summary>
   ///   Raised if the OpenSSL configuration file path is invalid, missing, or a directory.
   /// </summary>
   ETaurusTLSConfigFilePathError = class(ETaurusTLSAPICryptoError);
