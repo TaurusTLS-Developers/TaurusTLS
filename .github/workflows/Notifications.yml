@@ -106,8 +106,9 @@ jobs:
           """)
 
           # Validate configuration.
-          token = os.environ.get("TELEGRAM_TOKEN")
-          chat_id = os.environ.get("TELEGRAM_TO")
+          token = os.environ.get("TLG_BOT_TKN_TAURUSTLSDEV_BOT")
+          chat_id = os.environ.get("TLG_CHAT_ID_TAURUSTLS_ALERTS")
+          message_thread_id = os.environ.get("TLG_THRD_ID_TAURUSTLS_ALERTS")
 
           if not token or not chat_id:
               sys.exit("Missing Telegram token or chat ID.")
@@ -115,6 +116,7 @@ jobs:
           # Prepare Telegram Bot API request.
           payload = {
               "chat_id": chat_id,
+              "message_thread_id": message_thread_id,
               "text": message,
               "parse_mode": "HTML",
               "link_preview_options": {
