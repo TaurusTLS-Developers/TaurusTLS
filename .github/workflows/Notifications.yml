@@ -52,7 +52,13 @@ jobs:
           action = event.get("action", "")
           repository = event["repository"]["full_name"]
 
-          if event_name == "pull_request_target":
+          if event_name == "push":
+              title = "Workflow Test"
+              subject = "Testing Telegram notifications from feature branch"
+              url = event["repository"]["html_url"]
+              author = os.environ["GITHUB_ACTOR"]
+          
+          elif event_name == "pull_request_target":
               pr = event["pull_request"]
               title = f"Pull Request {action}"
               subject = pr["title"]
