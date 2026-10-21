@@ -26,6 +26,7 @@ const
   {$ELSE}
   min_supported_ssl_version = 0;
   {$ENDIF}
+  CVerStrOpenSSLPfx = 'OpenSSL ';
   CLibCryptoBase = 'libcrypto';
   CLibSSLBase = 'libssl';
 
