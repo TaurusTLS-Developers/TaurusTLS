@@ -2,7 +2,7 @@
 name: TaurusTLS GitHub Notifications
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, reopened, closed, review_requested]
     branches:
       - main
@@ -13,8 +13,8 @@ on:
   issue_comment:
     types: [created]
 
-permissions:
-  contents: read
+# No GitHub API permissions required.
+permissions: {}
 
 jobs:
   notify-telegram:
@@ -25,17 +25,22 @@ jobs:
     if: ${{ github.event_name != 'issue_comment' || !github.event.issue.pull_request }}
 
     steps:
-      - name: Build and Sanitize Telegram Payload
-        id: payload
+      - name: Send Telegram Notification
         shell: python
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_TO: ${{ secrets.TELEGRAM_TO }}
+
         run: |
           import html
           import inspect
           import json
           import os
-          import uuid
+          import sys
+          import urllib.error
+          import urllib.request
 
-          # Read GitHub event data directly to avoid shell injection.
+          # Read event data without shell interpolation.
           with open(os.environ["GITHUB_EVENT_PATH"], encoding="utf-8") as f:
               event = json.load(f)
 
@@ -43,7 +48,7 @@ jobs:
           action = event.get("action", "")
           repository = event["repository"]["full_name"]
 
-          if event_name == "pull_request":
+          if event_name == "pull_request_target":
               pr = event["pull_request"]
               title = f"Pull Request {action}"
               subject = pr["title"]
@@ -66,12 +71,13 @@ jobs:
               author = comment["user"]["login"]
 
           else:
-              title = f"Event Triggered: {event_name}"
-              subject = repository
-              url = event["repository"]["html_url"]
-              author = os.environ["GITHUB_ACTOR"]
+              sys.exit(f"Unsupported event: {event_name}")
 
-          # Escape values for Telegram HTML formatting.
+          # Limit subject length to prevent Telegram message-size errors.
+          if len(subject) > 1000:
+              subject = subject[:997] + "..."
+
+          # Escape user-supplied content for Telegram HTML.
           title = html.escape(title)
           subject = html.escape(subject)
           author = html.escape(author)
@@ -89,18 +95,54 @@ jobs:
               <a href="{url}">🔗 View on GitHub</a>
           """)
 
-          # Use a unique delimiter for multiline GitHub Actions output.
-          delimiter = f"EOF_{uuid.uuid4().hex}"
+          # Validate configuration.
+          token = os.environ.get("TELEGRAM_TOKEN")
+          chat_id = os.environ.get("TELEGRAM_TO")
 
-          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
-              f.write(f"message<<{delimiter}\n")
-              f.write(message + "\n")
-              f.write(f"{delimiter}\n")
+          if not token or not chat_id:
+              sys.exit("Missing Telegram token or chat ID.")
 
-      - name: Send Telegram Message
-        uses: appleboy/telegram-action@214f06cfa3d3a588c1472116889437e7c6fd29b1 # v1.1.1
-        with:
-          to: ${{ secrets.TELEGRAM_TO }}
-          token: ${{ secrets.TELEGRAM_TOKEN }}
-          format: html
-          message: ${{ steps.payload.outputs.message }}
+          # Prepare Telegram Bot API request.
+          payload = {
+              "chat_id": chat_id,
+              "text": message,
+              "parse_mode": "HTML",
+              "link_preview_options": {
+                  "is_disabled": True
+              },
+          }
+
+          data = json.dumps(payload).encode("utf-8")
+
+          request = urllib.request.Request(
+              url=f"https://api.telegram.org/bot{token}/sendMessage",
+              data=data,
+              headers={
+                  "Content-Type": "application/json"
+              },
+              method="POST",
+          )
+
+          # Send the notification.
+          # Avoid printing exception URLs because they contain the token.
+          try:
+              with urllib.request.urlopen(request, timeout=15) as response:
+                  result = json.load(response)
+
+              if not result.get("ok"):
+                  sys.exit("Telegram API rejected the notification.")
+
+              print("Telegram notification sent successfully.")
+
+          except urllib.error.HTTPError as error:
+              print(
+                  f"Telegram API returned HTTP {error.code}.",
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          except urllib.error.URLError:
+              sys.exit("Unable to connect to Telegram API.")
+
+          except TimeoutError:
+              sys.exit("Telegram API request timed out.")
