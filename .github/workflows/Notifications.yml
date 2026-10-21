@@ -1,101 +1,161 @@
+
 name: TaurusTLS GitHub Notifications
 
 on:
-  pull_request:
+  push:
+    branches:
+      - test/telegram-notifications
+      
+  pull_request_target:
     types: [opened, reopened, closed, review_requested]
     branches:
       - main
+
   issues:
     types: [opened, reopened, closed]
+
   issue_comment:
     types: [created]
+
+# No GitHub API permissions required.
+permissions: {}
 
 jobs:
   notify-telegram:
     runs-on: ubuntu-latest
-    # Skip job if it's a comment on a PR (GitHub treats PRs as issues for comments)
+
+    # GitHub treats PR comments as issue comments.
+    # Skip comments on pull requests.
     if: ${{ github.event_name != 'issue_comment' || !github.event.issue.pull_request }}
-    
+
     steps:
-      - name: Set Event Details
-        id: event-info
-        run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            echo "TITLE=Pull Request ${{ github.event.action }}" >> $GITHUB_OUTPUT
-            echo "SUBJECT=${{ github.event.pull_request.title }}" >> $GITHUB_OUTPUT
-            echo "URL=${{ github.event.pull_request.html_url }}" >> $GITHUB_OUTPUT
-            echo "AUTHOR=${{ github.event.pull_request.user.login }}" >> $GITHUB_OUTPUT
-            
-          elif [ "${{ github.event_name }}" == "issues" ]; then
-            echo "TITLE=Issue ${{ github.event.action }}" >> $GITHUB_OUTPUT
-            echo "SUBJECT=${{ github.event.issue.title }}" >> $GITHUB_OUTPUT
-            echo "URL=${{ github.event.issue.html_url }}" >> $GITHUB_OUTPUT
-            echo "AUTHOR=${{ github.event.issue.user.login }}" >> $GITHUB_OUTPUT
-            
-          elif [ "${{ github.event_name }}" == "issue_comment" ]; then
-            echo "TITLE=New Comment on Issue #${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
-            echo "SUBJECT=${{ github.event.issue.title }}" >> $GITHUB_OUTPUT
-            echo "URL=${{ github.event.comment.html_url }}" >> $GITHUB_OUTPUT
-            echo "AUTHOR=${{ github.event.comment.user.login }}" >> $GITHUB_OUTPUT
-            
-          elif [ "${{ github.event_name }}" == "workflow_run" ]; then
-            echo "TITLE=CI Build Failed" >> $GITHUB_OUTPUT
-            echo "SUBJECT=${{ github.repository }}" >> $GITHUB_OUTPUT
-            echo "URL=${{ github.event.workflow_run.html_url }}" >> $GITHUB_OUTPUT
-            echo "AUTHOR=GitHub Actions" >> $GITHUB_OUTPUT
-            
-          else
-            echo "TITLE=Event Triggered: ${{ github.event_name }}" >> $GITHUB_OUTPUT
-            echo "SUBJECT=${{ github.repository }}" >> $GITHUB_OUTPUT
-            echo "URL=https://github.com/${{ github.repository }}" >> $GITHUB_OUTPUT
-            echo "AUTHOR=${{ github.actor }}" >> $GITHUB_OUTPUT
-          fi
-          
-      - name: Build and Sanitize Telegram Payload
-        id: payload
+      - name: Send Telegram Notification
+        shell: python
         env:
-          RAW_TITLE: ${{ steps.event-info.outputs.TITLE }}
-          RAW_SUBJECT: ${{ steps.event-info.outputs.SUBJECT }}
-          RAW_AUTHOR: ${{ steps.event-info.outputs.AUTHOR }}
-          REPO_NAME: ${{ github.event.repository.name }}
-          URL: ${{ steps.event-info.outputs.URL }}
+          TELEGRAM_TOKEN: ${{ secrets.TLG_BOT_TKN_TAURUSTLSDEV_BOT }}
+          TELEGRAM_TO: ${{ secrets.TLG_CHAT_ID_TAURUSTLS_ALERTS }}
+          TELEGRAM_THREAD: ${{ vars.TLG_THRD_ID_TAURUSTLS_ALERTS }}
+
         run: |
           import html
           import inspect
+          import json
           import os
+          import sys
+          import urllib.error
+          import urllib.request
 
-          # Fetch raw inputs safely
-          title = html.escape(os.environ.get("RAW_TITLE", ""))
-          subject = html.escape(os.environ.get("RAW_SUBJECT", ""))
-          author = html.escape(os.environ.get("RAW_AUTHOR", ""))
-          repo = os.environ.get("REPO_NAME", "")
-          url = os.environ.get("URL", "")
+          # Read event data without shell interpolation.
+          with open(os.environ["GITHUB_EVENT_PATH"], encoding="utf-8") as f:
+              event = json.load(f)
 
-          # Indent naturally! Your editor will be happy now.
-          raw_message = f"""
-          <b>🛠️ TaurusTLS GitHub Notification</b>
+          event_name = os.environ["GITHUB_EVENT_NAME"]
+          action = event.get("action", "")
+          repository = event["repository"]["full_name"]
 
-          <b>Event:</b> {title}
-          <b>Subject:</b> {subject}
-          <b>Repository:</b> <code>TaurusTLS/{repo}</code>
-          <b>Triggered by:</b> @{author}
+          if event_name == "push":
+              title = "Workflow Test"
+              subject = "Testing Telegram notifications from feature branch"
+              url = event["repository"]["html_url"]
+              author = os.environ["GITHUB_ACTOR"]
+          
+          elif event_name == "pull_request_target":
+              pr = event["pull_request"]
+              title = f"Pull Request {action}"
+              subject = pr["title"]
+              url = pr["html_url"]
+              author = pr["user"]["login"]
 
-          <a href="{url}">🔗 View on GitHub</a>
-          """
+          elif event_name == "issues":
+              issue = event["issue"]
+              title = f"Issue {action}"
+              subject = issue["title"]
+              url = issue["html_url"]
+              author = issue["user"]["login"]
 
-          # Clean up the leading whitespace automatically
-          message = inspect.cleandoc(raw_message)
+          elif event_name == "issue_comment":
+              issue = event["issue"]
+              comment = event["comment"]
+              title = f"New Comment on Issue #{issue['number']}"
+              subject = issue["title"]
+              url = comment["html_url"]
+              author = comment["user"]["login"]
 
-          # Export the finalized payload string
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-              f.write("message<<EOF\n")
-              f.write(message + "\n")
-              f.write("EOF\n")
+          else:
+              sys.exit(f"Unsupported event: {event_name}")
 
-      - name: Send Telegram Message
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.TELEGRAM_TO }}
-          token: ${{ secrets.TELEGRAM_TOKEN }}
-          format: html
-          message: ${{ steps.payload.outputs.message }}
+          # Limit subject length to prevent Telegram message-size errors.
+          if len(subject) > 1000:
+              subject = subject[:997] + "..."
+
+          # Escape user-supplied content for Telegram HTML.
+          title = html.escape(title)
+          subject = html.escape(subject)
+          author = html.escape(author)
+          repository = html.escape(repository)
+          url = html.escape(url, quote=True)
+
+          message = inspect.cleandoc(f"""
+              <b>🛠️ TaurusTLS GitHub Notification</b>
+
+              <b>Event:</b> {title}
+              <b>Subject:</b> {subject}
+              <b>Repository:</b> <code>{repository}</code>
+              <b>Triggered by:</b> @{author}
+
+              <a href="{url}">🔗 View on GitHub</a>
+          """)
+
+          # Validate configuration.
+          token = os.environ.get("TELEGRAM_TOKEN")
+          chat_id = os.environ.get("TELEGRAM_TO")
+          message_thread_id = os.environ.get("TELEGRAM_THREAD")
+
+          if not token or not chat_id:
+              sys.exit("Missing Telegram token or chat ID.")
+
+          # Prepare Telegram Bot API request.
+          payload = {
+              "chat_id": chat_id,
+              "message_thread_id": message_thread_id,
+              "text": message,
+              "parse_mode": "HTML",
+              "link_preview_options": {
+                  "is_disabled": True
+              },
+          }
+
+          data = json.dumps(payload).encode("utf-8")
+
+          request = urllib.request.Request(
+              url=f"https://api.telegram.org/bot{token}/sendMessage",
+              data=data,
+              headers={
+                  "Content-Type": "application/json"
+              },
+              method="POST",
+          )
+
+          # Send the notification.
+          # Avoid printing exception URLs because they contain the token.
+          try:
+              with urllib.request.urlopen(request, timeout=15) as response:
+                  result = json.load(response)
+
+              if not result.get("ok"):
+                  sys.exit("Telegram API rejected the notification.")
+
+              print("Telegram notification sent successfully.")
+
+          except urllib.error.HTTPError as error:
+              print(
+                  f"Telegram API returned HTTP {error.code}.",
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          except urllib.error.URLError:
+              sys.exit("Unable to connect to Telegram API.")
+
+          except TimeoutError:
+              sys.exit("Telegram API request timed out.")
