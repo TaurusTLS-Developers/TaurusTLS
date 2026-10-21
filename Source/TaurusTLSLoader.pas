@@ -19,7 +19,10 @@ unit TaurusTLSLoader;
 interface
 
 uses
-  Classes, IdGlobal, IdCTypes, IdThreadSafe;
+  Classes,
+  IdGlobal,
+  IdCTypes,
+  IdThreadSafe;
 
 {$IF NOT DECLARED(TIdLibHandle)}
 type
@@ -170,6 +173,7 @@ uses
 {$ENDIF}
 {$IFDEF VCL_2010_OR_ABOVE}
   System.IOUtils,
+  System.AnsiStrings,
 {$ENDIF}
   TaurusTLSConsts,
   TaurusTLSHeaders_crypto,
@@ -899,6 +903,8 @@ type
     procedure BindHeaderSymbols(const AVersionNo: TIdC_ULONG);
     procedure UnbindHeaderSymbols;
     procedure FreeDynamicLibraries;
+    class function IsOpenSSLPrefix(const AStr: PAnsiChar): Boolean; static;
+      {$IFDEF USE_INLINE}inline;{$ENDIF}
   strict protected
     function DoLoad: Boolean; override;
     procedure DoUnload; override;
@@ -983,22 +989,44 @@ begin
   Result := FOpenSSLPath;
 end;
 
-procedure TOpenSSLDynamicLoader.SetOpenSSLPath(const Value: string);
-begin
-  if Value = '' then
-    FOpenSSLPath := ''
-  else
-    FOpenSSLPath := IncludeTrailingPathDelimiter(Value);
-end;
-
 function TOpenSSLDynamicLoader.GetSSLLibVersions: string;
 begin
   Result := FSSLLibVersions;
 end;
 
+procedure TOpenSSLDynamicLoader.SetOpenSSLPath(const Value: string);
+begin
+  FLoaderLock.Acquire;
+  try
+    if Value = FOpenSSLPath then
+      Exit;
+
+    if IsLoaded or IsActiveHandlePresent then
+      raise ETaurusTLSConfigFilePathError.Create(RSOSSLConfigFileAlreadyLoaded);
+
+    if Value = '' then
+      FOpenSSLPath := ''
+    else
+      FOpenSSLPath := IncludeTrailingPathDelimiter(Value);
+  finally
+    FLoaderLock.Release;
+  end;
+end;
+
 procedure TOpenSSLDynamicLoader.SetSSLLibVersions(const AValue: string);
 begin
-  FSSLLibVersions := AValue;
+  FLoaderLock.Acquire;
+  try
+    if AValue = FSSLLibVersions then
+      Exit;
+
+    if IsLoaded or IsActiveHandlePresent then
+      raise ETaurusTLSConfigFilePathError.Create(RSOSSLConfigFileAlreadyLoaded);
+
+    FSSLLibVersions := AValue;
+  finally
+    FLoaderLock.Release;
+  end;
 end;
 
 function TOpenSSLDynamicLoader.GetFailedToLoad: TStringList;
@@ -1014,6 +1042,19 @@ begin
   finally
     FLoaderLock.Release;
   end;
+end;
+
+class function TOpenSSLDynamicLoader.IsOpenSSLPrefix(
+  const AStr: PAnsiChar): Boolean;
+begin
+  if not Assigned(AStr) then
+    Exit(False);
+{$IFDEF FPC}
+  Result := StrLComp(AStr, CVerStrOpenSSLPfx, Length(CVerStrOpenSSLPfx)) = 0;
+{$ELSE}
+  Result := System.AnsiStrings.AnsiStrLComp(AStr,
+    CVerStrOpenSSLPfx, Length(CVerStrOpenSSLPfx)) = 0;
+{$ENDIF}
 end;
 
 function TOpenSSLDynamicLoader.NeedUnloadCleanup: Boolean;
@@ -1071,9 +1112,12 @@ end;
 function TOpenSSLDynamicLoader.LoadAndVerifyLibraries: Boolean;
 type
   TOpenSSL_version_num = function: TIdC_ULONG; cdecl;
+  TOpenSSL_version = function(t: TIdC_INT): PIdAnsiChar; cdecl;
 var
   LOpenSSL_version_num: TOpenSSL_version_num;
+  LOpenSSL_version: TOpenSSL_version;
   LSSLVersionNo: TIdC_ULONG;
+  LVersionPChar: PIdAnsiChar;
 begin
   Result := False;
 
@@ -1083,11 +1127,25 @@ begin
   if (FLibCrypto = IdNilHandle) or (FLibSSL = IdNilHandle) then
     Exit;
 
+  // 1. Verify genuine OpenSSL identity using zero-allocation PAnsiChar/PChar check
+  LOpenSSL_version := LoadLibFunction(FLibCrypto, 'OpenSSL_version');
+  if not Assigned(LOpenSSL_version) then
+    LOpenSSL_version := LoadLibFunction(FLibCrypto, 'SSLeay_version');
+
+  if not Assigned(LOpenSSL_version) then
+    raise ETaurusTLSLoaderError.Create(RSOSSLCantGetSSLVersionString);
+
+  LVersionPChar := LOpenSSL_version(OPENSSL_VERSION_CONST); // 0 = OPENSSL_VERSION
+  if (not Assigned(LVersionPChar)) or (not IsOpenSSLPrefix(LVersionPChar)) then
+    raise ETaurusTLSLoaderError.Create(RSOSSLUnsupportedCryptoLibrary);
+
+  // 2. Numeric version check (supports OpenSSL 3.x and 4.x)
   LOpenSSL_version_num := LoadLibFunction(FLibCrypto, 'OpenSSL_version_num');
   if not Assigned(LOpenSSL_version_num) then
     LOpenSSL_version_num := LoadLibFunction(FLibCrypto, 'SSLeay');
+
   if not Assigned(LOpenSSL_version_num) then
-    raise ETaurusTLSError.Create(ROSSLCantGetSSLVersionNo);
+    raise ETaurusTLSLoaderError.Create(ROSSLCantGetSSLVersionNo);
 
   LSSLVersionNo := LOpenSSL_version_num();
   CheckOpenSSLVersion(LSSLVersionNo);

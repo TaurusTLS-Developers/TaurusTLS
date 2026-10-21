@@ -24,6 +24,8 @@ resourcestring
   RSOSSLCouldNotLoadSSLLibrary = 'Could not load SSL library.';
 
   ROSSLCantGetSSLVersionNo = 'Unable to determine SSL Library Version number';
+  RSOSSLCantGetSSLVersionString = 'Cannot obtain OpenSSL version string';
+  RSOSSLUnsupportedCryptoLibrary = 'Unsupported cryptographic library detected';
   ROSSLAPIFunctionNotPresent =
     'TaurusTLS API Function/Procedure %s not found in SSL Library';
   ROSUnrecognisedLibName = 'Unrecognised SSL Library name (%s)';
