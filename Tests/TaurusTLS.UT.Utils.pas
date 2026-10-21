@@ -27,15 +27,17 @@ type
   ///  TestFixtures derived from <see cref="TaurusTLS.UT.TestClassesTOsslTestBase" class.
   ///  </summary>
   TOsslLoader = class
-  {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   public const
     cEnvVarPathName = 'OPENSSL_PATH';
     cShortOptPathName = 'osp';
     cLongOptPathName = 'opensslpath';
 
+    cEnvVarConfPathName = 'OPENSSL_CONF';
+    cShortOptConfigPathName = 'oscp';
+    cLongOptConfigPathName = 'openssl-config-path';
+
     cEnvVarModulesPathName = 'OPENSSL_MODULES';
-    cShortOptModulesPathName = 'osmp';
-    cLongOptModulesPathName = 'opensslmodulespath';
+
   private class var
     FLoader: IOpenSSLLoader;
     FLoadCount: FixedUInt;
@@ -44,16 +46,15 @@ type
     class procedure Lock; {$IFDEF USE_INLINE}inline; {$ENDIF}
     class procedure Unlock; {$IFDEF USE_INLINE}inline; {$ENDIF}
     class procedure RegisterOptions; static;
-    class function GetFromEnvVar: string; static;
+    class function GetFromEnvVar(const AValue: string): string; static;
     class procedure SetPath(const Value: string); static;
     class function GetPath: string; static;
-    {$ENDIF}
+    class function GetConfigFile: string; static;
+    class procedure SetConfigFile(const Value: string); static;
     class function GetLoaded: boolean; static;
   public
-    {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
     class constructor Create;
     class destructor Destroy;
-    {$ENDIF}
     ///  <summary>
     ///  Tries to load Openssl library. Can be called multiple times.
     ///  <returns>
@@ -79,7 +80,6 @@ type
     ///  </returns
     ///  </summary>
     class property Loaded: boolean read GetLoaded;
-  {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
     ///  <summary>
     ///  Allows to change path to the Openssl library folder
     ///  <remarks>
@@ -87,7 +87,10 @@ type
     ///  </remarks>
     ///  </summary>
     class property Path: string read GetPath write SetPath;
-  {$ENDIF}
+    ///  <summary>
+    ///  OpenSSL configuration file used when loading either linking model.
+    ///  </summary>
+    class property ConfigFile: string read GetConfigFile write SetConfigFile;
   end;
 
   {$IFDEF USE_FASTMM5}
@@ -124,7 +127,7 @@ type
 
 resourcestring
   rcOssLoaderPathHelp = 'Specify path to OpenSSL library folder';
-  rcOssLoaderModulesPathHelp = 'Specify path to OpenSSL module provider libraries'' folder';
+  rcOssLoaderConfigPathHelp = 'Specify path to OpenSSL configuration file';
   rcFastMMDebugEnableHelp = 'Enable or disable detailed memory leak';
   rcFastMMLogHelp = 'Memory leak report file name.';
   {$IFDEF USE_FASTMM5}
@@ -146,12 +149,12 @@ uses
 
 { TOsslLoader }
 
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 class constructor TOsslLoader.Create;
 begin
   FLock:=TObject.Create;
   FLoader:=GetOpenSSLLoader;
-  Path:=GetFromEnvVar;
+  Path:=GetFromEnvVar(cEnvVarPathName);
+  ConfigFile:=GetFromEnvVar(cEnvVarConfPathName);
   RegisterOptions;
 end;
 
@@ -171,9 +174,9 @@ begin
   TMonitor.Exit(FLock);
 end;
 
-class function TOsslLoader.GetFromEnvVar: string;
+class function TOsslLoader.GetFromEnvVar(const AValue: string): string;
 begin
-  Result:=GetEnvironmentVariable(cEnvVarPathName);
+  Result:=GetEnvironmentVariable(AValue);
 end;
 
 class procedure TOsslLoader.RegisterOptions;
@@ -185,7 +188,13 @@ begin
       Path:=Value;
     end
   );
-
+  TOptionsRegistry.RegisterOption<string>(cLongOptConfigPathName, cShortOptConfigPathName,
+    rcOssLoaderConfigPathHelp,
+    procedure(Value: string)
+    begin
+      ConfigFile:=Value;
+    end
+  );
 end;
 
 class function TOsslLoader.GetPath: string;
@@ -198,22 +207,28 @@ begin
   FLoader.OpenSSLPath:=Value;
 end;
 
-{$ENDIF}
+class function TOsslLoader.GetConfigFile: string;
+begin
+  Result:=FLoader.ConfigFile;
+end;
+
+class procedure TOsslLoader.SetConfigFile(const Value: string);
+begin
+  FLoader.ConfigFile:=Value;
+end;
 
 class function TOsslLoader.GetLoaded: boolean;
 begin
-  {$IFDEF OPENSSL_STATIC_LINK_MODEL}
-  Result:=True;
-  {$ELSE}
-  Result:=FLoadCount > 0;
-  {$ENDIF}
+  Lock;
+  try
+    Result:=(FLoadCount > 0) and Assigned(FLoader) and FLoader.IsLoaded;
+  finally
+    Unlock;
+  end;
 end;
 
 class function TOsslLoader.Load: boolean;
 begin
-  {$IFDEF OPENSSL_STATIC_LINK_MODEL}
-  Result:=True;
-  {$ELSE}
   Lock;
   try
     if FLoadCount = 0 then
@@ -232,15 +247,13 @@ begin
   finally
     Unlock;
   end;
-  {$ENDIF}
 end;
 
 class procedure TOsslLoader.Unload;
 begin
-  {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   Lock;
   try
-  if FLoadCount > 0 then
+    if FLoadCount > 0 then
     begin
       Dec(FLoadCount);
       if FLoadCount = 0 then
@@ -254,7 +267,6 @@ begin
   finally
     Unlock;
   end;
-  {$ENDIF}
 end;
 
 {$IFDEF USE_FASTMM5}
