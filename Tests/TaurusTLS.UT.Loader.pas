@@ -30,13 +30,26 @@ type
     FInvalidSyntaxConfigFile: string;
     FOrigOpenSSLPath: string;
     FOrigSSLLibVersions: string;
+    FOrigConfigFile: string;
+    FOrigCurrentDir: string;
+    FOrigConfEnv: string;
+    FOrigModulesEnv: string;
+    FHadConfEnv: Boolean;
+    FHadModulesEnv: Boolean;
+    FStateCaptured: Boolean;
+    FLockHeld: Boolean;
 
+    /// <summary>Writes a configuration into the fixture's temporary directory.</summary>
     function CreateTempConfigFile(const AContent: string; const AFileName: string = ''): string;
+    /// <summary>Decodes validated hexadecimal byte pairs.</summary>
     function HexToBytes(const AHexStr: string): TBytes;
+    /// <summary>Decodes UTF-16LE test data, including embedded null characters.</summary>
     function HexToUnicodeString(const AHexStr: string): string;
   public
+    /// <summary>Captures state and establishes an isolated loader environment.</summary>
     [Setup]
     procedure Setup;
+    /// <summary>Unloads and restores configuration, paths, and environment.</summary>
     [TearDown]
     procedure Teardown;
   end;
@@ -91,6 +104,11 @@ type
     [Test]
     procedure Config_InvalidSyntax;
 
+    /// <summary>Verifies recovery from missing-file and directory path failures.</summary>
+    [TestCase('MissingFile', '0')]
+    [TestCase('Directory', '1')]
+    procedure Config_PathFailureRecovery(const APathKind: Integer);
+
     /// <summary>Tests that Unload clears the active effective configuration filename.</summary>
     [Test]
     procedure Config_UnloadClears;
@@ -101,7 +119,7 @@ type
     procedure Config_RelativePath(const ARelPath: string);
 
     /// <summary>Tests that configuration paths containing Unicode characters are supported.</summary>
-    [TestCase('Accents', 'Conf_Test_Unicode.cnf')]
+    [TestCase('Accents', 'Conf_éà_Üñîçødé.cnf')]
     [TestCase('Cyrillic', 'Конфиг_Тест.cnf')]
     procedure Config_UnicodePath(const AUnicodeFileName: string);
   end;
@@ -148,7 +166,6 @@ type
     procedure Life_MutateWhenFailed(const APropId: Integer);
   end;
 
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   /// <summary>
   ///   Group 3: Lifecycle action callbacks, execution ordering, and rollback tests.
   /// </summary>
@@ -178,12 +195,84 @@ type
     procedure CB_RollbackOnFail;
 
     /// <summary>Tests that internal failure teardown preserves FailedToLoad diagnostics.</summary>
+    {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
     [Test]
     procedure CB_PreserveDiag;
+    {$ENDIF}
+
+    /// <summary>Verifies that callback failure blocks retries until explicit Unload.</summary>
+    [Test]
+    procedure CB_FailureRecovery;
   end;
-{$ENDIF}
 
 implementation
+
+uses
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ELSE}
+  Posix.Stdlib,
+  {$ENDIF}
+  TaurusTLS.UT.Utils,
+  TaurusTLSHeaders_crypto,
+  TaurusTLSHeaders_conf;
+
+var
+  GLoaderTestLock: TObject;
+
+{ Environment changes are process-wide. The runner must execute these fixtures
+  sequentially with other OpenSSL fixtures. The monitor also serializes this base. }
+
+/// <summary>Captures an environment variable without losing its unset state.</summary>
+function ReadTestEnv(const AName: string; out AValue: string): Boolean;
+{$IFDEF MSWINDOWS}
+var
+  LSize: DWORD;
+begin
+  SetLastError(ERROR_SUCCESS);
+  LSize := Winapi.Windows.GetEnvironmentVariable(PChar(AName), nil, 0);
+  Result := (LSize > 0) or (GetLastError <> ERROR_ENVVAR_NOT_FOUND);
+  AValue := System.SysUtils.GetEnvironmentVariable(AName);
+end;
+{$ELSE}
+var
+  LValue: MarshaledAString;
+begin
+  LValue := Posix.Stdlib.getenv(MarshaledAString(UTF8String(AName)));
+  Result := LValue <> nil;
+  if Result then
+    AValue := UTF8ToString(LValue)
+  else
+    AValue := '';
+end;
+{$ENDIF}
+
+/// <summary>Sets or removes an environment variable using the platform API.</summary>
+procedure WriteTestEnv(const AName, AValue: string; AExists: Boolean);
+{$IFDEF MSWINDOWS}
+var
+  LValue: PChar;
+begin
+  if AExists then
+    LValue := PChar(AValue)
+  else
+    LValue := nil;
+  if not Winapi.Windows.SetEnvironmentVariable(PChar(AName), LValue) then
+    RaiseLastOSError;
+end;
+{$ELSE}
+var
+  LResult: Integer;
+begin
+  if AExists then
+    LResult := Posix.Stdlib.setenv(MarshaledAString(UTF8String(AName)),
+      MarshaledAString(UTF8String(AValue)), 1)
+  else
+    LResult := Posix.Stdlib.unsetenv(MarshaledAString(UTF8String(AName)));
+  if LResult <> 0 then
+    raise EInOutError.CreateFmt('Cannot update environment variable %s', [AName]);
+end;
+{$ENDIF}
 
 const
   cMinimalValidOpenSSLConfig =
@@ -213,7 +302,8 @@ begin
   Assert.IsFalse(Odd(lLen mod 2), 'HEX String must be divisible by 2.');
   lLen := lLen div 2;
   SetLength(Result, lLen);
-  HexToBin(PChar(AHexStr), 0, Result, 0, lLen);
+  Assert.AreEqual(Integer(lLen),
+    HexToBin(PChar(AHexStr), 0, Result, 0, lLen), 'Invalid hexadecimal test data');
 end;
 
 function TLoaderBaseFixture.HexToUnicodeString(const AHexStr: string): string;
@@ -221,53 +311,88 @@ var
   LBytes: TBytes;
 begin
   LBytes := HexToBytes(AHexStr);
+  Assert.IsFalse(Odd(Length(LBytes)), 'UTF-16LE requires complete code units');
   Result := TEncoding.Unicode.GetString(LBytes);
 end;
 
 procedure TLoaderBaseFixture.Setup;
 begin
-  FLoader := GetOpenSSLLoader;
-  if Assigned(FLoader) then
-  begin
+  TMonitor.Enter(GLoaderTestLock);
+  FLockHeld := True;
+  try
+    FLoader := GetOpenSSLLoader;
+    Assert.IsNotNull(FLoader);
+    Assert.IsFalse(TOsslLoader.Loaded, 'Loader fixtures require exclusive loader ownership');
     FOrigOpenSSLPath := FLoader.OpenSSLPath;
     FOrigSSLLibVersions := FLoader.SSLLibVersions;
-    try
-      FLoader.Unload;
-    except
-    end;
-    try
-      FLoader.ConfigFile := '';
-    except
-    end;
+    FOrigConfigFile := FLoader.ConfigFile;
+    FOrigCurrentDir := GetCurrentDir;
+    FHadConfEnv := ReadTestEnv('OPENSSL_CONF', FOrigConfEnv);
+    FHadModulesEnv := ReadTestEnv('OPENSSL_MODULES', FOrigModulesEnv);
+    FStateCaptured := True;
+    FLoader.Unload;
+    FLoader.ConfigFile := '';
+    if TOsslLoader.Path <> '' then
+      FLoader.OpenSSLPath := TOsslLoader.Path;
+
+    FTempDir := TPath.Combine(TPath.GetTempPath, 'TaurusTLS_UT_Loader_' + TGuid.NewGuid.ToString);
+    TDirectory.CreateDirectory(FTempDir);
+    FValidConfigFile := CreateTempConfigFile(cMinimalValidOpenSSLConfig);
+    FInvalidSyntaxConfigFile := CreateTempConfigFile(cMinimalInvalidOpenSSLConfig);
+    WriteTestEnv('OPENSSL_CONF', FValidConfigFile, True);
+    { No external providers are required by this suite. Prevent machine-specific
+      OPENSSL_MODULES values from affecting discovery. }
+    WriteTestEnv('OPENSSL_MODULES', FTempDir, True);
+  except
+    Teardown;
+    raise;
   end;
-
-  FTempDir := TPath.Combine(TPath.GetTempPath, 'TaurusTLS_UT_Loader_' + TGuid.NewGuid.ToString);
-  TDirectory.CreateDirectory(FTempDir);
-
-  FValidConfigFile := CreateTempConfigFile(cMinimalValidOpenSSLConfig);
-  FInvalidSyntaxConfigFile := CreateTempConfigFile(cMinimalInvalidOpenSSLConfig);
 end;
 
 procedure TLoaderBaseFixture.Teardown;
 begin
-  if Assigned(FLoader) then
-  begin
+  try
+    if FStateCaptured then
     try
       FLoader.Unload;
-    except
+    finally
+      try
+        FLoader.ConfigFile := FOrigConfigFile;
+      finally
+        try
+          FLoader.OpenSSLPath := FOrigOpenSSLPath;
+        finally
+          try
+            FLoader.SSLLibVersions := FOrigSSLLibVersions;
+          finally
+            try
+              if not SetCurrentDir(FOrigCurrentDir) then
+                raise EInOutError.Create('Cannot restore current directory');
+            finally
+              try
+                WriteTestEnv('OPENSSL_CONF', FOrigConfEnv, FHadConfEnv);
+              finally
+                WriteTestEnv('OPENSSL_MODULES', FOrigModulesEnv, FHadModulesEnv);
+              end;
+            end;
+          end;
+        end;
+      end;
     end;
+  finally
+    FStateCaptured := False;
     try
-      FLoader.ConfigFile := '';
-    except
+      if (FTempDir <> '') and TDirectory.Exists(FTempDir) then
+        TDirectory.Delete(FTempDir, True);
+      FTempDir := '';
+    finally
+      FLoader := nil;
+      if FLockHeld then
+      begin
+        FLockHeld := False;
+        TMonitor.Exit(GLoaderTestLock);
+      end;
     end;
-    FLoader.OpenSSLPath := FOrigOpenSSLPath;
-    FLoader.SSLLibVersions := FOrigSSLLibVersions;
-  end;
-
-  if TDirectory.Exists(FTempDir) then
-  try
-    TDirectory.Delete(FTempDir, True);
-  except
   end;
 end;
 
@@ -393,12 +518,27 @@ begin
 end;
 
 procedure TLoaderConfigFixture.Config_UnloadClears;
+var
+  LDefaultConfig: PIdAnsiChar;
+  LExpectedPath: string;
 begin
   FLoader.ConfigFile := '';
   Assert.IsTrue(FLoader.Load, 'Loader.Load failed');
   try
     Assert.IsTrue(FLoader.IsLoaded);
-    Assert.AreNotEqual('', FLoader.ConfigFile);
+    // Discovery reports a filename; this does not read the machine's config.
+    // Query the native API because its C-runtime environment may differ from
+    // the environment seen by Delphi, especially when launched from the IDE.
+    LExpectedPath := '';
+    LDefaultConfig := CONF_get1_default_config_file();
+    if Assigned(LDefaultConfig) then
+    try
+      LExpectedPath := UTF8ToString(LDefaultConfig);
+    finally
+      OPENSSL_free(LDefaultConfig);
+    end;
+    Assert.AreEqual(LExpectedPath, FLoader.ConfigFile,
+      'Loader must report the native discovery result');
   finally
     FLoader.Unload;
   end;
@@ -418,9 +558,11 @@ begin
     TDirectory.CreateDirectory(LSubDir);
 
   TFile.WriteAllText(LFullPath, cMinimalValidOpenSSLConfig);
-  LNormalized := TPath.GetFullPath(LFullPath);
 
-  FLoader.ConfigFile := LFullPath;
+  Assert.IsTrue(SetCurrentDir(FTempDir), 'Cannot set relative-path test directory');
+  // The OS may report a physical directory instead of its temporary-path alias.
+  LNormalized := TPath.GetFullPath(TPath.Combine(GetCurrentDir, ARelPath));
+  FLoader.ConfigFile := ARelPath;
   Assert.IsTrue(FLoader.Load, 'Load failed for relative config path');
   try
     Assert.IsTrue(FLoader.IsLoaded);
@@ -448,6 +590,25 @@ begin
   end;
 end;
 
+procedure TLoaderConfigFixture.Config_PathFailureRecovery(const APathKind: Integer);
+begin
+  if APathKind = 0 then
+    FLoader.ConfigFile := TPath.Combine(FTempDir, 'missing.cnf')
+  else
+    FLoader.ConfigFile := FTempDir;
+  Assert.WillRaise(
+    procedure
+    begin
+      FLoader.Load;
+    end, ETaurusTLSConfigFilePathError);
+  Assert.IsFalse(FLoader.IsLoaded);
+  FLoader.ConfigFile := FValidConfigFile;
+  Assert.IsFalse(FLoader.Load, 'Correcting a path must not reset the circuit breaker');
+  FLoader.Unload;
+  Assert.IsTrue(FLoader.Load, 'Explicit Unload must permit a corrected path to load');
+  Assert.IsTrue(FLoader.IsLoaded);
+end;
+
 { TLoaderLifecycleFixture }
 
 {$IFDEF OPENSSL_STATIC_LINK_MODEL}
@@ -459,6 +620,7 @@ begin
   Assert.IsNotNull(LLoader, 'Static loader instance must be available');
   Assert.IsFalse(LLoader.IsLoaded, 'Static loader must not be loaded before Load is called');
   Assert.AreEqual('', LLoader.OpenSSLPath, 'OpenSSLPath must be empty in static mode');
+  Assert.AreEqual('', LLoader.SSLLibVersions, 'SSLLibVersions must be empty in static mode');
   Assert.AreEqual(0, LLoader.FailedToLoad.Count, 'FailedToLoad must be empty in static mode');
 end;
 {$ENDIF}
@@ -613,13 +775,13 @@ begin
   end;
 end;
 
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-
 { TLoaderCallbacksFixture }
 
 var
   TTestCallbackLog: TStringList = nil;
+  {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   GTestSymbolInjectorActive: Boolean = False;
+  {$ENDIF}
 
 type
   TTestCallbackObserverA = class
@@ -636,11 +798,6 @@ type
     class procedure ActionProc(AAction: TOpenSSLLoadAction);
   end;
 
-  TTestSymbolInjector = class
-  public
-    class var Active: Boolean;
-  end;
-
 class procedure TTestCallbackObserverA.ActionProc(AAction: TOpenSSLLoadAction);
 begin
   if not Active then
@@ -648,7 +805,10 @@ begin
 
   if VerifyHandlesLive then
   begin
-    if GetOpenSSLLoader.IsLoaded then
+    {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+    Assert.IsTrue(Assigned(OpenSSL_version_num), 'Version routine must remain bound');
+    {$ENDIF}
+    if OpenSSL_version_num() >= min_supported_ssl_version then
     begin
       if AAction = osaLoad then
         TTestCallbackLog.Add('A:Load:Live')
@@ -686,23 +846,26 @@ begin
     TTestCallbackLog.Add('B:Unload');
 end;
 
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 procedure TestSymbolInjectorLoadProc(const ADllHandle: TIdLibHandle; LibVersion: TIdC_UINT; const AFailed: TStringList);
 begin
   if GTestSymbolInjectorActive and Assigned(AFailed) then
     AFailed.Add('Fake_Diagnostic_Symbol');
 end;
+{$ENDIF}
 
 procedure TLoaderCallbacksFixture.Setup;
 begin
   inherited Setup;
+  {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   GTestSymbolInjectorActive := False;
+  {$ENDIF}
   if Assigned(TTestCallbackLog) then
     TTestCallbackLog.Clear;
   TTestCallbackObserverA.Active := False;
   TTestCallbackObserverA.VerifyHandlesLive := False;
   TTestCallbackObserverB.Active := False;
   TTestCallbackObserverB.ThrowOnLoad := False;
-  TTestSymbolInjector.Active := False;
 end;
 
 procedure TLoaderCallbacksFixture.Teardown;
@@ -711,7 +874,6 @@ begin
   TTestCallbackObserverA.VerifyHandlesLive := False;
   TTestCallbackObserverB.Active := False;
   TTestCallbackObserverB.ThrowOnLoad := False;
-  TTestSymbolInjector.Active := False;
   inherited Teardown;
 end;
 
@@ -783,6 +945,11 @@ begin
     Assert.AreEqual(2, TTestCallbackLog.Count);
     Assert.AreEqual('A:Load', TTestCallbackLog[0]);
     Assert.AreEqual('A:Unload', TTestCallbackLog[1]);
+    Assert.IsTrue(FLoader.Load, 'A new load cycle must succeed');
+    FLoader.Unload;
+    Assert.AreEqual(4, TTestCallbackLog.Count);
+    Assert.AreEqual('A:Load', TTestCallbackLog[2]);
+    Assert.AreEqual('A:Unload', TTestCallbackLog[3]);
   finally
     TTestCallbackObserverA.Active := False;
     FLoader.Unload;
@@ -817,6 +984,7 @@ begin
   end;
 end;
 
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 procedure TLoaderCallbacksFixture.CB_PreserveDiag;
 begin
   GTestSymbolInjectorActive := True;
@@ -842,20 +1010,47 @@ end;
 
 {$ENDIF}
 
+procedure TLoaderCallbacksFixture.CB_FailureRecovery;
+begin
+  TTestCallbackObserverA.Active := True;
+  TTestCallbackObserverB.Active := True;
+  TTestCallbackObserverB.ThrowOnLoad := True;
+  FLoader.ConfigFile := FValidConfigFile;
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      FLoader.Load;
+    end,
+    Exception, 'Simulated action failure in Observer B');
+  Assert.IsFalse(FLoader.IsLoaded);
+  Assert.AreEqual(2, TTestCallbackLog.Count);
+  TTestCallbackObserverB.ThrowOnLoad := False;
+  Assert.IsFalse(FLoader.Load, 'Callback failure must trip the circuit breaker');
+  Assert.AreEqual(2, TTestCallbackLog.Count, 'Blocked load must not dispatch callbacks');
+  FLoader.Unload;
+  Assert.IsTrue(FLoader.Load, 'Explicit Unload must permit recovery');
+  FLoader.Unload;
+  Assert.AreEqual(6, TTestCallbackLog.Count);
+  Assert.AreEqual('A:Load', TTestCallbackLog[2]);
+  Assert.AreEqual('B:Load', TTestCallbackLog[3]);
+  Assert.AreEqual('B:Unload', TTestCallbackLog[4]);
+  Assert.AreEqual('A:Unload', TTestCallbackLog[5]);
+end;
+
 initialization
+  GLoaderTestLock := TObject.Create;
   TDUnitX.RegisterTestFixture(TLoaderConfigFixture);
   TDUnitX.RegisterTestFixture(TLoaderLifecycleFixture);
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   TDUnitX.RegisterTestFixture(TLoaderCallbacksFixture);
   TTestCallbackLog := TStringList.Create;
   Register_SSLLoaderAction(TTestCallbackObserverA.ActionProc);
   Register_SSLLoaderAction(TTestCallbackObserverB.ActionProc);
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   Register_SSLLoader(TestSymbolInjectorLoadProc, 'LibCrypto');
 {$ENDIF}
 
 finalization
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   FreeAndNil(TTestCallbackLog);
-{$ENDIF}
+  FreeAndNil(GLoaderTestLock);
 
 end.
