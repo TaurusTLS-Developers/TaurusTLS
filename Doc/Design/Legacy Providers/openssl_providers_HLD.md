@@ -1,6 +1,6 @@
 ﻿# TaurusTLS OpenSSL Configuration, FIPS and Legacy Support — HLD
 
-Status: Revised design for developer review. Sections 2A and the associated lifecycle changes are proposed, not implemented.
+Status: Unified loader lifecycle, runtime resources and metadata are implemented. Provider integration and policy decisions identified below remain open.
 Revision date: 2026-10-22.
 Details: [DDD](openssl_providers_DDD.md).
 
@@ -17,7 +17,7 @@ The product supports two deployment models:
 
 There is no supported static-library/external-provider combination. OPENSSL_STATIC_LINK_MODEL remains the existing compiler discriminator; it does not introduce permission for mixed provider deployment. Startup-linked shared-library configurations, where retained by existing platform settings, must follow the established platform arrangement and must not be presented as a new supported mixed-deployment model. STATICLOAD_OPENSSL (linked archives) and OPENSSL_USE_SHARED_LIBRARY (startup shared-library imports) are mutually exclusive on all targets; TaurusTLSLinkDefines.inc rejects conflicting definitions.
 
-Applications explicitly initialize through `IOpenSSLLoader.Load`; a future `TTaurusTLSLoader` component is deferred. The compatibility `LoadOpenSSLLibrary` routine is proposed to forward to the same operation. Queries and NTLM readiness hooks must not initialize OpenSSL. Non-FIPS applications need no mandatory configuration file or FIPS assets. Removing implicit initialization requires documented migration and review.
+Applications explicitly initialize through `IOpenSSLLoader.Load`; a future `TTaurusTLSLoader` component is deferred. The compatibility `LoadOpenSSLLibrary` routine forwards to the same operation. Queries and NTLM readiness hooks must not initialize OpenSSL. Non-FIPS applications need no mandatory configuration file or FIPS assets. Removing implicit initialization requires documented migration and review.
 
 Support OpenSSL 3.x/4.x in the refactored path; do not carry OpenSSL 0.9–1.1.1 branches into it. ProvidersPath is unreleased and removed in favor of optional ConfigFile. Preserve the existing IOpenSSLLoader GUID {BBB0F670-CC26-42BC-A9E0-33647361941A}, as directed by the developer for interface extensions. Rebuild affected packages and consumers together; preserving the GUID does not preserve an old compiled interface layout.
 
@@ -30,11 +30,27 @@ Support OpenSSL 3.x/4.x in the refactored path; do not carry OpenSSL 0.9–1.1.1
 | TaurusTLSFIPS / internal FIPS manager | Readiness-aware Indy hooks and configured-policy reporting; final FIPS reporting/setter behavior remains deferred |
 | TaurusTLS_LegacyProviders | Linked-provider registration where required and configured legacy readiness; activation belongs to openssl.cnf |
 | TaurusTLS_NTLM | Ordinary Indy NTLM hooks, available without FIPS; reject prohibited operations when dynamic FIPS is active |
-| Private TaurusTLS runtime class (proposed) | Own TaurusTLS TLS callback locks; register initialization/cleanup actions with the loader; no independent public readiness flag |
+| Private `TTaurusTLSRuntime` class | Own TaurusTLS TLS callback locks; register initialization/cleanup actions with the loader; no independent public readiness flag |
 
 `IOpenSSLLoader` provides a unified contract across both dynamic and static linking models. `TOpenSSLBaseLoader` encapsulates common state, instance locking (`FLoaderLock`), configuration path validation, OpenSSL error extraction, and action callback dispatching/rollback.
 
-* **Dynamic Linking (`TOpenSSLDynamicLoader`):** Implements dynamic library discovery (`FindLibrary`), symbol resolution (`GLibCryptoLoadList`/`GLibSSLLoadList`), version verification, and handle cleanup (`GUnLoadList`, `FreeLibrary`).
+The singleton is constructed during TaurusTLSLoader unit initialization or by an
+earlier registration/query call. All paths use atomic compare-and-swap to publish
+one fully constructed instance in both linking models. The linking conditional
+selects only the concrete class; static and dynamic candidates use the same CAS
+publication path. Competing candidates own separate locks and
+diagnostics; losing candidates are released without touching shared registries.
+Ordinary, nonvirtual instance constructors create the registration and lifecycle
+locks. No class constructor or application-supplied factory is required.
+
+The published instance protects the shared registration lists with its own
+registration lock. Unit initialization preserves an earlier winner and its
+registrations. Constructing the singleton does not load or initialize OpenSSL;
+the application still calls Load explicitly. The singleton retains an ownership
+reference until unit finalization, which requires all application callers to
+have stopped.
+
+* **Dynamic Linking (`TOpenSSLDynamicLoader`):** Implements dynamic library discovery (`FindLibrary`), symbol resolution (`FCryptoLoaders`/`FSSLLoaders`), version verification, and handle cleanup (`FUnloaders`, `FreeLibrary`).
 * **Static Linking (`TOpenSSLStaticLoader`):** Operates on statically linked symbols. Dynamic-only properties (`OpenSSLPath`, `SSLLibVersions`, `FailedToLoad`) provide safe/inert defaults (`''` and empty list). Handles configuration application and action callbacks without dynamic library loading or symbol unbinding.
 
 Repeated `Load` calls when ready return `True` without repeating initialization or acquiring references. One explicit `Unload` performs cleanup; further `Unload` calls are safe. The application controls shutdown and must finish active crypto operations first.
@@ -43,7 +59,7 @@ The loader applies configuration before post-binding/post-configuration actions.
 
 The implemented public `State` reports `lsNotLoaded`, `lsLoadedReady`, or `lsLoadedFailed`. Internal loading/unloading states map to `lsNotLoaded`. `State`/`IsLoaded` are atomic snapshots and do not acquire the lifecycle lock. Recursive public Load/Unload calls during lifecycle callbacks raise `ETaurusTLSLoaderError`; internal rollback is a separate operation.
 
-## 2A. Unified runtime lifecycle and metadata (draft)
+## 2A. Unified runtime lifecycle and metadata
 
 This refactoring unifies the API and gives `IOpenSSLLoader` sole responsibility
 for coordinating the OpenSSL lifecycle. It owns shared-library loading and
@@ -52,9 +68,9 @@ TaurusTLS runtime setup in both dynamic and static models. Configuration,
 runtime resources and readiness are therefore managed through one Load/Unload
 contract.
 
-Extend `IOpenSSLLoader` with read-only Version, ConfigDirectory, ModulesDirectory
-and EnginesDirectory properties, with matching Get* accessors. Keep a single
-Load/Unload implementation and one readiness state.
+`IOpenSSLLoader` exposes read-only Version, ConfigDirectory, ModulesDirectory
+and EnginesDirectory properties, with matching Get* accessors. Both models share
+the base Load/Unload implementation and one readiness state.
 
 | Property | Source and meaning |
 |---|---|
@@ -73,14 +89,14 @@ preserve the compatibility routine with an empty result rather than returning a
 disabled-engine marker. [Modern metadata APIs](https://docs.openssl.org/4.0/man3/OpenSSL_version/).
 
 All metadata properties are passive. Not-ready or unavailable values are empty.
-The proposed implementation captures copied Pascal strings before successful
+The implementation captures copied Pascal strings before successful
 publication, clears them on cleanup, and serializes access with the lifecycle
 lock. Only State/IsLoaded carry the nonblocking-query guarantee.
 
 Preserve the six global routines as thin forwarding compatibility wrappers,
 inline where supported:
 
-| Existing routine | Proposed target |
+| Existing routine | Forwarding target |
 |---|---|
 | LoadOpenSSLLibrary | `GetOpenSSLLoader.Load` |
 | UnLoadOpenSSLLibrary | `GetOpenSSLLoader.Unload` |
@@ -89,30 +105,35 @@ inline where supported:
 | OpenSSLModulesDir | `GetOpenSSLLoader.ModulesDirectory` |
 | OpenSSLEnginesDir | `GetOpenSSLLoader.EnginesDirectory` |
 
-Review the wrapper contract before implementation: Load remains an explicit
+The wrapper contract preserves Load as an explicit
 lifecycle entry point; metadata queries never load. OpenSSLDir changes from a
 compiled default-directory query to the directory of ConfigFile. Review internal
 constructor/other implicit-load sites against explicit application initialization.
 
-Move general OpenSSL initialization into TaurusTLSLoader for both linking models.
-A private class in TaurusTLS owns the TLS callback locks and participates through
-Register_SSLLoaderAction. Use class vars/class methods for these resources, with
-a callback method compatible with the existing method-pointer type. Remove
-SSLIsLoaded as a competing readiness source. A failed action cleans its own
+TaurusTLSLoader owns general OpenSSL initialization for both linking models.
+The private TTaurusTLSRuntime class owns the TLS callback locks through class
+vars and class methods and participates through Register_SSLLoaderAction.
+Its action method matches the existing method-pointer type. SSLIsLoaded has been
+removed as a competing readiness source. A failed action cleans its own
 partially allocated resources; completed actions unwind in reverse order before
 unbinding. Readiness includes successful registered runtime actions, not socket
 creation or a guarantee that unloading is safe with live objects.
 
-Remove obsolete OpenSSL locking/thread-ID callbacks and obsolete error-string
-setup from this path, while preserving TaurusTLS's own callback locks. Do not
-replace old global state with a second lifecycle in the private class.
+Obsolete OpenSSL locking/thread-ID callbacks and explicit error-string setup
+have been removed from this path; TaurusTLS's own callback locks are retained.
+The private class does not introduce a second lifecycle.
 
-Before code changes, review initialization flags/order for explicit versus default
-configuration, optional custom allocators, pre-configuration builtin registration,
-external initialization and static reload limitations. Custom memory functions
-must be installed before OpenSSL allocations; a post-configuration callback is too
-late. Audit callback sizes and C ABI. No OPENSSL_cleanup in reloadable teardown.
-[Memory function ordering](https://docs.openssl.org/3.0/man3/OPENSSL_malloc/).
+For an explicit ConfigFile, the loader initializes libcrypto with
+OPENSSL_INIT_NO_LOAD_CONFIG, then applies the selected file through
+CONF_modules_load_file_ex. Empty input requests OPENSSL_INIT_LOAD_CONFIG before
+default filename discovery. Both paths initialize libssl with
+OPENSSL_INIT_NO_LOAD_CONFIG before dispatching actions. OpenSSL's first
+initialization policy may persist after external initialization or static
+load/unload cycles; discovery is not proof that the file was applied.
+
+Pre-configuration builtin registration remains a separate design decision.
+OpenSSL manages its own allocations; TaurusTLS installs no custom memory hooks
+and does not call OPENSSL_cleanup during reloadable teardown.
 
 ## 3. Configuration and discovery
 
@@ -121,7 +142,7 @@ Add optional ConfigFile to IOpenSSLLoader, available in both linking models:
 - A specified file is validated and loaded into the default context before provider callbacks or cryptographic operations.
 - Invalid/missing explicit paths raise `ETaurusTLSConfigFilePathError`; OpenSSL loading failures raise `ETaurusTLSConfigFileLoadError`. Both derive from `ETaurusTLSAPICryptoError`; load failures preserve the OpenSSL error details and filename.
 
-Use `CONF_modules_load_file_ex(nil, filename, nil, 0)` for explicit configuration across both models. It selects the default context and allows module errors to remain visible. `CONF_get1_default_config_file` discovers the default configuration filename when `ConfigFile` is empty; free its returned allocation with `OPENSSL_free`. Discovery alone neither loads that file nor proves it was applied. The current loader only discovers it; actual default initialization must be defined before configuration completion can be reported. [OpenSSL configuration APIs](https://docs.openssl.org/3.0/man3/CONF_modules_load_file/).
+Use `CONF_modules_load_file_ex(nil, filename, nil, 0)` for explicit configuration across both models. It selects the default context and allows module errors to remain visible. `CONF_get1_default_config_file` discovers the default configuration filename when `ConfigFile` is empty; free its returned allocation with `OPENSSL_free`. Discovery alone neither loads that file nor proves it was applied. The loader requests default initialization with OPENSSL_INIT_LOAD_CONFIG before discovering the filename; prior native initialization may already have fixed the configuration policy. [OpenSSL configuration APIs](https://docs.openssl.org/3.0/man3/CONF_modules_load_file/).
 
 Remove ProvidersPath, its accessors and loader calls to `OSSL_PROVIDER_set_default_search_path`. Do not substitute a hidden TaurusTLS search directory or mutate customer process environment. OpenSSL resolves providers through its standard module discovery or the provider section's module setting. Configuration controls module paths, activation and provider parameters. [OpenSSL 4.0 provider configuration](https://docs.openssl.org/4.0/man5/config/#provider-configuration).
 
@@ -156,7 +177,7 @@ Do not claim FIPS certification from provider activation or loader success.
 
 ## 5. Scope and acceptance
 
-This design covers loader readiness/configuration contracts and the proposed runtime/metadata integration, including consumer/NTLM readiness. Broader hook hardening, HMAC context consistency and FIPS reporting/policy require separate design review. Exclude static FIPS, mixed deployments, programmatic provider activation, the new component, unrelated socket/ECH work and certification claims.
+This design covers implemented loader readiness/configuration and runtime/metadata integration, together with the intended consumer/NTLM readiness contract. The remaining consumer audit and provider work are not implied to be complete. Broader hook hardening, HMAC context consistency and FIPS reporting/policy require separate design review. Exclude static FIPS, mixed deployments, programmatic provider activation, the new component, unrelated socket/ECH work and certification claims.
 
 Preserve supported configuration/module discovery and document intentional compatibility changes, including explicit initialization and OpenSSLDir semantics. Test those changes in controlled environments without requiring machine-wide configuration.
 
@@ -165,7 +186,7 @@ Acceptance:
 - Passive modern metadata and compatibility forwarding; no competing TLS ready flag.
 - Dynamic and static configuration paths, path validation, and strict typed failures.
 - Non-nil `IOpenSSLLoader` across both dynamic and static targets (`TOpenSSLStaticLoader` on macOS/static targets).
-- Thread-safe callback registration with on-demand lock initialization.
+- Atomic singleton publication in both linking models; callback registration uses the lock created in the winning instance's constructor.
 - Configuration-only provider activation; static registration ordering resolved before implementation.
 - Deferred FIPS/NTLM policy questions tracked without claiming they are resolved.
 - Runtime and test builds/runs on Win32, Win64, Linux64 and OSX64; track the known unrelated InputRanges baseline separately. Successful integration does not establish application/module certification.

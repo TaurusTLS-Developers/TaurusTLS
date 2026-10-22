@@ -1,6 +1,6 @@
 ﻿# TaurusTLS OpenSSL Configuration, FIPS and Legacy Support — DDD
 
-Status: Revised specification for developer review. Section 2A is a proposed runtime/metadata design, not implemented behavior.
+Status: Loader lifecycle, runtime resources and metadata describe the implemented behavior. Deferred provider integration, consumer audit and FIPS policy work are identified separately.
 Revision date: 2026-10-22.
 Architecture: [HLD](openssl_providers_HLD.md).
 
@@ -15,7 +15,7 @@ procedure SetConfigFile(const AValue: string);
 property ConfigFile: string read GetConfigFile write SetConfigFile;
 ~~~
 
-Preserve the existing `IOpenSSLLoader` GUID `{BBB0F670-CC26-42BC-A9E0-33647361941A}` for ConfigFile, State and the proposed metadata accessors, as directed by the developer. Rebuild all affected packages and consumers together; the unchanged GUID does not make earlier compiled interface layouts compatible.
+Preserve the existing `IOpenSSLLoader` GUID `{BBB0F670-CC26-42BC-A9E0-33647361941A}` for ConfigFile, State and the metadata accessors, as directed by the developer. Rebuild all affected packages and consumers together; the unchanged GUID does not make earlier compiled interface layouts compatible.
 
 `GetOpenSSLLoader` returns the singleton `IOpenSSLLoader` instance across all platforms:
 - In dynamic builds (`{$IFNDEF OPENSSL_STATIC_LINK_MODEL}`), it instantiates and returns `TOpenSSLDynamicLoader`.
@@ -44,7 +44,7 @@ Configuration behavior:
 
 | Input | Required behavior |
 |---|---|
-| Empty ConfigFile | Current loader discovers the default filename with `CONF_get1_default_config_file()`; this does not load it. Modern default initialization and OPENSSL_CONF behavior must be defined before claiming the file was applied |
+| Empty ConfigFile | Request `OPENSSL_init_crypto(OPENSSL_INIT_LOAD_CONFIG, nil)`, then discover the default filename with `CONF_get1_default_config_file()`. Discovery itself does not load or validate that file; prior initialization may have fixed the native configuration policy |
 | Nonempty ConfigFile | Suppress implicit default configuration loading; explicitly apply the selected file to nil/default context via `CONF_modules_load_file_ex` (requires OpenSSL 3.0+) |
 | Invalid/missing explicit file path | Raise ETaurusTLSConfigFilePathError before provider callbacks; engage failure circuit breaker |
 | OpenSSL configuration-loading failure | Capture OpenSSL error queue and raise ETaurusTLSConfigFileLoadError with effective filename; engage failure circuit breaker |
@@ -56,14 +56,14 @@ Configuration behavior:
 To eliminate code duplication, centralize error handling, and guarantee thread safety, `TaurusTLSLoader` employs the Template Method pattern:
 
 * **`TOpenSSLBaseLoader` (Abstract Base):**
-  - Manages `FLoaderLock: TIdCriticalSection`, the atomic `FState` backing field, `FLastLoadActionIdx: NativeInt`, `FConfigFile`, and `FEffectiveConfigFile`. No separate loaded/failed Boolean supplies readiness.
+  - Owns the atomic singleton slot and class-owned action registry. Each instance owns `FRegistrationLock`, `FLoaderLock`, the atomic `FState` backing field, `FLastLoadActionIdx`, configuration strings and cached metadata. No separate loaded/failed Boolean supplies readiness.
   - Non-virtual template methods `Load` and `Unload` govern the state machine, thread locking, and circuit breaker.
   - Declares abstract/virtual hooks `function DoLoad: Boolean; virtual; abstract;` and `procedure DoUnload; virtual; abstract;`.
   - Encapsulates shared configuration validation (`ApplyConfiguration`), OpenSSL static-inline call wrappers, and action callback dispatching/rollback (`DispatchLoadActions`, `RollbackLoadActions`).
 * **`TOpenSSLDynamicLoader` (`{$IFNDEF OPENSSL_STATIC_LINK_MODEL}`):**
-  - Owns `FLibCrypto`, `FLibSSL`, `FOpenSSLPath`, `FSSLLibVersions` (initialized to `DefaultLibVersions`), and `FFailed`.
-  - In `DoLoad`: locates dynamic libraries (`FindLibrary`), validates OpenSSL 3.x/4.x version, binds symbols (`GLibCryptoLoadList`/`GLibSSLLoadList`), applies configuration, and dispatches action callbacks.
-  - In `DoUnload`: rolls back action callbacks while symbols/handles are live, unbinds header symbols (`GUnLoadList`), and frees dynamic libraries.
+  - Owns class registries `FCryptoLoaders`, `FSSLLoaders` and `FUnloaders`; each instance owns `FLibCrypto`, `FLibSSL`, `FOpenSSLPath`, `FSSLLibVersions` (initialized to `DefaultLibVersions`), and `FFailed`.
+  - In `DoLoad`: locates dynamic libraries (`FindLibrary`), validates OpenSSL 3.x/4.x version, binds symbols (`FCryptoLoaders`/`FSSLLoaders`), applies configuration, and dispatches action callbacks.
+  - In `DoUnload`: rolls back action callbacks while symbols/handles are live, unbinds header symbols (`FUnloaders`), and frees dynamic libraries.
 * **`TOpenSSLStaticLoader` (`{$IFDEF OPENSSL_STATIC_LINK_MODEL}`):**
   - Owns static-specific behavior with inert `OpenSSLPath`, `SSLLibVersions`, and empty `FailedToLoad`.
   - In `DoLoad`: verifies statically linked version, applies configuration, and dispatches action callbacks.
@@ -79,12 +79,57 @@ In static mode, statically imported `external` routines cannot be evaluated with
 
 Method pointer typecasts for action callbacks are wrapped in `IsActionAssigned` and `ClearAction` with `{$IFDEF DCC}{$WARN UNSAFE_CAST OFF}{$ENDIF}` to suppress Delphi `W1048` compiler warnings.
 
-### Thread-safe registration & initialization order
+### Thread-safe singleton publication and registration
 
-`Register_SSLLoader`, `Register_SSLUnloader`, and `Register_SSLLoaderAction` can be invoked at runtime from any thread or during unit initialization.
-1. All registration routines are synchronized using `GRegistrationLock: TIdCriticalSection`.
-2. To prevent dropped registrations caused by Delphi unit dependency order (where `TaurusTLSHeaders_*` initialize prior to `TaurusTLSLoader`), `GRegistrationLock` is initialized on-demand via `EnsureRegistrationLock`.
-3. Iteration during `DispatchLoadActions` and `RollbackLoadActions` acquires `GRegistrationLock` when indexing callbacks, preventing concurrent mutation hazards.
+The loader may be constructed by TaurusTLSLoader unit initialization or earlier
+by Register_SSLLoader/Register_SSLUnloader. Register_SSLLoaderAction and
+GetOpenSSLLoader use the same path, including in static builds. Construction only
+creates Pascal infrastructure and reads loader settings; it never calls Load,
+initializes OpenSSL or dispatches actions.
+
+TOpenSSLBaseLoader.EnsureInstance atomically reads FInstance. If it is nil, it
+constructs the selected concrete loader using an ordinary nonvirtual constructor.
+OPENSSL_STATIC_LINK_MODEL selects only TOpenSSLStaticLoader versus
+TOpenSSLDynamicLoader. Both branches return to the same CompareExchangeInstance
+publication call; static builds do not bypass CAS, including calls from other
+threads through GetOpenSSLLoader.
+The base instance constructor creates FRegistrationLock and FLoaderLock
+unconditionally. Each candidate has its own locks, diagnostic list and unloaded
+state. Constructors do not mutate registration lists.
+
+After the concrete constructor completes, acquire one ownership reference with
+_AddRef, then publish the object using CAS with nil as the comparand. The winner
+transfers that reference to the singleton slot. A losing candidate releases its
+reference with _Release and returns the published winner. Constructor failure
+does not publish a partial instance.
+
+For Delphi, use a typed TInterlocked.CompareExchange<TOpenSSLBaseLoader> slot;
+for FPC, use its Pointer CAS overload behind the same typed helper. Do not CAS
+a managed interface variable. GetInstance converts the published object to
+IOpenSSLLoader, giving each caller its normal interface reference. The slot's
+separate ownership reference keeps the object alive after callers release theirs.
+FPC compilation remains unverified.
+
+The registries remain class variables: FLoadActions in the base loader, and
+FCryptoLoaders/FSSLLoaders/FUnloaders in the dynamic loader. Registration obtains
+the published instance's FRegistrationLock, holds that same lock for the update,
+then releases it. There is no separate lazy registration-lock allocation.
+
+Unit initialization calls EnsureInstance and preserves an earlier winner and all
+early registrations. Lifecycle callback iteration and dynamic symbol binding/reset
+use that winner's registration lock. The existing lifecycle lock continues to
+serialize Load/Unload independently.
+
+At unit finalization, atomically exchange the singleton slot with nil, release
+its ownership reference, and free the class-owned registries. Finalization is
+not a concurrent shutdown API: applications must stop all callers first.
+No singleton replacement or public reset operation is introduced.
+
+Small nonvirtual helpers and forwarding routines use
+{$IFDEF USE_INLINE}inline; {$ENDIF}, including singleton forwarding, the CAS
+helper, atomic state accessors and metadata forwarders. Inlining is a compiler
+optimization request; it does not change synchronization or lifetime rules.
+EnsureInstance retains the complete candidate construction/publication path.
 
 ### Failure handling, circuit breaker, and callback rollback
 
@@ -92,7 +137,7 @@ If library loading fails at any point (validation error, OpenSSL configuration f
 1. The loader captures the OpenSSL error details before executing teardown.
 2. Internal `UnloadInternal(False)` executes; public recursive Unload is not used:
    - Dispatches `osaUnload` in reverse order strictly to callbacks that already executed `osaLoad` (`FLastLoadActionIdx downto 0`). Callbacks that failed or have not yet run are not dispatched `osaUnload`.
-   - Executes header unloaders (`GUnLoadList`) in dynamic mode.
+   - Executes header unloaders (`FUnloaders`) in dynamic mode.
    - Frees loaded library handles (`FLibSSL`, `FLibCrypto`) in dynamic mode.
    - Clears `FEffectiveConfigFile`.
    - Publishes `lsLoadedFailed` while preserving recorded diagnostics in `FailedToLoad`.
@@ -125,6 +170,11 @@ Add resource strings in TaurusTLS_ResourceStrings for both stages:
 - `RSOSSLConfigFileNotFound`
 - `RSOSSLConfigFileLoadFailed`
 
+The shared resource-string unit also owns loader lifecycle and native
+initialization failure messages. TaurusTLSLoader declares no local resourcestring
+section. The unused custom-memory-hook code and its allocator-only failure
+message have been removed.
+
 Do not collapse these exceptions into false or suppress them at the loader boundary. The FIPS mode backend must preserve configuration exceptions while reporting provider/policy enablement failures through its existing Boolean/diagnostic contract.
 
 Tests must assert the specific exception class and filename for invalid/missing/directory paths and malformed/unreadable/module-failing configuration, with configuration failures isolated in fresh processes.
@@ -135,7 +185,7 @@ ConfigFile is a full OpenSSL configuration with openssl_conf/provider/algorithm 
 
 `CONF_get1_default_config_file` is diagnostic/discovery support only. Its caller owns the returned string and frees it with `OPENSSL_free`. It does not select or change configuration. `CONF_modules_load_file_ex` is the chosen explicit loader; do not redundantly call both it and `OSSL_LIB_CTX_load_config` for the same file. [Configuration loading API](https://docs.openssl.org/3.0/man3/CONF_modules_load_file/).
 
-## 2A. Unified runtime and metadata implementation (proposed)
+## 2A. Unified runtime and metadata implementation
 
 ### Readiness and interface shape
 
@@ -155,7 +205,7 @@ unverified. Public Load/Unload rejects recursive lifecycle calls with
 ETaurusTLSLoaderError. Internal rollback is separate. Only State/IsLoaded are
 nonblocking status queries.
 
-Proposed additions to IOpenSSLLoader:
+Implemented metadata members of IOpenSSLLoader:
 
 ~~~pascal
 function GetVersion: string;
@@ -221,47 +271,47 @@ escapes the lifecycle boundary and no readiness result leases OpenSSL resources.
 
 The core loader owns general OpenSSL initialization and configuration for both
 linking models. TaurusTLS owns only its runtime-specific resources through a
-private class. Proposed sequence, subject to the review gates below:
+private TTaurusTLSRuntime class. The implemented sequence is:
 
-1. Publish internal lsLoading; obtain libraries/symbols or validate static imports.
-2. Complete required pre-initialization work before OpenSSL allocations:
-   optional custom memory callbacks and linked builtin registration.
-3. Initialize modern libcrypto with an explicit configuration policy. For a
-   selected file suppress implicit default loading, then apply that file once
-   with CONF_modules_load_file_ex. For empty input define actual default
-   initialization separately from filename discovery.
-4. Complete modern libssl initialization with OPENSSL_init_ssl using reviewed
-   flags. Do not reapply default configuration after an explicit selection.
+1. Publish internal lsLoading; load and bind dynamic libraries, or validate the
+   linked OpenSSL version.
+2. For an explicit file, validate the path, call
+   OPENSSL_init_crypto(OPENSSL_INIT_NO_LOAD_CONFIG, nil), then strictly apply the
+   selected file with CONF_modules_load_file_ex(nil, filename, nil, 0). For empty
+   input, call OPENSSL_init_crypto(OPENSSL_INIT_LOAD_CONFIG, nil), then discover
+   the default filename. Failed crypto initialization raises ETaurusTLSLoaderError.
+3. Record the effective filename and resolve its directory at load time; public
+   effective configuration and metadata remain hidden until readiness.
+4. Call OPENSSL_init_ssl(OPENSSL_INIT_NO_LOAD_CONFIG, nil). A missing dynamic
+   routine or failed initialization raises ETaurusTLSOpenSSLInitFailed.
 5. Run registered osaLoad actions, including TaurusTLS runtime resources.
-6. Capture metadata and publish lsLoadedReady only after successful completion.
+6. Capture remaining metadata and publish lsLoadedReady after successful completion.
 
-Ordering must be audited for calls that allocate earlier than expected, including
-discovery/configuration. The existing osaLoad phase occurs after configuration
-and cannot serve steps 2–3. Do not invent a public pre-initialization API without
-review. OpenSSL initialization options may be fixed by the first caller;
+Required linked builtin registration must precede configuration. That phase is
+not implemented by this sequence; existing osaLoad actions run too late to
+provide it. Its mechanism remains a separate design decision. Do not invent a
+public pre-initialization API without review. OpenSSL initialization options may be fixed by the first caller;
 external initialization and static reloads cannot be treated as a fresh process.
 No OPENSSL_cleanup in a reloadable lifecycle.
 [Initialization semantics](https://docs.openssl.org/3.0/man3/OPENSSL_init_crypto/).
 
-Optional OPENSSL_SET_MEMORY_FUNCS needs a separate design decision before moving
-it: audit size_t, filename/line parameters, cdecl ABI and realloc semantics, and
-install it before the first OpenSSL allocation. A post-configuration load action
-is too late. [Memory callback contract](https://docs.openssl.org/3.0/man3/OPENSSL_malloc/).
+OpenSSL uses its own memory management. TaurusTLS does not install custom
+allocation callbacks.
 
 ### Private TaurusTLS runtime class
 
-Replace the existing global TLS initialization resources with class vars and
-class methods in a private implementation class in TaurusTLS. Keep TaurusTLS
+TTaurusTLSRuntime owns TLS initialization resources through class vars and
+class methods in the TaurusTLS implementation section. Keep TaurusTLS
 socket/Indy dependencies out of TaurusTLSLoader. Register a load/unload action
 whose method is compatible with the existing procedure-of-object signature;
 use an ordinary class method where a static method would lose the method pointer.
 
 The class owns the locks still required by TaurusTLS info/level/password/verify/
 SNI callbacks. It does not publish another ready Boolean or acquire a separate
-global lifecycle lock. Remove SSLIsLoaded as a competing state source after
-auditing its users. Modern OpenSSL supplies its own threading support; remove
-CRYPTO_num_locks/locking/thread-ID setup and corresponding legacy cleanup from
-this path. Remove obsolete explicit error-string setup and obsolete init flags.
+global lifecycle lock. SSLIsLoaded and its internal uses have been removed;
+readiness comes from the loader. Modern OpenSSL supplies its own threading
+support. The old CRYPTO_num_locks/locking/thread-ID setup, corresponding cleanup
+and obsolete explicit error-string setup have been removed from this path.
 
 The action cleans up partial allocations before propagating its own failure,
 because the loader only unwinds completed actions. Successful actions release
@@ -282,7 +332,7 @@ Keep these routines and make each a forwarding wrapper, inline where supported:
 | OpenSSLModulesDir | GetOpenSSLLoader.ModulesDirectory |
 | OpenSSLEnginesDir | GetOpenSSLLoader.EnginesDirectory |
 
-This forwarding contract is proposed for review. LoadOpenSSLLibrary remains an
+This forwarding contract is implemented. LoadOpenSSLLibrary remains an
 explicit application initialization entry point. One Unload globally tears down
 the runtime even after multiple successful Load calls; no reference counter is
 introduced. Metadata wrappers are passive and return empty before readiness.
@@ -292,14 +342,16 @@ Audit internal context constructors and all other implicit Load calls in the
 consumer review. They must not be used to conceal an initialization
 requirement. Application shutdown must retire live objects/operations first.
 
-### Decisions required before implementation
+### Remaining design and review work
 
-- Approve accessor/property names and compatibility forwarding/migration.
-- Approve the core/native-init versus private TLS-resource split.
-- Select default/explicit init flags and failure reporting; avoid duplicate config.
-- Define optional allocator setup and pre-configuration builtin registration.
-- Define registration/finalization ordering without introducing circular units.
-- Test both models and failure rollback; keep provider/FIPS policy work deferred.
+- Define pre-configuration builtin registration and reconcile existing provider
+  callbacks with configuration-only activation.
+- Complete the consumer audit, including remaining implicit Load calls and NTLM
+  readiness/execution contracts.
+- Resolve FIPS reporting and policy separately.
+- Keep dedicated competing-first-publication stress separate from concurrent
+  lookup/registration fixtures, which start after unit initialization.
+- FPC compilation remains unverified.
 
 ## 3. Discovery, ownership and legacy support
 
@@ -387,8 +439,11 @@ Runtime and metadata acceptance:
 | Configuration ownership | No duplicate default configuration after explicit selection; discovery alone not reported as proof of application |
 | Providers | Configuration-only activation; linked builtin registration ordering reviewed separately |
 
-Review the HLD/DDD before production changes. After implementation, reconcile
-XMLDoc and migration notes with the actual behavior and record platform results.
+The developer reports no new failures or regressions on Win32, Win64, Linux64
+and OSX64, including after the conditional-inline updates. Fresh Windows runs
+recorded 85/85 Loader tests on each Windows target and 454/454 Win64 regression
+tests with LegacyProviders excluded; all other result counts were zero. No
+additional platform totals are inferred. These results do not establish
+cold-start CAS contention coverage or completion of deferred provider/FIPS work.
 Keep the known InputRanges common-name failure on Linux/macOS separate from
-regressions; record Windows LegacyProvider exclusions explicitly. FPC remains
-unverified. No plans/design documents are staged or committed.
+regressions. FPC remains unverified.
