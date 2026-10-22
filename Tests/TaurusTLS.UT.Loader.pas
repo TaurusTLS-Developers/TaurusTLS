@@ -145,6 +145,17 @@ type
     [Test]
     procedure State_Lifecycle;
 
+    {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+    /// <summary>Verifies missing libraries fail without dispatching actions and permit explicit recovery.</summary>
+    [Test]
+    procedure Life_MissingLibraries;
+    {$IFDEF MSWINDOWS}
+    /// <summary>Verifies a crypto-only deployment releases its partial library handle after failure.</summary>
+    [Test]
+    procedure Life_PartialLibrary;
+    {$ENDIF}
+    {$ENDIF}
+
     /// <summary>Tests that successive Unload calls are safe no-ops.</summary>
     [Test]
     procedure Life_DoubleUnload;
@@ -226,6 +237,21 @@ type
     /// <summary>Verifies readiness queries on another thread do not wait for a loading callback.</summary>
     [Test]
     procedure State_ReadDuringLoad;
+
+    /// <summary>Verifies unload-action failures do not prevent later action cleanup.</summary>
+    [Test]
+    procedure Life_UnloadActionFailure;
+
+    {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+    /// <summary>Verifies all symbol resetters run and readiness fails when cleanup raises.</summary>
+    [TestCase('SingleFailure', '0')]
+    [TestCase('MultipleFailures', '1')]
+    procedure Life_UnloaderFailure(const ASecondFailure: Integer);
+
+    /// <summary>Verifies a load exception survives a subsequent header-cleanup exception.</summary>
+    [Test]
+    procedure Life_PreserveLoadError;
+    {$ENDIF}
   end;
 
 implementation
@@ -845,6 +871,9 @@ var
   TTestCallbackLog: TStringList = nil;
   {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   GTestSymbolInjectorActive: Boolean = False;
+  GTestCleanupFaultActive: Boolean = False;
+  GTestSecondCleanupFaultActive: Boolean = False;
+  GTestCleanupTailCount: Integer = 0;
   {$ENDIF}
 
 type
@@ -873,6 +902,7 @@ type
   public
     class var Active: Boolean;
     class var ThrowOnLoad: Boolean;
+    class var ThrowOnUnload: Boolean;
     /// <summary>Records lifecycle actions or raises a simulated load failure to exercise rollback.</summary>
     /// <param name="AAction">The load or unload action dispatched by the loader.</param>
     class procedure ActionProc(AAction: TOpenSSLLoadAction);
@@ -968,7 +998,11 @@ begin
   if AAction = osaLoad then
     TTestCallbackLog.Add('B:Load')
   else
+  begin
     TTestCallbackLog.Add('B:Unload');
+    if ThrowOnUnload then
+      raise Exception.Create('Simulated unload action failure in Observer B');
+  end;
 end;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
@@ -983,11 +1017,37 @@ begin
 end;
 {$ENDIF}
 
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+/// <summary>Records that cleanup continues past injected header-unloader failures.</summary>
+procedure TestCleanupTail;
+begin
+  if GTestCleanupFaultActive then
+    Inc(GTestCleanupTailCount);
+end;
+
+/// <summary>Injects a later cleanup error to verify preservation of the first error.</summary>
+procedure TestSecondCleanupFault;
+begin
+  if GTestSecondCleanupFaultActive then
+    raise ETaurusTLSLoaderError.Create('Secondary header cleanup failure');
+end;
+
+/// <summary>Injects the first header cleanup error before the remaining resetters.</summary>
+procedure TestCleanupFault;
+begin
+  if GTestCleanupFaultActive then
+    raise ETaurusTLSLoaderError.Create('Primary header cleanup failure');
+end;
+{$ENDIF}
+
 procedure TLoaderCallbacksFixture.Setup;
 begin
   inherited Setup;
   {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   GTestSymbolInjectorActive := False;
+  GTestCleanupFaultActive := False;
+  GTestSecondCleanupFaultActive := False;
+  GTestCleanupTailCount := 0;
   {$ENDIF}
   if Assigned(TTestCallbackLog) then
     TTestCallbackLog.Clear;
@@ -1000,10 +1060,17 @@ begin
   TTestCallbackObserverA.PropagateRecursive := False;
   TTestCallbackObserverB.Active := False;
   TTestCallbackObserverB.ThrowOnLoad := False;
+  TTestCallbackObserverB.ThrowOnUnload := False;
 end;
 
 procedure TLoaderCallbacksFixture.Teardown;
 begin
+  {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  GTestCleanupFaultActive := False;
+  GTestSecondCleanupFaultActive := False;
+  GTestSymbolInjectorActive := False;
+  {$ENDIF}
+  TTestCallbackObserverB.ThrowOnUnload := False;
   if Assigned(TTestCallbackObserverA.QueryThread) then
   begin
     // The outer lifecycle operation has released its lock before teardown.
@@ -1017,6 +1084,51 @@ begin
   TTestCallbackObserverB.ThrowOnLoad := False;
   inherited Teardown;
 end;
+
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+procedure TLoaderLifecycleFixture.Life_MissingLibraries;
+begin
+  FLoader.OpenSSLPath := FTempDir;
+  FLoader.ConfigFile := FValidConfigFile;
+  Assert.IsFalse(FLoader.Load);
+  Assert.IsTrue(FLoader.State = lsLoadedFailed);
+  Assert.IsFalse(FLoader.IsLoaded);
+  Assert.IsFalse(Assigned(OpenSSL_version_num), 'Headers must remain unbound');
+  FLoader.OpenSSLPath := FOrigOpenSSLPath;
+  Assert.IsFalse(FLoader.Load, 'A path change must not reset failure state');
+  FLoader.Unload;
+  Assert.IsTrue(FLoader.State = lsNotLoaded);
+  Assert.IsTrue(FLoader.Load, 'Explicit reset permits loading from the restored path');
+end;
+
+{$IFDEF MSWINDOWS}
+procedure TLoaderLifecycleFixture.Life_PartialLibrary;
+var
+  LCryptoFiles: TArray<string>;
+  LSourceFile: string;
+  LCopyFile: string;
+begin
+  LCryptoFiles := TDirectory.GetFiles(FOrigOpenSSLPath, 'libcrypto*.dll');
+  Assert.IsTrue(Length(LCryptoFiles) > 0, 'Test distribution must contain a crypto DLL');
+  LSourceFile := LCryptoFiles[0];
+  LCopyFile := TPath.Combine(FTempDir, TPath.GetFileName(LSourceFile));
+  TFile.Copy(LSourceFile, LCopyFile);
+  FLoader.OpenSSLPath := FTempDir;
+  FLoader.ConfigFile := FValidConfigFile;
+  Assert.IsFalse(FLoader.Load, 'Crypto without SSL is a partial load failure');
+  Assert.IsTrue(FLoader.State = lsLoadedFailed);
+  Assert.IsFalse(FLoader.IsLoaded);
+  Assert.IsFalse(Assigned(OpenSSL_version_num), 'Headers must not bind after partial discovery');
+  Assert.IsTrue(Winapi.Windows.GetModuleHandle(PChar(LCopyFile)) = 0,
+    'Rollback must release the partially loaded crypto DLL');
+  TFile.Delete(LCopyFile);
+  FLoader.OpenSSLPath := FOrigOpenSSLPath;
+  Assert.IsFalse(FLoader.Load);
+  FLoader.Unload;
+  Assert.IsTrue(FLoader.Load, 'Recovery must work after the partial load is cleaned up');
+end;
+{$ENDIF}
+{$ENDIF}
 
 procedure TLoaderCallbacksFixture.CB_DispatchLive;
 begin
@@ -1237,6 +1349,82 @@ begin
   Assert.IsTrue(FLoader.State = lsLoadedReady);
 end;
 
+procedure TLoaderCallbacksFixture.Life_UnloadActionFailure;
+begin
+  TTestCallbackObserverA.Active := True;
+  TTestCallbackObserverA.VerifyHandlesLive := True;
+  TTestCallbackObserverB.Active := True;
+  TTestCallbackObserverB.ThrowOnUnload := True;
+  FLoader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(FLoader.Load);
+  FLoader.Unload;
+  Assert.IsTrue(FLoader.State = lsNotLoaded);
+  Assert.IsFalse(FLoader.IsLoaded);
+  Assert.AreEqual(4, TTestCallbackLog.Count);
+  Assert.AreEqual('B:Unload', TTestCallbackLog[2]);
+  Assert.AreEqual('A:Unload:Live', TTestCallbackLog[3],
+    'Earlier actions still clean up with routines callable');
+  {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  Assert.IsFalse(Assigned(OpenSSL_version_num));
+  {$ENDIF}
+  TTestCallbackObserverB.ThrowOnUnload := False;
+  Assert.IsTrue(FLoader.Load);
+  FLoader.Unload;
+end;
+
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+procedure TLoaderCallbacksFixture.Life_UnloaderFailure(const ASecondFailure: Integer);
+begin
+  FLoader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(FLoader.Load);
+  GTestCleanupFaultActive := True;
+  GTestSecondCleanupFaultActive := ASecondFailure <> 0;
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      FLoader.Unload;
+    end, ETaurusTLSLoaderError, 'Primary header cleanup failure');
+  Assert.AreEqual(1, GTestCleanupTailCount, 'Remaining resetters must still execute');
+  Assert.IsFalse(Assigned(OpenSSL_version_num), 'Header reset must finish despite errors');
+  Assert.IsTrue(FLoader.State = lsLoadedFailed);
+  Assert.IsFalse(FLoader.Load, 'Cleanup failure must not leave the loader ready');
+  GTestCleanupFaultActive := False;
+  GTestSecondCleanupFaultActive := False;
+  FLoader.Unload;
+  Assert.IsTrue(FLoader.State = lsNotLoaded);
+  Assert.IsTrue(FLoader.Load, 'Cleanup exceptions must not retain the lifecycle lock');
+end;
+
+procedure TLoaderCallbacksFixture.Life_PreserveLoadError;
+begin
+  TTestCallbackObserverA.Active := True;
+  TTestCallbackObserverB.Active := True;
+  TTestCallbackObserverB.ThrowOnLoad := True;
+  GTestSymbolInjectorActive := True;
+  GTestCleanupFaultActive := True;
+  FLoader.ConfigFile := FValidConfigFile;
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      FLoader.Load;
+    end, Exception, 'Simulated action failure in Observer B');
+  Assert.AreEqual(1, GTestCleanupTailCount);
+  Assert.IsFalse(Assigned(OpenSSL_version_num));
+  Assert.IsTrue(FLoader.State = lsLoadedFailed);
+  Assert.IsTrue(FLoader.FailedToLoad.IndexOf('Fake_Diagnostic_Symbol') >= 0,
+    'Failure cleanup must preserve binding diagnostics');
+  Assert.AreEqual(2, TTestCallbackLog.Count);
+  Assert.AreEqual('A:Unload', TTestCallbackLog[1]);
+  Assert.IsFalse(FLoader.Load);
+  GTestCleanupFaultActive := False;
+  GTestSymbolInjectorActive := False;
+  TTestCallbackObserverB.ThrowOnLoad := False;
+  FLoader.Unload;
+  Assert.AreEqual(0, FLoader.FailedToLoad.Count);
+  Assert.IsTrue(FLoader.Load);
+end;
+{$ENDIF}
+
 initialization
   GLoaderTestLock := TObject.Create;
   TDUnitX.RegisterTestFixture(TLoaderConfigFixture);
@@ -1247,6 +1435,9 @@ initialization
   Register_SSLLoaderAction(TTestCallbackObserverB.ActionProc);
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   Register_SSLLoader(TestSymbolInjectorLoadProc, 'LibCrypto');
+  Register_SSLUnloader(TestCleanupTail);
+  Register_SSLUnloader(TestSecondCleanupFault);
+  Register_SSLUnloader(TestCleanupFault);
 {$ENDIF}
 
 finalization

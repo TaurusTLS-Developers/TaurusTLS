@@ -776,14 +776,15 @@ end;
 
 procedure TOpenSSLBaseLoader.UnloadInternal(const AResetFailState: Boolean);
 var
-  LNeedsCleanup: Boolean;
+  LWasReady: Boolean;
   LCompleted: Boolean;
 begin
-  LNeedsCleanup := IsLoaded or NeedUnloadCleanup;
+  LWasReady := IsLoaded;
   LCompleted := False;
   SetInternalState(lsUnloading);
   try
-    if LNeedsCleanup then
+    // Keep cleanup predicates inside the state-restoration boundary.
+    if LWasReady or NeedUnloadCleanup then
       DoUnload;
     if AResetFailState and Assigned(FailedToLoad) then
       FailedToLoad.Clear;
@@ -1071,7 +1072,7 @@ type
     function LoadAndVerifyLibraries: Boolean;
     /// <summary>Runs registered crypto and SSL header binders and collects diagnostics.</summary>
     procedure BindHeaderSymbols(const AVersionNo: TIdC_ULONG);
-    /// <summary>Runs registered symbol resetters in reverse registration order.</summary>
+    /// <summary>Attempts all symbol resetters in reverse order, then re-raises the first failure.</summary>
     procedure UnbindHeaderSymbols;
     /// <summary>Releases the SSL and crypto library handles and resets them to IdNilHandle.</summary>
     procedure FreeDynamicLibraries;
@@ -1336,14 +1337,31 @@ begin
 end;
 
 procedure TOpenSSLDynamicLoader.UnbindHeaderSymbols;
-var
-  i: Integer;
+
+  // Finish remaining resetters before re-raising the first cleanup exception.
+  // Nested failures are handled the same way without retaining exception objects.
+  procedure UnbindFrom(const ALastIndex: Integer);
+  var
+    i: Integer;
+  begin
+    for i := ALastIndex downto 0 do
+    try
+      TOpenSSLUnloadProc(GUnLoadList[i]);
+    except
+      try
+        UnbindFrom(i - 1);
+      except
+        // Preserve the first failure after all remaining resetters were tried.
+      end;
+      raise;
+    end;
+  end;
+
 begin
   GRegistrationLock.Acquire;
   try
     if Assigned(GUnLoadList) then
-      for i := GUnLoadList.Count - 1 downto 0 do
-        TOpenSSLUnloadProc(GUnLoadList[i]);
+      UnbindFrom(GUnLoadList.Count - 1);
   finally
     GRegistrationLock.Release;
   end;
@@ -1396,14 +1414,16 @@ end;
 
 procedure TOpenSSLDynamicLoader.DoUnload;
 begin
-  // 1. Roll back lifecycle actions while symbols and handles are still active
-  RollbackLoadActions;
-
-  // 2. Unbind symbols back to nil
-  UnbindHeaderSymbols;
-
-  // 3. Free OS dynamic library handles
-  FreeDynamicLibraries;
+  // Each cleanup stage must run even if an earlier stage raises.
+  try
+    RollbackLoadActions;
+  finally
+    try
+      UnbindHeaderSymbols;
+    finally
+      FreeDynamicLibraries;
+    end;
+  end;
 end;
 {$ENDIF}
 
