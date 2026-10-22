@@ -233,7 +233,14 @@ type
     [TestCase('LoadDuringUnload', '2,0')]
     [TestCase('UnloadDuringUnload', '2,1')]
     [TestCase('RollbackDuringUnload', '2,2')]
+    [TestCase('RegisterDuringLoad', '1,3')]
+    [TestCase('RegisterDuringUnload', '2,3')]
     procedure State_Recursive(const APhase, AOperation: Integer);
+
+    /// <summary>Verifies late actions are rejected without altering the registry or readiness.</summary>
+    [TestCase('Ready', '0')]
+    [TestCase('Failed', '1')]
+    procedure CB_RejectLateRegistration(const AFailed: Integer);
 
     /// <summary>Verifies an uncaught recursive-call error fails initialization and permits later recovery.</summary>
     [Test]
@@ -1053,6 +1060,9 @@ begin
     Inc(TConcurrentRegistrationObserver.HeaderUnloadCount);
 end;
 
+// Exercise the deprecated compatibility API deliberately.
+{$I TaurusTLSSymbolDeprecatedOff.inc}
+{$IFDEF FPC}{$WARN 5044 OFF}{$ENDIF}
 function LoaderMetadataIsEmpty: Boolean;
 var
   LLoader: IOpenSSLLoader;
@@ -1063,6 +1073,8 @@ begin
     (OpenSSLVersion = '') and (OpenSSLDir = '') and
     (OpenSSLModulesDir = '') and (OpenSSLEnginesDir = '');
 end;
+
+{$I TaurusTLSSymbolDeprecatedOn.inc}
 
 class procedure TTestRuntimeHooksObserver.Install;
 begin
@@ -1142,6 +1154,7 @@ begin
       0: GetOpenSSLLoader.Load;
       1: GetOpenSSLLoader.Unload;
       2: GetOpenSSLLoader.Unload(False);
+      3: Register_SSLLoaderAction(TTestCallbackObserverB.ActionProc);
     end;
   except
     on E: ETaurusTLSLoaderError do
@@ -1699,6 +1712,44 @@ begin
   Assert.AreEqual(2, TTestCallbackLog.Count, 'Only the outer operation dispatches callbacks');
 end;
 
+procedure TLoaderCallbacksFixture.CB_RejectLateRegistration(const AFailed: Integer);
+var
+  LExpectedState: TTaurusTLSLoaderState;
+begin
+  FLoader.ConfigFile := FValidConfigFile;
+  TTestCallbackObserverA.Active := True;
+  TTestCallbackObserverB.Active := True;
+  if AFailed <> 0 then
+  begin
+    TTestCallbackObserverB.ThrowOnLoad := True;
+    Assert.WillRaise(
+      procedure
+      begin
+        FLoader.Load;
+      end, Exception);
+    LExpectedState := lsLoadedFailed;
+    TTestCallbackObserverB.ThrowOnLoad := False;
+  end
+  else
+  begin
+    Assert.IsTrue(FLoader.Load);
+    LExpectedState := lsLoadedReady;
+  end;
+
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      Register_SSLLoaderAction(TTestCallbackObserverB.ActionProc);
+    end, ETaurusTLSLoaderError, RSOSSLLoaderActionRegistrationInactive);
+  Assert.IsTrue(FLoader.State = LExpectedState, 'Rejected registration must preserve state');
+  FLoader.Unload;
+  TTestCallbackLog.Clear;
+  Assert.IsTrue(FLoader.Load);
+  Assert.AreEqual(2, TTestCallbackLog.Count, 'Rejected registration must not append an action');
+  FLoader.Unload;
+  Assert.AreEqual(4, TTestCallbackLog.Count);
+end;
+
 procedure TLoaderCallbacksFixture.State_RecursiveFailure;
 begin
   TTestCallbackObserverA.Active := True;
@@ -1824,6 +1875,9 @@ begin
   Assert.AreEqual(0, TTestRuntimeHooksObserver.InstallCount);
 end;
 
+// Keep compatibility-wrapper coverage while callers migrate to the loader.
+{$I TaurusTLSSymbolDeprecatedOff.inc}
+{$IFDEF FPC}{$WARN 5044 OFF}{$ENDIF}
 procedure TLoaderCallbacksFixture.Info_NativeValues;
 begin
   FLoader.ConfigFile := FValidConfigFile;
@@ -1946,6 +2000,8 @@ begin
     LContext.Free;
   end;
 end;
+
+{$I TaurusTLSSymbolDeprecatedOn.inc}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 procedure TLoaderCallbacksFixture.Info_Unavailable(const AKind: Integer);
