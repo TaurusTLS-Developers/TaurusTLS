@@ -46,16 +46,16 @@ const
     {$IFDEF WINDOWS}
       {$IFDEF CPU64}
         {$IFDEF CPUARM64}
-        CLibCrypto = 'libcrypto-3-arm64.dll';
-        CLibSSL = 'libssl-3-arm64.dll';
+        CLibCrypto = 'libcrypto-4-arm64.dll';
+        CLibSSL = 'libssl-4-arm64.dll';
         {$ELSE}
-        CLibCrypto = 'libcrypto-3-x64.dll';
-        CLibSSL = 'libssl-3-x64.dll';
+        CLibCrypto = 'libcrypto-4-x64.dll';
+        CLibSSL = 'libssl-4-x64.dll';
         {$ENDIF}
       {$ENDIF}
       {$IFDEF CPU32}
-        CLibCrypto = 'libcrypto-3.dll';
-        CLibSSL = 'libssl-3.dll';
+        CLibCrypto = 'libcrypto-4.dll';
+        CLibSSL = 'libssl-4.dll';
       {$ENDIF}
     {$ENDIF}
   {$ELSE}
