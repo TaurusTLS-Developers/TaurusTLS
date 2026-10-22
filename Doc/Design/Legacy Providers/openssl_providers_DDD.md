@@ -115,14 +115,37 @@ FCryptoLoaders/FSSLLoaders/FUnloaders in the dynamic loader. Registration obtain
 the published instance's FRegistrationLock, holds that same lock for the update,
 then releases it. There is no separate lazy registration-lock allocation.
 
+Lifecycle action registration first acquires FLoaderLock and requires the
+internal state to be exactly lsNotLoaded. Other states, including failure,
+raise ETaurusTLSLoaderError using RSOSSLLoaderActionRegistrationInactive.
+FRegistrationLock is acquired only after this check, following the lifecycle
+operation's lock order. A concurrent Load cannot skip a newly accepted action;
+action registration from a lifecycle callback is rejected. No automatic
+catch-up initialization is performed for late actions. After failure, explicit
+Unload resets the state before registration is permitted.
+
 Unit initialization calls EnsureInstance and preserves an earlier winner and all
 early registrations. Lifecycle callback iteration and dynamic symbol binding/reset
 use that winner's registration lock. The existing lifecycle lock continues to
 serialize Load/Unload independently.
 
-At unit finalization, atomically exchange the singleton slot with nil, release
-its ownership reference, and free the class-owned registries. Finalization is
-not a concurrent shutdown API: applications must stop all callers first.
+At unit finalization, atomically read the existing singleton without creating
+one, then call its full Unload operation while the slot remains published.
+Cleanup callbacks can therefore query the same singleton, observe non-ready
+state and call native routines before symbol reset and library release. Catch
+cleanup exceptions at this finalization boundary after Unload has attempted
+all cleanup stages. Then atomically exchange the singleton slot with nil,
+release its ownership reference and free the class-owned registries.
+
+TaurusTLS finalization independently calls GetOpenSSLLoader.Unload directly
+before the loader unit finalizes, with the same exception containment.
+Repeated cleanup is safe. Loader-only applications therefore also receive the
+full lifecycle cleanup rather than relying on destructor-level handle release.
+Explicit public Unload calls continue to propagate cleanup errors.
+
+Finalization is not a concurrent shutdown API: applications must stop all
+callers and retire active crypto objects first. Callback owners must remain
+valid until their cleanup has run; registration does not retain them.
 No singleton replacement or public reset operation is introduced.
 
 Small nonvirtual helpers and forwarding routines use
@@ -321,7 +344,9 @@ finalization so callbacks never target finalized resources.
 
 ### Compatibility wrappers and migration
 
-Keep these routines and make each a forwarding wrapper, inline where supported:
+Retain these routines as deprecated forwarding wrappers, inline where supported.
+Compiler deprecation messages name the corresponding IOpenSSLLoader member.
+Use GetOpenSSLLoader to obtain the interface for new code:
 
 | Routine | Forwarding expression/operation |
 |---|---|
@@ -332,8 +357,12 @@ Keep these routines and make each a forwarding wrapper, inline where supported:
 | OpenSSLModulesDir | GetOpenSSLLoader.ModulesDirectory |
 | OpenSSLEnginesDir | GetOpenSSLLoader.EnginesDirectory |
 
-This forwarding contract is implemented. LoadOpenSSLLibrary remains an
-explicit application initialization entry point. One Unload globally tears down
+This forwarding contract is implemented and retained for compatibility.
+LoadOpenSSLLibrary remains an explicit application initialization entry point,
+but new callers should use IOpenSSLLoader.Load. Internal context initialization
+and unit finalization call the loader directly. Compatibility tests retain
+wrapper calls with deprecation warnings suppressed only around those routines.
+One Unload globally tears down
 the runtime even after multiple successful Load calls; no reference counter is
 introduced. Metadata wrappers are passive and return empty before readiness.
 OpenSSLDir now means the directory containing ConfigFile; document this change.
@@ -438,6 +467,8 @@ Runtime and metadata acceptance:
 | Unload/reload | Metadata/resources cleared; no duplicate callbacks, legacy locking setup or second ready flag |
 | Configuration ownership | No duplicate default configuration after explicit selection; discovery alone not reported as proof of application |
 | Providers | Configuration-only activation; linked builtin registration ordering reviewed separately |
+| Late lifecycle action registration | Rejected outside lsNotLoaded without changing state or the action registry |
+| Unit finalization | Full unload runs with the singleton still published; cleanup errors do not escape the unit finalizers |
 
 The developer reports no new failures or regressions on Win32, Win64, Linux64
 and OSX64, including after the conditional-inline updates. Fresh Windows runs
@@ -447,3 +478,10 @@ additional platform totals are inferred. These results do not establish
 cold-start CAS contention coverage or completion of deferred provider/FIPS work.
 Keep the known InputRanges common-name failure on Linux/macOS separate from
 regressions. FPC remains unverified.
+
+After the registration and finalization safety changes, fresh Win64 runs passed
+89/89 Loader tests and 458/458 regression tests with LegacyProviders excluded;
+both runs reported zero ignored, leaked, failed or errored tests. The developer
+reports unchanged results across all platforms. No additional platform totals
+are inferred. Loaded loader-only application termination in a separate process
+remains unverified by these fixture runs.

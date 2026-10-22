@@ -48,7 +48,19 @@ registration lock. Unit initialization preserves an earlier winner and its
 registrations. Constructing the singleton does not load or initialize OpenSSL;
 the application still calls Load explicitly. The singleton retains an ownership
 reference until unit finalization, which requires all application callers to
-have stopped.
+have stopped. Lifecycle actions must be registered while State is lsNotLoaded;
+registration during loading, readiness, unloading or failure raises
+ETaurusTLSLoaderError. This prevents an early Load from silently omitting a
+later unit's runtime initialization. Failed state must be reset with Unload
+before registration.
+
+TaurusTLS finalization calls the shared Unload operation. Loader finalization
+also runs full Unload while the singleton remains published, covering applications
+that use TaurusTLSLoader without TaurusTLS. Cleanup actions precede dynamic
+symbol reset and library release. Only then is singleton ownership released.
+Unit finalizers contain cleanup exceptions so remaining finalizers can run;
+explicit application Unload calls still report errors. Callback owners must
+remain valid until cleanup completes.
 
 * **Dynamic Linking (`TOpenSSLDynamicLoader`):** Implements dynamic library discovery (`FindLibrary`), symbol resolution (`FCryptoLoaders`/`FSSLLoaders`), version verification, and handle cleanup (`FUnloaders`, `FreeLibrary`).
 * **Static Linking (`TOpenSSLStaticLoader`):** Operates on statically linked symbols. Dynamic-only properties (`OpenSSLPath`, `SSLLibVersions`, `FailedToLoad`) provide safe/inert defaults (`''` and empty list). Handles configuration application and action callbacks without dynamic library loading or symbol unbinding.
@@ -93,8 +105,9 @@ The implementation captures copied Pascal strings before successful
 publication, clears them on cleanup, and serializes access with the lifecycle
 lock. Only State/IsLoaded carry the nonblocking-query guarantee.
 
-Preserve the six global routines as thin forwarding compatibility wrappers,
-inline where supported:
+Retain the six global routines as deprecated forwarding compatibility wrappers,
+inline where supported. Their compiler messages direct callers to the matching
+IOpenSSLLoader member; new code should obtain the interface with GetOpenSSLLoader:
 
 | Existing routine | Forwarding target |
 |---|---|
