@@ -141,6 +141,10 @@ type
     [Test]
     procedure Life_DoubleLoad;
 
+    /// <summary>Verifies stable readiness states through failure, reset, and successful loading.</summary>
+    [Test]
+    procedure State_Lifecycle;
+
     /// <summary>Tests that successive Unload calls are safe no-ops.</summary>
     [Test]
     procedure Life_DoubleUnload;
@@ -205,6 +209,23 @@ type
     /// <summary>Verifies that callback failure blocks retries until explicit Unload.</summary>
     [Test]
     procedure CB_FailureRecovery;
+
+    /// <summary>Verifies recursive public lifecycle calls raise without altering the outer operation.</summary>
+    [TestCase('LoadDuringLoad', '1,0')]
+    [TestCase('UnloadDuringLoad', '1,1')]
+    [TestCase('RollbackDuringLoad', '1,2')]
+    [TestCase('LoadDuringUnload', '2,0')]
+    [TestCase('UnloadDuringUnload', '2,1')]
+    [TestCase('RollbackDuringUnload', '2,2')]
+    procedure State_Recursive(const APhase, AOperation: Integer);
+
+    /// <summary>Verifies an uncaught recursive-call error fails initialization and permits later recovery.</summary>
+    [Test]
+    procedure State_RecursiveFailure;
+
+    /// <summary>Verifies readiness queries on another thread do not wait for a loading callback.</summary>
+    [Test]
+    procedure State_ReadDuringLoad;
   end;
 
 implementation
@@ -215,6 +236,7 @@ uses
   {$ELSE}
   Posix.Stdlib,
   {$ENDIF}
+  System.SyncObjs,
   TaurusTLS.UT.Utils,
   TaurusTLSHeaders_crypto,
   TaurusTLSHeaders_conf;
@@ -459,6 +481,8 @@ begin
     ETaurusTLSConfigFilePathError,
     Format(RSOSSLConfigFileIsDirectory, [LNormalizedDir])
   );
+  Assert.IsTrue(FLoader.State = lsLoadedFailed);
+  Assert.IsFalse(FLoader.IsLoaded);
 end;
 
 procedure TLoaderConfigFixture.Config_RejectMissing;
@@ -477,6 +501,8 @@ begin
     ETaurusTLSConfigFilePathError,
     Format(RSOSSLConfigFileNotFound, [LNormalized])
   );
+  Assert.IsTrue(FLoader.State = lsLoadedFailed);
+  Assert.IsFalse(FLoader.IsLoaded);
 end;
 
 procedure TLoaderConfigFixture.Config_ValidLoad;
@@ -626,6 +652,42 @@ begin
   Assert.AreEqual(0, LLoader.FailedToLoad.Count, 'FailedToLoad must be empty in static mode');
 end;
 {$ENDIF}
+
+procedure TLoaderLifecycleFixture.State_Lifecycle;
+begin
+  Assert.IsTrue(FLoader.State = lsNotLoaded);
+  Assert.IsFalse(FLoader.IsLoaded);
+  FLoader.ConfigFile := FInvalidSyntaxConfigFile;
+  Assert.WillRaise(
+    procedure
+    begin
+      FLoader.Load;
+    end, ETaurusTLSConfigFileLoadError);
+  Assert.IsTrue(FLoader.State = lsLoadedFailed);
+  Assert.IsFalse(FLoader.IsLoaded);
+  // Binding diagnostics are independent of the circuit breaker.
+  FLoader.FailedToLoad.Clear;
+  Assert.IsTrue(FLoader.State = lsLoadedFailed,
+    'Clearing binding diagnostics must not clear failure state');
+  Assert.IsFalse(FLoader.IsLoaded);
+  FLoader.ConfigFile := FValidConfigFile;
+  Assert.IsFalse(FLoader.Load);
+  Assert.IsTrue(FLoader.State = lsLoadedFailed);
+  FLoader.Unload;
+  Assert.IsTrue(FLoader.State = lsNotLoaded);
+  Assert.IsTrue(FLoader.Load);
+  Assert.IsTrue(FLoader.State = lsLoadedReady);
+  Assert.IsTrue(FLoader.IsLoaded);
+  Assert.IsTrue(FLoader.Load);
+  Assert.IsTrue(FLoader.State = lsLoadedReady);
+  FLoader.Unload(False);
+  Assert.IsTrue(FLoader.State = lsLoadedFailed);
+  Assert.IsFalse(FLoader.Load);
+  FLoader.Unload;
+  FLoader.Unload;
+  Assert.IsTrue(FLoader.State = lsNotLoaded);
+  Assert.IsFalse(FLoader.IsLoaded);
+end;
 
 procedure TLoaderLifecycleFixture.Life_DoubleLoad;
 begin
@@ -790,6 +852,18 @@ type
   public
     class var Active: Boolean;
     class var VerifyHandlesLive: Boolean;
+    class var LoadState: TTaurusTLSLoaderState;
+    class var UnloadState: TTaurusTLSLoaderState;
+    class var LoadedOnLoad: Boolean;
+    class var LoadedOnUnload: Boolean;
+    class var RecursivePhase: Integer;
+    class var RecursiveOperation: Integer;
+    class var RecursiveRejected: Boolean;
+    class var PropagateRecursive: Boolean;
+    class var QueryDone: TEvent;
+    class var QueryThread: TThread;
+    class var QueryState: TTaurusTLSLoaderState;
+    class var QueryLoaded: Boolean;
     /// <summary>Records lifecycle actions and optionally verifies that OpenSSL routines remain callable.</summary>
     /// <param name="AAction">The load or unload action dispatched by the loader.</param>
     class procedure ActionProc(AAction: TOpenSSLLoadAction);
@@ -808,6 +882,51 @@ class procedure TTestCallbackObserverA.ActionProc(AAction: TOpenSSLLoadAction);
 begin
   if not Active then
     Exit;
+
+  if AAction = osaLoad then
+  begin
+    LoadState := GetOpenSSLLoader.State;
+    LoadedOnLoad := GetOpenSSLLoader.IsLoaded;
+    if Assigned(QueryDone) then
+    begin
+      QueryThread := TThread.CreateAnonymousThread(
+        procedure
+        begin
+          try
+            QueryState := GetOpenSSLLoader.State;
+            QueryLoaded := GetOpenSSLLoader.IsLoaded;
+          finally
+            QueryDone.SetEvent;
+          end;
+        end);
+      QueryThread.FreeOnTerminate := False;
+      QueryThread.Start;
+      Assert.IsTrue(QueryDone.WaitFor(5000) = wrSignaled,
+        'Readiness queries must not wait for the lifecycle lock');
+    end;
+  end
+  else
+  begin
+    UnloadState := GetOpenSSLLoader.State;
+    LoadedOnUnload := GetOpenSSLLoader.IsLoaded;
+  end;
+
+  if ((RecursivePhase = 1) and (AAction = osaLoad)) or
+    ((RecursivePhase = 2) and (AAction = osaUnload)) then
+  try
+    case RecursiveOperation of
+      0: GetOpenSSLLoader.Load;
+      1: GetOpenSSLLoader.Unload;
+      2: GetOpenSSLLoader.Unload(False);
+    end;
+  except
+    on E: ETaurusTLSLoaderError do
+    begin
+      RecursiveRejected := True;
+      if PropagateRecursive then
+        raise;
+    end;
+  end;
 
   if VerifyHandlesLive then
   begin
@@ -874,12 +993,24 @@ begin
     TTestCallbackLog.Clear;
   TTestCallbackObserverA.Active := False;
   TTestCallbackObserverA.VerifyHandlesLive := False;
+  TTestCallbackObserverA.LoadState := lsLoadedFailed;
+  TTestCallbackObserverA.UnloadState := lsLoadedFailed;
+  TTestCallbackObserverA.RecursivePhase := 0;
+  TTestCallbackObserverA.RecursiveRejected := False;
+  TTestCallbackObserverA.PropagateRecursive := False;
   TTestCallbackObserverB.Active := False;
   TTestCallbackObserverB.ThrowOnLoad := False;
 end;
 
 procedure TLoaderCallbacksFixture.Teardown;
 begin
+  if Assigned(TTestCallbackObserverA.QueryThread) then
+  begin
+    // The outer lifecycle operation has released its lock before teardown.
+    TTestCallbackObserverA.QueryThread.WaitFor;
+    FreeAndNil(TTestCallbackObserverA.QueryThread);
+  end;
+  FreeAndNil(TTestCallbackObserverA.QueryDone);
   TTestCallbackObserverA.Active := False;
   TTestCallbackObserverA.VerifyHandlesLive := False;
   TTestCallbackObserverB.Active := False;
@@ -898,12 +1029,18 @@ begin
     try
       Assert.AreEqual(1, TTestCallbackLog.Count);
       Assert.AreEqual('A:Load:Live', TTestCallbackLog[0]);
+      Assert.IsTrue(TTestCallbackObserverA.LoadState = lsNotLoaded);
+      Assert.IsFalse(TTestCallbackObserverA.LoadedOnLoad);
+      Assert.IsTrue(FLoader.State = lsLoadedReady);
     finally
       FLoader.Unload;
     end;
 
     Assert.AreEqual(2, TTestCallbackLog.Count);
     Assert.AreEqual('A:Unload:Live', TTestCallbackLog[1]);
+    Assert.IsTrue(TTestCallbackObserverA.UnloadState = lsNotLoaded);
+    Assert.IsFalse(TTestCallbackObserverA.LoadedOnUnload);
+    Assert.IsTrue(FLoader.State = lsNotLoaded);
   finally
     TTestCallbackObserverA.Active := False;
     TTestCallbackObserverA.VerifyHandlesLive := False;
@@ -985,6 +1122,9 @@ begin
     Assert.AreEqual(2, TTestCallbackLog.Count);
     Assert.AreEqual('A:Load', TTestCallbackLog[0]);
     Assert.AreEqual('A:Unload', TTestCallbackLog[1]);
+    Assert.IsTrue(TTestCallbackObserverA.UnloadState = lsNotLoaded);
+    Assert.IsFalse(TTestCallbackObserverA.LoadedOnUnload);
+    Assert.IsTrue(FLoader.State = lsLoadedFailed);
     Assert.IsFalse(FLoader.IsLoaded);
   finally
     TTestCallbackObserverB.ThrowOnLoad := False;
@@ -1045,6 +1185,56 @@ begin
   Assert.AreEqual('B:Load', TTestCallbackLog[3]);
   Assert.AreEqual('B:Unload', TTestCallbackLog[4]);
   Assert.AreEqual('A:Unload', TTestCallbackLog[5]);
+end;
+
+procedure TLoaderCallbacksFixture.State_Recursive(const APhase, AOperation: Integer);
+begin
+  TTestCallbackObserverA.Active := True;
+  TTestCallbackObserverA.RecursivePhase := APhase;
+  TTestCallbackObserverA.RecursiveOperation := AOperation;
+  FLoader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(FLoader.Load);
+  Assert.IsTrue(FLoader.State = lsLoadedReady);
+  FLoader.Unload;
+  Assert.IsTrue(TTestCallbackObserverA.RecursiveRejected,
+    'Recursive lifecycle calls must raise ETaurusTLSLoaderError');
+  Assert.IsTrue(FLoader.State = lsNotLoaded);
+  Assert.AreEqual(2, TTestCallbackLog.Count, 'Only the outer operation dispatches callbacks');
+end;
+
+procedure TLoaderCallbacksFixture.State_RecursiveFailure;
+begin
+  TTestCallbackObserverA.Active := True;
+  TTestCallbackObserverA.RecursivePhase := 1;
+  TTestCallbackObserverA.RecursiveOperation := 0;
+  TTestCallbackObserverA.PropagateRecursive := True;
+  FLoader.ConfigFile := FValidConfigFile;
+  Assert.WillRaise(
+    procedure
+    begin
+      FLoader.Load;
+    end, ETaurusTLSLoaderError);
+  Assert.IsTrue(TTestCallbackObserverA.RecursiveRejected);
+  Assert.IsTrue(FLoader.State = lsLoadedFailed);
+  Assert.IsFalse(FLoader.Load);
+  Assert.AreEqual(0, TTestCallbackLog.Count, 'Failed action did not complete');
+  FLoader.Unload;
+  TTestCallbackObserverA.RecursivePhase := 0;
+  Assert.IsTrue(FLoader.Load);
+  Assert.IsTrue(FLoader.State = lsLoadedReady);
+  FLoader.Unload;
+end;
+
+procedure TLoaderCallbacksFixture.State_ReadDuringLoad;
+begin
+  TTestCallbackObserverA.Active := True;
+  TTestCallbackObserverA.QueryDone := TEvent.Create(nil, True, False, '');
+  FLoader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(FLoader.Load);
+  TTestCallbackObserverA.QueryThread.WaitFor;
+  Assert.IsTrue(TTestCallbackObserverA.QueryState = lsNotLoaded);
+  Assert.IsFalse(TTestCallbackObserverA.QueryLoaded);
+  Assert.IsTrue(FLoader.State = lsLoadedReady);
 end;
 
 initialization
