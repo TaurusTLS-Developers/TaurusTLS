@@ -479,5 +479,5 @@
 			<Version Value="2"/>
 			<UseFileFilters Value="True"/>
 		</PublishOptions>
-		<Version Major="1" Release="11" Build="53"/></Package>
+		<Version Major="1" Minor="1" Release="12" Build="54"/></Package>
 </CONFIG>
