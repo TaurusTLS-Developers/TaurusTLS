@@ -56,6 +56,12 @@ const
 {$IFEND}
 
 type
+  /// <summary>Internal lifecycle states, including operations in progress.</summary>
+  TTaurusTLSLoaderStateAll = (
+    lsLoading, lsUnloading, lsNotLoaded, lsLoadedReady, lsLoadedFailed);
+  /// <summary>Stable states exposed to applications; transitions report lsNotLoaded.</summary>
+  TTaurusTLSLoaderState = lsNotLoaded..lsLoadedFailed;
+
   { IOpenSSLLoader }
 
   /// <summary>Identifies a lifecycle action dispatched in either linking model.</summary>
@@ -119,13 +125,19 @@ type
     /// <remarks>False is used for internal failure rollback.</remarks>
     procedure Unload(const AResetFailState: Boolean); overload;
 
-    /// <summary>Returns the linking model's current loader state.</summary>
-    /// <remarks>
-    ///   Static builds report successful lifecycle initialization. Dynamic builds
-    ///   report the presence of the crypto library handle, including during load
-    ///   and unload callbacks. Check Load's result to establish successful loading.
-    /// </remarks>
+    /// <summary>True only after configuration and every load callback complete successfully.</summary>
+    /// <remarks>False during load, unload, and rollback in both linking models.</remarks>
     function IsLoaded: Boolean;
+    /// <summary>Returns an atomic readiness snapshot without acquiring the lifecycle lock.</summary>
+    /// <remarks>
+    ///   Internal loading/unloading states report lsNotLoaded. Failed state blocks
+    ///   retries until explicit Unload. A snapshot does not protect live crypto
+    ///   objects or operations against concurrent unloading.
+    /// </remarks>
+    function GetState: TTaurusTLSLoaderState;
+
+    /// <summary>Current stable readiness state; independent of library-handle presence.</summary>
+    property State: TTaurusTLSLoaderState read GetState;
 
     /// <summary>Ordered filename suffixes used to find dynamic OpenSSL libraries.</summary>
     /// <remarks>
@@ -249,7 +261,14 @@ uses
   TaurusTLSConsts,
   TaurusTLSHeaders_crypto,
   TaurusTLSHeaders_conf,
+  {$IFNDEF FPC}
+  SyncObjs,
+  {$ENDIF}
   SysUtils;
+
+resourcestring
+  RSOSSLLoaderLifecycleInProgress =
+    'Cannot call %s while the OpenSSL loader is loading or unloading';
 
 {$IFNDEF HAS_UNIT_Generics_Collections}
 type
@@ -490,11 +509,18 @@ type
   TOpenSSLBaseLoader = class(TInterfacedObject, IOpenSSLLoader)
   strict protected
     FLoaderLock: TIdCriticalSection;
-    FLibraryLoaded: Boolean;
-    FFailedToLoad: Boolean;
+    // Delphi's generic TInterlocked overloads require class types. Keep the
+    // ordinal storage private; all reads/writes use typed atomic accessors.
+    FState: Integer;
     FLastLoadActionIdx: NativeInt;
     FConfigFile: string;
     FEffectiveConfigFile: string;
+    /// <summary>Reads the internal lifecycle state atomically.</summary>
+    function GetInternalState: TTaurusTLSLoaderStateAll;
+    /// <summary>Publishes the internal lifecycle state atomically.</summary>
+    procedure SetInternalState(const AState: TTaurusTLSLoaderStateAll);
+    /// <summary>Performs cleanup while the caller holds the lifecycle lock.</summary>
+    procedure UnloadInternal(const AResetFailState: Boolean);
 
 // --- OpenSSL API Wrappers (Static vs Dynamic Bridge) ---
     /// <summary>Initializes OpenSSL directly in static builds or through an assigned dynamic routine.</summary>
@@ -547,8 +573,10 @@ type
     procedure SetConfigFile(const Value: string); virtual;
     /// <summary>Returns the model-owned binding diagnostic list.</summary>
     function GetFailedToLoad: TStringList; virtual; abstract;
-    /// <summary>Reports state according to the selected linking model.</summary>
-    function IsLoaded: Boolean; virtual; abstract;
+    /// <summary>Reads the stable public state without taking the lifecycle lock.</summary>
+    function GetState: TTaurusTLSLoaderState;
+    /// <summary>True only when the common state is lsLoadedReady.</summary>
+    function IsLoaded: Boolean;
   public
     /// <summary>Creates the loader lock and initializes unloaded state with no completed actions.</summary>
     constructor Create; virtual;
@@ -563,6 +591,7 @@ type
     /// <summary>Runs synchronized cleanup, preserving or resetting failure state as requested.</summary>
     procedure Unload(const AResetFailState: Boolean); overload;
 
+    property State: TTaurusTLSLoaderState read GetState;
     property OpenSSLPath: string read GetOpenSSLPath write SetOpenSSLPath;
     property ConfigFile: string read GetConfigFile write SetConfigFile;
     property FailedToLoad: TStringList read GetFailedToLoad;
@@ -575,8 +604,7 @@ begin
   inherited Create;
   FLoaderLock := TIdCriticalSection.Create;
   FLastLoadActionIdx := -1;
-  FLibraryLoaded := False;
-  FFailedToLoad := False;
+  SetInternalState(lsNotLoaded);
   FConfigFile := '';
   FEffectiveConfigFile := '';
 end;
@@ -653,41 +681,77 @@ end;
 {$WARN UNSAFE_CAST DEFAULT}
 {$ENDIF}
 
+function TOpenSSLBaseLoader.GetInternalState: TTaurusTLSLoaderStateAll;
+begin
+  {$IFDEF FPC}
+  Result := TTaurusTLSLoaderStateAll(
+    InterlockedCompareExchange(FState, Ord(lsNotLoaded), Ord(lsNotLoaded)));
+  {$ELSE}
+  Result := TTaurusTLSLoaderStateAll(
+    TInterlocked.CompareExchange(FState, Ord(lsNotLoaded), Ord(lsNotLoaded)));
+  {$ENDIF}
+end;
+
+procedure TOpenSSLBaseLoader.SetInternalState(const AState: TTaurusTLSLoaderStateAll);
+begin
+  {$IFDEF FPC}
+  InterlockedExchange(FState, Ord(AState));
+  {$ELSE}
+  TInterlocked.Exchange(FState, Ord(AState));
+  {$ENDIF}
+end;
+
+function TOpenSSLBaseLoader.GetState: TTaurusTLSLoaderState;
+var
+  LState: TTaurusTLSLoaderStateAll;
+begin
+  LState := GetInternalState;
+  case LState of
+    lsNotLoaded, lsLoadedReady, lsLoadedFailed:
+      Result := LState;
+  else
+    Result := lsNotLoaded;
+  end;
+end;
+
+function TOpenSSLBaseLoader.IsLoaded: Boolean;
+begin
+  Result := GetState = lsLoadedReady;
+end;
+
 function TOpenSSLBaseLoader.Load: Boolean;
 begin
-  // 1. Fast circuit-breaker pre-check
-  Result := not FFailedToLoad;
-  if not Result then
-    Exit;
+  if GetInternalState = lsLoadedFailed then
+    Exit(False);
 
   FLoaderLock.Acquire;
   try
-    // 2. Re-verify circuit breaker and loaded state under lock
-    Result := not FFailedToLoad;
-    if not Result then
-      Exit;
+    case GetInternalState of
+      lsLoading, lsUnloading:
+        raise ETaurusTLSLoaderError.CreateFmt(RSOSSLLoaderLifecycleInProgress, ['Load']);
+      lsLoadedFailed:
+        Exit(False);
+      lsLoadedReady:
+        Exit(True);
+    end;
 
-    if not IsLoaded then
-    begin
-      FLastLoadActionIdx := -1;
+    SetInternalState(lsLoading);
+    FLastLoadActionIdx := -1;
+    try
+      Result := DoLoad;
+    except
+      // Preserve the original configuration/binding/callback exception.
       try
-        Result := DoLoad;
-        if not Result then
-        begin
-          // Soft failure: trip circuit breaker and unwind
-          Unload(False);
-          Exit;
-        end;
-        FLibraryLoaded := True;
-        Result := True;
+        UnloadInternal(False);
       except
-        // Hard failure: trip circuit breaker, unwind, and re-raise
-        Unload(False);
-        raise;
+        // UnloadInternal publishes failed state even if cleanup raises.
       end;
-    end
+      raise;
+    end;
+    if Result then
+      SetInternalState(lsLoadedReady)
     else
-      Result := True;
+      UnloadInternal(False);
   finally
     FLoaderLock.Release;
   end;
@@ -702,24 +766,34 @@ procedure TOpenSSLBaseLoader.Unload(const AResetFailState: Boolean);
 begin
   FLoaderLock.Acquire;
   try
-    if IsLoaded or NeedUnloadCleanup then
-    begin
-      DoUnload;
-      FEffectiveConfigFile := '';
-    end;
-
-    if AResetFailState then
-    begin
-      if Assigned(FailedToLoad) then
-        FailedToLoad.Clear;
-      FFailedToLoad := False;
-    end
-    else
-      FFailedToLoad := True;
-
-    FLibraryLoaded := False;
+    if GetInternalState in [lsLoading, lsUnloading] then
+      raise ETaurusTLSLoaderError.CreateFmt(RSOSSLLoaderLifecycleInProgress, ['Unload']);
+    UnloadInternal(AResetFailState);
   finally
     FLoaderLock.Release;
+  end;
+end;
+
+procedure TOpenSSLBaseLoader.UnloadInternal(const AResetFailState: Boolean);
+var
+  LNeedsCleanup: Boolean;
+  LCompleted: Boolean;
+begin
+  LNeedsCleanup := IsLoaded or NeedUnloadCleanup;
+  LCompleted := False;
+  SetInternalState(lsUnloading);
+  try
+    if LNeedsCleanup then
+      DoUnload;
+    if AResetFailState and Assigned(FailedToLoad) then
+      FailedToLoad.Clear;
+    LCompleted := True;
+  finally
+    FEffectiveConfigFile := '';
+    if AResetFailState and LCompleted then
+      SetInternalState(lsNotLoaded)
+    else
+      SetInternalState(lsLoadedFailed);
   end;
 end;
 
@@ -875,7 +949,7 @@ begin
     if Value = FConfigFile then
       Exit;
 
-    if IsLoaded or IsActiveHandlePresent then
+    if (GetInternalState in [lsLoading, lsUnloading, lsLoadedReady]) or IsActiveHandlePresent then
       raise ETaurusTLSConfigFilePathError.Create(RSOSSLConfigFileAlreadyLoaded);
 
     if Value <> '' then
@@ -912,7 +986,6 @@ type
     function GetSSLLibVersions: string; override;
     procedure SetSSLLibVersions(const AValue: string); override;
     function GetFailedToLoad: TStringList; override;
-    function IsLoaded: Boolean; override;
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -955,15 +1028,7 @@ begin
   Result := FFailed;
 end;
 
-function TOpenSSLStaticLoader.IsLoaded: Boolean;
-begin
-  FLoaderLock.Acquire;
-  try
-    Result := FLibraryLoaded;
-  finally
-    FLoaderLock.Release;
-  end;
-end;
+
 
 function TOpenSSLStaticLoader.DoLoad: Boolean;
 begin
@@ -1023,7 +1088,6 @@ type
     function GetSSLLibVersions: string; override;
     procedure SetSSLLibVersions(const AValue: string); override;
     function GetFailedToLoad: TStringList; override;
-    function IsLoaded: Boolean; override;
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -1109,7 +1173,7 @@ begin
     if Value = FOpenSSLPath then
       Exit;
 
-    if IsLoaded or IsActiveHandlePresent then
+    if (GetInternalState in [lsLoading, lsUnloading, lsLoadedReady]) or IsActiveHandlePresent then
       raise ETaurusTLSConfigFilePathError.Create(RSOSSLConfigFileAlreadyLoaded);
 
     if Value = '' then
@@ -1128,7 +1192,7 @@ begin
     if AValue = FSSLLibVersions then
       Exit;
 
-    if IsLoaded or IsActiveHandlePresent then
+    if (GetInternalState in [lsLoading, lsUnloading, lsLoadedReady]) or IsActiveHandlePresent then
       raise ETaurusTLSConfigFilePathError.Create(RSOSSLConfigFileAlreadyLoaded);
 
     FSSLLibVersions := AValue;
@@ -1142,15 +1206,7 @@ begin
   Result := FFailed;
 end;
 
-function TOpenSSLDynamicLoader.IsLoaded: Boolean;
-begin
-  FLoaderLock.Acquire;
-  try
-    Result := (FLibCrypto <> IdNilHandle);
-  finally
-    FLoaderLock.Release;
-  end;
-end;
+
 
 class function TOpenSSLDynamicLoader.IsOpenSSLPrefix(
   const AStr: PAnsiChar): Boolean;
