@@ -36,6 +36,8 @@ Headers remain OpenSSL-only. A03's two property API imports stay valid, includin
 - When `ConfigFile` is left empty, it returns the discovered default OpenSSL configuration path obtained via `CONF_get1_default_config_file()` and freed with `OPENSSL_free`.
 Upon library unload, `FEffectiveConfigFile` is cleared and `GetConfigFile` returns back to reporting `FConfigFile`.
 
+Calling `Load` again when the loader is ready returns `True` without repeating configuration or callbacks. Load calls do not acquire references. One explicit `Unload` performs cleanup, even after several successful `Load` calls; further `Unload` calls are safe. The application must finish active crypto operations before unloading.
+
 Normalize a nonempty relative filename against the current full path and pass a UTF-8 buffer to OpenSSL. Explicit `ConfigFile` loading uses `CONF_modules_load_file_ex` and requires OpenSSL 3.0 or higher; OpenSSL 1.1.x is excluded from support with this configuration mechanism. Leave OpenSSL's own include/module path semantics unchanged.
 
 Configuration behavior:
@@ -152,7 +154,7 @@ Static legacy lifecycle:
 - Registers its lifecycle callback with `Register_SSLLoaderAction`. On `osaLoad` (triggered by `GetOpenSSLLoader.Load` after configuration is applied), it verifies `OSSL_PROVIDER_add_builtin` registration, retains default, and loads legacy by name.
 - `osaUnload` (or unit finalization fallback) releases owned handles while linked APIs remain callable.
 
-`OSSL_PROVIDER_add_builtin` alone does not initialize a provider; both static and dynamic lifecycles require load/unload. Make registration/acquisition idempotent and serialize manager access; release only owned references.
+`OSSL_PROVIDER_add_builtin` alone does not initialize a provider; both static and dynamic lifecycles require load/unload. Register each builtin provider once, acquire at most one owned reference per provider, and serialize manager access; release only owned references.
 
 Normal TLS and hashing use default-provider algorithms. Explicitly loading legacy must retain default rather than suppressing its fallback unintentionally. The legacy unit remains useful outside FIPS and is required by TaurusTLS_NTLM's MD4-based path.
 

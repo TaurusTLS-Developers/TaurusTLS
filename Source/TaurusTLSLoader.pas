@@ -82,8 +82,9 @@ type
 
   /// <summary>Provides a common lifecycle and configuration API for both linking models.</summary>
   /// <remarks>
-  ///   Load is idempotent, not reference counted. A failure blocks later Load
-  ///   calls until Unload resets the failure state. Static builds retain linked
+  ///   Calling Load again when ready returns True without repeating initialization.
+  ///   Load calls do not acquire references; one Unload performs cleanup.
+  ///   A failure blocks later Load calls until Unload resets the failure state. Static builds retain linked
   ///   code and use the loader for configuration and lifecycle actions.
   /// </remarks>
   IOpenSSLLoader = interface
@@ -584,7 +585,7 @@ type
     destructor Destroy; override;
 
     // Non-virtual template methods managing thread locking and circuit breakers
-    /// <summary>Runs the synchronized load template with idempotency, rollback, and circuit-breaker checks.</summary>
+    /// <summary>Loads once under the lifecycle lock; repeated calls when ready return True without reinitializing.</summary>
     function Load: Boolean;
     /// <summary>Runs the cleanup template and resets failure state and binding diagnostics.</summary>
     procedure Unload; overload;

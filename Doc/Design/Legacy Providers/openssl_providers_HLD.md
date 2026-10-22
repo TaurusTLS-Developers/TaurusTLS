@@ -35,6 +35,8 @@ Non-FIPS applications require no new initialization calls, configuration file or
 * **Dynamic Linking (`TOpenSSLDynamicLoader`):** Implements dynamic library discovery (`FindLibrary`), symbol resolution (`GLibCryptoLoadList`/`GLibSSLLoadList`), version verification, and handle cleanup (`GUnLoadList`, `FreeLibrary`).
 * **Static Linking (`TOpenSSLStaticLoader`):** Operates on statically linked symbols. Dynamic-only properties (`OpenSSLPath`, `SSLLibVersions`, `FailedToLoad`) provide safe/inert defaults (`''` and empty list). Handles configuration application and action callbacks without dynamic library loading or symbol unbinding.
 
+Repeated `Load` calls when ready return `True` without repeating initialization or acquiring references. One explicit `Unload` performs cleanup; further `Unload` calls are safe. The application controls shutdown and must finish active crypto operations first.
+
 The loader applies configuration before provider callbacks. OpenSSL performs provider discovery and initialization. TaurusTLSFIPS and TaurusTLS_LegacyProviders manage their own provider references and validation through these APIs. No additional public TaurusTLS provider registry is required.
 
 ## 3. Configuration and discovery

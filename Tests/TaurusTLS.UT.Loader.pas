@@ -125,7 +125,7 @@ type
   end;
 
   /// <summary>
-  ///   Group 2: Lifecycle idempotency, state persistence, mutation guards, and circuit breaker tests.
+  ///   Group 2: Repeated load/unload calls, state persistence, mutation guards, and circuit breaker tests.
   /// </summary>
   [TestFixture]
   [Category('Loader,Loader.Lifecycle')]
@@ -137,7 +137,7 @@ type
     procedure Static_State;
     {$ENDIF}
 
-    /// <summary>Tests that successive Load calls succeed idempotently.</summary>
+    /// <summary>Tests that a second Load succeeds without repeating initialization.</summary>
     [Test]
     procedure Life_DoubleLoad;
 
@@ -160,7 +160,7 @@ type
     [Test]
     procedure Life_DoubleUnload;
 
-    /// <summary>Tests that idempotent Load calls preserve the active configuration.</summary>
+    /// <summary>Tests that repeated Load calls preserve the active configuration.</summary>
     [Test]
     procedure Life_PreserveConfig;
 
