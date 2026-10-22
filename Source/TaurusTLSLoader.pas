@@ -77,6 +77,10 @@ type
   ///   OpenSSL routines are callable during both actions. A load exception aborts
   ///   loading and rolls back completed actions. Cleanup exceptions are suppressed
   ///   so remaining actions can run. The loader does not own the callback object.
+  ///   State reports lsNotLoaded and IsLoaded is False during load, unload, and
+  ///   rollback callbacks. Initialization callbacks use callable OpenSSL routines
+  ///   directly; they must not require application-ready state to establish it.
+  ///   Application crypto entry points must wait for lsLoadedReady.
   /// </remarks>
   TTaurusTLSOnLoadAction = procedure(AAction: TOpenSSLLoadAction) of object;
 
@@ -95,7 +99,8 @@ type
     function GetSSLLibVersions: string;
     /// <summary>Sets the dynamic library directory; ignored in static builds.</summary>
     procedure SetOpenSSLPath(const Value: string);
-    /// <summary>Returns the effective filename while loaded, otherwise the configured filename.</summary>
+    /// <summary>Returns the effective filename while ready, otherwise the configured filename.</summary>
+    /// <remarks>Callbacks see the configured input, not the expanded effective filename.</remarks>
     function GetConfigFile: string;
     /// <summary>Selects a configuration filename while the loader is inactive.</summary>
     procedure SetConfigFile(const Value: string);
@@ -143,15 +148,19 @@ type
     /// <summary>Ordered filename suffixes used to find dynamic OpenSSL libraries.</summary>
     /// <remarks>
     ///   Entries use the platform directory-list delimiter (semicolon on Windows,
-    ///   colon on POSIX). Changes are rejected while loaded or a crypto handle is
-    ///   active. Static builds return an empty string and ignore assignments.
+    ///   colon on POSIX). In dynamic builds, changes are rejected while loading,
+    ///   ready, unloading, or holding a crypto handle. Assigning the stored value
+    ///   does nothing. Static builds always return empty and ignore assignments.
+    ///   Changing values after a failed load does not reset the failure state.
     /// </remarks>
     property SSLLibVersions: string read GetSSLLibVersions write SetSSLLibVersions;
     /// <summary>Directory searched for dynamic OpenSSL libraries.</summary>
     /// <remarks>
     ///   Nonempty values receive a trailing path delimiter. An empty value uses
-    ///   the platform library search. Changes are rejected while loaded or a
-    ///   crypto handle is active. Static builds return empty and ignore assignments.
+    ///   the platform library search. In dynamic builds, changes are rejected while
+    ///   loading, ready, unloading, or holding a crypto handle. Assigning the exact
+    ///   stored value does nothing. Static builds return empty and ignore assignments.
+    ///   Changing values after a failed load does not reset the failure state.
     /// </remarks>
     property OpenSSLPath: string read GetOpenSSLPath write SetOpenSSLPath;
     /// <summary>Explicit configuration filename, or the effective filename while loaded.</summary>
@@ -162,9 +171,13 @@ type
     ///   raise exceptions. An empty value only queries OpenSSL's default filename;
     ///   this branch does not explicitly load that file. Discovery can reflect a
     ///   C-runtime environment different from Delphi's process environment.
-    ///   Changes are rejected while loaded or a crypto handle is active; assigning
-    ///   the existing configured value is a no-op. Unload retains the configured
-    ///   value and clears the effective filename.
+    ///   Changes are rejected while loading, ready, unloading, or holding a crypto
+    ///   handle. Assigning the exact configured input does nothing, including
+    ///   during callbacks; that input can differ from the expanded ready filename.
+    ///   Callbacks and inactive callers see the configured input. The effective
+    ///   filename is exposed only after every load action succeeds. Unload and
+    ///   rollback clear the effective filename and retain the configured input.
+    ///   Changing the input after a failed load does not reset failure or permit a retry.
     /// </remarks>
     property ConfigFile: string read GetConfigFile write SetConfigFile;
     /// <summary>Loader-owned list of symbols that could not be bound dynamically.</summary>

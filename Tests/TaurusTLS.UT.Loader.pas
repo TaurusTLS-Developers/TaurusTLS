@@ -238,6 +238,36 @@ type
     [Test]
     procedure State_ReadDuringLoad;
 
+    /// <summary>Verifies changed values are rejected and repeated inputs are safe during callbacks.</summary>
+    [TestCase('LoadConfigChange', '1,0,0')]
+    [TestCase('UnloadConfigChange', '2,0,0')]
+    [TestCase('RollbackConfigChange', '3,0,0')]
+    [TestCase('LoadConfigRepeat', '1,0,1')]
+    [TestCase('UnloadConfigRepeat', '2,0,1')]
+    [TestCase('RollbackConfigRepeat', '3,0,1')]
+    [TestCase('LoadPathChange', '1,1,0')]
+    [TestCase('UnloadPathChange', '2,1,0')]
+    [TestCase('RollbackPathChange', '3,1,0')]
+    [TestCase('LoadPathRepeat', '1,1,1')]
+    [TestCase('UnloadPathRepeat', '2,1,1')]
+    [TestCase('RollbackPathRepeat', '3,1,1')]
+    [TestCase('LoadVersionsChange', '1,2,0')]
+    [TestCase('UnloadVersionsChange', '2,2,0')]
+    [TestCase('RollbackVersionsChange', '3,2,0')]
+    [TestCase('LoadVersionsRepeat', '1,2,1')]
+    [TestCase('UnloadVersionsRepeat', '2,2,1')]
+    [TestCase('RollbackVersionsRepeat', '3,2,1')]
+    procedure Config_CallbackMutation(const APhase, AProperty, ARepeat: Integer);
+
+    /// <summary>Verifies effective filename publication follows successful readiness.</summary>
+    [TestCase('Absolute', '0')]
+    [TestCase('Relative', '1')]
+    procedure Config_Publication(const ARelative: Integer);
+
+    /// <summary>Verifies rollback retains configured input without publishing a ready filename.</summary>
+    [Test]
+    procedure Config_RollbackPublication;
+
     /// <summary>Verifies unload-action failures do not prevent later action cleanup.</summary>
     [Test]
     procedure Life_UnloadActionFailure;
@@ -475,6 +505,8 @@ begin
   LPath := 'some_relative/config.cnf';
   FLoader.ConfigFile := LPath;
   Assert.AreEqual(LPath, FLoader.ConfigFile);
+  Assert.IsTrue(FLoader.State = lsNotLoaded, 'Selecting a config must not load OpenSSL');
+  Assert.IsFalse(FLoader.IsLoaded);
   FLoader.ConfigFile := '';
 end;
 
@@ -675,6 +707,11 @@ begin
   Assert.IsFalse(LLoader.IsLoaded, 'Static loader must not be loaded before Load is called');
   Assert.AreEqual('', LLoader.OpenSSLPath, 'OpenSSLPath must be empty in static mode');
   Assert.AreEqual('', LLoader.SSLLibVersions, 'SSLLibVersions must be empty in static mode');
+  LLoader.OpenSSLPath := 'ignored-static-path';
+  LLoader.SSLLibVersions := 'ignored-static-versions';
+  Assert.AreEqual('', LLoader.OpenSSLPath);
+  Assert.AreEqual('', LLoader.SSLLibVersions);
+  Assert.IsTrue(LLoader.State = lsNotLoaded, 'Inert setters must not initialize OpenSSL');
   Assert.AreEqual(0, LLoader.FailedToLoad.Count, 'FailedToLoad must be empty in static mode');
 end;
 {$ENDIF}
@@ -851,6 +888,7 @@ begin
     {$ENDIF}
   end;
 
+  Assert.IsTrue(FLoader.State = lsLoadedFailed, 'Changing a property must not reset failure');
   Assert.IsFalse(FLoader.Load, 'Subsequent Load must return False while circuit breaker is active');
 
   FLoader.Unload;
@@ -893,6 +931,15 @@ type
     class var QueryThread: TThread;
     class var QueryState: TTaurusTLSLoaderState;
     class var QueryLoaded: Boolean;
+    class var ConfigOnLoad: string;
+    class var ConfigOnUnload: string;
+    class var ProbePhase: Integer;
+    class var ProbeProperty: Integer;
+    class var ProbeValue: string;
+    class var ProbeCompleted: Boolean;
+    class var ProbeRejected: Boolean;
+    class var ProbeError: string;
+    class var ProbeResult: string;
     /// <summary>Records lifecycle actions and optionally verifies that OpenSSL routines remain callable.</summary>
     /// <param name="AAction">The load or unload action dispatched by the loader.</param>
     class procedure ActionProc(AAction: TOpenSSLLoadAction);
@@ -917,6 +964,7 @@ begin
   begin
     LoadState := GetOpenSSLLoader.State;
     LoadedOnLoad := GetOpenSSLLoader.IsLoaded;
+    ConfigOnLoad := GetOpenSSLLoader.ConfigFile;
     if Assigned(QueryDone) then
     begin
       QueryThread := TThread.CreateAnonymousThread(
@@ -939,6 +987,32 @@ begin
   begin
     UnloadState := GetOpenSSLLoader.State;
     LoadedOnUnload := GetOpenSSLLoader.IsLoaded;
+    ConfigOnUnload := GetOpenSSLLoader.ConfigFile;
+  end;
+
+  if ((ProbePhase = 1) and (AAction = osaLoad)) or
+    ((ProbePhase = 2) and (AAction = osaUnload)) then
+  begin
+    try
+      case ProbeProperty of
+        0: GetOpenSSLLoader.ConfigFile := ProbeValue;
+        1: GetOpenSSLLoader.OpenSSLPath := ProbeValue;
+        2: GetOpenSSLLoader.SSLLibVersions := ProbeValue;
+      end;
+    except
+      on E: ETaurusTLSConfigFilePathError do
+      begin
+        ProbeRejected := True;
+        ProbeError := E.Message;
+      end;
+    end;
+    case ProbeProperty of
+      0: ProbeResult := GetOpenSSLLoader.ConfigFile;
+      1: ProbeResult := GetOpenSSLLoader.OpenSSLPath;
+      2: ProbeResult := GetOpenSSLLoader.SSLLibVersions;
+    end;
+    // Unload callbacks suppress unexpected errors; record completion explicitly.
+    ProbeCompleted := True;
   end;
 
   if ((RecursivePhase = 1) and (AAction = osaLoad)) or
@@ -1058,6 +1132,13 @@ begin
   TTestCallbackObserverA.RecursivePhase := 0;
   TTestCallbackObserverA.RecursiveRejected := False;
   TTestCallbackObserverA.PropagateRecursive := False;
+  TTestCallbackObserverA.ConfigOnLoad := '';
+  TTestCallbackObserverA.ConfigOnUnload := '';
+  TTestCallbackObserverA.ProbePhase := 0;
+  TTestCallbackObserverA.ProbeCompleted := False;
+  TTestCallbackObserverA.ProbeRejected := False;
+  TTestCallbackObserverA.ProbeError := '';
+  TTestCallbackObserverA.ProbeResult := '';
   TTestCallbackObserverB.Active := False;
   TTestCallbackObserverB.ThrowOnLoad := False;
   TTestCallbackObserverB.ThrowOnUnload := False;
@@ -1297,6 +1378,125 @@ begin
   Assert.AreEqual('B:Load', TTestCallbackLog[3]);
   Assert.AreEqual('B:Unload', TTestCallbackLog[4]);
   Assert.AreEqual('A:Unload', TTestCallbackLog[5]);
+end;
+
+procedure TLoaderCallbacksFixture.Config_CallbackMutation(
+  const APhase, AProperty, ARepeat: Integer);
+var
+  LOriginalValue: string;
+  LRejectExpected: Boolean;
+begin
+  FLoader.ConfigFile := FValidConfigFile;
+  case AProperty of
+    0: LOriginalValue := FLoader.ConfigFile;
+    1: LOriginalValue := FLoader.OpenSSLPath;
+    2: LOriginalValue := FLoader.SSLLibVersions;
+  end;
+  TTestCallbackObserverA.Active := True;
+  if APhase = 1 then
+    TTestCallbackObserverA.ProbePhase := 1
+  else
+    TTestCallbackObserverA.ProbePhase := 2;
+  TTestCallbackObserverA.ProbeProperty := AProperty;
+  if ARepeat <> 0 then
+    TTestCallbackObserverA.ProbeValue := LOriginalValue
+  else
+    case AProperty of
+      0: TTestCallbackObserverA.ProbeValue := TPath.Combine(FTempDir, 'replacement.cnf');
+      1: TTestCallbackObserverA.ProbeValue := FTempDir;
+      2: TTestCallbackObserverA.ProbeValue := 'replacement-version';
+    end;
+
+  if APhase = 3 then
+  begin
+    TTestCallbackObserverB.Active := True;
+    TTestCallbackObserverB.ThrowOnLoad := True;
+    Assert.WillRaiseWithMessage(
+      procedure
+      begin
+        FLoader.Load;
+      end, Exception, 'Simulated action failure in Observer B');
+    Assert.IsTrue(FLoader.State = lsLoadedFailed);
+    Assert.IsFalse(FLoader.Load, 'Rejected mutation must not permit a retry');
+  end
+  else
+  begin
+    Assert.IsTrue(FLoader.Load);
+    Assert.IsTrue(FLoader.State = lsLoadedReady);
+    FLoader.Unload;
+    Assert.IsTrue(FLoader.State = lsNotLoaded);
+  end;
+
+  Assert.IsTrue(TTestCallbackObserverA.ProbeCompleted, 'Property probe must finish');
+  LRejectExpected := ARepeat = 0;
+  {$IFDEF OPENSSL_STATIC_LINK_MODEL}
+  LRejectExpected := LRejectExpected and (AProperty = 0);
+  {$ENDIF}
+  Assert.IsTrue(TTestCallbackObserverA.ProbeRejected = LRejectExpected,
+    'Changed active properties are rejected; repeated inputs and static path/version setters are safe');
+  if LRejectExpected then
+    Assert.AreEqual(RSOSSLConfigFileAlreadyLoaded, TTestCallbackObserverA.ProbeError);
+  Assert.AreEqual(LOriginalValue, TTestCallbackObserverA.ProbeResult,
+    'Callbacks must not replace configured values');
+  Assert.AreEqual(FValidConfigFile, FLoader.ConfigFile);
+end;
+
+procedure TLoaderCallbacksFixture.Config_Publication(const ARelative: Integer);
+var
+  LInput: string;
+  LExpected: string;
+begin
+  if ARelative <> 0 then
+  begin
+    Assert.IsTrue(SetCurrentDir(FTempDir));
+    LInput := TPath.GetFileName(FValidConfigFile);
+    LExpected := TPath.GetFullPath(TPath.Combine(GetCurrentDir, LInput));
+  end
+  else
+  begin
+    LInput := FValidConfigFile;
+    LExpected := TPath.GetFullPath(LInput);
+  end;
+  FLoader.ConfigFile := LInput;
+  TTestCallbackObserverA.Active := True;
+  Assert.IsTrue(FLoader.Load);
+  Assert.AreEqual(LInput, TTestCallbackObserverA.ConfigOnLoad,
+    'Initialization callbacks see configured input before readiness');
+  Assert.IsTrue(TTestCallbackObserverA.LoadState = lsNotLoaded);
+  Assert.AreEqual(LExpected, FLoader.ConfigFile, 'Ready state exposes the effective full filename');
+  FLoader.Unload;
+  Assert.AreEqual(LInput, TTestCallbackObserverA.ConfigOnUnload);
+  Assert.IsTrue(TTestCallbackObserverA.UnloadState = lsNotLoaded);
+  Assert.AreEqual(LInput, FLoader.ConfigFile, 'Unload retains the configured input');
+end;
+
+procedure TLoaderCallbacksFixture.Config_RollbackPublication;
+var
+  LInput: string;
+begin
+  Assert.IsTrue(SetCurrentDir(FTempDir));
+  LInput := TPath.GetFileName(FValidConfigFile);
+  FLoader.ConfigFile := LInput;
+  TTestCallbackObserverA.Active := True;
+  TTestCallbackObserverB.Active := True;
+  TTestCallbackObserverB.ThrowOnLoad := True;
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      FLoader.Load;
+    end, Exception, 'Simulated action failure in Observer B');
+  Assert.IsTrue(FLoader.State = lsLoadedFailed);
+  Assert.AreEqual(LInput, TTestCallbackObserverA.ConfigOnLoad);
+  Assert.AreEqual(LInput, TTestCallbackObserverA.ConfigOnUnload);
+  Assert.AreEqual(LInput, FLoader.ConfigFile);
+  Assert.IsTrue(TTestCallbackObserverA.UnloadState = lsNotLoaded);
+  FLoader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(FLoader.State = lsLoadedFailed);
+  Assert.IsFalse(FLoader.Load);
+  FLoader.Unload;
+  TTestCallbackObserverB.ThrowOnLoad := False;
+  Assert.IsTrue(FLoader.Load);
+  Assert.AreEqual(TPath.GetFullPath(FValidConfigFile), FLoader.ConfigFile);
 end;
 
 procedure TLoaderCallbacksFixture.State_Recursive(const APhase, AOperation: Integer);
