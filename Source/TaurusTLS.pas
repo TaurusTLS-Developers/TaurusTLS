@@ -2611,57 +2611,22 @@ type
   /// </seealso>
   ETaurusTLSSetDefaultVerifyPathsError = class(ETaurusTLSError);
   {$ENDIF}
-  /// <summary>
-  /// Loads the OpenSSL libraries. This is ignored if OpenSSL is loaded by
-  /// TaurusTLS statically.
-  /// </summary>
-  /// <returns>
-  /// True if successful or False if it failed.
-  /// </returns>
-  /// <remarks>
-  /// The OpenSSL library is only loaded once. If it is already loaded, True
-  /// is returned. True is also returned if the library is statically loaded
-  /// by TaurusTLS.
-  /// </remarks>
-function LoadOpenSSLLibrary: Boolean;
-/// <summary>
-/// Unloads the OpenSSL libaries. Called when the program terminates. Ignored
-/// if TaurusTLS loaded the OpenSSL libraries statically.
-/// </summary>
-procedure UnLoadOpenSSLLibrary;
+/// <summary>Initializes OpenSSL and registered TaurusTLS resources through the shared loader.</summary>
+/// <remarks>Works in both linking models. Repeated successful calls do not acquire references.</remarks>
+function LoadOpenSSLLibrary: Boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
+/// <summary>Runs shared cleanup and releases dynamic libraries; static routines remain linked.</summary>
+/// <remarks>The application must finish active crypto operations before unloading.</remarks>
+procedure UnLoadOpenSSLLibrary; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
-/// <summary>
-/// The version of OpenSSL that was loaded.
-/// </summary>
-function OpenSSLVersion: string;
-/// <summary>
-/// The OpenSSL configuration directory.
-/// </summary>
-/// <returns>
-/// The OpenSSL configuration directory. Do <b>NOT</b> assume that this is the directory
-/// where the library is located. The library itslef is loaded based on the
-/// operating system's defaults or the <see
-/// cref="TaurusTLSLoader|GetOpenSSLLoader" />'s <see
-/// cref="TaurusTLSLoader|IOpenSSLLoader.GetOpenSSLPath" /> property.
-/// </returns>
-function OpenSSLDir: string;   {$IFDEF USE_INLINE}inline; {$ENDIF}
-
-/// <summary>
-/// The default directory for OpenSSL dynamically loaded modules that are not engines.
-/// </summary>
-///  <returns>
-///  The default directory for OpenSSL dynamically loaded modules that are not engines
-///  or an empty string if this is not supported.
-///  </returns>
-function OpenSSLModulesDir : String;  {$IFDEF USE_INLINE}inline; {$ENDIF}
-/// <summary>
-/// The default directory for OpenSSL dynamically loaded engine modules.
-/// </summary>
-///  <returns>
-///  he default directory for OpenSSL dynamically loaded engine modules or an
-///  empty string if this is not supported.
-///  </returns>
-function OpenSSLEnginesDir : String; {$IFDEF USE_INLINE}inline; {$ENDIF}
+/// <summary>Returns the loaded version text, or empty while the loader is not ready.</summary>
+function OpenSSLVersion: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+/// <summary>Returns the directory containing the effective ConfigFile, or empty while not ready.</summary>
+/// <remarks>This is the selected/discovered configuration directory, not the compiled OPENSSLDIR.</remarks>
+function OpenSSLDir: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+/// <summary>Returns the compiled default module directory, or empty while not ready or unavailable.</summary>
+function OpenSSLModulesDir: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+/// <summary>Returns the OpenSSL 3 engine directory; empty on OpenSSL 4 or while not ready.</summary>
+function OpenSSLEnginesDir: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
 implementation
 
@@ -2708,23 +2673,19 @@ uses
   TaurusTLSLoader;
 
 type
-  // TODO: TIdThreadSafeObjectList instead?
-{$IFDEF HAS_GENERICS_TThreadList}
-  TIdCriticalSectionThreadList = TThreadList<TIdCriticalSection>;
-  TIdCriticalSectionList = TList<TIdCriticalSection>;
-{$ELSE}
-  // TODO: flesh out to match TThreadList<TIdCriticalSection> and TList<TIdCriticalSection> on non-Generics compilers
-  TIdCriticalSectionThreadList = TThreadList;
-  TIdCriticalSectionList = TList;
-{$ENDIF}
-
-var
-  LockInfoCB: TIdCriticalSection = nil;   //PALOFF - Created and freed objects
-  LockLevelCB: TIdCriticalSection = nil;  //PALOFF - Created and freed objects
-  LockPassCB: TIdCriticalSection = nil;  //PALOFF - Created and freed objects
-  LockVerifyCB: TIdCriticalSection = nil; //PALOFF - Created and freed objects
-  Lock_SNI_CB: TIdCriticalSection = nil;  //PALOFF - Created and freed objects
-  CallbackLockList: TIdCriticalSectionThreadList = nil;  //PALOFF - Created and freed objects
+  /// <summary>Owns TaurusTLS callback resources within the loader lifecycle.</summary>
+  TTaurusTLSRuntime = class
+  private
+    class var FInfoLock: TIdCriticalSection;
+    class var FLevelLock: TIdCriticalSection;
+    class var FPasswordLock: TIdCriticalSection;
+    class var FVerifyLock: TIdCriticalSection;
+    class var FSNILock: TIdCriticalSection;
+    class procedure Initialize; static;
+    class procedure ReleaseResources; static;
+  public
+    class procedure OnLoadAction(AAction: TOpenSSLLoadAction);
+  end;
 
 procedure GetStateVars(const SSLSocket: PSSL; const AWhere, Aret: TIdC_INT;
   out VTypeStr, VMsg: String);
@@ -2853,7 +2814,7 @@ begin
       {$IFDEF DCC}{$WARN UNSAFE_CAST DEFAULT}{$ENDIF}
       if LSock <> nil then
       begin
-        LockVerifyCB.Enter;
+        TTaurusTLSRuntime.FVerifyLock.Enter;
         try
 {$IFDEF USE_INLINE_VAR}
           var
@@ -2877,7 +2838,7 @@ begin
               Result := 0;
           end;
         finally
-          LockVerifyCB.Leave;
+          TTaurusTLSRuntime.FVerifyLock.Leave;
         end;
       end;
     end;
@@ -2899,7 +2860,7 @@ begin
   // clobers it.  CYA.
   LErr := GStack.WSGetLastError;
   try
-    LockLevelCB.Enter;
+    TTaurusTLSRuntime.FLevelLock.Enter;
     try
       {$IFDEF DCC}{$WARN UNSAFE_CAST OFF}{$ENDIF}
       if Supports(TTaurusTLSContext(ex).Parent, ITaurusTLSCallbackHelper,
@@ -2921,7 +2882,7 @@ begin
         Result := 0;
       end;
     finally
-      LockLevelCB.Leave;
+      TTaurusTLSRuntime.FLevelLock.Leave;
     end;
   finally
     GStack.WSSetLastError(LErr);
@@ -2956,7 +2917,7 @@ begin
   // clobers it.  CYA.
   LErr := GStack.WSGetLastError;
   try
-    LockPassCB.Enter;
+    TTaurusTLSRuntime.FPasswordLock.Enter;
     try
       {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
       FillChar(LBuf^, size, 0);
@@ -3009,7 +2970,7 @@ begin
         Result := -1;
       end;
     finally
-      LockPassCB.Leave;
+      TTaurusTLSRuntime.FPasswordLock.Leave;
     end;
   finally
     GStack.WSSetLastError(LErr);
@@ -3032,7 +2993,7 @@ begin
   }
   LErr := GStack.WSGetLastError;
   try
-    LockInfoCB.Enter;
+    TTaurusTLSRuntime.FInfoLock.Enter;
     try
       {$IFDEF DCC}{$WARN UNSAFE_CAST OFF}{$ENDIF}
       if Supports(TTaurusTLSSocket(SSL_get_app_data(SSLSocket)).Parent,  //PALOFF
@@ -3043,7 +3004,7 @@ begin
         LHelper := nil;
       end;
     finally
-      LockInfoCB.Leave;
+      TTaurusTLSRuntime.FInfoLock.Leave;
     end;
   finally
     GStack.WSSetLastError(LErr);
@@ -3074,7 +3035,7 @@ begin
   }
   LErr := GStack.WSGetLastError;
   try
-    LockVerifyCB.Enter;
+    TTaurusTLSRuntime.FVerifyLock.Enter;
     try
       {$IFDEF DCC}{$WARN UNSAFE_CAST OFF}{$ENDIF}
       if Supports(TTaurusTLSSocket(arg).Parent, ITaurusTLSCallbackHelper,
@@ -3117,7 +3078,7 @@ begin
         LHelper := nil;
       end;
     finally
-      LockVerifyCB.Leave;
+      TTaurusTLSRuntime.FVerifyLock.Leave;
     end;
   finally
     GStack.WSSetLastError(LErr);
@@ -3139,7 +3100,7 @@ begin
     // Default reply, do not acknowlege SNI and continue as if we didn't
     // receive a SNI.
     Result := SSL_TLSEXT_ERR_NOACK;
-    Lock_SNI_CB.Enter;
+    TTaurusTLSRuntime.FSNILock.Enter;
     try
       if SSL <> nil then
       begin
@@ -3185,7 +3146,7 @@ begin
         end;
       end;
     finally
-      Lock_SNI_CB.Leave;
+      TTaurusTLSRuntime.FSNILock.Leave;
     end;
   finally
     GStack.WSSetLastError(LErr);
@@ -3215,341 +3176,68 @@ begin
 
 end;
 
-{$IFDEF OPENSSL_SET_MEMORY_FUNCS}
-
-function IdMalloc(num: UInt32): Pointer cdecl;
+class procedure TTaurusTLSRuntime.Initialize;
 begin
-  Result := AllocMem(num);
-end;
-
-function IdRealloc(address: Pointer; num: UInt32): Pointer cdecl;
-begin
-  Result := addr;
-  ReallocMem(Result, num);
-end;
-
-procedure IdFree(address: Pointer)cdecl;
-begin
-  FreeMem(addr);
-end;
-
-procedure IdSslCryptoMallocInit;
-// replaces the actual alloc routines
-// this is useful if you are using a memory manager that can report on leaks
-// at shutdown time.
-var
-  r: Integer;
-begin
-  r := CRYPTO_set_mem_functions(@IdMalloc, @IdRealloc, @IdFree);
-  Assert(r <> 0);
-end;
-{$ENDIF}
-{$IFNDEF WIN32_OR_WIN64}
-
-procedure _threadid_func(id: PCRYPTO_THREADID)cdecl;
-begin
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  if Assigned(CRYPTO_THREADID_set_numeric) then
-{$ENDIF}
-  begin
-    CRYPTO_THREADID_set_numeric(id, TIdC_ULONG(CurrentThreadId));
-  end;
-end;
-
-function _GetThreadID: TIdC_ULONG; cdecl;
-begin
-  // TODO: Verify how well this will work with fibers potentially running from
-  // thread to thread or many on the same thread.
-  Result := TIdC_ULONG(CurrentThreadId);
-end;
-{$ENDIF}
-{$I TaurusTLSUnusedParamOff.inc}
-
-procedure SslLockingCallback(Mode, n: TIdC_INT; Afile: PIdAnsiChar; //FI:O804 //surpress method parameter is declared but never used.
-  line: TIdC_INT)cdecl; //FI:O804 //surpress method parameter is declared but never used.
-var
-  Lock: TIdCriticalSection;  //PALOFF "Local identifiers that are set more than once without referencing in-between"
-  LList: TIdCriticalSectionList;
-begin
-  Assert(CallbackLockList <> nil);
-  Lock := nil;
-
-  LList := CallbackLockList.LockList;
   try
-    if n < LList.Count then
-    begin
-      Lock := {$IFDEF HAS_GENERICS_TList}LList.Items[n]{$ELSE}TIdCriticalSection
-        (LList.Items[n]){$ENDIF};
-    end;
-  finally
-    CallbackLockList.UnlockList;
-  end;
-  Assert(Lock <> nil);
-  if (Mode and CRYPTO_LOCK) = CRYPTO_LOCK then
-  begin
-    Lock.Acquire;
-  end
-  else
-  begin
-    Lock.Release;
+    FInfoLock := TIdCriticalSection.Create;
+    FLevelLock := TIdCriticalSection.Create;
+    FPasswordLock := TIdCriticalSection.Create;
+    FVerifyLock := TIdCriticalSection.Create;
+    FSNILock := TIdCriticalSection.Create;
+    // Later unit initialization may have replaced Indy's crypto hooks.
+    InstallFIPSHooks;
+  except
+    // A failed action is responsible for its own partial initialization.
+    ReleaseResources;
+    raise;
   end;
 end;
-{$I TaurusTLSUnusedParamOn.inc}
 
-procedure PrepareTaurusTLSLocking;
-var
-  i, cnt: TIdC_INT; //PALOFF - Local identifiers that are set and referenced once
-  Lock: TIdCriticalSection;    //PALOFF - Unbalanced Create/Free, Created and freed objects
-  LList: TIdCriticalSectionList;  //PALOFF - Local identifiers that are set and referenced once
+class procedure TTaurusTLSRuntime.ReleaseResources;
 begin
-  LList := CallbackLockList.LockList;
-  try
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-    if Assigned(CRYPTO_num_locks) then
-      cnt := CRYPTO_num_locks
-    else
-      cnt := 0;
-{$ELSE}
-    cnt := CRYPTO_num_locks;
-{$ENDIF}
-    for i := 0 to cnt - 1 do  //PALOFF - For-loop variables not used in loop FI:W528
-    begin
-      Lock := TIdCriticalSection.Create;
-      try
-        LList.Add(Lock);
-      except
-        Lock.Free;
-        raise;
-      end;
-    end;
-  finally
-    CallbackLockList.UnlockList;
-  end;
+  FreeAndNil(FSNILock);
+  FreeAndNil(FVerifyLock);
+  FreeAndNil(FPasswordLock);
+  FreeAndNil(FLevelLock);
+  FreeAndNil(FInfoLock);
 end;
 
-{
-  function RSACallback(sslSocket: PSSL; e: Integer; KeyLength: Integer):PRSA; cdecl;
-  const
-  RSA: PRSA = nil;
-  var
-  SSLSocket: TSSLWSocket;
-  IdSSLSocket: TTaurusTLSSocket;
-  begin
-  IdSSLSocket := TTaurusTLSSocket(IdSslGetAppData(sslSocket));
-
-  if Assigned(IdSSLSocket) then begin
-  IdSSLSocket.TriggerSSLRSACallback(KeyLength);
+class procedure TTaurusTLSRuntime.OnLoadAction(AAction: TOpenSSLLoadAction);
+begin
+  case AAction of
+    osaLoad: Initialize;
+    osaUnload: ReleaseResources;
   end;
-
-  Result := RSA_generate_key(KeyLength, RSA_F4, @RSAProgressCallback, ssl);
-  end;
-}
+end;
 
 function LoadOpenSSLLibrary: Boolean;
 begin
-  Assert(SSLIsLoaded <> nil);
-  SSLIsLoaded.Lock;
-  try
-    if SSLIsLoaded.Value then
-    begin
-      Result := True;
-      Exit;
-    end;
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-    Result := GetOpenSSLLoader.Load;
-    if not Result then
-      Exit;
-{$ELSE}
-    Result := True;
-{$ENDIF}
-{$IFDEF OPENSSL_SET_MEMORY_FUNCS}
-    // has to be done before anything that uses memory
-    IdSslCryptoMallocInit;
-{$ENDIF}
-    if OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS or
-      OPENSSL_INIT_ADD_ALL_CIPHERS or OPENSSL_INIT_ADD_ALL_DIGESTS or
-      OPENSSL_INIT_LOAD_CRYPTO_STRINGS or OPENSSL_INIT_LOAD_CONFIG or
-      OPENSSL_INIT_ASYNC or OPENSSL_INIT_ENGINE_ALL_BUILTIN, nil) < 1 then
-    begin
-      raise ETaurusTLSOpenSSLInitFailed.Create(RSOSSLInitFailed);
-    end;
-
-    SSL_load_error_strings;
-    // Create locking structures, we need them for callback routines
-    Assert(LockInfoCB = nil);
-    LockInfoCB := TIdCriticalSection.Create;
-    LockLevelCB := TIdCriticalSection.Create;
-    LockPassCB := TIdCriticalSection.Create;
-    LockVerifyCB := TIdCriticalSection.Create;
-    Lock_SNI_CB := TIdCriticalSection.Create;
-    // Handle internal TaurusTLS locking
-    CallbackLockList := TIdCriticalSectionThreadList.Create;
-    PrepareTaurusTLSLocking;
-    CRYPTO_set_locking_callback(@SslLockingCallback);
-{$IFNDEF WIN32_OR_WIN64}
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-    if Assigned(CRYPTO_THREADID_set_callback) then
-    begin
-      CRYPTO_THREADID_set_callback(@_threadid_func);
-    end
-    else
-    begin
-      CRYPTO_set_id_callback(@_GetThreadID);
-    end;
-{$ELSE}
-    CRYPTO_THREADID_set_callback(@_threadid_func);
-{$ENDIF}
-{$ENDIF}
-    // Another unit's initialization section may have replaced the Indy hash
-    // hooks after TaurusTLSFIPS installed them
-    InstallFIPSHooks;
-
-    SSLIsLoaded.Value := True;
-  finally
-    SSLIsLoaded.Unlock;
-  end;
-
+  Result := GetOpenSSLLoader.Load;
 end;
 
 procedure UnLoadOpenSSLLibrary;
-{$IFNDEF USE_OBJECT_ARC}
-var
-  i: Integer;
-  LList: TIdCriticalSectionList;
-{$ENDIF}
 begin
-  SSLIsLoaded.Lock;
-  try
-    if SSLIsLoaded.Value then
-    begin
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-      if Assigned(CRYPTO_set_locking_callback) then
-{$ENDIF}
-        CRYPTO_set_locking_callback(nil);
-
-      // <-- RLebeau: why is this here and not in IdSSLTaurusTLSHeaders.Unload()?
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-      GetOpenSSLLoader.Unload;
-{$ENDIF}
-      FreeAndNil(LockInfoCB);
-      FreeAndNil(LockLevelCB);
-      FreeAndNil(LockPassCB);
-      FreeAndNil(LockVerifyCB);
-      FreeAndNil(Lock_SNI_CB);
-      if Assigned(CallbackLockList) then
-      begin
-{$IFDEF USE_OBJECT_ARC}
-        CallbackLockList.Clear; // Items are auto-freed
-{$ELSE}
-        LList := CallbackLockList.LockList;
-
-        begin
-          try
-            for i := 0 to LList.Count - 1 do
-            begin
-{$IFDEF HAS_GENERICS_TList}LList.Items[i]{$ELSE}TIdCriticalSection(LList.Items[i]){$ENDIF}.Free;
-            end;
-            LList.Clear;
-          finally
-            CallbackLockList.UnlockList;
-          end;
-        end;
-{$ENDIF}
-        FreeAndNil(CallbackLockList);
-      end;
-      SSLIsLoaded.Value := False;
-    end;
-  finally
-    SSLIsLoaded.Unlock;
-  end;
+  GetOpenSSLLoader.Unload;
 end;
 
 function OpenSSLVersion: string;
 begin
-  Result := '';
-  // RLebeau 9/7/2015: even if LoadOpenSSLLibrary() fails, _SSLeay_version()
-  // might have been loaded OK before the failure occured. LoadOpenSSLLibrary()
-  // does not unload ..
-  if not LoadOpenSSLLibrary then
-  begin
-    // redundant but here to avoid PAL warning about functions called as procedures.
-    Result := '';
-  end;
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  if Assigned(SSLeay_version) then
-  begin
-{$ENDIF}
-    Result := AnsiStringToString(SSLeay_version(SSLEAY_VERSION_CONST));
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  end;
-{$ENDIF}
+  Result := GetOpenSSLLoader.Version;
 end;
 
-function GetDirFromOpenSSLVerString(const AStr : String) : String;  {$IFDEF USE_INLINE}inline; {$ENDIF}
-var i: Integer;
+function OpenSSLEnginesDir: string;
 begin
-  Result := AStr;
-  { assumed format is 'OPENSSLDIR: "<dir>"' }
-  i := Pos('"', Result);
-  if i < 0 then
-    Result := ''
-  else
-  begin
-    Delete(Result, 1, i);
-    i := Pos('"', Result);
-    if i < 0 then
-      Result := ''
-    else
-      Delete(Result, i, Length(Result) - i + 1);
-  end;
+  Result := GetOpenSSLLoader.EnginesDirectory;
 end;
 
-function OpenSSLEnginesDir : String;  {$IFDEF USE_INLINE}inline; {$ENDIF}
+function OpenSSLModulesDir: string;
 begin
-  Result := '';
-  if LoadOpenSSLLibrary then
-  begin
-    Result := AnsiStringToString(OPENSSL_info(OPENSSL_INFO_ENGINES_DIR));
-    if Result = '' then
-    begin
-      Result := GetDirFromOpenSSLVerString(AnsiStringToString(SSLeay_version(OPENSSL_ENGINES_DIR)));
-      if Result = 'ENGINESDIR: N/A' then
-      begin
-        Result := '';
-      end;
-    end;
-    {$IFDEF WINDOWS}
-    Result := StringReplace(Result, '/','\',[rfReplaceAll]);
-    {$ENDIF}
-  end;
+  Result := GetOpenSSLLoader.ModulesDirectory;
 end;
 
-function OpenSSLModulesDir : String;  {$IFDEF USE_INLINE}inline; {$ENDIF}
+function OpenSSLDir: string;
 begin
-  Result := '';
-  if LoadOpenSSLLibrary then
-  begin
-    Result := AnsiStringToString(OPENSSL_info(OPENSSL_INFO_MODULES_DIR));
-    {$IFDEF WINDOWS}
-    Result := StringReplace(Result, '/','\',[rfReplaceAll]);
-    {$ENDIF}
-  end;
-end;
-
-function OpenSSLDir: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
-begin
-  Result := '';
-  if LoadOpenSSLLibrary then
-  begin
-    Result :=  AnsiStringToString(OPENSSL_info(OPENSSL_INFO_CONFIG_DIR));
-    if Result = '' then
-    begin
-      Result := GetDirFromOpenSSLVerString(AnsiStringToString(SSLeay_version(OPENSSL_DIR)));
-    end;
-    {$IFDEF WINDOWS}
-    Result := StringReplace(Result, '/','\',[rfReplaceAll]);
-    {$ENDIF}
-  end;
+  Result := GetOpenSSLLoader.ConfigDirectory;
 end;
 
 { TTaurusTLSX509File }
@@ -5868,11 +5556,13 @@ end;
 
 initialization
 
+Register_SSLLoaderAction(TTaurusTLSRuntime.OnLoadAction);
+
 {$I TaurusTLSSymbolDeprecatedOff.inc}
 RegisterSSL('TaurusTLS', 'TaurusTLS Developers', { do not localize }
   'Copyright ' + Char(169) + ' 2025'#10#13 + { do not localize }
   'TaurusTLS Developers. All rights reserved.', { do not localize }
-  'Open SSL 1.1.1 and 3.x DLL Delphi and C++Builder interface',
+  'OpenSSL 3.x and 4.x Delphi and C++Builder interface',
   { do not localize }
   'https://github.com/JPeterMugaas/TaurusTLS'#10#13 + { do not localize }
   'Original Authors - J. Peter Mugaas and Tony Whyman', { do not localize }
