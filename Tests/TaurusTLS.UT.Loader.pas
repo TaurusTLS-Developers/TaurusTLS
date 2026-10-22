@@ -173,12 +173,14 @@ type
   [Category('Loader,Loader.Callbacks')]
   TLoaderCallbacksFixture = class(TLoaderBaseFixture)
   public
+    /// <summary>Initializes the base fixture and resets callback observers and diagnostics injection.</summary>
     [Setup]
     procedure Setup;
+    /// <summary>Disables callback observers before restoring the base fixture state.</summary>
     [TearDown]
     procedure Teardown;
 
-    /// <summary>Tests that osaLoad and osaUnload fire while handles/symbols are active.</summary>
+    /// <summary>Verifies that OpenSSL routines remain callable during load and unload callbacks in both linking models.</summary>
     [Test]
     procedure CB_DispatchLive;
 
@@ -788,6 +790,8 @@ type
   public
     class var Active: Boolean;
     class var VerifyHandlesLive: Boolean;
+    /// <summary>Records lifecycle actions and optionally verifies that OpenSSL routines remain callable.</summary>
+    /// <param name="AAction">The load or unload action dispatched by the loader.</param>
     class procedure ActionProc(AAction: TOpenSSLLoadAction);
   end;
 
@@ -795,6 +799,8 @@ type
   public
     class var Active: Boolean;
     class var ThrowOnLoad: Boolean;
+    /// <summary>Records lifecycle actions or raises a simulated load failure to exercise rollback.</summary>
+    /// <param name="AAction">The load or unload action dispatched by the loader.</param>
     class procedure ActionProc(AAction: TOpenSSLLoadAction);
   end;
 
@@ -847,6 +853,10 @@ begin
 end;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+/// <summary>Adds a synthetic missing-symbol diagnostic when injection is enabled.</summary>
+/// <param name="ADllHandle">The library handle supplied by the header-binding dispatcher; unused.</param>
+/// <param name="LibVersion">The library version supplied by the dispatcher; unused.</param>
+/// <param name="AFailed">The diagnostic list that receives the synthetic entry, if assigned.</param>
 procedure TestSymbolInjectorLoadProc(const ADllHandle: TIdLibHandle; LibVersion: TIdC_UINT; const AFailed: TStringList);
 begin
   if GTestSymbolInjectorActive and Assigned(AFailed) then

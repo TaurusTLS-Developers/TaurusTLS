@@ -9,9 +9,16 @@
 { ****************************************************************************** }
 {$I TaurusTLSCompilerDefines.inc}
 /// <summary>
-///   Functionality for loading the OpenSSL library including registration
-///   mechanism for the TaurusTLSHeader_ units across dynamic and static models.
+///   Shared OpenSSL lifecycle, configuration, and provider action registration
+///   for dynamic binding and static linking.
 /// </summary>
+/// <remarks>
+///   Dynamic builds load shared libraries and bind TaurusTLSHeaders_* procedural
+///   variables. Static builds call linked routines directly. Both models expose
+///   the same loader interface and dispatch initialization and cleanup actions.
+///   In static builds, Unload runs cleanup callbacks and resets loader state.
+///   The OpenSSL routines remain part of the application.
+/// </remarks>
 unit TaurusTLSLoader;
 
 {$I TaurusTLSLinkDefines.inc}
@@ -51,102 +58,166 @@ const
 type
   { IOpenSSLLoader }
 
-  /// <summary>
-  ///   Indicates OpenSSL library load action.
-  /// </summary>
+  /// <summary>Identifies a lifecycle action dispatched in either linking model.</summary>
   TOpenSSLLoadAction = (
-    /// <summary>OpenSSL library loaded.</summary>
+    /// <summary>Initializes consumers after configuration and, in dynamic builds, symbol binding.</summary>
     osaLoad,
-    /// <summary>OpenSSL library is being unloaded.</summary>
+    /// <summary>Cleans up consumers before dynamic symbols are unbound or static loader state is reset.</summary>
     osaUnload);
 
-  /// <summary>
-  ///   Definition for the class instance event called by loader in OpenSSL
-  ///   library loading or unloading.
-  /// </summary>
+  /// <summary>Instance method used to initialize or release OpenSSL-dependent resources.</summary>
+  /// <param name="AAction">The initialization or cleanup action to perform.</param>
+  /// <remarks>
+  ///   OpenSSL routines are callable during both actions. A load exception aborts
+  ///   loading and rolls back completed actions. Cleanup exceptions are suppressed
+  ///   so remaining actions can run. The loader does not own the callback object.
+  /// </remarks>
   TTaurusTLSOnLoadAction = procedure(AAction: TOpenSSLLoadAction) of object;
 
-  /// <summary>
-  ///   Library Loader for TaurusTLS.
-  /// </summary>
+  /// <summary>Provides a common lifecycle and configuration API for both linking models.</summary>
+  /// <remarks>
+  ///   Load is idempotent, not reference counted. A failure blocks later Load
+  ///   calls until Unload resets the failure state. Static builds retain linked
+  ///   code and use the loader for configuration and lifecycle actions.
+  /// </remarks>
   IOpenSSLLoader = interface
     ['{BBB0F670-CC26-42BC-A9E0-33647361941A}']
-    /// <summary>Property get function for OpenSSLPath.</summary>
+    /// <summary>Returns the dynamic library search directory, or an empty string in static builds.</summary>
     function GetOpenSSLPath: string;
-    /// <summary>Property get function for SSLLibVersions.</summary>
+    /// <summary>Returns dynamic library filename suffixes, or an empty string in static builds.</summary>
     function GetSSLLibVersions: string;
-    /// <summary>Property set procedure for OpenSSLPath.</summary>
+    /// <summary>Sets the dynamic library directory; ignored in static builds.</summary>
     procedure SetOpenSSLPath(const Value: string);
-    /// <summary>Returns the configured or active OpenSSL configuration filename.</summary>
+    /// <summary>Returns the effective filename while loaded, otherwise the configured filename.</summary>
     function GetConfigFile: string;
-    /// <summary>Selects an optional OpenSSL configuration file before initialization.</summary>
+    /// <summary>Selects a configuration filename while the loader is inactive.</summary>
     procedure SetConfigFile(const Value: string);
-    /// <summary>Property get function for FailedToLoad.</summary>
+    /// <summary>Returns the loader-owned symbol-binding diagnostic list.</summary>
     function GetFailedToLoad: TStringList;
 
-    /// <summary>Loads the OpenSSL library.</summary>
+    /// <summary>Loads and binds dynamic libraries or initializes the static loader lifecycle.</summary>
+    /// <returns>True on success or when already loaded; False on a soft failure or blocked retry.</returns>
+    /// <remarks>
+    ///   Applies configuration before dispatching osaLoad. Failures unwind completed
+    ///   actions and dynamic bindings and trip the circuit breaker. Configuration,
+    ///   version-validation, and callback exceptions propagate to the caller.
+    /// </remarks>
     function Load: Boolean;
-    /// <summary>Property set procedure for SSLLibVersions.</summary>
+    /// <summary>Sets dynamic library filename suffixes; ignored in static builds.</summary>
     procedure SetSSLLibVersions(const AValue: string);
-    /// <summary>Unloads the OpenSSL library.</summary>
+    /// <summary>Runs cleanup, releases dynamic bindings, and resets the failure state and diagnostics.</summary>
+    /// <remarks>
+    ///   Repeated calls are safe. Static code remains linked. The configured
+    ///   filename is retained; only the effective loaded filename is cleared.
+    /// </remarks>
     procedure Unload; overload;
-    /// <summary>Unloads the OpenSSL library, optionally resetting the failure state.</summary>
+    /// <summary>Runs cleanup and controls whether subsequent Load calls may retry.</summary>
+    /// <param name="AResetFailState">
+    ///   True clears the circuit breaker and diagnostics. False preserves
+    ///   diagnostics and blocks Load until an explicit reset.
+    /// </param>
+    /// <remarks>False is used for internal failure rollback.</remarks>
     procedure Unload(const AResetFailState: Boolean); overload;
 
-    /// <summary>True if the OpenSSL library is loaded or False if not.</summary>
+    /// <summary>Returns the linking model's current loader state.</summary>
+    /// <remarks>
+    ///   Static builds report successful lifecycle initialization. Dynamic builds
+    ///   report the presence of the crypto library handle, including during load
+    ///   and unload callbacks. Check Load's result to establish successful loading.
+    /// </remarks>
     function IsLoaded: Boolean;
 
-    /// <summary>The version numbers for OpenSSL separated by ';'.</summary>
+    /// <summary>Ordered filename suffixes used to find dynamic OpenSSL libraries.</summary>
+    /// <remarks>
+    ///   Entries use the platform directory-list delimiter (semicolon on Windows,
+    ///   colon on POSIX). Changes are rejected while loaded or a crypto handle is
+    ///   active. Static builds return an empty string and ignore assignments.
+    /// </remarks>
     property SSLLibVersions: string read GetSSLLibVersions write SetSSLLibVersions;
-    /// <summary>The directory path where OpenSSL dynamic libraries reside.</summary>
+    /// <summary>Directory searched for dynamic OpenSSL libraries.</summary>
+    /// <remarks>
+    ///   Nonempty values receive a trailing path delimiter. An empty value uses
+    ///   the platform library search. Changes are rejected while loaded or a
+    ///   crypto handle is active. Static builds return empty and ignore assignments.
+    /// </remarks>
     property OpenSSLPath: string read GetOpenSSLPath write SetOpenSSLPath;
-    /// <summary>Optional OpenSSL configuration filename.</summary>
+    /// <summary>Explicit configuration filename, or the effective filename while loaded.</summary>
+    /// <remarks>
+    ///   Both models accept relative and Unicode paths. Load expands an explicit
+    ///   path, checks that it names an existing file, and applies it to the default
+    ///   OpenSSL context using UTF-8. Invalid paths and configuration load failures
+    ///   raise exceptions. An empty value only queries OpenSSL's default filename;
+    ///   this branch does not explicitly load that file. Discovery can reflect a
+    ///   C-runtime environment different from Delphi's process environment.
+    ///   Changes are rejected while loaded or a crypto handle is active; assigning
+    ///   the existing configured value is a no-op. Unload retains the configured
+    ///   value and clears the effective filename.
+    /// </remarks>
     property ConfigFile: string read GetConfigFile write SetConfigFile;
-    /// <summary>Lists all functions that failed to load.</summary>
+    /// <summary>Loader-owned list of symbols that could not be bound dynamically.</summary>
+    /// <remarks>
+    ///   Static builds have no binding diagnostics. This list is distinct from
+    ///   the circuit breaker: a failure may block Load even when the list is empty.
+    ///   Internal rollback preserves entries; Unload with reset clears them.
+    ///   Do not free the returned list.
+    /// </remarks>
     property FailedToLoad: TStringList read GetFailedToLoad;
   end;
 
-  /// <summary>
-  ///   Definition for the loader procedure obtaining function addresses.
-  /// </summary>
+  /// <summary>Header registration procedure that binds dynamic OpenSSL routine addresses.</summary>
+  /// <param name="ADllHandle">The loaded crypto or SSL library handle.</param>
+  /// <param name="LibVersion">The numeric OpenSSL version shifted right by 12 bits for header binding.</param>
+  /// <param name="AFailed">Loader-owned list receiving symbol-binding diagnostics.</param>
   TOpenSSLLoadProc = procedure(const ADllHandle: TIdLibHandle;
     LibVersion: TIdC_UINT; const AFailed: TStringList);
 
-  /// <summary>
-  ///   Definition for the unloader procedure resetting function addresses back to nil.
-  /// </summary>
+  /// <summary>Header cleanup procedure that resets dynamic procedural variables to nil.</summary>
   TOpenSSLUnloadProc = procedure;
 
 var
-  /// <summary>
-  ///   Thread-safe flag indicating initialization state.
-  /// </summary>
+  /// <summary>Shared thread-safe flag allocated and released by this unit.</summary>
+  /// <remarks>
+  ///   The current loader implementations do not update this flag. Use the
+  ///   singleton loader's IsLoaded method to inspect loader state.
+  /// </remarks>
   SSLIsLoaded: TIdThreadSafeBoolean = nil;
 
-/// <summary>
-///   Returns the singleton library loader interface.
-/// </summary>
+/// <summary>Returns the singleton loader selected by OPENSSL_STATIC_LINK_MODEL.</summary>
+/// <returns>The dynamic or static loader interface, available after unit initialization.</returns>
 function GetOpenSSLLoader: IOpenSSLLoader;
 
-/// <summary>
-///   Registers a symbol loader procedure (LibCrypto / LibSSL).
-/// </summary>
+/// <summary>Registers a header symbol-binding procedure for dynamic loads.</summary>
+/// <param name="LoadProc">Procedure that binds a header unit's procedural variables.</param>
+/// <param name="module_name">Case-sensitive library selector: LibCrypto or LibSSL.</param>
+/// <remarks>
+///   Registration is protected by the registration lock. Static loading does not
+///   invoke these procedures because its external routines are linked directly.
+/// </remarks>
 procedure Register_SSLLoader(LoadProc: TOpenSSLLoadProc; const module_name: string);
 
-/// <summary>
-///   Registers an unloader procedure resetting symbols to nil.
-/// </summary>
+/// <summary>Registers a dynamic symbol-reset procedure, run in reverse registration order.</summary>
+/// <param name="UnloadProc">Procedure that clears a header unit's procedural variables.</param>
+/// <remarks>Runs after lifecycle cleanup actions and before dynamic library release.</remarks>
 procedure Register_SSLUnloader(UnloadProc: TOpenSSLUnloadProc);
 
-/// <summary>
-///   Registers a lifecycle action hook invoked after load and before unload.
-/// </summary>
+/// <summary>Registers initialization and cleanup actions for both linking models.</summary>
+/// <param name="AActionProc">Instance method whose object must remain valid while registered.</param>
+/// <remarks>
+///   Intended for provider and other OpenSSL-dependent resource initialization.
+///   osaLoad runs in registration order after configuration and dynamic binding.
+///   osaUnload runs in reverse order while routines remain callable. If loading
+///   fails, only actions whose osaLoad completed receive rollback cleanup.
+///   Repeated Load calls while loaded do not redispatch actions. Registrations
+///   persist across load cycles; register once, before loading. There is no
+///   unregistration API, and registrations do not retain callback objects.
+/// </remarks>
 procedure Register_SSLLoaderAction(const AActionProc: TTaurusTLSOnLoadAction);
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 {$IF NOT DECLARED(LoadLibFunction)}
   {$DEFINE LOADLIB_UNAVAIL}
   {$IFDEF LOADLIB_UNAVAIL}
+/// <summary>Resolves a routine address from a loaded dynamic library handle.</summary>
 function LoadLibFunction(const ALibHandle: TIdLibHandle; const AProcName: TIdLibFuncName): Pointer;
   {$ENDIF}
 {$IFEND}
@@ -328,6 +399,7 @@ begin
   Result := GOpenSSLLoader;
 end;
 
+/// <summary>Creates the registration lock when a header registers before loader initialization.</summary>
 procedure EnsureRegistrationLock;
 begin
   if not Assigned(GRegistrationLock) then
@@ -425,43 +497,70 @@ type
     FEffectiveConfigFile: string;
 
 // --- OpenSSL API Wrappers (Static vs Dynamic Bridge) ---
+    /// <summary>Initializes OpenSSL directly in static builds or through an assigned dynamic routine.</summary>
     class procedure SslInitCrypto(opts: TIdC_UINT64; settings: pointer); static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    /// <summary>Loads configuration into the supplied context; returns -1 if the dynamic routine is absent.</summary>
     class function SslModulesLoadFileEx(libctx: pointer; filename, appname: PIdAnsiChar; flags: TIdC_ULONG): TIdC_INT; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    /// <summary>Obtains an OpenSSL-allocated discovery filename; release it with SslFree.</summary>
     class function SslGet1DefaultConfigFile: PIdAnsiChar; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    /// <summary>Releases OpenSSL-owned memory through the matching linking model; accepts nil.</summary>
     class procedure SslFree(addr: Pointer); static; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
 // --- Method Pointer Helpers (DCC Unsafe Cast Warning Suppression) ---
+    /// <summary>Checks both the code and instance pointers of a lifecycle action.</summary>
     class function IsActionAssigned(const AAction: TTaurusTLSOnLoadAction): Boolean; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    /// <summary>Clears both pointers of a lifecycle action.</summary>
     class procedure ClearAction(var AAction: TTaurusTLSOnLoadAction); static; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     // --- Virtual Template Hooks ---
+    /// <summary>Performs model-specific loading, configuration, and action dispatch under the loader lock.</summary>
     function DoLoad: Boolean; virtual; abstract;
+    /// <summary>Cleans up completed actions and any model-specific bindings under the loader lock.</summary>
     procedure DoUnload; virtual; abstract;
+    /// <summary>Reports whether partial initialization requires cleanup even when IsLoaded is false.</summary>
     function NeedUnloadCleanup: Boolean; virtual;
+    /// <summary>Reports whether a dynamic crypto handle prevents configuration changes.</summary>
     function IsActiveHandlePresent: Boolean; virtual;
 
     // --- Configuration and Lifecycle Helpers ---
+    /// <summary>Loads an explicit configuration or records the native discovery filename without loading it.</summary>
     procedure ApplyConfiguration; virtual;
+    /// <summary>Invokes registered load actions in order and records each successfully completed action.</summary>
     procedure DispatchLoadActions; virtual;
+    /// <summary>Runs completed actions in reverse order, suppresses cleanup exceptions, and resets progress.</summary>
     procedure RollbackLoadActions; virtual;
+    /// <summary>Rejects versions below min_supported_ssl_version with an unsupported-version exception.</summary>
     function CheckOpenSSLVersion(const AVersionNo: TIdC_ULONG): Boolean; virtual;
 
     // --- IOpenSSLLoader Abstract/Virtual Property Accessors ---
+    /// <summary>Returns the model-specific dynamic library path.</summary>
     function GetOpenSSLPath: string; virtual; abstract;
+    /// <summary>Updates the model-specific path while inactive; static implementations ignore it.</summary>
     procedure SetOpenSSLPath(const Value: string); virtual; abstract;
+    /// <summary>Returns the model-specific dynamic filename suffix list.</summary>
     function GetSSLLibVersions: string; virtual; abstract;
+    /// <summary>Updates the model-specific filename suffix list while inactive.</summary>
     procedure SetSSLLibVersions(const AValue: string); virtual; abstract;
+    /// <summary>Returns the effective filename while loaded, otherwise the configured filename.</summary>
     function GetConfigFile: string; virtual;
+    /// <summary>Validates path characters and rejects configuration changes while active.</summary>
     procedure SetConfigFile(const Value: string); virtual;
+    /// <summary>Returns the model-owned binding diagnostic list.</summary>
     function GetFailedToLoad: TStringList; virtual; abstract;
+    /// <summary>Reports state according to the selected linking model.</summary>
     function IsLoaded: Boolean; virtual; abstract;
   public
+    /// <summary>Creates the loader lock and initializes unloaded state with no completed actions.</summary>
     constructor Create; virtual;
+    /// <summary>Releases the loader lock.</summary>
     destructor Destroy; override;
 
     // Non-virtual template methods managing thread locking and circuit breakers
+    /// <summary>Runs the synchronized load template with idempotency, rollback, and circuit-breaker checks.</summary>
     function Load: Boolean;
+    /// <summary>Runs the cleanup template and resets failure state and binding diagnostics.</summary>
     procedure Unload; overload;
+    /// <summary>Runs synchronized cleanup, preserving or resetting failure state as requested.</summary>
     procedure Unload(const AResetFailState: Boolean); overload;
 
     property OpenSSLPath: string read GetOpenSSLPath write SetOpenSSLPath;
@@ -800,6 +899,8 @@ end;
 
 {$IFDEF OPENSSL_STATIC_LINK_MODEL}
 type
+  /// <summary>Applies configuration and lifecycle actions to routines linked into the executable.</summary>
+  /// <remarks>Library path/version settings are inert; unloading does not unlink OpenSSL.</remarks>
   TOpenSSLStaticLoader = class(TOpenSSLBaseLoader)
   strict private
     FFailed: TStringList;
@@ -890,6 +991,7 @@ end;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 type
+  /// <summary>Loads shared libraries, binds header routines, and manages lifecycle actions.</summary>
   TOpenSSLDynamicLoader = class(TOpenSSLBaseLoader)
   strict private
     FLibCrypto: TIdLibHandle;
@@ -898,11 +1000,17 @@ type
     FSSLLibVersions: string;
     FFailed: TStringList;
 
+    /// <summary>Tries the configured directory and ordered platform filename suffixes.</summary>
     function FindLibrary(const LibName, LibVersions: string): TIdLibHandle;
+    /// <summary>Loads crypto and SSL libraries and validates the crypto library identity and version.</summary>
     function LoadAndVerifyLibraries: Boolean;
+    /// <summary>Runs registered crypto and SSL header binders and collects diagnostics.</summary>
     procedure BindHeaderSymbols(const AVersionNo: TIdC_ULONG);
+    /// <summary>Runs registered symbol resetters in reverse registration order.</summary>
     procedure UnbindHeaderSymbols;
+    /// <summary>Releases the SSL and crypto library handles and resets them to IdNilHandle.</summary>
     procedure FreeDynamicLibraries;
+    /// <summary>Checks the native version string for the expected OpenSSL prefix.</summary>
     class function IsOpenSSLPrefix(const AStr: PAnsiChar): Boolean; static;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
   strict protected
