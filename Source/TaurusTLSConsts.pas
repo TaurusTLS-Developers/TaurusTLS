@@ -44,19 +44,8 @@ const
     CLibSSL = 'ssl';
     {$ENDIF}
     {$IFDEF WINDOWS}
-      {$IFDEF CPU64}
-        {$IFDEF CPUARM64}
-        CLibCrypto = 'libcrypto-4-arm64.dll';
-        CLibSSL = 'libssl-4-arm64.dll';
-        {$ELSE}
-        CLibCrypto = 'libcrypto-4-x64.dll';
-        CLibSSL = 'libssl-4-x64.dll';
-        {$ENDIF}
-      {$ENDIF}
-      {$IFDEF CPU32}
-        CLibCrypto = 'libcrypto-4.dll';
-        CLibSSL = 'libssl-4.dll';
-      {$ENDIF}
+    CLibCrypto = 'libcrypto.lib';
+    CLibSSL = 'libssl.lib';
     {$ENDIF}
   {$ELSE}
     {$IFDEF STATICLOAD_OPENSSL}
