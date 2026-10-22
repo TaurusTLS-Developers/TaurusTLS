@@ -145,6 +145,11 @@ type
     [Test]
     procedure State_Lifecycle;
 
+    /// <summary>Verifies concurrent queries share one loader and concurrent registrations are retained.</summary>
+    [TestCase('Queries', '0')]
+    [TestCase('Registrations', '1')]
+    procedure Life_ConcurrentSingleton(const ARegister: Integer);
+
     {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
     /// <summary>Verifies missing libraries fail without dispatching actions and permit explicit recovery.</summary>
     [Test]
@@ -268,6 +273,45 @@ type
     [Test]
     procedure Config_RollbackPublication;
 
+    /// <summary>Verifies metadata and compatibility queries never initialize OpenSSL.</summary>
+    [Test]
+    procedure Info_Passive;
+
+    /// <summary>Verifies modern metadata values, callback visibility, and cleanup.</summary>
+    [Test]
+    procedure Info_NativeValues;
+
+    /// <summary>Verifies configuration directories remain fixed after changing the working directory.</summary>
+    [TestCase('Absolute', '0')]
+    [TestCase('Relative', '1')]
+    [TestCase('UnicodeDirectory', '2')]
+    procedure Info_ConfigDirectory(const AKind: Integer);
+
+    /// <summary>Verifies direct and compatibility loads share TLS initialization and ownership.</summary>
+    [Test]
+    procedure Runtime_SharedLifecycle;
+
+    /// <summary>Verifies partial TLS runtime resources are cleaned after a hook installation failure.</summary>
+    [Test]
+    procedure Runtime_ActionFailure;
+
+    {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+    /// <summary>Verifies unavailable native metadata is represented by empty values.</summary>
+    [TestCase('NullResult', '0')]
+    [TestCase('MissingSymbol', '1')]
+    procedure Info_Unavailable(const AKind: Integer);
+
+    /// <summary>Verifies empty and relative native discovery filenames have stable directory semantics.</summary>
+    [TestCase('Empty', '0')]
+    [TestCase('Relative', '1')]
+    procedure Info_Discovery(const AKind: Integer);
+
+    /// <summary>Verifies native crypto/SSL initialization failure occurs before runtime callbacks.</summary>
+    [TestCase('Crypto', '0')]
+    [TestCase('SSL', '1')]
+    procedure Runtime_InitFailure(const AKind: Integer);
+    {$ENDIF}
+
     /// <summary>Verifies unload-action failures do not prevent later action cleanup.</summary>
     [Test]
     procedure Life_UnloadActionFailure;
@@ -295,7 +339,11 @@ uses
   System.SyncObjs,
   TaurusTLS.UT.Utils,
   TaurusTLSHeaders_crypto,
-  TaurusTLSHeaders_conf;
+  TaurusTLSHeaders_conf,
+  TaurusTLSHeaders_ssl,
+  TaurusTLSHeaders_types,
+  TaurusTLSFIPS,
+  TaurusTLS;
 
 var
   GLoaderTestLock: TObject;
@@ -912,9 +960,32 @@ var
   GTestCleanupFaultActive: Boolean = False;
   GTestSecondCleanupFaultActive: Boolean = False;
   GTestCleanupTailCount: Integer = 0;
+  GTestInfoUnavailable: Integer = 0;
+  GTestDiscoveryOverride: Boolean = False;
+  GTestDiscoveryFile: string = '';
+  GTestSSLInitFailure: Boolean = False;
+  GTestCryptoInitFailure: Boolean = False;
   {$ENDIF}
 
 type
+  TTestRuntimeHooksObserver = class
+  public
+    class var Active: Boolean;
+    class var ThrowOnInstall: Boolean;
+    class var InstallCount: Integer;
+    class procedure Install; static;
+  end;
+
+  TConcurrentRegistrationObserver = class
+  public
+    class var Active: Boolean;
+    class var HeaderLoadCount: Integer;
+    class var HeaderUnloadCount: Integer;
+    class var ActionLoadCount: Integer;
+    class var ActionUnloadCount: Integer;
+    class procedure ActionProc(AAction: TOpenSSLLoadAction);
+  end;
+
   TTestCallbackObserverA = class
   public
     class var Active: Boolean;
@@ -933,6 +1004,8 @@ type
     class var QueryLoaded: Boolean;
     class var ConfigOnLoad: string;
     class var ConfigOnUnload: string;
+    class var MetadataEmptyOnLoad: Boolean;
+    class var MetadataEmptyOnUnload: Boolean;
     class var ProbePhase: Integer;
     class var ProbeProperty: Integer;
     class var ProbeValue: string;
@@ -955,6 +1028,51 @@ type
     class procedure ActionProc(AAction: TOpenSSLLoadAction);
   end;
 
+class procedure TConcurrentRegistrationObserver.ActionProc(AAction: TOpenSSLLoadAction);
+begin
+  if not Active then
+    Exit;
+  case AAction of
+    osaLoad: Inc(ActionLoadCount);
+    osaUnload: Inc(ActionUnloadCount);
+  end;
+end;
+
+{$I TaurusTLSUnusedParamOff.inc}
+procedure ConcurrentRegistrationLoader(const ADllHandle: TIdLibHandle;
+  LibVersion: TIdC_UINT; const AFailed: TStringList);
+begin
+  if TConcurrentRegistrationObserver.Active then
+    Inc(TConcurrentRegistrationObserver.HeaderLoadCount);
+end;
+{$I TaurusTLSUnusedParamOn.inc}
+
+procedure ConcurrentRegistrationUnloader;
+begin
+  if TConcurrentRegistrationObserver.Active then
+    Inc(TConcurrentRegistrationObserver.HeaderUnloadCount);
+end;
+
+function LoaderMetadataIsEmpty: Boolean;
+var
+  LLoader: IOpenSSLLoader;
+begin
+  LLoader := GetOpenSSLLoader;
+  Result := (LLoader.Version = '') and (LLoader.ConfigDirectory = '') and
+    (LLoader.ModulesDirectory = '') and (LLoader.EnginesDirectory = '') and
+    (OpenSSLVersion = '') and (OpenSSLDir = '') and
+    (OpenSSLModulesDir = '') and (OpenSSLEnginesDir = '');
+end;
+
+class procedure TTestRuntimeHooksObserver.Install;
+begin
+  if not Active then
+    Exit;
+  Inc(InstallCount);
+  if ThrowOnInstall then
+    raise EAbort.Create('Simulated TLS runtime initialization failure');
+end;
+
 class procedure TTestCallbackObserverA.ActionProc(AAction: TOpenSSLLoadAction);
 begin
   if not Active then
@@ -965,6 +1083,7 @@ begin
     LoadState := GetOpenSSLLoader.State;
     LoadedOnLoad := GetOpenSSLLoader.IsLoaded;
     ConfigOnLoad := GetOpenSSLLoader.ConfigFile;
+    MetadataEmptyOnLoad := LoaderMetadataIsEmpty;
     if Assigned(QueryDone) then
     begin
       QueryThread := TThread.CreateAnonymousThread(
@@ -988,6 +1107,7 @@ begin
     UnloadState := GetOpenSSLLoader.State;
     LoadedOnUnload := GetOpenSSLLoader.IsLoaded;
     ConfigOnUnload := GetOpenSSLLoader.ConfigFile;
+    MetadataEmptyOnUnload := LoaderMetadataIsEmpty;
   end;
 
   if ((ProbePhase = 1) and (AAction = osaLoad)) or
@@ -1092,6 +1212,51 @@ end;
 {$ENDIF}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+{$I TaurusTLSUnusedParamOff.inc}
+function TestUnavailableInfo(AKind: TIdC_INT): PIdAnsiChar; cdecl;
+begin
+  Result := nil;
+end;
+
+function TestDefaultConfigFile: PIdAnsiChar; cdecl;
+begin
+  if GTestDiscoveryFile = '' then
+    Result := nil
+  else
+    Result := CRYPTO_strdup(PIdAnsiChar(UTF8String(GTestDiscoveryFile)), nil, 0);
+end;
+
+function TestSSLInit(opts: TIdC_UINT64;
+  const settings: POPENSSL_INIT_SETTINGS): TIdC_INT; cdecl;
+begin
+  Result := 0;
+end;
+
+procedure TestRuntimeBindings(const ADllHandle: TIdLibHandle;
+  LibVersion: TIdC_UINT; const AFailed: TStringList);
+begin
+  case GTestInfoUnavailable of
+    1: OPENSSL_info := TestUnavailableInfo;
+    2:
+      begin
+        OPENSSL_info := TestUnavailableInfo;
+        AFailed.Add('OPENSSL_info');
+      end;
+  end;
+  if GTestDiscoveryOverride then
+    CONF_get1_default_config_file := TestDefaultConfigFile;
+  if GTestCryptoInitFailure then
+    OPENSSL_init_crypto := TestSSLInit;
+end;
+
+procedure TestSSLBindings(const ADllHandle: TIdLibHandle;
+  LibVersion: TIdC_UINT; const AFailed: TStringList);
+begin
+  if GTestSSLInitFailure then
+    OPENSSL_init_ssl := TestSSLInit;
+end;
+{$I TaurusTLSUnusedParamOn.inc}
+
 /// <summary>Records that cleanup continues past injected header-unloader failures.</summary>
 procedure TestCleanupTail;
 begin
@@ -1142,10 +1307,30 @@ begin
   TTestCallbackObserverB.Active := False;
   TTestCallbackObserverB.ThrowOnLoad := False;
   TTestCallbackObserverB.ThrowOnUnload := False;
+  TTestCallbackObserverA.MetadataEmptyOnLoad := False;
+  TTestCallbackObserverA.MetadataEmptyOnUnload := False;
+  TTestRuntimeHooksObserver.Active := False;
+  TTestRuntimeHooksObserver.ThrowOnInstall := False;
+  TTestRuntimeHooksObserver.InstallCount := 0;
+  {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  GTestInfoUnavailable := 0;
+  GTestDiscoveryOverride := False;
+  GTestDiscoveryFile := '';
+  GTestSSLInitFailure := False;
+  GTestCryptoInitFailure := False;
+  {$ENDIF}
 end;
 
 procedure TLoaderCallbacksFixture.Teardown;
 begin
+  TTestRuntimeHooksObserver.Active := False;
+  TTestRuntimeHooksObserver.ThrowOnInstall := False;
+  {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  GTestInfoUnavailable := 0;
+  GTestDiscoveryOverride := False;
+  GTestSSLInitFailure := False;
+  GTestCryptoInitFailure := False;
+  {$ENDIF}
   {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   GTestCleanupFaultActive := False;
   GTestSecondCleanupFaultActive := False;
@@ -1625,6 +1810,323 @@ begin
 end;
 {$ENDIF}
 
+procedure TLoaderCallbacksFixture.Info_Passive;
+begin
+  FLoader.ConfigFile := FValidConfigFile;
+  TTestCallbackObserverA.Active := True;
+  TTestCallbackObserverB.Active := True;
+  TTestRuntimeHooksObserver.Active := True;
+  Assert.IsTrue(LoaderMetadataIsEmpty);
+  Assert.IsTrue(LoaderMetadataIsEmpty);
+  Assert.IsTrue(FLoader.State = lsNotLoaded);
+  Assert.AreEqual(FValidConfigFile, FLoader.ConfigFile);
+  Assert.AreEqual(0, TTestCallbackLog.Count);
+  Assert.AreEqual(0, TTestRuntimeHooksObserver.InstallCount);
+end;
+
+procedure TLoaderCallbacksFixture.Info_NativeValues;
+begin
+  FLoader.ConfigFile := FValidConfigFile;
+  TTestCallbackObserverA.Active := True;
+  TTestCallbackObserverB.Active := True;
+  Assert.IsTrue(FLoader.Load);
+  Assert.IsTrue(TTestCallbackObserverA.MetadataEmptyOnLoad);
+  Assert.AreEqual(UTF8ToString(OpenSSL_version(OPENSSL_VERSION_CONST)), FLoader.Version);
+  Assert.AreEqual(ExtractFileDir(FLoader.ConfigFile), FLoader.ConfigDirectory);
+  Assert.AreEqual(UTF8ToString(OPENSSL_info(OPENSSL_INFO_MODULES_DIR)), FLoader.ModulesDirectory);
+  if OpenSSL_version_num() >= $40000000 then
+    Assert.AreEqual('', FLoader.EnginesDirectory)
+  else
+    Assert.AreEqual(UTF8ToString(OPENSSL_info(OPENSSL_INFO_ENGINES_DIR)), FLoader.EnginesDirectory);
+  Assert.AreEqual(FLoader.Version, OpenSSLVersion);
+  Assert.AreEqual(FLoader.ConfigDirectory, OpenSSLDir);
+  Assert.AreEqual(FLoader.ModulesDirectory, OpenSSLModulesDir);
+  Assert.AreEqual(FLoader.EnginesDirectory, OpenSSLEnginesDir);
+  Assert.IsTrue(FLoader.Load);
+  Assert.AreEqual(2, TTestCallbackLog.Count);
+  FLoader.Unload;
+  Assert.IsTrue(TTestCallbackObserverA.MetadataEmptyOnUnload);
+  Assert.IsTrue(LoaderMetadataIsEmpty);
+
+  // A later callback failure must not expose metadata from the previous load.
+  TTestCallbackObserverB.ThrowOnLoad := True;
+  Assert.WillRaise(
+    procedure
+    begin
+      FLoader.Load;
+    end, Exception);
+  Assert.IsTrue(FLoader.State = lsLoadedFailed);
+  Assert.IsTrue(LoaderMetadataIsEmpty);
+  Assert.IsTrue(TTestCallbackObserverA.MetadataEmptyOnLoad);
+  Assert.IsTrue(TTestCallbackObserverA.MetadataEmptyOnUnload);
+end;
+
+procedure TLoaderCallbacksFixture.Info_ConfigDirectory(const AKind: Integer);
+var
+  LExpectedDirectory: string;
+  LUnicodeDirectory: string;
+  LConfig: string;
+begin
+  Assert.IsTrue(SetCurrentDir(FTempDir));
+  case AKind of
+    0: LConfig := FValidConfigFile;
+    1: LConfig := '.' + PathDelim + ExtractFileName(FValidConfigFile);
+  else
+    LUnicodeDirectory := TPath.Combine(FTempDir, 'Конфигурация_é');
+    TDirectory.CreateDirectory(LUnicodeDirectory);
+    LConfig := TPath.Combine(LUnicodeDirectory, 'test.cnf');
+    TFile.WriteAllText(LConfig, cMinimalValidOpenSSLConfig);
+  end;
+  FLoader.ConfigFile := LConfig;
+  Assert.IsTrue(FLoader.Load);
+  LExpectedDirectory := ExtractFileDir(FLoader.ConfigFile);
+  Assert.AreEqual(LExpectedDirectory, FLoader.ConfigDirectory);
+  Assert.IsTrue(SetCurrentDir(FOrigCurrentDir));
+  Assert.AreEqual(LExpectedDirectory, FLoader.ConfigDirectory);
+  Assert.AreEqual(LExpectedDirectory, OpenSSLDir);
+end;
+
+procedure TLoaderCallbacksFixture.Runtime_SharedLifecycle;
+var
+  LContext: TTaurusTLSContext;
+  I: Integer;
+begin
+  FLoader.ConfigFile := FValidConfigFile;
+  TTestRuntimeHooksObserver.Active := True;
+  for I := 1 to 2 do
+  begin
+    Assert.IsTrue(FLoader.Load);
+    Assert.AreEqual(I, TTestRuntimeHooksObserver.InstallCount);
+    Assert.IsTrue(LoadOpenSSLLibrary);
+    LContext := TTaurusTLSContext.Create;
+    try
+      LContext.UseSystemRootCACertificateStore := False;
+      LContext.InitContext(sslCtxClient);
+      Assert.IsNotNull(LContext.Context);
+      Assert.AreEqual(I, TTestRuntimeHooksObserver.InstallCount);
+    finally
+      LContext.Free;
+    end;
+    UnLoadOpenSSLLibrary;
+    Assert.IsTrue(FLoader.State = lsNotLoaded);
+    Assert.IsTrue(LoaderMetadataIsEmpty);
+    UnLoadOpenSSLLibrary;
+  end;
+end;
+
+procedure TLoaderCallbacksFixture.Runtime_ActionFailure;
+var
+  LContext: TTaurusTLSContext;
+begin
+  FLoader.ConfigFile := FValidConfigFile;
+  TTestCallbackObserverA.Active := True;
+  TTestRuntimeHooksObserver.Active := True;
+  TTestRuntimeHooksObserver.ThrowOnInstall := True;
+  Assert.WillRaiseWithMessage(
+    procedure
+    begin
+      FLoader.Load;
+    end, EAbort, 'Simulated TLS runtime initialization failure');
+  Assert.IsTrue(FLoader.State = lsLoadedFailed);
+  Assert.IsTrue(LoaderMetadataIsEmpty);
+  Assert.AreEqual(0, TTestCallbackLog.Count, 'Later load actions must not run');
+  Assert.AreEqual(1, TTestRuntimeHooksObserver.InstallCount);
+  Assert.IsFalse(LoadOpenSSLLibrary);
+  Assert.AreEqual(1, TTestRuntimeHooksObserver.InstallCount);
+  TTestRuntimeHooksObserver.ThrowOnInstall := False;
+  UnLoadOpenSSLLibrary;
+  Assert.IsTrue(LoadOpenSSLLibrary);
+  Assert.AreEqual(2, TTestRuntimeHooksObserver.InstallCount);
+  LContext := TTaurusTLSContext.Create;
+  try
+    LContext.UseSystemRootCACertificateStore := False;
+    LContext.InitContext(sslCtxClient);
+    Assert.IsNotNull(LContext.Context);
+  finally
+    LContext.Free;
+  end;
+end;
+
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+procedure TLoaderCallbacksFixture.Info_Unavailable(const AKind: Integer);
+begin
+  GTestInfoUnavailable := AKind + 1;
+  FLoader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(FLoader.Load);
+  Assert.IsNotEmpty(FLoader.Version);
+  Assert.AreEqual(ExtractFileDir(FLoader.ConfigFile), FLoader.ConfigDirectory);
+  Assert.AreEqual('', FLoader.ModulesDirectory);
+  Assert.AreEqual('', FLoader.EnginesDirectory);
+end;
+
+procedure TLoaderCallbacksFixture.Info_Discovery(const AKind: Integer);
+var
+  LExpectedDirectory: string;
+begin
+  GTestDiscoveryOverride := True;
+  if AKind = 0 then
+    LExpectedDirectory := ''
+  else
+  begin
+    Assert.IsTrue(SetCurrentDir(FTempDir));
+    GTestDiscoveryFile := 'sub' + PathDelim + 'test.cnf';
+    LExpectedDirectory := TPath.Combine(GetCurrentDir, 'sub');
+  end;
+  FLoader.ConfigFile := '';
+  Assert.IsTrue(FLoader.Load);
+  Assert.AreEqual(GTestDiscoveryFile, FLoader.ConfigFile);
+  Assert.AreEqual(LExpectedDirectory, FLoader.ConfigDirectory);
+  Assert.IsTrue(SetCurrentDir(FOrigCurrentDir));
+  Assert.AreEqual(LExpectedDirectory, FLoader.ConfigDirectory);
+end;
+
+procedure TLoaderCallbacksFixture.Runtime_InitFailure(const AKind: Integer);
+var
+  LExceptionClass: ExceptClass;
+begin
+  if AKind = 0 then
+  begin
+    GTestCryptoInitFailure := True;
+    LExceptionClass := ETaurusTLSLoaderError;
+  end
+  else
+  begin
+    GTestSSLInitFailure := True;
+    LExceptionClass := ETaurusTLSOpenSSLInitFailed;
+  end;
+  FLoader.ConfigFile := FValidConfigFile;
+  TTestCallbackObserverA.Active := True;
+  TTestRuntimeHooksObserver.Active := True;
+  Assert.WillRaise(
+    procedure
+    begin
+      FLoader.Load;
+    end, LExceptionClass);
+  Assert.IsTrue(FLoader.State = lsLoadedFailed);
+  Assert.IsTrue(LoaderMetadataIsEmpty);
+  Assert.AreEqual(0, TTestCallbackLog.Count);
+  Assert.AreEqual(0, TTestRuntimeHooksObserver.InstallCount);
+  GTestSSLInitFailure := False;
+  GTestCryptoInitFailure := False;
+  FLoader.Unload;
+  Assert.IsTrue(FLoader.Load);
+  Assert.AreEqual(1, TTestRuntimeHooksObserver.InstallCount);
+end;
+{$ENDIF}
+
+procedure TLoaderLifecycleFixture.Life_ConcurrentSingleton(const ARegister: Integer);
+const
+  CWorkerCount = 16;
+  CQueryCount = 100;
+var
+  LStart: TEvent;
+  LDone: TEvent;
+  LWorkers: TArray<TThread>;
+  LResults: TArray<IOpenSSLLoader>;
+  LErrors: TArray<string>;
+  LRemaining: Integer;
+  I: Integer;
+
+  function CreateWorker(const AIndex: Integer): TThread;
+  begin
+    Result := TThread.CreateAnonymousThread(
+      procedure
+      var
+        LLoader: IOpenSSLLoader;
+        J: Integer;
+      begin
+        try
+          try
+            if LStart.WaitFor(10000) <> wrSignaled then
+              raise Exception.Create('Singleton worker start timed out');
+            for J := 1 to CQueryCount do
+            begin
+              LLoader := GetOpenSSLLoader;
+              if LLoader <> FLoader then
+                raise Exception.Create('Concurrent query returned a different loader');
+            end;
+            LResults[AIndex] := LLoader;
+            if ARegister <> 0 then
+            begin
+              Register_SSLLoader(ConcurrentRegistrationLoader, 'LibCrypto');
+              Register_SSLUnloader(ConcurrentRegistrationUnloader);
+              Register_SSLLoaderAction(TConcurrentRegistrationObserver.ActionProc);
+            end;
+          except
+            on E: Exception do
+              LErrors[AIndex] := E.ClassName + ': ' + E.Message;
+          end;
+        finally
+          if TInterlocked.Decrement(LRemaining) = 0 then
+            LDone.SetEvent;
+        end;
+      end);
+    Result.FreeOnTerminate := False;
+  end;
+
+begin
+  SetLength(LWorkers, CWorkerCount);
+  SetLength(LResults, CWorkerCount);
+  SetLength(LErrors, CWorkerCount);
+  LRemaining := CWorkerCount;
+  TConcurrentRegistrationObserver.HeaderLoadCount := 0;
+  TConcurrentRegistrationObserver.HeaderUnloadCount := 0;
+  TConcurrentRegistrationObserver.ActionLoadCount := 0;
+  TConcurrentRegistrationObserver.ActionUnloadCount := 0;
+  TConcurrentRegistrationObserver.Active := ARegister <> 0;
+  LStart := TEvent.Create(nil, True, False, '');
+  try
+    LDone := TEvent.Create(nil, True, False, '');
+    try
+      for I := 0 to CWorkerCount - 1 do
+      begin
+        LWorkers[I] := CreateWorker(I);
+        LWorkers[I].Start;
+      end;
+      LStart.SetEvent;
+      Assert.IsTrue(LDone.WaitFor(10000) = wrSignaled, 'Concurrent singleton access timed out');
+      for I := 0 to CWorkerCount - 1 do
+      begin
+        Assert.AreEqual('', LErrors[I], 'Singleton worker failed');
+        Assert.IsTrue(LResults[I] = FLoader);
+      end;
+      Assert.IsTrue(FLoader.State = lsNotLoaded, 'Queries and registration must not load OpenSSL');
+      Assert.AreEqual(0, TConcurrentRegistrationObserver.ActionLoadCount);
+      Assert.AreEqual(0, TConcurrentRegistrationObserver.HeaderLoadCount);
+
+      if ARegister <> 0 then
+      begin
+        FLoader.ConfigFile := FValidConfigFile;
+        Assert.IsTrue(FLoader.Load);
+        Assert.AreEqual(CWorkerCount, TConcurrentRegistrationObserver.ActionLoadCount);
+        {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+        Assert.AreEqual(CWorkerCount, TConcurrentRegistrationObserver.HeaderLoadCount);
+        {$ENDIF}
+        Assert.IsTrue(FLoader.Load);
+        Assert.AreEqual(CWorkerCount, TConcurrentRegistrationObserver.ActionLoadCount);
+        FLoader.Unload;
+        Assert.AreEqual(CWorkerCount, TConcurrentRegistrationObserver.ActionUnloadCount);
+        {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+        Assert.AreEqual(CWorkerCount, TConcurrentRegistrationObserver.HeaderUnloadCount);
+        {$ENDIF}
+      end;
+    finally
+      LStart.SetEvent;
+      for I := 0 to High(LWorkers) do
+        if Assigned(LWorkers[I]) then
+        begin
+          LWorkers[I].WaitFor;
+          LWorkers[I].Free;
+        end;
+      LDone.Free;
+    end;
+  finally
+    LStart.Free;
+    // Registrations persist for the process; later fixtures observe inert callbacks.
+    TConcurrentRegistrationObserver.Active := False;
+  end;
+end;
+
 initialization
   GLoaderTestLock := TObject.Create;
   TDUnitX.RegisterTestFixture(TLoaderConfigFixture);
@@ -1633,8 +2135,11 @@ initialization
   TTestCallbackLog := TStringList.Create;
   Register_SSLLoaderAction(TTestCallbackObserverA.ActionProc);
   Register_SSLLoaderAction(TTestCallbackObserverB.ActionProc);
+  RegisterFIPSHooksInstaller(TTestRuntimeHooksObserver.Install);
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   Register_SSLLoader(TestSymbolInjectorLoadProc, 'LibCrypto');
+  Register_SSLLoader(TestRuntimeBindings, 'LibCrypto');
+  Register_SSLLoader(TestSSLBindings, 'LibSSL');
   Register_SSLUnloader(TestCleanupTail);
   Register_SSLUnloader(TestSecondCleanupFault);
   Register_SSLUnloader(TestCleanupFault);
