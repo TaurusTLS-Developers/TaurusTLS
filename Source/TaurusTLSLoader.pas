@@ -252,7 +252,10 @@ procedure Register_SSLUnloader(UnloadProc: TOpenSSLUnloadProc);
 ///   osaUnload runs in reverse order while routines remain callable. If loading
 ///   fails, only actions whose osaLoad completed receive rollback cleanup.
 ///   Repeated Load calls while loaded do not redispatch actions. Registrations
-///   persist across load cycles; register once, before loading. There is no
+///   persist across load cycles; register once while State is lsNotLoaded.
+///   Registration during loading, readiness, unloading or failure raises
+///   ETaurusTLSLoaderError. After failure, call Unload before registering.
+///   There is no
 ///   unregistration API, and registrations do not retain callback objects.
 /// </remarks>
 procedure Register_SSLLoaderAction(const AActionProc: TTaurusTLSOnLoadAction);
@@ -580,20 +583,29 @@ end;
 
 class procedure TOpenSSLBaseLoader.RegisterAction(const AActionProc: TTaurusTLSOnLoadAction);
 var
-  LRegistrationLock: TIdCriticalSection;
+  LInstance: TOpenSSLBaseLoader;
 begin
-  LRegistrationLock := GetRegistrationLock;
-  LRegistrationLock.Acquire;
+  LInstance := EnsureInstance;
+  // Match lifecycle lock ordering so an action cannot miss a concurrent load.
+  LInstance.FLoaderLock.Acquire;
   try
-    if FLoadActions = nil then
+    if LInstance.GetInternalState <> lsNotLoaded then
+      raise ETaurusTLSLoaderError.Create(RSOSSLLoaderActionRegistrationInactive);
+
+    LInstance.FRegistrationLock.Acquire;
+    try
+      if FLoadActions = nil then
 {$IFDEF HAS_UNIT_Generics_Collections}
-      FLoadActions := TList<TTaurusTLSOnLoadAction>.Create;
+        FLoadActions := TList<TTaurusTLSOnLoadAction>.Create;
 {$ELSE}
-      FLoadActions := TMethodList.Create;
+        FLoadActions := TMethodList.Create;
 {$ENDIF}
-    FLoadActions.Add(AActionProc);
+      FLoadActions.Add(AActionProc);
+    finally
+      LInstance.FRegistrationLock.Release;
+    end;
   finally
-    LRegistrationLock.Release;
+    LInstance.FLoaderLock.Release;
   end;
 end;
 
@@ -1630,7 +1642,17 @@ class procedure TOpenSSLBaseLoader.Finalize;
 var
   LInstance: TOpenSSLBaseLoader;
 begin
-  // Application threads must have stopped before module finalization.
+  // Keep the singleton published while cleanup actions can still query it.
+  // Application threads must have stopped; registered callback owners must
+  // remain valid until their cleanup action has run.
+  LInstance := CompareExchangeInstance(nil);
+  if Assigned(LInstance) then
+  try
+    LInstance.Unload;
+  except
+    // Unload attempts every cleanup stage; finalization must still release ownership.
+  end;
+
 {$IFDEF FPC}
   LInstance := TOpenSSLBaseLoader(InterlockedExchange(FInstance, Pointer(nil)));
 {$ELSE}

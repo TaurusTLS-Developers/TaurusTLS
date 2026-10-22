@@ -2612,21 +2612,36 @@ type
   ETaurusTLSSetDefaultVerifyPathsError = class(ETaurusTLSError);
   {$ENDIF}
 /// <summary>Initializes OpenSSL and registered TaurusTLS resources through the shared loader.</summary>
-/// <remarks>Works in both linking models. Repeated successful calls do not acquire references.</remarks>
+/// <remarks>Works in both linking models. Repeated successful calls do not acquire references. Deprecated; use IOpenSSLLoader.Load.</remarks>
 function LoadOpenSSLLibrary: Boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$IF DEFINED(HAS_DEPRECATED) OR DEFINED(FPC)}deprecated
+    {$IF DEFINED(VCL_2005_OR_ABOVE) OR DEFINED(FPC)}'Use GetOpenSSLLoader.Load'{$IFEND};{$IFEND}
 /// <summary>Runs shared cleanup and releases dynamic libraries; static routines remain linked.</summary>
-/// <remarks>The application must finish active crypto operations before unloading.</remarks>
+/// <remarks>The application must finish active crypto operations before unloading. Deprecated; use IOpenSSLLoader.Unload.</remarks>
 procedure UnLoadOpenSSLLibrary; {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$IF DEFINED(HAS_DEPRECATED) OR DEFINED(FPC)}deprecated
+    {$IF DEFINED(VCL_2005_OR_ABOVE) OR DEFINED(FPC)}'Use GetOpenSSLLoader.Unload'{$IFEND};{$IFEND}
 
 /// <summary>Returns the loaded version text, or empty while the loader is not ready.</summary>
+/// <remarks>Deprecated; use IOpenSSLLoader.Version.</remarks>
 function OpenSSLVersion: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$IF DEFINED(HAS_DEPRECATED) OR DEFINED(FPC)}deprecated
+    {$IF DEFINED(VCL_2005_OR_ABOVE) OR DEFINED(FPC)}'Use GetOpenSSLLoader.Version'{$IFEND};{$IFEND}
 /// <summary>Returns the directory containing the effective ConfigFile, or empty while not ready.</summary>
-/// <remarks>This is the selected/discovered configuration directory, not the compiled OPENSSLDIR.</remarks>
+/// <remarks>This is the selected/discovered configuration directory, not the compiled OPENSSLDIR. Deprecated; use IOpenSSLLoader.ConfigDirectory.</remarks>
 function OpenSSLDir: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$IF DEFINED(HAS_DEPRECATED) OR DEFINED(FPC)}deprecated
+    {$IF DEFINED(VCL_2005_OR_ABOVE) OR DEFINED(FPC)}'Use GetOpenSSLLoader.ConfigDirectory'{$IFEND};{$IFEND}
 /// <summary>Returns the compiled default module directory, or empty while not ready or unavailable.</summary>
+/// <remarks>Deprecated; use IOpenSSLLoader.ModulesDirectory.</remarks>
 function OpenSSLModulesDir: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$IF DEFINED(HAS_DEPRECATED) OR DEFINED(FPC)}deprecated
+    {$IF DEFINED(VCL_2005_OR_ABOVE) OR DEFINED(FPC)}'Use GetOpenSSLLoader.ModulesDirectory'{$IFEND};{$IFEND}
 /// <summary>Returns the OpenSSL 3 engine directory; empty on OpenSSL 4 or while not ready.</summary>
+/// <remarks>Deprecated; use IOpenSSLLoader.EnginesDirectory.</remarks>
 function OpenSSLEnginesDir: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$IF DEFINED(HAS_DEPRECATED) OR DEFINED(FPC)}deprecated
+    {$IF DEFINED(VCL_2005_OR_ABOVE) OR DEFINED(FPC)}'Use GetOpenSSLLoader.EnginesDirectory'{$IFEND};{$IFEND}
 
 implementation
 
@@ -4308,7 +4323,7 @@ begin
   inherited Create;
   // an exception here probably means that you are using the wrong version
   // of the openssl libraries. refer to comments at the top of this file.
-  if not LoadOpenSSLLibrary then
+  if not GetOpenSSLLoader.Load then
   begin
     raise ETaurusTLSCouldNotLoadSSLLibrary.Create(RSOSSLCouldNotLoadSSLLibrary);
   end;
@@ -5573,7 +5588,12 @@ TTaurusTLSIOHandlerSocket.RegisterIOHandler;
 finalization
 
 // TODO: TTaurusTLSIOHandlerSocket.UnregisterIOHandler;
-UnLoadOpenSSLLibrary;
+try
+  GetOpenSSLLoader.Unload;
+except
+  // The loader attempts all cleanup stages before propagating an error.
+  // Do not interrupt the remaining unit finalizers during application shutdown.
+end;
 
 end.
 
