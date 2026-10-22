@@ -28,8 +28,7 @@ interface
 uses
   Classes,
   IdGlobal,
-  IdCTypes,
-  IdThreadSafe;
+  IdCTypes;
 
 {$IF NOT DECLARED(TIdLibHandle)}
 type
@@ -90,6 +89,8 @@ type
   ///   Load calls do not acquire references; one Unload performs cleanup.
   ///   A failure blocks later Load calls until Unload resets the failure state. Static builds retain linked
   ///   code and use the loader for configuration and lifecycle actions.
+  ///   Metadata getters copy cached strings under the lifecycle lock and never
+  ///   initialize OpenSSL. Only State and IsLoaded are nonblocking queries.
   /// </remarks>
   IOpenSSLLoader = interface
     ['{BBB0F670-CC26-42BC-A9E0-33647361941A}']
@@ -141,6 +142,24 @@ type
     ///   objects or operations against concurrent unloading.
     /// </remarks>
     function GetState: TTaurusTLSLoaderState;
+    /// <summary>Returns the loaded OpenSSL version text, or empty while not ready.</summary>
+    function GetVersion: string;
+    /// <summary>Returns the directory containing the effective ConfigFile, or empty while not ready.</summary>
+    function GetConfigDirectory: string;
+    /// <summary>Returns the compiled default module directory, or empty while not ready or unavailable.</summary>
+    function GetModulesDirectory: string;
+    /// <summary>Returns the OpenSSL 3 engine directory; empty on OpenSSL 4 or while not ready.</summary>
+    function GetEnginesDirectory: string;
+
+    /// <summary>Copied version text; reading metadata never initializes OpenSSL.</summary>
+    property Version: string read GetVersion;
+    /// <summary>Directory of the effective configuration filename, resolved during loading.</summary>
+    /// <remarks>A discovered filename does not prove that the file exists or was applied.</remarks>
+    property ConfigDirectory: string read GetConfigDirectory;
+    /// <summary>Compiled default module directory, not configured provider filenames or OPENSSL_MODULES.</summary>
+    property ModulesDirectory: string read GetModulesDirectory;
+    /// <summary>Compiled engine directory on supported OpenSSL 3 builds; empty on OpenSSL 4.</summary>
+    property EnginesDirectory: string read GetEnginesDirectory;
 
     /// <summary>Current stable readiness state; independent of library-handle presence.</summary>
     property State: TTaurusTLSLoaderState read GetState;
@@ -168,9 +187,11 @@ type
     ///   Both models accept relative and Unicode paths. Load expands an explicit
     ///   path, checks that it names an existing file, and applies it to the default
     ///   OpenSSL context using UTF-8. Invalid paths and configuration load failures
-    ///   raise exceptions. An empty value only queries OpenSSL's default filename;
-    ///   this branch does not explicitly load that file. Discovery can reflect a
-    ///   C-runtime environment different from Delphi's process environment.
+    ///   raise exceptions. An empty value requests standard OpenSSL configuration
+    ///   initialization and discovers its default filename. OpenSSL's first
+    ///   initialization policy may persist across static load cycles or external
+    ///   initialization; the discovered filename alone does not prove it was read.
+    ///   Discovery can reflect a C-runtime environment different from Delphi's process environment.
     ///   Changes are rejected while loading, ready, unloading, or holding a crypto
     ///   handle. Assigning the exact configured input does nothing, including
     ///   during callbacks; that input can differ from the expanded ready filename.
@@ -200,17 +221,14 @@ type
   /// <summary>Header cleanup procedure that resets dynamic procedural variables to nil.</summary>
   TOpenSSLUnloadProc = procedure;
 
-var
-  /// <summary>Shared thread-safe flag allocated and released by this unit.</summary>
-  /// <remarks>
-  ///   The current loader implementations do not update this flag. Use the
-  ///   singleton loader's IsLoaded method to inspect loader state.
-  /// </remarks>
-  SSLIsLoaded: TIdThreadSafeBoolean = nil;
-
 /// <summary>Returns the singleton loader selected by OPENSSL_STATIC_LINK_MODEL.</summary>
-/// <returns>The dynamic or static loader interface, available after unit initialization.</returns>
-function GetOpenSSLLoader: IOpenSSLLoader;
+/// <returns>The shared dynamic or static loader interface.</returns>
+/// <remarks>
+///   Atomically creates the loader infrastructure if it is not yet available.
+///   This does not load or initialize OpenSSL. Unit initialization and all
+///   registration entry points use the same singleton publication path.
+/// </remarks>
+function GetOpenSSLLoader: IOpenSSLLoader; {$IFDEF USE_INLINE}inline; {$ENDIF}
 
 /// <summary>Registers a header symbol-binding procedure for dynamic loads.</summary>
 /// <param name="LoadProc">Procedure that binds a header unit's procedural variables.</param>
@@ -275,14 +293,11 @@ uses
   TaurusTLSConsts,
   TaurusTLSHeaders_crypto,
   TaurusTLSHeaders_conf,
+  TaurusTLSHeaders_ssl,
   {$IFNDEF FPC}
   SyncObjs,
   {$ENDIF}
   SysUtils;
-
-resourcestring
-  RSOSSLLoaderLifecycleInProgress =
-    'Cannot call %s while the OpenSSL loader is loading or unloading';
 
 {$IFNDEF HAS_UNIT_Generics_Collections}
 type
@@ -412,97 +427,6 @@ end;
 {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 {$ENDIF}
 
-var
-  GOpenSSLLoader: IOpenSSLLoader = nil;
-  GRegistrationLock: TIdCriticalSection = nil;
-{$IFDEF HAS_UNIT_Generics_Collections}
-  GLibCryptoLoadList: TList<TOpenSSLLoadProc> = nil;
-  GLibSSLLoadList: TList<TOpenSSLLoadProc> = nil;
-  GUnLoadList: TList<TOpenSSLUnloadProc> = nil;
-  GOnLoadActionList: TList<TTaurusTLSOnLoadAction> = nil;
-{$ELSE}
-  GLibCryptoLoadList: TList = nil;
-  GLibSSLLoadList: TList = nil;
-  GUnLoadList: TList = nil;
-  GOnLoadActionList: TMethodList = nil;
-{$ENDIF}
-
-function GetOpenSSLLoader: IOpenSSLLoader;
-begin
-  Result := GOpenSSLLoader;
-end;
-
-/// <summary>Creates the registration lock when a header registers before loader initialization.</summary>
-procedure EnsureRegistrationLock;
-begin
-  if not Assigned(GRegistrationLock) then
-    GRegistrationLock := TIdCriticalSection.Create;
-end;
-
-procedure Register_SSLLoader(LoadProc: TOpenSSLLoadProc; const module_name: string);
-begin
-  EnsureRegistrationLock;
-  GRegistrationLock.Acquire;
-  try
-    if GLibCryptoLoadList = nil then
-{$IFDEF HAS_UNIT_Generics_Collections}
-      GLibCryptoLoadList := TList<TOpenSSLLoadProc>.Create;
-{$ELSE}
-      GLibCryptoLoadList := TList.Create;
-{$ENDIF}
-
-    if GLibSSLLoadList = nil then
-{$IFDEF HAS_UNIT_Generics_Collections}
-      GLibSSLLoadList := TList<TOpenSSLLoadProc>.Create;
-{$ELSE}
-      GLibSSLLoadList := TList.Create;
-{$ENDIF}
-
-    if module_name = 'LibCrypto' then
-      GLibCryptoLoadList.Add(LoadProc)
-    else if module_name = 'LibSSL' then
-      GLibSSLLoadList.Add(LoadProc)
-    else
-      raise ETaurusTLSError.CreateFmt(ROSUnrecognisedLibName, [module_name]);
-  finally
-    GRegistrationLock.Release;
-  end;
-end;
-
-procedure Register_SSLUnloader(UnloadProc: TOpenSSLUnloadProc);
-begin
-  EnsureRegistrationLock;
-  GRegistrationLock.Acquire;
-  try
-    if GUnLoadList = nil then
-{$IFDEF HAS_UNIT_Generics_Collections}
-      GUnLoadList := TList<TOpenSSLUnloadProc>.Create;
-{$ELSE}
-      GUnLoadList := TList.Create;
-{$ENDIF}
-    GUnLoadList.Add(UnloadProc);
-  finally
-    GRegistrationLock.Release;
-  end;
-end;
-
-procedure Register_SSLLoaderAction(const AActionProc: TTaurusTLSOnLoadAction);
-begin
-  EnsureRegistrationLock;
-  GRegistrationLock.Acquire;
-  try
-    if GOnLoadActionList = nil then
-{$IFDEF HAS_UNIT_Generics_Collections}
-      GOnLoadActionList := TList<TTaurusTLSOnLoadAction>.Create;
-{$ELSE}
-      GOnLoadActionList := TMethodList.Create;
-{$ENDIF}
-    GOnLoadActionList.Add(AActionProc);
-  finally
-    GRegistrationLock.Release;
-  end;
-end;
-
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 {$IFDEF LOADLIB_UNAVAIL}
 function LoadLibFunction(const ALibHandle: TIdLibHandle; const AProcName: TIdLibFuncName): Pointer;
@@ -514,6 +438,8 @@ end;
 {$ENDIF}
 
 type
+  TOpenSSLMetadata = (omVersion, omConfigDirectory, omModulesDirectory, omEnginesDirectory);
+
   { TOpenSSLBaseLoader }
 
   /// <summary>
@@ -521,7 +447,31 @@ type
   ///   application, and action callback dispatching for all linking models.
   /// </summary>
   TOpenSSLBaseLoader = class(TInterfacedObject, IOpenSSLLoader)
-  strict protected
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} private
+{$IFDEF FPC}
+    class var FInstance: Pointer;
+{$ELSE}
+    class var FInstance: TOpenSSLBaseLoader;
+{$ENDIF}
+{$IFDEF HAS_UNIT_Generics_Collections}
+    class var FLoadActions: TList<TTaurusTLSOnLoadAction>;
+{$ELSE}
+    class var FLoadActions: TMethodList;
+{$ENDIF}
+  private
+    /// <summary>Atomically reads or publishes a completed candidate; nil only reads the slot.</summary>
+    class function CompareExchangeInstance(const ACandidate: TOpenSSLBaseLoader): TOpenSSLBaseLoader; static; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Returns the published singleton, releasing any losing candidate.</summary>
+    class function EnsureInstance: TOpenSSLBaseLoader; static;
+    class function GetInstance: IOpenSSLLoader; static; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    class procedure Initialize; static;
+    class procedure Finalize; static;
+    class procedure RegisterAction(const AActionProc: TTaurusTLSOnLoadAction); static;
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} protected
+    /// <summary>Returns the registration lock owned by the published singleton.</summary>
+    class function GetRegistrationLock: TIdCriticalSection; static; {$IFDEF USE_INLINE}inline; {$ENDIF}
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} protected
+    FRegistrationLock: TIdCriticalSection;
     FLoaderLock: TIdCriticalSection;
     // Delphi's generic TInterlocked overloads require class types. Keep the
     // ordinal storage private; all reads/writes use typed atomic accessors.
@@ -529,16 +479,22 @@ type
     FLastLoadActionIdx: NativeInt;
     FConfigFile: string;
     FEffectiveConfigFile: string;
+    FMetadata: array[TOpenSSLMetadata] of string;
+    procedure CaptureMetadata;
+    procedure ClearMetadata;
+    function GetMetadata(const AKind: TOpenSSLMetadata): string;
     /// <summary>Reads the internal lifecycle state atomically.</summary>
-    function GetInternalState: TTaurusTLSLoaderStateAll;
+    function GetInternalState: TTaurusTLSLoaderStateAll; {$IFDEF USE_INLINE}inline; {$ENDIF}
     /// <summary>Publishes the internal lifecycle state atomically.</summary>
-    procedure SetInternalState(const AState: TTaurusTLSLoaderStateAll);
+    procedure SetInternalState(const AState: TTaurusTLSLoaderStateAll); {$IFDEF USE_INLINE}inline; {$ENDIF}
     /// <summary>Performs cleanup while the caller holds the lifecycle lock.</summary>
     procedure UnloadInternal(const AResetFailState: Boolean);
 
 // --- OpenSSL API Wrappers (Static vs Dynamic Bridge) ---
     /// <summary>Initializes OpenSSL directly in static builds or through an assigned dynamic routine.</summary>
-    class procedure SslInitCrypto(opts: TIdC_UINT64; settings: pointer); static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    class function SslInitCrypto(opts: TIdC_UINT64; settings: pointer): TIdC_INT; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
+    /// <summary>Initializes libssl without reapplying default configuration.</summary>
+    procedure InitializeSSL;
     /// <summary>Loads configuration into the supplied context; returns -1 if the dynamic routine is absent.</summary>
     class function SslModulesLoadFileEx(libctx: pointer; filename, appname: PIdAnsiChar; flags: TIdC_ULONG): TIdC_INT; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
     /// <summary>Obtains an OpenSSL-allocated discovery filename; release it with SslFree.</summary>
@@ -563,7 +519,7 @@ type
     function IsActiveHandlePresent: Boolean; virtual;
 
     // --- Configuration and Lifecycle Helpers ---
-    /// <summary>Loads an explicit configuration or records the native discovery filename without loading it.</summary>
+    /// <summary>Applies explicit configuration or requests native default initialization and discovers its filename.</summary>
     procedure ApplyConfiguration; virtual;
     /// <summary>Invokes registered load actions in order and records each successfully completed action.</summary>
     procedure DispatchLoadActions; virtual;
@@ -588,13 +544,17 @@ type
     /// <summary>Returns the model-owned binding diagnostic list.</summary>
     function GetFailedToLoad: TStringList; virtual; abstract;
     /// <summary>Reads the stable public state without taking the lifecycle lock.</summary>
-    function GetState: TTaurusTLSLoaderState;
+    function GetState: TTaurusTLSLoaderState; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetVersion: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetConfigDirectory: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetModulesDirectory: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetEnginesDirectory: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
     /// <summary>True only when the common state is lsLoadedReady.</summary>
-    function IsLoaded: Boolean;
+    function IsLoaded: Boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
   public
-    /// <summary>Creates the loader lock and initializes unloaded state with no completed actions.</summary>
-    constructor Create; virtual;
-    /// <summary>Releases the loader lock.</summary>
+    /// <summary>Creates both instance locks and unloaded state without calling OpenSSL.</summary>
+    constructor Create;
+    /// <summary>Releases the instance's registration and lifecycle locks.</summary>
     destructor Destroy; override;
 
     // Non-virtual template methods managing thread locking and circuit breakers
@@ -613,9 +573,34 @@ type
 
 { TOpenSSLBaseLoader }
 
+class function TOpenSSLBaseLoader.GetRegistrationLock: TIdCriticalSection;
+begin
+  Result := EnsureInstance.FRegistrationLock;
+end;
+
+class procedure TOpenSSLBaseLoader.RegisterAction(const AActionProc: TTaurusTLSOnLoadAction);
+var
+  LRegistrationLock: TIdCriticalSection;
+begin
+  LRegistrationLock := GetRegistrationLock;
+  LRegistrationLock.Acquire;
+  try
+    if FLoadActions = nil then
+{$IFDEF HAS_UNIT_Generics_Collections}
+      FLoadActions := TList<TTaurusTLSOnLoadAction>.Create;
+{$ELSE}
+      FLoadActions := TMethodList.Create;
+{$ENDIF}
+    FLoadActions.Add(AActionProc);
+  finally
+    LRegistrationLock.Release;
+  end;
+end;
+
 constructor TOpenSSLBaseLoader.Create;
 begin
   inherited Create;
+  FRegistrationLock := TIdCriticalSection.Create;
   FLoaderLock := TIdCriticalSection.Create;
   FLastLoadActionIdx := -1;
   SetInternalState(lsNotLoaded);
@@ -626,17 +611,85 @@ end;
 destructor TOpenSSLBaseLoader.Destroy;
 begin
   FreeAndNil(FLoaderLock);
+  FreeAndNil(FRegistrationLock);
   inherited Destroy;
 end;
 
-class procedure TOpenSSLBaseLoader.SslInitCrypto(opts: TIdC_UINT64; settings: pointer);
+class function TOpenSSLBaseLoader.SslInitCrypto(opts: TIdC_UINT64;
+  settings: pointer): TIdC_INT;
 begin
 {$IFDEF OPENSSL_STATIC_LINK_MODEL}
-  OPENSSL_init_crypto(opts, settings);
+  Result := OPENSSL_init_crypto(opts, settings);
 {$ELSE}
   if Assigned(OPENSSL_init_crypto) then
-    OPENSSL_init_crypto(opts, settings);
+    Result := OPENSSL_init_crypto(opts, settings)
+  else
+    Result := 0;
 {$ENDIF}
+end;
+
+procedure TOpenSSLBaseLoader.InitializeSSL;
+begin
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  if not Assigned(OPENSSL_init_ssl) then
+    raise ETaurusTLSOpenSSLInitFailed.Create(RSOSSLInitFailed);
+{$ENDIF}
+  if OPENSSL_init_ssl(OPENSSL_INIT_NO_LOAD_CONFIG, nil) <> 1 then
+    raise ETaurusTLSOpenSSLInitFailed.Create(RSOSSLInitFailed);
+end;
+
+procedure TOpenSSLBaseLoader.ClearMetadata;
+var
+  LKind: TOpenSSLMetadata;
+begin
+  for LKind := Low(TOpenSSLMetadata) to High(TOpenSSLMetadata) do
+    FMetadata[LKind] := '';
+end;
+
+procedure TOpenSSLBaseLoader.CaptureMetadata;
+begin
+  FMetadata[omVersion] := UTF8ToString(OpenSSL_version(OPENSSL_VERSION_CONST));
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  if not Assigned(OPENSSL_info) or (GetFailedToLoad.IndexOf('OPENSSL_info') >= 0) then
+    Exit;
+{$ENDIF}
+  FMetadata[omModulesDirectory] := UTF8ToString(OPENSSL_info(OPENSSL_INFO_MODULES_DIR));
+  // OpenSSL 4 removed engine support; preserve the compatibility query as empty.
+  if OpenSSL_version_num() < $40000000 then
+    FMetadata[omEnginesDirectory] := UTF8ToString(OPENSSL_info(OPENSSL_INFO_ENGINES_DIR));
+end;
+
+function TOpenSSLBaseLoader.GetMetadata(const AKind: TOpenSSLMetadata): string;
+begin
+  FLoaderLock.Acquire;
+  try
+    if IsLoaded then
+      Result := FMetadata[AKind]
+    else
+      Result := '';
+  finally
+    FLoaderLock.Release;
+  end;
+end;
+
+function TOpenSSLBaseLoader.GetVersion: string;
+begin
+  Result := GetMetadata(omVersion);
+end;
+
+function TOpenSSLBaseLoader.GetConfigDirectory: string;
+begin
+  Result := GetMetadata(omConfigDirectory);
+end;
+
+function TOpenSSLBaseLoader.GetModulesDirectory: string;
+begin
+  Result := GetMetadata(omModulesDirectory);
+end;
+
+function TOpenSSLBaseLoader.GetEnginesDirectory: string;
+begin
+  Result := GetMetadata(omEnginesDirectory);
 end;
 
 class function TOpenSSLBaseLoader.SslModulesLoadFileEx(libctx: pointer;
@@ -751,8 +804,11 @@ begin
 
     SetInternalState(lsLoading);
     FLastLoadActionIdx := -1;
+    ClearMetadata;
     try
       Result := DoLoad;
+      if Result then
+        CaptureMetadata;
     except
       // Preserve the original configuration/binding/callback exception.
       try
@@ -804,6 +860,7 @@ begin
       FailedToLoad.Clear;
     LCompleted := True;
   finally
+    ClearMetadata;
     FEffectiveConfigFile := '';
     if AResetFailState and LCompleted then
       SetInternalState(lsNotLoaded)
@@ -859,7 +916,8 @@ begin
         RSOSSLConfigFileNotFound, [LNormalizedConfig]);
     {$ENDIF}
 
-    SslInitCrypto(OPENSSL_INIT_NO_LOAD_CONFIG, nil);
+    if SslInitCrypto(OPENSSL_INIT_NO_LOAD_CONFIG, nil) <> 1 then
+      raise ETaurusTLSLoaderError.Create(RSOSSLInitCryptoFailed);
 
     if SslModulesLoadFileEx(nil, PIdAnsiChar(UTF8Encode(LNormalizedConfig)), nil, 0) <= 0 then
       ETaurusTLSConfigFileLoadError.RaiseException(
@@ -867,6 +925,8 @@ begin
   end
   else
   begin
+    if SslInitCrypto(OPENSSL_INIT_LOAD_CONFIG, nil) <> 1 then
+      raise ETaurusTLSLoaderError.Create(RSOSSLInitCryptoFailed);
     LDefaultConfig := SslGet1DefaultConfigFile();
     if Assigned(LDefaultConfig) then
     try
@@ -877,6 +937,8 @@ begin
   end;
 
   FEffectiveConfigFile := LNormalizedConfig;
+  if LNormalizedConfig <> '' then
+    FMetadata[omConfigDirectory] := ExtractFileDir(ExpandFileName(LNormalizedConfig));
 end;
 
 procedure TOpenSSLBaseLoader.DispatchLoadActions;
@@ -885,26 +947,26 @@ var
   LCount: Integer;
   LAction: TTaurusTLSOnLoadAction;
 begin
-  GRegistrationLock.Acquire;
+  FRegistrationLock.Acquire;
   try
-    if Assigned(GOnLoadActionList) then
-      LCount := GOnLoadActionList.Count
+    if Assigned(FLoadActions) then
+      LCount := FLoadActions.Count
     else
       LCount := 0;
   finally
-    GRegistrationLock.Release;
+    FRegistrationLock.Release;
   end;
 
   for i := 0 to LCount - 1 do
   begin
-    GRegistrationLock.Acquire;
+    FRegistrationLock.Acquire;
     try
-      if Assigned(GOnLoadActionList) and (i < GOnLoadActionList.Count) then
-        LAction := GOnLoadActionList[i]
+      if Assigned(FLoadActions) and (i < FLoadActions.Count) then
+        LAction := FLoadActions[i]
       else
         ClearAction(LAction);
     finally
-      GRegistrationLock.Release;
+      FRegistrationLock.Release;
     end;
 
     if IsActionAssigned(LAction) then
@@ -920,18 +982,18 @@ var
   i: NativeInt;
   LAction: TTaurusTLSOnLoadAction;
 begin
-  if (FLastLoadActionIdx >= 0) and Assigned(GOnLoadActionList) then
+  if (FLastLoadActionIdx >= 0) and Assigned(FLoadActions) then
   begin
     for i := FLastLoadActionIdx downto 0 do
     begin
-      GRegistrationLock.Acquire;
+      FRegistrationLock.Acquire;
       try
-        if Assigned(GOnLoadActionList) and (i < GOnLoadActionList.Count) then
-          LAction := GOnLoadActionList[i]
+        if Assigned(FLoadActions) and (i < FLoadActions.Count) then
+          LAction := FLoadActions[i]
         else
           ClearAction(LAction);
       finally
-        GRegistrationLock.Release;
+        FRegistrationLock.Release;
       end;
 
       if IsActionAssigned(LAction) then
@@ -991,9 +1053,9 @@ type
   /// <summary>Applies configuration and lifecycle actions to routines linked into the executable.</summary>
   /// <remarks>Library path/version settings are inert; unloading does not unlink OpenSSL.</remarks>
   TOpenSSLStaticLoader = class(TOpenSSLBaseLoader)
-  strict private
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} private
     FFailed: TStringList;
-  strict protected
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} protected
     function DoLoad: Boolean; override;
     procedure DoUnload; override;
     function GetOpenSSLPath: string; override;
@@ -1002,7 +1064,7 @@ type
     procedure SetSSLLibVersions(const AValue: string); override;
     function GetFailedToLoad: TStringList; override;
   public
-    constructor Create; override;
+    constructor Create;
     destructor Destroy; override;
   end;
 
@@ -1043,8 +1105,6 @@ begin
   Result := FFailed;
 end;
 
-
-
 function TOpenSSLStaticLoader.DoLoad: Boolean;
 begin
   // Verify statically linked OpenSSL 3.x / 4.x version
@@ -1052,6 +1112,7 @@ begin
 
   // Apply explicit/default configuration
   ApplyConfiguration;
+  InitializeSSL;
 
   // Execute registered action callbacks
   DispatchLoadActions;
@@ -1073,7 +1134,22 @@ end;
 type
   /// <summary>Loads shared libraries, binds header routines, and manages lifecycle actions.</summary>
   TOpenSSLDynamicLoader = class(TOpenSSLBaseLoader)
-  strict private
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} private
+{$IFDEF HAS_UNIT_Generics_Collections}
+    class var FCryptoLoaders: TList<TOpenSSLLoadProc>;
+    class var FSSLLoaders: TList<TOpenSSLLoadProc>;
+    class var FUnloaders: TList<TOpenSSLUnloadProc>;
+{$ELSE}
+    class var FCryptoLoaders: TList;
+    class var FSSLLoaders: TList;
+    class var FUnloaders: TList;
+{$ENDIF}
+  private
+    class procedure RegisterHeaderLoader(LoadProc: TOpenSSLLoadProc;
+      const module_name: string); static;
+    class procedure RegisterHeaderUnloader(UnloadProc: TOpenSSLUnloadProc); static;
+    class procedure ClearHeaderRegistrations; static;
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} private
     FLibCrypto: TIdLibHandle;
     FLibSSL: TIdLibHandle;
     FOpenSSLPath: string;
@@ -1093,7 +1169,7 @@ type
     /// <summary>Checks the native version string for the expected OpenSSL prefix.</summary>
     class function IsOpenSSLPrefix(const AStr: PAnsiChar): Boolean; static;
       {$IFDEF USE_INLINE}inline;{$ENDIF}
-  strict protected
+  {$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} protected
     function DoLoad: Boolean; override;
     procedure DoUnload; override;
     function NeedUnloadCleanup: Boolean; override;
@@ -1104,9 +1180,67 @@ type
     procedure SetSSLLibVersions(const AValue: string); override;
     function GetFailedToLoad: TStringList; override;
   public
-    constructor Create; override;
+    constructor Create;
     destructor Destroy; override;
   end;
+
+class procedure TOpenSSLDynamicLoader.RegisterHeaderLoader(LoadProc: TOpenSSLLoadProc; const module_name: string);
+var
+  LRegistrationLock: TIdCriticalSection;
+begin
+  LRegistrationLock := GetRegistrationLock;
+  LRegistrationLock.Acquire;
+  try
+    if FCryptoLoaders = nil then
+{$IFDEF HAS_UNIT_Generics_Collections}
+      FCryptoLoaders := TList<TOpenSSLLoadProc>.Create;
+{$ELSE}
+      FCryptoLoaders := TList.Create;
+{$ENDIF}
+
+    if FSSLLoaders = nil then
+{$IFDEF HAS_UNIT_Generics_Collections}
+      FSSLLoaders := TList<TOpenSSLLoadProc>.Create;
+{$ELSE}
+      FSSLLoaders := TList.Create;
+{$ENDIF}
+
+    if module_name = 'LibCrypto' then
+      FCryptoLoaders.Add(LoadProc)
+    else if module_name = 'LibSSL' then
+      FSSLLoaders.Add(LoadProc)
+    else
+      raise ETaurusTLSError.CreateFmt(ROSUnrecognisedLibName, [module_name]);
+  finally
+    LRegistrationLock.Release;
+  end;
+end;
+
+class procedure TOpenSSLDynamicLoader.RegisterHeaderUnloader(UnloadProc: TOpenSSLUnloadProc);
+var
+  LRegistrationLock: TIdCriticalSection;
+begin
+  LRegistrationLock := GetRegistrationLock;
+  LRegistrationLock.Acquire;
+  try
+    if FUnloaders = nil then
+{$IFDEF HAS_UNIT_Generics_Collections}
+      FUnloaders := TList<TOpenSSLUnloadProc>.Create;
+{$ELSE}
+      FUnloaders := TList.Create;
+{$ENDIF}
+    FUnloaders.Add(UnloadProc);
+  finally
+    LRegistrationLock.Release;
+  end;
+end;
+
+class procedure TOpenSSLDynamicLoader.ClearHeaderRegistrations;
+begin
+  FreeAndNil(FCryptoLoaders);
+  FreeAndNil(FSSLLoaders);
+  FreeAndNil(FUnloaders);
+end;
 
 function DoLoadLibrary(const FullLibName: string): TIdLibHandle;
 {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -1308,8 +1442,6 @@ begin
 
   // 1. Verify genuine OpenSSL identity using zero-allocation PAnsiChar/PChar check
   LOpenSSL_version := LoadLibFunction(FLibCrypto, 'OpenSSL_version');
-  if not Assigned(LOpenSSL_version) then
-    LOpenSSL_version := LoadLibFunction(FLibCrypto, 'SSLeay_version');
 
   if not Assigned(LOpenSSL_version) then
     raise ETaurusTLSLoaderError.Create(RSOSSLCantGetSSLVersionString);
@@ -1320,8 +1452,6 @@ begin
 
   // 2. Numeric version check (supports OpenSSL 3.x and 4.x)
   LOpenSSL_version_num := LoadLibFunction(FLibCrypto, 'OpenSSL_version_num');
-  if not Assigned(LOpenSSL_version_num) then
-    LOpenSSL_version_num := LoadLibFunction(FLibCrypto, 'SSLeay');
 
   if not Assigned(LOpenSSL_version_num) then
     raise ETaurusTLSLoaderError.Create(ROSSLCantGetSSLVersionNo);
@@ -1336,17 +1466,17 @@ procedure TOpenSSLDynamicLoader.BindHeaderSymbols(const AVersionNo: TIdC_ULONG);
 var
   i: Integer;
 begin
-  GRegistrationLock.Acquire;
+  FRegistrationLock.Acquire;
   try
-    if Assigned(GLibCryptoLoadList) then
-      for i := 0 to GLibCryptoLoadList.Count - 1 do
-        TOpenSSLLoadProc(GLibCryptoLoadList[i])(FLibCrypto, AVersionNo, FFailed);
+    if Assigned(FCryptoLoaders) then
+      for i := 0 to FCryptoLoaders.Count - 1 do
+        TOpenSSLLoadProc(FCryptoLoaders[i])(FLibCrypto, AVersionNo, FFailed);
 
-    if Assigned(GLibSSLLoadList) then
-      for i := 0 to GLibSSLLoadList.Count - 1 do
-        TOpenSSLLoadProc(GLibSSLLoadList[i])(FLibSSL, AVersionNo, FFailed);
+    if Assigned(FSSLLoaders) then
+      for i := 0 to FSSLLoaders.Count - 1 do
+        TOpenSSLLoadProc(FSSLLoaders[i])(FLibSSL, AVersionNo, FFailed);
   finally
-    GRegistrationLock.Release;
+    FRegistrationLock.Release;
   end;
 end;
 
@@ -1360,7 +1490,7 @@ procedure TOpenSSLDynamicLoader.UnbindHeaderSymbols;
   begin
     for i := ALastIndex downto 0 do
     try
-      TOpenSSLUnloadProc(GUnLoadList[i]);
+      TOpenSSLUnloadProc(FUnloaders[i]);
     except
       try
         UnbindFrom(i - 1);
@@ -1372,12 +1502,12 @@ procedure TOpenSSLDynamicLoader.UnbindHeaderSymbols;
   end;
 
 begin
-  GRegistrationLock.Acquire;
+  FRegistrationLock.Acquire;
   try
-    if Assigned(GUnLoadList) then
-      UnbindFrom(GUnLoadList.Count - 1);
+    if Assigned(FUnloaders) then
+      UnbindFrom(FUnloaders.Count - 1);
   finally
-    GRegistrationLock.Release;
+    FRegistrationLock.Release;
   end;
 end;
 
@@ -1410,8 +1540,6 @@ begin
 
   // 2. Resolve version for header bindings (shifted by 12 bits)
   LOpenSSL_version_num := LoadLibFunction(FLibCrypto, 'OpenSSL_version_num');
-  if not Assigned(LOpenSSL_version_num) then
-    LOpenSSL_version_num := LoadLibFunction(FLibCrypto, 'SSLeay');
   LSSLVersionNo := LOpenSSL_version_num() shr 12;
 
   // 3. Bind function pointers from dynamic libraries
@@ -1419,6 +1547,7 @@ begin
 
   // 4. Apply explicit or default configuration (with all OpenSSL calls guarded)
   ApplyConfiguration;
+  InitializeSSL;
 
   // 5. Execute registered lifecycle actions
   DispatchLoadActions;
@@ -1441,25 +1570,112 @@ begin
 end;
 {$ENDIF}
 
-initialization
-  Assert(SSLIsLoaded = nil);
-  SSLIsLoaded := TIdThreadSafeBoolean.Create;
-  GRegistrationLock := TIdCriticalSection.Create;
+class function TOpenSSLBaseLoader.CompareExchangeInstance(
+  const ACandidate: TOpenSSLBaseLoader): TOpenSSLBaseLoader;
+begin
+{$IFDEF FPC}
+  Result := TOpenSSLBaseLoader(InterlockedCompareExchange(
+    FInstance, Pointer(ACandidate), nil));
+{$ELSE}
+  Result := TInterlocked.CompareExchange<TOpenSSLBaseLoader>(
+    FInstance, ACandidate, nil);
+{$ENDIF}
+end;
+
+class function TOpenSSLBaseLoader.EnsureInstance: TOpenSSLBaseLoader;
+var
+  LCandidate: TOpenSSLBaseLoader;
+  LPublished: TOpenSSLBaseLoader;
+begin
+  Result := CompareExchangeInstance(nil);
+  if Assigned(Result) then
+    Exit;
 
 {$IFDEF OPENSSL_STATIC_LINK_MODEL}
-  GOpenSSLLoader := TOpenSSLStaticLoader.Create;
+  LCandidate := TOpenSSLStaticLoader.Create;
 {$ELSE}
-  GOpenSSLLoader := TOpenSSLDynamicLoader.Create;
+  LCandidate := TOpenSSLDynamicLoader.Create;
 {$ENDIF}
+  // The atomic object slot owns one interface reference until unit finalization.
+  // Acquire it before publication so another caller cannot release the owner.
+  LCandidate._AddRef;
+  try
+    LPublished := CompareExchangeInstance(LCandidate);
+    if not Assigned(LPublished) then
+    begin
+      Result := LCandidate;
+      LCandidate := nil; // Ownership transferred to the published slot.
+    end
+    else
+      Result := LPublished;
+  finally
+    // A losing candidate owns only its own locks and diagnostics, never the registry.
+    if Assigned(LCandidate) then
+      LCandidate._Release;
+  end;
+end;
+
+class function TOpenSSLBaseLoader.GetInstance: IOpenSSLLoader;
+begin
+  Result := EnsureInstance;
+end;
+
+class procedure TOpenSSLBaseLoader.Initialize;
+begin
+  // Preserve a singleton already published by early header registration.
+  EnsureInstance;
+end;
+
+class procedure TOpenSSLBaseLoader.Finalize;
+var
+  LInstance: TOpenSSLBaseLoader;
+begin
+  // Application threads must have stopped before module finalization.
+{$IFDEF FPC}
+  LInstance := TOpenSSLBaseLoader(InterlockedExchange(FInstance, Pointer(nil)));
+{$ELSE}
+  LInstance := TInterlocked.Exchange<TOpenSSLBaseLoader>(FInstance, nil);
+{$ENDIF}
+  if Assigned(LInstance) then
+    LInstance._Release;
+  FreeAndNil(FLoadActions);
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  TOpenSSLDynamicLoader.ClearHeaderRegistrations;
+{$ENDIF}
+end;
+
+function GetOpenSSLLoader: IOpenSSLLoader;
+begin
+  Result := TOpenSSLBaseLoader.GetInstance;
+end;
+
+procedure Register_SSLLoader(LoadProc: TOpenSSLLoadProc; const module_name: string);
+begin
+  TOpenSSLBaseLoader.EnsureInstance;
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  TOpenSSLDynamicLoader.RegisterHeaderLoader(LoadProc, module_name);
+{$ELSE}
+  if (module_name <> 'LibCrypto') and (module_name <> 'LibSSL') then
+    raise ETaurusTLSError.CreateFmt(ROSUnrecognisedLibName, [module_name]);
+{$ENDIF}
+end;
+
+procedure Register_SSLUnloader(UnloadProc: TOpenSSLUnloadProc);
+begin
+  TOpenSSLBaseLoader.EnsureInstance;
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  TOpenSSLDynamicLoader.RegisterHeaderUnloader(UnloadProc);
+{$ENDIF}
+end;
+
+procedure Register_SSLLoaderAction(const AActionProc: TTaurusTLSOnLoadAction);
+begin
+  TOpenSSLBaseLoader.RegisterAction(AActionProc);
+end;
+
+initialization
+  TOpenSSLBaseLoader.Initialize;
 
 finalization
-  GOpenSSLLoader := nil;
-
-  FreeAndNil(GOnLoadActionList);
-  FreeAndNil(GLibCryptoLoadList);
-  FreeAndNil(GLibSSLLoadList);
-  FreeAndNil(GUnLoadList);
-
-  FreeAndNil(GRegistrationLock);
-  FreeAndNil(SSLIsLoaded);
+  TOpenSSLBaseLoader.Finalize;
 end.

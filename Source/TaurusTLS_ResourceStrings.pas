@@ -265,6 +265,11 @@ resourcestring
   RSMsg_DES_set_key_wrong_key_parity = 'DES_set_key: Wrong Key Parity';
   RSMsg_DES_weak_key = 'DES_set_key: Weak key';
 
+  // OpenSSL Loader Messages
+  RSOSSLLoaderLifecycleInProgress =
+    'Cannot call %s while the OpenSSL loader is loading or unloading';
+  RSOSSLInitCryptoFailed = 'OPENSSL_init_crypto failed';
+
   // OpenSSL Configuration Messages
   RSOSSLConfigFilePathInvalid = 'Invalid OpenSSL configuration file path: %s';
   RSOSSLConfigFileNotFound = 'OpenSSL configuration file not found: %s';
