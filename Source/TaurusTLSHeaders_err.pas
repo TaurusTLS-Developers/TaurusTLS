@@ -249,6 +249,21 @@ const
   ERR_R_PKCS12_LIB = ERR_LIB_PKCS12;
 
 
+  (* Macros to help decode recorded system errors *)
+  ERR_SYSTEM_FLAG = Cardinal(MaxInt) + 1;
+  ERR_SYSTEM_MASK = Cardinal(MaxInt);
+
+  (* Macros to help decode recorded OpenSSL errors
+   * As expressed above, RFLAGS and REASON overlap by one bit to allow
+   * ERR_R_FATAL to use ERR_RFLAG_FATAL as its reason code.*)
+
+  ERR_LIB_OFFSET = TIdC_LONG(23);
+  ERR_LIB_MASK = $FF;
+  ERR_RFLAGS_OFFSET = TIdC_LONG(18);
+  ERR_RFLAGS_MASK = $1F;
+  ERR_REASON_MASK = $7FFFFF;
+
+
 (*
  * 99 is the maximum possible ERR_R_... code, higher values are reserved for
  * the individual libraries
@@ -501,7 +516,11 @@ const
 {helper_functions}
 function ERR_GET_LIB(l: TIdC_INT): TIdC_ULONG;
 begin
-  Result := (l shr 24) and $ff;
+  // OpenSSL 3.x/4.x err.h: system flag bit 31, library offset 23.
+  if (TIdC_UINT(l) and ERR_SYSTEM_FLAG) <> 0 then
+    Result := ERR_LIB_SYS
+  else
+    Result := (TIdC_UINT(l) shr ERR_LIB_OFFSET) and ERR_LIB_MASK;
 end;
 {\helper_functions}
 
@@ -588,7 +607,11 @@ end;
 
 function  _ERR_GET_REASON(const l : TIdC_INT) : TIdC_INT; cdecl;
 begin
-  Result := l and $fff;
+  // OpenSSL 3.x/4.x preserves all reason flags and system error bits.
+  if (TIdC_UINT(l) and $80000000) <> 0 then
+    Result := l and $7FFFFFFF
+  else
+    Result := l and $7FFFFF;
 end;
 
 procedure  ERR_ERR_put_error(lib: TIdC_INT; func: TIdC_INT; reason: TIdC_INT;
@@ -1978,7 +2001,11 @@ end;
 
 function ERR_GET_REASON(const l : TIdC_INT) : TIdC_INT;
 begin
-  Result := l and $fff;
+  // Same OpenSSL 3.x/4.x decoding as the dynamic-link helper.
+  if (TIdC_UINT(l) and $80000000) <> 0 then
+    Result := l and $7FFFFFFF
+  else
+    Result := l and $7FFFFF;
 end;
 
 {$ENDIF}
