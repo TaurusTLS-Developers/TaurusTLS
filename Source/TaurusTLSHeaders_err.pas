@@ -605,13 +605,9 @@ begin
   ERR_PUT_error(ERR_LIB_X509,f,r,nil,0);
 end;
 
-function  _ERR_GET_REASON(const l : TIdC_INT) : TIdC_INT; cdecl;
+function _ERR_GET_REASON(const l : TIdC_INT) : TIdC_INT; cdecl; {$IFDEF USE_INLINE}inline; {$ENDIF}
 begin
-  // OpenSSL 3.x/4.x preserves all reason flags and system error bits.
-  if (TIdC_UINT(l) and $80000000) <> 0 then
-    Result := l and $7FFFFFFF
-  else
-    Result := l and $7FFFFF;
+  Result:=ERR_GET_REASON(l);
 end;
 
 procedure  ERR_ERR_put_error(lib: TIdC_INT; func: TIdC_INT; reason: TIdC_INT;
