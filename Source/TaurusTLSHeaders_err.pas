@@ -1998,10 +1998,10 @@ end;
 function ERR_GET_REASON(const l : TIdC_INT) : TIdC_INT;
 begin
   // Same OpenSSL 3.x/4.x decoding as the dynamic-link helper.
-  if (TIdC_UINT(l) and $80000000) <> 0 then
-    Result := l and $7FFFFFFF
+  if (TIdC_UINT(l) and ERR_SYSTEM_FLAG) <> 0 then
+    Result := l and ERR_SYSTEM_MASK
   else
-    Result := l and $7FFFFF;
+    Result := l and ERR_REASON_MASK;
 end;
 
 {$ENDIF}
