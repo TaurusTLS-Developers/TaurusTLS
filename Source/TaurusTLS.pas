@@ -2678,7 +2678,9 @@ uses
   Posix.Time,
   Posix.Unistd,
 {$ENDIF}
+  IdExceptionCore,
   IdFIPS,
+  IdResourceStrings,
   IdResourceStringsProtocols,
   TaurusTLS_ResourceStrings,
   IdStack,
@@ -4226,6 +4228,8 @@ end;
 
 function TTaurusTLSIOHandlerSocket.RecvEnc(var VBuffer: TIdBytes): Integer;
 begin
+  if fSSLSocket = nil then
+    raise EIdClosedSocket.Create(RSStatusDisconnected);
   Result := fSSLSocket.Recv(VBuffer);
 end;
 
@@ -4244,6 +4248,8 @@ end;
 function TTaurusTLSIOHandlerSocket.SendEnc(const ABuffer: TIdBytes;
   const AOffset, ALength: Integer): Integer;
 begin
+  if fSSLSocket = nil then
+    raise EIdClosedSocket.Create(RSStatusDisconnected);
   // This can not be altered because it inherits from Indy.
   Result := fSSLSocket.Send(ABuffer, AOffset, ALength); //PALOFF
 end;
