@@ -308,7 +308,9 @@ type
 	  
 {helper_functions}
   {$EXTERNALSYM ERR_GET_LIB}
-function ERR_GET_LIB(l: TIdC_INT): TIdC_ULONG;
+  function ERR_GET_LIB(l: TIdC_INT): TIdC_ULONG;
+
+  function ERR_GET_REASON(const l : TIdC_INT) : TIdC_INT;
 {\helper_functions}
 
 
@@ -399,8 +401,6 @@ var
   SSLErr: procedure (func: TIdC_INT; reason: TIdC_INT); cdecl = nil; {removed 1.0.0}
   {$EXTERNALSYM X509err}
   X509err: procedure (const f,r : TIdC_INT); cdecl = nil; {removed 1.0.0}
-  {$EXTERNALSYM ERR_GET_REASON}
-  ERR_GET_REASON: function (const l : TIdC_INT) : TIdC_INT; cdecl = nil; {removed 1.0.0}
 
 {$ELSE}
 
@@ -488,8 +488,6 @@ var
   procedure SSLErr(func: TIdC_INT; reason: TIdC_INT); {removed 1.0.0}
   {$EXTERNALSYM X509err}
   procedure X509err(const f,r : TIdC_INT); {removed 1.0.0}
-  {$EXTERNALSYM ERR_GET_REASON}
-  function ERR_GET_REASON(const l : TIdC_INT) : TIdC_INT; {removed 1.0.0}
 {$ENDIF}
 
 implementation
@@ -511,7 +509,6 @@ const
   ERR_put_error_removed = (byte(3) shl 8 or byte(0)) shl 8 or byte(0);
   SSLErr_removed = (byte(1) shl 8 or byte(0)) shl 8 or byte(0);
   X509err_removed = (byte(1) shl 8 or byte(0)) shl 8 or byte(0);
-  ERR_GET_REASON_removed = (byte(1) shl 8 or byte(0)) shl 8 or byte(0);
 
 {helper_functions}
 function ERR_GET_LIB(l: TIdC_INT): TIdC_ULONG;
@@ -521,6 +518,15 @@ begin
     Result := ERR_LIB_SYS
   else
     Result := (TIdC_UINT(l) shr ERR_LIB_OFFSET) and ERR_LIB_MASK;
+end;
+
+function ERR_GET_REASON(const l : TIdC_INT) : TIdC_INT;
+begin
+  // Same OpenSSL 3.x/4.x decoding as the dynamic-link helper.
+  if (TIdC_UINT(l) and ERR_SYSTEM_FLAG) <> 0 then
+    Result := l and ERR_SYSTEM_MASK
+  else
+    Result := l and ERR_REASON_MASK;
 end;
 {\helper_functions}
 
@@ -577,7 +583,6 @@ const
 
   SSLErr_procname = 'SSLErr'; {removed 1.0.0}
   X509err_procname = 'X509err'; {removed 1.0.0}
-  ERR_GET_REASON_procname = 'ERR_GET_REASON'; {removed 1.0.0}
 
   {$IFNDEF _FIXINSIGHT_}
 {$I TaurusTLSNoRetValOff.inc}
@@ -603,11 +608,6 @@ end;
 procedure  _X509err(const f,r : TIdC_INT); cdecl;
 begin
   ERR_PUT_error(ERR_LIB_X509,f,r,nil,0);
-end;
-
-function _ERR_GET_REASON(const l : TIdC_INT) : TIdC_INT; cdecl; {$IFDEF USE_INLINE}inline; {$ENDIF}
-begin
-  Result:=ERR_GET_REASON(l);
 end;
 
 procedure  ERR_ERR_put_error(lib: TIdC_INT; func: TIdC_INT; reason: TIdC_INT;
@@ -828,12 +828,6 @@ end;
 procedure  ERR_X509err(const f,r : TIdC_INT);  cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(X509err_procname);
-end;
-
-
-function  ERR_ERR_GET_REASON(const l : TIdC_INT) : TIdC_INT;  cdecl;
-begin
-  ETaurusTLSAPIFunctionNotPresent.RaiseException(ERR_GET_REASON_procname);
 end;
 
 
@@ -1899,39 +1893,6 @@ begin
     {$ifend}
   end;
 
- 
-  ERR_GET_REASON := LoadLibFunction(ADllHandle, ERR_GET_REASON_procname);
-  FuncLoadError := not assigned(ERR_GET_REASON);
-  if FuncLoadError then
-  begin
-    {$if not defined(ERR_GET_REASON_allownil)}
-    ERR_GET_REASON := ERR_ERR_GET_REASON;
-    {$ifend}
-    {$if declared(ERR_GET_REASON_introduced)}
-    if LibVersion < ERR_GET_REASON_introduced then
-    begin
-      {$if declared(FC_ERR_GET_REASON)}
-      ERR_GET_REASON := FC_ERR_GET_REASON;
-      {$ifend}
-      FuncLoadError := false;
-    end;
-    {$ifend}
-    {$if declared(ERR_GET_REASON_removed)}
-    if ERR_GET_REASON_removed <= LibVersion then
-    begin
-      {$if declared(_ERR_GET_REASON)}
-      ERR_GET_REASON := _ERR_GET_REASON;
-      {$ifend}
-      FuncLoadError := false;
-    end;
-    {$ifend}
-    {$if not defined(ERR_GET_REASON_allownil)}
-    if FuncLoadError then
-      AFailed.Add('ERR_GET_REASON');
-    {$ifend}
-  end;
-
-
 end;
 
 procedure Unload;
@@ -1969,7 +1930,6 @@ begin
   ERR_clear_last_mark := nil; {introduced 1.1.0}
   SSLErr := nil; {removed 1.0.0}
   X509err := nil; {removed 1.0.0}
-  ERR_GET_REASON := nil; {removed 1.0.0}
 end;
   {$ENDIF}
 {$ELSE}
@@ -1993,15 +1953,6 @@ end;
 procedure X509err(const f,r : TIdC_INT);
 begin
   ERR_PUT_error(ERR_LIB_X509,f,r,nil,0);
-end;
-
-function ERR_GET_REASON(const l : TIdC_INT) : TIdC_INT;
-begin
-  // Same OpenSSL 3.x/4.x decoding as the dynamic-link helper.
-  if (TIdC_UINT(l) and $80000000) <> 0 then
-    Result := l and $7FFFFFFF
-  else
-    Result := l and $7FFFFF;
 end;
 
 {$ENDIF}
