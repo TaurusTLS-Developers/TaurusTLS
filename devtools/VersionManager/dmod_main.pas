@@ -492,16 +492,19 @@ begin
         end;
         if not VarIsNull(LXMLNode['VerInfo_Keys']) then
         begin
-          LXMLNode['VerInfo_Keys'] := 'CompanyName=' + ACompanyName +
-            ';FileDescription=$(MSBuildProjectName);FileVersion=' +
-            IntToStr(AMajorVersion) + '.' + IntToStr(AMinorVersion) + '.' +
-            IntToStr(ARelease) + '.' + IntToStr(ABuild) + ';InternalName=' +
-            ChangeFileExt(ExtractFileName(APkg), '.bpl') + ';LegalCopyright=' +
-            ACopyright + ';LegalTrademarks=;OriginalFilename=' +
-            ChangeFileExt(ExtractFileName(APkg), '.bpl') +
-            ';ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion='
-            + IntToStr(AMajorVersion) + '.' + IntToStr(AMinorVersion) + '.' +
-            IntToStr(ARelease) + '.' + IntToStr(ABuild) + ';Comments=';
+          if Pos('minSdkVersion', LXMLNode['VerInfo_Keys']) = 0 then
+          begin
+            LXMLNode['VerInfo_Keys'] := 'CompanyName=' + ACompanyName +
+              ';FileDescription=$(MSBuildProjectName);FileVersion=' +
+              IntToStr(AMajorVersion) + '.' + IntToStr(AMinorVersion) + '.' +
+              IntToStr(ARelease) + '.' + IntToStr(ABuild) + ';InternalName=' +
+              ChangeFileExt(ExtractFileName(APkg), '.bpl') + ';LegalCopyright=' +
+              ACopyright + ';LegalTrademarks=;OriginalFilename=' +
+              ChangeFileExt(ExtractFileName(APkg), '.bpl') +
+              ';ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion='
+              + IntToStr(AMajorVersion) + '.' + IntToStr(AMinorVersion) + '.' +
+              IntToStr(ARelease) + '.' + IntToStr(ABuild) + ';Comments=';
+          end;
         end;
       end;
     end;

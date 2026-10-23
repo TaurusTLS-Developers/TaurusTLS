@@ -1,11 +1,10 @@
 object dmodMain: TdmodMain
   OnCreate = DataModuleCreate
   OnDestroy = DataModuleDestroy
-  Height = 750
-  Width = 1000
-  PixelsPerInch = 120
+  Height = 600
+  Width = 800
   object projFile: TXMLDocument
-    Left = 608
-    Top = 432
+    Left = 486
+    Top = 346
   end
 end
