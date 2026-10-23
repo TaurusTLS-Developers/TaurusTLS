@@ -23,22 +23,25 @@ program TaurusTLS.IT.Shutdown;
   when omitted, or the supplied directory when present. Match the libraries
   to the executable architecture. Static builds ignore the library path.
   --inject-cleanup-failure intentionally raises in the first cleanup callback;
-  both callbacks must still execute, and the observer must report failure.
+  both callbacks must still execute. Detecting this expected exception while
+  all cleanup checks pass is a successful test, reported as PASS with exit 0.
   This standalone app does not accept DUnitX runner switches.
 
   Usage
   Run each check as a fresh process from a terminal so finalization output
   remains visible. Use an external timeout when automating process execution.
-  PowerShell, Win32 with the controlled development distribution:
-    & '.\Win32\Debug\TaurusTLS.IT.Shutdown.exe' '-osp:C:\Temp\OpenSSL-Distribution\legacy\openssl-4.0.2-Windows-x86.zip'
+  PowerShell, Win32 with a selected OpenSSL distribution:
+    & '.\Win32\Debug\TaurusTLS.IT.Shutdown.exe' '-osp:<Path-to-OpenSSL 32-bit shared libraries>'
     $LASTEXITCODE
-  For Win64, use the Win64 executable and Windows-x64.zip directory.
-  Linux or macOS, using system libraries or the linked archive:
+  For Win64, use the Win64 executable and OpenSSL 64-bit shared libraries.
+  Linux usually uses the system OpenSSL libraries:
     ./TaurusTLS_IT_Shutdown; echo $?
-  Dynamic libraries from a selected directory:
+  Use -osp: to select another directory containing OpenSSL shared libraries:
     ./TaurusTLS_IT_Shutdown -osp:/path/to/openssl/libraries; echo $?
-  Run the executable from its deployed directory (macOS: app/Contents/MacOS).
-  Append --inject-cleanup-failure for the negative check.
+
+  macOS builds use statically linked OpenSSL and do not require -osp:.
+  Run the deployed executable from <application>.app/Contents/MacOS.
+  Append --inject-cleanup-failure to test cleanup after an expected exception.
 
   Results
   Normal success ends with:
@@ -46,9 +49,13 @@ program TaurusTLS.IT.Shutdown;
     UNLOAD callback 1
     PASS: loader-only unit finalization completed
   Exit code 0 means success; detected failures print FAIL and exit with code 1.
-  The injected-failure check is expected to exit with code 1. A startup failure
-  skips shutdown verification and retains the original error in the output.
-  A crash or timeout is a failed run even if the final PASS line is absent.
+  The injected-failure check also exits with code 0 when it behaves as expected.
+  The additional PASS messages confirm that callback 2 raised the deliberate
+  EExpectedCleanupFailure exception, the loader caught it, and callback 1 still
+  ran. Final loader state, metadata and binding checks must also pass.
+  Missing injection or any unexpected cleanup error is a failure. A startup
+  failure skips shutdown verification and retains the original error in the
+  output. A crash or timeout is always a failed run.
 }
 
 {$APPTYPE CONSOLE}
@@ -65,6 +72,8 @@ uses
   TaurusTLSHeaders_crypto in '..\Source\TaurusTLSHeaders_crypto.pas';
 
 type
+  EExpectedCleanupFailure = class(Exception);
+
   TShutdownProbe = class
   private
     FLoader: IOpenSSLLoader;
@@ -72,6 +81,7 @@ type
     FUnloadCount: Integer;
     FFailure: string;
     FInjectFailure: Boolean;
+    FInjectedFailureObserved: Boolean;
     procedure CheckNativeAPI;
     procedure Action(const AIndex: Integer; AAction: TOpenSSLLoadAction);
   public
@@ -126,13 +136,15 @@ begin
           Require(MainCompleted, 'Cleanup ran before the program body completed');
           Writeln('UNLOAD callback ', AIndex);
           if FInjectFailure and (AIndex = 2) then
-            raise Exception.Create('Injected cleanup failure');
+            raise EExpectedCleanupFailure.Create('Injected cleanup failure');
         end;
     end;
   except
     on E: Exception do
     begin
-      if FFailure = '' then
+      if E is EExpectedCleanupFailure then
+        FInjectedFailureObserved := True
+      else if FFailure = '' then
         FFailure := E.ClassName + ': ' + E.Message;
       raise;
     end;
@@ -209,6 +221,8 @@ begin
     Format('Expected two load/unload callbacks; observed %d/%d',
       [FLoadCount, FUnloadCount]));
   Require(FFailure = '', 'Callback failed: ' + FFailure);
+  Require(FInjectedFailureObserved = FInjectFailure,
+    'Cleanup failure injection did not match the requested test mode');
   // Use the retained interface: querying the singleton now would recreate it.
   Require((FLoader.State = lsNotLoaded) and not FLoader.IsLoaded,
     'Loader remained ready after finalization');
@@ -218,6 +232,11 @@ begin
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   Require(not Assigned(OpenSSL_version_num), 'Dynamic version symbol was not reset');
 {$ENDIF}
+  if FInjectFailure then
+  begin
+    Writeln('PASS: cleanup callback 2 raised EExpectedCleanupFailure: Injected cleanup failure');
+    Writeln('PASS: loader caught the expected exception, callback 1 still ran, and all final cleanup checks passed');
+  end;
 end;
 
 procedure Run;
