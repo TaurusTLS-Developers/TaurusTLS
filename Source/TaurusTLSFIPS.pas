@@ -77,9 +77,7 @@ uses
   IdGlobal,
   IdCTypes,
   IdFIPS,
-  {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   TaurusTLSLoader,
-  {$ENDIF}
   TaurusTLSExceptionHandlers,
   TaurusTLS_ResourceStrings,
   TaurusTLSHeaders_evp,
@@ -228,11 +226,8 @@ end;
 
 function TaurusTLSIsHashingIntfAvail: Boolean;
 begin
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  // Linked native code still requires explicit TaurusTLS runtime initialization.
   Result := GetOpenSSLLoader.IsLoaded;
-{$ELSE}
-  Result := true;
-{$ENDIF}
 end;
 
 function TaurusTLSGetFIPSMode: Boolean;
@@ -257,6 +252,9 @@ function TaurusIsHashAvail(const AHashName : PIdAnsiChar) : Boolean; {$IFDEF USE
 var
   lMeth: PEVP_MD;
 begin
+  Result := False;
+  if not GetOpenSSLLoader.IsLoaded then
+    Exit;
   lMeth := nil;
   try
     lMeth := EVP_MD_fetch(nil, AHashName, nil);
@@ -390,11 +388,7 @@ end;
 
 function TaurusTLSIsHMACAvail: Boolean;
 begin
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   Result := GetOpenSSLLoader.IsLoaded;
-{$ELSE}
-  Result := true;
-{$ENDIF}
 end;
 
 function TaurusTLSIsHMACMD5Avail: Boolean;
@@ -508,6 +502,8 @@ end;
 
 procedure InstallFIPSHooks;
 begin
+  // A library query must not initialize Indy's separate OpenSSL backend.
+  LoadHashLibrary := TaurusTLSIsHashingIntfAvail;
   SetFIPSMode := TaurusTLSSetFIPSMode;
   GetFIPSMode := TaurusTLSGetFIPSMode;
   IsHashingIntfAvail := TaurusTLSIsHashingIntfAvail;
