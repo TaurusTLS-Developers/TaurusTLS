@@ -14,7 +14,7 @@ uses
 
 type
   /// <summary>Owns a real Indy loopback pair and isolated PEM assets.</summary>
-  TIOFixture = class(TOsslBaseFixture)
+  TIOFixture = class(TOsslAutoloadFixture)
   private
     FDir, FCert, FKey, FError: string;
     FStop: TEvent;
@@ -158,7 +158,7 @@ end;
 
 procedure TIOFixture.Setup;
 begin
-  CheckAllFailures;
+  CheckLoaded;
   FExpired := 0;
   FVerifyError := 0;
   FAlert := 0;

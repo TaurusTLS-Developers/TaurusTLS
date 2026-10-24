@@ -109,36 +109,36 @@ begin
   case AState of
     1:
       begin
-        FLoader.ConfigFile := FInvalidSyntaxConfigFile;
+        Loader.ConfigFile := FInvalidSyntaxConfigFile;
         Assert.WillRaise(
           procedure
           begin
-            FLoader.Load;
+            Loader.Load;
           end, ETaurusTLSConfigFileLoadError);
       end;
     2:
       begin
-        FLoader.ConfigFile := FValidConfigFile;
-        Assert.IsTrue(FLoader.Load);
-        FLoader.Unload;
+        Loader.ConfigFile := FValidConfigFile;
+        Assert.IsTrue(Loader.Load);
+        Loader.Unload;
       end;
   end;
   // An accidental Load would raise instead of quietly changing the state.
   LConfig := TPath.Combine(FTempDir, 'missing_consumer_config.cnf');
-  FLoader.ConfigFile := LConfig;
-  LState := FLoader.State;
-  LDiagnostics := FLoader.FailedToLoad.Text;
+  Loader.ConfigFile := LConfig;
+  LState := Loader.State;
+  LDiagnostics := Loader.FailedToLoad.Text;
   CheckUnavailable;
   CheckUnavailable;
-  Assert.IsTrue(FLoader.State = LState);
-  Assert.AreEqual(LConfig, FLoader.ConfigFile);
-  Assert.AreEqual(LDiagnostics, FLoader.FailedToLoad.Text);
-  Assert.AreEqual('', FLoader.Version);
+  Assert.IsTrue(Loader.State = LState);
+  Assert.AreEqual(LConfig, Loader.ConfigFile);
+  Assert.AreEqual(LDiagnostics, Loader.FailedToLoad.Text);
+  Assert.AreEqual('', Loader.Version);
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   Assert.IsFalse(Assigned(OpenSSL_version_num), 'Queries must not bind native APIs');
 {$ENDIF}
   if AState = 1 then
-    Assert.IsFalse(FLoader.Load, 'Query must not reset failed-state retry blocking');
+    Assert.IsFalse(Loader.Load, 'Query must not reset failed-state retry blocking');
 end;
 
 procedure TLoaderFIPSReadinessFixture.Hash_Ready;
@@ -148,10 +148,10 @@ var
   LAvailable: Boolean;
 begin
   InstallFIPSHooks;
-  FLoader.ConfigFile := FValidConfigFile;
+  Loader.ConfigFile := FValidConfigFile;
   for I := 1 to 2 do
   begin
-    Assert.IsTrue(FLoader.Load);
+    Assert.IsTrue(Loader.Load);
     Assert.IsTrue(IdFIPS.LoadHashLibrary());
     Assert.IsTrue(IdHash.HashFunctionsLoaded);
     Assert.IsTrue(IdFIPS.IsHashingIntfAvail());
@@ -172,9 +172,9 @@ begin
     end;
     Assert.AreEqual(LAvailable, IdFIPS.IsMD4HashIntfAvail(),
       'Loader readiness must not imply MD4 availability');
-    Assert.IsTrue(FLoader.State = lsLoadedReady);
-    Assert.AreEqual(FValidConfigFile, FLoader.ConfigFile);
-    FLoader.Unload;
+    Assert.IsTrue(Loader.State = lsLoadedReady);
+    Assert.AreEqual(FValidConfigFile, Loader.ConfigFile);
+    Loader.Unload;
     CheckUnavailable;
   end;
 end;
@@ -187,9 +187,9 @@ begin
   TConsumerReadinessObserver.Error := '';
   TConsumerReadinessObserver.Active := True;
   try
-    FLoader.ConfigFile := FValidConfigFile;
-    Assert.IsTrue(FLoader.Load);
-    FLoader.Unload;
+    Loader.ConfigFile := FValidConfigFile;
+    Assert.IsTrue(Loader.Load);
+    Loader.Unload;
     Assert.AreEqual(1, TConsumerReadinessObserver.LoadCount);
     Assert.AreEqual(1, TConsumerReadinessObserver.UnloadCount);
     Assert.AreEqual('', TConsumerReadinessObserver.Error);
@@ -207,15 +207,15 @@ procedure TLoaderFIPSReadinessFixture.Hash_Reinstall(const AReady: Integer);
 var
   LSavedHook: TLoadHashLibrary;
 begin
-  FLoader.ConfigFile := FValidConfigFile;
+  Loader.ConfigFile := FValidConfigFile;
   if AReady <> 0 then
-    Assert.IsTrue(FLoader.Load);
+    Assert.IsTrue(Loader.Load);
   LSavedHook := IdFIPS.LoadHashLibrary;
   try
     IdFIPS.LoadHashLibrary := UnexpectedHashLoader;
     InstallFIPSHooks;
     Assert.AreEqual(AReady <> 0, IdHash.HashFunctionsLoaded);
-    Assert.IsTrue(FLoader.IsLoaded = (AReady <> 0));
+    Assert.IsTrue(Loader.IsLoaded = (AReady <> 0));
   finally
     IdFIPS.LoadHashLibrary := LSavedHook;
   end;

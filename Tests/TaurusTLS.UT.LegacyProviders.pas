@@ -29,7 +29,7 @@ type
   /// </summary>
   [TestFixture]
   [Category('LegacyProviders')]
-  TTaurusTLSLegacyProvidersLoaderFixture = class(TOsslBaseFixture)
+  TTaurusTLSLegacyProvidersLoaderFixture = class(TOsslAutoloadFixture)
   public
     [Test]
     procedure TestIsLegacyProviderLoaded;
@@ -44,7 +44,7 @@ type
   /// </remarks>
   [TestFixture]
   [Category('LegacyProviders')]
-  TTaurusTLSHashes = class(TOsslBaseFixture)
+  TTaurusTLSHashes = class(TOsslAutoloadFixture)
   public
     [TestCase('Provider.Legacy (MD4): ''''', 'MD4,,31d6cfe0d16ae931b73c59d7e0c089c0')]
     [TestCase('Provider.Legacy (MD4): ''abcd''', 'MD4,61626364,41decd8f579255c5200f86a4bb3ba740')]

@@ -11,7 +11,7 @@ uses
 type
   [TestFixture]
   [Category('FIPSProperties')]
-  TTaurusTLSFIPSPropertiesFixture = class(TOsslBaseFixture)
+  TTaurusTLSFIPSPropertiesFixture = class(TOsslAutoloadFixture)
   public
 {$IFDEF OPENSSL_STATIC_LINK_MODEL}
     [Test]

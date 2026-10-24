@@ -16,7 +16,7 @@ uses
 type
   [TestFixture]
   [Category('InputRanges')]
-  TTaurusTLSInputRangesFixture = class(TOsslBaseFixture)
+  TTaurusTLSInputRangesFixture = class(TOsslAutoloadFixture)
   public
     /// <summary>
     ///   A length past MaxInt gets no BIO. Narrowed to an int it became

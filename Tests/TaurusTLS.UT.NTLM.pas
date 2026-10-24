@@ -42,7 +42,7 @@ type
 
   [TestFixture]
   [Category('NTLM')]
-  TOSSLNTLMFixture = class(TOsslBaseFixture)
+  TOSSLNTLMFixture = class(TOsslAutoloadFixture)
   private
     class function HexBytes(const AHex: string): TIdBytes; static;
     class procedure AssertBytesEqual(const AExpected, AActual: TIdBytes); static;
@@ -145,14 +145,14 @@ var
 begin
   // Loading this sentinel would raise; a passive readiness query must ignore it.
   LConfig := TPath.Combine(FTempDir, 'missing_ntlm_config.cnf');
-  FLoader.ConfigFile := LConfig;
-  LDiagnostics := FLoader.FailedToLoad.Text;
+  Loader.ConfigFile := LConfig;
+  LDiagnostics := Loader.FailedToLoad.Text;
   for I := 1 to 2 do
     Assert.IsFalse(IdFIPS.LoadNTLMLibrary());
-  Assert.IsTrue(FLoader.State = lsNotLoaded);
-  Assert.AreEqual(LConfig, FLoader.ConfigFile);
-  Assert.AreEqual(LDiagnostics, FLoader.FailedToLoad.Text);
-  Assert.AreEqual('', FLoader.Version);
+  Assert.IsTrue(Loader.State = lsNotLoaded);
+  Assert.AreEqual(LConfig, Loader.ConfigFile);
+  Assert.AreEqual(LDiagnostics, Loader.FailedToLoad.Text);
+  Assert.AreEqual('', Loader.Version);
   Assert.AreEqual(0, TNTLMReadinessObserver.LoadCount);
   Assert.AreEqual(0, TNTLMReadinessObserver.UnloadCount);
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
@@ -165,26 +165,26 @@ var
   LDiagnostics: string;
   I: Integer;
 begin
-  FLoader.ConfigFile := FInvalidSyntaxConfigFile;
+  Loader.ConfigFile := FInvalidSyntaxConfigFile;
   Assert.WillRaise(
     procedure
     begin
-      FLoader.Load;
+      Loader.Load;
     end,
     ETaurusTLSConfigFileLoadError);
-  Assert.IsTrue(FLoader.State = lsLoadedFailed);
-  LDiagnostics := FLoader.FailedToLoad.Text;
+  Assert.IsTrue(Loader.State = lsLoadedFailed);
+  LDiagnostics := Loader.FailedToLoad.Text;
   // A corrected property must not let a status query reset the circuit breaker.
-  FLoader.ConfigFile := FValidConfigFile;
+  Loader.ConfigFile := FValidConfigFile;
   for I := 1 to 2 do
     Assert.IsFalse(IdFIPS.LoadNTLMLibrary());
-  Assert.IsTrue(FLoader.State = lsLoadedFailed);
-  Assert.AreEqual(FValidConfigFile, FLoader.ConfigFile);
-  Assert.AreEqual(LDiagnostics, FLoader.FailedToLoad.Text);
-  Assert.IsFalse(FLoader.Load, 'Hook must leave retry blocked until explicit Unload');
+  Assert.IsTrue(Loader.State = lsLoadedFailed);
+  Assert.AreEqual(FValidConfigFile, Loader.ConfigFile);
+  Assert.AreEqual(LDiagnostics, Loader.FailedToLoad.Text);
+  Assert.IsFalse(Loader.Load, 'Hook must leave retry blocked until explicit Unload');
   Assert.AreEqual(0, TNTLMReadinessObserver.LoadCount);
   Assert.AreEqual(0, TNTLMReadinessObserver.UnloadCount);
-  FLoader.Unload;
+  Loader.Unload;
   Assert.IsFalse(IdFIPS.LoadNTLMLibrary(), 'Reset alone must not initialize OpenSSL');
 end;
 
@@ -194,23 +194,23 @@ var
   LConfig: string;
   LVersion: string;
 begin
-  FLoader.ConfigFile := FValidConfigFile;
+  Loader.ConfigFile := FValidConfigFile;
   for I := 1 to ACycles do
   begin
     Assert.IsFalse(IdFIPS.LoadNTLMLibrary());
-    Assert.IsTrue(FLoader.Load);
-    LConfig := FLoader.ConfigFile;
-    LVersion := FLoader.Version;
+    Assert.IsTrue(Loader.Load);
+    LConfig := Loader.ConfigFile;
+    LVersion := Loader.Version;
     Assert.IsTrue(IdFIPS.LoadNTLMLibrary());
     Assert.IsTrue(IdFIPS.LoadNTLMLibrary());
-    Assert.IsTrue(FLoader.State = lsLoadedReady);
-    Assert.AreEqual(LConfig, FLoader.ConfigFile);
-    Assert.AreEqual(LVersion, FLoader.Version);
+    Assert.IsTrue(Loader.State = lsLoadedReady);
+    Assert.AreEqual(LConfig, Loader.ConfigFile);
+    Assert.AreEqual(LVersion, Loader.Version);
     Assert.AreEqual(I, TNTLMReadinessObserver.LoadCount);
     Assert.IsFalse(TNTLMReadinessObserver.ReadyDuringLoad);
-    FLoader.Unload;
+    Loader.Unload;
     Assert.IsFalse(IdFIPS.LoadNTLMLibrary());
-    Assert.IsTrue(FLoader.State = lsNotLoaded);
+    Assert.IsTrue(Loader.State = lsNotLoaded);
     Assert.AreEqual(I, TNTLMReadinessObserver.UnloadCount);
     Assert.IsFalse(TNTLMReadinessObserver.ReadyDuringUnload);
     Assert.AreEqual('', TNTLMReadinessObserver.Error,
@@ -227,18 +227,18 @@ procedure TLoaderNTLMReadinessFixture.Hooks_Reinstalled(const AReady: Integer);
 var
   LSavedHook: TLoadNTLMLibrary;
 begin
-  FLoader.ConfigFile := FValidConfigFile;
+  Loader.ConfigFile := FValidConfigFile;
   if AReady <> 0 then
-    Assert.IsTrue(FLoader.Load);
+    Assert.IsTrue(Loader.Load);
   LSavedHook := IdFIPS.LoadNTLMLibrary;
   try
     IdFIPS.LoadNTLMLibrary := UnexpectedNTLMHook;
     InstallFIPSHooks;
     Assert.IsTrue(IdFIPS.LoadNTLMLibrary() = (AReady <> 0));
     if AReady <> 0 then
-      Assert.IsTrue(FLoader.State = lsLoadedReady)
+      Assert.IsTrue(Loader.State = lsLoadedReady)
     else
-      Assert.IsTrue(FLoader.State = lsNotLoaded);
+      Assert.IsTrue(Loader.State = lsNotLoaded);
   finally
     IdFIPS.LoadNTLMLibrary := LSavedHook;
   end;
@@ -282,7 +282,7 @@ procedure TOSSLNTLMFixture.NTLMResponse(
 var
   LChallenge, LActual: TIdBytes;
 begin
-  CheckAllFailures;
+  CheckLoaded;
   CheckLegacyProvider;
   LChallenge := HexBytes(AChallengeHex);
   Assert.AreEqual<Integer>(8, Length(LChallenge));
@@ -295,7 +295,7 @@ procedure TOSSLNTLMFixture.LMResponse(
 var
   LChallenge, LActual: TIdBytes;
 begin
-  CheckAllFailures;
+  CheckLoaded;
   CheckLegacyProvider;
   LChallenge := HexBytes(AChallengeHex);
   Assert.AreEqual<Integer>(8, Length(LChallenge));
@@ -309,7 +309,7 @@ var
   LInput, LInputBefore, LExpected, LBuffer, LActual: TIdBytes;
   I: Integer;
 begin
-  CheckAllFailures;
+  CheckLoaded;
   CheckLegacyProvider;
   Assert.IsTrue((ALeftGuard > 0) and (ARightGuard > 0));
 

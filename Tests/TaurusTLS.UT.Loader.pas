@@ -16,15 +16,15 @@ uses
   TaurusTLSLoader,
   TaurusTLSExceptionHandlers,
   TaurusTLS_ResourceStrings,
-  TaurusTLSConsts;
+  TaurusTLSConsts,
+  TaurusTLS.UT.TestClasses;
 
 type
   /// <summary>
   ///   Base fixture providing shared setup, teardown, and temporary configuration file helpers.
   /// </summary>
-  TLoaderBaseFixture = class
+  TLoaderBaseFixture = class(TOsslBaseFixture)
   protected
-    FLoader: IOpenSSLLoader;
     FTempDir: string;
     FValidConfigFile: string;
     FInvalidSyntaxConfigFile: string;
@@ -455,20 +455,19 @@ begin
   TMonitor.Enter(GLoaderTestLock);
   FLockHeld := True;
   try
-    FLoader := GetOpenSSLLoader;
-    Assert.IsNotNull(FLoader);
-    Assert.IsFalse(TOsslLoader.Loaded, 'Loader fixtures require exclusive loader ownership');
-    FOrigOpenSSLPath := FLoader.OpenSSLPath;
-    FOrigSSLLibVersions := FLoader.SSLLibVersions;
-    FOrigConfigFile := FLoader.ConfigFile;
+    Assert.IsNotNull(Loader);
+    Assert.IsFalse(Loader.IsLoaded, 'Loader fixtures require exclusive loader ownership');
+    FOrigOpenSSLPath := Loader.OpenSSLPath;
+    FOrigSSLLibVersions := Loader.SSLLibVersions;
+    FOrigConfigFile := Loader.ConfigFile;
     FOrigCurrentDir := GetCurrentDir;
     FHadConfEnv := ReadTestEnv('OPENSSL_CONF', FOrigConfEnv);
     FHadModulesEnv := ReadTestEnv('OPENSSL_MODULES', FOrigModulesEnv);
     FStateCaptured := True;
-    FLoader.Unload;
-    FLoader.ConfigFile := '';
-    if TOsslLoader.Path <> '' then
-      FLoader.OpenSSLPath := TOsslLoader.Path;
+    Loader.Unload;
+    SetupFromCmd;
+    // Lifecycle tests select isolated configs instead of the command-line config.
+    Loader.ConfigFile := '';
 
     FTempDir := TPath.Combine(TPath.GetTempPath, 'TaurusTLS_UT_Loader_' + TGuid.NewGuid.ToString);
     TDirectory.CreateDirectory(FTempDir);
@@ -479,7 +478,12 @@ begin
       OPENSSL_MODULES values from affecting discovery. }
     WriteTestEnv('OPENSSL_MODULES', FTempDir, True);
   except
-    Teardown;
+    try
+      Teardown;
+    except
+      on E: Exception do
+        Log(TLogLevel.Error, 'Loader fixture setup cleanup: ' + E.Message);
+    end;
     raise;
   end;
 end;
@@ -489,16 +493,16 @@ begin
   try
     if FStateCaptured then
     try
-      FLoader.Unload;
+      Loader.Unload;
     finally
       try
-        FLoader.ConfigFile := FOrigConfigFile;
+        Loader.ConfigFile := FOrigConfigFile;
       finally
         try
-          FLoader.OpenSSLPath := FOrigOpenSSLPath;
+          Loader.OpenSSLPath := FOrigOpenSSLPath;
         finally
           try
-            FLoader.SSLLibVersions := FOrigSSLLibVersions;
+            Loader.SSLLibVersions := FOrigSSLLibVersions;
           finally
             try
               if not SetCurrentDir(FOrigCurrentDir) then
@@ -521,7 +525,6 @@ begin
         TDirectory.Delete(FTempDir, True);
       FTempDir := '';
     finally
-      FLoader := nil;
       if FLockHeld then
       begin
         FLockHeld := False;
@@ -548,9 +551,9 @@ end;
 
 procedure TLoaderConfigFixture.Config_Initial;
 begin
-  Assert.IsNotNull(FLoader);
-  Assert.IsFalse(FLoader.IsLoaded);
-  Assert.AreEqual('', FLoader.ConfigFile);
+  Assert.IsNotNull(Loader);
+  Assert.IsFalse(Loader.IsLoaded);
+  Assert.AreEqual('', Loader.ConfigFile);
 end;
 
 procedure TLoaderConfigFixture.Config_SetValid;
@@ -558,11 +561,11 @@ var
   LPath: string;
 begin
   LPath := 'some_relative/config.cnf';
-  FLoader.ConfigFile := LPath;
-  Assert.AreEqual(LPath, FLoader.ConfigFile);
-  Assert.IsTrue(FLoader.State = lsNotLoaded, 'Selecting a config must not load OpenSSL');
-  Assert.IsFalse(FLoader.IsLoaded);
-  FLoader.ConfigFile := '';
+  Loader.ConfigFile := LPath;
+  Assert.AreEqual(LPath, Loader.ConfigFile);
+  Assert.IsTrue(Loader.State = lsNotLoaded, 'Selecting a config must not load OpenSSL');
+  Assert.IsFalse(Loader.IsLoaded);
+  Loader.ConfigFile := '';
 end;
 
 procedure TLoaderConfigFixture.Config_InvalidChars(const AHexPath: string);
@@ -573,7 +576,7 @@ begin
   Assert.WillRaiseWithMessage(
     procedure
     begin
-      FLoader.ConfigFile := LPath;
+      Loader.ConfigFile := LPath;
     end,
     ETaurusTLSConfigFilePathError,
     Format(RSOSSLConfigFilePathInvalid, [LPath])
@@ -585,17 +588,17 @@ var
   LNormalizedDir: string;
 begin
   LNormalizedDir := TPath.GetFullPath(FTempDir);
-  FLoader.ConfigFile := FTempDir;
+  Loader.ConfigFile := FTempDir;
   Assert.WillRaiseWithMessage(
     procedure
     begin
-      FLoader.Load;
+      Loader.Load;
     end,
     ETaurusTLSConfigFilePathError,
     Format(RSOSSLConfigFileIsDirectory, [LNormalizedDir])
   );
-  Assert.IsTrue(FLoader.State = lsLoadedFailed);
-  Assert.IsFalse(FLoader.IsLoaded);
+  Assert.IsTrue(Loader.State = lsLoadedFailed);
+  Assert.IsFalse(Loader.IsLoaded);
 end;
 
 procedure TLoaderConfigFixture.Config_RejectMissing;
@@ -605,17 +608,17 @@ var
 begin
   LNonExistent := TPath.Combine(FTempDir, 'does_not_exist_' + TGuid.NewGuid.ToString + '.cnf');
   LNormalized := TPath.GetFullPath(LNonExistent);
-  FLoader.ConfigFile := LNonExistent;
+  Loader.ConfigFile := LNonExistent;
   Assert.WillRaiseWithMessage(
     procedure
     begin
-      FLoader.Load;
+      Loader.Load;
     end,
     ETaurusTLSConfigFilePathError,
     Format(RSOSSLConfigFileNotFound, [LNormalized])
   );
-  Assert.IsTrue(FLoader.State = lsLoadedFailed);
-  Assert.IsFalse(FLoader.IsLoaded);
+  Assert.IsTrue(Loader.State = lsLoadedFailed);
+  Assert.IsFalse(Loader.IsLoaded);
 end;
 
 procedure TLoaderConfigFixture.Config_ValidLoad;
@@ -623,13 +626,13 @@ var
   LNormalized: string;
 begin
   LNormalized := TPath.GetFullPath(FValidConfigFile);
-  FLoader.ConfigFile := FValidConfigFile;
-  Assert.IsTrue(FLoader.Load, 'Loader.Load with valid config failed');
+  Loader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(Loader.Load, 'Loader.Load with valid config failed');
   try
-    Assert.IsTrue(FLoader.IsLoaded);
-    Assert.AreEqual(LNormalized, FLoader.ConfigFile);
+    Assert.IsTrue(Loader.IsLoaded);
+    Assert.AreEqual(LNormalized, Loader.ConfigFile);
   finally
-    FLoader.Unload;
+    Loader.Unload;
   end;
 end;
 
@@ -640,10 +643,10 @@ var
 begin
   LNormalized := TPath.GetFullPath(FInvalidSyntaxConfigFile);
   LExMsgExpected := Format(RSOSSLConfigFileLoadFailed, [LNormalized]);
-  FLoader.ConfigFile := FInvalidSyntaxConfigFile;
+  Loader.ConfigFile := FInvalidSyntaxConfigFile;
 
   try
-    FLoader.Load;
+    Loader.Load;
     Assert.Fail('Expected ETaurusTLSConfigFileLoadError was not raised');
   except
     on E: ETaurusTLSConfigFileLoadError do
@@ -654,8 +657,8 @@ begin
   end;
 
   // Circuit breaker: subsequent call immediately returns False without re-attempting
-  Assert.IsFalse(FLoader.IsLoaded, 'Loader must not be in loaded state after failure');
-  Assert.IsFalse(FLoader.Load, 'Subsequent Load must return False due to FFailedToLoad circuit breaker');
+  Assert.IsFalse(Loader.IsLoaded, 'Loader must not be in loaded state after failure');
+  Assert.IsFalse(Loader.Load, 'Subsequent Load must return False due to FFailedToLoad circuit breaker');
 end;
 
 procedure TLoaderConfigFixture.Config_UnloadClears;
@@ -663,10 +666,10 @@ var
   LDefaultConfig: PIdAnsiChar;
   LExpectedPath: string;
 begin
-  FLoader.ConfigFile := '';
-  Assert.IsTrue(FLoader.Load, 'Loader.Load failed');
+  Loader.ConfigFile := '';
+  Assert.IsTrue(Loader.Load, 'Loader.Load failed');
   try
-    Assert.IsTrue(FLoader.IsLoaded);
+    Assert.IsTrue(Loader.IsLoaded);
     // Discovery reports a filename; this does not read the machine's config.
     // Query the native API because its C-runtime environment may differ from
     // the environment seen by Delphi, especially when launched from the IDE.
@@ -678,13 +681,13 @@ begin
     finally
       OPENSSL_free(LDefaultConfig);
     end;
-    Assert.AreEqual(LExpectedPath, FLoader.ConfigFile,
+    Assert.AreEqual(LExpectedPath, Loader.ConfigFile,
       'Loader must report the native discovery result');
   finally
-    FLoader.Unload;
+    Loader.Unload;
   end;
-  Assert.IsFalse(FLoader.IsLoaded);
-  Assert.AreEqual('', FLoader.ConfigFile);
+  Assert.IsFalse(Loader.IsLoaded);
+  Assert.AreEqual('', Loader.ConfigFile);
 end;
 
 procedure TLoaderConfigFixture.Config_RelativePath(const ARelPath: string);
@@ -703,13 +706,13 @@ begin
   Assert.IsTrue(SetCurrentDir(FTempDir), 'Cannot set relative-path test directory');
   // The OS may report a physical directory instead of its temporary-path alias.
   LNormalized := TPath.GetFullPath(TPath.Combine(GetCurrentDir, ARelPath));
-  FLoader.ConfigFile := ARelPath;
-  Assert.IsTrue(FLoader.Load, 'Load failed for relative config path');
+  Loader.ConfigFile := ARelPath;
+  Assert.IsTrue(Loader.Load, 'Load failed for relative config path');
   try
-    Assert.IsTrue(FLoader.IsLoaded);
-    Assert.AreEqual(LNormalized, FLoader.ConfigFile);
+    Assert.IsTrue(Loader.IsLoaded);
+    Assert.AreEqual(LNormalized, Loader.ConfigFile);
   finally
-    FLoader.Unload;
+    Loader.Unload;
   end;
 end;
 
@@ -721,33 +724,33 @@ begin
   LFilePath := CreateTempConfigFile(cMinimalValidOpenSSLConfig, AUnicodeFileName);
   LNormalized := TPath.GetFullPath(LFilePath);
 
-  FLoader.ConfigFile := LFilePath;
-  Assert.IsTrue(FLoader.Load, 'Load failed with Unicode config filename');
+  Loader.ConfigFile := LFilePath;
+  Assert.IsTrue(Loader.Load, 'Load failed with Unicode config filename');
   try
-    Assert.IsTrue(FLoader.IsLoaded);
-    Assert.AreEqual(LNormalized, FLoader.ConfigFile);
+    Assert.IsTrue(Loader.IsLoaded);
+    Assert.AreEqual(LNormalized, Loader.ConfigFile);
   finally
-    FLoader.Unload;
+    Loader.Unload;
   end;
 end;
 
 procedure TLoaderConfigFixture.Config_PathFailureRecovery(const APathKind: Integer);
 begin
   if APathKind = 0 then
-    FLoader.ConfigFile := TPath.Combine(FTempDir, 'missing.cnf')
+    Loader.ConfigFile := TPath.Combine(FTempDir, 'missing.cnf')
   else
-    FLoader.ConfigFile := FTempDir;
+    Loader.ConfigFile := FTempDir;
   Assert.WillRaise(
     procedure
     begin
-      FLoader.Load;
+      Loader.Load;
     end, ETaurusTLSConfigFilePathError);
-  Assert.IsFalse(FLoader.IsLoaded);
-  FLoader.ConfigFile := FValidConfigFile;
-  Assert.IsFalse(FLoader.Load, 'Correcting a path must not reset the circuit breaker');
-  FLoader.Unload;
-  Assert.IsTrue(FLoader.Load, 'Explicit Unload must permit a corrected path to load');
-  Assert.IsTrue(FLoader.IsLoaded);
+  Assert.IsFalse(Loader.IsLoaded);
+  Loader.ConfigFile := FValidConfigFile;
+  Assert.IsFalse(Loader.Load, 'Correcting a path must not reset the circuit breaker');
+  Loader.Unload;
+  Assert.IsTrue(Loader.Load, 'Explicit Unload must permit a corrected path to load');
+  Assert.IsTrue(Loader.IsLoaded);
 end;
 
 { TLoaderLifecycleFixture }
@@ -773,65 +776,65 @@ end;
 
 procedure TLoaderLifecycleFixture.State_Lifecycle;
 begin
-  Assert.IsTrue(FLoader.State = lsNotLoaded);
-  Assert.IsFalse(FLoader.IsLoaded);
-  FLoader.ConfigFile := FInvalidSyntaxConfigFile;
+  Assert.IsTrue(Loader.State = lsNotLoaded);
+  Assert.IsFalse(Loader.IsLoaded);
+  Loader.ConfigFile := FInvalidSyntaxConfigFile;
   Assert.WillRaise(
     procedure
     begin
-      FLoader.Load;
+      Loader.Load;
     end, ETaurusTLSConfigFileLoadError);
-  Assert.IsTrue(FLoader.State = lsLoadedFailed);
-  Assert.IsFalse(FLoader.IsLoaded);
+  Assert.IsTrue(Loader.State = lsLoadedFailed);
+  Assert.IsFalse(Loader.IsLoaded);
   // Binding diagnostics are independent of the circuit breaker.
-  FLoader.FailedToLoad.Clear;
-  Assert.IsTrue(FLoader.State = lsLoadedFailed,
+  Loader.FailedToLoad.Clear;
+  Assert.IsTrue(Loader.State = lsLoadedFailed,
     'Clearing binding diagnostics must not clear failure state');
-  Assert.IsFalse(FLoader.IsLoaded);
-  FLoader.ConfigFile := FValidConfigFile;
-  Assert.IsFalse(FLoader.Load);
-  Assert.IsTrue(FLoader.State = lsLoadedFailed);
-  FLoader.Unload;
-  Assert.IsTrue(FLoader.State = lsNotLoaded);
-  Assert.IsTrue(FLoader.Load);
-  Assert.IsTrue(FLoader.State = lsLoadedReady);
-  Assert.IsTrue(FLoader.IsLoaded);
-  Assert.IsTrue(FLoader.Load);
-  Assert.IsTrue(FLoader.State = lsLoadedReady);
-  FLoader.Unload(False);
-  Assert.IsTrue(FLoader.State = lsLoadedFailed);
-  Assert.IsFalse(FLoader.Load);
-  FLoader.Unload;
-  FLoader.Unload;
-  Assert.IsTrue(FLoader.State = lsNotLoaded);
-  Assert.IsFalse(FLoader.IsLoaded);
+  Assert.IsFalse(Loader.IsLoaded);
+  Loader.ConfigFile := FValidConfigFile;
+  Assert.IsFalse(Loader.Load);
+  Assert.IsTrue(Loader.State = lsLoadedFailed);
+  Loader.Unload;
+  Assert.IsTrue(Loader.State = lsNotLoaded);
+  Assert.IsTrue(Loader.Load);
+  Assert.IsTrue(Loader.State = lsLoadedReady);
+  Assert.IsTrue(Loader.IsLoaded);
+  Assert.IsTrue(Loader.Load);
+  Assert.IsTrue(Loader.State = lsLoadedReady);
+  Loader.Unload(False);
+  Assert.IsTrue(Loader.State = lsLoadedFailed);
+  Assert.IsFalse(Loader.Load);
+  Loader.Unload;
+  Loader.Unload;
+  Assert.IsTrue(Loader.State = lsNotLoaded);
+  Assert.IsFalse(Loader.IsLoaded);
 end;
 
 procedure TLoaderLifecycleFixture.Life_DoubleLoad;
 begin
-  FLoader.ConfigFile := FValidConfigFile;
-  Assert.IsTrue(FLoader.Load, 'Initial Load failed');
+  Loader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(Loader.Load, 'Initial Load failed');
   try
-    Assert.IsTrue(FLoader.IsLoaded);
-    Assert.IsTrue(FLoader.Load, 'Second Load call should succeed idempotently');
-    Assert.IsTrue(FLoader.IsLoaded);
+    Assert.IsTrue(Loader.IsLoaded);
+    Assert.IsTrue(Loader.Load, 'Second Load call should succeed idempotently');
+    Assert.IsTrue(Loader.IsLoaded);
   finally
-    FLoader.Unload;
+    Loader.Unload;
   end;
 end;
 
 procedure TLoaderLifecycleFixture.Life_DoubleUnload;
 begin
-  FLoader.Unload;
-  FLoader.Unload;
-  Assert.IsFalse(FLoader.IsLoaded);
+  Loader.Unload;
+  Loader.Unload;
+  Assert.IsFalse(Loader.IsLoaded);
 
-  FLoader.ConfigFile := FValidConfigFile;
-  Assert.IsTrue(FLoader.Load, 'Load failed');
-  FLoader.Unload;
-  Assert.IsFalse(FLoader.IsLoaded);
-  FLoader.Unload;
-  Assert.IsFalse(FLoader.IsLoaded);
+  Loader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(Loader.Load, 'Load failed');
+  Loader.Unload;
+  Assert.IsFalse(Loader.IsLoaded);
+  Loader.Unload;
+  Assert.IsFalse(Loader.IsLoaded);
 end;
 
 procedure TLoaderLifecycleFixture.Life_PreserveConfig;
@@ -839,60 +842,60 @@ var
   LNormalized: string;
 begin
   LNormalized := TPath.GetFullPath(FValidConfigFile);
-  FLoader.ConfigFile := FValidConfigFile;
-  Assert.IsTrue(FLoader.Load, 'Initial Load failed');
+  Loader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(Loader.Load, 'Initial Load failed');
   try
-    Assert.AreEqual(LNormalized, FLoader.ConfigFile);
-    Assert.IsTrue(FLoader.Load, 'Second Load should succeed');
-    Assert.AreEqual(LNormalized, FLoader.ConfigFile, 'Effective config must be preserved on second Load');
+    Assert.AreEqual(LNormalized, Loader.ConfigFile);
+    Assert.IsTrue(Loader.Load, 'Second Load should succeed');
+    Assert.AreEqual(LNormalized, Loader.ConfigFile, 'Effective config must be preserved on second Load');
   finally
-    FLoader.Unload;
+    Loader.Unload;
   end;
 end;
 
 procedure TLoaderLifecycleFixture.Life_CircuitBreaker;
 begin
-  FLoader.ConfigFile := FInvalidSyntaxConfigFile;
+  Loader.ConfigFile := FInvalidSyntaxConfigFile;
   try
-    FLoader.Load;
+    Loader.Load;
     Assert.Fail('Expected ETaurusTLSConfigFileLoadError was not raised');
   except
     on ETaurusTLSConfigFileLoadError do ;
   end;
 
-  Assert.IsFalse(FLoader.IsLoaded, 'Loader must not be loaded after failure');
-  Assert.IsFalse(FLoader.Load, 'Subsequent Load must return False while failure state is active');
+  Assert.IsFalse(Loader.IsLoaded, 'Loader must not be loaded after failure');
+  Assert.IsFalse(Loader.Load, 'Subsequent Load must return False while failure state is active');
 
-  FLoader.Unload;
-  Assert.IsFalse(FLoader.IsLoaded);
+  Loader.Unload;
+  Assert.IsFalse(Loader.IsLoaded);
 
-  FLoader.ConfigFile := FValidConfigFile;
-  Assert.IsTrue(FLoader.Load, 'Load should succeed after explicit Unload resets failure state');
+  Loader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(Loader.Load, 'Load should succeed after explicit Unload resets failure state');
   try
-    Assert.IsTrue(FLoader.IsLoaded);
+    Assert.IsTrue(Loader.IsLoaded);
   finally
-    FLoader.Unload;
+    Loader.Unload;
   end;
 end;
 
 procedure TLoaderLifecycleFixture.Life_RejectConfigWhenLoaded;
 begin
   // Load with default/empty configuration
-  FLoader.ConfigFile := '';
-  Assert.IsTrue(FLoader.Load, 'Initial Load failed');
+  Loader.ConfigFile := '';
+  Assert.IsTrue(Loader.Load, 'Initial Load failed');
   try
-    Assert.IsTrue(FLoader.IsLoaded);
+    Assert.IsTrue(Loader.IsLoaded);
     Assert.WillRaiseWithMessage(
       procedure
       begin
         // Attempt to assign a new configuration while loaded
-        FLoader.ConfigFile := FValidConfigFile;
+        Loader.ConfigFile := FValidConfigFile;
       end,
       ETaurusTLSConfigFilePathError,
       RSOSSLConfigFileAlreadyLoaded
     );
   finally
-    FLoader.Unload;
+    Loader.Unload;
   end;
 end;
 
@@ -903,58 +906,58 @@ var
   LOrigVersions: string;
 {$ENDIF}
 begin
-  FLoader.ConfigFile := FInvalidSyntaxConfigFile;
+  Loader.ConfigFile := FInvalidSyntaxConfigFile;
   try
-    FLoader.Load;
+    Loader.Load;
     Assert.Fail('Expected ETaurusTLSConfigFileLoadError was not raised');
   except
     on ETaurusTLSConfigFileLoadError do ;
   end;
 
-  Assert.IsFalse(FLoader.IsLoaded, 'Loader must not be in loaded state after failure');
+  Assert.IsFalse(Loader.IsLoaded, 'Loader must not be in loaded state after failure');
 
   case APropId of
     0:
       begin
-        FLoader.ConfigFile := FValidConfigFile;
-        Assert.AreEqual(FValidConfigFile, FLoader.ConfigFile);
+        Loader.ConfigFile := FValidConfigFile;
+        Assert.AreEqual(FValidConfigFile, Loader.ConfigFile);
       end;
     {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
     1:
       begin
-        LOrigPath := FLoader.OpenSSLPath;
+        LOrigPath := Loader.OpenSSLPath;
         try
-          FLoader.OpenSSLPath := FTempDir;
-          Assert.AreEqual(IncludeTrailingPathDelimiter(FTempDir), FLoader.OpenSSLPath);
+          Loader.OpenSSLPath := FTempDir;
+          Assert.AreEqual(IncludeTrailingPathDelimiter(FTempDir), Loader.OpenSSLPath);
         finally
-          FLoader.OpenSSLPath := LOrigPath; // Restore valid library path
+          Loader.OpenSSLPath := LOrigPath; // Restore valid library path
         end;
       end;
     2:
       begin
-        LOrigVersions := FLoader.SSLLibVersions;
+        LOrigVersions := Loader.SSLLibVersions;
         try
-          FLoader.SSLLibVersions := DefaultLibVersions;
-          Assert.AreEqual(DefaultLibVersions, FLoader.SSLLibVersions);
+          Loader.SSLLibVersions := DefaultLibVersions;
+          Assert.AreEqual(DefaultLibVersions, Loader.SSLLibVersions);
         finally
-          FLoader.SSLLibVersions := LOrigVersions; // Restore valid versions
+          Loader.SSLLibVersions := LOrigVersions; // Restore valid versions
         end;
       end;
     {$ENDIF}
   end;
 
-  Assert.IsTrue(FLoader.State = lsLoadedFailed, 'Changing a property must not reset failure');
-  Assert.IsFalse(FLoader.Load, 'Subsequent Load must return False while circuit breaker is active');
+  Assert.IsTrue(Loader.State = lsLoadedFailed, 'Changing a property must not reset failure');
+  Assert.IsFalse(Loader.Load, 'Subsequent Load must return False while circuit breaker is active');
 
-  FLoader.Unload;
-  Assert.IsFalse(FLoader.IsLoaded);
+  Loader.Unload;
+  Assert.IsFalse(Loader.IsLoaded);
 
-  FLoader.ConfigFile := FValidConfigFile;
-  Assert.IsTrue(FLoader.Load, 'Load should succeed after explicit Unload resets failure state');
+  Loader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(Loader.Load, 'Load should succeed after explicit Unload resets failure state');
   try
-    Assert.IsTrue(FLoader.IsLoaded);
+    Assert.IsTrue(Loader.IsLoaded);
   finally
-    FLoader.Unload;
+    Loader.Unload;
   end;
 end;
 
@@ -1367,17 +1370,17 @@ end;
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 procedure TLoaderLifecycleFixture.Life_MissingLibraries;
 begin
-  FLoader.OpenSSLPath := FTempDir;
-  FLoader.ConfigFile := FValidConfigFile;
-  Assert.IsFalse(FLoader.Load);
-  Assert.IsTrue(FLoader.State = lsLoadedFailed);
-  Assert.IsFalse(FLoader.IsLoaded);
+  Loader.OpenSSLPath := FTempDir;
+  Loader.ConfigFile := FValidConfigFile;
+  Assert.IsFalse(Loader.Load);
+  Assert.IsTrue(Loader.State = lsLoadedFailed);
+  Assert.IsFalse(Loader.IsLoaded);
   Assert.IsFalse(Assigned(OpenSSL_version_num), 'Headers must remain unbound');
-  FLoader.OpenSSLPath := FOrigOpenSSLPath;
-  Assert.IsFalse(FLoader.Load, 'A path change must not reset failure state');
-  FLoader.Unload;
-  Assert.IsTrue(FLoader.State = lsNotLoaded);
-  Assert.IsTrue(FLoader.Load, 'Explicit reset permits loading from the restored path');
+  Loader.OpenSSLPath := FOrigOpenSSLPath;
+  Assert.IsFalse(Loader.Load, 'A path change must not reset failure state');
+  Loader.Unload;
+  Assert.IsTrue(Loader.State = lsNotLoaded);
+  Assert.IsTrue(Loader.Load, 'Explicit reset permits loading from the restored path');
 end;
 
 {$IFDEF MSWINDOWS}
@@ -1392,19 +1395,19 @@ begin
   LSourceFile := LCryptoFiles[0];
   LCopyFile := TPath.Combine(FTempDir, TPath.GetFileName(LSourceFile));
   TFile.Copy(LSourceFile, LCopyFile);
-  FLoader.OpenSSLPath := FTempDir;
-  FLoader.ConfigFile := FValidConfigFile;
-  Assert.IsFalse(FLoader.Load, 'Crypto without SSL is a partial load failure');
-  Assert.IsTrue(FLoader.State = lsLoadedFailed);
-  Assert.IsFalse(FLoader.IsLoaded);
+  Loader.OpenSSLPath := FTempDir;
+  Loader.ConfigFile := FValidConfigFile;
+  Assert.IsFalse(Loader.Load, 'Crypto without SSL is a partial load failure');
+  Assert.IsTrue(Loader.State = lsLoadedFailed);
+  Assert.IsFalse(Loader.IsLoaded);
   Assert.IsFalse(Assigned(OpenSSL_version_num), 'Headers must not bind after partial discovery');
   Assert.IsTrue(Winapi.Windows.GetModuleHandle(PChar(LCopyFile)) = 0,
     'Rollback must release the partially loaded crypto DLL');
   TFile.Delete(LCopyFile);
-  FLoader.OpenSSLPath := FOrigOpenSSLPath;
-  Assert.IsFalse(FLoader.Load);
-  FLoader.Unload;
-  Assert.IsTrue(FLoader.Load, 'Recovery must work after the partial load is cleaned up');
+  Loader.OpenSSLPath := FOrigOpenSSLPath;
+  Assert.IsFalse(Loader.Load);
+  Loader.Unload;
+  Assert.IsTrue(Loader.Load, 'Recovery must work after the partial load is cleaned up');
 end;
 {$ENDIF}
 {$ENDIF}
@@ -1415,23 +1418,23 @@ begin
   TTestCallbackObserverA.Active := True;
   TTestCallbackObserverA.VerifyHandlesLive := True;
   try
-    FLoader.ConfigFile := FValidConfigFile;
-    Assert.IsTrue(FLoader.Load, 'Load failed');
+    Loader.ConfigFile := FValidConfigFile;
+    Assert.IsTrue(Loader.Load, 'Load failed');
     try
       Assert.AreEqual(1, TTestCallbackLog.Count);
       Assert.AreEqual('A:Load:Live', TTestCallbackLog[0]);
       Assert.IsTrue(TTestCallbackObserverA.LoadState = lsNotLoaded);
       Assert.IsFalse(TTestCallbackObserverA.LoadedOnLoad);
-      Assert.IsTrue(FLoader.State = lsLoadedReady);
+      Assert.IsTrue(Loader.State = lsLoadedReady);
     finally
-      FLoader.Unload;
+      Loader.Unload;
     end;
 
     Assert.AreEqual(2, TTestCallbackLog.Count);
     Assert.AreEqual('A:Unload:Live', TTestCallbackLog[1]);
     Assert.IsTrue(TTestCallbackObserverA.UnloadState = lsNotLoaded);
     Assert.IsFalse(TTestCallbackObserverA.LoadedOnUnload);
-    Assert.IsTrue(FLoader.State = lsNotLoaded);
+    Assert.IsTrue(Loader.State = lsNotLoaded);
   finally
     TTestCallbackObserverA.Active := False;
     TTestCallbackObserverA.VerifyHandlesLive := False;
@@ -1444,14 +1447,14 @@ begin
   TTestCallbackObserverA.Active := True;
   TTestCallbackObserverB.Active := True;
   try
-    FLoader.ConfigFile := FValidConfigFile;
-    Assert.IsTrue(FLoader.Load, 'Load failed');
+    Loader.ConfigFile := FValidConfigFile;
+    Assert.IsTrue(Loader.Load, 'Load failed');
     try
       Assert.AreEqual(2, TTestCallbackLog.Count);
       Assert.AreEqual('A:Load', TTestCallbackLog[0]);
       Assert.AreEqual('B:Load', TTestCallbackLog[1]);
     finally
-      FLoader.Unload;
+      Loader.Unload;
     end;
 
     Assert.AreEqual(4, TTestCallbackLog.Count);
@@ -1470,27 +1473,27 @@ begin
   TTestCallbackLog.Clear;
   TTestCallbackObserverA.Active := True;
   try
-    FLoader.ConfigFile := FValidConfigFile;
-    Assert.IsTrue(FLoader.Load, 'Initial Load failed');
-    Assert.IsTrue(FLoader.Load, 'Second Load call should succeed');
+    Loader.ConfigFile := FValidConfigFile;
+    Assert.IsTrue(Loader.Load, 'Initial Load failed');
+    Assert.IsTrue(Loader.Load, 'Second Load call should succeed');
 
     Assert.AreEqual(1, TTestCallbackLog.Count);
     Assert.AreEqual('A:Load', TTestCallbackLog[0]);
 
-    FLoader.Unload;
-    FLoader.Unload;
+    Loader.Unload;
+    Loader.Unload;
 
     Assert.AreEqual(2, TTestCallbackLog.Count);
     Assert.AreEqual('A:Load', TTestCallbackLog[0]);
     Assert.AreEqual('A:Unload', TTestCallbackLog[1]);
-    Assert.IsTrue(FLoader.Load, 'A new load cycle must succeed');
-    FLoader.Unload;
+    Assert.IsTrue(Loader.Load, 'A new load cycle must succeed');
+    Loader.Unload;
     Assert.AreEqual(4, TTestCallbackLog.Count);
     Assert.AreEqual('A:Load', TTestCallbackLog[2]);
     Assert.AreEqual('A:Unload', TTestCallbackLog[3]);
   finally
     TTestCallbackObserverA.Active := False;
-    FLoader.Unload;
+    Loader.Unload;
   end;
 end;
 
@@ -1501,9 +1504,9 @@ begin
   TTestCallbackObserverB.Active := True;
   TTestCallbackObserverB.ThrowOnLoad := True;
   try
-    FLoader.ConfigFile := FValidConfigFile;
+    Loader.ConfigFile := FValidConfigFile;
     try
-      FLoader.Load;
+      Loader.Load;
       Assert.Fail('Expected exception from Observer B was not raised');
     except
       on E: Exception do
@@ -1515,13 +1518,13 @@ begin
     Assert.AreEqual('A:Unload', TTestCallbackLog[1]);
     Assert.IsTrue(TTestCallbackObserverA.UnloadState = lsNotLoaded);
     Assert.IsFalse(TTestCallbackObserverA.LoadedOnUnload);
-    Assert.IsTrue(FLoader.State = lsLoadedFailed);
-    Assert.IsFalse(FLoader.IsLoaded);
+    Assert.IsTrue(Loader.State = lsLoadedFailed);
+    Assert.IsFalse(Loader.IsLoaded);
   finally
     TTestCallbackObserverB.ThrowOnLoad := False;
     TTestCallbackObserverA.Active := False;
     TTestCallbackObserverB.Active := False;
-    FLoader.Unload;
+    Loader.Unload;
   end;
 end;
 
@@ -1530,22 +1533,22 @@ procedure TLoaderCallbacksFixture.CB_PreserveDiag;
 begin
   GTestSymbolInjectorActive := True;
   try
-    FLoader.ConfigFile := FInvalidSyntaxConfigFile;
+    Loader.ConfigFile := FInvalidSyntaxConfigFile;
     try
-      FLoader.Load;
+      Loader.Load;
     except
       on ETaurusTLSConfigFileLoadError do ;
     end;
 
-    Assert.IsTrue(FLoader.FailedToLoad.IndexOf('Fake_Diagnostic_Symbol') >= 0,
+    Assert.IsTrue(Loader.FailedToLoad.IndexOf('Fake_Diagnostic_Symbol') >= 0,
       'Internal failure teardown must preserve FailedToLoad diagnostics');
 
-    FLoader.Unload;
-    Assert.AreEqual(0, FLoader.FailedToLoad.Count,
+    Loader.Unload;
+    Assert.AreEqual(0, Loader.FailedToLoad.Count,
       'Public Unload must clear FailedToLoad diagnostics');
   finally
     GTestSymbolInjectorActive := False;
-    FLoader.Unload;
+    Loader.Unload;
   end;
 end;
 
@@ -1556,21 +1559,21 @@ begin
   TTestCallbackObserverA.Active := True;
   TTestCallbackObserverB.Active := True;
   TTestCallbackObserverB.ThrowOnLoad := True;
-  FLoader.ConfigFile := FValidConfigFile;
+  Loader.ConfigFile := FValidConfigFile;
   Assert.WillRaiseWithMessage(
     procedure
     begin
-      FLoader.Load;
+      Loader.Load;
     end,
     Exception, 'Simulated action failure in Observer B');
-  Assert.IsFalse(FLoader.IsLoaded);
+  Assert.IsFalse(Loader.IsLoaded);
   Assert.AreEqual(2, TTestCallbackLog.Count);
   TTestCallbackObserverB.ThrowOnLoad := False;
-  Assert.IsFalse(FLoader.Load, 'Callback failure must trip the circuit breaker');
+  Assert.IsFalse(Loader.Load, 'Callback failure must trip the circuit breaker');
   Assert.AreEqual(2, TTestCallbackLog.Count, 'Blocked load must not dispatch callbacks');
-  FLoader.Unload;
-  Assert.IsTrue(FLoader.Load, 'Explicit Unload must permit recovery');
-  FLoader.Unload;
+  Loader.Unload;
+  Assert.IsTrue(Loader.Load, 'Explicit Unload must permit recovery');
+  Loader.Unload;
   Assert.AreEqual(6, TTestCallbackLog.Count);
   Assert.AreEqual('A:Load', TTestCallbackLog[2]);
   Assert.AreEqual('B:Load', TTestCallbackLog[3]);
@@ -1584,11 +1587,11 @@ var
   LOriginalValue: string;
   LRejectExpected: Boolean;
 begin
-  FLoader.ConfigFile := FValidConfigFile;
+  Loader.ConfigFile := FValidConfigFile;
   case AProperty of
-    0: LOriginalValue := FLoader.ConfigFile;
-    1: LOriginalValue := FLoader.OpenSSLPath;
-    2: LOriginalValue := FLoader.SSLLibVersions;
+    0: LOriginalValue := Loader.ConfigFile;
+    1: LOriginalValue := Loader.OpenSSLPath;
+    2: LOriginalValue := Loader.SSLLibVersions;
   end;
   TTestCallbackObserverA.Active := True;
   if APhase = 1 then
@@ -1612,17 +1615,17 @@ begin
     Assert.WillRaiseWithMessage(
       procedure
       begin
-        FLoader.Load;
+        Loader.Load;
       end, Exception, 'Simulated action failure in Observer B');
-    Assert.IsTrue(FLoader.State = lsLoadedFailed);
-    Assert.IsFalse(FLoader.Load, 'Rejected mutation must not permit a retry');
+    Assert.IsTrue(Loader.State = lsLoadedFailed);
+    Assert.IsFalse(Loader.Load, 'Rejected mutation must not permit a retry');
   end
   else
   begin
-    Assert.IsTrue(FLoader.Load);
-    Assert.IsTrue(FLoader.State = lsLoadedReady);
-    FLoader.Unload;
-    Assert.IsTrue(FLoader.State = lsNotLoaded);
+    Assert.IsTrue(Loader.Load);
+    Assert.IsTrue(Loader.State = lsLoadedReady);
+    Loader.Unload;
+    Assert.IsTrue(Loader.State = lsNotLoaded);
   end;
 
   Assert.IsTrue(TTestCallbackObserverA.ProbeCompleted, 'Property probe must finish');
@@ -1636,7 +1639,7 @@ begin
     Assert.AreEqual(RSOSSLConfigFileAlreadyLoaded, TTestCallbackObserverA.ProbeError);
   Assert.AreEqual(LOriginalValue, TTestCallbackObserverA.ProbeResult,
     'Callbacks must not replace configured values');
-  Assert.AreEqual(FValidConfigFile, FLoader.ConfigFile);
+  Assert.AreEqual(FValidConfigFile, Loader.ConfigFile);
 end;
 
 procedure TLoaderCallbacksFixture.Config_Publication(const ARelative: Integer);
@@ -1655,17 +1658,17 @@ begin
     LInput := FValidConfigFile;
     LExpected := TPath.GetFullPath(LInput);
   end;
-  FLoader.ConfigFile := LInput;
+  Loader.ConfigFile := LInput;
   TTestCallbackObserverA.Active := True;
-  Assert.IsTrue(FLoader.Load);
+  Assert.IsTrue(Loader.Load);
   Assert.AreEqual(LInput, TTestCallbackObserverA.ConfigOnLoad,
     'Initialization callbacks see configured input before readiness');
   Assert.IsTrue(TTestCallbackObserverA.LoadState = lsNotLoaded);
-  Assert.AreEqual(LExpected, FLoader.ConfigFile, 'Ready state exposes the effective full filename');
-  FLoader.Unload;
+  Assert.AreEqual(LExpected, Loader.ConfigFile, 'Ready state exposes the effective full filename');
+  Loader.Unload;
   Assert.AreEqual(LInput, TTestCallbackObserverA.ConfigOnUnload);
   Assert.IsTrue(TTestCallbackObserverA.UnloadState = lsNotLoaded);
-  Assert.AreEqual(LInput, FLoader.ConfigFile, 'Unload retains the configured input');
+  Assert.AreEqual(LInput, Loader.ConfigFile, 'Unload retains the configured input');
 end;
 
 procedure TLoaderCallbacksFixture.Config_RollbackPublication;
@@ -1674,27 +1677,27 @@ var
 begin
   Assert.IsTrue(SetCurrentDir(FTempDir));
   LInput := TPath.GetFileName(FValidConfigFile);
-  FLoader.ConfigFile := LInput;
+  Loader.ConfigFile := LInput;
   TTestCallbackObserverA.Active := True;
   TTestCallbackObserverB.Active := True;
   TTestCallbackObserverB.ThrowOnLoad := True;
   Assert.WillRaiseWithMessage(
     procedure
     begin
-      FLoader.Load;
+      Loader.Load;
     end, Exception, 'Simulated action failure in Observer B');
-  Assert.IsTrue(FLoader.State = lsLoadedFailed);
+  Assert.IsTrue(Loader.State = lsLoadedFailed);
   Assert.AreEqual(LInput, TTestCallbackObserverA.ConfigOnLoad);
   Assert.AreEqual(LInput, TTestCallbackObserverA.ConfigOnUnload);
-  Assert.AreEqual(LInput, FLoader.ConfigFile);
+  Assert.AreEqual(LInput, Loader.ConfigFile);
   Assert.IsTrue(TTestCallbackObserverA.UnloadState = lsNotLoaded);
-  FLoader.ConfigFile := FValidConfigFile;
-  Assert.IsTrue(FLoader.State = lsLoadedFailed);
-  Assert.IsFalse(FLoader.Load);
-  FLoader.Unload;
+  Loader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(Loader.State = lsLoadedFailed);
+  Assert.IsFalse(Loader.Load);
+  Loader.Unload;
   TTestCallbackObserverB.ThrowOnLoad := False;
-  Assert.IsTrue(FLoader.Load);
-  Assert.AreEqual(TPath.GetFullPath(FValidConfigFile), FLoader.ConfigFile);
+  Assert.IsTrue(Loader.Load);
+  Assert.AreEqual(TPath.GetFullPath(FValidConfigFile), Loader.ConfigFile);
 end;
 
 procedure TLoaderCallbacksFixture.State_Recursive(const APhase, AOperation: Integer);
@@ -1702,13 +1705,13 @@ begin
   TTestCallbackObserverA.Active := True;
   TTestCallbackObserverA.RecursivePhase := APhase;
   TTestCallbackObserverA.RecursiveOperation := AOperation;
-  FLoader.ConfigFile := FValidConfigFile;
-  Assert.IsTrue(FLoader.Load);
-  Assert.IsTrue(FLoader.State = lsLoadedReady);
-  FLoader.Unload;
+  Loader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(Loader.Load);
+  Assert.IsTrue(Loader.State = lsLoadedReady);
+  Loader.Unload;
   Assert.IsTrue(TTestCallbackObserverA.RecursiveRejected,
     'Recursive lifecycle calls must raise ETaurusTLSLoaderError');
-  Assert.IsTrue(FLoader.State = lsNotLoaded);
+  Assert.IsTrue(Loader.State = lsNotLoaded);
   Assert.AreEqual(2, TTestCallbackLog.Count, 'Only the outer operation dispatches callbacks');
 end;
 
@@ -1716,7 +1719,7 @@ procedure TLoaderCallbacksFixture.CB_RejectLateRegistration(const AFailed: Integ
 var
   LExpectedState: TTaurusTLSLoaderState;
 begin
-  FLoader.ConfigFile := FValidConfigFile;
+  Loader.ConfigFile := FValidConfigFile;
   TTestCallbackObserverA.Active := True;
   TTestCallbackObserverB.Active := True;
   if AFailed <> 0 then
@@ -1725,14 +1728,14 @@ begin
     Assert.WillRaise(
       procedure
       begin
-        FLoader.Load;
+        Loader.Load;
       end, Exception);
     LExpectedState := lsLoadedFailed;
     TTestCallbackObserverB.ThrowOnLoad := False;
   end
   else
   begin
-    Assert.IsTrue(FLoader.Load);
+    Assert.IsTrue(Loader.Load);
     LExpectedState := lsLoadedReady;
   end;
 
@@ -1741,12 +1744,12 @@ begin
     begin
       Register_SSLLoaderAction(TTestCallbackObserverB.ActionProc);
     end, ETaurusTLSLoaderError, RSOSSLLoaderActionRegistrationInactive);
-  Assert.IsTrue(FLoader.State = LExpectedState, 'Rejected registration must preserve state');
-  FLoader.Unload;
+  Assert.IsTrue(Loader.State = LExpectedState, 'Rejected registration must preserve state');
+  Loader.Unload;
   TTestCallbackLog.Clear;
-  Assert.IsTrue(FLoader.Load);
+  Assert.IsTrue(Loader.Load);
   Assert.AreEqual(2, TTestCallbackLog.Count, 'Rejected registration must not append an action');
-  FLoader.Unload;
+  Loader.Unload;
   Assert.AreEqual(4, TTestCallbackLog.Count);
 end;
 
@@ -1756,33 +1759,33 @@ begin
   TTestCallbackObserverA.RecursivePhase := 1;
   TTestCallbackObserverA.RecursiveOperation := 0;
   TTestCallbackObserverA.PropagateRecursive := True;
-  FLoader.ConfigFile := FValidConfigFile;
+  Loader.ConfigFile := FValidConfigFile;
   Assert.WillRaise(
     procedure
     begin
-      FLoader.Load;
+      Loader.Load;
     end, ETaurusTLSLoaderError);
   Assert.IsTrue(TTestCallbackObserverA.RecursiveRejected);
-  Assert.IsTrue(FLoader.State = lsLoadedFailed);
-  Assert.IsFalse(FLoader.Load);
+  Assert.IsTrue(Loader.State = lsLoadedFailed);
+  Assert.IsFalse(Loader.Load);
   Assert.AreEqual(0, TTestCallbackLog.Count, 'Failed action did not complete');
-  FLoader.Unload;
+  Loader.Unload;
   TTestCallbackObserverA.RecursivePhase := 0;
-  Assert.IsTrue(FLoader.Load);
-  Assert.IsTrue(FLoader.State = lsLoadedReady);
-  FLoader.Unload;
+  Assert.IsTrue(Loader.Load);
+  Assert.IsTrue(Loader.State = lsLoadedReady);
+  Loader.Unload;
 end;
 
 procedure TLoaderCallbacksFixture.State_ReadDuringLoad;
 begin
   TTestCallbackObserverA.Active := True;
   TTestCallbackObserverA.QueryDone := TEvent.Create(nil, True, False, '');
-  FLoader.ConfigFile := FValidConfigFile;
-  Assert.IsTrue(FLoader.Load);
+  Loader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(Loader.Load);
   TTestCallbackObserverA.QueryThread.WaitFor;
   Assert.IsTrue(TTestCallbackObserverA.QueryState = lsNotLoaded);
   Assert.IsFalse(TTestCallbackObserverA.QueryLoaded);
-  Assert.IsTrue(FLoader.State = lsLoadedReady);
+  Assert.IsTrue(Loader.State = lsLoadedReady);
 end;
 
 procedure TLoaderCallbacksFixture.Life_UnloadActionFailure;
@@ -1791,11 +1794,11 @@ begin
   TTestCallbackObserverA.VerifyHandlesLive := True;
   TTestCallbackObserverB.Active := True;
   TTestCallbackObserverB.ThrowOnUnload := True;
-  FLoader.ConfigFile := FValidConfigFile;
-  Assert.IsTrue(FLoader.Load);
-  FLoader.Unload;
-  Assert.IsTrue(FLoader.State = lsNotLoaded);
-  Assert.IsFalse(FLoader.IsLoaded);
+  Loader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(Loader.Load);
+  Loader.Unload;
+  Assert.IsTrue(Loader.State = lsNotLoaded);
+  Assert.IsFalse(Loader.IsLoaded);
   Assert.AreEqual(4, TTestCallbackLog.Count);
   Assert.AreEqual('B:Unload', TTestCallbackLog[2]);
   Assert.AreEqual('A:Unload:Live', TTestCallbackLog[3],
@@ -1804,31 +1807,31 @@ begin
   Assert.IsFalse(Assigned(OpenSSL_version_num));
   {$ENDIF}
   TTestCallbackObserverB.ThrowOnUnload := False;
-  Assert.IsTrue(FLoader.Load);
-  FLoader.Unload;
+  Assert.IsTrue(Loader.Load);
+  Loader.Unload;
 end;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 procedure TLoaderCallbacksFixture.Life_UnloaderFailure(const ASecondFailure: Integer);
 begin
-  FLoader.ConfigFile := FValidConfigFile;
-  Assert.IsTrue(FLoader.Load);
+  Loader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(Loader.Load);
   GTestCleanupFaultActive := True;
   GTestSecondCleanupFaultActive := ASecondFailure <> 0;
   Assert.WillRaiseWithMessage(
     procedure
     begin
-      FLoader.Unload;
+      Loader.Unload;
     end, ETaurusTLSLoaderError, 'Primary header cleanup failure');
   Assert.AreEqual(1, GTestCleanupTailCount, 'Remaining resetters must still execute');
   Assert.IsFalse(Assigned(OpenSSL_version_num), 'Header reset must finish despite errors');
-  Assert.IsTrue(FLoader.State = lsLoadedFailed);
-  Assert.IsFalse(FLoader.Load, 'Cleanup failure must not leave the loader ready');
+  Assert.IsTrue(Loader.State = lsLoadedFailed);
+  Assert.IsFalse(Loader.Load, 'Cleanup failure must not leave the loader ready');
   GTestCleanupFaultActive := False;
   GTestSecondCleanupFaultActive := False;
-  FLoader.Unload;
-  Assert.IsTrue(FLoader.State = lsNotLoaded);
-  Assert.IsTrue(FLoader.Load, 'Cleanup exceptions must not retain the lifecycle lock');
+  Loader.Unload;
+  Assert.IsTrue(Loader.State = lsNotLoaded);
+  Assert.IsTrue(Loader.Load, 'Cleanup exceptions must not retain the lifecycle lock');
 end;
 
 procedure TLoaderCallbacksFixture.Life_PreserveLoadError;
@@ -1838,39 +1841,39 @@ begin
   TTestCallbackObserverB.ThrowOnLoad := True;
   GTestSymbolInjectorActive := True;
   GTestCleanupFaultActive := True;
-  FLoader.ConfigFile := FValidConfigFile;
+  Loader.ConfigFile := FValidConfigFile;
   Assert.WillRaiseWithMessage(
     procedure
     begin
-      FLoader.Load;
+      Loader.Load;
     end, Exception, 'Simulated action failure in Observer B');
   Assert.AreEqual(1, GTestCleanupTailCount);
   Assert.IsFalse(Assigned(OpenSSL_version_num));
-  Assert.IsTrue(FLoader.State = lsLoadedFailed);
-  Assert.IsTrue(FLoader.FailedToLoad.IndexOf('Fake_Diagnostic_Symbol') >= 0,
+  Assert.IsTrue(Loader.State = lsLoadedFailed);
+  Assert.IsTrue(Loader.FailedToLoad.IndexOf('Fake_Diagnostic_Symbol') >= 0,
     'Failure cleanup must preserve binding diagnostics');
   Assert.AreEqual(2, TTestCallbackLog.Count);
   Assert.AreEqual('A:Unload', TTestCallbackLog[1]);
-  Assert.IsFalse(FLoader.Load);
+  Assert.IsFalse(Loader.Load);
   GTestCleanupFaultActive := False;
   GTestSymbolInjectorActive := False;
   TTestCallbackObserverB.ThrowOnLoad := False;
-  FLoader.Unload;
-  Assert.AreEqual(0, FLoader.FailedToLoad.Count);
-  Assert.IsTrue(FLoader.Load);
+  Loader.Unload;
+  Assert.AreEqual(0, Loader.FailedToLoad.Count);
+  Assert.IsTrue(Loader.Load);
 end;
 {$ENDIF}
 
 procedure TLoaderCallbacksFixture.Info_Passive;
 begin
-  FLoader.ConfigFile := FValidConfigFile;
+  Loader.ConfigFile := FValidConfigFile;
   TTestCallbackObserverA.Active := True;
   TTestCallbackObserverB.Active := True;
   TTestRuntimeHooksObserver.Active := True;
   Assert.IsTrue(LoaderMetadataIsEmpty);
   Assert.IsTrue(LoaderMetadataIsEmpty);
-  Assert.IsTrue(FLoader.State = lsNotLoaded);
-  Assert.AreEqual(FValidConfigFile, FLoader.ConfigFile);
+  Assert.IsTrue(Loader.State = lsNotLoaded);
+  Assert.AreEqual(FValidConfigFile, Loader.ConfigFile);
   Assert.AreEqual(0, TTestCallbackLog.Count);
   Assert.AreEqual(0, TTestRuntimeHooksObserver.InstallCount);
 end;
@@ -1880,25 +1883,25 @@ end;
 {$IFDEF FPC}{$WARN 5044 OFF}{$ENDIF}
 procedure TLoaderCallbacksFixture.Info_NativeValues;
 begin
-  FLoader.ConfigFile := FValidConfigFile;
+  Loader.ConfigFile := FValidConfigFile;
   TTestCallbackObserverA.Active := True;
   TTestCallbackObserverB.Active := True;
-  Assert.IsTrue(FLoader.Load);
+  Assert.IsTrue(Loader.Load);
   Assert.IsTrue(TTestCallbackObserverA.MetadataEmptyOnLoad);
-  Assert.AreEqual(UTF8ToString(OpenSSL_version(OPENSSL_VERSION_CONST)), FLoader.Version);
-  Assert.AreEqual(ExtractFileDir(FLoader.ConfigFile), FLoader.ConfigDirectory);
-  Assert.AreEqual(UTF8ToString(OPENSSL_info(OPENSSL_INFO_MODULES_DIR)), FLoader.ModulesDirectory);
+  Assert.AreEqual(UTF8ToString(OpenSSL_version(OPENSSL_VERSION_CONST)), Loader.Version);
+  Assert.AreEqual(ExtractFileDir(Loader.ConfigFile), Loader.ConfigDirectory);
+  Assert.AreEqual(UTF8ToString(OPENSSL_info(OPENSSL_INFO_MODULES_DIR)), Loader.ModulesDirectory);
   if OpenSSL_version_num() >= $40000000 then
-    Assert.AreEqual('', FLoader.EnginesDirectory)
+    Assert.AreEqual('', Loader.EnginesDirectory)
   else
-    Assert.AreEqual(UTF8ToString(OPENSSL_info(OPENSSL_INFO_ENGINES_DIR)), FLoader.EnginesDirectory);
-  Assert.AreEqual(FLoader.Version, OpenSSLVersion);
-  Assert.AreEqual(FLoader.ConfigDirectory, OpenSSLDir);
-  Assert.AreEqual(FLoader.ModulesDirectory, OpenSSLModulesDir);
-  Assert.AreEqual(FLoader.EnginesDirectory, OpenSSLEnginesDir);
-  Assert.IsTrue(FLoader.Load);
+    Assert.AreEqual(UTF8ToString(OPENSSL_info(OPENSSL_INFO_ENGINES_DIR)), Loader.EnginesDirectory);
+  Assert.AreEqual(Loader.Version, OpenSSLVersion);
+  Assert.AreEqual(Loader.ConfigDirectory, OpenSSLDir);
+  Assert.AreEqual(Loader.ModulesDirectory, OpenSSLModulesDir);
+  Assert.AreEqual(Loader.EnginesDirectory, OpenSSLEnginesDir);
+  Assert.IsTrue(Loader.Load);
   Assert.AreEqual(2, TTestCallbackLog.Count);
-  FLoader.Unload;
+  Loader.Unload;
   Assert.IsTrue(TTestCallbackObserverA.MetadataEmptyOnUnload);
   Assert.IsTrue(LoaderMetadataIsEmpty);
 
@@ -1907,9 +1910,9 @@ begin
   Assert.WillRaise(
     procedure
     begin
-      FLoader.Load;
+      Loader.Load;
     end, Exception);
-  Assert.IsTrue(FLoader.State = lsLoadedFailed);
+  Assert.IsTrue(Loader.State = lsLoadedFailed);
   Assert.IsTrue(LoaderMetadataIsEmpty);
   Assert.IsTrue(TTestCallbackObserverA.MetadataEmptyOnLoad);
   Assert.IsTrue(TTestCallbackObserverA.MetadataEmptyOnUnload);
@@ -1931,12 +1934,12 @@ begin
     LConfig := TPath.Combine(LUnicodeDirectory, 'test.cnf');
     TFile.WriteAllText(LConfig, cMinimalValidOpenSSLConfig);
   end;
-  FLoader.ConfigFile := LConfig;
-  Assert.IsTrue(FLoader.Load);
-  LExpectedDirectory := ExtractFileDir(FLoader.ConfigFile);
-  Assert.AreEqual(LExpectedDirectory, FLoader.ConfigDirectory);
+  Loader.ConfigFile := LConfig;
+  Assert.IsTrue(Loader.Load);
+  LExpectedDirectory := ExtractFileDir(Loader.ConfigFile);
+  Assert.AreEqual(LExpectedDirectory, Loader.ConfigDirectory);
   Assert.IsTrue(SetCurrentDir(FOrigCurrentDir));
-  Assert.AreEqual(LExpectedDirectory, FLoader.ConfigDirectory);
+  Assert.AreEqual(LExpectedDirectory, Loader.ConfigDirectory);
   Assert.AreEqual(LExpectedDirectory, OpenSSLDir);
 end;
 
@@ -1945,11 +1948,11 @@ var
   LContext: TTaurusTLSContext;
   I: Integer;
 begin
-  FLoader.ConfigFile := FValidConfigFile;
+  Loader.ConfigFile := FValidConfigFile;
   TTestRuntimeHooksObserver.Active := True;
   for I := 1 to 2 do
   begin
-    Assert.IsTrue(FLoader.Load);
+    Assert.IsTrue(Loader.Load);
     Assert.AreEqual(I, TTestRuntimeHooksObserver.InstallCount);
     Assert.IsTrue(LoadOpenSSLLibrary);
     LContext := TTaurusTLSContext.Create;
@@ -1962,7 +1965,7 @@ begin
       LContext.Free;
     end;
     UnLoadOpenSSLLibrary;
-    Assert.IsTrue(FLoader.State = lsNotLoaded);
+    Assert.IsTrue(Loader.State = lsNotLoaded);
     Assert.IsTrue(LoaderMetadataIsEmpty);
     UnLoadOpenSSLLibrary;
   end;
@@ -1972,16 +1975,16 @@ procedure TLoaderCallbacksFixture.Runtime_ActionFailure;
 var
   LContext: TTaurusTLSContext;
 begin
-  FLoader.ConfigFile := FValidConfigFile;
+  Loader.ConfigFile := FValidConfigFile;
   TTestCallbackObserverA.Active := True;
   TTestRuntimeHooksObserver.Active := True;
   TTestRuntimeHooksObserver.ThrowOnInstall := True;
   Assert.WillRaiseWithMessage(
     procedure
     begin
-      FLoader.Load;
+      Loader.Load;
     end, EAbort, 'Simulated TLS runtime initialization failure');
-  Assert.IsTrue(FLoader.State = lsLoadedFailed);
+  Assert.IsTrue(Loader.State = lsLoadedFailed);
   Assert.IsTrue(LoaderMetadataIsEmpty);
   Assert.AreEqual(0, TTestCallbackLog.Count, 'Later load actions must not run');
   Assert.AreEqual(1, TTestRuntimeHooksObserver.InstallCount);
@@ -2007,12 +2010,12 @@ end;
 procedure TLoaderCallbacksFixture.Info_Unavailable(const AKind: Integer);
 begin
   GTestInfoUnavailable := AKind + 1;
-  FLoader.ConfigFile := FValidConfigFile;
-  Assert.IsTrue(FLoader.Load);
-  Assert.IsNotEmpty(FLoader.Version);
-  Assert.AreEqual(ExtractFileDir(FLoader.ConfigFile), FLoader.ConfigDirectory);
-  Assert.AreEqual('', FLoader.ModulesDirectory);
-  Assert.AreEqual('', FLoader.EnginesDirectory);
+  Loader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(Loader.Load);
+  Assert.IsNotEmpty(Loader.Version);
+  Assert.AreEqual(ExtractFileDir(Loader.ConfigFile), Loader.ConfigDirectory);
+  Assert.AreEqual('', Loader.ModulesDirectory);
+  Assert.AreEqual('', Loader.EnginesDirectory);
 end;
 
 procedure TLoaderCallbacksFixture.Info_Discovery(const AKind: Integer);
@@ -2028,12 +2031,12 @@ begin
     GTestDiscoveryFile := 'sub' + PathDelim + 'test.cnf';
     LExpectedDirectory := TPath.Combine(GetCurrentDir, 'sub');
   end;
-  FLoader.ConfigFile := '';
-  Assert.IsTrue(FLoader.Load);
-  Assert.AreEqual(GTestDiscoveryFile, FLoader.ConfigFile);
-  Assert.AreEqual(LExpectedDirectory, FLoader.ConfigDirectory);
+  Loader.ConfigFile := '';
+  Assert.IsTrue(Loader.Load);
+  Assert.AreEqual(GTestDiscoveryFile, Loader.ConfigFile);
+  Assert.AreEqual(LExpectedDirectory, Loader.ConfigDirectory);
   Assert.IsTrue(SetCurrentDir(FOrigCurrentDir));
-  Assert.AreEqual(LExpectedDirectory, FLoader.ConfigDirectory);
+  Assert.AreEqual(LExpectedDirectory, Loader.ConfigDirectory);
 end;
 
 procedure TLoaderCallbacksFixture.Runtime_InitFailure(const AKind: Integer);
@@ -2050,22 +2053,22 @@ begin
     GTestSSLInitFailure := True;
     LExceptionClass := ETaurusTLSOpenSSLInitFailed;
   end;
-  FLoader.ConfigFile := FValidConfigFile;
+  Loader.ConfigFile := FValidConfigFile;
   TTestCallbackObserverA.Active := True;
   TTestRuntimeHooksObserver.Active := True;
   Assert.WillRaise(
     procedure
     begin
-      FLoader.Load;
+      Loader.Load;
     end, LExceptionClass);
-  Assert.IsTrue(FLoader.State = lsLoadedFailed);
+  Assert.IsTrue(Loader.State = lsLoadedFailed);
   Assert.IsTrue(LoaderMetadataIsEmpty);
   Assert.AreEqual(0, TTestCallbackLog.Count);
   Assert.AreEqual(0, TTestRuntimeHooksObserver.InstallCount);
   GTestSSLInitFailure := False;
   GTestCryptoInitFailure := False;
-  FLoader.Unload;
-  Assert.IsTrue(FLoader.Load);
+  Loader.Unload;
+  Assert.IsTrue(Loader.Load);
   Assert.AreEqual(1, TTestRuntimeHooksObserver.InstallCount);
 end;
 {$ENDIF}
@@ -2098,7 +2101,7 @@ var
             for J := 1 to CQueryCount do
             begin
               LLoader := GetOpenSSLLoader;
-              if LLoader <> FLoader then
+              if LLoader <> Loader then
                 raise Exception.Create('Concurrent query returned a different loader');
             end;
             LResults[AIndex] := LLoader;
@@ -2144,23 +2147,23 @@ begin
       for I := 0 to CWorkerCount - 1 do
       begin
         Assert.AreEqual('', LErrors[I], 'Singleton worker failed');
-        Assert.IsTrue(LResults[I] = FLoader);
+        Assert.IsTrue(LResults[I] = Loader);
       end;
-      Assert.IsTrue(FLoader.State = lsNotLoaded, 'Queries and registration must not load OpenSSL');
+      Assert.IsTrue(Loader.State = lsNotLoaded, 'Queries and registration must not load OpenSSL');
       Assert.AreEqual(0, TConcurrentRegistrationObserver.ActionLoadCount);
       Assert.AreEqual(0, TConcurrentRegistrationObserver.HeaderLoadCount);
 
       if ARegister <> 0 then
       begin
-        FLoader.ConfigFile := FValidConfigFile;
-        Assert.IsTrue(FLoader.Load);
+        Loader.ConfigFile := FValidConfigFile;
+        Assert.IsTrue(Loader.Load);
         Assert.AreEqual(CWorkerCount, TConcurrentRegistrationObserver.ActionLoadCount);
         {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
         Assert.AreEqual(CWorkerCount, TConcurrentRegistrationObserver.HeaderLoadCount);
         {$ENDIF}
-        Assert.IsTrue(FLoader.Load);
+        Assert.IsTrue(Loader.Load);
         Assert.AreEqual(CWorkerCount, TConcurrentRegistrationObserver.ActionLoadCount);
-        FLoader.Unload;
+        Loader.Unload;
         Assert.AreEqual(CWorkerCount, TConcurrentRegistrationObserver.ActionUnloadCount);
         {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
         Assert.AreEqual(CWorkerCount, TConcurrentRegistrationObserver.HeaderUnloadCount);

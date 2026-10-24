@@ -8,16 +8,16 @@ uses
 type
   [TestFixture]
   [Category('Context')]
-  TContextLoadFixture = class(TOsslBaseFixture)
+  TContextLoadFixture = class(TOsslAutoloadFixture)
   private
     FDir: string;
     procedure InitWith(const ARootPublicKey, ADHParamsFile: string);
     function WriteFile(const AName, AContent: string): string;
   public
     [SetupFixture]
-    procedure SetupFixture;
+    procedure SetupFixture; override;
     [TearDownFixture]
-    procedure TearDownFixture;
+    procedure TearDownFixture; override;
 
     [Test]
     procedure DHParamsFile_Missing_Raises;
@@ -68,17 +68,31 @@ const
 
 procedure TContextLoadFixture.SetupFixture;
 begin
-  inherited;
-  FDir := TPath.Combine(TPath.GetTempPath, 'TaurusTLS.UT.Context.' +
-    TGUID.NewGuid.ToString);
-  TDirectory.CreateDirectory(FDir);
+  try
+    inherited;
+    FDir := TPath.Combine(TPath.GetTempPath, 'TaurusTLS.UT.Context.' +
+      TGUID.NewGuid.ToString);
+    TDirectory.CreateDirectory(FDir);
+  except
+    // DUnitX skips teardown after a fixture setup error.
+    try
+      TearDownFixture;
+    except
+      on E: Exception do
+        Log(TLogLevel.Error, 'Context fixture setup cleanup: ' + E.Message);
+    end;
+    raise;
+  end;
 end;
 
 procedure TContextLoadFixture.TearDownFixture;
 begin
-  if TDirectory.Exists(FDir) then
-    TDirectory.Delete(FDir, True);
-  inherited;
+  try
+    if (FDir <> '') and TDirectory.Exists(FDir) then
+      TDirectory.Delete(FDir, True);
+  finally
+    inherited;
+  end;
 end;
 
 procedure TContextLoadFixture.InitWith(const ARootPublicKey,
