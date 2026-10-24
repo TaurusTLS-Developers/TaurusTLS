@@ -2,13 +2,44 @@ unit TaurusTLS.UT.NTLM;
 
 interface
 
+{$I ..\Source\TaurusTLSCompilerDefines.inc}
+{$I ..\Source\TaurusTLSLinkDefines.inc}
+
 uses
   System.SysUtils,
+  System.IOUtils,
   DUnitX.TestFramework,
   IdGlobal,
-  TaurusTLS.UT.TestClasses;
+  IdCTypes,
+  TaurusTLSLoader,
+  TaurusTLSExceptionHandlers,
+  TaurusTLS.UT.TestClasses,
+  TaurusTLS.UT.Loader;
 
 type
+  [TestFixture('', 'Checks the actual Indy NTLM loading hook against loader readiness without executing NTLM algorithms. '
+    + 'Uses controlled temporary OpenSSL configuration and the loader fixture native-library settings.')]
+  [Category('Loader,Loader.NTLM')]
+  TLoaderNTLMReadinessFixture = class(TLoaderBaseFixture)
+  public
+    [Setup]
+    procedure Setup;
+    [TearDown]
+    procedure Teardown;
+    [Test]
+    procedure Status_NotLoaded;
+    [Test]
+    procedure Status_Failed;
+    [TestCase('SingleCycle', '1')]
+    [TestCase('RepeatedCycle', '2')]
+    procedure Status_LoadUnload(const ACycles: Integer);
+    [TestCase('NotLoaded', '0')]
+    [TestCase('Ready', '1')]
+    procedure Hooks_Reinstalled(const AReady: Integer);
+  end;
+
+
+
   [TestFixture]
   [Category('NTLM')]
   TOSSLNTLMFixture = class(TOsslBaseFixture)
@@ -37,8 +68,181 @@ type
 implementation
 
 uses
+  IdFIPS,
+  TaurusTLSHeaders_crypto,
   TaurusTLS_LegacyProviders,
+  TaurusTLSFIPS,
   TaurusTLS_NTLM;
+
+
+type
+  TNTLMReadinessObserver = class
+  public
+    class var Active: Boolean;
+    class var LoadCount: Integer;
+    class var UnloadCount: Integer;
+    class var ReadyDuringLoad: Boolean;
+    class var ReadyDuringUnload: Boolean;
+    class var Error: string;
+    class procedure Action(AAction: TOpenSSLLoadAction);
+  end;
+
+class procedure TNTLMReadinessObserver.Action(AAction: TOpenSSLLoadAction);
+begin
+  if not Active then
+    Exit;
+  try
+    case AAction of
+      osaLoad:
+        begin
+          Inc(LoadCount);
+          ReadyDuringLoad := IdFIPS.LoadNTLMLibrary();
+        end;
+      osaUnload:
+        begin
+          Inc(UnloadCount);
+          ReadyDuringUnload := IdFIPS.LoadNTLMLibrary();
+        end;
+    end;
+  except
+    on E: Exception do
+    begin
+      Error := E.ClassName + ': ' + E.Message;
+      raise;
+    end;
+  end;
+end;
+
+{ TLoaderNTLMReadinessFixture }
+
+procedure TLoaderNTLMReadinessFixture.Setup;
+begin
+  inherited Setup;
+  InstallFIPSHooks;
+  Assert.IsTrue(Assigned(IdFIPS.LoadNTLMLibrary), 'Indy NTLM hook must be installed');
+  TNTLMReadinessObserver.LoadCount := 0;
+  TNTLMReadinessObserver.UnloadCount := 0;
+  TNTLMReadinessObserver.ReadyDuringLoad := False;
+  TNTLMReadinessObserver.ReadyDuringUnload := False;
+  TNTLMReadinessObserver.Error := '';
+  TNTLMReadinessObserver.Active := True;
+end;
+
+procedure TLoaderNTLMReadinessFixture.Teardown;
+begin
+  try
+    inherited Teardown;
+  finally
+    TNTLMReadinessObserver.Active := False;
+  end;
+end;
+
+procedure TLoaderNTLMReadinessFixture.Status_NotLoaded;
+var
+  LConfig: string;
+  LDiagnostics: string;
+  I: Integer;
+begin
+  // Loading this sentinel would raise; a passive readiness query must ignore it.
+  LConfig := TPath.Combine(FTempDir, 'missing_ntlm_config.cnf');
+  FLoader.ConfigFile := LConfig;
+  LDiagnostics := FLoader.FailedToLoad.Text;
+  for I := 1 to 2 do
+    Assert.IsFalse(IdFIPS.LoadNTLMLibrary());
+  Assert.IsTrue(FLoader.State = lsNotLoaded);
+  Assert.AreEqual(LConfig, FLoader.ConfigFile);
+  Assert.AreEqual(LDiagnostics, FLoader.FailedToLoad.Text);
+  Assert.AreEqual('', FLoader.Version);
+  Assert.AreEqual(0, TNTLMReadinessObserver.LoadCount);
+  Assert.AreEqual(0, TNTLMReadinessObserver.UnloadCount);
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  Assert.IsFalse(Assigned(OpenSSL_version_num), 'Query must not bind native APIs');
+{$ENDIF}
+end;
+
+procedure TLoaderNTLMReadinessFixture.Status_Failed;
+var
+  LDiagnostics: string;
+  I: Integer;
+begin
+  FLoader.ConfigFile := FInvalidSyntaxConfigFile;
+  Assert.WillRaise(
+    procedure
+    begin
+      FLoader.Load;
+    end,
+    ETaurusTLSConfigFileLoadError);
+  Assert.IsTrue(FLoader.State = lsLoadedFailed);
+  LDiagnostics := FLoader.FailedToLoad.Text;
+  // A corrected property must not let a status query reset the circuit breaker.
+  FLoader.ConfigFile := FValidConfigFile;
+  for I := 1 to 2 do
+    Assert.IsFalse(IdFIPS.LoadNTLMLibrary());
+  Assert.IsTrue(FLoader.State = lsLoadedFailed);
+  Assert.AreEqual(FValidConfigFile, FLoader.ConfigFile);
+  Assert.AreEqual(LDiagnostics, FLoader.FailedToLoad.Text);
+  Assert.IsFalse(FLoader.Load, 'Hook must leave retry blocked until explicit Unload');
+  Assert.AreEqual(0, TNTLMReadinessObserver.LoadCount);
+  Assert.AreEqual(0, TNTLMReadinessObserver.UnloadCount);
+  FLoader.Unload;
+  Assert.IsFalse(IdFIPS.LoadNTLMLibrary(), 'Reset alone must not initialize OpenSSL');
+end;
+
+procedure TLoaderNTLMReadinessFixture.Status_LoadUnload(const ACycles: Integer);
+var
+  I: Integer;
+  LConfig: string;
+  LVersion: string;
+begin
+  FLoader.ConfigFile := FValidConfigFile;
+  for I := 1 to ACycles do
+  begin
+    Assert.IsFalse(IdFIPS.LoadNTLMLibrary());
+    Assert.IsTrue(FLoader.Load);
+    LConfig := FLoader.ConfigFile;
+    LVersion := FLoader.Version;
+    Assert.IsTrue(IdFIPS.LoadNTLMLibrary());
+    Assert.IsTrue(IdFIPS.LoadNTLMLibrary());
+    Assert.IsTrue(FLoader.State = lsLoadedReady);
+    Assert.AreEqual(LConfig, FLoader.ConfigFile);
+    Assert.AreEqual(LVersion, FLoader.Version);
+    Assert.AreEqual(I, TNTLMReadinessObserver.LoadCount);
+    Assert.IsFalse(TNTLMReadinessObserver.ReadyDuringLoad);
+    FLoader.Unload;
+    Assert.IsFalse(IdFIPS.LoadNTLMLibrary());
+    Assert.IsTrue(FLoader.State = lsNotLoaded);
+    Assert.AreEqual(I, TNTLMReadinessObserver.UnloadCount);
+    Assert.IsFalse(TNTLMReadinessObserver.ReadyDuringUnload);
+    Assert.AreEqual('', TNTLMReadinessObserver.Error,
+      'Transition hook query must not recurse into lifecycle operations');
+  end;
+end;
+
+function UnexpectedNTLMHook: Boolean;
+begin
+  raise Exception.Create('NTLM hook was not reinstalled');
+end;
+
+procedure TLoaderNTLMReadinessFixture.Hooks_Reinstalled(const AReady: Integer);
+var
+  LSavedHook: TLoadNTLMLibrary;
+begin
+  FLoader.ConfigFile := FValidConfigFile;
+  if AReady <> 0 then
+    Assert.IsTrue(FLoader.Load);
+  LSavedHook := IdFIPS.LoadNTLMLibrary;
+  try
+    IdFIPS.LoadNTLMLibrary := UnexpectedNTLMHook;
+    InstallFIPSHooks;
+    Assert.IsTrue(IdFIPS.LoadNTLMLibrary() = (AReady <> 0));
+    if AReady <> 0 then
+      Assert.IsTrue(FLoader.State = lsLoadedReady)
+    else
+      Assert.IsTrue(FLoader.State = lsNotLoaded);
+  finally
+    IdFIPS.LoadNTLMLibrary := LSavedHook;
+  end;
+end;
 
 const
   CGuardByte = $A5;
@@ -137,6 +341,8 @@ begin
 end;
 
 initialization
+  Register_SSLLoaderAction(TNTLMReadinessObserver.Action);
   TDUnitX.RegisterTestFixture(TOSSLNTLMFixture);
+  TDUnitX.RegisterTestFixture(TLoaderNTLMReadinessFixture);
 
 end.
