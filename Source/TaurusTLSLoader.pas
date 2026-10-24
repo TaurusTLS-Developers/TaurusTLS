@@ -273,6 +273,9 @@ function LoadLibFunction(const ALibHandle: TIdLibHandle; const AProcName: TIdLib
 implementation
 
 uses
+{$IFDEF UNITTEST}
+  TaurusTLSLoader.TestHooks,
+{$ENDIF}
 {$IFDEF HAS_UNIT_Generics_Collections}
   System.Generics.Collections,
 {$ENDIF}
@@ -624,6 +627,10 @@ destructor TOpenSSLBaseLoader.Destroy;
 begin
   FreeAndNil(FLoaderLock);
   FreeAndNil(FRegistrationLock);
+{$IFDEF UNITTEST}
+  if Assigned(OnLoaderCandidateDestroyed) then
+    OnLoaderCandidateDestroyed;
+{$ENDIF}
   inherited Destroy;
 end;
 
@@ -1594,11 +1601,22 @@ begin
 {$ENDIF}
 end;
 
+{$IFDEF UNITTEST}
+function AcquireLoaderForTest: IInterface;
+begin
+  Result := GetOpenSSLLoader;
+end;
+{$ENDIF}
+
 class function TOpenSSLBaseLoader.EnsureInstance: TOpenSSLBaseLoader;
 var
   LCandidate: TOpenSSLBaseLoader;
   LPublished: TOpenSSLBaseLoader;
 begin
+{$IFDEF UNITTEST}
+  if Assigned(OnLoaderAccess) then
+    OnLoaderAccess(AcquireLoaderForTest);
+{$ENDIF}
   Result := CompareExchangeInstance(nil);
   if Assigned(Result) then
     Exit;
@@ -1612,6 +1630,10 @@ begin
   // Acquire it before publication so another caller cannot release the owner.
   LCandidate._AddRef;
   try
+{$IFDEF UNITTEST}
+    if Assigned(OnLoaderCandidateReady) then
+      OnLoaderCandidateReady;
+{$ENDIF}
     LPublished := CompareExchangeInstance(LCandidate);
     if not Assigned(LPublished) then
     begin
