@@ -25,6 +25,9 @@ program TaurusTLS.Loader.Shutdown;
   --inject-cleanup-failure intentionally raises in the first cleanup callback;
   both callbacks must still execute. Detecting this expected exception while
   all cleanup checks pass is a successful test, reported as PASS with exit 0.
+  --exit:Pause waits for Enter after all finalization checks (useful in the IDE).
+  --exit:Continue, --exit:, or no exit option returns immediately (the default).
+  Example for IDE runs: --inject-cleanup-failure --exit:Pause
   This standalone app does not accept DUnitX runner switches.
 
   Usage
@@ -35,9 +38,9 @@ program TaurusTLS.Loader.Shutdown;
     $LASTEXITCODE
   For Win64, use the Win64 executable and OpenSSL 64-bit shared libraries.
   Linux usually uses the system OpenSSL libraries:
-    ./TaurusTLS_IT_Shutdown; echo $?
+    ./TaurusTLS_Loader_Shutdown; echo $?
   Use -osp: to select another directory containing OpenSSL shared libraries:
-    ./TaurusTLS_IT_Shutdown -osp:/path/to/openssl/libraries; echo $?
+    ./TaurusTLS_Loader_Shutdown -osp:/path/to/openssl/libraries; echo $?
 
   macOS builds use statically linked OpenSSL and do not require -osp:.
   Run the deployed executable from <application>.app/Contents/MacOS.
@@ -66,9 +69,10 @@ program TaurusTLS.Loader.Shutdown;
 uses
   System.SysUtils,
   System.IOUtils,
-  TaurusTLS.Loader.Shutdown.Observer in 'TaurusTLS.Loader.Shutdown.Observer.pas',
-  TaurusTLSLoader in '..\Source\TaurusTLSLoader.pas',
-  TaurusTLSHeaders_crypto in '..\Source\TaurusTLSHeaders_crypto.pas';
+  TaurusTLSLoader,
+  TaurusTLSHeaders_crypto,
+  TaurusTLS.Loader.ConsoleSupport in 'TaurusTLS.Loader.ConsoleSupport.pas',
+  TaurusTLS.Loader.Shutdown.Observer in 'TaurusTLS.Loader.Shutdown.Observer.pas';
 
 type
   EExpectedCleanupFailure = class(Exception);
@@ -169,6 +173,8 @@ begin
   for I := 1 to ParamCount do
   begin
     LArgument := ParamStr(I);
+    if ConsumeExitOption(LArgument) then
+      Continue;
     if SameText(Copy(LArgument, 1, 5), '-osp:') then
       LLibraryPath := Copy(LArgument, 6, MaxInt)
     else if SameText(LArgument, '--inject-cleanup-failure') then
