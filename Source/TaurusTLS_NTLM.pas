@@ -76,13 +76,14 @@ uses
   TaurusTLSFIPS,
   SysUtils;
 
+/// <summary>Reports loader readiness without initializing or resetting OpenSSL.</summary>
+/// <remarks>Applications must explicitly load OpenSSL before using Indy NTLM.</remarks>
 function LoadTaurusTLS: Boolean;
+var
+  LLoader: IOpenSSLLoader;
 begin
-{$IFDEF OPENSSL_STATIC_LINK_MODEL}
-  Result := true;
-{$ELSE}
-  Result := GetOpenSSLLoader.Load;
-{$ENDIF}
+  LLoader := GetOpenSSLLoader;
+  Result := Assigned(LLoader) and (LLoader.State = lsLoadedReady);
 end;
 
 function TaurusTLSIsNTLMFuncsAvail: Boolean;
