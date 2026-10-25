@@ -32,6 +32,10 @@ type
     [TestCase('NotLoaded', '0')]
     [TestCase('Ready', '1')]
     procedure Hash_Reinstall(const AReady: Integer);
+    /// <summary>Hash/FIPS setup must leave all NTLM callbacks owned by their backend.</summary>
+    [TestCase('NotLoaded', '0')]
+    [TestCase('Ready', '1')]
+    procedure Hash_PreservesNTLM(const AReady: Integer);
   end;
 
 implementation
@@ -218,6 +222,40 @@ begin
     Assert.IsTrue(Loader.IsLoaded = (AReady <> 0));
   finally
     IdFIPS.LoadHashLibrary := LSavedHook;
+  end;
+end;
+
+procedure TLoaderFIPSReadinessFixture.Hash_PreservesNTLM(const AReady: Integer);
+var
+  LSavedLoad: TLoadNTLMLibrary;
+  LSavedAvailable: TIsNTLMFuncsAvail;
+  LSavedLM: TNTLMGetLmChallengeResponse;
+  LSavedNT: TNTLMGetNtChallengeResponse;
+begin
+  Loader.ConfigFile := FValidConfigFile;
+  if AReady <> 0 then
+    Assert.IsTrue(Loader.Load);
+  LSavedLoad := IdFIPS.LoadNTLMLibrary;
+  LSavedAvailable := IdFIPS.IsNTLMFuncsAvail;
+  LSavedLM := IdFIPS.NTLMGetLmChallengeResponse;
+  LSavedNT := IdFIPS.NTLMGetNtChallengeResponse;
+  try
+    IdFIPS.LoadNTLMLibrary := UnexpectedHashLoader;
+    IdFIPS.IsNTLMFuncsAvail := UnexpectedHashLoader;
+    IdFIPS.NTLMGetLmChallengeResponse := nil;
+    IdFIPS.NTLMGetNtChallengeResponse := nil;
+    InstallFIPSHooks;
+    InstallFIPSHooks;
+    Assert.IsTrue(@IdFIPS.LoadNTLMLibrary = @UnexpectedHashLoader);
+    Assert.IsTrue(@IdFIPS.IsNTLMFuncsAvail = @UnexpectedHashLoader);
+    Assert.IsFalse(Assigned(IdFIPS.NTLMGetLmChallengeResponse));
+    Assert.IsFalse(Assigned(IdFIPS.NTLMGetNtChallengeResponse));
+    Assert.IsTrue(Loader.IsLoaded = (AReady <> 0));
+  finally
+    IdFIPS.LoadNTLMLibrary := LSavedLoad;
+    IdFIPS.IsNTLMFuncsAvail := LSavedAvailable;
+    IdFIPS.NTLMGetLmChallengeResponse := LSavedLM;
+    IdFIPS.NTLMGetNtChallengeResponse := LSavedNT;
   end;
 end;
 
