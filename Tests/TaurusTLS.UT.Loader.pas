@@ -235,12 +235,35 @@ type
     [TestCase('RollbackDuringUnload', '2,2')]
     [TestCase('RegisterDuringLoad', '1,3')]
     [TestCase('RegisterDuringUnload', '2,3')]
+    [TestCase('UnregisterDuringLoad', '1,4')]
+    [TestCase('UnregisterDuringUnload', '2,4')]
     procedure State_Recursive(const APhase, AOperation: Integer);
 
-    /// <summary>Verifies late actions are rejected without altering the registry or readiness.</summary>
+    /// <summary>Ready registration runs immediately; failed registration requires reset.</summary>
     [TestCase('Ready', '0')]
     [TestCase('Failed', '1')]
-    procedure CB_RejectLateRegistration(const AFailed: Integer);
+    procedure CB_RegistrationState(const AFailed: Integer);
+    [TestCase('Inactive', '0')]
+    [TestCase('Ready', '1')]
+    [TestCase('Failed', '2')]
+    procedure CB_Unregister(const AState: Integer);
+    [Test]
+    procedure CB_RegistrationIdentity;
+    [TestCase('Load', '0')]
+    [TestCase('Unload', '1')]
+    procedure CB_ImmediateFailure(const AUnload: Integer);
+    [TestCase('LoadDuringAdd', '0,0')]
+    [TestCase('UnloadDuringAdd', '0,1')]
+    [TestCase('RegisterDuringAdd', '0,2')]
+    [TestCase('UnregisterDuringAdd', '0,3')]
+    [TestCase('LoadDuringRemove', '1,0')]
+    [TestCase('UnloadDuringRemove', '1,1')]
+    [TestCase('RegisterDuringRemove', '1,2')]
+    [TestCase('UnregisterDuringRemove', '1,3')]
+    procedure CB_ImmediateReentry(const AUnload, AOperation: Integer);
+    [TestCase('Register', '0')]
+    [TestCase('Unregister', '1')]
+    procedure CB_ConcurrentMutation(const ARemove: Integer);
 
     /// <summary>Verifies an uncaught recursive-call error fails initialization and permits later recovery.</summary>
     [Test]
@@ -977,6 +1000,18 @@ var
   {$ENDIF}
 
 type
+  TActionRegistrationProbe = class
+  public
+    LoadCount, UnloadCount: Integer;
+    ReadyOnLoad, ReadyOnUnload, NativeOnLoad, NativeOnUnload: Boolean;
+    FailOnLoad, FailOnUnload, Reenter, ReenterOnUnload, ReentryRejected: Boolean;
+    Operation: Integer;
+    Name: string;
+    Log: TStringList;
+    Entered, ReleaseGate: TEvent;
+    procedure Action(AAction: TOpenSSLLoadAction);
+  end;
+
   TTestRuntimeObserver = class
   public
     class var Active: Boolean;
@@ -1078,6 +1113,48 @@ end;
 
 {$I TaurusTLSSymbolDeprecatedOn.inc}
 
+procedure TActionRegistrationProbe.Action(AAction: TOpenSSLLoadAction);
+begin
+  if AAction = osaLoad then
+  begin
+    Inc(LoadCount);
+    ReadyOnLoad := GetOpenSSLLoader.IsLoaded;
+    NativeOnLoad := OpenSSL_version_num() > 0;
+    if Assigned(Log) then
+      Log.Add(Name + ':Load');
+    if FailOnLoad then
+      raise EAbort.Create('Immediate load failure');
+  end
+  else
+  begin
+    Inc(UnloadCount);
+    ReadyOnUnload := GetOpenSSLLoader.IsLoaded;
+    NativeOnUnload := OpenSSL_version_num() > 0;
+    if Assigned(Log) then
+      Log.Add(Name + ':Unload');
+    if FailOnUnload then
+      raise EAbort.Create('Immediate unload failure');
+  end;
+  if Reenter and (ReenterOnUnload = (AAction = osaUnload)) then
+  try
+    case Operation of
+      0: GetOpenSSLLoader.Load;
+      1: GetOpenSSLLoader.Unload;
+      2: Register_SSLLoaderAction(Action);
+      3: UnRegister_SSLLoaderAction(Action);
+    end;
+  except
+    on E: ETaurusTLSLoaderError do
+      ReentryRejected := True;
+  end;
+  if Assigned(Entered) then
+  begin
+    Entered.SetEvent;
+    if ReleaseGate.WaitFor(10000) <> wrSignaled then
+      raise Exception.Create('Immediate callback release timed out');
+  end;
+end;
+
 class procedure TTestRuntimeObserver.ActionProc(AAction: TOpenSSLLoadAction);
 begin
   if not Active or (AAction <> osaLoad) then
@@ -1157,6 +1234,7 @@ begin
       1: GetOpenSSLLoader.Unload;
       2: GetOpenSSLLoader.Unload(False);
       3: Register_SSLLoaderAction(TTestCallbackObserverB.ActionProc);
+      4: UnRegister_SSLLoaderAction(TTestCallbackObserverB.ActionProc);
     end;
   except
     on E: ETaurusTLSLoaderError do
@@ -1714,42 +1792,303 @@ begin
   Assert.AreEqual(2, TTestCallbackLog.Count, 'Only the outer operation dispatches callbacks');
 end;
 
-procedure TLoaderCallbacksFixture.CB_RejectLateRegistration(const AFailed: Integer);
+procedure TLoaderCallbacksFixture.CB_RegistrationState(const AFailed: Integer);
 var
-  LExpectedState: TTaurusTLSLoaderState;
+  LProbe: TActionRegistrationProbe;
 begin
-  Loader.ConfigFile := FValidConfigFile;
-  TTestCallbackObserverA.Active := True;
-  TTestCallbackObserverB.Active := True;
-  if AFailed <> 0 then
-  begin
-    TTestCallbackObserverB.ThrowOnLoad := True;
-    Assert.WillRaise(
+  LProbe := TActionRegistrationProbe.Create;
+  try
+    Loader.ConfigFile := FValidConfigFile;
+    if AFailed <> 0 then
+    begin
+      TTestCallbackObserverB.Active := True;
+      TTestCallbackObserverB.ThrowOnLoad := True;
+      Assert.WillRaise(
+        procedure
+        begin
+          Loader.Load;
+        end, Exception, 'The fixture must enter failed state before testing registration');
+      TTestCallbackObserverB.ThrowOnLoad := False;
+      Assert.WillRaise(
+        procedure
+        begin
+          Register_SSLLoaderAction(LProbe.Action);
+        end, ETaurusTLSLoaderError, 'Failed state must reject new registrations until reset');
+      Assert.IsTrue(Loader.State = lsLoadedFailed, 'Rejected registration must preserve failure state');
+      Assert.AreEqual(0, LProbe.LoadCount, 'Rejected registration must not invoke the callback');
+    end
+    else
+    begin
+      Assert.IsTrue(Loader.Load, 'The fixture must be ready before late registration');
+      Register_SSLLoaderAction(LProbe.Action);
+      Assert.AreEqual(1, LProbe.LoadCount, 'Ready registration must run osaLoad immediately');
+      Assert.IsTrue(LProbe.ReadyOnLoad and LProbe.NativeOnLoad,
+        'Immediate initialization must see ready state and callable native APIs');
+      Assert.IsTrue(Loader.Load, 'A repeated Load must remain successful');
+      Assert.AreEqual(1, LProbe.LoadCount, 'Repeated Load must not redispatch the added callback');
+    end;
+    UnRegister_SSLLoaderAction(LProbe.Action);
+    Assert.AreEqual(Integer(Ord(AFailed = 0)), LProbe.UnloadCount,
+      'Ready removal must clean up once; a rejected registration has no cleanup');
+    if AFailed = 0 then
+      Assert.IsTrue(LProbe.ReadyOnUnload and LProbe.NativeOnUnload,
+        'Immediate cleanup must retain ready state and callable native APIs');
+    Loader.Unload;
+    Assert.IsTrue(Loader.Load, 'Explicit reset must allow the following load cycle');
+    Assert.AreEqual(Integer(Ord(AFailed = 0)), LProbe.LoadCount,
+      'Removed or rejected callbacks must not appear in a later load cycle');
+  finally
+    UnRegister_SSLLoaderAction(LProbe.Action);
+    LProbe.Free;
+  end;
+end;
+
+procedure TLoaderCallbacksFixture.CB_Unregister(const AState: Integer);
+var
+  LProbe: TActionRegistrationProbe;
+begin
+  LProbe := TActionRegistrationProbe.Create;
+  try
+    Loader.ConfigFile := FValidConfigFile;
+    Register_SSLLoaderAction(LProbe.Action);
+    if AState = 1 then
+      Assert.IsTrue(Loader.Load, 'Ready removal requires an initialized callback')
+    else if AState = 2 then
+    begin
+      TTestCallbackObserverB.Active := True;
+      TTestCallbackObserverB.ThrowOnLoad := True;
+      Assert.WillRaise(
+        procedure
+        begin
+          Loader.Load;
+        end, Exception, 'The earlier action must fail before the new probe is initialized');
+      TTestCallbackObserverB.ThrowOnLoad := False;
+    end;
+    UnRegister_SSLLoaderAction(LProbe.Action);
+    UnRegister_SSLLoaderAction(LProbe.Action);
+    Assert.AreEqual(Integer(Ord(AState = 1)), LProbe.UnloadCount,
+      'Only initialized actions receive cleanup, and repeated removal is a no-op');
+    Loader.Unload;
+    Assert.IsTrue(Loader.Load, 'Removal must leave later lifecycle cycles usable');
+    Assert.AreEqual(Integer(Ord(AState = 1)), LProbe.LoadCount,
+      'An action removed while inactive, ready or failed must not be dispatched again');
+  finally
+    UnRegister_SSLLoaderAction(LProbe.Action);
+    LProbe.Free;
+  end;
+end;
+
+procedure TLoaderCallbacksFixture.CB_RegistrationIdentity;
+var
+  LFirst, LSecond: TActionRegistrationProbe;
+  LLog: TStringList;
+begin
+  LFirst := TActionRegistrationProbe.Create;
+  LSecond := TActionRegistrationProbe.Create;
+  LLog := TStringList.Create;
+  try
+    LFirst.Name := 'A';
+    LSecond.Name := 'B';
+    LFirst.Log := LLog;
+    LSecond.Log := LLog;
+    Loader.ConfigFile := FValidConfigFile;
+    Register_SSLLoaderAction(nil);
+    UnRegister_SSLLoaderAction(nil);
+    UnRegister_SSLLoaderAction(LFirst.Action);
+    Assert.IsTrue(Loader.Load, 'Missing and nil removals must not disturb lifecycle actions');
+    Register_SSLLoaderAction(LFirst.Action);
+    Register_SSLLoaderAction(LFirst.Action);
+    Register_SSLLoaderAction(LSecond.Action);
+    UnRegister_SSLLoaderAction(LFirst.Action);
+    Assert.AreEqual(1, LFirst.UnloadCount, 'One removal must remove only one duplicate registration');
+    Assert.AreEqual(0, LSecond.UnloadCount, 'Equal method code on a different instance must remain registered');
+    Loader.Unload;
+    Assert.AreEqual(2, LFirst.UnloadCount, 'The remaining duplicate must participate in normal unload');
+    Assert.AreEqual(1, LSecond.UnloadCount, 'A different instance must retain its cleanup callback');
+    Assert.AreEqual('B:Unload', LLog[LLog.Count - 2], 'Remaining callbacks must clean up in reverse registration order');
+    Assert.AreEqual('A:Unload', LLog[LLog.Count - 1], 'Removal must preserve indexes of earlier callbacks');
+    Assert.IsTrue(Loader.Load, 'The registry must remain valid after removing a duplicate');
+    Assert.AreEqual(3, LFirst.LoadCount, 'Only the remaining duplicate must run on reload');
+    Assert.AreEqual(2, LSecond.LoadCount, 'The second instance must survive the removal and reload');
+  finally
+    UnRegister_SSLLoaderAction(LSecond.Action);
+    UnRegister_SSLLoaderAction(LFirst.Action);
+    UnRegister_SSLLoaderAction(LFirst.Action);
+    LLog.Free;
+    LSecond.Free;
+    LFirst.Free;
+  end;
+end;
+
+procedure TLoaderCallbacksFixture.CB_ImmediateFailure(const AUnload: Integer);
+var
+  LProbe: TActionRegistrationProbe;
+begin
+  LProbe := TActionRegistrationProbe.Create;
+  try
+    Loader.ConfigFile := FValidConfigFile;
+    Assert.IsTrue(Loader.Load, 'Immediate failure tests require a ready runtime');
+    if AUnload = 0 then
+    begin
+      LProbe.FailOnLoad := True;
+      Assert.WillRaise(
+        procedure
+        begin
+          Register_SSLLoaderAction(LProbe.Action);
+        end, EAbort, 'Immediate initialization must propagate the original callback exception');
+      UnRegister_SSLLoaderAction(LProbe.Action);
+      Assert.AreEqual(0, LProbe.UnloadCount, 'An initialization that failed must not leave a registered action');
+      LProbe.FailOnLoad := False;
+    end
+    else
+    begin
+      Register_SSLLoaderAction(LProbe.Action);
+      LProbe.FailOnUnload := True;
+      Assert.WillRaise(
+        procedure
+        begin
+          UnRegister_SSLLoaderAction(LProbe.Action);
+        end, EAbort, 'Immediate cleanup must propagate the original callback exception');
+      LProbe.FailOnUnload := False;
+      UnRegister_SSLLoaderAction(LProbe.Action);
+      Assert.AreEqual(1, LProbe.UnloadCount, 'Cleanup failure must still detach the callback');
+    end;
+    Assert.IsTrue(Loader.IsLoaded, 'An immediate callback failure must preserve the existing ready runtime');
+    Register_SSLLoaderAction(LProbe.Action);
+    UnRegister_SSLLoaderAction(LProbe.Action);
+    Assert.AreEqual(2, LProbe.LoadCount, 'The mutation guard must reset after either callback exception');
+    Loader.Unload;
+    Assert.AreEqual(Integer(Ord(AUnload <> 0)) + 1, LProbe.UnloadCount,
+      'Normal unload must not repeat cleanup of detached callbacks');
+  finally
+    LProbe.FailOnLoad := False;
+    LProbe.FailOnUnload := False;
+    UnRegister_SSLLoaderAction(LProbe.Action);
+    LProbe.Free;
+  end;
+end;
+
+procedure TLoaderCallbacksFixture.CB_ImmediateReentry(const AUnload, AOperation: Integer);
+var
+  LProbe: TActionRegistrationProbe;
+begin
+  LProbe := TActionRegistrationProbe.Create;
+  try
+    Loader.ConfigFile := FValidConfigFile;
+    Assert.IsTrue(Loader.Load, 'Immediate reentry tests require ready native APIs');
+    LProbe.Reenter := True;
+    LProbe.ReenterOnUnload := AUnload <> 0;
+    LProbe.Operation := AOperation;
+    Register_SSLLoaderAction(LProbe.Action);
+    UnRegister_SSLLoaderAction(LProbe.Action);
+    Assert.IsTrue(LProbe.ReentryRejected,
+      'Immediate callbacks must reject recursive Load, Unload, registration and removal');
+    Assert.IsTrue(Loader.IsLoaded, 'Rejected reentry must preserve the surrounding ready runtime');
+    Assert.AreEqual(1, LProbe.LoadCount, 'Rejected reentry must not duplicate initialization');
+    Assert.AreEqual(1, LProbe.UnloadCount, 'Rejected reentry must not duplicate cleanup');
+  finally
+    LProbe.Reenter := False;
+    UnRegister_SSLLoaderAction(LProbe.Action);
+    LProbe.Free;
+  end;
+end;
+
+procedure TLoaderCallbacksFixture.CB_ConcurrentMutation(const ARemove: Integer);
+var
+  LProbe: TActionRegistrationProbe;
+  LMutation, LUnload: TThread;
+  LMutationDone, LUnloadStarted, LUnloadDone: TEvent;
+  LMutationError, LUnloadError: string;
+begin
+  LProbe := TActionRegistrationProbe.Create;
+  LMutation := nil;
+  LUnload := nil;
+  LMutationDone := TEvent.Create(nil, True, False, '');
+  LUnloadStarted := TEvent.Create(nil, True, False, '');
+  LUnloadDone := TEvent.Create(nil, True, False, '');
+  LProbe.Entered := TEvent.Create(nil, True, False, '');
+  LProbe.ReleaseGate := TEvent.Create(nil, True, False, '');
+  try
+    Loader.ConfigFile := FValidConfigFile;
+    Assert.IsTrue(Loader.Load, 'Concurrent mutation tests require a ready runtime');
+    if ARemove <> 0 then
+    begin
+      // Set up the registered action without blocking the test thread.
+      LProbe.ReleaseGate.SetEvent;
+      Register_SSLLoaderAction(LProbe.Action);
+      LProbe.ReleaseGate.ResetEvent;
+      LProbe.Entered.ResetEvent;
+    end;
+    LMutation := TThread.CreateAnonymousThread(
       procedure
       begin
-        Loader.Load;
-      end, Exception);
-    LExpectedState := lsLoadedFailed;
-    TTestCallbackObserverB.ThrowOnLoad := False;
-  end
-  else
-  begin
-    Assert.IsTrue(Loader.Load);
-    LExpectedState := lsLoadedReady;
-  end;
-
-  Assert.WillRaiseWithMessage(
-    procedure
+        try
+          try
+            if ARemove <> 0 then
+              UnRegister_SSLLoaderAction(LProbe.Action)
+            else
+              Register_SSLLoaderAction(LProbe.Action);
+          except
+            on E: Exception do
+              LMutationError := E.ClassName + ': ' + E.Message;
+          end;
+        finally
+          LMutationDone.SetEvent;
+        end;
+      end);
+    LMutation.FreeOnTerminate := False;
+    LMutation.Start;
+    Assert.IsTrue(LProbe.Entered.WaitFor(10000) = wrSignaled,
+      'The immediate action must start before the competing unload');
+    LUnload := TThread.CreateAnonymousThread(
+      procedure
+      begin
+        LUnloadStarted.SetEvent;
+        try
+          try
+            Loader.Unload;
+          except
+            on E: Exception do
+              LUnloadError := E.ClassName + ': ' + E.Message;
+          end;
+        finally
+          LUnloadDone.SetEvent;
+        end;
+      end);
+    LUnload.FreeOnTerminate := False;
+    LUnload.Start;
+    Assert.IsTrue(LUnloadStarted.WaitFor(10000) = wrSignaled, 'The competing unload thread must start');
+    Assert.IsTrue(LUnloadDone.WaitFor(100) = wrTimeout,
+      'Concurrent unload must wait until the immediate callback returns');
+    Assert.IsTrue(Loader.IsLoaded, 'Native readiness must remain visible during the immediate action');
+    LProbe.ReleaseGate.SetEvent;
+    Assert.IsTrue(LMutationDone.WaitFor(10000) = wrSignaled, 'The immediate action must finish after gate release');
+    Assert.IsTrue(LUnloadDone.WaitFor(10000) = wrSignaled, 'Concurrent unload must finish after action completion');
+    Assert.AreEqual('', LMutationError, 'Immediate mutation must not race native library release');
+    Assert.AreEqual('', LUnloadError, 'The competing unload must complete successfully');
+    Assert.AreEqual(1, LProbe.LoadCount, 'Concurrent unload must not duplicate initialization');
+    Assert.AreEqual(1, LProbe.UnloadCount, 'Removal and unload must clean up the action exactly once');
+    Assert.IsTrue(Loader.State = lsNotLoaded, 'The competing unload must leave the loader inactive');
+  finally
+    LProbe.ReleaseGate.SetEvent;
+    if Assigned(LMutation) then
     begin
-      Register_SSLLoaderAction(TTestCallbackObserverB.ActionProc);
-    end, ETaurusTLSLoaderError, RSOSSLLoaderActionRegistrationInactive);
-  Assert.IsTrue(Loader.State = LExpectedState, 'Rejected registration must preserve state');
-  Loader.Unload;
-  TTestCallbackLog.Clear;
-  Assert.IsTrue(Loader.Load);
-  Assert.AreEqual(2, TTestCallbackLog.Count, 'Rejected registration must not append an action');
-  Loader.Unload;
-  Assert.AreEqual(4, TTestCallbackLog.Count);
+      LMutation.WaitFor;
+      LMutation.Free;
+    end;
+    if Assigned(LUnload) then
+    begin
+      LUnload.WaitFor;
+      LUnload.Free;
+    end;
+    UnRegister_SSLLoaderAction(LProbe.Action);
+    LProbe.ReleaseGate.Free;
+    LProbe.Entered.Free;
+    LUnloadDone.Free;
+    LUnloadStarted.Free;
+    LMutationDone.Free;
+    LProbe.Free;
+  end;
 end;
 
 procedure TLoaderCallbacksFixture.State_RecursiveFailure;
