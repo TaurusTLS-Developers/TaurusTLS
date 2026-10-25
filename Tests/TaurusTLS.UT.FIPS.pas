@@ -74,11 +74,51 @@ type
 {$ENDIF}
   end;
 
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  /// <summary>
+  /// Real-provider integration: activation/selection, provider identity,
+  /// digest/HMAC vectors, policy rejection, self-tests and reload.
+  /// </summary>
+  /// <remarks>
+  /// Requires -fmc:installed-fipsmodule.cnf, matching dynamic libraries and
+  /// fips/legacy modules under the config directory/ossl-modules. Without -fmc,
+  /// each provider case fails with an actionable prerequisite message.
+  /// Run category FIPS.Provider alone in a fresh process. Installed data is read-only.
+  /// </remarks>
+  [Category('FIPS.Provider')]
+  [TestFixture('', 'Checks real FIPS selection, native provider identity, digest/HMAC vectors, rejection, self-tests and reload. '
+    + 'Requires -fmc:installed-fipsmodule.cnf, matching libraries via -osp:, and fips/legacy modules under the config directory/ossl-modules. '
+    + 'Missing -fmc fails with a prerequisite message. Run FIPS.Provider alone, or explicitly exclude the category. Installed data remains read-only.')]
+  TConfiguredFIPSProviderFixture = class(TLoaderBaseFixture)
+  private
+    FInstalledConfigText: string;
+    procedure LoadConfigured(const ASelected: Boolean);
+    procedure CheckInstalledConfigUnchanged;
+  public
+    [TestCase('AvailableNotSelected', 'False')]
+    [TestCase('Selected', 'True')]
+    procedure Mode_ReflectsSelection(const ASelected: Boolean);
+    [Test]
+    procedure Digest_UsesFIPS;
+    [TestCase('SHA256', '0,B0344C61D8DB38535CA8AFCEAF0BF12B881DC200C9833DA726E9376C2E32CFF7')]
+    [TestCase('SHA384', '1,AFD03944D84895626B0825F4AB46907F15F9DADBE4101EC682AA034C7CEBC59CFAEA9EA9076EDE7F4AF152E8B2FA9CB6')]
+    [TestCase('SHA512', '2,87AA7CDEA5EF619D4FF0B4241A1D6CB02379F4E2CE4EC2787AD0B30545E17CDEDAA833B7D6B8A702038B274EAEA3F4E4BE9D914EEB61F1702E696C203A126854')]
+    procedure HMAC_UsesFIPS(const AAlgorithm: Integer; const AExpected: string);
+    [Test]
+    procedure Policy_RejectsLegacyNTLM;
+    [Test]
+    procedure Provider_SelfTest;
+    [Test]
+    procedure Lifecycle_Reload;
+  end;
+{$ENDIF}
+
 implementation
 
 uses
   System.SysUtils,
   System.IOUtils,
+  DUnitX.CommandLine.Options,
   IdFIPS,
   IdHash,
   IdGlobal,
@@ -129,22 +169,27 @@ procedure TLoaderFIPSReadinessFixture.CheckUnavailable;
 begin
   Assert.IsFalse(IdFIPS.LoadHashLibrary(), 'Hash loading hook must be status-only');
   Assert.IsFalse(IdHash.HashFunctionsLoaded, 'Indy must not invoke another loader');
-  Assert.IsFalse(IdFIPS.IsHashingIntfAvail());
-  Assert.IsFalse(IdFIPS.IsHMACAvail());
-  Assert.IsFalse(IdFIPS.IsMD2HashIntfAvail());
-  Assert.IsFalse(IdFIPS.IsMD4HashIntfAvail());
-  Assert.IsFalse(IdFIPS.IsMD5HashIntfAvail());
-  Assert.IsFalse(IdFIPS.IsSHA1HashIntfAvail());
-  Assert.IsFalse(IdFIPS.IsSHA224HashIntfAvail());
-  Assert.IsFalse(IdFIPS.IsSHA256HashIntfAvail());
-  Assert.IsFalse(IdFIPS.IsSHA384HashIntfAvail());
-  Assert.IsFalse(IdFIPS.IsSHA512HashIntfAvail());
-  Assert.IsFalse(IdFIPS.IsHMACMD5Avail());
-  Assert.IsFalse(IdFIPS.IsHMACSHA1Avail());
-  Assert.IsFalse(IdFIPS.IsHMACSHA224Avail());
-  Assert.IsFalse(IdFIPS.IsHMACSHA256Avail());
-  Assert.IsFalse(IdFIPS.IsHMACSHA384Avail());
-  Assert.IsFalse(IdFIPS.IsHMACSHA512Avail());
+  Assert.IsFalse(IdFIPS.IsHashingIntfAvail(),
+    'general hash availability must be false before native runtime readiness');
+  Assert.IsFalse(IdFIPS.IsHMACAvail(), 'HMAC availability must be false before native runtime readiness');
+  Assert.IsFalse(IdFIPS.IsMD2HashIntfAvail(), 'MD2 hash availability must be false before native runtime readiness');
+  Assert.IsFalse(IdFIPS.IsMD4HashIntfAvail(), 'MD4 hash availability must be false before native runtime readiness');
+  Assert.IsFalse(IdFIPS.IsMD5HashIntfAvail(), 'MD5 hash availability must be false before native runtime readiness');
+  Assert.IsFalse(IdFIPS.IsSHA1HashIntfAvail(), 'SHA1 hash availability must be false before native runtime readiness');
+  Assert.IsFalse(IdFIPS.IsSHA224HashIntfAvail(),
+    'SHA224 hash availability must be false before native runtime readiness');
+  Assert.IsFalse(IdFIPS.IsSHA256HashIntfAvail(),
+    'SHA256 hash availability must be false before native runtime readiness');
+  Assert.IsFalse(IdFIPS.IsSHA384HashIntfAvail(),
+    'SHA384 hash availability must be false before native runtime readiness');
+  Assert.IsFalse(IdFIPS.IsSHA512HashIntfAvail(),
+    'SHA512 hash availability must be false before native runtime readiness');
+  Assert.IsFalse(IdFIPS.IsHMACMD5Avail(), 'HMACMD5 availability must be false before native runtime readiness');
+  Assert.IsFalse(IdFIPS.IsHMACSHA1Avail(), 'HMACSHA1 availability must be false before native runtime readiness');
+  Assert.IsFalse(IdFIPS.IsHMACSHA224Avail(), 'HMACSHA224 availability must be false before native runtime readiness');
+  Assert.IsFalse(IdFIPS.IsHMACSHA256Avail(), 'HMACSHA256 availability must be false before native runtime readiness');
+  Assert.IsFalse(IdFIPS.IsHMACSHA384Avail(), 'HMACSHA384 availability must be false before native runtime readiness');
+  Assert.IsFalse(IdFIPS.IsHMACSHA512Avail(), 'HMACSHA512 availability must be false before native runtime readiness');
 end;
 
 procedure TLoaderFIPSReadinessFixture.Hash_NotReady(const AState: Integer);
@@ -161,12 +206,13 @@ begin
           procedure
           begin
             Loader.Load;
-          end, ETaurusTLSConfigFileLoadError);
+          end, ETaurusTLSConfigFileLoadError,
+          'Malformed fixture configuration must raise the typed configuration-load error');
       end;
     2:
       begin
         Loader.ConfigFile := FValidConfigFile;
-        Assert.IsTrue(Loader.Load);
+        Assert.IsTrue(Loader.Load, 'Controlled OpenSSL initialization must succeed before exercising Hash NotReady');
         Loader.Unload;
       end;
   end;
@@ -177,10 +223,11 @@ begin
   LDiagnostics := Loader.FailedToLoad.Text;
   CheckUnavailable;
   CheckUnavailable;
-  Assert.IsTrue(Loader.State = LState);
-  Assert.AreEqual(LConfig, Loader.ConfigFile);
-  Assert.AreEqual(LDiagnostics, Loader.FailedToLoad.Text);
-  Assert.AreEqual('', Loader.Version);
+  Assert.IsTrue(Loader.State = LState, 'Passive or rejected hook calls must preserve the previous loader state');
+  Assert.AreEqual(LConfig, Loader.ConfigFile, 'Passive availability probes must preserve the configured file path');
+  Assert.AreEqual(LDiagnostics, Loader.FailedToLoad.Text,
+    'Passive availability probes must preserve existing loader diagnostics');
+  Assert.AreEqual('', Loader.Version, 'Inactive availability probes must leave runtime version metadata empty');
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   Assert.IsFalse(Assigned(OpenSSL_version_num), 'Queries must not bind native APIs');
 {$ENDIF}
@@ -198,11 +245,14 @@ begin
   Loader.ConfigFile := FValidConfigFile;
   for I := 1 to 2 do
   begin
-    Assert.IsTrue(Loader.Load);
-    Assert.IsTrue(IdFIPS.LoadHashLibrary());
-    Assert.IsTrue(IdHash.HashFunctionsLoaded);
-    Assert.IsTrue(IdFIPS.IsHashingIntfAvail());
-    Assert.IsTrue(IdFIPS.IsHMACAvail());
+    Assert.IsTrue(Loader.Load, 'Controlled OpenSSL initialization must succeed before exercising Hash Ready');
+    Assert.IsTrue(IdFIPS.LoadHashLibrary(),
+      'hash loader readiness must be true for the initialized fixture configuration');
+    Assert.IsTrue(IdHash.HashFunctionsLoaded,
+      'Indy must report hash functions loaded after explicit runtime initialization');
+    Assert.IsTrue(IdFIPS.IsHashingIntfAvail(),
+      'general hash availability must be true for the initialized fixture configuration');
+    Assert.IsTrue(IdFIPS.IsHMACAvail(), 'HMAC availability must be true for the initialized fixture configuration');
     LMethod := EVP_MD_fetch(nil, 'SHA256', nil);
     try
       LAvailable := Assigned(LMethod);
@@ -219,8 +269,9 @@ begin
     end;
     Assert.AreEqual(LAvailable, IdFIPS.IsMD4HashIntfAvail(),
       'Loader readiness must not imply MD4 availability');
-    Assert.IsTrue(Loader.State = lsLoadedReady);
-    Assert.AreEqual(FValidConfigFile, Loader.ConfigFile);
+    Assert.IsTrue(Loader.State = lsLoadedReady, 'The completed load must leave the native runtime ready');
+    Assert.AreEqual(FValidConfigFile, Loader.ConfigFile,
+      'Repeated loads and availability probes must preserve the fixture configuration');
     Loader.Unload;
     CheckUnavailable;
   end;
@@ -235,11 +286,14 @@ begin
   TConsumerReadinessObserver.Active := True;
   try
     Loader.ConfigFile := FValidConfigFile;
-    Assert.IsTrue(Loader.Load);
+    Assert.IsTrue(Loader.Load, 'Controlled OpenSSL initialization must succeed before exercising Hash Transitions');
     Loader.Unload;
-    Assert.AreEqual(1, TConsumerReadinessObserver.LoadCount);
-    Assert.AreEqual(1, TConsumerReadinessObserver.UnloadCount);
-    Assert.AreEqual('', TConsumerReadinessObserver.Error);
+    Assert.AreEqual(1, TConsumerReadinessObserver.LoadCount,
+      'The readiness observer must receive exactly one load notification');
+    Assert.AreEqual(1, TConsumerReadinessObserver.UnloadCount,
+      'The readiness observer must receive exactly one unload notification');
+    Assert.AreEqual('', TConsumerReadinessObserver.Error,
+      'No hook may advertise readiness or raise during lifecycle transitions');
   finally
     TConsumerReadinessObserver.Active := False;
   end;
@@ -256,13 +310,15 @@ var
 begin
   Loader.ConfigFile := FValidConfigFile;
   if AReady <> 0 then
-    Assert.IsTrue(Loader.Load);
+    Assert.IsTrue(Loader.Load, 'Controlled OpenSSL initialization must succeed before exercising Hash Reinstall');
   LSavedHook := IdFIPS.LoadHashLibrary;
   try
     IdFIPS.LoadHashLibrary := UnexpectedHashLoader;
     InstallFIPSHooks;
-    Assert.AreEqual(AReady <> 0, IdHash.HashFunctionsLoaded);
-    Assert.IsTrue(Loader.IsLoaded = (AReady <> 0));
+    Assert.AreEqual(AReady <> 0, IdHash.HashFunctionsLoaded,
+      'Reinstalled Indy hash readiness must match the fixture loader state');
+    Assert.IsTrue(Loader.IsLoaded = (AReady <> 0),
+      'Installing hooks must preserve the requested loaded or unloaded state');
   finally
     IdFIPS.LoadHashLibrary := LSavedHook;
   end;
@@ -277,7 +333,7 @@ var
 begin
   Loader.ConfigFile := FValidConfigFile;
   if AReady <> 0 then
-    Assert.IsTrue(Loader.Load);
+    Assert.IsTrue(Loader.Load, 'Controlled OpenSSL initialization must succeed before exercising Hash PreservesNTLM');
   LSavedLoad := IdFIPS.LoadNTLMLibrary;
   LSavedAvailable := IdFIPS.IsNTLMFuncsAvail;
   LSavedLM := IdFIPS.NTLMGetLmChallengeResponse;
@@ -289,11 +345,16 @@ begin
     IdFIPS.NTLMGetNtChallengeResponse := nil;
     InstallFIPSHooks;
     InstallFIPSHooks;
-    Assert.IsTrue(@IdFIPS.LoadNTLMLibrary = @UnexpectedHashLoader);
-    Assert.IsTrue(@IdFIPS.IsNTLMFuncsAvail = @UnexpectedHashLoader);
-    Assert.IsFalse(Assigned(IdFIPS.NTLMGetLmChallengeResponse));
-    Assert.IsFalse(Assigned(IdFIPS.NTLMGetNtChallengeResponse));
-    Assert.IsTrue(Loader.IsLoaded = (AReady <> 0));
+    Assert.IsTrue(@IdFIPS.LoadNTLMLibrary = @UnexpectedHashLoader,
+      'Installing FIPS hooks must preserve the foreign NTLM loading callback');
+    Assert.IsTrue(@IdFIPS.IsNTLMFuncsAvail = @UnexpectedHashLoader,
+      'Installing FIPS hooks must preserve the foreign NTLM availability callback');
+    Assert.IsFalse(Assigned(IdFIPS.NTLMGetLmChallengeResponse),
+      'Installing FIPS hooks must leave an unassigned LM response callback untouched');
+    Assert.IsFalse(Assigned(IdFIPS.NTLMGetNtChallengeResponse),
+      'Installing FIPS hooks must leave an unassigned NT response callback untouched');
+    Assert.IsTrue(Loader.IsLoaded = (AReady <> 0),
+      'Installing hooks must preserve the requested loaded or unloaded state');
   finally
     IdFIPS.LoadNTLMLibrary := LSavedLoad;
     IdFIPS.IsNTLMFuncsAvail := LSavedAvailable;
@@ -327,16 +388,19 @@ begin
   Loader.ConfigFile := FValidConfigFile;
   for I := 1 to 2 do
   begin
-    Assert.IsTrue(Loader.Load);
-    Assert.IsTrue(@IdFIPS.GetFIPSMode = @LGet);
-    Assert.IsTrue(@IdFIPS.SetFIPSMode = @LSet);
-    Assert.IsTrue(@IdFIPS.GetSHA256HashInst = @LHash);
-    Assert.IsTrue(@IdFIPS.GetHMACSHA256HashInst = @LMAC);
+    Assert.IsTrue(Loader.Load,
+      'Controlled OpenSSL initialization must succeed before exercising Hooks StableAcrossLifecycle');
+    Assert.IsTrue(@IdFIPS.GetFIPSMode = @LGet, 'Load and unload must preserve the GetFIPSMode callback');
+    Assert.IsTrue(@IdFIPS.SetFIPSMode = @LSet, 'Load and unload must preserve the SetFIPSMode callback');
+    Assert.IsTrue(@IdFIPS.GetSHA256HashInst = @LHash, 'Load and unload must preserve the GetSHA256HashInst callback');
+    Assert.IsTrue(@IdFIPS.GetHMACSHA256HashInst = @LMAC,
+      'Load and unload must preserve the GetHMACSHA256HashInst callback');
     Loader.Unload;
-    Assert.IsTrue(@IdFIPS.GetFIPSMode = @LGet);
-    Assert.IsTrue(@IdFIPS.SetFIPSMode = @LSet);
-    Assert.IsTrue(@IdFIPS.GetSHA256HashInst = @LHash);
-    Assert.IsTrue(@IdFIPS.GetHMACSHA256HashInst = @LMAC);
+    Assert.IsTrue(@IdFIPS.GetFIPSMode = @LGet, 'Load and unload must preserve the GetFIPSMode callback');
+    Assert.IsTrue(@IdFIPS.SetFIPSMode = @LSet, 'Load and unload must preserve the SetFIPSMode callback');
+    Assert.IsTrue(@IdFIPS.GetSHA256HashInst = @LHash, 'Load and unload must preserve the GetSHA256HashInst callback');
+    Assert.IsTrue(@IdFIPS.GetHMACSHA256HashInst = @LMAC,
+      'Load and unload must preserve the GetHMACSHA256HashInst callback');
   end;
 end;
 
@@ -354,49 +418,53 @@ begin
           procedure
           begin
             Loader.Load;
-          end, ETaurusTLSConfigFileLoadError);
+          end, ETaurusTLSConfigFileLoadError,
+          'Malformed fixture configuration must raise the typed configuration-load error');
       end;
     2:
       begin
-        Assert.IsTrue(Loader.Load);
+        Assert.IsTrue(Loader.Load,
+          'Controlled OpenSSL initialization must succeed before exercising Operations NotReady');
         Loader.Unload;
       end;
   end;
   LState := Loader.State;
-  Assert.IsFalse(IdFIPS.GetFIPSMode());
-  Assert.IsFalse(IdFIPS.SetFIPSMode(True));
-  Assert.IsFalse(IdFIPS.SetFIPSMode(False));
+  Assert.IsFalse(IdFIPS.GetFIPSMode(), 'An inactive or unselected FIPS runtime must not report operational FIPS mode');
+  Assert.IsFalse(IdFIPS.SetFIPSMode(True),
+    'A missing or inactive FIPS provider must not accept a request to enable FIPS mode');
+  Assert.IsFalse(IdFIPS.SetFIPSMode(False),
+    'The FIPS setter must reject requests while the native runtime is inactive');
   Assert.WillRaise(
     procedure
     begin
       IdFIPS.GetSHA256HashInst();
-    end, ETaurusTLSLoaderError);
+    end, ETaurusTLSLoaderError, 'GetSHA256HashInst must reject calls before native runtime readiness');
   Assert.WillRaise(
     procedure
     begin
       IdFIPS.GetHMACSHA256HashInst(nil);
-    end, ETaurusTLSLoaderError);
+    end, ETaurusTLSLoaderError, 'GetHMACSHA256HashInst must reject calls before native runtime readiness');
   Assert.WillRaise(
     procedure
     begin
       IdFIPS.UpdateHashInst(nil, nil);
-    end, ETaurusTLSLoaderError);
+    end, ETaurusTLSLoaderError, 'UpdateHashInst must reject calls before native runtime readiness');
   Assert.WillRaise(
     procedure
     begin
       IdFIPS.FinalHashInst(nil);
-    end, ETaurusTLSLoaderError);
+    end, ETaurusTLSLoaderError, 'FinalHashInst must reject calls before native runtime readiness');
   Assert.WillRaise(
     procedure
     begin
       IdFIPS.UpdateHMACInst(nil, nil);
-    end, ETaurusTLSLoaderError);
+    end, ETaurusTLSLoaderError, 'UpdateHMACInst must reject calls before native runtime readiness');
   Assert.WillRaise(
     procedure
     begin
       IdFIPS.FinalHMACInst(nil);
-    end, ETaurusTLSLoaderError);
-  Assert.IsTrue(Loader.State = LState);
+    end, ETaurusTLSLoaderError, 'FinalHMACInst must reject calls before native runtime readiness');
+  Assert.IsTrue(Loader.State = LState, 'Passive or rejected hook calls must preserve the previous loader state');
 end;
 
 procedure TLoaderFIPSReadinessFixture.Mode_ConfigOwned;
@@ -405,17 +473,18 @@ var
 begin
   InstallFIPSHooks;
   Loader.ConfigFile := FValidConfigFile;
-  Assert.IsTrue(Loader.Load);
+  Assert.IsTrue(Loader.Load, 'Controlled OpenSSL initialization must succeed before exercising Mode ConfigOwned');
   LSelected := EVP_default_properties_is_fips_enabled(nil);
   Assert.AreEqual(0, LSelected, 'Controlled ordinary config must not select FIPS');
-  Assert.IsFalse(IdFIPS.GetFIPSMode());
+  Assert.IsFalse(IdFIPS.GetFIPSMode(), 'An inactive or unselected FIPS runtime must not report operational FIPS mode');
   Assert.IsFalse(IdFIPS.SetFIPSMode(True), 'Setter must not activate/select FIPS');
 {$IFDEF OPENSSL_STATIC_LINK_MODEL}
   Assert.IsFalse(IdFIPS.SetFIPSMode(False), 'Static FIPS is unsupported');
 {$ELSE}
   Assert.IsTrue(IdFIPS.SetFIPSMode(False), 'Matching configured non-FIPS mode is a no-op');
 {$ENDIF}
-  Assert.AreEqual(LSelected, EVP_default_properties_is_fips_enabled(nil));
+  Assert.AreEqual(LSelected, EVP_default_properties_is_fips_enabled(nil),
+    'FIPS setter calls must preserve the original native policy selection');
 end;
 
 procedure TLoaderFIPSReadinessFixture.Mode_SelectedWithoutProvider;
@@ -437,32 +506,42 @@ begin
     '[algorithms]' + sLineBreak +
     'default_properties = fips=yes' + sLineBreak, TEncoding.UTF8);
   Loader.ConfigFile := LConfig;
-  Assert.IsTrue(Loader.Load);
+  Assert.IsTrue(Loader.Load, 'Selecting FIPS properties without a module must still initialize the native runtime');
   // This fixture activates only default, even when a fips module is installed.
   // Native default context can retain archive providers; no other fixture activates FIPS.
   LSelected := EVP_default_properties_is_fips_enabled(nil);
   try
-    Assert.AreEqual(1, LSelected);
-    Assert.AreEqual(0, OSSL_PROVIDER_available(nil, 'fips'));
+    Assert.AreEqual(1, LSelected, 'The controlled missing-provider configuration must select fips=yes');
+    Assert.AreEqual(0, OSSL_PROVIDER_available(nil, 'fips'),
+      'Queries and rejected operations must not activate the missing FIPS provider');
     Assert.IsFalse(IdFIPS.GetFIPSMode(), 'Selection alone is not operational FIPS');
-    Assert.IsFalse(IdFIPS.SetFIPSMode(True));
+    Assert.IsFalse(IdFIPS.SetFIPSMode(True),
+      'A missing or inactive FIPS provider must not accept a request to enable FIPS mode');
     Assert.IsFalse(IdFIPS.SetFIPSMode(False), 'Setter must not weaken selected policy');
-    Assert.AreEqual(1, EVP_default_properties_is_fips_enabled(nil));
-    Assert.IsFalse(IdFIPS.IsSHA256HashIntfAvail());
-    Assert.IsFalse(IdFIPS.IsHMACAvail());
-    Assert.IsFalse(IdFIPS.IsHMACSHA256Avail());
+    Assert.AreEqual(1, EVP_default_properties_is_fips_enabled(nil),
+      'Queries and operations must preserve the configured fips=yes selection');
+    Assert.IsFalse(IdFIPS.IsSHA256HashIntfAvail(),
+      'SHA256 hash availability must be false when the selected native provider cannot supply it');
+    Assert.IsFalse(IdFIPS.IsHMACAvail(),
+      'HMAC availability must be false when the selected native provider cannot supply it');
+    Assert.IsFalse(IdFIPS.IsHMACSHA256Avail(),
+      'HMACSHA256 availability must be false when the selected native provider cannot supply it');
     Assert.WillRaise(
       procedure
       begin
         IdFIPS.GetSHA256HashInst();
-      end, ETaurusTLSSHA256NotFound);
+      end, ETaurusTLSSHA256NotFound,
+      'GetSHA256HashInst must reject an algorithm unavailable under the selected provider policy');
     Assert.WillRaise(
       procedure
       begin
         IdFIPS.GetHMACSHA256HashInst(nil);
-      end, ETaurusTLSSHA256NotFound);
-    Assert.AreEqual(1, EVP_default_properties_is_fips_enabled(nil));
-    Assert.AreEqual(0, OSSL_PROVIDER_available(nil, 'fips'));
+      end, ETaurusTLSSHA256NotFound,
+      'GetHMACSHA256HashInst must reject an algorithm unavailable under the selected provider policy');
+    Assert.AreEqual(1, EVP_default_properties_is_fips_enabled(nil),
+      'Queries and operations must preserve the configured fips=yes selection');
+    Assert.AreEqual(0, OSSL_PROVIDER_available(nil, 'fips'),
+      'Queries and rejected operations must not activate the missing FIPS provider');
   finally
     // Test-owned policy only; production never toggles it. Retire it before unload.
     EVP_default_properties_enable_fips(nil, 0);
@@ -477,13 +556,13 @@ var
 begin
   InstallFIPSHooks;
   Loader.ConfigFile := FValidConfigFile;
-  Assert.IsTrue(Loader.Load);
+  Assert.IsTrue(Loader.Load, 'Controlled OpenSSL initialization must succeed before exercising Hash SHA256Vector');
   LContext := IdFIPS.GetSHA256HashInst();
   IdFIPS.UpdateHashInst(LContext, ToBytes('a', IndyTextEncoding_ASCII));
   IdFIPS.UpdateHashInst(LContext, ToBytes('bc', IndyTextEncoding_ASCII));
   LResult := IdFIPS.FinalHashInst(LContext);
   Assert.AreEqual('BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD',
-    BytesHex(LResult));
+    BytesHex(LResult), 'SHA256 over abc must match the known-answer digest');
 end;
 
 procedure TLoaderFIPSReadinessFixture.HMAC_Vectors(const AAlgorithm: Integer;
@@ -495,7 +574,7 @@ var
 begin
   InstallFIPSHooks;
   Loader.ConfigFile := FValidConfigFile;
-  Assert.IsTrue(Loader.Load);
+  Assert.IsTrue(Loader.Load, 'Controlled OpenSSL initialization must succeed before exercising HMAC Vectors');
   SetLength(LKey, 20);
   FillChar(LKey[0], Length(LKey), $0B);
   // SHA-2 values: RFC 4231 case 1; MD5/SHA1 independently checked with Python hmac.
@@ -511,7 +590,8 @@ begin
   IdFIPS.UpdateHMACInst(LContext, ToBytes('Hi ', IndyTextEncoding_ASCII));
   IdFIPS.UpdateHMACInst(LContext, ToBytes('There', IndyTextEncoding_ASCII));
   LResult := IdFIPS.FinalHMACInst(LContext);
-  Assert.AreEqual(AExpected, BytesHex(LResult));
+  Assert.AreEqual(AExpected, BytesHex(LResult),
+    'The selected HMAC algorithm must match its independent known-answer vector');
 end;
 
 procedure TLoaderFIPSReadinessFixture.HMAC_EmptyKeyAndInput;
@@ -520,11 +600,12 @@ var
 begin
   InstallFIPSHooks;
   Loader.ConfigFile := FValidConfigFile;
-  Assert.IsTrue(Loader.Load);
+  Assert.IsTrue(Loader.Load, 'Controlled OpenSSL initialization must succeed before exercising HMAC EmptyKeyAndInput');
   LContext := IdFIPS.GetHMACSHA256HashInst(nil);
   IdFIPS.UpdateHMACInst(LContext, nil);
   Assert.AreEqual('B613679A0814D9EC772F95D778C35FC5FF1697C493715653C6C712144292C5AD',
-    BytesHex(IdFIPS.FinalHMACInst(LContext)));
+    BytesHex(IdFIPS.FinalHMACInst(LContext)),
+    'HMAC-SHA256 with an empty key and input must match the known-answer vector');
 end;
 
 procedure TLoaderFIPSReadinessFixture.Probes_PreserveErrors;
@@ -534,21 +615,23 @@ var
 begin
   InstallFIPSHooks;
   Loader.ConfigFile := FValidConfigFile;
-  Assert.IsTrue(Loader.Load);
+  Assert.IsTrue(Loader.Load, 'Controlled OpenSSL initialization must succeed before exercising Probes PreserveErrors');
   ERR_clear_error;
   LMethod := EVP_MD_fetch(nil, 'TaurusTLS-nonexistent-digest', nil);
   EVP_MD_free(LMethod);
   LFirst := ERR_peek_error;
   LLast := ERR_peek_last_error;
-  Assert.IsTrue(LFirst <> 0);
+  Assert.IsTrue(LFirst <> 0, 'The fixture must seed a native error before testing error preservation');
   try
     IdFIPS.IsMD2HashIntfAvail();
     IdFIPS.IsMD4HashIntfAvail();
     IdFIPS.IsHMACMD5Avail();
     IdFIPS.IsHMACSHA256Avail();
     IdFIPS.GetFIPSMode();
-    Assert.AreEqual(UInt64(LFirst), UInt64(ERR_peek_error));
-    Assert.AreEqual(UInt64(LLast), UInt64(ERR_peek_last_error));
+    Assert.AreEqual(UInt64(LFirst), UInt64(ERR_peek_error),
+      'Availability probes must preserve the oldest queued native error');
+    Assert.AreEqual(UInt64(LLast), UInt64(ERR_peek_last_error),
+      'Availability probes must preserve the newest queued native error');
   finally
     ERR_clear_error;
   end;
@@ -560,6 +643,7 @@ end;
 procedure TLoaderFIPSReadinessFixture.Config_MissingFIPSModule;
 var
   LConfig, LModule: string;
+  LRejected: Boolean;
 begin
   InstallFIPSHooks;
   LConfig := TPath.Combine(FTempDir, 'missing_fips_module.cnf');
@@ -569,26 +653,64 @@ begin
     'openssl_conf = init' + sLineBreak +
     '[init]' + sLineBreak +
     'providers = providers' + sLineBreak +
+    'alg_section = algorithms' + sLineBreak +
     '[providers]' + sLineBreak +
     'fips = missing_fips' + sLineBreak +
     '[missing_fips]' + sLineBreak +
     'module = "' + LModule + '"' + sLineBreak +
-    'activate = 1' + sLineBreak, TEncoding.UTF8);
+    'activate = 1' + sLineBreak +
+    '[algorithms]' + sLineBreak +
+    'default_properties = fips=yes' + sLineBreak, TEncoding.UTF8);
   Loader.ConfigFile := LConfig;
-  Assert.WillRaise(
-    procedure
-    begin
-      Loader.Load;
-    end, ETaurusTLSConfigFileLoadError);
-  Assert.IsTrue(Loader.State = lsLoadedFailed);
-  Assert.IsFalse(IdFIPS.GetFIPSMode());
-  Assert.IsFalse(IdFIPS.SetFIPSMode(True));
-  Assert.IsFalse(IdFIPS.LoadHashLibrary());
-  Assert.IsFalse(Loader.Load, 'Failed-state retry remains blocked');
+  LRejected := False;
+  try
+    Assert.IsTrue(Loader.Load, 'A nonfatal provider activation failure must not prevent native runtime readiness');
+  except
+    on E: ETaurusTLSConfigFileLoadError do
+      LRejected := True;
+  end;
+  Assert.IsFalse(IdFIPS.GetFIPSMode(), 'An inactive or unselected FIPS runtime must not report operational FIPS mode');
+  Assert.IsFalse(IdFIPS.SetFIPSMode(True),
+    'A missing or inactive FIPS provider must not accept a request to enable FIPS mode');
+  Assert.IsFalse(IdFIPS.SetFIPSMode(False), 'Missing FIPS must not weaken selected policy');
+  if LRejected then
+  begin
+    Assert.IsTrue(Loader.State = lsLoadedFailed, 'A rejected configuration must leave the loader in failed state');
+    Assert.IsFalse(IdFIPS.LoadHashLibrary(),
+      'hash loader readiness must be false when the selected native provider cannot supply it');
+    Assert.IsFalse(Loader.Load, 'Failed-state retry remains blocked');
+  end
+  else
+  begin
+    // OpenSSL 4.1 treats module activation failure as nonfatal configuration.
+    // Ready libraries do not prove configured providers/algorithms are usable.
+    Assert.IsTrue(Loader.State = lsLoadedReady, 'The completed load must leave the native runtime ready');
+    Assert.AreEqual(0, OSSL_PROVIDER_available(nil, 'fips'),
+      'Queries and rejected operations must not activate the missing FIPS provider');
+    Assert.AreEqual(1, EVP_default_properties_is_fips_enabled(nil),
+      'Queries and operations must preserve the configured fips=yes selection');
+    Assert.IsFalse(IdFIPS.IsSHA256HashIntfAvail(),
+      'SHA256 hash availability must be false when the selected native provider cannot supply it');
+    Assert.IsFalse(IdFIPS.IsHMACAvail(),
+      'HMAC availability must be false when the selected native provider cannot supply it');
+    Assert.WillRaise(
+      procedure
+      begin
+        IdFIPS.GetSHA256HashInst();
+      end, ETaurusTLSSHA256NotFound,
+      'GetSHA256HashInst must reject an algorithm unavailable under the selected provider policy');
+  end;
   Loader.Unload;
-  Loader.ConfigFile := FValidConfigFile;
+  Loader.ConfigFile := CreateTempConfigFile(
+    'openssl_conf = init' + sLineBreak +
+    '[init]' + sLineBreak + 'providers = providers' + sLineBreak +
+    'alg_section = algorithms' + sLineBreak +
+    '[providers]' + sLineBreak + 'default = default_sect' + sLineBreak +
+    '[default_sect]' + sLineBreak + 'activate = 1' + sLineBreak +
+    '[algorithms]' + sLineBreak + 'default_properties =' + sLineBreak);
   Assert.IsTrue(Loader.Load, 'Explicit reset permits corrected config');
-  Assert.IsTrue(IdFIPS.IsSHA256HashIntfAvail());
+  Assert.IsTrue(IdFIPS.IsSHA256HashIntfAvail(),
+    'SHA256 hash availability must be true for the initialized fixture configuration');
 end;
 {$ENDIF}
 
@@ -608,6 +730,7 @@ var
   GFreeDigest: TFreeDigest;
   GFreeMAC: TFreeMAC;
   GFreedContexts: Integer;
+  GInjectedFailureCalls: Integer;
 
 procedure CountFreeDigest(ctx: PEVP_MD_CTX); cdecl;
 begin
@@ -623,23 +746,27 @@ end;
 
 function FailInitDigest(ctx: PEVP_MD_CTX; const MD: PEVP_MD; Engine: PENGINE): TIdC_INT; cdecl;
 begin
+  Inc(GInjectedFailureCalls);
   Result := 0;
 end;
 
 function FailInitMAC(ctx: PEVP_MAC_CTX; const Key: PIdAnsiChar;
   KeyLength: TIdC_SIZET; const Params: TaurusTLSHeaders_core.POSSL_PARAM_ARRAY): TIdC_INT; cdecl;
 begin
+  Inc(GInjectedFailureCalls);
   Result := 0;
 end;
 
 function FailFinalDigest(ctx: PEVP_MD_CTX; Data: PByte; var Size: TIdC_UINT): TIdC_INT; cdecl;
 begin
+  Inc(GInjectedFailureCalls);
   Result := 0;
 end;
 
 function FailFinalMAC(ctx: PEVP_MAC_CTX; Data: PIdAnsiChar;
   var Size: TIdC_SIZET; Capacity: TIdC_SIZET): TIdC_INT; cdecl;
 begin
+  Inc(GInjectedFailureCalls);
   Result := 0;
 end;
 
@@ -653,7 +780,8 @@ var
 begin
   InstallFIPSHooks;
   Loader.ConfigFile := FValidConfigFile;
-  Assert.IsTrue(Loader.Load);
+  Assert.IsTrue(Loader.Load,
+    'Controlled OpenSSL initialization must succeed before exercising Operations CleanupOnFailure');
   GFreeDigest := EVP_MD_CTX_free;
   GFreeMAC := EVP_MAC_CTX_free;
   LInitDigest := EVP_DigestInit_ex;
@@ -661,6 +789,7 @@ begin
   LFinalDigest := EVP_DigestFinal_ex;
   LFinalMAC := EVP_MAC_final;
   GFreedContexts := 0;
+  GInjectedFailureCalls := 0;
   try
     EVP_MD_CTX_free := CountFreeDigest;
     EVP_MAC_CTX_free := CountFreeMAC;
@@ -672,7 +801,8 @@ begin
             procedure
             begin
               IdFIPS.GetSHA256HashInst();
-            end, ETaurusTLSDigestInitEx);
+            end, ETaurusTLSAPICryptoError,
+            'The injected GetSHA256HashInst failure must propagate a native crypto error');
         end;
       1:
         begin
@@ -681,7 +811,8 @@ begin
             procedure
             begin
               IdFIPS.GetHMACSHA256HashInst(nil);
-            end, ETaurusTLSHMACInitEx);
+            end, ETaurusTLSAPICryptoError,
+            'The injected GetHMACSHA256HashInst failure must propagate a native crypto error');
         end;
       2:
         begin
@@ -691,7 +822,7 @@ begin
             procedure
             begin
               IdFIPS.FinalHashInst(LContext);
-            end, ETaurusTLSDigestFinalEx);
+            end, ETaurusTLSAPICryptoError, 'The injected FinalHashInst failure must propagate a native crypto error');
         end;
       3:
         begin
@@ -701,9 +832,10 @@ begin
             procedure
             begin
               IdFIPS.FinalHMACInst(LContext);
-            end, ETaurusTLSHMACFinal);
+            end, ETaurusTLSAPICryptoError, 'The injected FinalHMACInst failure must propagate a native crypto error');
         end;
     end;
+    Assert.AreEqual(1, GInjectedFailureCalls, 'Expected injected native function must execute');
     Assert.AreEqual(1, GFreedContexts, 'Failing operation must free its native context exactly once');
   finally
     EVP_MD_CTX_free := GFreeDigest;
@@ -718,7 +850,275 @@ end;
 {$ENDIF}
 {$ENDIF}
 
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+var
+  GInstalledFIPSConfig: string;
+
+function ConfigPath(const APath: string): string;
+begin
+  Result := StringReplace(TPath.GetFullPath(APath), '\', '/', [rfReplaceAll]);
+  if Pos('"', Result) <> 0 then
+    raise EArgumentException.Create('OpenSSL test paths cannot contain a double quote');
+end;
+
+procedure TConfiguredFIPSProviderFixture.LoadConfigured(const ASelected: Boolean);
+var
+  LDirectory, LFIPS, LLegacy, LSelection, LConfig: string;
+begin
+  if GInstalledFIPSConfig = '' then
+    Assert.Fail('FIPS.Provider requires -fmc:<installed fipsmodule.cnf>, matching libraries via -osp:, and fips/legacy modules in ossl-modules. Run -i:FIPS.Provider in a fresh process, or explicitly exclude it with -e:FIPS.Provider.');
+  Assert.IsFalse(Loader.IsLoaded, 'The provider fixture must start with an unloaded native runtime');
+  Assert.IsTrue(TFile.Exists(GInstalledFIPSConfig), 'Installed FIPS config is required');
+  LDirectory := TPath.GetDirectoryName(GInstalledFIPSConfig);
+{$IFDEF MSWINDOWS}
+  LFIPS := TPath.Combine(LDirectory, 'ossl-modules\fips.dll');
+  LLegacy := TPath.Combine(LDirectory, 'ossl-modules\legacy.dll');
+{$ELSE}
+  LFIPS := TPath.Combine(TPath.Combine(LDirectory, 'ossl-modules'), 'fips.so');
+  LLegacy := TPath.Combine(TPath.Combine(LDirectory, 'ossl-modules'), 'legacy.so');
+{$ENDIF}
+  Assert.IsTrue(TFile.Exists(LFIPS), 'Matching installed FIPS module is required');
+  Assert.IsTrue(TFile.Exists(LLegacy), 'Matching legacy module is required for policy rejection tests');
+  FInstalledConfigText := TFile.ReadAllText(GInstalledFIPSConfig);
+  if ASelected then
+    LSelection := 'fips=yes'
+  else
+    LSelection := '';
+  LConfig := CreateTempConfigFile(
+    'config_diagnostics = 1' + sLineBreak +
+    'openssl_conf = fips_test_init' + sLineBreak +
+    '.include "' + ConfigPath(GInstalledFIPSConfig) + '"' + sLineBreak +
+    '[fips_test_init]' + sLineBreak +
+    'providers = fips_test_providers' + sLineBreak +
+    'alg_section = fips_test_algorithms' + sLineBreak +
+    '[fips_test_providers]' + sLineBreak +
+    'default = fips_test_default' + sLineBreak +
+    'base = fips_test_base' + sLineBreak +
+    'fips = fips_sect' + sLineBreak +
+    'legacy = fips_test_legacy' + sLineBreak +
+    '[fips_test_default]' + sLineBreak +
+    'activate = 1' + sLineBreak +
+    '[fips_test_base]' + sLineBreak +
+    'activate = 1' + sLineBreak +
+    '[fips_sect]' + sLineBreak +
+    'module = "' + ConfigPath(LFIPS) + '"' + sLineBreak +
+    '[fips_test_legacy]' + sLineBreak +
+    'module = "' + ConfigPath(LLegacy) + '"' + sLineBreak +
+    'activate = 1' + sLineBreak +
+    '[fips_test_algorithms]' + sLineBreak +
+    'default_properties = ' + LSelection + sLineBreak, 'fips-provider-test.cnf');
+  Loader.ConfigFile := LConfig;
+  Assert.IsTrue(Loader.Load, 'Configured FIPS runtime initialization must succeed');
+  Assert.AreEqual(1, OSSL_PROVIDER_available(nil, 'fips'),
+    'The installed configuration must leave the FIPS provider active');
+  Assert.AreEqual(1, OSSL_PROVIDER_available(nil, 'legacy'),
+    'Legacy must remain active so rejection tests exercise FIPS policy');
+  Assert.AreEqual(Integer(Ord(ASelected)), EVP_default_properties_is_fips_enabled(nil),
+    'Native FIPS selection must match the fixture configuration after hook calls');
+end;
+
+procedure TConfiguredFIPSProviderFixture.CheckInstalledConfigUnchanged;
+begin
+  Assert.AreEqual(FInstalledConfigText, TFile.ReadAllText(GInstalledFIPSConfig),
+    'Tests must preserve installed FIPS integrity and policy data');
+end;
+
+procedure TConfiguredFIPSProviderFixture.Mode_ReflectsSelection(const ASelected: Boolean);
+begin
+  LoadConfigured(ASelected);
+  Assert.AreEqual(ASelected, IdFIPS.GetFIPSMode(),
+    'Provider availability alone must not imply selected FIPS mode');
+  Assert.IsTrue(IdFIPS.SetFIPSMode(ASelected), 'Matching policy request is a no-op');
+  Assert.IsFalse(IdFIPS.SetFIPSMode(not ASelected), 'Changing policy is refused');
+  Assert.AreEqual(Integer(Ord(ASelected)), EVP_default_properties_is_fips_enabled(nil),
+    'Native FIPS selection must match the fixture configuration after hook calls');
+  Assert.AreEqual(1, OSSL_PROVIDER_available(nil, 'fips'),
+    'The installed configuration must leave the FIPS provider active');
+  CheckInstalledConfigUnchanged;
+end;
+
+procedure TConfiguredFIPSProviderFixture.Digest_UsesFIPS;
+var
+  LContext: TIdHashIntCtx;
+  LExpectedMethod: PEVP_MD;
+  LResult: TIdBytes;
+begin
+  LoadConfigured(True);
+  Assert.IsTrue(IdFIPS.IsSHA256HashIntfAvail(),
+    'SHA256 hash availability must be true for the initialized fixture configuration');
+  LExpectedMethod := EVP_MD_fetch(nil, 'SHA256', 'provider=fips');
+  try
+    Assert.IsTrue(LExpectedMethod <> nil, 'An explicit provider=fips SHA256 fetch must succeed');
+    LContext := IdFIPS.GetSHA256HashInst();
+    try
+      // OpenSSL caches fetched methods. Match the hook context to a fetch that
+      // explicitly requires fips, without adding a missing header import.
+      Assert.IsTrue(EVP_MD_CTX_md(LContext) = LExpectedMethod,
+        'Hook digest must be the native FIPS-provider implementation');
+      IdFIPS.UpdateHashInst(LContext, ToBytes('abc', IndyTextEncoding_ASCII));
+    except
+      EVP_MD_CTX_free(LContext);
+      raise;
+    end;
+    LResult := IdFIPS.FinalHashInst(LContext); // Final owns/free context, even on error.
+    Assert.AreEqual('BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD',
+      BytesHex(LResult), 'SHA256 over abc must match the known-answer digest');
+  finally
+    EVP_MD_free(LExpectedMethod);
+  end;
+  CheckInstalledConfigUnchanged;
+end;
+
+procedure TConfiguredFIPSProviderFixture.HMAC_UsesFIPS(const AAlgorithm: Integer;
+  const AExpected: string);
+var
+  LKey, LResult: TIdBytes;
+  LContext: TIdHMACIntCtx;
+  LProvider: TaurusTLSHeaders_types.POSSL_PROVIDER;
+begin
+  LoadConfigured(True);
+  SetLength(LKey, 20);
+  FillChar(LKey[0], Length(LKey), $0B);
+  case AAlgorithm of
+    0: LContext := IdFIPS.GetHMACSHA256HashInst(LKey);
+    1: LContext := IdFIPS.GetHMACSHA384HashInst(LKey);
+  else
+    LContext := IdFIPS.GetHMACSHA512HashInst(LKey);
+  end;
+  try
+    LProvider := EVP_MAC_get0_provider(EVP_MAC_CTX_get0_mac(LContext));
+    Assert.IsTrue(LProvider <> nil, 'The native algorithm must expose its owning provider');
+    Assert.AreEqual('fips', string(AnsiString(OSSL_PROVIDER_get0_name(LProvider))),
+      'The native HMAC implementation must belong to the FIPS provider');
+    IdFIPS.UpdateHMACInst(LContext, ToBytes('Hi There', IndyTextEncoding_ASCII));
+  except
+    EVP_MAC_CTX_free(LContext);
+    raise;
+  end;
+  LResult := IdFIPS.FinalHMACInst(LContext);
+  Assert.AreEqual(AExpected, BytesHex(LResult),
+    'The selected HMAC algorithm must match its independent known-answer vector');
+  Assert.AreEqual(1, EVP_default_properties_is_fips_enabled(nil),
+    'Queries and operations must preserve the configured fips=yes selection');
+  CheckInstalledConfigUnchanged;
+end;
+
+procedure TConfiguredFIPSProviderFixture.Policy_RejectsLegacyNTLM;
+var
+  LMD: PEVP_MD;
+  LCipher: PEVP_CIPHER;
+  LChallenge: TIdBytes;
+begin
+  LoadConfigured(True);
+  // Legacy is deliberately active; configured FIPS selection must still win.
+  Assert.IsTrue(IdFIPS.GetFIPSMode(),
+    'A ready runtime with the selected installed FIPS provider must report FIPS mode');
+  Assert.IsFalse(IdFIPS.IsMD4HashIntfAvail(),
+    'MD4 hash availability must be false when the selected native provider cannot supply it');
+  Assert.IsFalse(IdFIPS.IsNTLMFuncsAvail(),
+    'NTLM function availability must be false when the selected native provider cannot supply it');
+  LMD := EVP_MD_fetch(nil, 'MD4', nil);
+  try
+    Assert.IsTrue(LMD = nil, 'Configured FIPS selection must prevent a native MD4 fetch despite active legacy');
+  finally
+    EVP_MD_free(LMD);
+  end;
+  LCipher := EVP_CIPHER_fetch(nil, 'DES-ECB', nil);
+  try
+    Assert.IsTrue(LCipher = nil,
+      'Configured FIPS selection must prevent a native DES-ECB fetch despite active legacy');
+  finally
+    EVP_CIPHER_free(LCipher);
+    ERR_clear_error;
+  end;
+  Assert.WillRaise(
+    procedure
+    begin
+      IdFIPS.GetMD4HashInst();
+    end, ETaurusTLSMD4NotFound,
+    'GetMD4HashInst must reject an algorithm unavailable under the selected provider policy');
+  SetLength(LChallenge, 8);
+  Assert.WillRaise(
+    procedure
+    begin
+      IdFIPS.NTLMGetNtChallengeResponse('Password', LChallenge);
+    end, EIdFIPSAlgorithmNotAllowed,
+    'NTLMGetNtChallengeResponse must reject the LM/NT response under selected FIPS policy');
+  Assert.WillRaise(
+    procedure
+    begin
+      IdFIPS.NTLMGetLmChallengeResponse('Password', LChallenge);
+    end, EIdFIPSAlgorithmNotAllowed,
+    'NTLMGetLmChallengeResponse must reject the LM/NT response under selected FIPS policy');
+  Assert.IsFalse(IdFIPS.SetFIPSMode(False), 'The FIPS setter must not weaken an active configured FIPS policy');
+  Assert.AreEqual(1, EVP_default_properties_is_fips_enabled(nil),
+    'Queries and operations must preserve the configured fips=yes selection');
+  CheckInstalledConfigUnchanged;
+end;
+
+procedure TConfiguredFIPSProviderFixture.Provider_SelfTest;
+var
+  LMAC: PEVP_MAC;
+  LProvider: TaurusTLSHeaders_types.POSSL_PROVIDER;
+begin
+  LoadConfigured(True);
+  LMAC := EVP_MAC_fetch(nil, 'HMAC', 'provider=fips');
+  try
+    Assert.IsTrue(LMAC <> nil, 'An explicit provider=fips HMAC fetch must succeed');
+    LProvider := EVP_MAC_get0_provider(LMAC); // Borrowed while LMAC is alive.
+    Assert.IsTrue(LProvider <> nil, 'The native algorithm must expose its owning provider');
+    Assert.AreEqual(1, OSSL_PROVIDER_self_test(LProvider), 'The loaded FIPS provider must pass its native self-tests');
+    Assert.IsTrue(IdFIPS.GetFIPSMode(),
+      'A ready runtime with the selected installed FIPS provider must report FIPS mode');
+  finally
+    EVP_MAC_free(LMAC);
+  end;
+  CheckInstalledConfigUnchanged;
+end;
+
+procedure TConfiguredFIPSProviderFixture.Lifecycle_Reload;
+var
+  LGet: TGetFIPSMode;
+  LSet: TSetFIPSMode;
+begin
+  LoadConfigured(True);
+  LGet := IdFIPS.GetFIPSMode;
+  LSet := IdFIPS.SetFIPSMode;
+  Assert.IsTrue(IdFIPS.GetFIPSMode(),
+    'A ready runtime with the selected installed FIPS provider must report FIPS mode');
+  Loader.Unload;
+  Assert.IsFalse(IdFIPS.GetFIPSMode(), 'An inactive or unselected FIPS runtime must not report operational FIPS mode');
+  Assert.IsFalse(IdFIPS.SetFIPSMode(True),
+    'A missing or inactive FIPS provider must not accept a request to enable FIPS mode');
+  Assert.IsTrue(@IdFIPS.GetFIPSMode = @LGet, 'Load and unload must preserve the GetFIPSMode callback');
+  Assert.IsTrue(@IdFIPS.SetFIPSMode = @LSet, 'Load and unload must preserve the SetFIPSMode callback');
+  Assert.IsTrue(Loader.Load, 'Controlled OpenSSL initialization must succeed before exercising Lifecycle Reload');
+  Assert.IsTrue(IdFIPS.GetFIPSMode(),
+    'A ready runtime with the selected installed FIPS provider must report FIPS mode');
+  Assert.IsTrue(@IdFIPS.GetFIPSMode = @LGet, 'Load and unload must preserve the GetFIPSMode callback');
+  Assert.IsTrue(@IdFIPS.SetFIPSMode = @LSet, 'Load and unload must preserve the SetFIPSMode callback');
+  CheckInstalledConfigUnchanged;
+end;
+
+procedure RegisterFIPSProviderOptions;
+begin
+  TOptionsRegistry.RegisterOption<string>('fips-module-config', 'fmc',
+    'Opt in to real FIPS provider tests using installed fipsmodule.cnf; run -i:FIPS.Provider alone',
+    procedure(Value: string)
+    begin
+      if Value = '' then
+        raise EArgumentException.Create('-fmc requires an installed fipsmodule.cnf path');
+      GInstalledFIPSConfig := TPath.GetFullPath(Value);
+      // Fixture registration is unconditional; missing input produces prerequisite failures.
+    end);
+end;
+{$ENDIF}
+
 initialization
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  RegisterFIPSProviderOptions;
+  TDUnitX.RegisterTestFixture(TConfiguredFIPSProviderFixture);
+{$ENDIF}
   TDUnitX.RegisterTestFixture(TLoaderFIPSReadinessFixture);
   Register_SSLLoaderAction(TConsumerReadinessObserver.Action);
 
