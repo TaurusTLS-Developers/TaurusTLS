@@ -1,4 +1,4 @@
-﻿# TaurusTLS OpenSSL Configuration, FIPS and Legacy Support — HLD
+# TaurusTLS OpenSSL Configuration, FIPS and Legacy Support — HLD
 
 Status: Configuration-owned activation, independent NTLM/FIPS hooks and EVP_MAC handling are implemented. Real FIPS integration passes on Win64/OpenSSL 4.1; Release builds, archive isolation and approval indicators remain separate.
 Revision date: 2026-10-24.
@@ -40,19 +40,27 @@ one fully constructed instance in both linking models. The linking conditional
 selects only the concrete class; static and dynamic candidates use the same CAS
 publication path. Competing candidates own separate locks and
 diagnostics; losing candidates are released without touching shared registries.
-Ordinary, nonvirtual instance constructors create the registration and lifecycle
-locks. No class constructor or application-supplied factory is required.
+Ordinary, nonvirtual instance constructors create one loader
+lock. No class constructor or application-supplied factory is required.
 
-The published instance protects the shared registration lists with its own
-registration lock. Unit initialization preserves an earlier winner and its
+The published instance protects lifecycle operations and the shared registration
+lists with its single loader lock. Unit initialization preserves an earlier winner and its
 registrations. Constructing the singleton does not load or initialize OpenSSL;
 the application still calls Load explicitly. The singleton retains an ownership
 reference until unit finalization, which requires all application callers to
-have stopped. Lifecycle actions must be registered while State is lsNotLoaded;
-registration during loading, readiness, unloading or failure raises
-ETaurusTLSLoaderError. This prevents an early Load from silently omitting a
-later unit's runtime initialization. Failed state must be reset with Unload
-before registration.
+have stopped. Lifecycle actions can be registered while inactive or ready.
+Ready registration immediately invokes osaLoad under the lifecycle lock, so a
+later unit cannot miss initialization. UnRegister_SSLLoaderAction removes the
+most recent matching method/instance and immediately invokes osaUnload when
+ready, while native APIs remain callable. Inactive/failed removal performs no
+callback. New registrations require explicit Unload after failure.
+
+Lifecycle and immediate callbacks reject recursive lifecycle/registry mutation.
+Other threads serialize through the lifecycle lock. A failed immediate osaLoad
+removes its new registration; failed osaUnload still detaches the action and
+propagates its exception. Callback owners retain responsibility for partial
+initialization/cleanup and must unregister before destroying their objects.
+Duplicate registrations remain independent; removing a missing action is a no-op.
 
 TaurusTLS finalization calls the shared Unload operation. Loader finalization
 also runs full Unload while the singleton remains published, covering applications

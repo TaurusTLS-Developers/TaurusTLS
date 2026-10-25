@@ -1,4 +1,4 @@
-﻿# TaurusTLS OpenSSL Configuration, FIPS and Legacy Support — DDD
+# TaurusTLS OpenSSL Configuration, FIPS and Legacy Support — DDD
 
 Status: Configuration-owned provider activation, independent NTLM/FIPS hooks and EVP_MAC handling are implemented. Real FIPS execution is validated on Win64/OpenSSL 4.1; Release builds, archive isolation, approval indicators and certification remain separate.
 Revision date: 2026-10-24.
@@ -56,7 +56,7 @@ Configuration behavior:
 To eliminate code duplication, centralize error handling, and guarantee thread safety, `TaurusTLSLoader` employs the Template Method pattern:
 
 * **`TOpenSSLBaseLoader` (Abstract Base):**
-  - Owns the atomic singleton slot and class-owned action registry. Each instance owns `FRegistrationLock`, `FLoaderLock`, the atomic `FState` backing field, `FLastLoadActionIdx`, configuration strings and cached metadata. No separate loaded/failed Boolean supplies readiness.
+  - Owns the atomic singleton slot and class-owned action registry. Each instance owns `FLoaderLock`, the atomic `FState` backing field, `FLastLoadActionIdx`, configuration strings and cached metadata. No separate loaded/failed Boolean supplies readiness.
   - Non-virtual template methods `Load` and `Unload` govern the state machine, thread locking, and circuit breaker.
   - Declares abstract/virtual hooks `function DoLoad: Boolean; virtual; abstract;` and `procedure DoUnload; virtual; abstract;`.
   - Encapsulates shared configuration validation (`ApplyConfiguration`), OpenSSL static-inline call wrappers, and action callback dispatching/rollback (`DispatchLoadActions`, `RollbackLoadActions`).
@@ -93,8 +93,8 @@ OPENSSL_STATIC_LINK_MODEL selects only TOpenSSLStaticLoader versus
 TOpenSSLDynamicLoader. Both branches return to the same CompareExchangeInstance
 publication call; static builds do not bypass CAS, including calls from other
 threads through GetOpenSSLLoader.
-The base instance constructor creates FRegistrationLock and FLoaderLock
-unconditionally. Each candidate has its own locks, diagnostic list and unloaded
+The base instance constructor creates FLoaderLock
+unconditionally. Each candidate has its own lock, diagnostic list and unloaded
 state. Constructors do not mutate registration lists.
 
 After the concrete constructor completes, acquire one ownership reference with
@@ -112,22 +112,35 @@ FPC compilation remains unverified.
 
 The registries remain class variables: FLoadActions in the base loader, and
 FCryptoLoaders/FSSLLoaders/FUnloaders in the dynamic loader. Registration obtains
-the published instance's FRegistrationLock, holds that same lock for the update,
+the published instance's FLoaderLock, holds that same lock for the update,
 then releases it. There is no separate lazy registration-lock allocation.
 
-Lifecycle action registration first acquires FLoaderLock and requires the
-internal state to be exactly lsNotLoaded. Other states, including failure,
-raise ETaurusTLSLoaderError using RSOSSLLoaderActionRegistrationInactive.
-FRegistrationLock is acquired only after this check, following the lifecycle
-operation's lock order. A concurrent Load cannot skip a newly accepted action;
-action registration from a lifecycle callback is rejected. No automatic
-catch-up initialization is performed for late actions. After failure, explicit
-Unload resets the state before registration is permitted.
+RegisterAction and UnRegisterAction share FLoaderLock with Load/Unload and
+header binding, registration and cleanup.
+Registration is accepted in lsNotLoaded and lsLoadedReady. The ready path adds
+the action, invokes osaLoad while holding FLoaderLock and advances
+FLastLoadActionIdx only after successful initialization. Callback failure removes
+the appended entry and propagates the exception without disturbing existing
+ready actions. The failing callback cleans up its own partial resources.
+
+UnRegister_SSLLoaderAction removes the most recent entry matching both method
+code and object pointer. When ready, invoke osaUnload before removal, preserving
+callable native APIs and ready status. Remove the entry and adjust the completed
+action index even if cleanup raises; propagate that exception. Inactive/failed
+removal performs no callback. Missing actions are harmless; nil callbacks are
+ignored in otherwise permitted states. Duplicates remain independent entries.
+
+FActionChangingInProgress guards immediate callback dispatch. Recursive public
+Load/Unload, registration and unregistration are rejected during that dispatch.
+Normal loading/unloading also reject registry changes. Other threads wait on
+the lifecycle lock, preventing native release before immediate actions finish.
+Registration after failure still requires explicit Unload; unregistration is
+allowed so a failed runtime cannot retain a callback to a destroyed object.
 
 Unit initialization calls EnsureInstance and preserves an earlier winner and all
 early registrations. Lifecycle callback iteration and dynamic symbol binding/reset
-use that winner's registration lock. The existing lifecycle lock continues to
-serialize Load/Unload independently.
+use that winner's FLoaderLock. One reentrant critical section serializes these
+operations with Load/Unload; no nested registration lock is needed.
 
 At unit finalization, atomically read the existing singleton without creating
 one, then call its full Unload operation while the slot remains published.
@@ -566,12 +579,14 @@ Runtime and metadata acceptance:
 | ConfigDirectory | Derived from effective ConfigFile; relative discovery fixed at load time; empty filename yields empty |
 | Working directory changes | Metadata does not drift after loading |
 | Unicode/macOS aliases | Existing Unicode and canonical-path handling preserved |
-| Callback observations | Non-ready during load/unload/rollback; native routines callable until unbinding; metadata empty |
+| Callback observations | Non-ready during normal load/unload/rollback; ready during immediate registration/removal; native routines remain callable |
 | Partial TLS action failure | Own partial resources cleaned, earlier actions unwound, loader failed, original error preserved |
 | Unload/reload | Metadata/resources cleared; no duplicate callbacks, legacy locking setup or second ready flag |
 | Configuration ownership | No duplicate default configuration after explicit selection; discovery alone not reported as proof of application |
 | Providers | Config-only activation; optional archive registration before config; dynamic wrapper dependency removed and fresh-process absence/activation/isolation cases verified |
-| Late lifecycle action registration | Rejected outside lsNotLoaded without changing state or the action registry |
+| Late lifecycle action registration | Ready registration runs osaLoad immediately; failures detach the new action and preserve the ready runtime |
+| Lifecycle action unregistration | Match code and instance; remove one most recent entry; ready cleanup runs once, inactive/failed removal runs no callback |
+| Immediate callback synchronization | Concurrent unload waits; recursive lifecycle/registry mutations raise; cleanup exceptions still detach the action |
 | Unit finalization | Full unload runs with the singleton still published; cleanup errors do not escape the unit finalizers |
 
 The developer reports no new failures or regressions on Win32, Win64, Linux64
