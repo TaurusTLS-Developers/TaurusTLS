@@ -37,11 +37,9 @@ uses
 /// Points Indy's IdFIPS hash and HMAC hooks at the TaurusTLS implementations.
 /// </summary>
 /// <remarks>
-/// This is called from this unit's initialization section and from TaurusTLS.LoadOpenSSLLibrary.
-/// Other units assign the same hooks from their initialization sections (for example
-/// IdSSLOpenSSLHeaders) and the unit initialization order is not guaranteed, notably in
-/// statically linked C++Builder applications, so the hooks are reinstalled when the
-/// OpenSSL library is loaded.
+/// Called once by unit initialization. Explicit callers may reinstall these hooks
+/// after selecting another backend. Loader Load/Unload never changes hook ownership.
+/// FIPS activation and selection belong to OpenSSL configuration.
 /// </remarks>
 procedure InstallFIPSHooks;
 
@@ -55,10 +53,9 @@ type
 /// Adds a procedure that InstallFIPSHooks calls after installing the hash and HMAC hooks.
 /// </summary>
 /// <remarks>
-/// Optional units that assign other IdFIPS hooks (for example TaurusTLS_NTLM) register here
-/// from their initialization sections so their hooks are reinstalled along with the hash and
-/// HMAC hooks.  The procedure is also called immediately if the TaurusTLS hooks are currently
-/// installed.
+/// Explicit compatibility extension point. NTLM does not register here and owns
+/// its callbacks independently. The procedure is called immediately if the TaurusTLS
+/// hooks are currently installed; no loader lifecycle notification invokes it.
 /// </remarks>
 procedure RegisterFIPSHooksInstaller(const AInstaller: TFIPSHooksInstaller);
 
@@ -74,6 +71,7 @@ procedure RevalidateFIPSPropertyAPIsForTests;
 implementation
 
 uses
+  SysUtils,
   IdGlobal,
   IdCTypes,
   IdFIPS,
@@ -83,7 +81,9 @@ uses
   TaurusTLSHeaders_evp,
   TaurusTLSHeaders_crypto,
   TaurusTLSHeaders_err,
-  TaurusTLSHeaders_hmac,
+  TaurusTLSHeaders_provider,
+  TaurusTLSHeaders_core,
+  TaurusTLSHeaders_params,
   TaurusTLSHeaders_types;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
@@ -120,7 +120,9 @@ begin
     Assigned(EVP_default_properties_enable_fips) and
     Assigned(EVP_default_properties_is_fips_enabled) and
     (LLoader.FailedToLoad.IndexOf('EVP_default_properties_enable_fips') < 0) and
-    (LLoader.FailedToLoad.IndexOf('EVP_default_properties_is_fips_enabled') < 0);
+    (LLoader.FailedToLoad.IndexOf('EVP_default_properties_is_fips_enabled') < 0) and
+    Assigned(OSSL_PROVIDER_available) and
+    (LLoader.FailedToLoad.IndexOf('OSSL_PROVIDER_available') < 0);
 end;
 
 function TaurusTLSFIPSPropertyAPIsAvailable: Boolean;
@@ -147,35 +149,19 @@ end;
 {$ENDIF}
 {$ENDIF}
 
-{$I TaurusTLSUnusedParamOff.inc}
-
-function FIPS_mode_set(onoff: TIdC_INT): TIdC_INT; //FI:O804 - Method parameter is declared but not used
-  {$IFDEF USE_INLINE}inline; {$ENDIF}
+procedure RequireHashReady;
 begin
-  Result := 0;
-  // FIPS is supported only by the dynamic linking model.
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  if GFIPSUsesPropertyAPIs and not TaurusTLSFIPSPropertyAPIsAvailable then
-    Exit;
-  if Assigned(TaurusTLSHeaders_crypto.FIPS_mode_set) then
-  begin
-    Result := TaurusTLSHeaders_crypto.FIPS_mode_set(onoff);
-  end;
-{$ENDIF}
+  if not GetOpenSSLLoader.IsLoaded then
+    raise ETaurusTLSLoaderError.Create('OpenSSL must be ready before using Indy hash/HMAC hooks');
 end;
-{$I TaurusTLSUnusedParamOn.inc}
 
-function FIPS_mode(): TIdC_INT; {$IFDEF USE_INLINE}inline; {$ENDIF}
+// Preserve all configured default properties. When FIPS is selected, additionally
+// require its provider for both the outer MAC and the nested digest fetch.
+function HashProperties: PIdAnsiChar;
 begin
-  Result := 0;
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  if GFIPSUsesPropertyAPIs and not TaurusTLSFIPSPropertyAPIsAvailable then
-    Exit;
-  if Assigned(TaurusTLSHeaders_crypto.FIPS_mode) then
-  begin
-    Result := TaurusTLSHeaders_crypto.FIPS_mode;
-  end;
-{$ENDIF}
+  Result := nil;
+  if EVP_default_properties_is_fips_enabled(nil) = 1 then
+    Result := 'provider=fips';
 end;
 
 // **************** Digest Common Code *********************
@@ -188,37 +174,56 @@ begin
   begin
     ETaurusTLSEVPMDCTXNew.RaiseException(RSOSSLEVPMDCTXNew);
   end;
-  ETaurusTLSDigestInitEx.RaiseIfError(EVP_DigestInit_ex(Result, AInst, nil),
-    RSOSSLEVPDigestExError);
+  try
+    ETaurusTLSDigestInitEx.RaiseIfError(EVP_DigestInit_ex(Result, AInst, nil),
+      RSOSSLEVPDigestExError);
+  except
+    EVP_MD_CTX_free(Result);
+    raise;
+  end;
 end;
 
 // **************** HMAC Common Code ***********************
 
-function TaurusTLSHMACInit(const AKey: TIdBytes; AInst: PEVP_MD): TIdHMACIntCtx;
-{$IFDEF USE_INLINE} inline; {$ENDIF}
+function TaurusTLSHACMACInit(const AKey: TIdBytes; const ACipher: PIdAnsiChar;
+  AExceptionClass: ETaurusTLSAlgorithmNotFoundClass): TIdHMACIntCtx;
+var
+  LMAC: PEVP_MAC;
+  LParams: array[0..2] of OSSL_PARAM;
+  LProperties: PIdAnsiChar;
+  LEmptyKey: AnsiChar;
+  LKey: PIdAnsiChar;
 begin
-  Result := HMAC_CTX_new;
-  if Result = nil then
-  begin
-    ETaurusTLSHMACCTXNew.RaiseException(RSOSSLHMACCTXnew);
-  end;
-  ETaurusTLSHMACInitEx.RaiseIfError(HMAC_Init_ex(Result, PByte(AKey),
-    Length(AKey), AInst, nil), RSOSSLHMACInitExError);
-end;
-
-function  TaurusTLSHACMACInit(AKey : TIdBytes; const ACipher : PIdAnsiChar;
-  AExceptionClass : ETaurusTLSAlgorithmNotFoundClass) : TIdHMACIntCtx;
-var LMD : PEVP_MD;
-begin
-  LMD := EVP_MD_fetch(nil, ACipher,nil);
-  if Assigned(LMD) then
-  begin
-    Result := TaurusTLSHMACInit(AKey, LMD);
-     EVP_MD_free(LMD);
-  end
-  else
-  begin
+  RequireHashReady;
+  LProperties := HashProperties;
+  LMAC := EVP_MAC_fetch(nil, 'HMAC', LProperties);
+  if LMAC = nil then
     raise AExceptionClass.CreateResMsg;
+  try
+    Result := EVP_MAC_CTX_new(LMAC);
+    if Result = nil then
+      ETaurusTLSHMACCTXNew.RaiseException(RSOSSLHMACCTXnew);
+  finally
+    EVP_MAC_free(LMAC);
+  end;
+  try
+    LParams[0] := OSSL_PARAM_construct_utf8_string('digest', ACipher, 0);
+    LParams[1] := OSSL_PARAM_construct_end;
+    LParams[2] := OSSL_PARAM_construct_end;
+    if LProperties <> nil then
+      LParams[1] := OSSL_PARAM_construct_utf8_string('properties', LProperties, 0);
+    // A nil key means reuse to EVP_MAC_init; an empty new key needs a pointer.
+    LEmptyKey := #0;
+    LKey := PIdAnsiChar(AKey);
+    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
+    if Length(AKey) = 0 then
+      LKey := @LEmptyKey;
+    ETaurusTLSHMACInitEx.RaiseIfError(
+      EVP_MAC_init(Result, LKey, Length(AKey), @LParams[0]), RSOSSLHMACInitExError);
+    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
+  except
+    EVP_MAC_CTX_free(Result);
+    raise;
   end;
 end;
 
@@ -232,35 +237,81 @@ end;
 
 function TaurusTLSGetFIPSMode: Boolean;
 begin
-  Result := FIPS_mode <> 0;
+  Result := False;
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  if not GetOpenSSLLoader.IsLoaded then
+    Exit;
+  if not TaurusTLSFIPSPropertyAPIsAvailable then
+    Exit;
+  // Availability alone does not mean that configured fetches select FIPS.
+  // This is mode reporting, not certification or an operation approval indicator.
+  Result := (EVP_default_properties_is_fips_enabled(nil) = 1) and
+    (OSSL_PROVIDER_available(nil, 'fips') = 1);
+{$ENDIF}
 end;
 
 function TaurusTLSSetFIPSMode(const AMode: Boolean): Boolean;
 begin
-  // leave this empty as we may not be using something that supports FIPS
-  if AMode then
-  begin
-    Result := FIPS_mode_set(1) = 1;
-  end
-  else
-  begin
-    Result := FIPS_mode_set(0) = 1;
-  end;
+  Result := False;
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  if not GetOpenSSLLoader.IsLoaded then
+    Exit;
+  if not TaurusTLSFIPSPropertyAPIsAvailable then
+    Exit;
+  // Compatibility no-op only: never activate providers, clear properties or
+  // weaken a selected policy. Even an unavailable selected FIPS policy is kept.
+  if (EVP_default_properties_is_fips_enabled(nil) = 1) <> AMode then
+    Exit;
+  Result := not AMode or TaurusTLSGetFIPSMode;
+{$ENDIF}
 end;
 
-function TaurusIsHashAvail(const AHashName : PIdAnsiChar) : Boolean; {$IFDEF USE_INLINE} inline; {$ENDIF}
+function TaurusIsHashAvail(const AHashName: PIdAnsiChar): Boolean;
 var
-  lMeth: PEVP_MD;
+  LMethod: PEVP_MD;
+  LMarked: Boolean;
 begin
   Result := False;
   if not GetOpenSSLLoader.IsLoaded then
     Exit;
-  lMeth := nil;
+  LMarked := ERR_set_mark() = 1;
   try
-    lMeth := EVP_MD_fetch(nil, AHashName, nil);
-    Result := Assigned(lMeth);
+    LMethod := EVP_MD_fetch(nil, AHashName, HashProperties);
+    try
+      Result := LMethod <> nil;
+    finally
+      EVP_MD_free(LMethod);
+    end;
   finally
-    EVP_MD_free(lMeth);
+    if LMarked then
+      ERR_pop_to_mark
+    else
+      ERR_clear_error;
+  end;
+end;
+
+function TaurusIsHMACAvail(const AHashName: PIdAnsiChar): Boolean;
+var
+  LMAC: PEVP_MAC;
+  LMarked: Boolean;
+begin
+  Result := False;
+  if not GetOpenSSLLoader.IsLoaded then
+    Exit;
+  LMarked := ERR_set_mark() = 1;
+  try
+    LMAC := EVP_MAC_fetch(nil, 'HMAC', HashProperties);
+    try
+      Result := (LMAC <> nil) and
+        ((AHashName = nil) or TaurusIsHashAvail(AHashName));
+    finally
+      EVP_MAC_free(LMAC);
+    end;
+  finally
+    if LMarked then
+      ERR_pop_to_mark
+    else
+      ERR_clear_error;
   end;
 end;
 
@@ -273,11 +324,15 @@ function  TaurusTLSInternalGetHash(const AHashName : PIdAnsiChar;
   AExceptionClass : ETaurusTLSAlgorithmNotFoundClass): TIdHashIntCtx;
 var LMD : PEVP_MD;
 begin
-  LMD := EVP_MD_fetch(nil,AHashName,nil);
+  RequireHashReady;
+  LMD := EVP_MD_fetch(nil, AHashName, HashProperties);
   if assigned(LMD) then
   begin
-    Result := TaurusTLSGetDigestCtx(LMD);
-    EVP_MD_Free(LMD);
+    try
+      Result := TaurusTLSGetDigestCtx(LMD);
+    finally
+      EVP_MD_Free(LMD);
+    end;
   end
   else
   begin
@@ -363,37 +418,35 @@ end;
 
 procedure TaurusTLSUpdateHashInst(ACtx: TIdHashIntCtx; const AIn: TIdBytes);
 begin
+  RequireHashReady;
   ETaurusTLSDigestUpdate.RaiseIfError(EVP_DigestUpdate(ACtx, PByte(AIn),
     Length(AIn)), RSOSSLEVPDigestUpdateError);
 end;
 
 function TaurusTLSFinalHashInst(ACtx: TIdHashIntCtx): TIdBytes;
 var
-  LLen: TIdC_UInt; //PALOFF - Local identifiers that are set more than once without referencing in-between
+  LLen: TIdC_UInt;
 begin
-{$IFDEF fpc}
-  Result := nil;
-{$ENDIF}
-  SetLength(Result, EVP_MAX_MD_SIZE);
-  LLen := 0; // unneeded but we get FPC warnings if we don't
-  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-  if ETaurusTLSDigestFinalEx.CheckResult(EVP_DigestFinal_ex(ACtx,
-    PByte(@Result[0]), LLen), RSOSSLEVPDigestError) then
-  begin
+  RequireHashReady;
+  try
+    SetLength(Result, EVP_MAX_MD_SIZE);
+    LLen := 0;
+    ETaurusTLSDigestFinalEx.RaiseIfError(
+      EVP_DigestFinal_ex(ACtx, PByte(Result), LLen), RSOSSLEVPDigestError);
     SetLength(Result, LLen);
-    EVP_MD_CTX_free(PEVP_MD_CTX(ACtx));
+  finally
+    EVP_MD_CTX_free(ACtx);
   end;
-  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
 end;
 
 function TaurusTLSIsHMACAvail: Boolean;
 begin
-  Result := GetOpenSSLLoader.IsLoaded;
+  Result := TaurusIsHMACAvail(nil);
 end;
 
 function TaurusTLSIsHMACMD5Avail: Boolean;
 begin
-  Result := TaurusIsHashAvail('MD5');
+  Result := TaurusIsHMACAvail('MD5');
 end;
 
 function TaurusTLSGetHMACMD5Inst(const AKey: TIdBytes): TIdHMACIntCtx;
@@ -404,7 +457,7 @@ end;
 function TaurusTLSIsHMACSHA1Avail: Boolean;
 begin
 
-  Result :=  TaurusIsHashAvail('SHA1');
+  Result :=  TaurusIsHMACAvail('SHA1');
 end;
 
 function TaurusTLSGetHMACSHA1Inst(const AKey: TIdBytes): TIdHMACIntCtx;
@@ -416,7 +469,7 @@ end;
 function TaurusTLSIsHMACSHA224Avail: Boolean;
 
 begin
-  Result :=  TaurusIsHashAvail('SHA224');
+  Result :=  TaurusIsHMACAvail('SHA224');
 end;
 
 function TaurusTLSGetHMACSHA224Inst(const AKey: TIdBytes): TIdHMACIntCtx;
@@ -426,7 +479,7 @@ end;
 
 function TaurusTLSIsHMACSHA256Avail: Boolean;
 begin
-  Result :=  TaurusIsHashAvail('SHA256');
+  Result :=  TaurusIsHMACAvail('SHA256');
 end;
 
 function TaurusTLSGetHMACSHA256Inst(const AKey: TIdBytes): TIdHMACIntCtx;
@@ -437,7 +490,7 @@ end;
 
 function TaurusTLSIsHMACSHA384Avail: Boolean;
 begin
-  Result :=  TaurusIsHashAvail('SHA384');
+  Result :=  TaurusIsHMACAvail('SHA384');
 end;
 
 function TaurusTLSGetHMACSHA384Inst(const AKey: TIdBytes): TIdHMACIntCtx;
@@ -447,7 +500,7 @@ end;
 
 function TaurusTLSIsHMACSHA512Avail: Boolean;
 begin
-  Result :=  TaurusIsHashAvail('SHA512');
+  Result :=  TaurusIsHMACAvail('SHA512');
 end;
 
 function TaurusTLSGetHMACSHA512Inst(const AKey: TIdBytes): TIdHMACIntCtx;
@@ -457,6 +510,7 @@ end;
 
 procedure TaurusTLSUpdateHMACInst(ACtx: TIdHMACIntCtx; const AIn: TIdBytes);
 begin
+  RequireHashReady;
   ETaurusTLSHMACUpdate.RaiseIfError(EVP_MAC_update(ACtx, PIdAnsiChar(AIn),
     Length(AIn)), RSOSSLHMACUpdateError);
 end;
@@ -465,20 +519,19 @@ function TaurusTLSFinalHMACInst(ACtx: TIdHMACIntCtx): TIdBytes;
 var
   LBufLen, LActualLen: TIdC_SIZET;
 begin
-  Result := nil;
-  // calculating the final buffer length
-  if (EVP_MAC_final(ACtx, nil, LBufLen, 0) <= 0) and (LBufLen <= 0) then
-    Exit;
-  SetLength(Result, LBufLen);
-  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-  if ETaurusTLSHMACFinal.CheckResult(
-    EVP_MAC_final(ACtx, PIdAnsiChar(Result), LActualLen, LBufLen),
-    RSOSSLHMACFinalError) then
-  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
-  begin
-    if LActualLen < LBufLen then
-      SetLength(Result, LActualLen);
-    HMAC_CTX_free(ACtx);
+  RequireHashReady;
+  try
+    LBufLen := EVP_MAC_CTX_get_mac_size(ACtx);
+    if (LBufLen = 0) or (LBufLen > EVP_MAX_MD_SIZE) then
+      ETaurusTLSHMACFinal.RaiseException(RSOSSLHMACFinalError);
+    SetLength(Result, LBufLen);
+    LActualLen := 0;
+    ETaurusTLSHMACFinal.RaiseIfError(
+      EVP_MAC_final(ACtx, PIdAnsiChar(Result), LActualLen, LBufLen),
+      RSOSSLHMACFinalError);
+    SetLength(Result, LActualLen);
+  finally
+    EVP_MAC_CTX_free(ACtx);
   end;
 end;
 
