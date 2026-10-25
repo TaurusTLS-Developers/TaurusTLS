@@ -257,6 +257,8 @@ resourcestring
     'because a certificate extension appears more than once.';
 
  
+  RSLegacyProviderRegisterFailed = 'Registering the linked OpenSSL legacy provider failed.';
+
   RSNTLMNotReady = 'OpenSSL must be explicitly loaded before computing NTLM responses.';
   RSNTLMInvalidChallenge = 'An NTLM challenge must contain exactly 8 bytes.';
   RSNTLMInvalidBuffer = 'NTLM input and output buffers must not be nil.';

@@ -1,130 +1,64 @@
-{ ****************************************************************************** }
+ï»¿{ ****************************************************************************** }
 { *  TaurusTLS                                                                 * }
 { *           https://github.com/JPeterMugaas/TaurusTLS                        * }
 { *                                                                            * }
 { *  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              * }
 { *                                                                            * }
-{ * Portions of this software are Copyright (c) 1993 – 2018,                   * }
-{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  * }
+{ * Portions of this software are Copyright (c) 1993 â€“ 2018,                   * }
+{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  * }
 { ****************************************************************************** }
 {$I TaurusTLSCompilerDefines.inc}
-/// <summary>
-///   This unit automatically loads or links to the Loads or links the OpenSSL 3
-///   <c>legacy</c> provider. To use, just incclude it in one of your program's
-///   units Using this unit requires that you deploy the <c>providers</c>
-///   directory along with your program if dynamically loading OpenSSL..
-/// </summary>
+/// <summary>Links and registers the optional archive legacy provider.</summary>
 /// <remarks>
-///   The legacy provider is needed only if you arfe interoperating with legacy
-///   systems that use the algorithms in the legacy provider such as the NTLM
-///   Protocol. using the <see cref="TaurusTLS_NTLM" /> support unit.
+/// Archive applications include this unit before loading OpenSSL. Configuration
+/// controls provider activation. Shared-library applications need only the
+/// deployed provider module and openssl.cnf; this unit does not load providers.
 /// </remarks>
-/// <seealso href="https://docs.openssl.org/3.0/man7/OSSL_PROVIDER-legacy/">
-///   OpenSSL Legacy Provider
-/// </seealso>
 unit TaurusTLS_LegacyProviders;
 
 {$I TaurusTLSLinkDefines.inc}
 
 interface
 
-/// <summary>
-/// True if the OpenSSL 3 legacy provider was loaded.
-/// </summary>
+/// <summary>Reports configured legacy availability while the loader is ready.</summary>
+/// <remarks>Does not load OpenSSL or acquire a provider reference.</remarks>
 function IsLegacyProviderLoaded: Boolean;
 
 implementation
 
 uses
-  IdGlobal,
+{$IFDEF STATICLOAD_OPENSSL}
   IdCTypes,
   TaurusTLSConsts,
-  {$IFDEF STATICLOAD_OPENSSL}
   TaurusTLSHeaders_core,
-  {$ENDIF}
+  TaurusTLSExceptionHandlers,
+  TaurusTLS_ResourceStrings,
+{$ENDIF}
   TaurusTLSHeaders_provider,
   TaurusTLSLoader;
 
-var
-  FDefaultProvider: POSSL_PROVIDER = nil;
-  FLegacyProvider: POSSL_PROVIDER = nil;
-
-const
-  CDefaultProviderName: PIdAnsiChar = 'default';
-  CLegacyProviderName: PIdAnsiChar  = 'legacy';
-
 function IsLegacyProviderLoaded: Boolean;
 begin
-  Result := Assigned(FLegacyProvider);
+  Result := GetOpenSSLLoader.IsLoaded;
+  if Result then
+    Result := OSSL_PROVIDER_available(nil, 'legacy') = 1;
 end;
 
-// Match the archive configuration that declares CLibLegacyProvider.
 {$IFDEF STATICLOAD_OPENSSL}
+// Keep the archive reference out of the core loader and shared-library builds.
 function ossl_legacy_provider_init(const handle: POSSL_CORE_HANDLE;
   const in_struct: POSSL_DISPATCH; var out_struct: POSSL_DISPATCH;
   var prov_ctx: Pointer): TIdC_INT; cdecl; external CLibLegacyProvider;
-{$ENDIF}
-
-type
-
-  /// <summary>
-  ///   Manager class providing lifecycle callbacks for OpenSSL 3.x+
-  ///   legacy and default providers.
-  /// </summary>
-  TTaurusTLSLegacyProviderManager = class
-  public
-    class procedure OnLoadAction(AAction: TOpenSSLLoadAction);
-    class procedure InitLegacyProvider;
-    class procedure UninitLegacyProvider;
-  end;
-
-class procedure TTaurusTLSLegacyProviderManager.InitLegacyProvider;
-begin
-  // 1. When linking the legacy archive, register its entry point first.
-  {$IFDEF STATICLOAD_OPENSSL}
-  OSSL_PROVIDER_add_builtin(nil, CLegacyProviderName, @ossl_legacy_provider_init);
-  {$ENDIF}
-
-  // 2. Explicitly retain the default provider so modern algorithms remain available
-  if not Assigned(FDefaultProvider) then
-    FDefaultProvider := OSSL_PROVIDER_load(nil, CDefaultProviderName);
-
-  // 3. Load the legacy provider
-  if not Assigned(FLegacyProvider) then
-    FLegacyProvider := OSSL_PROVIDER_load(nil, CLegacyProviderName);
-end;
-
-class procedure TTaurusTLSLegacyProviderManager.UninitLegacyProvider;
-begin
-  if Assigned(FLegacyProvider)then
-  begin
-    OSSL_PROVIDER_unload(FLegacyProvider);
-    FLegacyProvider := nil;
-  end;
-
-  if Assigned(FDefaultProvider) then
-  begin
-    OSSL_PROVIDER_unload(FDefaultProvider);
-    FDefaultProvider := nil;
-  end
-end;
-
-class procedure TTaurusTLSLegacyProviderManager.OnLoadAction(AAction: TOpenSSLLoadAction);
-begin
-  case AAction of
-    osaLoad:   InitLegacyProvider;
-    osaUnload: UninitLegacyProvider;
-  end;
-end;
-
 
 initialization
-{$IFDEF OPENSSL_STATIC_LINK_MODEL}
-  TTaurusTLSLegacyProviderManager.InitLegacyProvider;
-{$ELSE}
-  Register_SSLLoaderAction(TTaurusTLSLegacyProviderManager.OnLoadAction);
+  // Register the linked entry point in the default context before config loading.
+  // This does not load config, call the entry point or activate the provider.
+  // Archive builds still require legacy's "activate = 1" in openssl.cnf; when
+  // that config is applied, OpenSSL uses this function instead of an external
+  // provider module, so no "module" path is needed. Without config activation,
+  // linking this unit alone leaves the legacy provider inactive.
+  // Registration is once per unit lifetime and survives static Load/Unload.
+  if OSSL_PROVIDER_add_builtin(nil, 'legacy', @ossl_legacy_provider_init) <> 1 then
+    ETaurusTLSAPICryptoError.RaiseException(RSLegacyProviderRegisterFailed);
 {$ENDIF}
-
-finalization
-  TTaurusTLSLegacyProviderManager.UninitLegacyProvider;
 end.
