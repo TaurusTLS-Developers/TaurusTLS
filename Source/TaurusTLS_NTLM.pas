@@ -8,15 +8,11 @@
 { * Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  * }
 { ****************************************************************************** }
 {$I TaurusTLSCompilerDefines.inc}
-/// <summary>
-/// Self-registrated NT LAN Manager (NTLM) Protocol Implementation for Indy -
-/// Internet Direct.  Indy itself will call
-/// routines from the implementation section of the unit if you include this
-/// unit.
-/// </summary>
+/// <summary>Installs OpenSSL-backed LM/NTLMv1 response callbacks for Indy.</summary>
 /// <remarks>
-/// The NT LAN Manager (NTLM) Protocol is not considered secure.  It has been
-/// depreciated even by Microsoft.
+/// Applications explicitly load OpenSSL and configure the algorithms they permit.
+/// This unit neither installs TaurusTLSFIPS nor links/activates a legacy provider.
+/// NT responses require MD4 and DES-ECB; LM responses require DES-ECB.
 /// </remarks>
 unit TaurusTLS_NTLM;
 
@@ -29,274 +25,260 @@ uses
   IdFIPS;
 
 type
-   {$IFDEF DCC}{$WARN UNSAFE_TYPE OFF}{$ENDIF}
-  DES_LONG = type cardinal;
-  DES_cblock = array [0 .. 7] of byte;
+  DES_cblock = array [0 .. 7] of Byte;
   PDES_cblock = ^DES_cblock;
-  Pdes_key_schedule = ^des_key_schedule;
-  DES_ks = record
-    ks: array [0 .. 15] of record
-    case longint of
-    0: (cblock: DES_cblock);
-    1: (deslong: array [0 .. 1] of DES_LONG);
-    end;
-  end;
-  DES_key_schedule = DES_ks;
-   {$IFDEF DCC}{$WARN UNSAFE_TYPE DEFAULT}{$ENDIF}
 
-
-procedure Encrypt_DES(const Akey_56: DES_cblock;
+procedure Encrypt_DES(const AKey_56: DES_cblock;
   VOut: Pointer; const AIn: Pointer);
-
-procedure calc_resp(Vkeys: PDES_cblock;
-  const ANonce: TIdBytes; Vresults: Pdes_key_schedule);
-
-function SetupLanManagerPassword(const APassword: String;
+procedure calc_resp(VKeys: PDES_cblock;
+  const ANonce: TIdBytes; VResults: Pointer);
+function SetupLanManagerPassword(const APassword: string;
   const ANonce: TIdBytes): TIdBytes;
-
-function CreateNTPassword(const APassword: String;
+function CreateNTPassword(const APassword: string;
   const ANonce: TIdBytes): TIdBytes;
 {$ENDIF UNITTEST}
 
 implementation
+
 {$I TaurusTLSLinkDefines.inc}
+
 uses
 {$IFNDEF UNITTEST}
   IdCTypes,
   IdGlobal,
   IdFIPS,
 {$ENDIF UNITTEST}
-  IdHashMessageDigest,
   TaurusTLS_ResourceStrings,
   TaurusTLSExceptionHandlers,
   TaurusTLSLoader,
   TaurusTLSHeaders_evp,
+  TaurusTLSHeaders_err,
   TaurusTLSHeaders_types,
-  TaurusTLS_LegacyProviders,
-  TaurusTLSFIPS,
   SysUtils;
-
-/// <summary>Reports loader readiness without initializing or resetting OpenSSL.</summary>
-/// <remarks>Applications must explicitly load OpenSSL before using Indy NTLM.</remarks>
-function LoadTaurusTLS: Boolean;
-var
-  LLoader: IOpenSSLLoader;
-begin
-  LLoader := GetOpenSSLLoader;
-  Result := Assigned(LLoader) and (LLoader.State = lsLoadedReady);
-end;
-
-function TaurusTLSIsNTLMFuncsAvail: Boolean;
-begin
-  Result := True;
-end;
 
 {$IFNDEF UNITTEST}
 type
-   {$IFDEF DCC}{$WARN UNSAFE_TYPE OFF}{$ENDIF}
-  DES_LONG = type cardinal;
-  DES_cblock = array [0 .. 7] of byte;
+  DES_cblock = array [0 .. 7] of Byte;
   PDES_cblock = ^DES_cblock;
-  Pdes_key_schedule = ^des_key_schedule;
-  DES_ks = record
-    ks: array [0 .. 15] of record
-    case longint of
-    0: (cblock: DES_cblock);
-    1: (deslong: array [0 .. 1] of DES_LONG);
-    end;
-  end;
-  DES_key_schedule = DES_ks;
-   {$IFDEF DCC}{$WARN UNSAFE_TYPE DEFAULT}{$ENDIF}
 {$ENDIF UNITTEST}
 
-
-procedure Encrypt_DES(const Akey_56: des_cblock; VOut : Pointer; const AIn :  Pointer);
-Var
-  Lkey: des_cblock;  //PALOFF - Local variables that are set but not later used
-  LCipher : PEVP_CIPHER;
-  LContext : PEVP_CIPHER_CTX;
-  LOutLen,
-  LTmpLen  : TIdC_INT;
+function LoadTaurusTLS: Boolean;
 begin
-  Lkey[0] := Akey_56[0];
-  { /*
-    * turns a 56 bit key into the 64 bit, odd parity key and sets the key.
-    * The key schedule ks is also set.
-    */ }
-  Lkey[1] := ((Akey_56[0] SHL 7) and $FF) or (Akey_56[1] SHR 1);
-  Lkey[2] := ((Akey_56[1] SHL 6) and $FF) or (Akey_56[2] SHR 2);
-  Lkey[3] := ((Akey_56[2] SHL 5) and $FF) or (Akey_56[3] SHR 3);
-  Lkey[4] := ((Akey_56[3] SHL 4) and $FF) or (Akey_56[4] SHR 4);
-  Lkey[5] := ((Akey_56[4] SHL 3) and $FF) or (Akey_56[5] SHR 5);
-  Lkey[6] := ((Akey_56[5] SHL 2) and $FF) or (Akey_56[6] SHR 6);
-  Lkey[7] := (Akey_56[6] SHL 1) and $FF;
+  Result := GetOpenSSLLoader.IsLoaded;
+end;
 
-  LCipher := EVP_CIPHER_fetch(nil,'DES-ECB',nil);
-  if Assigned(LCipher) then
-  begin
-    try
-      LContext := EVP_CIPHER_CTX_new;
-      if Assigned(LContext) then
-      begin
-        try
-          {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-          EVP_CIPHER_CTX_ctrl(LContext, EVP_CTRL_RAND_KEY, 0, @LKey);
-          if EVP_EncryptInit_ex2( LContext, LCipher, @LKey[0], nil, nil) = 1 then
-          begin
-            if EVP_EncryptUpdate(LContext,VOut^,LOutLen,Ain, SizeOf(des_key_schedule)) =1 then
-            begin
-               if EVP_EncryptFinal_ex(LContext, VOut^, LTmpLen) <> 1 then
-               begin
-                 raise ETaurusTLSEVPEncryptFinalExFailed.Create(RSMsg_DES_EVP_EncryptFinalEx);
-               end;
-            end
-            else
-            begin
-              raise ETaurusTLSEVPEncryptUpdateFailed.Create(RSMsg_DES_EVP_EncryptUpdate);
-            end;
-          end
-          else
-          begin
-            raise ETaurusTLSEVPEncryptInitEx2Failed.Create(RSMsg_DES_EVP_EncryptInit_ex2);
-          end;
-         {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
-        finally
-          EVP_CIPHER_CTX_free(LContext);
-        end;
-      end
-      else
-      begin
-        raise ETaurusTLSEVPCipherCTXNewFailed.Create(RSMsg_DES_EVP_CIPHER_CTX_new_failed);
-      end;
-    finally
-      EVP_CIPHER_free(LCipher);
-    end;
-  end
-  else
-  begin
-    raise ETaurusTLSDES_ECBNotFound.Create(RSSSLDES_ECBNotFound);
+procedure RequireNTLMReady;
+begin
+  if not LoadTaurusTLS then
+    raise ETaurusTLSLoaderError.Create(RSNTLMNotReady);
+end;
+
+procedure CheckChallenge(const ANonce: TIdBytes);
+begin
+  if Length(ANonce) <> SizeOf(DES_cblock) then
+    raise EArgumentException.Create(RSNTLMInvalidChallenge);
+end;
+
+function TaurusTLSIsNTLMFuncsAvail: Boolean;
+var
+  LMD: PEVP_MD;
+  LCipher: PEVP_CIPHER;
+  LMarked: Boolean;
+begin
+  Result := False;
+  // Do not touch native APIs while unloaded, failed or inside a transition.
+  if not LoadTaurusTLS then
+    Exit;
+  if GetFIPSMode() then
+    Exit;
+  LMD := nil;
+  LCipher := nil;
+  LMarked := ERR_set_mark() = 1;
+  try
+    LMD := EVP_MD_fetch(nil, 'MD4', nil);
+    if LMD = nil then
+      Exit;
+    LCipher := EVP_CIPHER_fetch(nil, 'DES-ECB', nil);
+    Result := LCipher <> nil;
+  finally
+    EVP_CIPHER_free(LCipher);
+    EVP_MD_free(LMD);
+    // A negative availability probe must not leave errors for a later operation.
+    if LMarked then
+      ERR_pop_to_mark
+    else
+      ERR_clear_error;
   end;
 end;
 
-
-{ /*
-  * takes a 21 byte array and treats it as 3 56-bit DES keys. The
-  * 8 byte plaintext is encrypted with each key and the resulting 24
-  * bytes are stored in the results array.
-  */ }
-procedure calc_resp(Vkeys: PDES_cblock; const ANonce: TIdBytes;
-  Vresults: Pdes_key_schedule);
-Var
-  Lks: des_key_schedule;  //PALOFF - Local variables that are set but not later used
-  Lnonce: des_cblock;  //PALOFF - Local variables that are set but not later used
-  LCurPtr : Pdes_key_schedule;
+// Native EVP calls below require explicit buffer addresses and pointer access.
+{$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
+procedure Encrypt_DES(const AKey_56: DES_cblock;
+  VOut: Pointer; const AIn: Pointer);
+var
+  LKey: DES_cblock;
+  LCipher: PEVP_CIPHER;
+  LContext: PEVP_CIPHER_CTX;
+  LBlock: array [0 .. 2 * SizeOf(DES_cblock) - 1] of Byte;
+  LOutLen, LFinalLen: TIdC_INT;
+  I, J: Integer;
+  LParity: Byte;
 begin
-  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-  FillChar(LKs,SizeOf(LKs),0);
-  Move(ANonce[0], Lnonce, 8);
-  Encrypt_DES(Lnonce, Vresults,@Lks);
-  Encrypt_DES(VKeys^, Vresults,@lks);
-  LCurPtr := VResults;
-  Inc(LCurPtr,8);
-  Encrypt_DES(VKeys^, LCurPtr,@Lks);
-  Inc(LCurPtr,8);
-  Encrypt_DES(VKeys^, LCurPtr,@Lks);
-  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
+  if GetFIPSMode then
+    FIPSAlgorithmNotAllowed('DES');
+  RequireNTLMReady;
+  if (VOut = nil) or (AIn = nil) then
+    raise EArgumentException.Create(RSNTLMInvalidBuffer);
+
+  // Expand seven key bytes into eight DES bytes with odd parity.
+  LKey[0] := AKey_56[0] and $FE;
+  for I := 1 to 6 do
+    LKey[I] := ((AKey_56[I - 1] shl (8 - I)) or
+      (AKey_56[I] shr I)) and $FE;
+  LKey[7] := (AKey_56[6] shl 1) and $FE;
+  for I := 0 to High(LKey) do
+  begin
+    LParity := 1;
+    for J := 1 to 7 do
+      LParity := LParity xor ((LKey[I] shr J) and 1);
+    LKey[I] := LKey[I] or LParity;
+  end;
+
+  LCipher := EVP_CIPHER_fetch(nil, 'DES-ECB', nil);
+  if LCipher = nil then
+    raise ETaurusTLSDES_ECBNotFound.Create(RSSSLDES_ECBNotFound);
+  try
+    LContext := EVP_CIPHER_CTX_new;
+    if LContext = nil then
+      raise ETaurusTLSEVPCipherCTXNewFailed.Create(RSMsg_DES_EVP_CIPHER_CTX_new_failed);
+    try
+      ETaurusTLSEVPEncryptInitEx2Failed.RaiseIfError(
+        EVP_EncryptInit_ex2(LContext, LCipher, @LKey[0], nil, nil),
+        RSMsg_DES_EVP_EncryptInit_ex2);
+      ETaurusTLSEVPEncryptInitEx2Failed.RaiseIfError(
+        EVP_CIPHER_CTX_set_padding(LContext, 0), RSNTLMSetPaddingFailed);
+      ETaurusTLSEVPEncryptUpdateFailed.RaiseIfError(
+        EVP_EncryptUpdate(LContext, LBlock[0], LOutLen, AIn^,
+          SizeOf(DES_cblock)), RSMsg_DES_EVP_EncryptUpdate);
+      if (LOutLen < 0) or (LOutLen > SizeOf(DES_cblock)) then
+        raise ETaurusTLSEVPEncryptUpdateFailed.Create(RSNTLMUnexpectedOutputLength);
+      ETaurusTLSEVPEncryptFinalExFailed.RaiseIfError(
+        EVP_EncryptFinal_ex(LContext, LBlock[LOutLen], LFinalLen),
+        RSMsg_DES_EVP_EncryptFinalEx);
+      if LOutLen + LFinalLen <> SizeOf(DES_cblock) then
+        raise ETaurusTLSEVPEncryptFinalExFailed.Create(RSNTLMUnexpectedOutputLength);
+      // Publish exactly one block, and only after all native calls succeed.
+      Move(LBlock[0], VOut^, SizeOf(DES_cblock));
+    finally
+      EVP_CIPHER_CTX_free(LContext);
+    end;
+  finally
+    EVP_CIPHER_free(LCipher);
+  end;
 end;
 
-Const
-  Magic: des_cblock = ($4B, $47, $53, $21, $40, $23, $24, $25);
+procedure calc_resp(VKeys: PDES_cblock; const ANonce: TIdBytes;
+  VResults: Pointer);
+var
+  LKey: DES_cblock;
+  LKeyPtr, LResultPtr: PByte;
+  I: Integer;
+begin
+  CheckChallenge(ANonce);
+  if (VKeys = nil) or (VResults = nil) then
+    raise EArgumentException.Create(RSNTLMInvalidBuffer);
+  LKeyPtr := PByte(VKeys);
+  LResultPtr := PByte(VResults);
+  for I := 0 to 2 do
+  begin
+    FillChar(LKey, SizeOf(LKey), 0);
+    Move(LKeyPtr^, LKey[0], 7);
+    Encrypt_DES(LKey, LResultPtr, @ANonce[0]);
+    Inc(LKeyPtr, 7);
+    Inc(LResultPtr, SizeOf(DES_cblock));
+  end;
+end;
 
-  // * setup LanManager password */
-function SetupLanManagerPassword(const APassword: String;
+function SetupLanManagerPassword(const APassword: string;
+  const ANonce: TIdBytes): TIdBytes;
+const
+  Magic: DES_cblock = ($4B, $47, $53, $21, $40, $23, $24, $25);
+var
+  LPassword: TIdBytes;
+  LPaddedPassword: array [0 .. 13] of Byte;
+  LHash: array [0 .. 20] of Byte;
+  LKey: DES_cblock;
+  LLen: Integer;
+begin
+  if GetFIPSMode() then
+    FIPSAlgorithmNotAllowed('DES');
+  CheckChallenge(ANonce);
+  RequireNTLMReady;
+  // Retain the existing platform encoding and 14-byte truncation contract.
+  LPassword := IndyTextEncoding_OSDefault.GetBytes(UpperCase(APassword));
+  FillChar(LPaddedPassword, SizeOf(LPaddedPassword), 0);
+  LLen := Integer(IndyMin(Length(LPassword), SizeOf(LPaddedPassword)));
+  if LLen > 0 then
+    Move(LPassword[0], LPaddedPassword[0], LLen);
+  FillChar(LHash, SizeOf(LHash), 0);
+  FillChar(LKey, SizeOf(LKey), 0);
+  Move(LPaddedPassword[0], LKey[0], 7);
+  Encrypt_DES(LKey, @LHash[0], @Magic[0]);
+  Move(LPaddedPassword[7], LKey[0], 7);
+  Encrypt_DES(LKey, @LHash[8], @Magic[0]);
+  SetLength(Result, 24);
+  calc_resp(PDES_cblock(@LHash[0]), ANonce, @Result[0]);
+end;
+
+function CreateNTPassword(const APassword: string;
   const ANonce: TIdBytes): TIdBytes;
 var
-  lm_hpw: array [0 .. 20] of Byte;
-  lm_pw: array [0 .. 13] of Byte;
-  idx, len: Integer;
-  ks: des_key_schedule;   //PALOFF - Local variables that are set but not later used
-  lm_resp: array [0 .. 23] of Byte;
-  lPassword: {$IFDEF STRING_IS_UNICODE}TIdBytes{$ELSE}AnsiString{$ENDIF};
-begin
-{$IFDEF STRING_IS_UNICODE}
-  lPassword := IndyTextEncoding_OSDefault.GetBytes(UpperCase(APassword));
-{$ELSE}
-  lPassword := UpperCase(APassword);
-{$ENDIF}
-  len := Integer(IndyMin(Length(lPassword), 14));
-  if len > 0 then
-  begin
-    Move(lPassword[{$IFDEF STRING_IS_UNICODE}0{$ELSE}1{$ENDIF}], lm_pw[0], len);
-  end;
-  if len < 14 then
-  begin
-    for idx := len to 13 do
-    begin
-      lm_pw[idx] := $0;
-    end;
-  end;
-
-  // * create LanManager hashed password */
-
-  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-  Encrypt_DES(Magic, PDES_cblock(@lm_hpw[0]), @ks);
-
-  Encrypt_DES(Magic, PDES_cblock(PtrUInt(@lm_hpw[0]) + 8),@ks);
-
-  FillChar(lm_hpw[16], 5, 0);
-
-  FillChar(lm_resp[0], 23, 0);
-  calc_resp(PDES_cblock(@lm_hpw[0]), ANonce, Pdes_key_schedule(@lm_resp[0]));
-  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
-
-  SetLength(Result, SizeOf(lm_resp));
-  Move(lm_resp[0], Result[0], SizeOf(lm_resp));
-end;
-
-// * create NT hashed password */
-function CreateNTPassword(const APassword: String; const ANonce: TIdBytes)
-  : TIdBytes;
-var
-  Lnt_hpw: array [1 .. 21] of Byte;
-  Lnt_resp: array [1 .. 24] of Byte;
-  LMD4: TIdHashMessageDigest4;   //PALOFF - Created and freed objects
-{$IFNDEF STRING_IS_UNICODE}
-  i: Integer;
-  LPwUnicode: TIdBytes;
-{$ENDIF}
+  LPassword: TIdBytes;
+  LHash: array [0 .. 20] of Byte;
+  LDigest: array [0 .. EVP_MAX_MD_SIZE - 1] of Byte;
+  LMD: PEVP_MD;
+  LContext: PEVP_MD_CTX;
+  LHashLen: TIdC_UINT;
 begin
   CheckMD4Permitted;
-  LMD4 := TIdHashMessageDigest4.Create;
+  CheckChallenge(ANonce);
+  RequireNTLMReady;
+  LPassword := IndyTextEncoding_UTF16LE.GetBytes(APassword);
+  LMD := EVP_MD_fetch(nil, 'MD4', nil);
+  if LMD = nil then
+    raise ETaurusTLSMD4NotFound.CreateResMsg;
   try
-{$IFDEF STRING_IS_UNICODE}
-    Move(LMD4.HashString(APassword, IndyTextEncoding_UTF16LE)[0],
-      Lnt_hpw[1], 16);
-{$ELSE}
-    // RLebeau: TODO - should this use UTF-16 as well?  This logic will
-    // not produce a valid Unicode string if non-ASCII characters are present!
-    SetLength(LPwUnicode, Length(APassword) * SizeOf(WideChar));
-    for i := 0 to Length(APassword) - 1 do
-    begin
-      LPwUnicode[i * 2] := Byte(APassword[i + 1]);
-      LPwUnicode[(i * 2) + 1] := Byte(#0);
+    LContext := EVP_MD_CTX_new;
+    if LContext = nil then
+      raise ETaurusTLSEVPMDCTXNew.Create(RSOSSLEVPMDCTXNew);
+    try
+      FillChar(LHash, SizeOf(LHash), 0);
+      ETaurusTLSDigestInitEx.RaiseIfError(
+        EVP_DigestInit_ex(LContext, LMD, nil), RSOSSLEVPDigestExError);
+      // PByte(nil) is valid for an empty digest input with zero length.
+      ETaurusTLSDigestUpdate.RaiseIfError(
+        EVP_DigestUpdate(LContext, PByte(LPassword), Length(LPassword)),
+        RSOSSLEVPDigestUpdateError);
+      ETaurusTLSDigestFinalEx.RaiseIfError(
+        EVP_DigestFinal_ex(LContext, @LDigest[0], LHashLen),
+        RSOSSLEVPDigestError);
+      if LHashLen <> 16 then
+        raise ETaurusTLSDigestFinalEx.Create(RSNTLMUnexpectedOutputLength);
+      Move(LDigest[0], LHash[0], 16);
+    finally
+      EVP_MD_CTX_free(LContext);
     end;
-    Move(LMD4.HashBytes(LPwUnicode)[0], Lnt_hpw[1], 16);
-{$ENDIF}
   finally
-    LMD4.Free;
+    EVP_MD_free(LMD);
   end;
-  FillChar(Lnt_hpw[17], 5, 0);
-
-  FillChar(Lnt_resp[1], 20, 0);
-  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-  calc_resp(PDES_cblock(@Lnt_hpw[1]), ANonce, Pdes_key_schedule(@Lnt_resp[1]));
-  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
-
-  SetLength(Result, SizeOf(Lnt_resp));
-  Move(Lnt_resp[1], Result[0], SizeOf(Lnt_resp));
+  SetLength(Result, 24);
+  calc_resp(PDES_cblock(@LHash[0]), ANonce, @Result[0]);
 end;
 
-procedure InstallNTLMHooks;
+{$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
+
+// Callback addresses remain unchanged across Load/Unload; their bodies check loader state.
+procedure InitNTLMHooks;
 begin
   {$IF DECLARED(LoadNTLMLibrary)}
   LoadNTLMLibrary := LoadTaurusTLS;
@@ -313,7 +295,5 @@ begin
 end;
 
 initialization
-
-RegisterFIPSHooksInstaller(InstallNTLMHooks);
-
+  InitNTLMHooks;
 end.

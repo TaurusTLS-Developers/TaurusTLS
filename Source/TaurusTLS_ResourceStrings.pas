@@ -257,6 +257,12 @@ resourcestring
     'because a certificate extension appears more than once.';
 
  
+  RSNTLMNotReady = 'OpenSSL must be explicitly loaded before computing NTLM responses.';
+  RSNTLMInvalidChallenge = 'An NTLM challenge must contain exactly 8 bytes.';
+  RSNTLMInvalidBuffer = 'NTLM input and output buffers must not be nil.';
+  RSNTLMSetPaddingFailed = 'Disabling DES padding for NTLM failed.';
+  RSNTLMUnexpectedOutputLength = 'OpenSSL returned an unexpected NTLM output length.';
+
   RSMsg_DES_EVP_EncryptInit_ex2 = 'EVP_EncryptInit_ex2 failed';
   RSMsg_DES_EVP_EncryptUpdate = 'EVP_EncryptUpdate failed';
   RSMsg_DES_EVP_EncryptFinalEx = 'EVP_EncryptFinal_ex failed';
