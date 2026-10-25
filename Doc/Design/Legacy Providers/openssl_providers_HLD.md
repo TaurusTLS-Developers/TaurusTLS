@@ -27,7 +27,7 @@ Support OpenSSL 3.x/4.x in the refactored path; do not carry OpenSSL 0.9–1.1.1
 |---|---|
 | TaurusTLSHeaders_* | OpenSSL API declarations/imports, binding and compatibility stubs; no TaurusTLS capability or provider-management helpers |
 | TaurusTLSLoader | Unified lifecycle/readiness in both models; modern OpenSSL initialization, configuration and runtime metadata; callback registration and rollback |
-| TaurusTLSFIPS / internal FIPS manager | Readiness-aware Indy hooks and configured-policy reporting; final FIPS reporting/setter behavior remains deferred |
+| TaurusTLSFIPS | Stable independent Indy hooks; passive readiness/configured FIPS reporting, non-mutating compatibility setter and policy-preserving EVP digest/MAC operations |
 | TaurusTLS_LegacyProviders | Optional archive linking/registration before configuration; unnecessary for shared-library config activation; no provider acquisition/release in the selected design |
 | TaurusTLS_NTLM | Stable independently installed Indy callbacks; passive readiness and MD4/DES availability; direct EVP LM/NT response computation respecting configured policy |
 | Private `TTaurusTLSRuntime` class | Own TaurusTLS TLS callback locks; register initialization/cleanup actions with the loader; no independent public readiness flag |
@@ -196,8 +196,14 @@ FIPS properties; a loaded FIPS provider alone does not establish FIPS selection.
 
 NTLM separation and response corrections are committed in `95e7bd2`;
 test coverage and fixture-owned config are committed in `0b42e6a`.
-Final FIPS GetFIPSMode/SetFIPSMode semantics, provenance, broader HMAC work,
-NTLMv2 RC4 and non-ASCII LM OEM policy remain separate reviewed work.
+The module-free FIPS implementation reports mode only when a ready dynamic
+runtime has both FIPS selection and an available FIPS provider. SetFIPSMode accepts
+only a no-op matching configured policy; it cannot activate or change selection.
+Hash/HMAC operations preserve native properties, reject inactive lifecycle states
+and use consistent EVP digest/MAC context lifetimes. With FIPS selected, both MAC
+and digest must come from provider=fips. See DDD section 4 for exact behavior.
+Real-provider positive execution, provenance/approval indicators, NTLMv2 RC4 and
+non-ASCII LM OEM policy remain separate work.
 
 Remove the regular runner's unconditional side-effecting legacy dependency through
 UT.LegacyProviders, preserving provider tests and archive-only registration.
@@ -211,7 +217,12 @@ No provider activation or successful test establishes certification.
 
 ## 5. Scope and acceptance
 
-This design covers implemented loader readiness/configuration and runtime/metadata integration, together with the intended consumer/NTLM readiness contract. The remaining consumer audit and provider work are not implied to be complete. Broader hook hardening, HMAC context consistency and FIPS reporting/policy require separate design review. Exclude static FIPS, mixed deployments, programmatic provider activation, the new component, unrelated socket/ECH work and certification claims.
+This design covers loader readiness/configuration, runtime/metadata integration,
+independent NTLM and module-free FIPS hook behavior. The developer authorized the
+module-free FIPS work on 2026-10-24. Real FIPS activation/operation acceptance,
+module provenance and approval indicators remain pending a supplied provider.
+Exclude static FIPS, mixed deployments, programmatic provider activation, the new
+component, unrelated socket/ECH work and certification claims.
 
 Preserve supported configuration/module discovery and document intentional compatibility changes, including explicit initialization and OpenSSLDir semantics. Test those changes in controlled environments without requiring machine-wide configuration.
 
