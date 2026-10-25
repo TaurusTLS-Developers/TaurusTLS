@@ -1,6 +1,6 @@
 ﻿# TaurusTLS OpenSSL Configuration, FIPS and Legacy Support — HLD
 
-Status: Loader/runtime lifecycle and NTLM hook/response changes are implemented. Configuration-only activation and optional archive registration are implemented; provider execution/isolated acceptance and final FIPS policy remain pending.
+Status: Configuration-owned activation, independent NTLM/FIPS hooks and EVP_MAC handling are implemented. Real FIPS integration passes on Win64/OpenSSL 4.1; Release builds, archive isolation and approval indicators remain separate.
 Revision date: 2026-10-24.
 Details: [DDD](openssl_providers_DDD.md).
 
@@ -202,8 +202,9 @@ only a no-op matching configured policy; it cannot activate or change selection.
 Hash/HMAC operations preserve native properties, reject inactive lifecycle states
 and use consistent EVP digest/MAC context lifetimes. With FIPS selected, both MAC
 and digest must come from provider=fips. See DDD section 4 for exact behavior.
-Real-provider positive execution, provenance/approval indicators, NTLMv2 RC4 and
-non-ASCII LM OEM policy remain separate work.
+Real-provider execution and native provider-identity checks now pass on Win64
+with the supplied OpenSSL 4.1 module. Approval indicators, certification,
+NTLMv2 RC4 and non-ASCII LM OEM policy remain separate work.
 
 Remove the regular runner's unconditional side-effecting legacy dependency through
 UT.LegacyProviders, preserving provider tests and archive-only registration.
@@ -219,8 +220,9 @@ No provider activation or successful test establishes certification.
 
 This design covers loader readiness/configuration, runtime/metadata integration,
 independent NTLM and module-free FIPS hook behavior. The developer authorized the
-module-free FIPS work on 2026-10-24. Real FIPS activation/operation acceptance,
-module provenance and approval indicators remain pending a supplied provider.
+module-free FIPS work on 2026-10-24. Real FIPS activation, native provider identity,
+vectors and self-tests now pass on Win64/OpenSSL 4.1. Additional positive platforms,
+certification provenance and approval indicators remain outside that evidence.
 Exclude static FIPS, mixed deployments, programmatic provider activation, the new
 component, unrelated socket/ECH work and certification claims.
 
@@ -238,3 +240,14 @@ Acceptance:
 - Runtime and test builds/runs on Win32, Win64, Linux64 and OSX64; track the known unrelated InputRanges baseline separately. Successful integration does not establish application/module certification.
 
 Current test options are -osp for the library path and optional -oscp for configuration; -osmp is retired. The positive NTLM fixture generates its own config before loading, so it needs no external -oscp. Use manual TOsslBaseFixture for configuration/lifecycle tests and TOsslAutoloadFixture for automatic loading. Test-only environment isolation and neutral NTLM test properties are not customer policy defaults.
+
+Real FIPS tests remain discoverable in dynamic builds. Supply
+-fmc:installed-fipsmodule.cnf and -i:FIPS.Provider in a separate process.
+Without -fmc, the provider cases fail with an actionable prerequisite message;
+runs intentionally omitting FIPS explicitly use -e:FIPS.Provider. Win64/OpenSSL
+4.1 validation: provider 9/9, guards 72/72 and explicit non-FIPS suite 556/556,
+all with exit 0 and zero ignored/leaked/failed/errored tests. Missing-parameter
+execution finds all nine provider cases and reports nine failures with exit 1.
+All assertions in the FIPS test unit carry descriptive failure messages. OpenSSL can report
+some missing-module activations as nonfatal configuration results; passive mode
+and operation checks must still reject unavailable FIPS without policy fallback.

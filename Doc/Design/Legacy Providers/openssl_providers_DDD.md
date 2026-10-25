@@ -1,6 +1,6 @@
 ﻿# TaurusTLS OpenSSL Configuration, FIPS and Legacy Support — DDD
 
-Status: Loader/runtime lifecycle and independent NTLM hooks/responses are implemented. Configuration-owned activation and registration-only legacy refactoring are implemented; provider execution/isolated acceptance and final FIPS policy remain pending.
+Status: Configuration-owned provider activation, independent NTLM/FIPS hooks and EVP_MAC handling are implemented. Real FIPS execution is validated on Win64/OpenSSL 4.1; Release builds, archive isolation, approval indicators and certification remain separate.
 Revision date: 2026-10-24.
 Architecture: [HLD](openssl_providers_HLD.md).
 
@@ -25,7 +25,7 @@ In static mode, dynamic-specific properties (`OpenSSLPath`, `SSLLibVersions`, `F
 
 `TaurusTLSLinkDefines.inc` must reject simultaneous `STATICLOAD_OPENSSL` and `OPENSSL_USE_SHARED_LIBRARY` definitions on every target. `STATICLOAD_OPENSSL` selects linked archives; `OPENSSL_USE_SHARED_LIBRARY` selects startup shared-library imports. The Windows compiler-include example enables only `OPENSSL_USE_SHARED_LIBRARY`. Linked legacy callback imports and registration use `{$IFDEF STATICLOAD_OPENSSL}`; `OPENSSL_STATIC_LINK_MODEL` alone also covers shared-library imports and is insufficient for selecting the archive callback.
 
-Do not add public `ActivateProvider`/`LoadProvider`/`RegisterBuiltinProvider`/FIPS-mode methods to `IOpenSSLLoader`. The 2026-10-24 activation-API proposal is superseded by configuration-only activation. Preserve Indy `SetFIPSMode`/`GetFIPSMode` signatures in `TaurusTLSFIPS`; final reporting/setter semantics remain pending. Retain the legacy unit for archive registration and review its `IsLegacyProviderLoaded` compatibility semantics without manager-owned activation handles.
+Do not add public `ActivateProvider`/`LoadProvider`/`RegisterBuiltinProvider`/FIPS-mode methods to `IOpenSSLLoader`. The 2026-10-24 activation-API proposal is superseded by configuration-only activation. Preserve Indy `SetFIPSMode`/`GetFIPSMode` signatures in `TaurusTLSFIPS`; their implemented non-mutating semantics are defined in section 4. Retain the legacy unit for archive registration and its passive `IsLegacyProviderLoaded` facade without manager-owned activation handles.
 
 Headers remain OpenSSL-only. Modern property API imports do not imply TaurusTLS supports static FIPS. The implemented `CONF_modules_load_file_ex` import belongs to `TaurusTLSHeaders_conf`. Use only modern OpenSSL 3.x/4.x routines in the new runtime/metadata path; do not move OpenSSL 0.9–1.1.1 compatibility branches into it.
 
@@ -200,7 +200,15 @@ message have been removed.
 
 Do not collapse these exceptions into false or suppress them at the loader boundary. The FIPS mode backend must preserve configuration exceptions while reporting provider/policy enablement failures through its existing Boolean/diagnostic contract.
 
-Tests must assert the specific exception class and filename for invalid/missing/directory paths and malformed/unreadable/module-failing configuration, with configuration failures isolated in fresh processes.
+Tests assert the specific exception class and filename for invalid/missing/directory
+paths and native configuration failures, isolated in fresh processes. Do not
+assume every missing provider module makes configuration loading fail. OpenSSL
+4.1 treats some activation failures as nonfatal even with config_diagnostics=1;
+loader readiness can therefore coexist with an unavailable configured provider.
+FIPS reporting and algorithm fetches must still reject unavailable FIPS without
+clearing selection or falling back. Retry tests explicitly apply a corrected
+test-owned configuration, without assuming Unload resets the native context.
+[OpenSSL 4.1 provider configuration implementation](https://github.com/openssl/openssl/blob/openssl-4.1.0/crypto/provider_conf.c).
 
 For an explicit file, do not use IGNORE_ERRORS, IGNORE_RETURN_CODES or IGNORE_MISSING_FILE. Do not add SILENT or rewrite the customer's configuration. If configuration deliberately soft-loads a provider, successful file loading still does not establish FIPS readiness; FIPS validation must catch a missing/unusable provider.
 
@@ -447,10 +455,11 @@ LM retains platform-default encoding and 14-byte truncation. Non-ASCII OEM polic
 and NTLMv2 RC4 are separate work. Operations validate readiness and buffers, free
 native objects, and preserve prohibiting native/Indy selection policy.
 
-## 4. FIPS reporting and Indy policy — module-free implementation
+## 4. FIPS reporting and Indy policy
 
 Developer-authorized scope (2026-10-24): implement and test the paths that require
-no FIPS shared module; leave real-provider positive integration pending.
+no FIPS shared module. Subsequent real-provider integration is validated on
+Win64 with the supplied OpenSSL 4.1.0 x64 module and installed configuration.
 Provider activation and default selection belong to configuration. No loader
 or hook calls provider load/unload or changes customer default properties.
 
@@ -488,9 +497,10 @@ contexts must finish before Unload; readiness queries do not lease native object
 
 Legacy activation never overrides FIPS selection. NTLM keeps its native fetch
 and Indy-policy guards, independently of this adapter. Broader provider provenance,
-approval indicators, installed-module integrity/self-tests and real FIPS operation
-acceptance await a supplied FIPS module/configuration. No test result establishes
-certification. Static FIPS and mixed deployment remain unsupported.
+approval indicators and certification remain separate. Real-provider tests now
+verify installed configuration, native provider identity, digest/HMAC vectors,
+self-tests and configured-policy rejection on Win64; they do not establish
+validation/certification status. Static FIPS and mixed deployment remain unsupported.
 
 ## 5. Tests and review gates
 
@@ -511,8 +521,39 @@ deletes its files after unloading, including setup-failure cleanup. It uses
 a matching deployed module or linked registration and needs no external -oscp.
 Its neutral test properties must not become customer FIPS defaults.
 Windows OpenSSL 4.0.2 x86/x64 distributions are the agreed development inputs.
+Real FIPS integration additionally uses the supplied OpenSSL 4.1.0 x64 build.
 Compile runtime then tests through Kai/developer-assisted builds; validate Win32,
 Win64, Linux64 and OSX64. iOS/Android and broader distributions are deferred.
+
+### Real FIPS provider fixture and explicit prerequisites
+
+TConfiguredFIPSProviderFixture is always registered/discoverable in dynamic builds
+and has a TestFixture description. The parsed -fmc: option supplies an installed
+fipsmodule.cnf; it no longer controls registration. Missing input produces an
+actionable prerequisite failure for every provider case, rather than silently
+omitting coverage. The installed DUnitX version has no runtime-ignore API; no
+framework changes or synthetic success results are introduced. Runs intentionally
+omitting FIPS must explicitly select -e:FIPS.Provider. Run the provider category
+alone in a fresh process, using matching dynamic libraries via -osp:.
+The installed config must contain fips_sect, with matching fips/legacy modules
+under its sibling ossl-modules directory. The fixture includes that data read-only
+and creates/deletes its own activation/property wrapper configuration.
+
+Nine cases cover available-versus-selected reporting, non-mutating setter,
+SHA256 and SHA256/384/512 HMAC vectors, borrowed native MAC provider identity,
+digest identity against an explicit native provider=fips fetch, native self-tests,
+MD4/DES/NTLM rejection with legacy active, and unload/reload. Installed integrity
+and security-check parameters are never fabricated, disabled or overwritten.
+Separate initial fipsinstall -verify also passed. These are functional checks,
+not FIPS certification or per-operation approval-indicator validation.
+
+Win64/OpenSSL 4.1 results: positive provider 9/9, guards/NTLM/property suites 72/72,
+ordinary suite explicitly excluding FIPS.Provider 556/556, with zero
+ignored/leaked/failed/errored and exit 0. Without -fmc, provider-only execution
+finds all nine cases and reports nine prerequisite failures with exit 1.
+Every assertion in TaurusTLS.UT.FIPS.pas has a descriptive failure message.
+The four injected cleanup tests expect the actual ETaurusTLSAPICryptoError factory
+class and assert the injected function and context release each occur once.
 
 Runtime and metadata acceptance:
 
