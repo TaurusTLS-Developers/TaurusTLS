@@ -234,7 +234,7 @@ function GetOpenSSLLoader: IOpenSSLLoader; {$IFDEF USE_INLINE}inline; {$ENDIF}
 /// <param name="LoadProc">Procedure that binds a header unit's procedural variables.</param>
 /// <param name="module_name">Case-sensitive library selector: LibCrypto or LibSSL.</param>
 /// <remarks>
-///   Registration is protected by the registration lock. Static loading does not
+///   Registration is protected by the loader lock. Static loading does not
 ///   invoke these procedures because its external routines are linked directly.
 /// </remarks>
 procedure Register_SSLLoader(LoadProc: TOpenSSLLoadProc; const module_name: string);
@@ -245,20 +245,28 @@ procedure Register_SSLLoader(LoadProc: TOpenSSLLoadProc; const module_name: stri
 procedure Register_SSLUnloader(UnloadProc: TOpenSSLUnloadProc);
 
 /// <summary>Registers initialization and cleanup actions for both linking models.</summary>
-/// <param name="AActionProc">Instance method whose object must remain valid while registered.</param>
+/// <param name="AActionProc">Method whose object must remain valid while registered.</param>
 /// <remarks>
-///   Intended for provider and other OpenSSL-dependent resource initialization.
-///   osaLoad runs in registration order after configuration and dynamic binding.
-///   osaUnload runs in reverse order while routines remain callable. If loading
-///   fails, only actions whose osaLoad completed receive rollback cleanup.
-///   Repeated Load calls while loaded do not redispatch actions. Registrations
-///   persist across load cycles; register once while State is lsNotLoaded.
-///   Registration during loading, readiness, unloading or failure raises
-///   ETaurusTLSLoaderError. After failure, call Unload before registering.
-///   There is no
-///   unregistration API, and registrations do not retain callback objects.
+///   Actions load in registration order and unload in reverse order. Registering
+///   while ready invokes osaLoad immediately under the lifecycle lock. If it
+///   raises, the registration is removed and the original exception propagates;
+///   the failing callback owns cleanup of its partial initialization.
+///   Repeated Load calls do not redispatch actions. Duplicates are independent
+///   registrations; nil actions are ignored. Registration during load, unload,
+///   failure or an immediate callback raises ETaurusTLSLoaderError.
+///   Registrations do not retain callback objects.
 /// </remarks>
 procedure Register_SSLLoaderAction(const AActionProc: TTaurusTLSOnLoadAction);
+
+/// <summary>Removes the most recent matching lifecycle action registration.</summary>
+/// <remarks>
+///   Matching compares both method code and instance. Missing/nil actions are
+///   ignored. While ready, osaUnload runs immediately while native APIs remain
+///   callable. The registration is removed even if cleanup raises; that exception
+///   propagates. During load, unload or immediate callback dispatch, removal
+///   raises ETaurusTLSLoaderError. Inactive/failed removal performs no callback.
+/// </remarks>
+procedure UnRegister_SSLLoaderAction(const AActionProc: TTaurusTLSOnLoadAction);
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 {$IF NOT DECLARED(LoadLibFunction)}
@@ -473,16 +481,17 @@ type
     class procedure Initialize; static;
     class procedure Finalize; static;
     class procedure RegisterAction(const AActionProc: TTaurusTLSOnLoadAction); static;
+    class procedure UnRegisterAction(const AActionProc: TTaurusTLSOnLoadAction); static;
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} protected
-    /// <summary>Returns the registration lock owned by the published singleton.</summary>
-    class function GetRegistrationLock: TIdCriticalSection; static; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Returns the shared loader lock owned by the published singleton.</summary>
+    class function GetLoaderLock: TIdCriticalSection; static; {$IFDEF USE_INLINE}inline; {$ENDIF}
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} protected
-    FRegistrationLock: TIdCriticalSection;
     FLoaderLock: TIdCriticalSection;
     // Delphi's generic TInterlocked overloads require class types. Keep the
     // ordinal storage private; all reads/writes use typed atomic accessors.
     FState: Integer;
     FLastLoadActionIdx: NativeInt;
+    FActionChangingInProgress: Boolean;
     FConfigFile: string;
     FEffectiveConfigFile: string;
     FMetadata: array[TOpenSSLMetadata] of string;
@@ -511,8 +520,6 @@ type
 // --- Method Pointer Helpers (DCC Unsafe Cast Warning Suppression) ---
     /// <summary>Checks both the code and instance pointers of a lifecycle action.</summary>
     class function IsActionAssigned(const AAction: TTaurusTLSOnLoadAction): Boolean; static; {$IFDEF USE_INLINE}inline;{$ENDIF}
-    /// <summary>Clears both pointers of a lifecycle action.</summary>
-    class procedure ClearAction(var AAction: TTaurusTLSOnLoadAction); static; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
     // --- Virtual Template Hooks ---
     /// <summary>Performs model-specific loading, configuration, and action dispatch under the loader lock.</summary>
@@ -558,9 +565,9 @@ type
     /// <summary>True only when the common state is lsLoadedReady.</summary>
     function IsLoaded: Boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
   public
-    /// <summary>Creates both instance locks and unloaded state without calling OpenSSL.</summary>
+    /// <summary>Creates the loader lock and unloaded state without calling OpenSSL.</summary>
     constructor Create;
-    /// <summary>Releases the instance's registration and lifecycle locks.</summary>
+    /// <summary>Releases the loader lock.</summary>
     destructor Destroy; override;
 
     // Non-virtual template methods managing thread locking and circuit breakers
@@ -579,43 +586,102 @@ type
 
 { TOpenSSLBaseLoader }
 
-class function TOpenSSLBaseLoader.GetRegistrationLock: TIdCriticalSection;
+class function TOpenSSLBaseLoader.GetLoaderLock: TIdCriticalSection;
 begin
-  Result := EnsureInstance.FRegistrationLock;
+  Result := EnsureInstance.FLoaderLock;
 end;
 
 class procedure TOpenSSLBaseLoader.RegisterAction(const AActionProc: TTaurusTLSOnLoadAction);
 var
   LInstance: TOpenSSLBaseLoader;
+  LIndex: NativeInt;
 begin
   LInstance := EnsureInstance;
-  // Match lifecycle lock ordering so an action cannot miss a concurrent load.
-  LInstance.FLoaderLock.Acquire;
+  LInstance.FLoaderLock.Enter;
   try
-    if LInstance.GetInternalState <> lsNotLoaded then
+    if LInstance.FActionChangingInProgress or
+      not (LInstance.GetInternalState in [lsNotLoaded, lsLoadedReady]) then
       raise ETaurusTLSLoaderError.Create(RSOSSLLoaderActionRegistrationInactive);
-
-    LInstance.FRegistrationLock.Acquire;
-    try
-      if FLoadActions = nil then
+    if not IsActionAssigned(AActionProc) then
+      Exit;
+    if FLoadActions = nil then
 {$IFDEF HAS_UNIT_Generics_Collections}
-        FLoadActions := TList<TTaurusTLSOnLoadAction>.Create;
+      FLoadActions := TList<TTaurusTLSOnLoadAction>.Create;
 {$ELSE}
-        FLoadActions := TMethodList.Create;
+      FLoadActions := TMethodList.Create;
 {$ENDIF}
-      FLoadActions.Add(AActionProc);
-    finally
-      LInstance.FRegistrationLock.Release;
+    LIndex := FLoadActions.Add(AActionProc);
+    if LInstance.IsLoaded then
+    begin
+      LInstance.FActionChangingInProgress := True;
+      try
+        try
+          AActionProc(osaLoad);
+        except
+          FLoadActions.Delete(LIndex);
+          raise;
+        end;
+        LInstance.FLastLoadActionIdx := LIndex;
+      finally
+        LInstance.FActionChangingInProgress := False;
+      end;
     end;
   finally
-    LInstance.FLoaderLock.Release;
+    LInstance.FLoaderLock.Leave;
   end;
 end;
+
+{$IFDEF DCC}{$WARN UNSAFE_CAST OFF}{$ENDIF}
+class procedure TOpenSSLBaseLoader.UnRegisterAction(const AActionProc: TTaurusTLSOnLoadAction);
+var
+  LInstance: TOpenSSLBaseLoader;
+  LIndex, I: NativeInt;
+  LAction: TTaurusTLSOnLoadAction;
+begin
+  LInstance := EnsureInstance;
+  LInstance.FLoaderLock.Enter;
+  try
+    if LInstance.FActionChangingInProgress or
+      (LInstance.GetInternalState in [lsLoading, lsUnloading]) then
+      raise ETaurusTLSLoaderError.Create(RSOSSLLoaderActionRegistrationInactive);
+    if not IsActionAssigned(AActionProc) then
+      Exit;
+    LIndex := -1;
+    if Assigned(FLoadActions) then
+      for I := FLoadActions.Count - 1 downto 0 do
+      begin
+        LAction := FLoadActions[I];
+        if (TMethod(LAction).Code = TMethod(AActionProc).Code) and
+          (TMethod(LAction).Data = TMethod(AActionProc).Data) then
+        begin
+          LIndex := I;
+          Break;
+        end;
+      end;
+    if LIndex < 0 then
+      Exit;
+    LInstance.FActionChangingInProgress := True;
+    try
+      try
+        if LInstance.IsLoaded then
+          AActionProc(osaUnload);
+      finally
+        FLoadActions.Delete(LIndex);
+        if LIndex <= LInstance.FLastLoadActionIdx then
+          Dec(LInstance.FLastLoadActionIdx);
+      end;
+    finally
+      LInstance.FActionChangingInProgress := False;
+    end;
+  finally
+    LInstance.FLoaderLock.Leave;
+  end;
+end;
+{$IFDEF DCC}{$WARN UNSAFE_CAST DEFAULT}{$ENDIF}
 
 constructor TOpenSSLBaseLoader.Create;
 begin
   inherited Create;
-  FRegistrationLock := TIdCriticalSection.Create;
   FLoaderLock := TIdCriticalSection.Create;
   FLastLoadActionIdx := -1;
   SetInternalState(lsNotLoaded);
@@ -626,7 +692,6 @@ end;
 destructor TOpenSSLBaseLoader.Destroy;
 begin
   FreeAndNil(FLoaderLock);
-  FreeAndNil(FRegistrationLock);
 {$IFDEF UNITTEST}
   if Assigned(OnLoaderCandidateDestroyed) then
     OnLoaderCandidateDestroyed;
@@ -680,14 +745,14 @@ end;
 
 function TOpenSSLBaseLoader.GetMetadata(const AKind: TOpenSSLMetadata): string;
 begin
-  FLoaderLock.Acquire;
+  FLoaderLock.Enter;
   try
     if IsLoaded then
       Result := FMetadata[AKind]
     else
       Result := '';
   finally
-    FLoaderLock.Release;
+    FLoaderLock.Leave;
   end;
 end;
 
@@ -757,11 +822,6 @@ begin
   Result := Assigned(TMethod(AAction).Code) and Assigned(TMethod(AAction).Data);
 end;
 
-class procedure TOpenSSLBaseLoader.ClearAction(var AAction: TTaurusTLSOnLoadAction);
-begin
-  TMethod(AAction).Code := nil;
-  TMethod(AAction).Data := nil;
-end;
 
 {$IFDEF DCC}
 {$WARN UNSAFE_CAST DEFAULT}
@@ -810,8 +870,10 @@ begin
   if GetInternalState = lsLoadedFailed then
     Exit(False);
 
-  FLoaderLock.Acquire;
+  FLoaderLock.Enter;
   try
+    if FActionChangingInProgress then
+      raise ETaurusTLSLoaderError.CreateFmt(RSOSSLLoaderLifecycleInProgress, ['Load']);
     case GetInternalState of
       lsLoading, lsUnloading:
         raise ETaurusTLSLoaderError.CreateFmt(RSOSSLLoaderLifecycleInProgress, ['Load']);
@@ -842,7 +904,7 @@ begin
     else
       UnloadInternal(False);
   finally
-    FLoaderLock.Release;
+    FLoaderLock.Leave;
   end;
 end;
 
@@ -853,13 +915,13 @@ end;
 
 procedure TOpenSSLBaseLoader.Unload(const AResetFailState: Boolean);
 begin
-  FLoaderLock.Acquire;
+  FLoaderLock.Enter;
   try
-    if GetInternalState in [lsLoading, lsUnloading] then
+    if FActionChangingInProgress or (GetInternalState in [lsLoading, lsUnloading]) then
       raise ETaurusTLSLoaderError.CreateFmt(RSOSSLLoaderLifecycleInProgress, ['Unload']);
     UnloadInternal(AResetFailState);
   finally
-    FLoaderLock.Release;
+    FLoaderLock.Leave;
   end;
 end;
 
@@ -962,85 +1024,57 @@ end;
 
 procedure TOpenSSLBaseLoader.DispatchLoadActions;
 var
-  i: Integer;
-  LCount: Integer;
+  I: Integer;
   LAction: TTaurusTLSOnLoadAction;
 begin
-  FRegistrationLock.Acquire;
-  try
-    if Assigned(FLoadActions) then
-      LCount := FLoadActions.Count
-    else
-      LCount := 0;
-  finally
-    FRegistrationLock.Release;
-  end;
-
-  for i := 0 to LCount - 1 do
-  begin
-    FRegistrationLock.Acquire;
-    try
-      if Assigned(FLoadActions) and (i < FLoadActions.Count) then
-        LAction := FLoadActions[i]
-      else
-        ClearAction(LAction);
-    finally
-      FRegistrationLock.Release;
-    end;
-
-    if IsActionAssigned(LAction) then
+  // The caller holds FLoaderLock; callbacks cannot change this list.
+  if Assigned(FLoadActions) then
+    for I := 0 to FLoadActions.Count - 1 do
     begin
-      LAction(osaLoad);
-      Inc(FLastLoadActionIdx);
+      LAction := FLoadActions[I];
+      if IsActionAssigned(LAction) then
+      begin
+        LAction(osaLoad);
+        FLastLoadActionIdx := I;
+      end;
     end;
-  end;
 end;
 
 procedure TOpenSSLBaseLoader.RollbackLoadActions;
 var
-  i: NativeInt;
+  I: NativeInt;
   LAction: TTaurusTLSOnLoadAction;
 begin
+  // The caller holds FLoaderLock until all callbacks and native cleanup finish.
   if (FLastLoadActionIdx >= 0) and Assigned(FLoadActions) then
-  begin
-    for i := FLastLoadActionIdx downto 0 do
+    for I := FLastLoadActionIdx downto 0 do
     begin
-      FRegistrationLock.Acquire;
-      try
-        if Assigned(FLoadActions) and (i < FLoadActions.Count) then
-          LAction := FLoadActions[i]
-        else
-          ClearAction(LAction);
-      finally
-        FRegistrationLock.Release;
-      end;
-
+      LAction := FLoadActions[I];
       if IsActionAssigned(LAction) then
       try
         LAction(osaUnload);
       except
       end;
     end;
-  end;
   FLastLoadActionIdx := -1;
 end;
 
 function TOpenSSLBaseLoader.GetConfigFile: string;
 begin
-  FLoaderLock.Acquire;
+  FLoaderLock.Enter;
   try
     if IsLoaded then
       Result := FEffectiveConfigFile
     else
       Result := FConfigFile;
   finally
-    FLoaderLock.Release;
+    FLoaderLock.Leave;
   end;
 end;
 
 procedure TOpenSSLBaseLoader.SetConfigFile(const Value: string);
 begin
-  FLoaderLock.Acquire;
+  FLoaderLock.Enter;
   try
     if Value = FConfigFile then
       Exit;
@@ -1059,7 +1093,7 @@ begin
 
     FConfigFile := Value;
   finally
-    FLoaderLock.Release;
+    FLoaderLock.Leave;
   end;
 end;
 
@@ -1205,10 +1239,10 @@ type
 
 class procedure TOpenSSLDynamicLoader.RegisterHeaderLoader(LoadProc: TOpenSSLLoadProc; const module_name: string);
 var
-  LRegistrationLock: TIdCriticalSection;
+  LLoaderLock: TIdCriticalSection;
 begin
-  LRegistrationLock := GetRegistrationLock;
-  LRegistrationLock.Acquire;
+  LLoaderLock := GetLoaderLock;
+  LLoaderLock.Enter;
   try
     if FCryptoLoaders = nil then
 {$IFDEF HAS_UNIT_Generics_Collections}
@@ -1231,16 +1265,16 @@ begin
     else
       raise ETaurusTLSError.CreateFmt(ROSUnrecognisedLibName, [module_name]);
   finally
-    LRegistrationLock.Release;
+    LLoaderLock.Leave;
   end;
 end;
 
 class procedure TOpenSSLDynamicLoader.RegisterHeaderUnloader(UnloadProc: TOpenSSLUnloadProc);
 var
-  LRegistrationLock: TIdCriticalSection;
+  LLoaderLock: TIdCriticalSection;
 begin
-  LRegistrationLock := GetRegistrationLock;
-  LRegistrationLock.Acquire;
+  LLoaderLock := GetLoaderLock;
+  LLoaderLock.Enter;
   try
     if FUnloaders = nil then
 {$IFDEF HAS_UNIT_Generics_Collections}
@@ -1250,7 +1284,7 @@ begin
 {$ENDIF}
     FUnloaders.Add(UnloadProc);
   finally
-    LRegistrationLock.Release;
+    LLoaderLock.Leave;
   end;
 end;
 
@@ -1336,7 +1370,7 @@ end;
 
 procedure TOpenSSLDynamicLoader.SetOpenSSLPath(const Value: string);
 begin
-  FLoaderLock.Acquire;
+  FLoaderLock.Enter;
   try
     if Value = FOpenSSLPath then
       Exit;
@@ -1349,13 +1383,13 @@ begin
     else
       FOpenSSLPath := IncludeTrailingPathDelimiter(Value);
   finally
-    FLoaderLock.Release;
+    FLoaderLock.Leave;
   end;
 end;
 
 procedure TOpenSSLDynamicLoader.SetSSLLibVersions(const AValue: string);
 begin
-  FLoaderLock.Acquire;
+  FLoaderLock.Enter;
   try
     if AValue = FSSLLibVersions then
       Exit;
@@ -1365,7 +1399,7 @@ begin
 
     FSSLLibVersions := AValue;
   finally
-    FLoaderLock.Release;
+    FLoaderLock.Leave;
   end;
 end;
 
@@ -1483,20 +1517,15 @@ end;
 
 procedure TOpenSSLDynamicLoader.BindHeaderSymbols(const AVersionNo: TIdC_ULONG);
 var
-  i: Integer;
+  I: Integer;
 begin
-  FRegistrationLock.Acquire;
-  try
-    if Assigned(FCryptoLoaders) then
-      for i := 0 to FCryptoLoaders.Count - 1 do
-        TOpenSSLLoadProc(FCryptoLoaders[i])(FLibCrypto, AVersionNo, FFailed);
-
-    if Assigned(FSSLLoaders) then
-      for i := 0 to FSSLLoaders.Count - 1 do
-        TOpenSSLLoadProc(FSSLLoaders[i])(FLibSSL, AVersionNo, FFailed);
-  finally
-    FRegistrationLock.Release;
-  end;
+  // DoLoad holds FLoaderLock while binding and running lifecycle actions.
+  if Assigned(FCryptoLoaders) then
+    for I := 0 to FCryptoLoaders.Count - 1 do
+      TOpenSSLLoadProc(FCryptoLoaders[I])(FLibCrypto, AVersionNo, FFailed);
+  if Assigned(FSSLLoaders) then
+    for I := 0 to FSSLLoaders.Count - 1 do
+      TOpenSSLLoadProc(FSSLLoaders[I])(FLibSSL, AVersionNo, FFailed);
 end;
 
 procedure TOpenSSLDynamicLoader.UnbindHeaderSymbols;
@@ -1521,13 +1550,9 @@ procedure TOpenSSLDynamicLoader.UnbindHeaderSymbols;
   end;
 
 begin
-  FRegistrationLock.Acquire;
-  try
-    if Assigned(FUnloaders) then
-      UnbindFrom(FUnloaders.Count - 1);
-  finally
-    FRegistrationLock.Release;
-  end;
+  // DoUnload holds FLoaderLock until resetters finish and libraries are released.
+  if Assigned(FUnloaders) then
+    UnbindFrom(FUnloaders.Count - 1);
 end;
 
 procedure TOpenSSLDynamicLoader.FreeDynamicLibraries;
@@ -1715,6 +1740,11 @@ end;
 procedure Register_SSLLoaderAction(const AActionProc: TTaurusTLSOnLoadAction);
 begin
   TOpenSSLBaseLoader.RegisterAction(AActionProc);
+end;
+
+procedure UnRegister_SSLLoaderAction(const AActionProc: TTaurusTLSOnLoadAction);
+begin
+  TOpenSSLBaseLoader.UnRegisterAction(AActionProc);
 end;
 
 initialization

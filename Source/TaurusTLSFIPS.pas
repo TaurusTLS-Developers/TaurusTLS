@@ -558,12 +558,12 @@ initialization
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 Register_SSLLoaderAction(TTaurusTLSFIPSAPIState.OnLoadAction);
-// A dependency may have loaded the library before this unit initialized.
-if GetOpenSSLLoader <> nil then
-  if GetOpenSSLLoader.IsLoaded then
-    TTaurusTLSFIPSAPIState.OnLoadAction(osaLoad);
 {$ENDIF}
 
 InstallFIPSHooks;
 
+finalization
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+UnRegister_SSLLoaderAction(TTaurusTLSFIPSAPIState.OnLoadAction);
+{$ENDIF}
 end.

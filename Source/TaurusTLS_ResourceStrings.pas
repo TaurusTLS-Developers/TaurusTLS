@@ -275,9 +275,9 @@ resourcestring
 
   // OpenSSL Loader Messages
   RSOSSLLoaderLifecycleInProgress =
-    'Cannot call %s while the OpenSSL loader is loading or unloading';
+    'Cannot call %s during an OpenSSL loader lifecycle transition or action registration/removal';
   RSOSSLLoaderActionRegistrationInactive =
-    'OpenSSL loader actions can only be registered while the loader is not loaded';
+    'OpenSSL loader action registration or removal is not allowed in the current lifecycle state';
   RSOSSLInitCryptoFailed = 'OPENSSL_init_crypto failed';
 
   // OpenSSL Configuration Messages
