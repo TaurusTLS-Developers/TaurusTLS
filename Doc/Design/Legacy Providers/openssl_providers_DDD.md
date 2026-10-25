@@ -1,7 +1,7 @@
 ﻿# TaurusTLS OpenSSL Configuration, FIPS and Legacy Support — DDD
 
-Status: Loader lifecycle, runtime resources and metadata describe the implemented behavior. Deferred provider integration, consumer audit and FIPS policy work are identified separately.
-Revision date: 2026-10-22.
+Status: Loader/runtime lifecycle and independent NTLM hooks/responses are implemented. Configuration-owned activation and registration-only legacy refactoring are implemented; provider execution/isolated acceptance and final FIPS policy remain pending.
+Revision date: 2026-10-24.
 Architecture: [HLD](openssl_providers_HLD.md).
 
 ## 1. Public API and linking boundaries
@@ -25,7 +25,7 @@ In static mode, dynamic-specific properties (`OpenSSLPath`, `SSLLibVersions`, `F
 
 `TaurusTLSLinkDefines.inc` must reject simultaneous `STATICLOAD_OPENSSL` and `OPENSSL_USE_SHARED_LIBRARY` definitions on every target. `STATICLOAD_OPENSSL` selects linked archives; `OPENSSL_USE_SHARED_LIBRARY` selects startup shared-library imports. The Windows compiler-include example enables only `OPENSSL_USE_SHARED_LIBRARY`. Linked legacy callback imports and registration use `{$IFDEF STATICLOAD_OPENSSL}`; `OPENSSL_STATIC_LINK_MODEL` alone also covers shared-library imports and is insufficient for selecting the archive callback.
 
-Do not add public `LoadProvider`/`RegisterBuiltinProvider`/FIPS-mode methods to `IOpenSSLLoader`. Preserve the Indy `SetFIPSMode`/`GetFIPSMode` signatures. Their backend remains in `TaurusTLSFIPS`, with dynamic-only internal FIPS management. `IsLegacyProviderLoaded` remains the legacy facade's public status function.
+Do not add public `ActivateProvider`/`LoadProvider`/`RegisterBuiltinProvider`/FIPS-mode methods to `IOpenSSLLoader`. The 2026-10-24 activation-API proposal is superseded by configuration-only activation. Preserve Indy `SetFIPSMode`/`GetFIPSMode` signatures in `TaurusTLSFIPS`; final reporting/setter semantics remain pending. Retain the legacy unit for archive registration and review its `IsLegacyProviderLoaded` compatibility semantics without manager-owned activation handles.
 
 Headers remain OpenSSL-only. Modern property API imports do not imply TaurusTLS supports static FIPS. The implemented `CONF_modules_load_file_ex` import belongs to `TaurusTLSHeaders_conf`. Use only modern OpenSSL 3.x/4.x routines in the new runtime/metadata path; do not move OpenSSL 0.9–1.1.1 compatibility branches into it.
 
@@ -375,8 +375,9 @@ requirement. Application shutdown must retire live objects/operations first.
 
 - Define pre-configuration builtin registration and reconcile existing provider
   callbacks with configuration-only activation.
-- Complete the consumer audit, including remaining implicit Load calls and NTLM
-  readiness/execution contracts.
+- Complete remaining consumer implicit-Load compatibility decisions. NTLM hook
+  separation, algorithm checks and LM/NT response corrections are committed;
+  NTLMv2 RC4, non-ASCII LM encoding and dependency-isolation validation remain.
 - Resolve FIPS reporting and policy separately.
 - Keep dedicated competing-first-publication stress separate from concurrent
   lookup/registration fixtures, which start after unit initialization.
@@ -384,31 +385,67 @@ requirement. Application shutdown must retire live objects/operations first.
 
 ## 3. Discovery, ownership and legacy support
 
-Provider activation is controlled only by openssl.cnf. Neither unit inclusion,
-metadata queries nor NTLM availability hooks may call OSSL_PROVIDER_load to
-silently activate default, legacy, fips or base. The previous design for automatic
-default/legacy acquisition is superseded. A programmatic activation API is deferred.
+Decision confirmed 2026-10-24: provider activation is controlled by `openssl.cnf`.
+The loader applies configuration; `activate = 1` activates selected providers.
+The recently discussed unified activation API and NTLM loader-action alternative
+are superseded. No explicit provider handles or provider reference counter are
+added to the loader.
 
-OpenSSL configuration/environment resolves modules. Do not restore ProvidersPath,
-set a hidden default search path, mutate the customer's environment or parse
-provider sections in Delphi. In OpenSSL 4.0 activate is Boolean; in 3.0 presence
-alone activates. Omit activate to defer activation across these versions.
-[OpenSSL 4.0 provider configuration](https://docs.openssl.org/4.0/man5/config/#provider-configuration),
-[OpenSSL 3.0 provider configuration](https://docs.openssl.org/3.0/man5/config/#provider-configuration).
+OpenSSL resolves module paths and parameters. Do not restore ProvidersPath, parse
+provider sections in Delphi, set hidden paths or mutate customer environment.
+Empty ConfigFile requests standard configuration; it does not disable config.
+Omit `activate` to avoid explicit activation by a config across supported versions:
+older OpenSSL 3.0 treats presence as activation, unlike modern Boolean handling.
+[Provider configuration](https://docs.openssl.org/4.0/man5/config/#provider-configuration).
 
-For linked legacy code, import ossl_legacy_provider_init only under the artifact
-configuration that supplies it (STATICLOAD_OPENSSL), with the exact C ABI.
-OSSL_PROVIDER_add_builtin registers a discoverable implementation and does not
-activate it. This registration must precede configuration. The existing
-post-configuration osaLoad callback cannot provide that ordering; its replacement
-mechanism is a design gate, not an instruction to add another public API.
+Retain `TaurusTLS_LegacyProviders` for archive linking and builtin registration,
+using the existing artifact-specific `STATICLOAD_OPENSSL` guard and corrected ABI.
+It is unnecessary for dynamic/startup-shared config-based module activation.
+Remove the existing manager's default/legacy acquisitions, retained handles,
+release calls and activation in initialization/finalization or osaLoad/osaUnload.
 
-Configuration owns its activation references. Do not unload handles merely
-observed by TaurusTLS. Any later retained-reference design must be explicit,
-reviewed and release only owned references before dynamic unbinding.
-IsLegacyProviderLoaded/readiness semantics must be reviewed against configured
-algorithm availability; a provider name alone is not an NTLM execution guarantee.
-No fallback activation or weakening of configured FIPS selection is permitted.
+Builtin registration is implemented once in archive-only unit initialization,
+before application Load/configuration. Checked OSSL_PROVIDER_add_builtin stores
+the entry point without loading config or activating it; failure raises a crypto
+exception at startup. No new loader phase/API, provider handles or finalizer.
+Static unload/retry does not repeat registration. Applications must establish
+this ordering before external default-context configuration/crypto use and avoid
+conflicting cross-module same-name registration. Keep archive references out of
+the core loader and NTLM unit; isolated artifact execution remains pending.
+
+Configuration owns its activation references. Multiple consumers fetch/free their
+own algorithm objects; they do not acquire another provider reference merely to
+use it. Never release a configuration-owned/borrowed reference. Native reference
+counting is not a dynamic-library lease or a guarantee of immediate teardown.
+Static Unload and loader rollback do not promise a pristine default context.
+
+UT.LegacyProviders now imports the production unit only in archive builds.
+Shared builds retain provider tests without the wrapper. Positive fixtures own
+temporary provider config; a runtime-shared negative fixture verifies omission of
+activate leaves legacy/MD4/DES unavailable. Archive absence is still a fresh-process
+acceptance case. Audit runtime-package/transitive integration separately; the
+existing Windows runtime package still contains the now-passive legacy facade.
+
+Review the existing legacy status facade against ready configured provider
+availability; provider presence alone does not establish usable MD4/DES.
+Detailed boundaries and pending cases: [Legacy DDD](legacy_providers_DDD.md).
+
+### Implemented NTLM integration
+
+Runtime commit `95e7bd2` assigns stable callbacks once during initialization.
+Neither Load nor Unload reassigns them. NTLM has no dependency on TaurusTLSFIPS,
+TaurusTLS_LegacyProviders or Indy's hash backend; IdFIPS remains for declarations
+and policy. LoadNTLMLibrary only checks readiness.
+
+Availability checks loader readiness, Indy policy and MD4/DES-ECB fetches using
+current default-context properties. A negative probe preserves earlier native
+errors. LM requires DES-ECB; NT requires MD4 and DES-ECB.
+
+NT uses EVP MD4 over UTF-16LE. Corrected DES key expansion/parity, no padding,
+exact output lengths and three response block offsets are covered by tests.
+LM retains platform-default encoding and 14-byte truncation. Non-ASCII OEM policy
+and NTLMv2 RC4 are separate work. Operations validate readiness and buffers, free
+native objects, and preserve prohibiting native/Indy selection policy.
 
 ## 4. FIPS reporting and Indy policy (deferred)
 
@@ -423,10 +460,10 @@ availability, enabled default properties and operation-specific permission.
 Use modern APIs only; do not retain FIPS_mode/FIPS_mode_set compatibility with
 OpenSSL before 3.0 in this refactor.
 
-Readiness hooks must first check loader state and must never initialize or
-reset the loader. The agreed LoadNTLMLibrary adapter is a status-only query.
-Algorithm availability and execution hooks still need review, including Indy
-native fallbacks and whether each failure can safely raise an exception.
+Readiness hooks first check loader state and never initialize/reset the loader.
+LoadNTLMLibrary is status-only; NTLM algorithm/response guards are implemented.
+An active FIPS provider does not imply FIPS algorithm selection. Final FIPS/hash
+reporting, broader fallback/HMAC enforcement and setter semantics remain pending.
 
 Legacy activation does not override FIPS property selection or make MD4/DES
 acceptable under an enabled FIPS policy. Do not solve that conflict by weakening
@@ -439,14 +476,21 @@ No loader success, provider activation or test result establishes certification.
 ## 5. Tests and review gates
 
 Use existing DUnitX fixtures and register with TDUnitX.RegisterTestFixture.
-Loader/lifecycle fixtures must control initialization themselves rather than
-inherit an eager OpenSSL load. Crypto-dependent fixtures can use TOsslBaseFixture.
+Loader/lifecycle fixtures use manual TOsslBaseFixture and control initialization
+explicitly. TOsslAutoloadFixture supplies automatic setup/teardown for fixtures
+that require it. SetupFromCmd reuses parsed settings without loading; Boolean Load
+preserves exceptions. No TOsslLoader wrapper/load counter is required.
 Use controlled temporary configurations and failure-safe restoration; isolate
 process-wide initialization options or provider-policy scenarios in fresh
 processes where necessary.
 
-Preserve the runner's existing -osp/-osmp parameters and test-only environment
-preparation. Do not require OPENSSL_CONF to be set before launching from the IDE.
+Current runner options are -osp and optional -oscp; -osmp is retired. Preserve
+test-only environment isolation. Do not require external OPENSSL_CONF setup.
+The positive NTLM fixture (test commit 0b42e6a) generates a unique temporary
+non-FIPS default/legacy config before loading, restores loader settings and
+deletes its files after unloading, including setup-failure cleanup. It uses
+a matching deployed module or linked registration and needs no external -oscp.
+Its neutral test properties must not become customer FIPS defaults.
 Windows OpenSSL 4.0.2 x86/x64 distributions are the agreed development inputs.
 Compile runtime then tests through Kai/developer-assisted builds; validate Win32,
 Win64, Linux64 and OSX64. iOS/Android and broader distributions are deferred.
@@ -466,7 +510,7 @@ Runtime and metadata acceptance:
 | Partial TLS action failure | Own partial resources cleaned, earlier actions unwound, loader failed, original error preserved |
 | Unload/reload | Metadata/resources cleared; no duplicate callbacks, legacy locking setup or second ready flag |
 | Configuration ownership | No duplicate default configuration after explicit selection; discovery alone not reported as proof of application |
-| Providers | Configuration-only activation; linked builtin registration ordering reviewed separately |
+| Providers | Config-only activation; optional archive registration before config; dynamic wrapper dependency removed and fresh-process absence/activation/isolation cases verified |
 | Late lifecycle action registration | Rejected outside lsNotLoaded without changing state or the action registry |
 | Unit finalization | Full unload runs with the singleton still published; cleanup errors do not escape the unit finalizers |
 
@@ -485,3 +529,8 @@ both runs reported zero ignored, leaked, failed or errored tests. The developer
 reports unchanged results across all platforms. No additional platform totals
 are inferred. Loaded loader-only application termination in a separate process
 remains unverified by these fixture runs.
+
+Latest pre-provider-refactor developer reports: both Windows 522/522, Linux
+509/510 and macOS 472/473. Non-Windows NTLM inclusion/exclusions and remaining
+failure identities were not supplied; counts alone do not establish complete
+NTLM coverage. These runs do not validate the pending provider refactor.
