@@ -27,6 +27,9 @@ var
   InitialNTLM: TNTLMGetNtChallengeResponse;
   I, Selected: Integer;
   MissingModule: Boolean;
+{$IFNDEF PROBE_NTLM_ONLY}
+  ConfigRejected: Boolean;
+{$ENDIF}
 {$IFDEF PROBE_NTLM_ONLY}
   Response, Challenge: TIdBytes;
 {$ELSE}
@@ -88,7 +91,8 @@ begin
         ConfigText := ConfigText + '[fips_section]' + sLineBreak +
           'module = "' + StringReplace(TPath.Combine(ConfigDirectory, 'missing-fips'),
             '\', '/', [rfReplaceAll]) + '"' + sLineBreak +
-          'activate = 1' + sLineBreak;
+          'activate = 1' + sLineBreak +
+          '[algorithms]' + sLineBreak + 'default_properties = fips=yes' + sLineBreak;
 {$ENDIF}
       TFile.WriteAllText(ConfigFile, ConfigText, TEncoding.UTF8);
       Loader.OpenSSLPath := LibraryPath;
@@ -96,21 +100,36 @@ begin
 {$IFNDEF PROBE_NTLM_ONLY}
       if MissingModule then
       begin
+        ConfigRejected := False;
         try
-          Loader.Load;
-          raise Exception.Create('Missing configured FIPS module was accepted');
+          Require(Loader.Load, 'Native library loading failed');
         except
           on E: ETaurusTLSConfigFileLoadError do
-            Require(Loader.State = lsLoadedFailed, 'Config error did not publish failure');
+            ConfigRejected := True;
         end;
-        Require(not IdFIPS.GetFIPSMode(), 'Failed configuration reported FIPS mode');
-        Require(not IdFIPS.LoadHashLibrary(), 'Failed config advertised hash readiness');
-        Require(not Loader.Load, 'Failed retry must remain blocked');
+        Require(not IdFIPS.GetFIPSMode(), 'Missing provider reported FIPS mode');
+        Require(not IdFIPS.SetFIPSMode(False), 'Missing FIPS must not weaken selection');
+        if ConfigRejected then
+        begin
+          Require(Loader.State = lsLoadedFailed, 'Config error did not publish failure');
+          Require(not IdFIPS.LoadHashLibrary(), 'Failed config advertised hash readiness');
+          Require(not Loader.Load, 'Failed retry must remain blocked');
+        end
+        else
+        begin
+          // Native provider activation failures can be nonfatal to config loading.
+          Require(Loader.State = lsLoadedReady, 'Native runtime must remain ready');
+          Require(EVP_default_properties_is_fips_enabled(nil) = 1, 'FIPS selection lost');
+          Require(not IdFIPS.IsSHA256HashIntfAvail(), 'Missing FIPS fell back to default digest');
+          Require(not IdFIPS.IsHMACAvail(), 'Missing FIPS fell back to default HMAC');
+        end;
         Loader.Unload;
         ConfigText := 'openssl_conf = init' + sLineBreak +
           '[init]' + sLineBreak + 'providers = providers' + sLineBreak +
+          'alg_section = algorithms' + sLineBreak +
           '[providers]' + sLineBreak + 'default = default_section' + sLineBreak +
-          '[default_section]' + sLineBreak + 'activate = 1' + sLineBreak;
+          '[default_section]' + sLineBreak + 'activate = 1' + sLineBreak +
+          '[algorithms]' + sLineBreak + 'default_properties =' + sLineBreak;
         TFile.WriteAllText(ConfigFile, ConfigText, TEncoding.UTF8);
       end;
 {$ENDIF}
