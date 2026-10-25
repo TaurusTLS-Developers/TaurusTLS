@@ -1,4 +1,4 @@
-﻿{ ****************************************************************************** }
+{ ****************************************************************************** }
 { *  TaurusTLS                                                                 * }
 { *           https://github.com/JPeterMugaas/TaurusTLS                        * }
 { *                                                                            * }
@@ -164,7 +164,7 @@
 /// <summary>
 /// This unit contains the <see cref="TTaurusTLSIOHandlerSocket" /> and
 /// <see cref="TTaurusTLSServerIOHandler" /> classes plus helper classes.
-/// The <see cref="TaurusTLSFIPS" /> unit is registered meaning hash
+/// The <see cref="TaurusTLSIdFIPS" /> unit is registered meaning hash
 /// support routines are called by Indy - Internet Direct.
 /// </summary>
 unit TaurusTLS;
@@ -263,7 +263,7 @@ uses
   TaurusTLSHeaders_tls1,
   TaurusTLS_Utils,
   TaurusTLS_X509,
-  TaurusTLSFIPS {Ensure FIPS functions initialised};
+  TaurusTLSIdFIPS {Ensure FIPS functions initialised};
 
 {$IF DECLARED(TIdSSLVersion)}
 
