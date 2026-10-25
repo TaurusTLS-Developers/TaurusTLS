@@ -28,11 +28,11 @@ type
     /// <summary>Load/unload callbacks must not advertise readiness.</summary>
     [Test]
     procedure Hash_Transitions;
-    /// <summary>Hook reinstall replaces another backend without implicitly loading it.</summary>
+    /// <summary>Loader initialization and unload preserve a selected foreign hash backend.</summary>
     [TestCase('NotLoaded', '0')]
     [TestCase('Ready', '1')]
-    procedure Hash_Reinstall(const AReady: Integer);
-    /// <summary>Hash/FIPS setup must leave all NTLM callbacks owned by their backend.</summary>
+    procedure Hash_PreservesBackend(const AReady: Integer);
+    /// <summary>Loader initialization and unload preserve independently owned NTLM callbacks.</summary>
     [TestCase('NotLoaded', '0')]
     [TestCase('Ready', '1')]
     procedure Hash_PreservesNTLM(const AReady: Integer);
@@ -77,7 +77,8 @@ type
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   /// <summary>
   /// Real-provider integration: activation/selection, provider identity,
-  /// digest/HMAC vectors, policy rejection, self-tests and reload.
+  /// digest/HMAC vectors, policy rejection, self-tests, reload and invalid configs.
+  /// Negative cases run in child processes to avoid retained native provider state.
   /// </summary>
   /// <remarks>
   /// Requires -fmc:installed-fipsmodule.cnf, matching dynamic libraries and
@@ -86,13 +87,20 @@ type
   /// Run category FIPS.Provider alone in a fresh process. Installed data is read-only.
   /// </remarks>
   [Category('FIPS.Provider')]
-  [TestFixture('', 'Checks real FIPS selection, native provider identity, digest/HMAC vectors, rejection, self-tests and reload. '
+  [TestFixture('', 'Checks real FIPS selection, native provider identity, digest/HMAC vectors, rejection, self-tests, reload, omitted activation and invalid configurations. ' 
     + 'Requires -fmc:installed-fipsmodule.cnf, matching libraries via -osp:, and fips/legacy modules under the config directory/ossl-modules. '
     + 'Missing -fmc fails with a prerequisite message. Run FIPS.Provider alone, or explicitly exclude the category. Installed data remains read-only.')]
   TConfiguredFIPSProviderFixture = class(TLoaderBaseFixture)
+  private type
+    TFIPSProviderConfig = (fcInstalled, fcInactive, fcWrongSection, fcMissingMAC,
+      fcInvalidMAC, fcMissingInclude, fcMalformedInclude);
   private
     FInstalledConfigText: string;
+    function CreateProviderConfig(const ASelected: Boolean;
+      const AVariant: TFIPSProviderConfig = fcInstalled): string;
     procedure LoadConfigured(const ASelected: Boolean);
+    procedure CheckUnavailableFIPS(const ASelected: Boolean);
+    function RunInFreshProcess(const ACaseName: string): Boolean;
     procedure CheckInstalledConfigUnchanged;
   public
     [TestCase('AvailableNotSelected', 'False')]
@@ -110,13 +118,28 @@ type
     procedure Provider_SelfTest;
     [Test]
     procedure Lifecycle_Reload;
+    [TestCase('OrdinarySelection', 'False')]
+    [TestCase('FIPSSelection', 'True')]
+    procedure Provider_NotActivated(const ASelected: Boolean);
+    [TestCase('WrongSection', '0')]
+    [TestCase('MissingModuleMAC', '1')]
+    [TestCase('InvalidModuleMAC', '2')]
+    [TestCase('MissingInclude', '3')]
+    [TestCase('MalformedInclude', '4')]
+    procedure Config_InvalidFIPS(const ACase: Integer);
   end;
 {$ENDIF}
 
 implementation
 
 uses
+{$IFDEF MSWINDOWS}
+  Winapi.Windows,
+{$ELSE}
+  Posix.Stdlib,
+{$ENDIF}
   System.SysUtils,
+  System.Classes,
   System.IOUtils,
   DUnitX.CommandLine.Options,
   IdFIPS,
@@ -197,7 +220,6 @@ var
   LState: TTaurusTLSLoaderState;
   LConfig, LDiagnostics: string;
 begin
-  InstallFIPSHooks;
   case AState of
     1:
       begin
@@ -241,7 +263,6 @@ var
   LMethod: PEVP_MD;
   LAvailable: Boolean;
 begin
-  InstallFIPSHooks;
   Loader.ConfigFile := FValidConfigFile;
   for I := 1 to 2 do
   begin
@@ -279,7 +300,6 @@ end;
 
 procedure TLoaderFIPSReadinessFixture.Hash_Transitions;
 begin
-  InstallFIPSHooks;
   TConsumerReadinessObserver.LoadCount := 0;
   TConsumerReadinessObserver.UnloadCount := 0;
   TConsumerReadinessObserver.Error := '';
@@ -304,21 +324,23 @@ begin
   raise Exception.Create('Indy hash loader was not replaced by TaurusTLS');
 end;
 
-procedure TLoaderFIPSReadinessFixture.Hash_Reinstall(const AReady: Integer);
+procedure TLoaderFIPSReadinessFixture.Hash_PreservesBackend(const AReady: Integer);
 var
   LSavedHook: TLoadHashLibrary;
 begin
   Loader.ConfigFile := FValidConfigFile;
-  if AReady <> 0 then
-    Assert.IsTrue(Loader.Load, 'Controlled OpenSSL initialization must succeed before exercising Hash Reinstall');
   LSavedHook := IdFIPS.LoadHashLibrary;
   try
     IdFIPS.LoadHashLibrary := UnexpectedHashLoader;
-    InstallFIPSHooks;
-    Assert.AreEqual(AReady <> 0, IdHash.HashFunctionsLoaded,
-      'Reinstalled Indy hash readiness must match the fixture loader state');
-    Assert.IsTrue(Loader.IsLoaded = (AReady <> 0),
-      'Installing hooks must preserve the requested loaded or unloaded state');
+    if AReady <> 0 then
+      Assert.IsTrue(Loader.Load, 'Controlled initialization must succeed with a foreign hash callback');
+    Assert.IsTrue(@IdFIPS.LoadHashLibrary = @UnexpectedHashLoader,
+      'Loader initialization must preserve the selected hash backend');
+    Assert.AreEqual(AReady <> 0, Loader.IsLoaded,
+      'Checking callback ownership must preserve the requested loader state');
+    Loader.Unload;
+    Assert.IsTrue(@IdFIPS.LoadHashLibrary = @UnexpectedHashLoader,
+      'Loader unload must preserve the selected hash backend');
   finally
     IdFIPS.LoadHashLibrary := LSavedHook;
   end;
@@ -330,10 +352,21 @@ var
   LSavedAvailable: TIsNTLMFuncsAvail;
   LSavedLM: TNTLMGetLmChallengeResponse;
   LSavedNT: TNTLMGetNtChallengeResponse;
+
+  procedure CheckOwnership;
+  begin
+    Assert.IsTrue(@IdFIPS.LoadNTLMLibrary = @UnexpectedHashLoader,
+      'Loader lifecycle must preserve the foreign NTLM loading callback');
+    Assert.IsTrue(@IdFIPS.IsNTLMFuncsAvail = @UnexpectedHashLoader,
+      'Loader lifecycle must preserve the foreign NTLM availability callback');
+    Assert.IsFalse(Assigned(IdFIPS.NTLMGetLmChallengeResponse),
+      'Loader lifecycle must leave an unassigned LM response callback untouched');
+    Assert.IsFalse(Assigned(IdFIPS.NTLMGetNtChallengeResponse),
+      'Loader lifecycle must leave an unassigned NT response callback untouched');
+  end;
+
 begin
   Loader.ConfigFile := FValidConfigFile;
-  if AReady <> 0 then
-    Assert.IsTrue(Loader.Load, 'Controlled OpenSSL initialization must succeed before exercising Hash PreservesNTLM');
   LSavedLoad := IdFIPS.LoadNTLMLibrary;
   LSavedAvailable := IdFIPS.IsNTLMFuncsAvail;
   LSavedLM := IdFIPS.NTLMGetLmChallengeResponse;
@@ -343,18 +376,13 @@ begin
     IdFIPS.IsNTLMFuncsAvail := UnexpectedHashLoader;
     IdFIPS.NTLMGetLmChallengeResponse := nil;
     IdFIPS.NTLMGetNtChallengeResponse := nil;
-    InstallFIPSHooks;
-    InstallFIPSHooks;
-    Assert.IsTrue(@IdFIPS.LoadNTLMLibrary = @UnexpectedHashLoader,
-      'Installing FIPS hooks must preserve the foreign NTLM loading callback');
-    Assert.IsTrue(@IdFIPS.IsNTLMFuncsAvail = @UnexpectedHashLoader,
-      'Installing FIPS hooks must preserve the foreign NTLM availability callback');
-    Assert.IsFalse(Assigned(IdFIPS.NTLMGetLmChallengeResponse),
-      'Installing FIPS hooks must leave an unassigned LM response callback untouched');
-    Assert.IsFalse(Assigned(IdFIPS.NTLMGetNtChallengeResponse),
-      'Installing FIPS hooks must leave an unassigned NT response callback untouched');
-    Assert.IsTrue(Loader.IsLoaded = (AReady <> 0),
-      'Installing hooks must preserve the requested loaded or unloaded state');
+    if AReady <> 0 then
+      Assert.IsTrue(Loader.Load, 'Controlled initialization must succeed with foreign NTLM callbacks');
+    CheckOwnership;
+    Assert.AreEqual(AReady <> 0, Loader.IsLoaded,
+      'Checking callback ownership must preserve the requested loader state');
+    Loader.Unload;
+    CheckOwnership;
   finally
     IdFIPS.LoadNTLMLibrary := LSavedLoad;
     IdFIPS.IsNTLMFuncsAvail := LSavedAvailable;
@@ -380,7 +408,6 @@ var
   LMAC: TGetHMACInst;
   I: Integer;
 begin
-  InstallFIPSHooks;
   LGet := IdFIPS.GetFIPSMode;
   LSet := IdFIPS.SetFIPSMode;
   LHash := IdFIPS.GetSHA256HashInst;
@@ -408,7 +435,6 @@ procedure TLoaderFIPSReadinessFixture.Operations_NotReady(const AState: Integer)
 var
   LState: TTaurusTLSLoaderState;
 begin
-  InstallFIPSHooks;
   Loader.ConfigFile := FValidConfigFile;
   case AState of
     1:
@@ -471,7 +497,6 @@ procedure TLoaderFIPSReadinessFixture.Mode_ConfigOwned;
 var
   LSelected: Integer;
 begin
-  InstallFIPSHooks;
   Loader.ConfigFile := FValidConfigFile;
   Assert.IsTrue(Loader.Load, 'Controlled OpenSSL initialization must succeed before exercising Mode ConfigOwned');
   LSelected := EVP_default_properties_is_fips_enabled(nil);
@@ -492,7 +517,6 @@ var
   LConfig: string;
   LSelected: Integer;
 begin
-  InstallFIPSHooks;
   LConfig := TPath.Combine(FTempDir, 'selected_fips_without_module.cnf');
   TFile.WriteAllText(LConfig,
     'openssl_conf = init' + sLineBreak +
@@ -554,7 +578,6 @@ var
   LContext: TIdHashIntCtx;
   LResult: TIdBytes;
 begin
-  InstallFIPSHooks;
   Loader.ConfigFile := FValidConfigFile;
   Assert.IsTrue(Loader.Load, 'Controlled OpenSSL initialization must succeed before exercising Hash SHA256Vector');
   LContext := IdFIPS.GetSHA256HashInst();
@@ -572,7 +595,6 @@ var
   LContext: TIdHMACIntCtx;
   LResult: TIdBytes;
 begin
-  InstallFIPSHooks;
   Loader.ConfigFile := FValidConfigFile;
   Assert.IsTrue(Loader.Load, 'Controlled OpenSSL initialization must succeed before exercising HMAC Vectors');
   SetLength(LKey, 20);
@@ -598,7 +620,6 @@ procedure TLoaderFIPSReadinessFixture.HMAC_EmptyKeyAndInput;
 var
   LContext: TIdHMACIntCtx;
 begin
-  InstallFIPSHooks;
   Loader.ConfigFile := FValidConfigFile;
   Assert.IsTrue(Loader.Load, 'Controlled OpenSSL initialization must succeed before exercising HMAC EmptyKeyAndInput');
   LContext := IdFIPS.GetHMACSHA256HashInst(nil);
@@ -613,7 +634,6 @@ var
   LMethod: PEVP_MD;
   LFirst, LLast: TIdC_ULONG;
 begin
-  InstallFIPSHooks;
   Loader.ConfigFile := FValidConfigFile;
   Assert.IsTrue(Loader.Load, 'Controlled OpenSSL initialization must succeed before exercising Probes PreserveErrors');
   ERR_clear_error;
@@ -645,7 +665,6 @@ var
   LConfig, LModule: string;
   LRejected: Boolean;
 begin
-  InstallFIPSHooks;
   LConfig := TPath.Combine(FTempDir, 'missing_fips_module.cnf');
   LModule := StringReplace(TPath.Combine(FTempDir, 'missing-fips-module'), '\', '/', [rfReplaceAll]);
   TFile.WriteAllText(LConfig,
@@ -778,7 +797,6 @@ var
   LFinalMAC: TFinalMAC;
   LContext: Pointer;
 begin
-  InstallFIPSHooks;
   Loader.ConfigFile := FValidConfigFile;
   Assert.IsTrue(Loader.Load,
     'Controlled OpenSSL initialization must succeed before exercising Operations CleanupOnFailure');
@@ -853,6 +871,7 @@ end;
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 var
   GInstalledFIPSConfig: string;
+  GFreshFIPSCase: string;
 
 function ConfigPath(const APath: string): string;
 begin
@@ -861,9 +880,118 @@ begin
     raise EArgumentException.Create('OpenSSL test paths cannot contain a double quote');
 end;
 
-procedure TConfiguredFIPSProviderFixture.LoadConfigured(const ASelected: Boolean);
+function TConfiguredFIPSProviderFixture.RunInFreshProcess(const ACaseName: string): Boolean;
 var
-  LDirectory, LFIPS, LLegacy, LSelection, LConfig: string;
+  LArguments, LReportPath, LLogPath, LReport, LLog: string;
+{$IFDEF MSWINDOWS}
+  LCommand: string;
+  LStartup: TStartupInfo;
+  LProcess: TProcessInformation;
+  LSecurity: TSecurityAttributes;
+  LOutput: THandle;
+  LExitCode: DWORD;
+{$ELSE}
+  LCommand: UTF8String;
+  LExitCode: Integer;
+{$ENDIF}
+
+  function Argument(const AValue: string): string;
+  begin
+{$IFDEF MSWINDOWS}
+    if Pos('"', AValue) <> 0 then
+      raise EArgumentException.Create('Child-process arguments cannot contain a double quote');
+    Result := '"' + AValue + '"';
+{$ELSE}
+    Result := #39 + StringReplace(AValue, #39, #39 + #34 + #39 + #34 + #39,
+      [rfReplaceAll]) + #39;
+{$ENDIF}
+  end;
+
+begin
+  if GFreshFIPSCase <> '' then
+  begin
+    Assert.AreEqual(ACaseName, GFreshFIPSCase,
+      'The isolated process must execute exactly its requested negative scenario');
+    Exit(False);
+  end;
+  Assert.IsNotEmpty(GInstalledFIPSConfig,
+    'FIPS.Provider requires -fmc:<installed fipsmodule.cnf>; explicitly exclude with -e:FIPS.Provider when unavailable');
+  Assert.IsTrue(TFile.Exists(GInstalledFIPSConfig),
+    'The installed FIPS configuration must exist before starting an isolated negative case');
+  // Unload is not a native default-context reset. A previous successful FIPS
+  // activation could otherwise conceal a missing activation or broken config.
+  LReportPath := TPath.Combine(FTempDir, 'fips-child.xml');
+  LLogPath := TPath.Combine(FTempDir, 'fips-child.log');
+  LArguments := ' ' + Argument('-r:TaurusTLS.UT.FIPS.TConfiguredFIPSProviderFixture.' + ACaseName)
+    + ' ' + Argument('-fcc:' + ACaseName)
+    + ' ' + Argument('-osp:' + Loader.OpenSSLPath)
+    + ' ' + Argument('-fmc:' + GInstalledFIPSConfig)
+    + ' --exitbehavior:Continue -cm:Quiet ' + Argument('--xml:' + LReportPath);
+{$IFDEF MSWINDOWS}
+  LSecurity := Default(TSecurityAttributes);
+  LSecurity.nLength := SizeOf(LSecurity);
+  LSecurity.bInheritHandle := True;
+  LOutput := CreateFile(PChar(LLogPath), GENERIC_WRITE, FILE_SHARE_READ,
+    @LSecurity, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+  Assert.IsTrue(LOutput <> INVALID_HANDLE_VALUE,
+    'The isolated FIPS case must have a writable diagnostic log');
+  try
+    LStartup := Default(TStartupInfo);
+    LStartup.cb := SizeOf(LStartup);
+    LStartup.dwFlags := STARTF_USESTDHANDLES;
+    LStartup.hStdOutput := LOutput;
+    LStartup.hStdError := LOutput;
+    LStartup.hStdInput := GetStdHandle(STD_INPUT_HANDLE);
+    LProcess := Default(TProcessInformation);
+    LCommand := Argument(ParamStr(0)) + LArguments;
+    UniqueString(LCommand); // CreateProcess may modify its command-line buffer.
+    Assert.IsTrue(CreateProcess(nil, PChar(LCommand), nil, nil, True,
+      CREATE_NO_WINDOW, nil, nil, LStartup, LProcess),
+      'The isolated FIPS test process must start successfully');
+    CloseHandle(LProcess.hThread);
+    try
+      if WaitForSingleObject(LProcess.hProcess, 30000) <> WAIT_OBJECT_0 then
+      begin
+        TerminateProcess(LProcess.hProcess, 1);
+        WaitForSingleObject(LProcess.hProcess, 5000);
+        Assert.Fail('Isolated FIPS case exceeded its 30-second deadline: ' + ACaseName);
+      end;
+      Assert.IsTrue(GetExitCodeProcess(LProcess.hProcess, LExitCode),
+        'The isolated FIPS process exit code must be readable');
+    finally
+      CloseHandle(LProcess.hProcess);
+    end;
+  finally
+    CloseHandle(LOutput);
+  end;
+{$ELSE}
+  // Quote every argument independently; provider paths may contain shell syntax.
+  LCommand := UTF8String(Argument(ParamStr(0)) + LArguments
+    + ' > ' + Argument(LLogPath) + ' 2>&1');
+  LExitCode := Posix.Stdlib.system(MarshaledAString(LCommand));
+{$ENDIF}
+  LLog := '';
+  if TFile.Exists(LLogPath) then
+    LLog := TFile.ReadAllText(LLogPath);
+  Assert.AreEqual(0, Integer(LExitCode),
+    'Isolated FIPS case failed: ' + ACaseName + sLineBreak + LLog);
+  Assert.IsTrue(TFile.Exists(LReportPath),
+    'The isolated case must produce a test report; exit code zero alone is insufficient');
+  LReport := TFile.ReadAllText(LReportPath);
+  Assert.IsTrue(Pos(' total="1"', LReport) > 0,
+    'The child filter must execute exactly one test, rather than silently matching nothing');
+  Assert.IsTrue(Pos('<test-case name="' + ACaseName + '" executed="True" result="Success"', LReport) > 0,
+    'The requested negative scenario must execute successfully in the child report');
+  Result := True;
+end;
+
+function TConfiguredFIPSProviderFixture.CreateProviderConfig(const ASelected: Boolean;
+  const AVariant: TFIPSProviderConfig): string;
+var
+  LDirectory, LFIPS, LLegacy, LSelection, LInclude, LValue: string;
+  LLines: TStringList;
+  I: Integer;
+  LChanged: Boolean;
 begin
   if GInstalledFIPSConfig = '' then
     Assert.Fail('FIPS.Provider requires -fmc:<installed fipsmodule.cnf>, matching libraries via -osp:, and fips/legacy modules in ossl-modules. Run -i:FIPS.Provider in a fresh process, or explicitly exclude it with -e:FIPS.Provider.');
@@ -880,14 +1008,68 @@ begin
   Assert.IsTrue(TFile.Exists(LFIPS), 'Matching installed FIPS module is required');
   Assert.IsTrue(TFile.Exists(LLegacy), 'Matching legacy module is required for policy rejection tests');
   FInstalledConfigText := TFile.ReadAllText(GInstalledFIPSConfig);
+  LInclude := GInstalledFIPSConfig;
+  if AVariant <> fcInstalled then
+  begin
+    LInclude := TPath.Combine(FTempDir, 'installed-fips-copy.cnf');
+    if AVariant <> fcMissingInclude then
+    begin
+      LLines := TStringList.Create;
+      try
+        LLines.Text := FInstalledConfigText;
+        LChanged := False;
+        for I := LLines.Count - 1 downto 0 do
+        begin
+          if (AVariant = fcInactive) and SameText(Trim(LLines.Names[I]), 'activate') then
+          begin
+            LLines.Delete(I); // Omit instead of activate=0 for older OpenSSL.
+            LChanged := True;
+          end
+          else if (AVariant = fcWrongSection) and
+            SameText(Trim(LLines[I]), '[fips_sect]') then
+          begin
+            LLines[I] := '[incorrect_fips_sect]';
+            LChanged := True;
+          end
+          else if (AVariant in [fcMissingMAC, fcInvalidMAC]) and
+            SameText(Trim(LLines.Names[I]), 'module-mac') then
+          begin
+            if AVariant = fcMissingMAC then
+              LLines.Delete(I)
+            else
+            begin
+              LValue := Trim(Copy(LLines[I], Pos('=', LLines[I]) + 1, MaxInt));
+              Assert.IsNotEmpty(LValue, 'Installed module MAC must be present before constructing a corrupted copy');
+              if LValue[1] = '0' then
+                LValue[1] := '1'
+              else
+                LValue[1] := '0';
+              LLines[I] := 'module-mac = ' + LValue;
+            end;
+            LChanged := True;
+          end;
+        end;
+        if AVariant = fcMalformedInclude then
+        begin
+          LLines.Text := '[fips_sect' + sLineBreak + '= invalid';
+          LChanged := True;
+        end;
+        Assert.IsTrue(LChanged, 'The temporary configuration must contain the requested deliberate defect');
+        // OpenSSL configuration parsing does not accept a UTF-8 BOM.
+        TFile.WriteAllBytes(LInclude, TEncoding.UTF8.GetBytes(LLines.Text));
+      finally
+        LLines.Free;
+      end;
+    end;
+  end;
   if ASelected then
     LSelection := 'fips=yes'
   else
     LSelection := '';
-  LConfig := CreateTempConfigFile(
+  Result := CreateTempConfigFile(
     'config_diagnostics = 1' + sLineBreak +
     'openssl_conf = fips_test_init' + sLineBreak +
-    '.include "' + ConfigPath(GInstalledFIPSConfig) + '"' + sLineBreak +
+    '.include "' + ConfigPath(LInclude) + '"' + sLineBreak +
     '[fips_test_init]' + sLineBreak +
     'providers = fips_test_providers' + sLineBreak +
     'alg_section = fips_test_algorithms' + sLineBreak +
@@ -907,7 +1089,11 @@ begin
     'activate = 1' + sLineBreak +
     '[fips_test_algorithms]' + sLineBreak +
     'default_properties = ' + LSelection + sLineBreak, 'fips-provider-test.cnf');
-  Loader.ConfigFile := LConfig;
+end;
+
+procedure TConfiguredFIPSProviderFixture.LoadConfigured(const ASelected: Boolean);
+begin
+  Loader.ConfigFile := CreateProviderConfig(ASelected);
   Assert.IsTrue(Loader.Load, 'Configured FIPS runtime initialization must succeed');
   Assert.AreEqual(1, OSSL_PROVIDER_available(nil, 'fips'),
     'The installed configuration must leave the FIPS provider active');
@@ -1100,8 +1286,154 @@ begin
   CheckInstalledConfigUnchanged;
 end;
 
+procedure TConfiguredFIPSProviderFixture.CheckUnavailableFIPS(const ASelected: Boolean);
+begin
+  Assert.IsTrue(Loader.IsLoaded, 'A nonfatal provider failure must leave native libraries ready');
+  Assert.AreEqual(0, OSSL_PROVIDER_available(nil, 'fips'),
+    'An inactive or invalidly configured FIPS provider must remain unavailable');
+  Assert.IsFalse(IdFIPS.GetFIPSMode(),
+    'Inactive or invalid FIPS configuration must not report operational FIPS support');
+  Assert.IsFalse(IdFIPS.SetFIPSMode(True),
+    'The compatibility setter must not activate or repair an unavailable provider');
+  Assert.AreEqual(not ASelected, IdFIPS.SetFIPSMode(False),
+    'Only an already unselected policy may accept a no-op disable request');
+  Assert.AreEqual(Integer(Ord(ASelected)), EVP_default_properties_is_fips_enabled(nil),
+    'Queries and setter requests must preserve the fixture-selected native policy');
+  if ASelected then
+  begin
+    Assert.IsFalse(IdFIPS.IsSHA256HashIntfAvail(),
+      'Unavailable selected FIPS must not fall back to the default SHA256 implementation');
+    Assert.IsFalse(IdFIPS.IsHMACSHA256Avail(),
+      'Unavailable selected FIPS must not fall back to ordinary HMAC-SHA256');
+    Assert.IsFalse(IdFIPS.IsNTLMFuncsAvail(),
+      'Selected FIPS must reject NTLM despite the active legacy provider');
+    Assert.WillRaise(
+      procedure
+      begin
+        IdFIPS.GetSHA256HashInst();
+      end, ETaurusTLSSHA256NotFound,
+      'SHA256 creation must reject unavailable selected FIPS instead of weakening properties');
+    Assert.WillRaise(
+      procedure
+      begin
+        IdFIPS.GetHMACSHA256HashInst(nil);
+      end, ETaurusTLSSHA256NotFound,
+      'HMAC creation must reject unavailable selected FIPS instead of weakening properties');
+  end
+  else
+  begin
+    Assert.IsTrue(IdFIPS.IsSHA256HashIntfAvail(),
+      'An unselected inactive FIPS provider must leave ordinary SHA256 usable');
+    Assert.IsTrue(IdFIPS.IsHMACSHA256Avail(),
+      'An unselected inactive FIPS provider must leave ordinary HMAC-SHA256 usable');
+    Assert.IsTrue(IdFIPS.IsNTLMFuncsAvail(),
+      'Inactive FIPS must leave configured legacy NTLM algorithms usable');
+  end;
+  Assert.AreEqual(0, OSSL_PROVIDER_available(nil, 'fips'),
+    'Availability and operation checks must not implicitly activate the FIPS provider');
+end;
+
+procedure TConfiguredFIPSProviderFixture.Provider_NotActivated(const ASelected: Boolean);
+begin
+  if ASelected then
+  begin
+    if RunInFreshProcess('Provider_NotActivated.FIPSSelection') then
+      Exit;
+  end
+  else if RunInFreshProcess('Provider_NotActivated.OrdinarySelection') then
+    Exit;
+  Loader.ConfigFile := CreateProviderConfig(ASelected, fcInactive);
+  try
+    Assert.IsTrue(Loader.Load,
+      'A valid installed FIPS configuration without activation must load successfully');
+    Assert.AreEqual(1, OSSL_PROVIDER_available(nil, 'legacy'),
+      'Legacy must be active to distinguish policy rejection from missing legacy algorithms');
+    CheckUnavailableFIPS(ASelected);
+  finally
+    CheckInstalledConfigUnchanged;
+  end;
+end;
+
+procedure TConfiguredFIPSProviderFixture.Config_InvalidFIPS(const ACase: Integer);
+var
+  LVariant: TFIPSProviderConfig;
+  LConfig: string;
+  LRejected: Boolean;
+begin
+  case ACase of
+    0: LVariant := fcWrongSection;
+    1: LVariant := fcMissingMAC;
+    2: LVariant := fcInvalidMAC;
+    3: LVariant := fcMissingInclude;
+    4: LVariant := fcMalformedInclude;
+  else
+    raise EArgumentException.Create('Unknown invalid FIPS configuration test case');
+  end;
+  case LVariant of
+    fcWrongSection: LConfig := 'WrongSection';
+    fcMissingMAC: LConfig := 'MissingModuleMAC';
+    fcInvalidMAC: LConfig := 'InvalidModuleMAC';
+    fcMissingInclude: LConfig := 'MissingInclude';
+    fcMalformedInclude: LConfig := 'MalformedInclude';
+  end;
+  if RunInFreshProcess('Config_InvalidFIPS.' + LConfig) then
+    Exit;
+  LConfig := CreateProviderConfig(True, LVariant);
+  Loader.ConfigFile := LConfig;
+  LRejected := False;
+  try
+    try
+      Assert.IsTrue(Loader.Load,
+        'Nonfatal provider configuration failure may leave native libraries ready');
+    except
+      on E: ETaurusTLSConfigFileLoadError do
+      begin
+        LRejected := True;
+        Assert.IsTrue(Pos(LConfig, E.Message) > 0,
+          'A fatal included-configuration error must identify the selected wrapper file');
+      end;
+    end;
+    if LVariant = fcMalformedInclude then
+      Assert.IsTrue(LRejected,
+        'Malformed included FIPS configuration must raise a typed configuration-load error');
+    if LRejected then
+    begin
+      Assert.IsTrue(Loader.State = lsLoadedFailed,
+        'Fatal FIPS configuration failure must publish the failed loader state');
+      Assert.IsFalse(IdFIPS.GetFIPSMode(),
+        'Failed FIPS configuration must not advertise operational FIPS support');
+      Assert.IsFalse(IdFIPS.SetFIPSMode(True),
+        'FIPS enabling requests must not recover or reset a failed runtime');
+      Assert.IsFalse(IdFIPS.IsSHA256HashIntfAvail(),
+        'A failed runtime must not advertise digest availability');
+      Assert.IsFalse(IdFIPS.IsHMACSHA256Avail(),
+        'A failed runtime must not advertise HMAC availability');
+      Assert.IsFalse(Loader.Load,
+        'Invalid FIPS configuration must retain failed-state retry blocking until explicit reset');
+      Assert.WillRaise(
+        procedure
+        begin
+          IdFIPS.GetSHA256HashInst();
+        end, ETaurusTLSLoaderError,
+        'Digest creation after fatal FIPS configuration failure must reject inactive native APIs');
+    end
+    else
+      CheckUnavailableFIPS(True);
+  finally
+    CheckInstalledConfigUnchanged;
+  end;
+end;
+
 procedure RegisterFIPSProviderOptions;
 begin
+  TOptionsRegistry.RegisterOption<string>('fips-child-case', 'fcc',
+    'Internal isolated FIPS scenario selector; use -i:FIPS.Provider for normal runs',
+    procedure(Value: string)
+    begin
+      if Value = '' then
+        raise EArgumentException.Create('-fcc requires an isolated test-case name');
+      GFreshFIPSCase := Value;
+    end);
   TOptionsRegistry.RegisterOption<string>('fips-module-config', 'fmc',
     'Opt in to real FIPS provider tests using installed fipsmodule.cnf; run -i:FIPS.Provider alone',
     procedure(Value: string)

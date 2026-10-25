@@ -30,34 +30,6 @@ unit TaurusTLSFIPS;
 
 interface
 
-uses
-  Classes;
-
-/// <summary>
-/// Points Indy's IdFIPS hash and HMAC hooks at the TaurusTLS implementations.
-/// </summary>
-/// <remarks>
-/// Called once by unit initialization. Explicit callers may reinstall these hooks
-/// after selecting another backend. Loader Load/Unload never changes hook ownership.
-/// FIPS activation and selection belong to OpenSSL configuration.
-/// </remarks>
-procedure InstallFIPSHooks;
-
-type
-  /// <summary>
-  /// A procedure that assigns additional IdFIPS hooks.
-  /// </summary>
-  TFIPSHooksInstaller = procedure;
-
-/// <summary>
-/// Adds a procedure that InstallFIPSHooks calls after installing the hash and HMAC hooks.
-/// </summary>
-/// <remarks>
-/// Explicit compatibility extension point. NTLM does not register here and owns
-/// its callbacks independently. The procedure is called immediately if the TaurusTLS
-/// hooks are currently installed; no loader lifecycle notification invokes it.
-/// </remarks>
-procedure RegisterFIPSHooksInstaller(const AInstaller: TFIPSHooksInstaller);
 
 {$IFDEF UNITTEST}
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
@@ -537,22 +509,8 @@ end;
 
 // ****************************************************
 
-var
-  GFIPSHooksInstallers: array of TFIPSHooksInstaller;
-
-procedure CallFIPSHooksInstallers;
-var
-  I: Integer;
-begin
-  for I := 0 to High(GFIPSHooksInstallers) do
-    GFIPSHooksInstallers[I]();
-end;
-
-function FIPSHooksInstalled: Boolean;
-begin
-  Result := @IsHashingIntfAvail = @TaurusTLSIsHashingIntfAvail;
-end;
-
+// Install callbacks once during unit initialization. Loader actions only refresh
+// native API readiness; they never change the selected Indy backend.
 procedure InstallFIPSHooks;
 begin
   // A library query must not initialize Indy's separate OpenSSL backend.
@@ -594,15 +552,6 @@ begin
   UpdateHMACInst := TaurusTLSUpdateHMACInst;
   FinalHMACInst := TaurusTLSFinalHMACInst;
 
-  CallFIPSHooksInstallers;
-end;
-
-procedure RegisterFIPSHooksInstaller(const AInstaller: TFIPSHooksInstaller);
-begin
-  SetLength(GFIPSHooksInstallers, Length(GFIPSHooksInstallers) + 1);
-  GFIPSHooksInstallers[High(GFIPSHooksInstallers)] := AInstaller;
-  if FIPSHooksInstalled then
-    AInstaller;
 end;
 
 initialization

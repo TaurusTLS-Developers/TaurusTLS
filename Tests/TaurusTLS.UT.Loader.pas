@@ -298,7 +298,7 @@ type
     [Test]
     procedure Runtime_SharedLifecycle;
 
-    /// <summary>Verifies partial TLS runtime resources are cleaned after a hook installation failure.</summary>
+    /// <summary>Verifies TLS runtime resources are released when a later loader action fails.</summary>
     [Test]
     procedure Runtime_ActionFailure;
 
@@ -349,7 +349,6 @@ uses
   TaurusTLSHeaders_conf,
   TaurusTLSHeaders_ssl,
   TaurusTLSHeaders_types,
-  TaurusTLSFIPS,
   TaurusTLS;
 
 var
@@ -978,12 +977,12 @@ var
   {$ENDIF}
 
 type
-  TTestRuntimeHooksObserver = class
+  TTestRuntimeObserver = class
   public
     class var Active: Boolean;
-    class var ThrowOnInstall: Boolean;
-    class var InstallCount: Integer;
-    class procedure Install; static;
+    class var ThrowOnLoad: Boolean;
+    class var LoadCount: Integer;
+    class procedure ActionProc(AAction: TOpenSSLLoadAction);
   end;
 
   TConcurrentRegistrationObserver = class
@@ -1079,13 +1078,13 @@ end;
 
 {$I TaurusTLSSymbolDeprecatedOn.inc}
 
-class procedure TTestRuntimeHooksObserver.Install;
+class procedure TTestRuntimeObserver.ActionProc(AAction: TOpenSSLLoadAction);
 begin
-  if not Active then
+  if not Active or (AAction <> osaLoad) then
     Exit;
-  Inc(InstallCount);
-  if ThrowOnInstall then
-    raise EAbort.Create('Simulated TLS runtime initialization failure');
+  Inc(LoadCount);
+  if ThrowOnLoad then
+    raise EAbort.Create('Simulated TLS runtime action failure');
 end;
 
 class procedure TTestCallbackObserverA.ActionProc(AAction: TOpenSSLLoadAction);
@@ -1325,9 +1324,9 @@ begin
   TTestCallbackObserverB.ThrowOnUnload := False;
   TTestCallbackObserverA.MetadataEmptyOnLoad := False;
   TTestCallbackObserverA.MetadataEmptyOnUnload := False;
-  TTestRuntimeHooksObserver.Active := False;
-  TTestRuntimeHooksObserver.ThrowOnInstall := False;
-  TTestRuntimeHooksObserver.InstallCount := 0;
+  TTestRuntimeObserver.Active := False;
+  TTestRuntimeObserver.ThrowOnLoad := False;
+  TTestRuntimeObserver.LoadCount := 0;
   {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   GTestInfoUnavailable := 0;
   GTestDiscoveryOverride := False;
@@ -1339,8 +1338,8 @@ end;
 
 procedure TLoaderCallbacksFixture.Teardown;
 begin
-  TTestRuntimeHooksObserver.Active := False;
-  TTestRuntimeHooksObserver.ThrowOnInstall := False;
+  TTestRuntimeObserver.Active := False;
+  TTestRuntimeObserver.ThrowOnLoad := False;
   {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   GTestInfoUnavailable := 0;
   GTestDiscoveryOverride := False;
@@ -1869,13 +1868,14 @@ begin
   Loader.ConfigFile := FValidConfigFile;
   TTestCallbackObserverA.Active := True;
   TTestCallbackObserverB.Active := True;
-  TTestRuntimeHooksObserver.Active := True;
+  TTestRuntimeObserver.Active := True;
   Assert.IsTrue(LoaderMetadataIsEmpty);
   Assert.IsTrue(LoaderMetadataIsEmpty);
   Assert.IsTrue(Loader.State = lsNotLoaded);
   Assert.AreEqual(FValidConfigFile, Loader.ConfigFile);
   Assert.AreEqual(0, TTestCallbackLog.Count);
-  Assert.AreEqual(0, TTestRuntimeHooksObserver.InstallCount);
+  Assert.AreEqual(0, TTestRuntimeObserver.LoadCount,
+    'Passive queries and failed native initialization must not invoke runtime actions');
 end;
 
 // Keep compatibility-wrapper coverage while callers migrate to the loader.
@@ -1949,18 +1949,20 @@ var
   I: Integer;
 begin
   Loader.ConfigFile := FValidConfigFile;
-  TTestRuntimeHooksObserver.Active := True;
+  TTestRuntimeObserver.Active := True;
   for I := 1 to 2 do
   begin
     Assert.IsTrue(Loader.Load);
-    Assert.AreEqual(I, TTestRuntimeHooksObserver.InstallCount);
+    Assert.AreEqual(I, TTestRuntimeObserver.LoadCount,
+      'Each successful loader cycle must invoke the runtime observer once');
     Assert.IsTrue(LoadOpenSSLLibrary);
     LContext := TTaurusTLSContext.Create;
     try
       LContext.UseSystemRootCACertificateStore := False;
       LContext.InitContext(sslCtxClient);
       Assert.IsNotNull(LContext.Context);
-      Assert.AreEqual(I, TTestRuntimeHooksObserver.InstallCount);
+      Assert.AreEqual(I, TTestRuntimeObserver.LoadCount,
+        'Creating a TLS context must reuse the initialized runtime');
     finally
       LContext.Free;
     end;
@@ -1977,23 +1979,26 @@ var
 begin
   Loader.ConfigFile := FValidConfigFile;
   TTestCallbackObserverA.Active := True;
-  TTestRuntimeHooksObserver.Active := True;
-  TTestRuntimeHooksObserver.ThrowOnInstall := True;
+  TTestRuntimeObserver.Active := True;
+  TTestRuntimeObserver.ThrowOnLoad := True;
   Assert.WillRaiseWithMessage(
     procedure
     begin
       Loader.Load;
-    end, EAbort, 'Simulated TLS runtime initialization failure');
+    end, EAbort, 'Simulated TLS runtime action failure');
   Assert.IsTrue(Loader.State = lsLoadedFailed);
   Assert.IsTrue(LoaderMetadataIsEmpty);
   Assert.AreEqual(0, TTestCallbackLog.Count, 'Later load actions must not run');
-  Assert.AreEqual(1, TTestRuntimeHooksObserver.InstallCount);
+  Assert.AreEqual(1, TTestRuntimeObserver.LoadCount,
+    'Failed-state retries must not rerun the action; reset permits one successful load');
   Assert.IsFalse(LoadOpenSSLLibrary);
-  Assert.AreEqual(1, TTestRuntimeHooksObserver.InstallCount);
-  TTestRuntimeHooksObserver.ThrowOnInstall := False;
+  Assert.AreEqual(1, TTestRuntimeObserver.LoadCount,
+    'Failed-state retries must not rerun the action; reset permits one successful load');
+  TTestRuntimeObserver.ThrowOnLoad := False;
   UnLoadOpenSSLLibrary;
   Assert.IsTrue(LoadOpenSSLLibrary);
-  Assert.AreEqual(2, TTestRuntimeHooksObserver.InstallCount);
+  Assert.AreEqual(2, TTestRuntimeObserver.LoadCount,
+    'Explicit reset must permit a second runtime initialization attempt');
   LContext := TTaurusTLSContext.Create;
   try
     LContext.UseSystemRootCACertificateStore := False;
@@ -2055,7 +2060,7 @@ begin
   end;
   Loader.ConfigFile := FValidConfigFile;
   TTestCallbackObserverA.Active := True;
-  TTestRuntimeHooksObserver.Active := True;
+  TTestRuntimeObserver.Active := True;
   Assert.WillRaise(
     procedure
     begin
@@ -2064,12 +2069,14 @@ begin
   Assert.IsTrue(Loader.State = lsLoadedFailed);
   Assert.IsTrue(LoaderMetadataIsEmpty);
   Assert.AreEqual(0, TTestCallbackLog.Count);
-  Assert.AreEqual(0, TTestRuntimeHooksObserver.InstallCount);
+  Assert.AreEqual(0, TTestRuntimeObserver.LoadCount,
+    'Passive queries and failed native initialization must not invoke runtime actions');
   GTestSSLInitFailure := False;
   GTestCryptoInitFailure := False;
   Loader.Unload;
   Assert.IsTrue(Loader.Load);
-  Assert.AreEqual(1, TTestRuntimeHooksObserver.InstallCount);
+  Assert.AreEqual(1, TTestRuntimeObserver.LoadCount,
+    'Failed-state retries must not rerun the action; reset permits one successful load');
 end;
 {$ENDIF}
 
@@ -2192,9 +2199,10 @@ initialization
   TDUnitX.RegisterTestFixture(TLoaderLifecycleFixture);
   TDUnitX.RegisterTestFixture(TLoaderCallbacksFixture);
   TTestCallbackLog := TStringList.Create;
+  // Observe the runtime load phase before the later test action callbacks.
+  Register_SSLLoaderAction(TTestRuntimeObserver.ActionProc);
   Register_SSLLoaderAction(TTestCallbackObserverA.ActionProc);
   Register_SSLLoaderAction(TTestCallbackObserverB.ActionProc);
-  RegisterFIPSHooksInstaller(TTestRuntimeHooksObserver.Install);
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   Register_SSLLoader(TestSymbolInjectorLoadProc, 'LibCrypto');
   Register_SSLLoader(TestRuntimeBindings, 'LibCrypto');

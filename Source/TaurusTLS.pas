@@ -3199,8 +3199,6 @@ begin
     FPasswordLock := TIdCriticalSection.Create;
     FVerifyLock := TIdCriticalSection.Create;
     FSNILock := TIdCriticalSection.Create;
-    // Later unit initialization may have replaced Indy's crypto hooks.
-    InstallFIPSHooks;
   except
     // A failed action is responsible for its own partial initialization.
     ReleaseResources;
