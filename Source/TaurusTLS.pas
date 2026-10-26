@@ -3159,7 +3159,7 @@ begin
             for i := 0 to LSSLIO.Certificates.Count - 1 do
             begin
               LX509 := LSSLIO.Certificates[i].x509;
-              if X509_check_host(LX509, LPHost, 0, 0, nil) = 1 then
+              if X509_check_host(LX509, LPHost, 0, X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT, nil) = 1 then
               begin
                 // switch certificate we send to the client and indicate success.
                 if SSL_set_SSL_CTX(SSL, LSSLIO.Certificates[i].ctx) <> nil then
@@ -3175,7 +3175,7 @@ begin
               LX509 := SSL_CTX_get0_certificate(LSSLIO.SSLContext.Context);
               if LX509 <> nil then
               begin
-                if X509_check_host(LX509, LPHost, 0, 0, nil) = 1 then
+                if X509_check_host(LX509, LPHost, 0, X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT, nil) = 1 then
                 begin
                   //no need to switch the certificates but good idea
                   //to indicate a host match.
