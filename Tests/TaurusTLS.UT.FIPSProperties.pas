@@ -45,7 +45,7 @@ type
 implementation
 
 uses
-  System.SysUtils, IdCTypes, IdFIPS, TaurusTLSFIPS
+  System.SysUtils, IdCTypes, IdFIPS, TaurusTLSIdFIPS, TaurusTLS_ProviderFIPS
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   , TaurusTLSLoader, TaurusTLSHeaders_crypto, TaurusTLSHeaders_evp,
   TaurusTLSHeaders_types, TaurusTLSExceptionHandlers

@@ -117,7 +117,7 @@ uses
   TaurusTLSHeaders_crypto,
   TaurusTLSHeaders_evp,
   TaurusTLSHeaders_types,
-  TaurusTLS_NTLM;
+  TaurusTLSIdNTLM;
 
 
 type

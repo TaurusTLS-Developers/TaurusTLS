@@ -14,7 +14,7 @@ uses
   TaurusTLSExceptionHandlers,
   TaurusTLSHeaders_evp,
   TaurusTLSHeaders_err,
-  TaurusTLS_NTLM,
+  TaurusTLSIdNTLM,
   TaurusTLS.Loader.ConsoleSupport in 'TaurusTLS.Loader.ConsoleSupport.pas';
 
 {$I TaurusTLS.Hooks.Isolation.inc}

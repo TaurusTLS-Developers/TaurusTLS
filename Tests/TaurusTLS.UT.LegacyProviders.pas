@@ -1,4 +1,4 @@
-﻿unit TaurusTLS.UT.LegacyProviders;
+unit TaurusTLS.UT.LegacyProviders;
 
 interface
 
@@ -93,7 +93,7 @@ uses
   TaurusTLSHeaders_err,
   TaurusTLSHeaders_provider
 {$IFDEF STATICLOAD_OPENSSL}
-  , TaurusTLS_LegacyProviders
+  , TaurusTLS_ProviderLegacy
 {$ENDIF}
   ;
 
