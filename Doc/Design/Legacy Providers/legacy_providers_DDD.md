@@ -1,7 +1,7 @@
-﻿# TaurusTLS Legacy Provider Integration - DDD
+# TaurusTLS Legacy Provider Integration - DDD
 
-Status: Registration-only unit and config-owning fixtures implemented; execution/isolated archive acceptance pending.
-Revision date: 2026-10-24.
+Status: Registration-only provider and independent Indy adapters are committed; isolated Win64 dynamic provider tests pass. Archive/dependency isolation, Release and final non-Windows execution remain pending.
+Revision date: 2026-10-27.
 Architecture: [Legacy HLD](legacy_providers_HLD.md).
 General lifecycle: [OpenSSL DDD](openssl_providers_DDD.md).
 Tracking: [Provider plan](openssl_providers_plan.md) and
@@ -13,7 +13,7 @@ Use the default context (`nil`) throughout. Configuration owns provider module
 paths, parameters and activation. The loader applies configuration using its
 existing `ConfigFile` contract before post-configuration actions.
 
-Retain `Source/TaurusTLS_LegacyProviders.pas` for archive linking and builtin
+Retain `Source/TaurusTLS_ProviderLegacy.pas` for archive linking and builtin
 registration. Shared-library deployments need no reference to this unit merely
 to activate an external module from `openssl.cnf`.
 
@@ -27,14 +27,22 @@ programmatic activation proposal is superseded by configuration-only activation.
 |---|---|
 | `TaurusTLSLoader` | Existing native lifecycle, explicit/default configuration, readiness, callback rollback and metadata |
 | `TaurusTLSHeaders_provider` | OpenSSL declarations/imports only |
-| `TaurusTLS_LegacyProviders` | Optional archive reference and builtin entry-point registration before configuration |
-| `TaurusTLS_NTLM` | Stable Indy callbacks, passive readiness/algorithm checks and LM/NT response operations |
-| `TaurusTLSFIPS` | Independent hash/FIPS integration and policy reporting, with final policy semantics deferred |
+| `TaurusTLS_ProviderLegacy` | Optional archive reference and builtin entry-point registration before configuration |
+| `TaurusTLSIdNTLM` | Stable Indy callbacks, passive readiness/algorithm checks and LM/NT response operations |
+| `TaurusTLS_ProviderFIPS` | Cached native FIPS API validation and passive `IsFIPSProviderLoaded`; no activation or Indy hooks |
+| `TaurusTLSIdFIPS` | Independent Indy hash/HMAC hooks, configured FIPS reporting and a non-mutating policy setter |
 
 The core loader and NTLM unit must not reference the optional legacy archive unit.
 Keep archive ABI declarations behind the existing artifact configuration
 (`STATICLOAD_OPENSSL` for Delphi). `OPENSSL_STATIC_LINK_MODEL` alone also selects
 startup shared-library imports and is not an archive discriminator.
+
+The unit split is delivered in `43b6aa8`. Deprecated `TaurusTLSFIPS` and
+`TaurusTLS_NTLM` contain only interface uses of their replacement adapters.
+Deprecated `TaurusTLS_LegacyProviders` also forwards the old public status query.
+They remain in Source for compatibility and are excluded from current runtime
+package membership. Generated package files are rebuilt by the package tool,
+rather than edited as part of the source/test commits.
 
 Retain the corrected `cdecl` declaration and parameter types for
 `ossl_legacy_provider_init` from the existing header/artifact contract. Keep
@@ -70,11 +78,11 @@ and otherwise uses OSSL_PROVIDER_available without acquiring a reference.
 Native source review establishes absence of config/activation calls in this path.
 Fresh-process archive execution is still required to validate the actual artifact.
 
-## 4. Remove automatic acquisition and release
+## 4. Acquisition, release and passive status
 
-Remove the existing manager's retained default/legacy handles, calls to
-`OSSL_PROVIDER_load` and matching `OSSL_PROVIDER_unload`, and activation from
-initialization/finalization and `Register_SSLLoaderAction` callbacks.
+The former manager's retained default/legacy handles, calls to
+`OSSL_PROVIDER_load`/`OSSL_PROVIDER_unload` and automatic activation have been
+removed. The provider unit performs archive-only registration and passive queries.
 
 Do not replace these with activation in NTLM, FIPS/hash hooks, a readiness query,
 or a new public loader method. OpenSSL configuration supplies activation.
@@ -85,10 +93,11 @@ reference counts, or treat a reference-count decrease as proof of deactivation.
 Normal loader cleanup releases only resources it actually owns; this refactor
 does not add explicit provider handles to it.
 
-Review `IsLegacyProviderLoaded` compatibility semantics against ready configured
-provider availability after the manager handles are removed. A passive status
-query must not load/reset the loader or activate providers; provider presence
-alone does not guarantee MD4/DES permission. Exact facade implementation is pending.
+`IsLegacyProviderLoaded` in TaurusTLS_ProviderLegacy returns False unless the
+loader is ready; otherwise it evaluates OSSL_PROVIDER_available(nil, 'legacy')
+without acquiring a reference. The deprecated wrapper forwards to that function.
+It never loads/resets the loader or activates a provider. Availability alone
+still does not guarantee MD4/DES permission under current properties.
 
 ## 5. Configuration and native initialization
 
@@ -119,7 +128,7 @@ NTLM implementation is committed in `95e7bd2`:
 - Assign the four Indy callbacks once via initialization; never rewrite them on
   load/unload. Preserve foreign assignments made afterward.
 - Retain `IdFIPS` for Indy declarations and policy, with no NTLM dependency on
-  `TaurusTLSFIPS` or `TaurusTLS_LegacyProviders`.
+  `TaurusTLSIdFIPS` or `TaurusTLS_ProviderLegacy`.
 - Keep `LoadNTLMLibrary` status-only. Availability checks readiness, Indy policy,
   and fetched MD4/DES-ECB under current default-context properties.
 - Preserve pre-existing native errors during a negative availability probe.
@@ -133,58 +142,87 @@ implementations. Distinguish native API support, provider availability, configur
 properties, Indy policy and actual operation permission. Preserve policy in
 availability/operation hooks; do not enable legacy to bypass restrictions.
 
-Final `GetFIPSMode`/`SetFIPSMode`, provenance and broader HMAC work remain
-separately reviewed. Static FIPS is unsupported; no certification claim follows
-from loading a module, passing a vector or reporting loader readiness.
+TaurusTLSIdFIPS reports mode only for a ready supported dynamic runtime with
+configured FIPS selection and an available FIPS provider. SetFIPSMode accepts
+only a no-op matching that policy. When FIPS is selected but unavailable,
+reporting is False and operations reject rather than fall back to default.
+Ordinary hashing/HMAC remains supported when FIPS is not selected.
+TaurusTLS_ProviderFIPS owns cached API validation and passive provider status;
+its loader action does not activate providers. Static FIPS remains unsupported.
+Per-operation approval indicators and certification provenance are separate;
+a loaded module, vector or readiness query is not a certification claim.
 
-## 7. Test runner and package changes
+## 7. Test runner and package boundaries
 
-The regular runner retains UT.LegacyProviders for coverage, but its production
-legacy dependency is now conditional on STATICLOAD_OPENSSL. Category exclusion
-still does not suppress unit initialization; the shared dependency is actually
-absent and the archive dependency only registers.
+The source split is committed in 43b6aa8; provider test extraction is committed
+in 90d409c. The ordinary TaurusTLS.UT project no longer includes the Legacy
+activation unit or TConfiguredFIPSProviderFixture. It retains loader/readiness,
+native-policy and Indy adapter behavior without installed FIPS prerequisites
+or a FIPS category exclusion.
 
-Provider fixtures now use the manual base with their own temporary configuration.
-A shared-runtime negative fixture omits activate, then checks legacy, MD4 and DES
-are unavailable. Static/archive absence remains a separate fresh-process check
-because configuration activation can survive static Unload.
+TaurusTLS.UT.Providers.Legacy contains the moved positive configuration/availability
+and digest fixtures plus the dynamic no-activation fixture. Its reference to
+TaurusTLS_ProviderLegacy remains conditional on STATICLOAD_OPENSSL. The old
+TaurusTLS.UT.LegacyProviders file remains on disk but is not in the ordinary project.
 
-Audit `TaurusTLS_RT` membership/transitive initialization as well as application
-uses clauses. NTLM-only and FIPS-only executable checks must prove that optional
-integration is not accidentally supplied by the combined runner.
+TaurusTLS.UT.Providers.Common extends TOsslBaseFixture from
+TaurusTLS.UT.TestClasses with temporary-config ownership and cleanup, reusing
+SetupFromCmd, Load, Unload and Loader. The Legacy fixture directly uses the same
+manual base. Do not reference TaurusTLS.UT.Loader merely for fixture helpers:
+its initialization registers ordinary-suite tests.
+
+The provider runner requires -scenario:<known-name>. It lists supported cases
+with -scenario:list and rejects missing/unknown selectors or arbitrary DUnitX
+run/category filters. After selecting one exact case it rebuilds the DUnitX
+filter cached by CheckCommandLine, disables RTTI fixture discovery and requires
+one pass with no failures/errors/ignored/leaks. Each process handles one native
+configuration scenario. The tests have no process-launch or child-report code.
+
+The external CMD/PowerShell/Bash launchers discover names from that executable,
+run each selected case with a deadline and retain logs/XML. PowerShell forwards
+-TestArguments arrays, CMD forwards testarg=VALUE tokens and Bash forwards
+arguments after --. Launcher-owned selectors, libraries/FIPS input, report
+filenames and exit behavior cannot be overridden through forwarded options.
+macOS runs only supported Legacy/default cases. Read
+[platform instructions](../../../Tests/TaurusTLS.UT.Providers.md); keep published
+examples relative or environment-based, with no private paths or identities.
+
+Current runtime package membership includes the new adapter/provider units and
+excludes the three deprecated wrappers. Audit actual generated package/linker
+closure independently of source uses clauses. An NTLM-only or FIPS-only probe
+must not be accidentally supplied with another optional integration by the runner.
 
 ## 8. Fixtures and acceptance matrix
 
-The manual `TOsslBaseFixture` provides a loader and configuration/lifecycle
-helpers; it does not eagerly load OpenSSL. `TOsslAutoloadFixture` supplies the
-automatic lifecycle for fixtures that need it.
+Provider fixtures create their own temporary configuration before explicit Load,
+unload before settings/file cleanup and handle failed setup/destructor cleanup.
+The ordinary NTLM crypto fixture retains its controlled non-FIPS config through
+the shared manual infrastructure. These settings are test-owned, not customer
+policy defaults. Static unload/retry does not reset OpenSSL's native context.
 
-NTLM test changes are committed in `0b42e6a`. The positive fixture creates and
-applies a unique temporary default/legacy config before loading, discovers an
-existing architecture-matched module where appropriate, then unloads, restores
-loader settings and deletes temporary files. Cleanup on setup failure and a
-destructor fallback are covered by the fixture implementation. These are controlled
-non-FIPS tests, not customer policy defaults.
-
-| Pending case | Expected observation |
+| Case | Evidence or remaining gate |
 |---|---|
-| Shared build, config activation | Matching module loads without the legacy wrapper unit |
-| Archive inclusion without activation | Entry point is registered but legacy algorithms remain unavailable |
-| Archive config activation | Linked provider activates after registration, without external module loading |
-| Unused module with invalid path and no activation | No implicit attempt to activate it |
-| Missing required provider/algorithm | Passive status false; operations report the established failure |
-| FIPS selection or denying Indy policy | NTLM algorithms stay unavailable/prohibited; no fallback activation |
-| Multiple consumers | Share configured provider; own only fetched algorithm objects |
-| Repeated ready Load | No duplicate preparation/configuration or callback assignment |
-| Failure/retry and static retained context | Registration/config lifetime handled without assumed native reset |
-| Optional dependency isolation | Dynamic NTLM/FIPS runners do not pull in the legacy unit |
-| Shutdown | Operations and objects retired before native library release |
+| Dynamic config activation without archive unit | 14/14 Win64 Legacy/default scenarios pass in separate processes |
+| Dynamic no-activation | Fresh case confirms Legacy/MD4/DES absence; included in those 14 |
+| FIPS selection/policy rejection | Covered by the 17 Win64 FIPS scenarios, including active Legacy under fips=yes |
+| Archive inclusion without activation | Pending fresh archive execution; registration alone must not supply active Legacy algorithms |
+| Archive config activation | Pending fresh archive execution using the linked provider with no external module |
+| Archive absence | Requires another executable without TaurusTLS_ProviderLegacy; not proven by the included-unit runner |
+| Unused or missing archive provider | Pending artifact-specific absence/failure scenarios |
+| Multiple consumers | Pending provider-specific acceptance; own fetched algorithms only, never borrowed provider handles |
+| Repeated Load and callback stability | Existing lifecycle/adapter coverage; retain final platform execution evidence |
+| Failure/retry and retained static context | Pending provider-specific archive execution; do not assume native reset |
+| Optional dependency isolation | Pending linker maps/package closure for adapters and unused archives |
+| Shutdown | Existing loader-only probes are separate evidence; all operations/objects must be retired before release |
 
-Run distinct default-context configurations in fresh processes where isolation is
-required. Existing combined-runner results do not validate the pending refactor.
-Developer results before this refactor: Windows32/64 each 522/522, Linux 509/510,
-macOS 472/473. Non-Windows category inclusion and remaining failure identities were
-not supplied. No new platform or FPC validation is implied.
+Dynamic Win64/OpenSSL 4.1 total: 31/31 separate-process scenarios (14 Legacy/default,
+17 FIPS); each reports one pass, zero ignored/leaked/failed/errored and exit 0.
+The provider Win64 and ordinary Linux64 full builds succeed, with recorded
+dependency warnings/hints. Final ordinary-suite execution and actual Linux/macOS
+provider runs after extraction remain pending; simulated macOS script checks do
+not establish native execution. FPC, Release and remaining archive gates stay open.
+Earlier combined-runner/platform totals predate this extraction and are retained
+as historical evidence in the local plan, not as acceptance of these final projects.
 
 ## 9. References
 
