@@ -9,8 +9,8 @@ interface
 uses
   DUnitX.TestFramework, TaurusTLS.UT.Providers.Common;
 
-type
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+type
   /// <summary>
   /// Real-provider integration: activation/selection, provider identity,
   /// digest/HMAC vectors, policy rejection, self-tests, reload and invalid configs.
@@ -78,6 +78,7 @@ type
 
 implementation
 
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 uses
   System.SysUtils, System.Classes, System.IOUtils,
   IdFIPS, IdGlobal, IdCTypes,
@@ -95,7 +96,6 @@ begin
     Result := Result + IntToHex(ABytes[I], 2);
 end;
 
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 function ConfigPath(const APath: string): string;
 begin
   Result := StringReplace(TPath.GetFullPath(APath), '\', '/', [rfReplaceAll]);
