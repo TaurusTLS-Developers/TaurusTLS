@@ -150,6 +150,13 @@ type
     [TestCase('Registrations', '1')]
     procedure Life_ConcurrentSingleton(const ARegister: Integer);
 
+    /// <summary>Competing Load callers wait for one initialization and share its ready result.</summary>
+    [TestCase('Workers2', '2')]
+    [TestCase('Workers3', '3')]
+    [TestCase('Workers15', '15')]
+    [TestCase('Workers32', '32')]
+    procedure Life_ConcurrentLoad(const AWorkerCount: Integer);
+
     {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
     /// <summary>Verifies missing libraries fail without dispatching actions and permit explicit recovery.</summary>
     [Test]
@@ -1119,7 +1126,7 @@ procedure TActionRegistrationProbe.Action(AAction: TOpenSSLLoadAction);
 begin
   if AAction = osaLoad then
   begin
-    Inc(LoadCount);
+    TInterlocked.Increment(LoadCount);
     ReadyOnLoad := GetOpenSSLLoader.IsLoaded;
     NativeOnLoad := OpenSSL_version_num() > 0;
     if Assigned(Log) then
@@ -1129,7 +1136,7 @@ begin
   end
   else
   begin
-    Inc(UnloadCount);
+    TInterlocked.Increment(UnloadCount);
     ReadyOnUnload := GetOpenSSLLoader.IsLoaded;
     NativeOnUnload := OpenSSL_version_num() > 0;
     if Assigned(Log) then
@@ -2574,6 +2581,116 @@ begin
     'Failed-state retries must not rerun the action; reset permits one successful load');
 end;
 {$ENDIF}
+
+procedure TLoaderLifecycleFixture.Life_ConcurrentLoad(const AWorkerCount: Integer);
+const
+  CWaitMilliseconds = 10000;
+  CBlockedCheckMilliseconds = 100;
+var
+  LLoader: IOpenSSLLoader;
+  LProbe: TActionRegistrationProbe;
+  LAllStarted, LAnyDone, LDone: TEvent;
+  LWorkers: TArray<TThread>;
+  LResults: TArray<Boolean>;
+  LErrors: TArray<string>;
+  LStarting, LRemaining: Integer;
+  I: Integer;
+
+  function CreateWorker(const AIndex: Integer): TThread;
+  begin
+    Result := TThread.CreateAnonymousThread(
+      procedure
+      begin
+        try
+          try
+            if TInterlocked.Decrement(LStarting) = 0 then
+              LAllStarted.SetEvent;
+            LResults[AIndex] := LLoader.Load;
+          except
+            on E: Exception do
+              LErrors[AIndex] := E.ClassName + ': ' + E.Message;
+          end;
+        finally
+          LAnyDone.SetEvent;
+          if TInterlocked.Decrement(LRemaining) = 0 then
+            LDone.SetEvent;
+        end;
+      end);
+    Result.FreeOnTerminate := False;
+  end;
+
+begin
+  Assert.IsTrue(AWorkerCount >= 2, 'At least two Load callers are required');
+  LLoader := Loader;
+  LLoader.ConfigFile := FValidConfigFile;
+  SetLength(LWorkers, AWorkerCount);
+  SetLength(LResults, AWorkerCount);
+  SetLength(LErrors, AWorkerCount);
+  LStarting := AWorkerCount;
+  LRemaining := AWorkerCount;
+  LAllStarted := nil;
+  LAnyDone := nil;
+  LDone := nil;
+  LProbe := TActionRegistrationProbe.Create;
+  try
+    LProbe.Entered := TEvent.Create(nil, True, False, '');
+    LProbe.ReleaseGate := TEvent.Create(nil, True, False, '');
+    LAllStarted := TEvent.Create(nil, True, False, '');
+    LAnyDone := TEvent.Create(nil, True, False, '');
+    LDone := TEvent.Create(nil, True, False, '');
+    Register_SSLLoaderAction(LProbe.Action);
+
+    // Hold the first Load inside initialization before starting its competitors.
+    LWorkers[0] := CreateWorker(0);
+    LWorkers[0].Start;
+    Assert.IsTrue(LProbe.Entered.WaitFor(CWaitMilliseconds) = wrSignaled,
+      'The first Load caller must enter its initialization callback');
+    for I := 1 to AWorkerCount - 1 do
+    begin
+      LWorkers[I] := CreateWorker(I);
+      LWorkers[I].Start;
+    end;
+    Assert.IsTrue(LAllStarted.WaitFor(CWaitMilliseconds) = wrSignaled,
+      'All competing Load workers must start');
+    Assert.IsTrue(LAnyDone.WaitFor(CBlockedCheckMilliseconds) = wrTimeout,
+      'No Load caller may return before initialization finishes');
+
+    LProbe.ReleaseGate.SetEvent;
+    Assert.IsTrue(LDone.WaitFor(CWaitMilliseconds) = wrSignaled,
+      'Load callers must finish after initialization is released');
+    for I := 0 to AWorkerCount - 1 do
+    begin
+      Assert.AreEqual('', LErrors[I], Format('Load worker %d failed', [I]));
+      Assert.IsTrue(LResults[I], Format('Load worker %d must succeed', [I]));
+    end;
+    Assert.IsTrue(LLoader.State = lsLoadedReady);
+    Assert.IsTrue(LLoader.IsLoaded);
+    Assert.AreEqual(1, LProbe.LoadCount, 'Competing callers must initialize actions once');
+    Assert.AreEqual(0, LProbe.UnloadCount, 'Successful Load callers must not trigger cleanup');
+
+    LLoader.Unload;
+    Assert.AreEqual(1, LProbe.UnloadCount, 'One global Unload must clean up once');
+    Assert.IsTrue(LLoader.State = lsNotLoaded);
+    Assert.IsFalse(LLoader.IsLoaded);
+  finally
+    // Release initialization even if a readiness, timeout or result assertion failed.
+    if Assigned(LProbe.ReleaseGate) then
+      LProbe.ReleaseGate.SetEvent;
+    for I := 0 to High(LWorkers) do
+      if Assigned(LWorkers[I]) then
+      begin
+        LWorkers[I].WaitFor;
+        LWorkers[I].Free;
+      end;
+    UnRegister_SSLLoaderAction(LProbe.Action);
+    LDone.Free;
+    LAnyDone.Free;
+    LAllStarted.Free;
+    LProbe.ReleaseGate.Free;
+    LProbe.Entered.Free;
+    LProbe.Free;
+  end;
+end;
 
 procedure TLoaderLifecycleFixture.Life_ConcurrentSingleton(const ARegister: Integer);
 const
