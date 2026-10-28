@@ -57,10 +57,14 @@ uses Variants, IdGlobal, IOUtils;
 procedure IterateThroughSourceDir(VRT_Units, VDT_Units, VRegister: TStrings);
 var
   LCurFile: TSearchRec;
+  LExclude: TStringList;
 begin
   VRT_Units.Clear;
   VDT_Units.Clear;
   VRegister.Clear;
+  LExclude := TStringList.Create;
+  try
+    LExclude.LoadFromFile(ExtractFilePath(ParamStr(0))+'exclude.txt');
   if FindFirst('..\..\..\..\Source\*.pas', faAnyFile, LCurFile) = 0 then
   begin
     repeat
@@ -76,7 +80,7 @@ begin
         end
         else
         begin
-          if (LCurFile.Name <> 'TaurusTLS_LegacyProviders.pas') and (LCurFile.Name <> 'TaurusTLSFIPS.pas') and (LCurFile.Name <> 'TaurusTLS_NTLM.pas') then
+          if LExclude.IndexOf(LCurFile.Name) = -1 then
           begin
             VRT_Units.Add(LCurFile.Name);
           end;
@@ -84,6 +88,9 @@ begin
       end;
     until FindNext(LCurFile) <> 0;
     FindClose(LCurFile);
+  end;
+  finally
+    FreeAndNil(LExclude);
   end;
 end;
 
