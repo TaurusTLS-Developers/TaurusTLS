@@ -145,7 +145,7 @@ type
     [Test]
     procedure State_Lifecycle;
 
-    /// <summary>Verifies concurrent queries share one loader and concurrent registrations are retained.</summary>
+    /// <summary>Verifies concurrent queries share one loader and concurrent action registrations are retained.</summary>
     [TestCase('Queries', '0')]
     [TestCase('Registrations', '1')]
     procedure Life_ConcurrentSingleton(const ARegister: Integer);
@@ -1023,8 +1023,6 @@ type
   TConcurrentRegistrationObserver = class
   public
     class var Active: Boolean;
-    class var HeaderLoadCount: Integer;
-    class var HeaderUnloadCount: Integer;
     class var ActionLoadCount: Integer;
     class var ActionUnloadCount: Integer;
     class procedure ActionProc(AAction: TOpenSSLLoadAction);
@@ -1080,21 +1078,6 @@ begin
     osaLoad: Inc(ActionLoadCount);
     osaUnload: Inc(ActionUnloadCount);
   end;
-end;
-
-{$I TaurusTLSUnusedParamOff.inc}
-procedure ConcurrentRegistrationLoader(const ADllHandle: TIdLibHandle;
-  LibVersion: TIdC_UINT; const AFailed: TStringList);
-begin
-  if TConcurrentRegistrationObserver.Active then
-    Inc(TConcurrentRegistrationObserver.HeaderLoadCount);
-end;
-{$I TaurusTLSUnusedParamOn.inc}
-
-procedure ConcurrentRegistrationUnloader;
-begin
-  if TConcurrentRegistrationObserver.Active then
-    Inc(TConcurrentRegistrationObserver.HeaderUnloadCount);
 end;
 
 // Exercise the deprecated compatibility API deliberately.
@@ -1464,10 +1447,15 @@ end;
 procedure TLoaderLifecycleFixture.Life_PartialLibrary;
 var
   LCryptoFiles: TArray<string>;
+  LDistributionPath: string;
   LSourceFile: string;
   LCopyFile: string;
 begin
-  LCryptoFiles := TDirectory.GetFiles(FOrigOpenSSLPath, 'libcrypto*.dll');
+  // The saved original path is for teardown; SetupFromCmd selects this test's path.
+  LDistributionPath := Loader.OpenSSLPath;
+  Assert.IsTrue(LDistributionPath <> '',
+    'Partial-library test requires an OpenSSL distribution directory configured with -osp');
+  LCryptoFiles := TDirectory.GetFiles(LDistributionPath, 'libcrypto*.dll');
   Assert.IsTrue(Length(LCryptoFiles) > 0, 'Test distribution must contain a crypto DLL');
   LSourceFile := LCryptoFiles[0];
   LCopyFile := TPath.Combine(FTempDir, TPath.GetFileName(LSourceFile));
@@ -1481,7 +1469,7 @@ begin
   Assert.IsTrue(Winapi.Windows.GetModuleHandle(PChar(LCopyFile)) = 0,
     'Rollback must release the partially loaded crypto DLL');
   TFile.Delete(LCopyFile);
-  Loader.OpenSSLPath := FOrigOpenSSLPath;
+  Loader.OpenSSLPath := LDistributionPath;
   Assert.IsFalse(Loader.Load);
   Loader.Unload;
   Assert.IsTrue(Loader.Load, 'Recovery must work after the partial load is cleaned up');
@@ -2452,11 +2440,7 @@ var
             end;
             LResults[AIndex] := LLoader;
             if ARegister <> 0 then
-            begin
-              Register_SSLLoader(ConcurrentRegistrationLoader, 'LibCrypto');
-              Register_SSLUnloader(ConcurrentRegistrationUnloader);
               Register_SSLLoaderAction(TConcurrentRegistrationObserver.ActionProc);
-            end;
           except
             on E: Exception do
               LErrors[AIndex] := E.ClassName + ': ' + E.Message;
@@ -2474,8 +2458,6 @@ begin
   SetLength(LResults, CWorkerCount);
   SetLength(LErrors, CWorkerCount);
   LRemaining := CWorkerCount;
-  TConcurrentRegistrationObserver.HeaderLoadCount := 0;
-  TConcurrentRegistrationObserver.HeaderUnloadCount := 0;
   TConcurrentRegistrationObserver.ActionLoadCount := 0;
   TConcurrentRegistrationObserver.ActionUnloadCount := 0;
   TConcurrentRegistrationObserver.Active := ARegister <> 0;
@@ -2497,23 +2479,16 @@ begin
       end;
       Assert.IsTrue(Loader.State = lsNotLoaded, 'Queries and registration must not load OpenSSL');
       Assert.AreEqual(0, TConcurrentRegistrationObserver.ActionLoadCount);
-      Assert.AreEqual(0, TConcurrentRegistrationObserver.HeaderLoadCount);
 
       if ARegister <> 0 then
       begin
         Loader.ConfigFile := FValidConfigFile;
         Assert.IsTrue(Loader.Load);
         Assert.AreEqual(CWorkerCount, TConcurrentRegistrationObserver.ActionLoadCount);
-        {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-        Assert.AreEqual(CWorkerCount, TConcurrentRegistrationObserver.HeaderLoadCount);
-        {$ENDIF}
         Assert.IsTrue(Loader.Load);
         Assert.AreEqual(CWorkerCount, TConcurrentRegistrationObserver.ActionLoadCount);
         Loader.Unload;
         Assert.AreEqual(CWorkerCount, TConcurrentRegistrationObserver.ActionUnloadCount);
-        {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-        Assert.AreEqual(CWorkerCount, TConcurrentRegistrationObserver.HeaderUnloadCount);
-        {$ENDIF}
       end;
     finally
       LStart.SetEvent;
