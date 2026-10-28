@@ -76,7 +76,7 @@ begin
         end
         else
         begin
-          if (LCurFile.Name <> 'TaurusTLSFIPS.pas') and (LCurFile.Name <> 'TaurusTLS_NTLM.pas') then
+          if (LCurFile.Name <> 'TaurusTLS_LegacyProviders.pas') and (LCurFile.Name <> 'TaurusTLSFIPS.pas') and (LCurFile.Name <> 'TaurusTLS_NTLM.pas') then
           begin
             VRT_Units.Add(LCurFile.Name);
           end;
