@@ -54,6 +54,22 @@ type
     procedure Teardown;
   end;
 
+  [TestFixture]
+  [Category('Loader,Loader.Component')]
+  TLoaderComponentFixture = class(TLoaderBaseFixture)
+  public
+    [Test]
+    procedure Context_ExplicitReadiness;
+    [Test]
+    procedure Facade_SharedLifecycle;
+    [TestCase('Automatic', '0')]
+    [TestCase('Disabled', '1')]
+    [TestCase('Designer', '2')]
+    procedure Facade_Startup(const AKind: Integer);
+    [Test]
+    procedure Facade_StartupFailure;
+  end;
+
   /// <summary>
   ///   Group 1: Configuration file path validation, syntax errors, and expansion tests.
   /// </summary>
@@ -396,6 +412,146 @@ uses
   TaurusTLSHeaders_ssl,
   TaurusTLSHeaders_types,
   TaurusTLS;
+
+type
+  TLoaderComponentAccess = class(TTaurusTLSLoader)
+  public
+    procedure FinishStreaming;
+    procedure MarkDesigning;
+  end;
+
+procedure TLoaderComponentAccess.FinishStreaming;
+begin
+  Loaded;
+end;
+
+procedure TLoaderComponentAccess.MarkDesigning;
+begin
+  SetDesigning(True);
+end;
+
+procedure TLoaderComponentFixture.Context_ExplicitReadiness;
+var
+  LContext: TTaurusTLSContext;
+begin
+  LContext := TTaurusTLSContext.Create;
+  try
+    Assert.IsFalse(Loader.IsLoaded, 'Construction must not load OpenSSL');
+    Assert.WillRaise(
+      procedure
+      begin
+        LContext.InitContext(sslCtxClient);
+      end, ETaurusTLSLoaderError);
+    Assert.IsFalse(Loader.IsLoaded, 'Readiness failure must not load OpenSSL');
+    Loader.ConfigFile := FValidConfigFile;
+    Assert.IsTrue(Loader.Load);
+    LContext.UseSystemRootCACertificateStore := False;
+    LContext.InitContext(sslCtxClient);
+  finally
+    LContext.Free;
+  end;
+end;
+
+procedure TLoaderComponentFixture.Facade_SharedLifecycle;
+var
+  LFirst, LSecond: TTaurusTLSLoader;
+begin
+  LFirst := TTaurusTLSLoader.Create(nil);
+  LSecond := TTaurusTLSLoader.Create(nil);
+  try
+    Assert.IsTrue(LFirst.LoadOnStart);
+    Assert.IsFalse(Loader.IsLoaded, 'Programmatic construction must stay inactive');
+    LFirst.OpenSSLPath := Loader.OpenSSLPath;
+    LFirst.SSLLibVersions := Loader.SSLLibVersions;
+    LFirst.ConfigFile := FValidConfigFile;
+    Assert.AreEqual(FValidConfigFile, LSecond.ConfigFile);
+    Assert.IsFalse(Loader.IsLoaded, 'Setters must not load');
+    Assert.IsTrue(LFirst.Load);
+    Assert.IsTrue(LSecond.IsLoaded);
+    Assert.AreEqual(Ord(Loader.State), Ord(LSecond.State));
+    Assert.AreEqual(Loader.Version, LSecond.Version);
+    Assert.AreEqual(Loader.ConfigDirectory, LSecond.ConfigDirectory);
+    Assert.AreEqual(Loader.ModulesDirectory, LSecond.ModulesDirectory);
+    Assert.AreEqual(Loader.EnginesDirectory, LSecond.EnginesDirectory);
+    Assert.IsTrue(Loader.FailedToLoad = LSecond.FailedToLoad);
+    Assert.IsTrue(LSecond.Load);
+    LFirst.Free;
+    LFirst := nil;
+    Assert.IsTrue(Loader.IsLoaded, 'Facade destruction must not unload');
+    LSecond.Unload;
+    Assert.IsFalse(Loader.IsLoaded, 'One Unload is global after repeated Load');
+  finally
+    LSecond.Free;
+    LFirst.Free;
+  end;
+end;
+
+procedure TLoaderComponentFixture.Facade_Startup(const AKind: Integer);
+var
+  LSource, LComponent: TLoaderComponentAccess;
+  LStream: TMemoryStream;
+begin
+  LSource := TLoaderComponentAccess.Create(nil);
+  try
+    LStream := TMemoryStream.Create;
+    try
+      LSource.ConfigFile := FValidConfigFile;
+      LSource.LoadOnStart := AKind <> 1;
+      LStream.WriteComponent(LSource);
+      Assert.IsFalse(Loader.IsLoaded, 'Writing properties must not load');
+      LStream.Position := 0;
+      LComponent := TLoaderComponentAccess.Create(nil);
+      try
+        if AKind = 2 then
+          LComponent.MarkDesigning;
+        LStream.ReadComponent(LComponent);
+        Assert.AreEqual(AKind = 0, Loader.IsLoaded);
+        Assert.AreEqual(AKind <> 1, LComponent.LoadOnStart);
+        Assert.AreEqual(FValidConfigFile, LComponent.ConfigFile);
+        if AKind = 2 then
+        begin
+          Assert.WillRaise(
+            procedure
+            begin
+              LComponent.Load;
+            end, ETaurusTLSLoaderError);
+          Assert.IsFalse(Loader.IsLoaded, 'Explicit design-time Load must stay inactive');
+        end;
+      finally
+        LComponent.Free;
+      end;
+    finally
+      LStream.Free;
+    end;
+  finally
+    LSource.Free;
+  end;
+end;
+
+procedure TLoaderComponentFixture.Facade_StartupFailure;
+var
+  LComponent: TLoaderComponentAccess;
+begin
+  LComponent := TLoaderComponentAccess.Create(nil);
+  try
+    // A failed configuration trips the circuit breaker. The following automatic
+    // load returns False and must become a visible startup exception.
+    LComponent.ConfigFile := TPath.Combine(FTempDir, 'missing.cnf');
+    Assert.WillRaise(
+      procedure
+      begin
+        LComponent.Load;
+      end, ETaurusTLSConfigFilePathError);
+    Assert.WillRaise(
+      procedure
+      begin
+        LComponent.FinishStreaming;
+      end, ETaurusTLSLoaderError);
+    Assert.AreEqual(Ord(lsLoadedFailed), Ord(Loader.State));
+  finally
+    LComponent.Free;
+  end;
+end;
 
 var
   GLoaderTestLock: TObject;
@@ -2794,6 +2950,7 @@ end;
 
 initialization
   GLoaderTestLock := TObject.Create;
+  TDUnitX.RegisterTestFixture(TLoaderComponentFixture);
   TDUnitX.RegisterTestFixture(TLoaderConfigFixture);
   TDUnitX.RegisterTestFixture(TLoaderLifecycleFixture);
   TDUnitX.RegisterTestFixture(TLoaderCallbacksFixture);
