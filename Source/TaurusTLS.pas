@@ -1,4 +1,4 @@
-{ ****************************************************************************** }
+﻿{ ****************************************************************************** }
 { *  TaurusTLS                                                                 * }
 { *           https://github.com/JPeterMugaas/TaurusTLS                        * }
 { *                                                                            * }
@@ -256,6 +256,7 @@ uses
   IdSSL,
   IdYarn,
   SysUtils,
+  TaurusTLSLoader,
   TaurusTLSExceptionHandlers,
   TaurusTLSHeaders_types,
   TaurusTLSHeaders_ssl,
@@ -298,6 +299,7 @@ const
   TLSv1_3 = sslvTLSv1_3;
 
 type
+
   /// <summary>
   /// Type for specifying a version of the TLS Protocol.
   /// </summary>
@@ -1101,7 +1103,7 @@ type
   public
 
     /// <summary>
-    ///   Creates a new instance of TTaurusTLSContext.
+    ///   Creates an inactive context without loading OpenSSL.
     /// </summary>
     constructor Create;
     /// <summary>
@@ -2355,6 +2357,170 @@ type
       write fOnContextLoaderCustom;
   end;
 
+  /// <summary>Component facade over the singleton; destruction never unloads OpenSSL.</summary>
+  /// <remarks>
+  ///   Each instance retains the same IOpenSSLLoader singleton, in dynamic and
+  ///   static builds alike. Any number of components may exist; configuration,
+  ///   diagnostics and OpenSSL lifecycle are global. Interface references keep
+  ///   the Delphi loader object alive, but do not count native OpenSSL users.
+  ///   LoadOnStart belongs to each component independently.
+  ///   Configure before loading. Streamed components may load from Loaded after
+  ///   their properties are read; programmatic instances require explicit Load.
+  ///   Keep TLS consumers inactive until application startup loading completes.
+  ///   Streaming does not establish ordering across forms or data modules.
+  ///   Destruction only releases the interface reference; it never calls Unload.
+  ///   Stop native operations and destroy their objects before global Unload.
+  ///   Readiness snapshots do not protect against concurrent unloading.
+  ///   Retained components must not use the loader after unit finalization.
+  /// </remarks>
+  TTaurusTLSLoader = class(TComponent)
+  private
+    // Retains the shared loader object, not an OpenSSL lifecycle lease.
+    FLoader: IOpenSSLLoader;
+    FLoadOnStart: Boolean;
+    procedure CheckRuntimeLoading;
+    function GetOpenSSLPath: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetSSLLibVersions: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetConfigFile: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetVersion: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetConfigDirectory: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetModulesDirectory: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetEnginesDirectory: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetState: TTaurusTLSLoaderState; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetFailedToLoad: TStringList; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetIsLoaded: Boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetOpenSSLPath(const Value: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetSSLLibVersions(const Value: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetConfigFile(const Value: string); {$IFDEF USE_INLINE}inline; {$ENDIF}
+  protected
+    /// <summary>
+    ///   Automatically loads a streamed component at runtime when LoadOnStart
+    ///   is True.
+    /// </summary>
+    /// <remarks>
+    ///   False from Load becomes ETaurusTLSLoaderError; other exceptions
+    ///   propagate.
+    /// </remarks>
+    procedure Loaded; override;
+  public
+    /// <summary>
+    ///   Retains the singleton interface and sets LoadOnStart=True without
+    ///   loading OpenSSL.
+    /// </summary>
+    /// <param name="AOwner">
+    ///   Standard component owner; nil permits manual component lifetime
+    ///   management.
+    /// </param>
+    constructor Create(AOwner: TComponent); override;
+    /// <summary>
+    ///   Explicitly initializes the shared OpenSSL runtime using the current
+    ///   configuration.
+    /// </summary>
+    /// <returns>
+    ///   True on success or if already ready; False on soft failure or blocked
+    ///   retry.
+    /// </returns>
+    /// <remarks>
+    ///   Raises ETaurusTLSLoaderError at design time. Configuration and
+    ///   callback exceptions propagate unchanged. A failed load blocks retries
+    ///   until Unload resets failure state; changing properties alone does not
+    ///   permit retry. Repeated successful calls acquire no leases and do not
+    ///   repeat initialization.
+    /// </remarks>
+    function Load: Boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>
+    ///   Globally cleans up OpenSSL and resets failure state and binding
+    ///   diagnostics.
+    /// </summary>
+    /// <remarks>
+    ///   Affects every component and direct singleton consumer. Repeated calls
+    ///   are safe after consumers are retired. No design-time guard is applied
+    ///   here. Static builds run cleanup while library code remains linked.
+    /// </remarks>
+    procedure Unload; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>
+    ///   True only after configuration and all load actions complete; False
+    ///   during transitions.
+    /// </summary>
+    /// <remarks>
+    ///   A snapshot only; applications must prevent Unload while native objects
+    ///   are alive.
+    /// </remarks>
+    property IsLoaded: Boolean read GetIsLoaded;
+    /// <summary>
+    ///   Atomic stable readiness state; loading and unloading report
+    ///   lsNotLoaded.
+    /// </summary>
+    property State: TTaurusTLSLoaderState read GetState;
+    /// <summary>
+    ///   Cached OpenSSL version text, or empty while not ready; never loads
+    ///   OpenSSL.
+    /// </summary>
+    property Version: string read GetVersion;
+    /// <summary>
+    ///   Directory of the effective ConfigFile, or empty while not ready.
+    /// </summary>
+    property ConfigDirectory: string read GetConfigDirectory;
+    /// <summary>
+    ///   Compiled default provider-module directory, not a configured module
+    ///   search path.
+    /// </summary>
+    property ModulesDirectory: string read GetModulesDirectory;
+    /// <summary>
+    ///   Compiled OpenSSL 3 engine directory; empty on OpenSSL 4 or while not
+    ///   ready.
+    /// </summary>
+    property EnginesDirectory: string read GetEnginesDirectory;
+    /// <summary>
+    ///   Borrowed singleton list of dynamic symbol-binding failures; never free
+    ///   it.
+    /// </summary>
+    /// <remarks>
+    ///   Static builds have no binding diagnostics. An empty list does not
+    ///   prove readiness.
+    /// </remarks>
+    property FailedToLoad: TStringList read GetFailedToLoad;
+  published
+    /// <summary>
+    ///   Dynamic library search directory; empty and assignments ignored in
+    ///   static builds.
+    /// </summary>
+    /// <remarks>
+    ///   Dynamic mutation is rejected while loading, ready or unloading; never
+    ///   initiates loading.
+    /// </remarks>
+    property OpenSSLPath: string read GetOpenSSLPath write SetOpenSSLPath;
+    /// <summary>
+    ///   Ordered dynamic filename suffixes separated by the platform
+    ///   directory-list delimiter.
+    /// </summary>
+    /// <remarks>
+    ///   <para>
+    ///     Dynamic mutation is rejected while loading, ready or unloading;
+    ///     never initiates loading.
+    ///   </para>
+    ///   <para>
+    ///     Static builds return empty and ignore assignments.
+    ///   </para>
+    /// </remarks>
+    property SSLLibVersions: string read GetSSLLibVersions write SetSSLLibVersions;
+    /// <summary>Configuration filename; empty selects standard OpenSSL configuration initialization.</summary>
+    /// <remarks>
+    ///   Set before loading. Relative and Unicode paths are accepted. While ready,
+    ///   returns the effective filename; otherwise returns the configured input.
+    ///   Mutation is rejected while active. Setters never initiate loading.
+    /// </remarks>
+    property ConfigFile: string read GetConfigFile write SetConfigFile;
+    /// <summary>Automatically loads after runtime streaming; defaults to True for each component.</summary>
+    /// <remarks>
+    ///   Never loads in the designer, constructor or setter. Setting True after
+    ///   streaming does not trigger loading. Programmatic instances require Load.
+    ///   False suppresses only this component's automatic call; another component
+    ///   or application code may still initialize the shared singleton.
+    /// </remarks>
+    property LoadOnStart: Boolean read FLoadOnStart write FLoadOnStart default True;
+  end;
+
   /// <summary>
   /// TLS Cipher information.
   /// </summary>
@@ -2684,8 +2850,7 @@ uses
   TaurusTLSHeaders_objects,
   TaurusTLSHeaders_obj_mac,
   TaurusTLSHeaders_x509,
-  TaurusTLS_Files,
-  TaurusTLSLoader;
+  TaurusTLS_Files;
 
 type
   /// <summary>Owns TaurusTLS callback resources within the loader lifecycle.</summary>
@@ -2701,6 +2866,107 @@ type
   public
     class procedure OnLoadAction(AAction: TOpenSSLLoadAction);
   end;
+
+{ TTaurusTLSLoader }
+
+constructor TTaurusTLSLoader.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  FLoader := GetOpenSSLLoader;
+  FLoadOnStart := True;
+end;
+
+procedure TTaurusTLSLoader.Loaded;
+begin
+  inherited Loaded;
+  if FLoadOnStart and not (csDesigning in ComponentState) then
+    if not Load then
+      raise ETaurusTLSLoaderError.Create(RSOSSLCouldNotLoadSSLLibrary);
+end;
+
+procedure TTaurusTLSLoader.CheckRuntimeLoading;
+begin
+  if csDesigning in ComponentState then
+    raise ETaurusTLSLoaderError.Create('OpenSSL cannot be loaded at design time');
+end;
+
+function TTaurusTLSLoader.Load: Boolean;
+begin
+  CheckRuntimeLoading;
+  Result := FLoader.Load;
+end;
+
+procedure TTaurusTLSLoader.Unload;
+begin
+  FLoader.Unload;
+end;
+
+function TTaurusTLSLoader.GetOpenSSLPath: string;
+begin
+  Result := FLoader.OpenSSLPath;
+end;
+
+function TTaurusTLSLoader.GetSSLLibVersions: string;
+begin
+  Result := FLoader.SSLLibVersions;
+end;
+
+function TTaurusTLSLoader.GetConfigFile: string;
+begin
+  Result := FLoader.ConfigFile;
+end;
+
+function TTaurusTLSLoader.GetVersion: string;
+begin
+  Result := FLoader.Version;
+end;
+
+function TTaurusTLSLoader.GetConfigDirectory: string;
+begin
+  Result := FLoader.ConfigDirectory;
+end;
+
+function TTaurusTLSLoader.GetModulesDirectory: string;
+begin
+  Result := FLoader.ModulesDirectory;
+end;
+
+function TTaurusTLSLoader.GetEnginesDirectory: string;
+begin
+  Result := FLoader.EnginesDirectory;
+end;
+
+function TTaurusTLSLoader.GetState: TTaurusTLSLoaderState;
+begin
+  Result := FLoader.State;
+end;
+
+function TTaurusTLSLoader.GetFailedToLoad: TStringList;
+begin
+  Result := FLoader.FailedToLoad;
+end;
+
+function TTaurusTLSLoader.GetIsLoaded: Boolean;
+begin
+  Result := FLoader.IsLoaded;
+end;
+
+procedure TTaurusTLSLoader.SetOpenSSLPath(const Value: string);
+begin
+  FLoader.OpenSSLPath := Value;
+end;
+
+procedure TTaurusTLSLoader.SetSSLLibVersions(const Value: string);
+begin
+  FLoader.SSLLibVersions := Value;
+end;
+
+procedure TTaurusTLSLoader.SetConfigFile(const Value: string);
+begin
+  FLoader.ConfigFile := Value;
+end;
+
+
 
 procedure GetStateVars(const SSLSocket: PSSL; const AWhere, Aret: TIdC_INT;
   out VTypeStr, VMsg: String);
@@ -4319,12 +4585,6 @@ end;
 constructor TTaurusTLSContext.Create;
 begin
   inherited Create;
-  // an exception here probably means that you are using the wrong version
-  // of the openssl libraries. refer to comments at the top of this file.
-  if not GetOpenSSLLoader.Load then
-  begin
-    raise ETaurusTLSCouldNotLoadSSLLibrary.Create(RSOSSLCouldNotLoadSSLLibrary);
-  end;
   fVerifyMode := [];
   fMode := sslmUnassigned;
   fSessionId := 1;
@@ -4472,6 +4732,9 @@ var
   LFunc:  SSL_verify_cb;
   LSkipDefaultLoader: Boolean;
 begin
+  // The application owns loading and must prevent Unload while contexts live.
+  if not GetOpenSSLLoader.IsLoaded then
+    raise ETaurusTLSLoaderError.Create('OpenSSL must be loaded before initializing a TLS context');
   // Destroy the context first
   DestroyContext;
   if fMode = sslmUnassigned then

@@ -27,6 +27,9 @@ interface
 
 uses
   Classes,
+  {$IFNDEF FPC}
+  System.SyncObjs,
+  {$ENDIF}
   IdGlobal,
   IdCTypes;
 
@@ -211,18 +214,34 @@ type
     property FailedToLoad: TStringList read GetFailedToLoad;
   end;
 
-  /// <summary>Header registration procedure that binds dynamic OpenSSL routine addresses.</summary>
-  /// <param name="ADllHandle">The loaded crypto or SSL library handle.</param>
-  /// <param name="LibVersion">The numeric OpenSSL version shifted right by 12 bits for header binding.</param>
-  /// <param name="AFailed">Loader-owned list receiving symbol-binding diagnostics.</param>
+  /// <summary>
+  ///   Header registration procedure that binds dynamic OpenSSL routine
+  ///   addresses.
+  /// </summary>
+  /// <param name="ADllHandle">
+  ///   The loaded crypto or SSL library handle.
+  /// </param>
+  /// <param name="LibVersion">
+  ///   The numeric OpenSSL version shifted right by 12 bits for header binding.
+  /// </param>
+  /// <param name="AFailed">
+  ///   Loader-owned list receiving symbol-binding diagnostics.
+  /// </param>
   TOpenSSLLoadProc = procedure(const ADllHandle: TIdLibHandle;
     LibVersion: TIdC_UINT; const AFailed: TStringList);
 
-  /// <summary>Header cleanup procedure that resets dynamic procedural variables to nil.</summary>
+  /// <summary>
+  ///   Header cleanup procedure that resets dynamic procedural variables to
+  ///   nil.
+  /// </summary>
   TOpenSSLUnloadProc = procedure;
 
-/// <summary>Returns the singleton loader selected by OPENSSL_STATIC_LINK_MODEL.</summary>
-/// <returns>The shared dynamic or static loader interface.</returns>
+/// <summary>
+///   Returns the singleton loader selected by OPENSSL_STATIC_LINK_MODEL.
+/// </summary>
+/// <returns>
+///   The shared dynamic or static loader interface.
+/// </returns>
 /// <remarks>
 ///   Atomically creates the loader infrastructure if it is not yet available.
 ///   This does not load or initialize OpenSSL. Unit initialization and all
@@ -230,62 +249,80 @@ type
 /// </remarks>
 function GetOpenSSLLoader: IOpenSSLLoader;
 
-/// <summary>Registers a header symbol-binding procedure for dynamic loads.</summary>
-/// <param name="LoadProc">Procedure that binds a header unit's procedural variables.</param>
-/// <param name="module_name">Case-sensitive library selector: LibCrypto or LibSSL.</param>
+/// <summary>
+///   Registers a header symbol-binding procedure for dynamic loads.
+/// </summary>
+/// <param name="LoadProc">
+///   Procedure that binds a header unit's procedural variables.
+/// </param>
+/// <param name="module_name">
+///   Case-sensitive library selector: LibCrypto or LibSSL.
+/// </param>
 /// <remarks>
 ///   Call only from serialized unit initialization, before application threads
-///   use the loader. Runtime header registration is unsupported. The loader lock
-///   protects the registry; it does not make late symbol binding supported.
-///   Static loading does not invoke these procedures because its external
-///   routines are linked directly.
+///   use the loader. Runtime header registration is unsupported. The loader
+///   lock protects the registry; it does not make late symbol binding
+///   supported. Static loading does not invoke these procedures because its
+///   external routines are linked directly.
 /// </remarks>
 procedure Register_SSLLoader(LoadProc: TOpenSSLLoadProc; const module_name: string);
 
-/// <summary>Registers a dynamic symbol-reset procedure, run in reverse registration order.</summary>
-/// <param name="UnloadProc">Procedure that clears a header unit's procedural variables.</param>
+/// <summary>
+///   Registers a dynamic symbol-reset procedure, run in reverse registration
+///   order.
+/// </summary>
+/// <param name="UnloadProc">
+///   Procedure that clears a header unit's procedural variables.
+/// </param>
 /// <remarks>
 ///   Register only from serialized unit initialization, alongside the header
 ///   loader. This registers cleanup; it does not perform cleanup at this call.
-///   The procedure runs after lifecycle cleanup actions and before dynamic library
-///   release. Stop loader use before unit finalization; registered procedures and
-///   their code must remain valid until loader cleanup has completed.
+///   The procedure runs after lifecycle cleanup actions and before dynamic
+///   library release. Stop loader use before unit finalization; registered
+///   procedures and their code must remain valid until loader cleanup has
+///   completed.
 /// </remarks>
 procedure Register_SSLUnloader(UnloadProc: TOpenSSLUnloadProc);
 
-/// <summary>Registers initialization and cleanup actions for both linking models.</summary>
-/// <param name="AActionProc">Method whose object must remain valid while registered.</param>
+/// <summary>
+///   Registers initialization and cleanup actions for both linking models.
+/// </summary>
+/// <param name="AActionProc">
+///   Method whose object must remain valid while registered.
+/// </param>
 /// <remarks>
-///   May be called from any thread. Calls serialize with lifecycle operations and
-///   action registration/removal under the loader lock. An immediate callback runs
-///   synchronously on the calling thread while that lock is held; it must not wait
-///   for another thread that needs the loader lock.
-///   Actions load in registration order and unload in reverse order. Registering
-///   while ready invokes osaLoad immediately under the lifecycle lock. If it
-///   raises, the registration is removed and the original exception propagates;
-///   the failing callback owns cleanup of its partial initialization.
-///   Repeated Load calls do not redispatch actions. Duplicates are independent
-///   registrations; nil actions are ignored. Reentrant registration from load,
-///   unload or immediate callbacks, and registration while failed, raises
+///   May be called from any thread. Calls serialize with lifecycle operations
+///   and action registration/removal under the loader lock. An immediate
+///   callback runs synchronously on the calling thread while that lock is held;
+///   it must not wait for another thread that needs the loader lock. Actions
+///   load in registration order and unload in reverse order. Registering while
+///   ready invokes osaLoad immediately under the lifecycle lock. If it raises,
+///   the registration is removed and the original exception propagates; the
+///   failing callback owns cleanup of its partial initialization. Repeated Load
+///   calls do not redispatch actions. Duplicates are independent registrations;
+///   nil actions are ignored. Reentrant registration from load, unload or
+///   immediate callbacks, and registration while failed, raises
 ///   ETaurusTLSLoaderError. Other threads wait for the current operation before
-///   registration is checked against the resulting state.
-///   Registrations do not retain callback objects.
+///   registration is checked against the resulting state. Registrations do not
+///   retain callback objects.
 /// </remarks>
 procedure Register_SSLLoaderAction(const AActionProc: TTaurusTLSOnLoadAction);
 
-/// <summary>Removes the most recent matching lifecycle action registration.</summary>
+/// <summary>
+///   Removes the most recent matching lifecycle action registration.
+/// </summary>
 /// <remarks>
 ///   May be called from any thread, serialized under the same loader lock as
-///   registration and lifecycle operations. Immediate cleanup runs synchronously
-///   on the calling thread while that lock is held; it must not wait for another
-///   thread that needs the loader lock. The caller must keep the callback object
-///   alive until removal and any synchronous cleanup have completed.
-///   Matching compares both method code and instance. Missing/nil actions are
-///   ignored. While ready, osaUnload runs immediately while native APIs remain
-///   callable. The registration is removed even if cleanup raises; that exception
-///   propagates. Reentrant removal from load, unload or immediate callbacks
-///   raises ETaurusTLSLoaderError. Other threads wait for the current operation.
-///   Inactive/failed removal performs no callback.
+///   registration and lifecycle operations. Immediate cleanup runs
+///   synchronously on the calling thread while that lock is held; it must not
+///   wait for another thread that needs the loader lock. The caller must keep
+///   the callback object alive until removal and any synchronous cleanup have
+///   completed. Matching compares both method code and instance. Missing/nil
+///   actions are ignored. While ready, osaUnload runs immediately while native
+///   APIs remain callable. The registration is removed even if cleanup raises;
+///   that exception propagates. Reentrant removal from load, unload or
+///   immediate callbacks raises ETaurusTLSLoaderError. Other threads wait for
+///   the current operation. Inactive/failed removal performs no callback.
 /// </remarks>
 procedure UnRegister_SSLLoaderAction(const AActionProc: TTaurusTLSOnLoadAction);
 
@@ -329,9 +366,6 @@ uses
   TaurusTLSHeaders_crypto,
   TaurusTLSHeaders_conf,
   TaurusTLSHeaders_ssl,
-  {$IFNDEF FPC}
-  SyncObjs,
-  {$ENDIF}
   SysUtils;
 
 {$IFNDEF HAS_UNIT_Generics_Collections}
