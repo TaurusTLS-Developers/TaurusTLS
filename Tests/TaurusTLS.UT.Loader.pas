@@ -265,6 +265,18 @@ type
     [TestCase('Unregister', '1')]
     procedure CB_ConcurrentMutation(const ARemove: Integer);
 
+    /// <summary>Concurrent workers register/remove distinct actions once without changing readiness.</summary>
+    /// <remarks>Worker count and initial readiness are supplied by each test case; no stress loops.</remarks>
+    [TestCase('Inactive2', '2,0')]
+    [TestCase('Ready2', '2,1')]
+    [TestCase('Inactive3', '3,0')]
+    [TestCase('Ready3', '3,1')]
+    [TestCase('Inactive15', '15,0')]
+    [TestCase('Ready15', '15,1')]
+    [TestCase('Inactive32', '32,0')]
+    [TestCase('Ready32', '32,1')]
+    procedure CB_ConcurrentActions(const AWorkerCount, AReady: Integer);
+
     /// <summary>Verifies an uncaught recursive-call error fails initialization and permits later recovery.</summary>
     [Test]
     procedure State_RecursiveFailure;
@@ -272,6 +284,10 @@ type
     /// <summary>Verifies readiness queries on another thread do not wait for a loading callback.</summary>
     [Test]
     procedure State_ReadDuringLoad;
+
+    /// <summary>Verifies readiness queries on another thread do not wait for an unloading callback.</summary>
+    [Test]
+    procedure State_ReadDuringUnload;
 
     /// <summary>Verifies changed values are rejected and repeated inputs are safe during callbacks.</summary>
     [TestCase('LoadConfigChange', '1,0,0')]
@@ -1042,6 +1058,9 @@ type
     class var PropagateRecursive: Boolean;
     class var QueryDone: TEvent;
     class var QueryThread: TThread;
+    class var QueryAction: TOpenSSLLoadAction;
+    class var QueryCompleted: Boolean;
+    class var QueryError: string;
     class var QueryState: TTaurusTLSLoaderState;
     class var QueryLoaded: Boolean;
     class var ConfigOnLoad: string;
@@ -1158,23 +1177,6 @@ begin
     LoadedOnLoad := GetOpenSSLLoader.IsLoaded;
     ConfigOnLoad := GetOpenSSLLoader.ConfigFile;
     MetadataEmptyOnLoad := LoaderMetadataIsEmpty;
-    if Assigned(QueryDone) then
-    begin
-      QueryThread := TThread.CreateAnonymousThread(
-        procedure
-        begin
-          try
-            QueryState := GetOpenSSLLoader.State;
-            QueryLoaded := GetOpenSSLLoader.IsLoaded;
-          finally
-            QueryDone.SetEvent;
-          end;
-        end);
-      QueryThread.FreeOnTerminate := False;
-      QueryThread.Start;
-      Assert.IsTrue(QueryDone.WaitFor(5000) = wrSignaled,
-        'Readiness queries must not wait for the lifecycle lock');
-    end;
   end
   else
   begin
@@ -1182,6 +1184,29 @@ begin
     LoadedOnUnload := GetOpenSSLLoader.IsLoaded;
     ConfigOnUnload := GetOpenSSLLoader.ConfigFile;
     MetadataEmptyOnUnload := LoaderMetadataIsEmpty;
+  end;
+
+  if Assigned(QueryDone) and (AAction = QueryAction) then
+  begin
+    QueryThread := TThread.CreateAnonymousThread(
+      procedure
+      begin
+        try
+          try
+            QueryState := GetOpenSSLLoader.State;
+            QueryLoaded := GetOpenSSLLoader.IsLoaded;
+          except
+            on E: Exception do
+              QueryError := E.ClassName + ': ' + E.Message;
+          end;
+        finally
+          QueryDone.SetEvent;
+        end;
+      end);
+    QueryThread.FreeOnTerminate := False;
+    QueryThread.Start;
+    // Unload suppresses callback exceptions: assert this result in the test instead.
+    QueryCompleted := QueryDone.WaitFor(5000) = wrSignaled;
   end;
 
   if ((ProbePhase = 1) and (AAction = osaLoad)) or
@@ -1373,6 +1398,11 @@ begin
   TTestCallbackObserverA.RecursivePhase := 0;
   TTestCallbackObserverA.RecursiveRejected := False;
   TTestCallbackObserverA.PropagateRecursive := False;
+  TTestCallbackObserverA.QueryAction := osaLoad;
+  TTestCallbackObserverA.QueryCompleted := False;
+  TTestCallbackObserverA.QueryError := '';
+  TTestCallbackObserverA.QueryState := lsLoadedFailed;
+  TTestCallbackObserverA.QueryLoaded := True;
   TTestCallbackObserverA.ConfigOnLoad := '';
   TTestCallbackObserverA.ConfigOnUnload := '';
   TTestCallbackObserverA.ProbePhase := 0;
@@ -1981,6 +2011,122 @@ begin
   end;
 end;
 
+procedure TLoaderCallbacksFixture.CB_ConcurrentActions(const AWorkerCount, AReady: Integer);
+const
+  CWaitMilliseconds = 10000;
+var
+  LStart, LDone: TEvent;
+  LWorkers: TArray<TThread>;
+  LProbes: TArray<TActionRegistrationProbe>;
+  LErrors: TArray<string>;
+  LRemaining: Integer;
+  I: Integer;
+
+  function CreateWorker(const AIndex: Integer): TThread;
+  begin
+    Result := TThread.CreateAnonymousThread(
+      procedure
+      begin
+        try
+          try
+            if LStart.WaitFor(CWaitMilliseconds) <> wrSignaled then
+              raise Exception.Create('Action worker start timed out');
+            Register_SSLLoaderAction(LProbes[AIndex].Action);
+            UnRegister_SSLLoaderAction(LProbes[AIndex].Action);
+          except
+            on E: Exception do
+              LErrors[AIndex] := E.ClassName + ': ' + E.Message;
+          end;
+        finally
+          if TInterlocked.Decrement(LRemaining) = 0 then
+            LDone.SetEvent;
+        end;
+      end);
+    Result.FreeOnTerminate := False;
+  end;
+
+  procedure CheckCounts;
+  var
+    J: Integer;
+  begin
+    for J := 0 to AWorkerCount - 1 do
+    begin
+      Assert.AreEqual(AReady, LProbes[J].LoadCount,
+        Format('Worker %d must initialize its action exactly once while ready, never while inactive', [J]));
+      Assert.AreEqual(AReady, LProbes[J].UnloadCount,
+        Format('Worker %d must clean up its action exactly once while ready, never while inactive', [J]));
+    end;
+  end;
+
+begin
+  Assert.IsTrue(AWorkerCount >= 2, 'At least two workers are needed for contention');
+  Assert.IsTrue(AReady in [0, 1], 'Initial readiness must be zero or one');
+  SetLength(LWorkers, AWorkerCount);
+  SetLength(LProbes, AWorkerCount);
+  SetLength(LErrors, AWorkerCount);
+  LRemaining := AWorkerCount;
+  LStart := nil;
+  LDone := nil;
+  try
+    LStart := TEvent.Create(nil, True, False, '');
+    LDone := TEvent.Create(nil, True, False, '');
+    for I := 0 to AWorkerCount - 1 do
+      LProbes[I] := TActionRegistrationProbe.Create;
+    Loader.ConfigFile := FValidConfigFile;
+    if AReady <> 0 then
+      Assert.IsTrue(Loader.Load, 'Ready action workers require a loaded runtime');
+
+    for I := 0 to AWorkerCount - 1 do
+    begin
+      LWorkers[I] := CreateWorker(I);
+      LWorkers[I].Start;
+    end;
+    LStart.SetEvent;
+    Assert.IsTrue(LDone.WaitFor(CWaitMilliseconds) = wrSignaled,
+      'Concurrent action registration/removal timed out');
+    for I := 0 to AWorkerCount - 1 do
+    begin
+      Assert.AreEqual('', LErrors[I], Format('Action worker %d failed', [I]));
+      if AReady <> 0 then
+      begin
+        Assert.IsTrue(LProbes[I].ReadyOnLoad and LProbes[I].ReadyOnUnload,
+          'Immediate callbacks must observe ready state');
+        Assert.IsTrue(LProbes[I].NativeOnLoad and LProbes[I].NativeOnUnload,
+          'Native APIs must remain callable during immediate callbacks');
+      end;
+    end;
+    CheckCounts;
+    if AReady <> 0 then
+      Assert.IsTrue(Loader.State = lsLoadedReady, 'Action mutations must preserve ready state')
+    else
+      Assert.IsTrue(Loader.State = lsNotLoaded, 'Action mutations must not load OpenSSL');
+
+    // A later lifecycle cycle must not invoke any removed action.
+    Loader.Unload;
+    Assert.IsTrue(Loader.Load, 'Removed actions must not prevent the next load');
+    Loader.Unload;
+    CheckCounts;
+  finally
+    if Assigned(LStart) then
+      LStart.SetEvent;
+    // Owners and synchronization objects outlive every worker, even on assertion failure.
+    for I := 0 to High(LWorkers) do
+      if Assigned(LWorkers[I]) then
+      begin
+        LWorkers[I].WaitFor;
+        LWorkers[I].Free;
+      end;
+    for I := 0 to High(LProbes) do
+      if Assigned(LProbes[I]) then
+      begin
+        UnRegister_SSLLoaderAction(LProbes[I].Action);
+        LProbes[I].Free;
+      end;
+    LDone.Free;
+    LStart.Free;
+  end;
+end;
+
 procedure TLoaderCallbacksFixture.CB_ConcurrentMutation(const ARemove: Integer);
 var
   LProbe: TActionRegistrationProbe;
@@ -2105,13 +2251,35 @@ end;
 procedure TLoaderCallbacksFixture.State_ReadDuringLoad;
 begin
   TTestCallbackObserverA.Active := True;
+  TTestCallbackObserverA.QueryAction := osaLoad;
   TTestCallbackObserverA.QueryDone := TEvent.Create(nil, True, False, '');
   Loader.ConfigFile := FValidConfigFile;
   Assert.IsTrue(Loader.Load);
+  Assert.IsTrue(TTestCallbackObserverA.QueryCompleted,
+    'Readiness queries must finish while the load callback is paused');
   TTestCallbackObserverA.QueryThread.WaitFor;
+  Assert.AreEqual('', TTestCallbackObserverA.QueryError, 'Readiness query worker failed');
   Assert.IsTrue(TTestCallbackObserverA.QueryState = lsNotLoaded);
   Assert.IsFalse(TTestCallbackObserverA.QueryLoaded);
   Assert.IsTrue(Loader.State = lsLoadedReady);
+end;
+
+procedure TLoaderCallbacksFixture.State_ReadDuringUnload;
+begin
+  TTestCallbackObserverA.Active := True;
+  Loader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(Loader.Load);
+  TTestCallbackObserverA.QueryAction := osaUnload;
+  TTestCallbackObserverA.QueryDone := TEvent.Create(nil, True, False, '');
+  Loader.Unload;
+  Assert.IsTrue(TTestCallbackObserverA.QueryCompleted,
+    'Readiness queries must finish while the unload callback is paused');
+  TTestCallbackObserverA.QueryThread.WaitFor;
+  Assert.AreEqual('', TTestCallbackObserverA.QueryError, 'Readiness query worker failed');
+  Assert.IsTrue(TTestCallbackObserverA.QueryState = lsNotLoaded);
+  Assert.IsFalse(TTestCallbackObserverA.QueryLoaded);
+  Assert.IsTrue(Loader.State = lsNotLoaded);
+  Assert.IsFalse(Loader.IsLoaded);
 end;
 
 procedure TLoaderCallbacksFixture.Life_UnloadActionFailure;
