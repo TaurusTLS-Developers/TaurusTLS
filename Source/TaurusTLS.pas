@@ -2647,7 +2647,7 @@ implementation
 
 uses
 {$IFDEF HAS_UNIT_Generics_Collections}
-  System.Generics.Collections,
+  Generics.Collections,
 {$ENDIF}
 {$IFDEF USE_FPC_POSIX}
   Sockets,

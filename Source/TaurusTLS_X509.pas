@@ -172,13 +172,13 @@ type
   /// </summary>
   TTaurusTLSX509Fingerprints = class(TTaurusTLSX509Info)
 {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
-    function GetSHA224: TTaurusTLSLEVP_MD; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetSHA224: TTaurusTLSLEVP_MD;
     function GetSHA224AsString: String; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetSHA256: TTaurusTLSLEVP_MD; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetSHA256: TTaurusTLSLEVP_MD;
     function GetSHA256AsString: String; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetSHA384: TTaurusTLSLEVP_MD; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetSHA384: TTaurusTLSLEVP_MD;
     function GetSHA384AsString: String; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetSHA512: TTaurusTLSLEVP_MD; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetSHA512: TTaurusTLSLEVP_MD;
     function GetSHA512AsString: String; {$IFDEF USE_INLINE}inline; {$ENDIF}
   public
     { IMPORTANT!!!
@@ -647,7 +647,7 @@ type
     function GetIssuer: TTaurusTLSX509Name; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetnotBefore: TDateTime; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetnotAfter: TDateTime; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetFingerprint: TTaurusTLSLEVP_MD; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetFingerprint: TTaurusTLSLEVP_MD;
     function GetFingerprintAsString: String; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetSerialNumber: String; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetSigInfo: TTaurusTLSX509SigInfo; {$IFDEF USE_INLINE}inline; {$ENDIF}

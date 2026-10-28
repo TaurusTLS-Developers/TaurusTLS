@@ -228,7 +228,7 @@ type
 ///   This does not load or initialize OpenSSL. Unit initialization and all
 ///   registration entry points use the same singleton publication path.
 /// </remarks>
-function GetOpenSSLLoader: IOpenSSLLoader; {$IFDEF USE_INLINE}inline; {$ENDIF}
+function GetOpenSSLLoader: IOpenSSLLoader;
 
 /// <summary>Registers a header symbol-binding procedure for dynamic loads.</summary>
 /// <param name="LoadProc">Procedure that binds a header unit's procedural variables.</param>
@@ -306,7 +306,7 @@ uses
   TaurusTLSLoader.TestHooks,
 {$ENDIF}
 {$IFDEF HAS_UNIT_Generics_Collections}
-  System.Generics.Collections,
+  Generics.Collections,
 {$ENDIF}
   TaurusTLSExceptionHandlers,
   {$IFDEF FPC}
@@ -874,7 +874,7 @@ begin
 end;
 
 {$IFDEF TAURUSTLS_RESTORE_RANGECHECKS_OFF}
-  {$UNDEFINE TAURUSTLS_RESTORE_RANGECHECKS_OFF}
+  {$UNDEF TAURUSTLS_RESTORE_RANGECHECKS_OFF}
   {$R-}
 {$ENDIF}
 
@@ -1648,7 +1648,7 @@ class function TOpenSSLBaseLoader.CompareExchangeInstance(
   const ACandidate: TOpenSSLBaseLoader): TOpenSSLBaseLoader;
 begin
 {$IFDEF FPC}
-  Result := TOpenSSLBaseLoader(InterlockedCompareExchange(
+  Result := TOpenSSLBaseLoader(System.InterlockedCompareExchange(
     FInstance, Pointer(ACandidate), nil));
 {$ELSE}
   Result := TInterlocked.CompareExchange<TOpenSSLBaseLoader>(
@@ -1731,7 +1731,7 @@ begin
   end;
 
 {$IFDEF FPC}
-  LInstance := TOpenSSLBaseLoader(InterlockedExchange(FInstance, Pointer(nil)));
+  LInstance := TOpenSSLBaseLoader(System.InterlockedExchange(FInstance, Pointer(nil)));
 {$ELSE}
   LInstance := TInterlocked.Exchange<TOpenSSLBaseLoader>(FInstance, nil);
 {$ENDIF}
