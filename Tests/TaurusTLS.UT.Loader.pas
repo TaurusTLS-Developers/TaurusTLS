@@ -58,16 +58,103 @@ type
   [Category('Loader,Loader.Component')]
   TLoaderComponentFixture = class(TLoaderBaseFixture)
   public
+    /// <summary>Verifies context construction stays inactive and native initialization requires explicit loading.</summary>
     [Test]
     procedure Context_ExplicitReadiness;
+    /// <summary>Verifies components share status, metadata and global Unload; destruction does not unload.</summary>
     [Test]
     procedure Facade_SharedLifecycle;
+    /// <summary>Round-trips a component through a stream and checks automatic, disabled and designer loading.</summary>
     [TestCase('Automatic', '0')]
     [TestCase('Disabled', '1')]
     [TestCase('Designer', '2')]
     procedure Facade_Startup(const AKind: Integer);
+    /// <summary>Verifies automatic startup converts a blocked Load returning False into an exception.</summary>
     [Test]
     procedure Facade_StartupFailure;
+    /// <summary>Streams settings and verifies only the running target is applied before an explicit Load.</summary>
+    [Test]
+    procedure Platform_DefaultsAndSelection;
+    /// <summary>Verifies scalar properties are public, share singleton configuration and reject changes while ready.</summary>
+    [Test]
+    procedure Platform_RuntimeConfiguration;
+    /// <summary>Round-trips all target settings and verifies collection assignment deep-copies version lists.</summary>
+    [Test]
+    procedure Platform_StreamingAndAssign;
+    /// <summary>Rejects duplicate current or foreign targets before applying startup configuration.</summary>
+    [TestCase('Current', '0')]
+    [TestCase('OtherTarget', '1')]
+    procedure Platform_DuplicateTargets(const AOther: Integer);
+    /// <summary>Verifies the stable target names, default suffix lists and minimum supported OpenSSL version.</summary>
+    [Test]
+    procedure Platform_SupportedTargets;
+    /// <summary>Checks target-specific suffix generation, preference order, custom suffixes and blank defaults.</summary>
+    [TestCase('Win32', 'tlpWin32,-4;-3;-3_1')]
+    [TestCase('Win64', 'tlpWin64,-4-x64;-3-x64;-3_1-x64')]
+    [TestCase('ARM64EC', 'tlpWinARM64EC,-4-arm64;-3-arm64;-3_1-arm64')]
+    [TestCase('Linux64', 'tlpLinux64,.4:.3:.3.1')]
+    [TestCase('MacOS64', 'tlpMacOS64,.4:.3:.3.1')]
+    [TestCase('Android32', 'tlpAndroid32,.4:.3:.3.1')]
+    [TestCase('Android64', 'tlpAndroid64,.4:.3:.3.1')]
+    [TestCase('iOSARM64', 'tlpiOSARM64,.4:.3:.3.1')]
+    [TestCase('iOSSimulatorARM64', 'tlpiOSSimulatorARM64,.4:.3:.3.1')]
+    procedure Platform_Versions(const ATargetName, AExpected: string);
+    /// <summary>Rejects malformed, overflowing and pre-3.x generated versions without changing the singleton.</summary>
+    [TestCase('LeadingDot', '.3')]
+    [TestCase('TrailingDot', '3.')]
+    [TestCase('RepeatedDot', '3..1')]
+    [TestCase('FilenameSuffix', '3-x64')]
+    [TestCase('OpenSSLZero', '0')]
+    [TestCase('OpenSSL11', '1.1')]
+    [TestCase('OpenSSL2', '2.0')]
+    [TestCase('Overflow', '99999999999999999999')]
+    procedure Platform_InvalidVersion(const AVersion: string);
+    /// <summary>Verifies changed runtime paths or versions are rejected while loaded without altering configuration.</summary>
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+    [TestCase('Path', '0')]
+    [TestCase('Versions', '1')]
+{$ENDIF}
+    [TestCase('Config', '2')]
+    procedure Platform_ReadyMutation(const AKind: Integer);
+    /// <summary>Checks repeated Load shares readiness and failed loads require explicit Unload before retry.</summary>
+    [Test]
+    procedure Platform_DefaultReadyAndFailureReset;
+    /// <summary>Reads a second component from a stream and verifies ready or failed singleton state is preserved.</summary>
+    [TestCase('Ready', 'False')]
+    [TestCase('Failed', 'True')]
+    procedure Platform_StreamingPreservesState(const AFailed: Boolean);
+    /// <summary>Streams empty or blank settings and verifies normal defaults replace inactive configuration.</summary>
+    [TestCase('Empty', 'False')]
+    [TestCase('BlankEntry', 'True')]
+    procedure Platform_StreamingDefaults(const AEntry: Boolean);
+    /// <summary>Rejects runtime collection, item and version-list edits without mutation, both inactive and ready.</summary>
+    [TestCase('Add', '0')]
+    [TestCase('Insert', '1')]
+    [TestCase('Delete', '2')]
+    [TestCase('Clear', '3')]
+    [TestCase('Assign', '4')]
+    [TestCase('ItemAssign', '5')]
+    [TestCase('Target', '6')]
+    [TestCase('Path', '7')]
+    [TestCase('Config', '8')]
+    [TestCase('VersionMode', '9')]
+    [TestCase('CustomVersions', '10')]
+    [TestCase('VersionAdd', '11')]
+    [TestCase('VersionPut', '12')]
+    [TestCase('VersionDelete', '13')]
+    [TestCase('VersionClear', '14')]
+    [TestCase('VersionText', '15')]
+    [TestCase('VersionExchange', '16')]
+    [TestCase('VersionAssign', '17')]
+    [TestCase('ItemIndex', '18')]
+    [TestCase('Detach', '19')]
+    [TestCase('MoveToRuntime', '20')]
+    [TestCase('CollectionProperty', '21')]
+    [TestCase('VersionBeginUpdate', '22')]
+    [TestCase('ItemCreate', '23')]
+    [TestCase('BaseClear', '24')]
+    [TestCase('BaseDelete', '25')]
+    procedure Platform_RuntimeMutation(const AOperation: Integer);
   end;
 
   /// <summary>
@@ -404,8 +491,10 @@ uses
   Winapi.Windows,
   {$ELSE}
   Posix.Stdlib,
+  Posix.Unistd,
   {$ENDIF}
   System.SyncObjs,
+  System.TypInfo,
   TaurusTLS.UT.Utils,
   TaurusTLSHeaders_crypto,
   TaurusTLSHeaders_conf,
@@ -418,6 +507,7 @@ type
   public
     procedure FinishStreaming;
     procedure MarkDesigning;
+    procedure MarkRuntime;
   end;
 
 procedure TLoaderComponentAccess.FinishStreaming;
@@ -428,6 +518,11 @@ end;
 procedure TLoaderComponentAccess.MarkDesigning;
 begin
   SetDesigning(True);
+end;
+
+procedure TLoaderComponentAccess.MarkRuntime;
+begin
+  SetDesigning(False);
 end;
 
 procedure TLoaderComponentFixture.Context_ExplicitReadiness;
@@ -464,7 +559,10 @@ begin
     LFirst.OpenSSLPath := Loader.OpenSSLPath;
     LFirst.SSLLibVersions := Loader.SSLLibVersions;
     LFirst.ConfigFile := FValidConfigFile;
-    Assert.AreEqual(FValidConfigFile, LSecond.ConfigFile);
+    Assert.AreEqual(FValidConfigFile, LSecond.ConfigFile, 'Runtime scalar settings are shared');
+    LSecond.OpenSSLPath := Loader.OpenSSLPath;
+    LSecond.SSLLibVersions := Loader.SSLLibVersions;
+    LSecond.ConfigFile := FValidConfigFile;
     Assert.IsFalse(Loader.IsLoaded, 'Setters must not load');
     Assert.IsTrue(LFirst.Load);
     Assert.IsTrue(LSecond.IsLoaded);
@@ -493,9 +591,17 @@ var
 begin
   LSource := TLoaderComponentAccess.Create(nil);
   try
+    LSource.MarkDesigning;
     LStream := TMemoryStream.Create;
     try
-      LSource.ConfigFile := FValidConfigFile;
+      with LSource.PlatformSettings.Add do
+      begin
+        Target := TTaurusTLSLoader.CurrentTarget;
+        OpenSSLPath := Loader.OpenSSLPath;
+        VersionMode := lvmCustom;
+        CustomSSLLibVersions := Loader.SSLLibVersions;
+        ConfigFile := FValidConfigFile;
+      end;
       LSource.LoadOnStart := AKind <> 1;
       LStream.WriteComponent(LSource);
       Assert.IsFalse(Loader.IsLoaded, 'Writing properties must not load');
@@ -507,7 +613,8 @@ begin
         LStream.ReadComponent(LComponent);
         Assert.AreEqual(AKind = 0, Loader.IsLoaded);
         Assert.AreEqual(AKind <> 1, LComponent.LoadOnStart);
-        Assert.AreEqual(FValidConfigFile, LComponent.ConfigFile);
+        if AKind <> 2 then
+          Assert.AreEqual(FValidConfigFile, LComponent.ConfigFile);
         if AKind = 2 then
         begin
           Assert.WillRaise(
@@ -536,6 +643,8 @@ begin
   try
     // A failed configuration trips the circuit breaker. The following automatic
     // load returns False and must become a visible startup exception.
+    LComponent.OpenSSLPath := Loader.OpenSSLPath;
+    LComponent.SSLLibVersions := Loader.SSLLibVersions;
     LComponent.ConfigFile := TPath.Combine(FTempDir, 'missing.cnf');
     Assert.WillRaise(
       procedure
@@ -549,6 +658,484 @@ begin
       end, ETaurusTLSLoaderError);
     Assert.AreEqual(Ord(lsLoadedFailed), Ord(Loader.State));
   finally
+    LComponent.Free;
+  end;
+end;
+
+procedure TLoaderComponentFixture.Platform_DefaultsAndSelection;
+var
+  LSource, LTarget: TLoaderComponentAccess;
+  LStream: TMemoryStream;
+  LSetting: TTaurusTLSPlatformSetting;
+begin
+  LSource := TLoaderComponentAccess.Create(nil);
+  LTarget := TLoaderComponentAccess.Create(nil);
+  LStream := TMemoryStream.Create;
+  try
+    Assert.AreEqual(0, LSource.PlatformSettings.Count);
+    LSource.MarkDesigning;
+    LSource.LoadOnStart := False;
+    LSetting := LSource.PlatformSettings.Add;
+    if TTaurusTLSLoader.CurrentTarget = tlpWin32 then
+      LSetting.Target := tlpLinux64
+    else
+      LSetting.Target := tlpWin32;
+    LSetting.ConfigFile := 'foreign-config.cnf';
+    LSetting := LSource.PlatformSettings.Add;
+    LSetting.Target := TTaurusTLSLoader.CurrentTarget;
+    LSetting.OpenSSLPath := Loader.OpenSSLPath;
+    LSetting.ConfigFile := FValidConfigFile;
+    LSetting.VersionMode := lvmCustom;
+    LSetting.CustomSSLLibVersions := Loader.SSLLibVersions;
+    Assert.AreEqual('', Loader.ConfigFile, 'Design settings must stay local');
+    LStream.WriteComponent(LSource);
+    LStream.Position := 0;
+    LStream.ReadComponent(LTarget);
+    Assert.AreEqual(FValidConfigFile, Loader.ConfigFile);
+    Assert.IsFalse(Loader.IsLoaded, 'Disabled automatic loading still restores configuration');
+    Assert.IsTrue(LTarget.Load);
+  finally
+    LStream.Free;
+    LTarget.Free;
+    LSource.Free;
+  end;
+end;
+
+procedure TLoaderComponentFixture.Platform_RuntimeConfiguration;
+var
+  LFirst, LSecond: TTaurusTLSLoader;
+begin
+  LFirst := TTaurusTLSLoader.Create(nil);
+  LSecond := TTaurusTLSLoader.Create(nil);
+  try
+    Assert.IsTrue(GetPropInfo(LFirst.ClassInfo, 'PlatformSettings') <> nil);
+    Assert.IsTrue(GetPropInfo(LFirst.ClassInfo, 'LoadOnStart') <> nil);
+    Assert.IsTrue(GetPropInfo(LFirst.ClassInfo, 'OpenSSLPath') = nil);
+    Assert.IsTrue(GetPropInfo(LFirst.ClassInfo, 'SSLLibVersions') = nil);
+    Assert.IsTrue(GetPropInfo(LFirst.ClassInfo, 'ConfigFile') = nil);
+    LFirst.ConfigFile := FValidConfigFile;
+    Assert.AreEqual(FValidConfigFile, LSecond.ConfigFile);
+    Assert.AreEqual(FValidConfigFile, Loader.ConfigFile);
+    Assert.IsFalse(Loader.IsLoaded);
+    Assert.IsTrue(LSecond.Load);
+    Assert.WillRaise(
+      procedure
+      begin
+        LFirst.ConfigFile := FInvalidSyntaxConfigFile;
+      end, ETaurusTLSConfigFilePathError);
+    Assert.AreEqual(FValidConfigFile, LFirst.ConfigFile);
+  finally
+    LSecond.Free;
+    LFirst.Free;
+  end;
+end;
+
+procedure TLoaderComponentFixture.Platform_StreamingAndAssign;
+var
+  LSource, LTarget: TLoaderComponentAccess;
+  LStream: TMemoryStream;
+  LPlatform: TTaurusTLSPlatform;
+  LSetting: TTaurusTLSPlatformSetting;
+  I: Integer;
+begin
+  LSource := TLoaderComponentAccess.Create(nil);
+  try
+    LTarget := TLoaderComponentAccess.Create(nil);
+    try
+      LSource.MarkDesigning;
+      LSource.LoadOnStart := False;
+      LSource.ConfigFile := 'runtime-only.cnf';
+      for LPlatform := Low(TTaurusTLSPlatform) to High(TTaurusTLSPlatform) do
+      begin
+        LSetting := LSource.PlatformSettings.Add;
+        LSetting.Target := LPlatform;
+        LSetting.ConfigFile := 'config-' + IntToStr(Ord(LPlatform)) + '.cnf';
+        LSetting.OpenSSLPath := 'library-' + IntToStr(Ord(LPlatform));
+        LSetting.VersionMode := lvmVersions;
+        LSetting.LibraryVersions.Add('4');
+        LSetting.LibraryVersions.Add('3.1');
+        LSetting.CustomSSLLibVersions := 'stored-even-if-inactive';
+      end;
+      LStream := TMemoryStream.Create;
+      try
+        LStream.WriteComponent(LSource);
+        LStream.Position := 0;
+        LStream.ReadComponent(LTarget);
+      finally
+        LStream.Free;
+      end;
+      Assert.AreEqual(Ord(High(TTaurusTLSPlatform)) + 1, LTarget.PlatformSettings.Count);
+      Assert.IsFalse(LTarget.LoadOnStart);
+      for I := 0 to LSource.PlatformSettings.Count - 1 do
+      begin
+        Assert.AreEqual(Ord(LSource.PlatformSettings[I].Target), Ord(LTarget.PlatformSettings[I].Target));
+        Assert.AreEqual(LSource.PlatformSettings[I].ConfigFile, LTarget.PlatformSettings[I].ConfigFile);
+        Assert.AreEqual(LSource.PlatformSettings[I].OpenSSLPath, LTarget.PlatformSettings[I].OpenSSLPath);
+        Assert.AreEqual(LSource.PlatformSettings[I].LibraryVersions.Text, LTarget.PlatformSettings[I].LibraryVersions.Text);
+        Assert.AreEqual(Ord(lvmVersions), Ord(LTarget.PlatformSettings[I].VersionMode));
+        Assert.AreEqual('stored-even-if-inactive', LTarget.PlatformSettings[I].CustomSSLLibVersions);
+      end;
+      Assert.AreEqual('config-' + IntToStr(Ord(TTaurusTLSLoader.CurrentTarget)) + '.cnf',
+        LTarget.ConfigFile, 'Only published platform settings must be streamed');
+      LTarget.MarkDesigning;
+      LTarget.PlatformSettings := LSource.PlatformSettings;
+      LSource.PlatformSettings[0].LibraryVersions[0] := '3';
+      Assert.AreEqual('4', LTarget.PlatformSettings[0].LibraryVersions[0], 'Assign must deep-copy lists');
+      Assert.IsFalse(Loader.IsLoaded);
+      Assert.AreEqual(LTarget.ConfigFile, Loader.ConfigFile);
+    finally
+      LTarget.Free;
+    end;
+  finally
+    LSource.Free;
+  end;
+end;
+
+procedure TLoaderComponentFixture.Platform_DuplicateTargets(const AOther: Integer);
+var
+  LComponent: TLoaderComponentAccess;
+  LTarget: TTaurusTLSPlatform;
+begin
+  LComponent := TLoaderComponentAccess.Create(nil);
+  try
+    LComponent.MarkDesigning;
+    LTarget := TTaurusTLSLoader.CurrentTarget;
+    if AOther <> 0 then
+      if LTarget = tlpWin32 then LTarget := tlpLinux64 else LTarget := tlpWin32;
+    LComponent.PlatformSettings.Add.Target := LTarget;
+    LComponent.PlatformSettings.Add.Target := LTarget;
+    Assert.WillRaise(
+      procedure
+      begin
+        LComponent.MarkRuntime;
+        LComponent.FinishStreaming;
+      end, ETaurusTLSLoaderError);
+    Assert.IsFalse(Loader.IsLoaded);
+    Assert.AreEqual('', Loader.ConfigFile);
+  finally
+    LComponent.Free;
+  end;
+end;
+
+procedure TLoaderComponentFixture.Platform_SupportedTargets;
+const
+  CExpectedTargets: array[0..8] of string = (
+    'tlpAndroid32', 'tlpAndroid64', 'tlpiOSARM64', 'tlpiOSSimulatorARM64',
+    'tlpMacOS64', 'tlpLinux64', 'tlpWin32', 'tlpWin64', 'tlpWinARM64EC');
+var
+  I: Integer;
+begin
+  Assert.AreEqual(Length(CExpectedTargets), Ord(High(TTaurusTLSPlatform)) + 1);
+  for I := 0 to High(CExpectedTargets) do
+    Assert.AreEqual(CExpectedTargets[I], GetEnumName(TypeInfo(TTaurusTLSPlatform), I));
+  Assert.AreEqual('-4;-3;', COpenSSLDefaultWin32Versions);
+  Assert.AreEqual('-4-x64;-3-x64;', COpenSSLDefaultWin64Versions);
+  Assert.AreEqual('-4-arm64;-3-arm64;', COpenSSLDefaultARM64Versions);
+  Assert.AreEqual('.4:.3', COpenSSLDefaultPosixVersions);
+{$IFNDEF OPENSSL_NO_MIN_VERSION}
+  Assert.IsTrue(min_supported_ssl_version >= $30000000);
+{$ENDIF}
+end;
+
+procedure TLoaderComponentFixture.Platform_Versions(const ATargetName, AExpected: string);
+var
+  LSettings: TTaurusTLSPlatformSettings;
+  LOwner: TLoaderComponentAccess;
+  LItem: TTaurusTLSPlatformSetting;
+  LDefault: string;
+begin
+  LOwner := TLoaderComponentAccess.Create(nil);
+  LOwner.MarkDesigning;
+  LSettings := LOwner.PlatformSettings;
+  try
+    LItem := LSettings.Add;
+    LItem.Target := TTaurusTLSPlatform(GetEnumValue(TypeInfo(TTaurusTLSPlatform), ATargetName));
+    LDefault := LItem.ResolveSSLLibVersions;
+    LItem.VersionMode := lvmVersions;
+    LItem.LibraryVersions.Add('4');
+    LItem.LibraryVersions.Add('3');
+    LItem.LibraryVersions.Add('3.1');
+    Assert.AreEqual(AExpected, LItem.ResolveSSLLibVersions);
+    LItem.LibraryVersions.Exchange(0, 1);
+    Assert.IsFalse(AExpected = LItem.ResolveSSLLibVersions, 'Order must affect search preference');
+    LItem.LibraryVersions.Clear;
+    LItem.VersionMode := lvmDefault;
+    Assert.AreEqual(LDefault, LItem.ResolveSSLLibVersions, 'Default mode must restore target defaults');
+    LItem.CustomSSLLibVersions := '""';
+    LItem.VersionMode := lvmCustom;
+    Assert.AreEqual('""', LItem.ResolveSSLLibVersions, 'Quoted empty candidate must be retained');
+    LItem.CustomSSLLibVersions := '';
+    Assert.AreEqual(LDefault, LItem.ResolveSSLLibVersions, 'Blank custom input selects defaults');
+    LItem.LibraryVersions.Clear;
+    LItem.VersionMode := lvmVersions;
+    LItem.LibraryVersions.Add('  ');
+    Assert.AreEqual(LDefault, LItem.ResolveSSLLibVersions, 'Blank preferences select defaults');
+  finally
+    LOwner.Free;
+  end;
+end;
+
+procedure TLoaderComponentFixture.Platform_InvalidVersion(const AVersion: string);
+var
+  LComponent: TLoaderComponentAccess;
+begin
+  LComponent := TLoaderComponentAccess.Create(nil);
+  try
+    LComponent.MarkDesigning;
+    with LComponent.PlatformSettings.Add do
+    begin
+      Target := TTaurusTLSLoader.CurrentTarget;
+      VersionMode := lvmVersions;
+      LibraryVersions.Add(AVersion);
+      ConfigFile := 'must-not-be-applied.cnf';
+    end;
+    Assert.WillRaise(
+      procedure
+      begin
+        LComponent.PlatformSettings[0].ResolveSSLLibVersions;
+      end, ETaurusTLSLoaderError);
+    Assert.IsFalse(Loader.IsLoaded);
+    Assert.AreEqual('', Loader.ConfigFile);
+  finally
+    LComponent.Free;
+  end;
+end;
+
+procedure TLoaderComponentFixture.Platform_ReadyMutation(const AKind: Integer);
+var
+  LComponent: TTaurusTLSLoader;
+  LPath, LVersions: string;
+begin
+  LComponent := TTaurusTLSLoader.Create(nil);
+  try
+    LPath := Loader.OpenSSLPath;
+    LVersions := Loader.SSLLibVersions;
+    LComponent.ConfigFile := FValidConfigFile;
+    Assert.IsTrue(LComponent.Load);
+    Assert.WillRaise(
+      procedure
+      begin
+        case AKind of
+          0: LComponent.OpenSSLPath := TPath.Combine(FTempDir, 'different');
+          1: LComponent.SSLLibVersions := 'different-suffix';
+          2: LComponent.ConfigFile := FInvalidSyntaxConfigFile;
+        end;
+      end, ETaurusTLSConfigFilePathError);
+    Assert.AreEqual(LPath, Loader.OpenSSLPath);
+    Assert.AreEqual(LVersions, Loader.SSLLibVersions);
+    Assert.AreEqual(FValidConfigFile, Loader.ConfigFile);
+    Assert.IsTrue(LComponent.Load);
+  finally
+    LComponent.Free;
+  end;
+end;
+
+procedure TLoaderComponentFixture.Platform_DefaultReadyAndFailureReset;
+var
+  LFirst, LSecond: TTaurusTLSLoader;
+begin
+  LFirst := TTaurusTLSLoader.Create(nil);
+  LSecond := TTaurusTLSLoader.Create(nil);
+  try
+    LFirst.ConfigFile := FValidConfigFile;
+    Assert.IsTrue(LFirst.Load);
+    Assert.IsTrue(LSecond.Load, 'Empty facade must reuse the ready singleton');
+    LFirst.Unload;
+    LFirst.ConfigFile := TPath.Combine(FTempDir, 'missing-retry.cnf');
+    Assert.WillRaise(
+      procedure
+      begin
+        LFirst.Load;
+      end, ETaurusTLSConfigFilePathError);
+    LSecond.ConfigFile := FValidConfigFile;
+    Assert.IsFalse(LFirst.Load, 'Configuration changes must not reset failure');
+    Assert.AreEqual(FValidConfigFile, Loader.ConfigFile);
+    LFirst.Unload;
+    Assert.IsTrue(LSecond.Load);
+  finally
+    LSecond.Free;
+    LFirst.Free;
+  end;
+end;
+
+procedure TLoaderComponentFixture.Platform_StreamingPreservesState(const AFailed: Boolean);
+var
+  LSource, LTarget: TLoaderComponentAccess;
+  LStream: TMemoryStream;
+  LConfig, LPath, LVersions: string;
+begin
+  if AFailed then
+  begin
+    Loader.ConfigFile := TPath.Combine(FTempDir, 'missing-streaming.cnf');
+    Assert.WillRaise(
+      procedure
+      begin
+        Loader.Load;
+      end, ETaurusTLSConfigFilePathError);
+  end
+  else
+  begin
+    Loader.ConfigFile := FValidConfigFile;
+    Assert.IsTrue(Loader.Load);
+  end;
+  LConfig := Loader.ConfigFile;
+  LPath := Loader.OpenSSLPath;
+  LVersions := Loader.SSLLibVersions;
+  LSource := TLoaderComponentAccess.Create(nil);
+  LTarget := TLoaderComponentAccess.Create(nil);
+  LStream := TMemoryStream.Create;
+  try
+    LSource.MarkDesigning;
+    with LSource.PlatformSettings.Add do
+    begin
+      Target := TTaurusTLSLoader.CurrentTarget;
+      ConfigFile := FInvalidSyntaxConfigFile;
+      OpenSSLPath := 'different-library-directory';
+    end;
+    LStream.WriteComponent(LSource);
+    LStream.Position := 0;
+    if AFailed then
+      Assert.WillRaise(
+        procedure
+        begin
+          LStream.ReadComponent(LTarget);
+        end, ETaurusTLSLoaderError)
+    else
+      LStream.ReadComponent(LTarget);
+    Assert.AreEqual(LConfig, Loader.ConfigFile);
+    Assert.AreEqual(LPath, Loader.OpenSSLPath);
+    Assert.AreEqual(LVersions, Loader.SSLLibVersions);
+    Assert.AreEqual(not AFailed, Loader.IsLoaded);
+  finally
+    LStream.Free;
+    LTarget.Free;
+    LSource.Free;
+  end;
+end;
+
+procedure TLoaderComponentFixture.Platform_StreamingDefaults(const AEntry: Boolean);
+var
+  LSource, LTarget: TLoaderComponentAccess;
+  LStream: TMemoryStream;
+begin
+  Loader.ConfigFile := FValidConfigFile;
+  LSource := TLoaderComponentAccess.Create(nil);
+  LTarget := TLoaderComponentAccess.Create(nil);
+  LStream := TMemoryStream.Create;
+  try
+    LSource.MarkDesigning;
+    LSource.LoadOnStart := False;
+    if AEntry then
+      LSource.PlatformSettings.Add.Target := TTaurusTLSLoader.CurrentTarget;
+    LStream.WriteComponent(LSource);
+    LStream.Position := 0;
+    LStream.ReadComponent(LTarget);
+    Assert.AreEqual('', Loader.ConfigFile);
+    Assert.AreEqual('', Loader.OpenSSLPath);
+{$IFDEF OPENSSL_STATIC_LINK_MODEL}
+    Assert.AreEqual('', Loader.SSLLibVersions);
+{$ELSE}
+    Assert.AreEqual(DefaultLibVersions, Loader.SSLLibVersions);
+{$ENDIF}
+    Assert.IsFalse(Loader.IsLoaded);
+  finally
+    LStream.Free;
+    LTarget.Free;
+    LSource.Free;
+  end;
+end;
+
+procedure TLoaderComponentFixture.Platform_RuntimeMutation(const AOperation: Integer);
+var
+  LComponent, LOther: TLoaderComponentAccess;
+  LItem: TTaurusTLSPlatformSetting;
+  LReady: Integer;
+begin
+  LComponent := TLoaderComponentAccess.Create(nil);
+  LOther := TLoaderComponentAccess.Create(nil);
+  try
+    LComponent.MarkDesigning;
+    LOther.MarkDesigning;
+    LItem := LComponent.PlatformSettings.Add;
+    LItem.Target := tlpWin32;
+    LItem.ConfigFile := 'original.cnf';
+    LItem.LibraryVersions.Add('4');
+    LItem.LibraryVersions.Add('3');
+    LComponent.PlatformSettings.Add.Target := tlpLinux64;
+    LOther.PlatformSettings.Add.Target := tlpWin64;
+    LComponent.MarkRuntime;
+    LOther.MarkRuntime;
+    for LReady := 0 to 1 do
+    begin
+      if LReady <> 0 then
+      begin
+        Loader.ConfigFile := FValidConfigFile;
+        Assert.IsTrue(Loader.Load);
+      end;
+      Assert.WillRaise(
+        procedure
+        begin
+          case AOperation of
+            0: LComponent.PlatformSettings.Add;
+            1: LComponent.PlatformSettings.Insert(0);
+            2: LComponent.PlatformSettings.Delete(0);
+            3: LComponent.PlatformSettings.Clear;
+            4: LComponent.PlatformSettings.Assign(LOther.PlatformSettings);
+            5: LItem.Assign(LOther.PlatformSettings[0]);
+            6: LItem.Target := tlpWin64;
+            7: LItem.OpenSSLPath := 'changed';
+            8: LItem.ConfigFile := 'changed.cnf';
+            9: LItem.VersionMode := lvmCustom;
+            10: LItem.CustomSSLLibVersions := 'changed';
+            11: LItem.LibraryVersions.Add('3.1');
+            12: LItem.LibraryVersions[0] := '3.1';
+            13: LItem.LibraryVersions.Delete(0);
+            14: LItem.LibraryVersions.Clear;
+            15: LItem.LibraryVersions.Text := '3.1';
+            16: LItem.LibraryVersions.Exchange(0, 1);
+            17: LItem.LibraryVersions.Assign(LOther.PlatformSettings[0].LibraryVersions);
+            18: LItem.Index := 1;
+            19: LItem.Collection := nil;
+            20:
+              begin
+                LOther.MarkDesigning;
+                try
+                  LOther.PlatformSettings[0].Collection := LComponent.PlatformSettings;
+                finally
+                  LOther.MarkRuntime;
+                end;
+              end;
+            21: LComponent.PlatformSettings := LOther.PlatformSettings;
+            22:
+              begin
+                LItem.LibraryVersions.BeginUpdate;
+                try
+                  LItem.LibraryVersions.Add('3.1');
+                finally
+                  LItem.LibraryVersions.EndUpdate;
+                end;
+              end;
+            23: TTaurusTLSPlatformSetting.Create(LComponent.PlatformSettings);
+            24: TCollection(LComponent.PlatformSettings).Clear;
+            25: TCollection(LComponent.PlatformSettings).Delete(0);
+          end;
+        end, ETaurusTLSLoaderError);
+      Assert.AreEqual(2, LComponent.PlatformSettings.Count);
+      Assert.IsTrue(LItem = LComponent.PlatformSettings[0]);
+      Assert.AreEqual(Ord(tlpWin32), Ord(LItem.Target));
+      Assert.AreEqual('', LItem.OpenSSLPath);
+      Assert.AreEqual('original.cnf', LItem.ConfigFile);
+      Assert.AreEqual(Ord(lvmDefault), Ord(LItem.VersionMode));
+      Assert.AreEqual('', LItem.CustomSSLLibVersions);
+      Assert.AreEqual(2, LItem.LibraryVersions.Count);
+      Assert.AreEqual('4', LItem.LibraryVersions[0]);
+      Assert.AreEqual('3', LItem.LibraryVersions[1]);
+      Assert.AreEqual(1, LOther.PlatformSettings.Count);
+      Assert.AreEqual(LReady <> 0, Loader.IsLoaded);
+    end;
+  finally
+    // Destruction must release runtime collections without guard exceptions.
+    LOther.Free;
     LComponent.Free;
   end;
 end;
