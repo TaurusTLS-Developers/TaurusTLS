@@ -158,28 +158,22 @@ Loaded callback is not a general application-start notification.
 ## Platform collection editing
 
 In the Object Inspector, open PlatformSettings and add an item for each desired
-target. For example, select Target=tlpWin64, OpenSSLPath=openssl\win64,
-ConfigFile=openssl.cnf, VersionMode=lvmVersions, and enter 4 then 3 in
-LibraryVersions. These collections cannot be populated by application code.
+target. Set Target, OpenSSLPath, ConfigFile and optional CustomSSLLibVersions.
+These collections cannot be populated by application code.
 
-LibraryVersions is an ordered TStrings list, one numeric version per line.
-Only major versions 3 and above are accepted; dotted versions such as 3.1 are valid. The example generates -4-x64;-3-x64.
-POSIX targets generate .4:.3. WinARM64EC maps to arm64 filenames in the supplied
-ARM64X distribution. Stable target names can be streamed on other designer hosts;
-an enum entry does not assert toolchain or dynamic-linking support.
+CustomSSLLibVersions is the only version-selection field. Empty uses the loader's
+normal target defaults. A nonempty value supplies an ordered raw suffix list,
+passed through unchanged. For example, -4-x64;-3-x64; on Win64 or .4:.3 on POSIX.
+Use semicolons on Windows and colons on POSIX. A value of two double quotes
+requests an unversioned candidate. Standard OpenSSL 3+ names use major versions;
+there is no VersionMode, numeric version list or minor-version suffix generation.
 
-VersionMode=lvmDefault uses normal target suffix defaults. lvmVersions generates
-suffixes; a blank list also uses defaults. lvmCustom uses CustomSSLLibVersions
-unchanged; blank custom input uses defaults. Custom lists use the target delimiter
-(semicolon on Windows, colon on POSIX). An explicit quoted empty candidate
-requests an unversioned name:
+WinARM64EC defaults use arm64 filenames from the supplied ARM64X distribution.
+Stable target names can be streamed on other hosts; an enum entry does not
+establish toolchain support. POSIX retains its existing unversioned-first lookup.
 
-Set VersionMode=lvmCustom and CustomSSLLibVersions to two double quotes.
-
-The existing POSIX loader tries the unversioned library before suffixes; this
-component preserves its search order. No OS-family collection fallbacks or
-scalar design-time defaults exist. Missing target entries are equivalent to
-all-blank entries, including when the singleton was previously configured.
+Existing development forms with VersionMode or LibraryVersions entries must
+remove them and, if needed, put the intended suffixes in CustomSSLLibVersions.
 
 ## Runtime configuration and existing forms
 
@@ -197,7 +191,7 @@ Old DFM/LFM scalar assignments must be removed and their values moved to the
 appropriate PlatformSettings item. These scalar properties are no longer
 published; old form entries are not silently imported.
 
-Returned settings, items and version lists are owned; do not free them separately.
+Returned settings and items are owned; do not free them separately.
 The component does not promise atomic multi-property configuration transactions.
 Coordinate startup and retire every native consumer before global Unload.
 

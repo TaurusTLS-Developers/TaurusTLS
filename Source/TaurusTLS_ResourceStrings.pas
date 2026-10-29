@@ -279,7 +279,6 @@ resourcestring
   RSOSSLLoaderActionRegistrationInactive =
     'OpenSSL loader action registration or removal is not allowed in the current lifecycle state';
   RSOSSLInitCryptoFailed = 'OPENSSL_init_crypto failed';
-  RSOSSLInvalidLibraryVersion = 'Invalid or unsupported OpenSSL library version: %s';
   RSOSSLDuplicatePlatformSetting = 'Duplicate TaurusTLS platform setting: %s';
   RSOSSLUnsupportedComponentTarget = 'The current compiler target is not supported by TTaurusTLSLoader';
   RSOSSLDesignTimeLoad = 'OpenSSL cannot be loaded at design time';

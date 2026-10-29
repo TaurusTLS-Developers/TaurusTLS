@@ -301,7 +301,8 @@ Per-operation approval indicators, provenance and certification remain separate.
 
 ## TTaurusTLSLoader component: platform settings and ownership
 
-Design revision: 2026-10-29; implemented in IDE buffers, validation in progress.
+Design revision: 2026-10-29; implemented and validated by Delphi Loader tests
+on Windows32, Windows64, Linux and macOS. Fresh FPC validation remains pending.
 This supersedes the original published-scalar facade design.
 
 TTaurusTLSLoader and its collection/helpers live in Source/TaurusTLSLoader.pas.
@@ -314,7 +315,7 @@ reference counting is introduced.
 
 Publish PlatformSettings and LoadOnStart (default True). PlatformSettings is
 one component-owned collection, initially empty. Each item groups library path,
-configuration filename and ordered version preferences for one exact target.
+configuration filename and optional custom library suffixes for one exact target.
 Developers add only the targets they need; each target may appear at most once.
 The collection configures deployment and does not restrict application targets.
 
@@ -325,7 +326,7 @@ all-blank entry. Blank fields select their loader/system defaults:
 |---|---|
 | Library path | Standard loader/platform library discovery |
 | ConfigFile | Standard OpenSSL configuration initialization |
-| Version preferences | Existing TaurusTLS suffix defaults for the running target |
+| CustomSSLLibVersions | Existing TaurusTLS suffix defaults for the running target |
 
 There are no Windows/POSIX fallback entries, scalar fallback defaults or
 inheritance rules. Defaults must not come from a previously configured component.
@@ -335,12 +336,12 @@ enum contains Android32, Android64, iOSARM64 (device), iOSSimulatorARM64,
 MacOS64 (Intel and ARM together), Linux64, Win32, Win64 and WinARM64EC.
 There is no Unknown entry; unsupported compiler targets fail explicitly.
 
-Only OpenSSL 3.x and newer are supported. Default suffix lists contain 4 and 3;
-generated preferences reject lower major versions. Version preferences are
-ordered, not a Pascal set, and are translated through
-explicit target naming rules. Retain a custom-suffix option for alternative
-distributions. WinARM64EC maps to the arm64 suffix of the supplied ARM64X
-OpenSSL-Distribution binaries; this is not a claim of upstream ARM64EC support.
+Only OpenSSL 3.x and newer are supported; standard library names use the major
+version. CustomSSLLibVersions is the only version-selection field: an ordered
+raw suffix string, passed unchanged to the loader. Empty uses existing target
+defaults (currently major versions 4 and 3). There is no VersionMode or numeric
+version list and no generated minor-version suffixes. WinARM64EC defaults use
+the arm64 suffix of supplied ARM64X binaries, not official upstream support.
 
 ### Runtime editing and shared configuration
 
@@ -348,9 +349,9 @@ Keep PlatformSettings published so the standard Object Inspector collection
 editor and automatic form streaming remain available. Collection/item edits are
 allowed only while the owning component is designing or being read by the
 streamer. Runtime mutation raises ETaurusTLSLoaderError before changing data,
-including nested LibraryVersions edits, assignment, insertion, deletion and
-reordering. Internal destruction remains permitted. Returned collections, items
-and string lists are owned objects; callers must not free them independently.
+including assignment, insertion, deletion and reordering. Internal destruction
+remains permitted. Returned collections and items are owned objects; callers
+must not free them independently.
 
 OpenSSLPath, ConfigFile and SSLLibVersions are public, not published or streamed.
 Their accessors delegate directly to the singleton. Runtime assignments use its
@@ -382,3 +383,11 @@ Keep TLS consumers inactive until startup loading succeeds. Context construction
 remains inactive; InitContext checks readiness before native calls in both linking
 models. Retire native objects and operations before Unload; readiness is a snapshot.
 See explicit_loading_migration.md for examples.
+
+### Validation of simplified version selection
+
+Loader tests with -i:Loader pass: Windows32 and Windows64 each 212/212,
+Linux 205/205 and macOS 187/187. Developer-supplied results establish these
+passed/total counts; their build configurations were not separately supplied.
+The locally observed Win64/Release compilation had no hints, warnings or errors.
+These results do not establish FPC runtime or static-link execution coverage.

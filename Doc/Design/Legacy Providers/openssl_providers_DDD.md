@@ -715,7 +715,8 @@ vector, self-test, provider identity or loader status is not certification.
 
 ### Status, placement and storage
 
-Design revision: 2026-10-29; implemented in IDE buffers, validation in progress.
+Design revision: 2026-10-29; implemented and validated by Delphi Loader tests
+on Windows32, Windows64, Linux and macOS. Fresh FPC validation remains pending.
 Supersedes the published scalar configuration of the original facade. The
 component, collection and helper implementations live in Source/TaurusTLSLoader.pas
 alongside the unchanged singleton interface. Source/TaurusTLS.pas uses this unit.
@@ -727,8 +728,8 @@ Do not use retained components after loader unit finalization.
 
 Publish PlatformSettings as an owned TCollection/TCollectionItem-compatible
 collection, plus LoadOnStart=True. Start with zero items. Each item identifies
-one exact compiler target and holds OpenSSLPath, ConfigFile and ordered library
-version preferences, with default/generated/custom-suffix selection.
+one exact compiler target and holds OpenSSLPath, ConfigFile and
+CustomSSLLibVersions (an optional ordered raw suffix string).
 
 TTaurusTLSPlatform has exactly nine entries: tlpAndroid32, tlpAndroid64,
 tlpiOSARM64 (device), tlpiOSSimulatorARM64, tlpMacOS64, tlpLinux64, tlpWin32,
@@ -757,33 +758,22 @@ configuration as an implicit fallback.
 |---|---|
 | Blank OpenSSLPath | Empty path; loader/platform library search |
 | Blank ConfigFile | Empty filename; standard OpenSSL initialization |
-| Blank/default versions | Existing DefaultLibVersions for this target |
-| Ordered versions | Generate target-specific suffixes in preference order |
-| Custom suffixes | Use the selected target's explicit suffix convention |
+| Blank CustomSSLLibVersions | Existing loader defaults for this target |
+| Nonempty CustomSSLLibVersions | Pass the complete string unchanged, preserving order |
 
-Blank version preferences must restore normal target defaults, not simply pass
-an empty low-level SSLLibVersions string: those search semantics may differ.
-Defaults are encoded through target rules or existing runtime defaults; no other
-platform is probed from the designer.
+OpenSSL 3+ standard shared-library naming uses major versions only. Remove
+TTaurusTLSLibraryVersionMode, VersionMode and LibraryVersions. There is no
+numeric/dotted version parser or generated suffix conversion. Defaults retain
+existing major-version searches: -4;-3; for Win32, -4-x64;-3-x64; for Win64,
+-4-arm64;-3-arm64; for WinARM64EC and .4:.3 on POSIX. ARM64EC names match the
+supplied ARM64X distribution and do not assert official upstream support.
 
-Version preferences are an ordered list, not a Pascal set. Preserve search order,
-target delimiters and supported compound-version spellings. Existing conventions
-include -4/-3 for Win32, -4-x64/-3-x64 for Win64, and .4/.3 on POSIX. These are
-suffixes, not complete filenames; extensions/placement remain the loader's job.
-For WinARM64EC use -<version>-arm64, matching the supplied ARM64X distribution;
-do not invent an arm64ec suffix or imply official upstream ARM64EC support.
-
-TTaurusTLSPlatformSetting exposes VersionMode (lvmDefault/lvmVersions/lvmCustom),
-LibraryVersions (ordered TStrings) and CustomSSLLibVersions (raw suffix string).
-Only major versions 3 and above are accepted in generated preferences. Defaults
-contain OpenSSL 4 and 3 only; the normal low-level minimum is OpenSSL 3.0.0.
-The legacy OPENSSL_NO_MIN_VERSION override is not redefined by this revision.
-Numeric version lines accept dotted compounds such as 3.1; generated Windows
-suffixes substitute underscores while POSIX suffixes retain dots. Blank lists
-and blank custom strings select defaults. A custom quoted empty candidate (two
-double quotes) explicitly requests an unversioned name. Preserve the existing
-POSIX loader's unversioned-first search behavior; no new native search algorithm
-is introduced. This uses standard collection/string-list editors.
+ResolveSSLLibVersions returns a nonempty CustomSSLLibVersions verbatim; empty
+returns the selected target's existing defaults. Custom strings use the target's
+directory-list delimiter and may specify a quoted empty candidate for unversioned
+lookup. The existing POSIX unversioned-first search behavior stays unchanged.
+The normal low-level minimum remains OpenSSL 3.0.0; preserve the existing
+OPENSSL_NO_MIN_VERSION override. Custom names do not establish older API support.
 
 For static/startup-linked builds, path and suffix settings follow the existing
 inert low-level property contract. ConfigFile still participates in lifecycle
@@ -791,7 +781,7 @@ initialization. An item does not enable runtime dynamic loading on a static targ
 
 ### Runtime mutation guards and standard editing
 
-Keep PlatformSettings published. Use the standard collection/string-list editors;
+Keep PlatformSettings published. Use the standard collection editor;
 no dedicated component editor or custom DefineProperties persistence is required.
 Collection mutation is allowed when its owner has csDesigning or csLoading.
 Otherwise raise ETaurusTLSLoaderError using RSOSSLPlatformSettingsDesignOnly
@@ -800,13 +790,11 @@ before changing any values. Streaming permission ends with csLoading.
 Guard item construction before attachment, item setters and Assign, collection
 Assign and BeginUpdate (including inherited Clear/Sort), deletion through
 Notify(cnDeleting), item SetIndex and movement between collections through
-SetCollection. Both source and destination must permit editing. Override the
-nested TStringList.Changing method itself, so replacing OnChanging or batching
-with BeginUpdate does not bypass the check.
+SetCollection. Both source and destination must permit editing.
 
 Collection destruction permits internal cleanup; item destructors must never
-raise mutation errors after Free has begun. Collections, items and nested lists
-remain component-owned: independently freeing borrowed objects is unsupported.
+raise mutation errors after Free has begun. Collections and items remain
+component-owned: independently freeing borrowed objects is unsupported.
 
 ### Public runtime properties
 
@@ -862,14 +850,22 @@ Keep consumers inactive during streaming; cross-form ordering is application-own
 
 - Empty/missing/all-blank settings select defaults during runtime streaming.
 - Exact target selection, duplicate validation and cross-host streaming are covered.
-- Generated/custom suffixes and ARM64EC-to-arm64 mapping remain covered.
-- Collection and nested item/list mutations fail before modification at runtime,
+- Empty defaults, verbatim custom suffix order and ARM64EC defaults are covered.
+- Collection and item mutations fail before modification at runtime,
   both before and after loading; design-time editing and runtime streaming work.
-- Collection assignment deep-copies lists; destruction releases them safely.
+- Collection assignment copies independent item values; destruction is safe.
 - Runtime scalars are public, not published, and configure shared state directly.
 - Changed scalar values are rejected while ready; repeated Load is idempotent.
 - Multiple streamed components do not reconfigure an already-ready singleton.
 - Failure/retry, explicit readiness and global Unload semantics remain covered.
 
-Implementation messages are declared in TaurusTLS_ResourceStrings.pas; suffix
-fragments, separators and default lists are named constants in TaurusTLSConsts.pas.
+Implementation messages are declared in TaurusTLS_ResourceStrings.pas; target
+delimiters and default lists are named constants in TaurusTLSConsts.pas.
+
+### Validation of simplified version selection
+
+Loader tests with -i:Loader pass: Windows32 and Windows64 each 212/212,
+Linux 205/205 and macOS 187/187. Developer-supplied results establish these
+passed/total counts; their build configurations were not separately supplied.
+The locally observed Win64/Release compilation had no hints, warnings or errors.
+These results do not establish FPC runtime or static-link execution coverage.

@@ -78,7 +78,7 @@ type
     /// <summary>Verifies scalar properties are public, share singleton configuration and reject changes while ready.</summary>
     [Test]
     procedure Platform_RuntimeConfiguration;
-    /// <summary>Round-trips all target settings and verifies collection assignment deep-copies version lists.</summary>
+    /// <summary>Round-trips all target settings and verifies collection assignment copies independent item values.</summary>
     [Test]
     procedure Platform_StreamingAndAssign;
     /// <summary>Rejects duplicate current or foreign targets before applying startup configuration.</summary>
@@ -88,27 +88,17 @@ type
     /// <summary>Verifies the stable target names, default suffix lists and minimum supported OpenSSL version.</summary>
     [Test]
     procedure Platform_SupportedTargets;
-    /// <summary>Checks target-specific suffix generation, preference order, custom suffixes and blank defaults.</summary>
-    [TestCase('Win32', 'tlpWin32,-4;-3;-3_1')]
-    [TestCase('Win64', 'tlpWin64,-4-x64;-3-x64;-3_1-x64')]
-    [TestCase('ARM64EC', 'tlpWinARM64EC,-4-arm64;-3-arm64;-3_1-arm64')]
-    [TestCase('Linux64', 'tlpLinux64,.4:.3:.3.1')]
-    [TestCase('MacOS64', 'tlpMacOS64,.4:.3:.3.1')]
-    [TestCase('Android32', 'tlpAndroid32,.4:.3:.3.1')]
-    [TestCase('Android64', 'tlpAndroid64,.4:.3:.3.1')]
-    [TestCase('iOSARM64', 'tlpiOSARM64,.4:.3:.3.1')]
-    [TestCase('iOSSimulatorARM64', 'tlpiOSSimulatorARM64,.4:.3:.3.1')]
+    /// <summary>Checks target defaults and verbatim custom suffix order without generated versions.</summary>
+    [TestCase('Win32', 'tlpWin32,-4;-3;')]
+    [TestCase('Win64', 'tlpWin64,-4-x64;-3-x64;')]
+    [TestCase('ARM64EC', 'tlpWinARM64EC,-4-arm64;-3-arm64;')]
+    [TestCase('Linux64', 'tlpLinux64,.4:.3')]
+    [TestCase('MacOS64', 'tlpMacOS64,.4:.3')]
+    [TestCase('Android32', 'tlpAndroid32,.4:.3')]
+    [TestCase('Android64', 'tlpAndroid64,.4:.3')]
+    [TestCase('iOSARM64', 'tlpiOSARM64,.4:.3')]
+    [TestCase('iOSSimulatorARM64', 'tlpiOSSimulatorARM64,.4:.3')]
     procedure Platform_Versions(const ATargetName, AExpected: string);
-    /// <summary>Rejects malformed, overflowing and pre-3.x generated versions without changing the singleton.</summary>
-    [TestCase('LeadingDot', '.3')]
-    [TestCase('TrailingDot', '3.')]
-    [TestCase('RepeatedDot', '3..1')]
-    [TestCase('FilenameSuffix', '3-x64')]
-    [TestCase('OpenSSLZero', '0')]
-    [TestCase('OpenSSL11', '1.1')]
-    [TestCase('OpenSSL2', '2.0')]
-    [TestCase('Overflow', '99999999999999999999')]
-    procedure Platform_InvalidVersion(const AVersion: string);
     /// <summary>Verifies changed runtime paths or versions are rejected while loaded without altering configuration.</summary>
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
     [TestCase('Path', '0')]
@@ -127,7 +117,7 @@ type
     [TestCase('Empty', 'False')]
     [TestCase('BlankEntry', 'True')]
     procedure Platform_StreamingDefaults(const AEntry: Boolean);
-    /// <summary>Rejects runtime collection, item and version-list edits without mutation, both inactive and ready.</summary>
+    /// <summary>Rejects runtime collection and item edits without mutation, both inactive and ready.</summary>
     [TestCase('Add', '0')]
     [TestCase('Insert', '1')]
     [TestCase('Delete', '2')]
@@ -137,20 +127,11 @@ type
     [TestCase('Target', '6')]
     [TestCase('Path', '7')]
     [TestCase('Config', '8')]
-    [TestCase('VersionMode', '9')]
     [TestCase('CustomVersions', '10')]
-    [TestCase('VersionAdd', '11')]
-    [TestCase('VersionPut', '12')]
-    [TestCase('VersionDelete', '13')]
-    [TestCase('VersionClear', '14')]
-    [TestCase('VersionText', '15')]
-    [TestCase('VersionExchange', '16')]
-    [TestCase('VersionAssign', '17')]
     [TestCase('ItemIndex', '18')]
     [TestCase('Detach', '19')]
     [TestCase('MoveToRuntime', '20')]
     [TestCase('CollectionProperty', '21')]
-    [TestCase('VersionBeginUpdate', '22')]
     [TestCase('ItemCreate', '23')]
     [TestCase('BaseClear', '24')]
     [TestCase('BaseDelete', '25')]
@@ -598,7 +579,6 @@ begin
       begin
         Target := TTaurusTLSLoader.CurrentTarget;
         OpenSSLPath := Loader.OpenSSLPath;
-        VersionMode := lvmCustom;
         CustomSSLLibVersions := Loader.SSLLibVersions;
         ConfigFile := FValidConfigFile;
       end;
@@ -685,7 +665,6 @@ begin
     LSetting.Target := TTaurusTLSLoader.CurrentTarget;
     LSetting.OpenSSLPath := Loader.OpenSSLPath;
     LSetting.ConfigFile := FValidConfigFile;
-    LSetting.VersionMode := lvmCustom;
     LSetting.CustomSSLLibVersions := Loader.SSLLibVersions;
     Assert.AreEqual('', Loader.ConfigFile, 'Design settings must stay local');
     LStream.WriteComponent(LSource);
@@ -751,9 +730,6 @@ begin
         LSetting.Target := LPlatform;
         LSetting.ConfigFile := 'config-' + IntToStr(Ord(LPlatform)) + '.cnf';
         LSetting.OpenSSLPath := 'library-' + IntToStr(Ord(LPlatform));
-        LSetting.VersionMode := lvmVersions;
-        LSetting.LibraryVersions.Add('4');
-        LSetting.LibraryVersions.Add('3.1');
         LSetting.CustomSSLLibVersions := 'stored-even-if-inactive';
       end;
       LStream := TMemoryStream.Create;
@@ -771,16 +747,15 @@ begin
         Assert.AreEqual(Ord(LSource.PlatformSettings[I].Target), Ord(LTarget.PlatformSettings[I].Target));
         Assert.AreEqual(LSource.PlatformSettings[I].ConfigFile, LTarget.PlatformSettings[I].ConfigFile);
         Assert.AreEqual(LSource.PlatformSettings[I].OpenSSLPath, LTarget.PlatformSettings[I].OpenSSLPath);
-        Assert.AreEqual(LSource.PlatformSettings[I].LibraryVersions.Text, LTarget.PlatformSettings[I].LibraryVersions.Text);
-        Assert.AreEqual(Ord(lvmVersions), Ord(LTarget.PlatformSettings[I].VersionMode));
         Assert.AreEqual('stored-even-if-inactive', LTarget.PlatformSettings[I].CustomSSLLibVersions);
       end;
       Assert.AreEqual('config-' + IntToStr(Ord(TTaurusTLSLoader.CurrentTarget)) + '.cnf',
         LTarget.ConfigFile, 'Only published platform settings must be streamed');
       LTarget.MarkDesigning;
       LTarget.PlatformSettings := LSource.PlatformSettings;
-      LSource.PlatformSettings[0].LibraryVersions[0] := '3';
-      Assert.AreEqual('4', LTarget.PlatformSettings[0].LibraryVersions[0], 'Assign must deep-copy lists');
+      LSource.PlatformSettings[0].CustomSSLLibVersions := 'changed-source';
+      Assert.AreEqual('stored-even-if-inactive', LTarget.PlatformSettings[0].CustomSSLLibVersions,
+        'Assign must copy independent item values');
       Assert.IsFalse(Loader.IsLoaded);
       Assert.AreEqual(LTarget.ConfigFile, Loader.ConfigFile);
     finally
@@ -839,65 +814,27 @@ end;
 
 procedure TLoaderComponentFixture.Platform_Versions(const ATargetName, AExpected: string);
 var
-  LSettings: TTaurusTLSPlatformSettings;
   LOwner: TLoaderComponentAccess;
   LItem: TTaurusTLSPlatformSetting;
-  LDefault: string;
 begin
   LOwner := TLoaderComponentAccess.Create(nil);
-  LOwner.MarkDesigning;
-  LSettings := LOwner.PlatformSettings;
   try
-    LItem := LSettings.Add;
+    LOwner.MarkDesigning;
+    LItem := LOwner.PlatformSettings.Add;
     LItem.Target := TTaurusTLSPlatform(GetEnumValue(TypeInfo(TTaurusTLSPlatform), ATargetName));
-    LDefault := LItem.ResolveSSLLibVersions;
-    LItem.VersionMode := lvmVersions;
-    LItem.LibraryVersions.Add('4');
-    LItem.LibraryVersions.Add('3');
-    LItem.LibraryVersions.Add('3.1');
     Assert.AreEqual(AExpected, LItem.ResolveSSLLibVersions);
-    LItem.LibraryVersions.Exchange(0, 1);
-    Assert.IsFalse(AExpected = LItem.ResolveSSLLibVersions, 'Order must affect search preference');
-    LItem.LibraryVersions.Clear;
-    LItem.VersionMode := lvmDefault;
-    Assert.AreEqual(LDefault, LItem.ResolveSSLLibVersions, 'Default mode must restore target defaults');
+    LItem.CustomSSLLibVersions := 'customer-first;customer-second';
+    Assert.AreEqual('customer-first;customer-second', LItem.ResolveSSLLibVersions,
+      'Custom suffixes and their order must be passed through unchanged');
     LItem.CustomSSLLibVersions := '""';
-    LItem.VersionMode := lvmCustom;
-    Assert.AreEqual('""', LItem.ResolveSSLLibVersions, 'Quoted empty candidate must be retained');
+    Assert.AreEqual('""', LItem.ResolveSSLLibVersions);
     LItem.CustomSSLLibVersions := '';
-    Assert.AreEqual(LDefault, LItem.ResolveSSLLibVersions, 'Blank custom input selects defaults');
-    LItem.LibraryVersions.Clear;
-    LItem.VersionMode := lvmVersions;
-    LItem.LibraryVersions.Add('  ');
-    Assert.AreEqual(LDefault, LItem.ResolveSSLLibVersions, 'Blank preferences select defaults');
+    Assert.AreEqual(AExpected, LItem.ResolveSSLLibVersions, 'Empty must restore loader defaults');
+    Assert.IsTrue(GetPropInfo(LItem.ClassInfo, 'VersionMode') = nil);
+    Assert.IsTrue(GetPropInfo(LItem.ClassInfo, 'LibraryVersions') = nil);
+    Assert.IsFalse(Loader.IsLoaded);
   finally
     LOwner.Free;
-  end;
-end;
-
-procedure TLoaderComponentFixture.Platform_InvalidVersion(const AVersion: string);
-var
-  LComponent: TLoaderComponentAccess;
-begin
-  LComponent := TLoaderComponentAccess.Create(nil);
-  try
-    LComponent.MarkDesigning;
-    with LComponent.PlatformSettings.Add do
-    begin
-      Target := TTaurusTLSLoader.CurrentTarget;
-      VersionMode := lvmVersions;
-      LibraryVersions.Add(AVersion);
-      ConfigFile := 'must-not-be-applied.cnf';
-    end;
-    Assert.WillRaise(
-      procedure
-      begin
-        LComponent.PlatformSettings[0].ResolveSSLLibVersions;
-      end, ETaurusTLSLoaderError);
-    Assert.IsFalse(Loader.IsLoaded);
-    Assert.AreEqual('', Loader.ConfigFile);
-  finally
-    LComponent.Free;
   end;
 end;
 
@@ -1059,8 +996,6 @@ begin
     LItem := LComponent.PlatformSettings.Add;
     LItem.Target := tlpWin32;
     LItem.ConfigFile := 'original.cnf';
-    LItem.LibraryVersions.Add('4');
-    LItem.LibraryVersions.Add('3');
     LComponent.PlatformSettings.Add.Target := tlpLinux64;
     LOther.PlatformSettings.Add.Target := tlpWin64;
     LComponent.MarkRuntime;
@@ -1085,15 +1020,7 @@ begin
             6: LItem.Target := tlpWin64;
             7: LItem.OpenSSLPath := 'changed';
             8: LItem.ConfigFile := 'changed.cnf';
-            9: LItem.VersionMode := lvmCustom;
             10: LItem.CustomSSLLibVersions := 'changed';
-            11: LItem.LibraryVersions.Add('3.1');
-            12: LItem.LibraryVersions[0] := '3.1';
-            13: LItem.LibraryVersions.Delete(0);
-            14: LItem.LibraryVersions.Clear;
-            15: LItem.LibraryVersions.Text := '3.1';
-            16: LItem.LibraryVersions.Exchange(0, 1);
-            17: LItem.LibraryVersions.Assign(LOther.PlatformSettings[0].LibraryVersions);
             18: LItem.Index := 1;
             19: LItem.Collection := nil;
             20:
@@ -1106,15 +1033,6 @@ begin
                 end;
               end;
             21: LComponent.PlatformSettings := LOther.PlatformSettings;
-            22:
-              begin
-                LItem.LibraryVersions.BeginUpdate;
-                try
-                  LItem.LibraryVersions.Add('3.1');
-                finally
-                  LItem.LibraryVersions.EndUpdate;
-                end;
-              end;
             23: TTaurusTLSPlatformSetting.Create(LComponent.PlatformSettings);
             24: TCollection(LComponent.PlatformSettings).Clear;
             25: TCollection(LComponent.PlatformSettings).Delete(0);
@@ -1125,11 +1043,7 @@ begin
       Assert.AreEqual(Ord(tlpWin32), Ord(LItem.Target));
       Assert.AreEqual('', LItem.OpenSSLPath);
       Assert.AreEqual('original.cnf', LItem.ConfigFile);
-      Assert.AreEqual(Ord(lvmDefault), Ord(LItem.VersionMode));
       Assert.AreEqual('', LItem.CustomSSLLibVersions);
-      Assert.AreEqual(2, LItem.LibraryVersions.Count);
-      Assert.AreEqual('4', LItem.LibraryVersions[0]);
-      Assert.AreEqual('3', LItem.LibraryVersions[1]);
       Assert.AreEqual(1, LOther.PlatformSettings.Count);
       Assert.AreEqual(LReady <> 0, Loader.IsLoaded);
     end;

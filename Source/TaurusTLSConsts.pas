@@ -26,14 +26,8 @@ const
   {$ELSE}
   min_supported_ssl_version = 0;
   {$ENDIF}
-  COpenSSLMinimumMajorVersion = 3;
   COpenSSLWindowsDirListDelimiter = ';';
   COpenSSLPosixDirListDelimiter = ':';
-  COpenSSLWindowsVersionPrefix = '-';
-  COpenSSLVersionSeparator = '.';
-  COpenSSLWindowsVersionSeparator = '_';
-  COpenSSLWin64VersionSuffix = '-x64';
-  COpenSSLARM64VersionSuffix = '-arm64';
   COpenSSLDefaultWin32Versions = '-4;-3;';
   COpenSSLDefaultWin64Versions = '-4-x64;-3-x64;';
   COpenSSLDefaultARM64Versions = '-4-arm64;-3-arm64;';
