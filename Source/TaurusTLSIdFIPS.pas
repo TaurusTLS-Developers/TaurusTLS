@@ -1,4 +1,4 @@
-{ ****************************************************************************** }
+﻿{ ****************************************************************************** }
 { *  TaurusTLS                                                                 * }
 { *           https://github.com/JPeterMugaas/TaurusTLS                        * }
 { *                                                                            * }
@@ -441,7 +441,9 @@ end;
 procedure InstallFIPSHooks;
 begin
   // A library query must not initialize Indy's separate OpenSSL backend.
+  {$IF DECLARED(LoadHashLibrary)}
   LoadHashLibrary := TaurusTLSIsHashingIntfAvail;
+  {$IFEND}
   SetFIPSMode := TaurusTLSSetFIPSMode;
   GetFIPSMode := TaurusTLSGetFIPSMode;
   IsHashingIntfAvail := TaurusTLSIsHashingIntfAvail;
