@@ -401,8 +401,7 @@ Use GetOpenSSLLoader to obtain the interface for new code:
 
 This forwarding contract is implemented and retained for compatibility.
 LoadOpenSSLLibrary remains an explicit application initialization entry point,
-but new callers should use IOpenSSLLoader.Load. Internal context initialization
-and unit finalization call the loader directly. Compatibility tests retain
+but new callers should use IOpenSSLLoader.Load. Unit finalization calls the loader directly; context creation no longer loads it. Compatibility tests retain
 wrapper calls with deprecation warnings suppressed only around those routines.
 One Unload globally tears down
 the runtime even after multiple successful Load calls; no reference counter is
@@ -417,8 +416,7 @@ requirement. Application shutdown must retire live objects/operations first.
 
 - Legacy pre-configuration registration, passive FIPS reporting and policy
   behavior are implemented; validate the outstanding archive/native-context cases.
-- Decide whether `TTaurusTLSContext.Create` should retain its implicit Load or
-  require explicit readiness, with migration tests before changing compatibility.
+- Explicit context readiness and the component facade are approved and implemented; track platform validation separately.
 - Complete final platform and runtime Release validation, dependency maps and
   the range-checking/concurrent-load/concurrent-unload-query test evidence.
 - Keep NTLMv2 RC4, non-ASCII LM OEM encoding and FIPS operation approval/
@@ -703,12 +701,150 @@ acceptance. Remaining gates are:
 - Runtime Release compilation with normal inline settings and relevant execution.
 - Concurrent status reads while an unload callback pauses cleanup, competing
   Load callers dispatching initialization once, and range-checking execution.
-- The TTaurusTLSContext.Create implicit-initialization compatibility decision.
+- Explicit-loading migration and component startup ordering validation.
 - FPC execution/compilation, which is not implied by Delphi platform results.
 - The deferred memory review and intermittent access-violation investigation,
   tracked separately from functional provider acceptance.
 - Operation approval indicators, certification provenance, NTLMv2 RC4,
-  non-ASCII LM OEM policy and the deferred loader component.
+  non-ASCII LM OEM policy.
 
 Keep known platform baseline failures distinct from new regressions. A passing
 vector, self-test, provider identity or loader status is not certification.
+
+## TTaurusTLSLoader: platform settings and explicit initialization
+
+### Status, placement and storage
+
+Approved design revision: 2026-10-28; not yet implemented. Supersedes the
+published scalar configuration of the original facade. The component declaration
+and methods belong in Source/TaurusTLS.pas; Source/TaurusTLSLoader.pas retains
+the singleton and its low-level string configuration API.
+
+The component caches FLoader: IOpenSSLLoader. Any number of components may
+retain the same singleton; these references preserve its Delphi object lifetime,
+not OpenSSL readiness or native-user ownership. Destruction never calls Unload.
+Do not use retained components after loader unit finalization.
+
+Publish PlatformSettings as an owned TCollection/TCollectionItem-compatible
+collection, plus LoadOnStart=True. Start with zero items. Each item identifies
+one exact compiler target and holds OpenSSLPath, ConfigFile and ordered library
+version preferences, with default/generated/custom-suffix selection.
+
+At minimum distinguish Win32, Win64 and Win64ARMEC. Other supported platforms
+must have exact target/architecture identities. Finalize the inventory against
+the supported compiler/linking matrix; collection membership does not establish
+new compiler or dynamic-loading support. Persisted target identities must remain
+readable on other design-time platforms: do not conditionally remove members or
+change their persisted meaning across compilers.
+
+Reject duplicate target entries, validating at least before Load. Item order has
+no target-selection priority. There are no OS-family defaults, inheritance rules
+or scalar design-time fallback values.
+
+### Resolution and default semantics
+
+Select by compiled process target, not the designer host or emulating host OS.
+An empty collection and a missing target entry resolve to normal defaults,
+exactly like an entry with all fields blank. Do not retain earlier singleton
+configuration as an implicit fallback.
+
+| Input | Resolution passed to the singleton |
+|---|---|
+| Blank OpenSSLPath | Empty path; loader/platform library search |
+| Blank ConfigFile | Empty filename; standard OpenSSL initialization |
+| Blank/default versions | Existing DefaultLibVersions for this target |
+| Ordered versions | Generate target-specific suffixes in preference order |
+| Custom suffixes | Use the selected target's explicit suffix convention |
+
+Blank version preferences must restore normal target defaults, not simply pass
+an empty low-level SSLLibVersions string: those search semantics may differ.
+Defaults are encoded through target rules or existing runtime defaults; no other
+platform is probed from the designer.
+
+Version preferences are an ordered list, not a Pascal set. Preserve search order,
+target delimiters and supported compound-version spellings. Existing conventions
+include -4/-3 for Win32, -4-x64/-3-x64 for Win64, and .4/.3 on POSIX. These are
+suffixes, not complete filenames; extensions/placement remain the loader's job.
+For Win64ARMEC use -<version>-arm64, matching the supplied ARM64X distribution;
+do not invent an arm64ec suffix or imply official upstream ARM64EC support.
+
+Keep an escape hatch for custom distribution suffixes. Before implementing the
+version editor, finalize the streamed representation of compound versions such
+as 1.1 and how to express an intentional unversioned candidate. Numeric sets
+must not silently discard existing -1_1/.1.1 naming conventions. Blank/default
+configuration remains default discovery, not an unversioned-only instruction.
+
+For static/startup-linked builds, path and suffix settings follow the existing
+inert low-level property contract. ConfigFile still participates in lifecycle
+initialization. An item does not enable runtime dynamic loading on a static target.
+
+### Public runtime properties
+
+Move OpenSSLPath, ConfigFile and SSLLibVersions to public, retaining runtime
+access but removing published RTTI/streaming. Keep IOpenSSLLoader unchanged.
+Runtime setters store component-local overrides, not immediate singleton changes.
+
+Resolve collection values/defaults first, then explicitly assigned runtime
+overrides. Track assignment separately from the string value: assigned empty
+requests defaults, while unassigned uses the selected item. Provide a clear way
+to clear an override and resume collection resolution; API spelling is an
+implementation detail to settle before coding.
+
+Getters remain passive. Specify resolved configured versus effective ConfigFile
+visibility consistently with the existing loader contract when finalizing the
+runtime accessor implementation. Readiness, metadata and borrowed FailedToLoad
+continue to come from the singleton and never load OpenSSL.
+
+### Applying settings and multiple components
+
+1. Reject component Load when csDesigning is present, before applying settings.
+2. Validate uniqueness and resolve the complete current-target request, including
+   runtime overrides, locally before mutating singleton properties.
+3. If already ready, allow equivalent requests and reject conflicting requests
+   with ETaurusTLSLoaderError. Preserve readiness and active configuration; do
+   not implicitly Unload or reset failure. Equality must respect path
+   normalization and configured versus effective configuration filenames.
+4. If inactive, apply resolved strings and call the existing Load. Preserve
+   Boolean returns, typed exceptions and failure/retry rules. Corrected
+   properties do not reset failed state; explicit Unload remains required.
+
+An empty/default component cannot silently adopt another component's different
+ready configuration. Equivalent multiple instances share one initialization and
+one global Unload. Startup must coordinate components and direct singleton users.
+Local resolution is not a claim that separate singleton setters form an atomic
+transaction; review synchronization before offering concurrent configuration
+guarantees. Existing readiness snapshots do not protect against concurrent unload.
+
+### Streaming, contexts and shutdown
+
+Construction obtains the shared interface and sets LoadOnStart=True without
+loading. Collection edits and scalar assignments do not load or reconfigure.
+Loaded calls inherited, checks LoadOnStart and csDesigning, then calls Load.
+False becomes ETaurusTLSLoaderError; other exceptions propagate. Setting
+LoadOnStart=True after streaming is not an application-start event. Programmatic
+instances require explicit Load. Unload remains explicit/global with no new
+design-time guard; component destruction only releases its interface reference.
+
+TTaurusTLSContext.Create remains inactive. InitContext checks readiness before
+DestroyContext, method selection or SSL_CTX_new_ex, raising ETaurusTLSLoaderError
+when non-ready in either linking model. Private method selection/certificate-store
+paths are reached through InitContext. Native contexts must be freed before Unload.
+
+Keep consumers inactive during streaming and activate after successful startup
+loading. Cross-form/data-module ordering remains application-owned.
+
+### Acceptance for the platform-settings revision
+
+- Empty/missing/all-blank target settings resolve identically to defaults.
+- Defaults do not retain prior component/singleton configuration.
+- Exact target selection, duplicates and cross-host streaming are covered.
+- Ordered/generated/custom suffix rules and ARM64EC-to-arm64 mapping are covered.
+- Runtime scalars are public, not published; overrides distinguish empty from
+  unassigned and can be cleared without loading.
+- Streaming and setters do not mutate the singleton.
+- Equivalent multi-component requests share initialization; conflicts preserve
+  the ready configuration and report a clear error.
+- Existing designer rejection, explicit readiness, static inert properties,
+  failure/retry and destruction/global-Unload behavior remain covered.
+- Update migration examples and XMLDoc during implementation. Earlier facade
+  test totals are historical evidence, not validation of this collection design.

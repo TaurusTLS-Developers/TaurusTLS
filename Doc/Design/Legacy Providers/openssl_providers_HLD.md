@@ -17,7 +17,7 @@ The product supports two deployment models:
 
 There is no supported static-library/external-provider combination. OPENSSL_STATIC_LINK_MODEL remains the existing compiler discriminator; it does not introduce permission for mixed provider deployment. Startup-linked shared-library configurations, where retained by existing platform settings, must follow the established platform arrangement and must not be presented as a new supported mixed-deployment model. STATICLOAD_OPENSSL (linked archives) and OPENSSL_USE_SHARED_LIBRARY (startup shared-library imports) are mutually exclusive on all targets; TaurusTLSLinkDefines.inc rejects conflicting definitions.
 
-Applications explicitly initialize through `IOpenSSLLoader.Load`; a future `TTaurusTLSLoader` component is deferred. The compatibility `LoadOpenSSLLibrary` routine forwards to the same operation. Queries and NTLM readiness hooks must not initialize OpenSSL. Non-FIPS applications need no mandatory configuration file or FIPS assets. Removing implicit initialization requires documented migration and review.
+Applications explicitly initialize through IOpenSSLLoader.Load or the TTaurusTLSLoader component facade. The compatibility `LoadOpenSSLLibrary` routine forwards to the same operation. Queries and NTLM readiness hooks must not initialize OpenSSL. Non-FIPS applications need no mandatory configuration file or FIPS assets. Context construction no longer loads OpenSSL; native context initialization requires readiness. See [migration](explicit_loading_migration.md).
 
 Support OpenSSL 3.x/4.x in the refactored path; do not carry OpenSSL 0.9–1.1.1 branches into it. ProvidersPath is unreleased and removed in favor of optional ConfigFile. Preserve the existing IOpenSSLLoader GUID {BBB0F670-CC26-42BC-A9E0-33647361941A}, as directed by the developer for interface extensions. Rebuild affected packages and consumers together; preserving the GUID does not preserve an old compiled interface layout.
 
@@ -144,10 +144,7 @@ IOpenSSLLoader member; new code should obtain the interface with GetOpenSSLLoade
 
 The wrapper contract preserves Load as an explicit
 lifecycle entry point; metadata queries never load. OpenSSLDir changes from a
-compiled default-directory query to the directory of ConfigFile. Review internal
-constructor/other implicit-load sites against explicit application initialization.
-`TTaurusTLSContext.Create` still loads implicitly for compatibility; whether to
-require explicit readiness there remains a separate migration decision.
+compiled default-directory query to the directory of ConfigFile. TTaurusTLSContext.Create creates an inactive object. InitContext raises ETaurusTLSLoaderError before any native call unless the singleton is ready, in both linking models.
 
 TaurusTLSLoader owns general OpenSSL initialization for both linking models.
 The private TTaurusTLSRuntime class owns the TLS callback locks through class
@@ -251,8 +248,7 @@ independent NTLM and module-free FIPS hook behavior. The developer authorized th
 module-free FIPS work on 2026-10-24. Real FIPS activation, native provider identity,
 vectors and self-tests now pass on Win64/OpenSSL 4.1. Additional positive platforms,
 certification provenance and approval indicators remain outside that evidence.
-Exclude static FIPS, mixed deployments, programmatic provider activation, the new
-component, unrelated socket/ECH work and certification claims.
+Exclude static FIPS, mixed deployments, programmatic provider activation, unrelated socket/ECH work and certification claims.
 
 Preserve supported configuration/module discovery and document intentional compatibility changes, including explicit initialization and OpenSSLDir semantics. Test those changes in controlled environments without requiring machine-wide configuration.
 
@@ -302,3 +298,70 @@ without policy fallback. Additional acceptance remains explicit: archive
 registration/absence/retry and retained contexts, linker-map dependency closure,
 Release builds, two lifecycle concurrency gaps and range-checking execution.
 Per-operation approval indicators, provenance and certification remain separate.
+
+## TTaurusTLSLoader component: platform settings and ownership
+
+Approved design revision: 2026-10-28; implementation is the next step.
+This supersedes the original published-scalar facade design.
+
+TTaurusTLSLoader lives with the other components in Source/TaurusTLS.pas.
+It derives from TComponent and retains the existing IOpenSSLLoader singleton.
+Platform selection belongs to the component; the singleton continues to accept
+resolved strings for the current process. No separate lifecycle or native-user
+reference counting is introduced.
+
+### Published configuration and defaults
+
+Publish PlatformSettings and LoadOnStart (default True). PlatformSettings is
+one component-owned collection, initially empty. Each item groups library path,
+configuration filename and ordered version preferences for one exact target.
+Developers add only the targets they need; each target may appear at most once.
+The collection configures deployment and does not restrict application targets.
+
+An empty collection is valid. A missing running-target entry behaves like an
+all-blank entry. Blank fields select their loader/system defaults:
+
+| Setting | Blank/default meaning |
+|---|---|
+| Library path | Standard loader/platform library discovery |
+| ConfigFile | Standard OpenSSL configuration initialization |
+| Version preferences | Existing TaurusTLS suffix defaults for the running target |
+
+There are no Windows/POSIX fallback entries, scalar fallback defaults or
+inheritance rules. Defaults must not come from a previously configured component.
+The designer streams other targets' settings without probing those platforms;
+runtime selection uses the compiled application target and architecture.
+
+Version preferences are ordered, not a Pascal set, and are translated through
+explicit target naming rules. Retain a custom-suffix option for alternative
+distributions. Win64ARMEC maps to the arm64 suffix of the supplied ARM64X
+OpenSSL-Distribution binaries; this is not a claim of upstream ARM64EC support.
+
+### Runtime properties and loading
+
+Move OpenSSLPath, ConfigFile and SSLLibVersions to public visibility: available
+programmatically but not published or streamed. These are runtime overrides,
+not design-time scalar defaults. Explicit assignments override this component's
+resolved collection settings on its next Load. Explicit empty assignments request
+defaults; assignment state distinguishes them from no override.
+
+Collection editing, streaming and runtime property assignment remain local to
+the component. Apply selected settings only when Load runs. Multiple instances
+are permitted. Equivalent requests share an already-ready singleton; conflicting
+requests raise an error without modifying or unloading the active configuration.
+An empty collection does not silently inherit a different component's settings.
+
+Runtime Loaded calls Load only when LoadOnStart=True; False becomes
+ETaurusTLSLoaderError and other exceptions propagate. Explicit Load rejects
+design time. Programmatic instances require explicit Load after configuration.
+Unload retains global semantics and has no new design-time guard. Destruction
+releases the cached interface reference without calling Unload.
+
+Keep TLS consumers inactive until startup loading succeeds. Streaming does not
+establish cross-form/data-module ordering. Context construction remains inactive;
+InitContext checks readiness before native calls in both linking models.
+Retire native objects and operations before Unload; readiness is only a snapshot.
+
+The [migration guide](explicit_loading_migration.md) currently describes the
+original facade. Update its examples and source XMLDoc with implementation of
+this revision; existing scalar-facade test passes do not validate the new design.
