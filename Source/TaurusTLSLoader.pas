@@ -26,6 +26,7 @@ unit TaurusTLSLoader;
 interface
 
 uses
+  SysUtils,
   Classes,
   {$IFNDEF FPC}
   System.SyncObjs,
@@ -352,12 +353,12 @@ type
     FDestroying: Boolean;
     FTarget: TTaurusTLSPlatform;
     FOpenSSLPath: string;
-    FConfigFile: string;
+    FConfigFile: TFileName;
     FCustomSSLLibVersions: string;
     procedure CheckMutable;
     procedure SetTarget(const Value: TTaurusTLSPlatform);
     procedure SetOpenSSLPath(const Value: string);
-    procedure SetConfigFile(const Value: string);
+    procedure SetConfigFile(const Value: TFileName);
     procedure SetCustomSSLLibVersions(const Value: string);
   protected
     function GetDisplayName: string; override;
@@ -381,7 +382,7 @@ type
     /// <summary>
     ///   Blank selects standard OpenSSL configuration initialization.
     /// </summary>
-    property ConfigFile: string read FConfigFile write SetConfigFile;
+    property ConfigFile: TFileName read FConfigFile write SetConfigFile;
     /// <summary>
     ///   Raw suffix list; blank selects defaults. A quoted empty candidate
     ///   requests an unversioned name.
@@ -513,8 +514,7 @@ uses
   TaurusTLSConsts,
   TaurusTLSHeaders_crypto,
   TaurusTLSHeaders_conf,
-  TaurusTLSHeaders_ssl,
-  SysUtils;
+  TaurusTLSHeaders_ssl;
 
 {$IFNDEF HAS_UNIT_Generics_Collections}
 type
@@ -2060,7 +2060,7 @@ begin
   end;
 end;
 
-procedure TTaurusTLSPlatformSetting.SetConfigFile(const Value: string);
+procedure TTaurusTLSPlatformSetting.SetConfigFile(const Value: TFileName);
 begin
   CheckMutable;
   if FConfigFile <> Value then
