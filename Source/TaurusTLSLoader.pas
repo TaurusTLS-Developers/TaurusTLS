@@ -249,6 +249,7 @@ type
 /// </remarks>
 function GetOpenSSLLoader: IOpenSSLLoader;
 
+
 /// <summary>
 ///   Registers a header symbol-binding procedure for dynamic loads.
 /// </summary>
@@ -336,9 +337,152 @@ function LoadLibFunction(const ALibHandle: TIdLibHandle; const AProcName: TIdLib
 {$IFEND}
 {$ENDIF}
 
+type
+  /// <summary>Exact compiler targets; members are stable across design-time hosts.</summary>
+  /// <remarks>Entries describe deployment settings, not a promise of target/toolchain support.</remarks>
+  TTaurusTLSPlatform = (tlpAndroid32, tlpAndroid64, tlpiOSARM64,
+    tlpiOSSimulatorARM64, tlpMacOS64, tlpLinux64, tlpWin32, tlpWin64,
+    tlpWinARM64EC);
+
+  TTaurusTLSLibraryVersionMode = (lvmDefault, lvmVersions, lvmCustom);
+
+  /// <summary>Component-local configuration for one exact target.</summary>
+  TTaurusTLSPlatformSetting = class(TCollectionItem)
+  private
+    FDestroying: Boolean;
+    FTarget: TTaurusTLSPlatform;
+    FOpenSSLPath: string;
+    FConfigFile: string;
+    FLibraryVersions: TStringList;
+    FVersionMode: TTaurusTLSLibraryVersionMode;
+    FCustomSSLLibVersions: string;
+    procedure CheckMutable;
+    procedure SetTarget(const Value: TTaurusTLSPlatform);
+    procedure SetOpenSSLPath(const Value: string);
+    procedure SetConfigFile(const Value: string);
+    procedure SetVersionMode(const Value: TTaurusTLSLibraryVersionMode);
+    procedure SetCustomSSLLibVersions(const Value: string);
+    procedure SetLibraryVersions(const Value: TStrings);
+    function GetLibraryVersions: TStrings;
+  protected
+    function GetDisplayName: string; override;
+    procedure SetCollection(Value: TCollection); override;
+    procedure SetIndex(Value: Integer); override;
+  public
+    constructor Create(Collection: TCollection); override;
+    destructor Destroy; override;
+    procedure Assign(Source: TPersistent); override;
+    /// <summary>Resolves this item's suffixes without accessing or initializing OpenSSL.</summary>
+    function ResolveSSLLibVersions: string;
+  published
+    property Target: TTaurusTLSPlatform read FTarget write SetTarget default tlpWin32;
+    /// <summary>Blank selects the loader/platform search; ignored in static builds.</summary>
+    property OpenSSLPath: string read FOpenSSLPath write SetOpenSSLPath;
+    /// <summary>Blank selects standard OpenSSL configuration initialization.</summary>
+    property ConfigFile: string read FConfigFile write SetConfigFile;
+    property VersionMode: TTaurusTLSLibraryVersionMode read FVersionMode write SetVersionMode default lvmDefault;
+    /// <summary>Ordered OpenSSL 3+ versions, one per line; dotted numeric versions are accepted.</summary>
+    property LibraryVersions: TStrings read GetLibraryVersions write SetLibraryVersions;
+    /// <summary>Raw suffix list; blank selects defaults. A quoted empty candidate requests an unversioned name.</summary>
+    property CustomSSLLibVersions: string read FCustomSSLLibVersions write SetCustomSSLLibVersions;
+  end;
+
+  /// <summary>Initially empty, owned collection of exact-target settings.</summary>
+  TTaurusTLSPlatformSettings = class(TOwnedCollection)
+  private
+    FDestroying: Boolean;
+    function GetItem(Index: Integer): TTaurusTLSPlatformSetting;
+    procedure SetItem(Index: Integer; const Value: TTaurusTLSPlatformSetting);
+  protected
+    procedure Notify(Item: TCollectionItem; Action: Classes.TCollectionNotification); override;
+  public
+    destructor Destroy; override;
+    procedure BeginUpdate; override;
+    procedure Assign(Source: TPersistent); override;
+    procedure CheckMutable;
+    constructor Create(AOwner: TPersistent);
+    function Add: TTaurusTLSPlatformSetting;
+    function FindTarget(ATarget: TTaurusTLSPlatform): TTaurusTLSPlatformSetting;
+    /// <summary>Rejects duplicate targets, including entries for other platforms.</summary>
+    procedure Validate;
+    property Items[Index: Integer]: TTaurusTLSPlatformSetting read GetItem write SetItem; default;
+  end;
+
+  /// <summary>Platform-aware component over the shared OpenSSL singleton.</summary>
+  /// <remarks>
+  ///   PlatformSettings are editable only in the designer and restored by streaming.
+  ///   Runtime scalar properties delegate directly to the shared singleton.
+  ///   Repeated Load calls preserve an already-ready runtime's configuration.
+  ///   LoadOnStart loads after runtime streaming only. Programmatic instances
+  ///   need explicit Load. Retire native consumers before global Unload.
+  ///   Destruction releases the interface without unloading OpenSSL. Readiness
+  ///   snapshots are not leases and do not protect against concurrent unloading.
+  /// </remarks>
+  TTaurusTLSLoader = class(TComponent)
+  private
+    FLoader: IOpenSSLLoader;
+    FLoadOnStart: Boolean;
+    FPlatformSettings: TTaurusTLSPlatformSettings;
+    procedure SetPlatformSettings(const Value: TTaurusTLSPlatformSettings);
+    procedure ApplyPlatformSettings;
+    procedure CheckRuntimeLoading;
+    function GetOpenSSLPath: string;
+    function GetSSLLibVersions: string;
+    function GetConfigFile: string;
+    function GetVersion: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetConfigDirectory: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetModulesDirectory: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetEnginesDirectory: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetState: TTaurusTLSLoaderState; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetFailedToLoad: TStringList; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetIsLoaded: Boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    procedure SetOpenSSLPath(const Value: string);
+    procedure SetSSLLibVersions(const Value: string);
+    procedure SetConfigFile(const Value: string);
+  protected
+    /// <summary>Loads after runtime streaming when LoadOnStart=True; False becomes an exception.</summary>
+    procedure Loaded; override;
+  public
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+    /// <summary>Returns the compiled process target, independent of the designer host.</summary>
+    class function CurrentTarget: TTaurusTLSPlatform; static;
+    /// <summary>Loads the singleton; repeated successful calls are idempotent.</summary>
+    /// <remarks>Rejects designer calls; preserves loader failures.</remarks>
+    function Load: Boolean;
+    /// <summary>Global cleanup/reset; retire all consumers first. No design-time guard.</summary>
+    procedure Unload; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    /// <summary>Shared runtime configuration; changes follow the singleton's mutation rules.</summary>
+    property OpenSSLPath: string read GetOpenSSLPath write SetOpenSSLPath;
+    property SSLLibVersions: string read GetSSLLibVersions write SetSSLLibVersions;
+    /// <summary>Shared configured input, or the effective filename while ready.</summary>
+    property ConfigFile: string read GetConfigFile write SetConfigFile;
+    /// <summary>True only after all singleton load actions complete; transitions report False.</summary>
+    property IsLoaded: Boolean read GetIsLoaded;
+    /// <summary>Atomic readiness snapshot; not a lease protecting native objects against Unload.</summary>
+    property State: TTaurusTLSLoaderState read GetState;
+    /// <summary>Cached shared OpenSSL version text; empty while not ready.</summary>
+    property Version: string read GetVersion;
+    /// <summary>Directory of the effective singleton configuration filename; empty while not ready.</summary>
+    property ConfigDirectory: string read GetConfigDirectory;
+    /// <summary>Compiled default module directory, not a configured module-search path.</summary>
+    property ModulesDirectory: string read GetModulesDirectory;
+    /// <summary>Compiled OpenSSL 3 engine directory; empty on OpenSSL 4 or while not ready.</summary>
+    property EnginesDirectory: string read GetEnginesDirectory;
+    /// <summary>Borrowed singleton diagnostics; do not free this list.</summary>
+    property FailedToLoad: TStringList read GetFailedToLoad;
+  published
+    /// <summary>Published design-time settings, restored during runtime streaming; empty by default.</summary>
+    /// <remarks>Runtime edits raise. The component owns the collection, items and version lists.</remarks>
+    property PlatformSettings: TTaurusTLSPlatformSettings read FPlatformSettings write SetPlatformSettings;
+    /// <summary>Runtime streaming only; the constructor and property setters never load OpenSSL.</summary>
+    property LoadOnStart: Boolean read FLoadOnStart write FLoadOnStart default True;
+  end;
+
 implementation
 
 uses
+  TypInfo,
 {$IFDEF UNITTEST}
   TaurusTLSLoader.TestHooks,
 {$ENDIF}
@@ -1810,6 +1954,501 @@ procedure UnRegister_SSLLoaderAction(const AActionProc: TTaurusTLSOnLoadAction);
 begin
   TOpenSSLBaseLoader.UnRegisterAction(AActionProc);
 end;
+
+{ Platform configuration }
+
+function TaurusTLSDefaultVersions(ATarget: TTaurusTLSPlatform): string;
+begin
+  case ATarget of
+    tlpWin32: Result := COpenSSLDefaultWin32Versions;
+    tlpWin64: Result := COpenSSLDefaultWin64Versions;
+    tlpWinARM64EC: Result := COpenSSLDefaultARM64Versions;
+  else
+    Result := COpenSSLDefaultPosixVersions;
+  end;
+end;
+
+type
+  // Override Changing itself: OnChanging can be replaced and is suppressed by
+  // BeginUpdate. Neither must bypass the runtime guard.
+  TTaurusTLSLibraryVersions = class(TStringList)
+  private
+    FSetting: TTaurusTLSPlatformSetting;
+  protected
+    procedure Changing; override;
+  public
+    constructor Create(ASetting: TTaurusTLSPlatformSetting);
+  end;
+
+constructor TTaurusTLSLibraryVersions.Create(ASetting: TTaurusTLSPlatformSetting);
+begin
+  inherited Create;
+  FSetting := ASetting;
+end;
+
+procedure TTaurusTLSLibraryVersions.Changing;
+begin
+  FSetting.CheckMutable;
+  inherited Changing;
+end;
+
+procedure TTaurusTLSPlatformSetting.CheckMutable;
+begin
+  if Collection is TTaurusTLSPlatformSettings then
+    TTaurusTLSPlatformSettings(Collection).CheckMutable
+  else
+    raise ETaurusTLSLoaderError.Create(RSOSSLPlatformSettingsDesignOnly);
+end;
+
+constructor TTaurusTLSPlatformSetting.Create(Collection: TCollection);
+begin
+  // Check before inherited attaches the item to its collection.
+  if Collection is TTaurusTLSPlatformSettings then
+    TTaurusTLSPlatformSettings(Collection).CheckMutable
+  else
+    raise ETaurusTLSLoaderError.Create(RSOSSLPlatformSettingsDesignOnly);
+  inherited Create(Collection);
+  FTarget := tlpWin32;
+  FLibraryVersions := TTaurusTLSLibraryVersions.Create(Self);
+end;
+
+destructor TTaurusTLSPlatformSetting.Destroy;
+begin
+  FDestroying := True;
+  FLibraryVersions.Free;
+  inherited Destroy;
+end;
+
+procedure TTaurusTLSPlatformSetting.SetCollection(Value: TCollection);
+begin
+  if not FDestroying then
+  begin
+    if Collection <> nil then
+      CheckMutable;
+    if Value is TTaurusTLSPlatformSettings then
+      TTaurusTLSPlatformSettings(Value).CheckMutable
+    else if Value <> nil then
+      raise ETaurusTLSLoaderError.Create(RSOSSLPlatformSettingsDesignOnly);
+  end;
+  inherited SetCollection(Value);
+end;
+
+procedure TTaurusTLSPlatformSetting.SetIndex(Value: Integer);
+begin
+  CheckMutable;
+  inherited SetIndex(Value);
+end;
+
+function TTaurusTLSPlatformSetting.GetLibraryVersions: TStrings;
+begin
+  Result := FLibraryVersions;
+end;
+
+procedure TTaurusTLSPlatformSetting.SetLibraryVersions(const Value: TStrings);
+begin
+  CheckMutable;
+  FLibraryVersions.Assign(Value);
+end;
+
+function TTaurusTLSPlatformSetting.GetDisplayName: string;
+begin
+  Result := GetEnumName(TypeInfo(TTaurusTLSPlatform), Ord(FTarget));
+end;
+
+procedure TTaurusTLSPlatformSetting.Assign(Source: TPersistent);
+var
+  LSource: TTaurusTLSPlatformSetting;
+begin
+  CheckMutable;
+  if Source is TTaurusTLSPlatformSetting then
+  begin
+    LSource := TTaurusTLSPlatformSetting(Source);
+    FTarget := LSource.FTarget;
+    FOpenSSLPath := LSource.FOpenSSLPath;
+    FConfigFile := LSource.FConfigFile;
+    FVersionMode := LSource.FVersionMode;
+    FCustomSSLLibVersions := LSource.FCustomSSLLibVersions;
+    FLibraryVersions.Assign(LSource.FLibraryVersions);
+    Changed(False);
+  end
+  else
+    inherited Assign(Source);
+end;
+
+procedure TTaurusTLSPlatformSetting.SetTarget(const Value: TTaurusTLSPlatform);
+begin
+  CheckMutable;
+  if FTarget <> Value then
+  begin
+    FTarget := Value;
+    Changed(False);
+  end;
+end;
+
+procedure TTaurusTLSPlatformSetting.SetOpenSSLPath(const Value: string);
+begin
+  CheckMutable;
+  if FOpenSSLPath <> Value then
+  begin
+    FOpenSSLPath := Value;
+    Changed(False);
+  end;
+end;
+
+procedure TTaurusTLSPlatformSetting.SetConfigFile(const Value: string);
+begin
+  CheckMutable;
+  if FConfigFile <> Value then
+  begin
+    FConfigFile := Value;
+    Changed(False);
+  end;
+end;
+
+procedure TTaurusTLSPlatformSetting.SetVersionMode(const Value: TTaurusTLSLibraryVersionMode);
+begin
+  CheckMutable;
+  if FVersionMode <> Value then
+  begin
+    FVersionMode := Value;
+    Changed(False);
+  end;
+end;
+
+procedure TTaurusTLSPlatformSetting.SetCustomSSLLibVersions(const Value: string);
+begin
+  CheckMutable;
+  if FCustomSSLLibVersions <> Value then
+  begin
+    FCustomSSLLibVersions := Value;
+    Changed(False);
+  end;
+end;
+
+function TTaurusTLSPlatformSetting.ResolveSSLLibVersions: string;
+var
+  I, J, LMajor, LSeparator: Integer;
+  LVersion, LSuffix, LDelimiter: string;
+  LLastWasDot: Boolean;
+begin
+  Result := TaurusTLSDefaultVersions(FTarget);
+  if FVersionMode = lvmDefault then
+    Exit;
+  if FVersionMode = lvmCustom then
+  begin
+    if FCustomSSLLibVersions <> '' then
+      Result := FCustomSSLLibVersions;
+    Exit;
+  end;
+  Result := '';
+  if FTarget in [tlpWin32, tlpWin64, tlpWinARM64EC] then
+    LDelimiter := COpenSSLWindowsDirListDelimiter
+  else
+    LDelimiter := COpenSSLPosixDirListDelimiter;
+  for I := 0 to FLibraryVersions.Count - 1 do
+  begin
+    LVersion := Trim(FLibraryVersions[I]);
+    if LVersion = '' then
+      Continue;
+    LLastWasDot := True;
+    for J := 1 to Length(LVersion) do
+    begin
+      if LVersion[J] = COpenSSLVersionSeparator then
+      begin
+        if LLastWasDot then
+          raise ETaurusTLSLoaderError.CreateFmt(RSOSSLInvalidLibraryVersion, [LVersion]);
+        LLastWasDot := True;
+      end
+      else
+      begin
+        if (LVersion[J] < '0') or (LVersion[J] > '9') then
+          raise ETaurusTLSLoaderError.CreateFmt(RSOSSLInvalidLibraryVersion, [LVersion]);
+        LLastWasDot := False;
+      end;
+    end;
+    if LLastWasDot then
+      raise ETaurusTLSLoaderError.CreateFmt(RSOSSLInvalidLibraryVersion, [LVersion]);
+    LSeparator := Pos(COpenSSLVersionSeparator, LVersion);
+    if LSeparator = 0 then
+      LSeparator := Length(LVersion) + 1;
+    if not TryStrToInt(Copy(LVersion, 1, LSeparator - 1), LMajor) then
+      raise ETaurusTLSLoaderError.CreateFmt(RSOSSLInvalidLibraryVersion, [LVersion]);
+    if LMajor < COpenSSLMinimumMajorVersion then
+      raise ETaurusTLSLoaderError.CreateFmt(RSOSSLInvalidLibraryVersion, [LVersion]);
+    if LDelimiter = COpenSSLWindowsDirListDelimiter then
+    begin
+      LSuffix := COpenSSLWindowsVersionPrefix + StringReplace(LVersion,
+        COpenSSLVersionSeparator, COpenSSLWindowsVersionSeparator, [rfReplaceAll]);
+      case FTarget of
+        tlpWin64: LSuffix := LSuffix + COpenSSLWin64VersionSuffix;
+        tlpWinARM64EC: LSuffix := LSuffix + COpenSSLARM64VersionSuffix;
+      end;
+    end
+    else
+      LSuffix := COpenSSLVersionSeparator + LVersion;
+    if Result <> '' then
+      Result := Result + LDelimiter;
+    Result := Result + LSuffix;
+  end;
+  if Result = '' then
+    Result := TaurusTLSDefaultVersions(FTarget);
+end;
+
+procedure TTaurusTLSPlatformSettings.CheckMutable;
+var
+  LOwner: TPersistent;
+begin
+  if FDestroying then
+    Exit;
+  LOwner := GetOwner;
+  if (LOwner is TComponent) and
+    ((csDesigning in TComponent(LOwner).ComponentState) or
+     (csLoading in TComponent(LOwner).ComponentState)) then
+    Exit;
+  raise ETaurusTLSLoaderError.Create(RSOSSLPlatformSettingsDesignOnly);
+end;
+
+destructor TTaurusTLSPlatformSettings.Destroy;
+begin
+  FDestroying := True;
+  inherited Destroy;
+end;
+
+procedure TTaurusTLSPlatformSettings.BeginUpdate;
+begin
+  // Clear, Assign and Delphi Sort enter here before changing any items.
+  CheckMutable;
+  inherited BeginUpdate;
+end;
+
+procedure TTaurusTLSPlatformSettings.Assign(Source: TPersistent);
+begin
+  CheckMutable;
+  inherited Assign(Source);
+end;
+
+procedure TTaurusTLSPlatformSettings.Notify(Item: TCollectionItem;
+  Action: Classes.TCollectionNotification);
+begin
+  // Delete notifies before calling Free. Never raise from an item destructor.
+  if Action = Classes.cnDeleting then
+    CheckMutable;
+  inherited Notify(Item, Action);
+end;
+
+constructor TTaurusTLSPlatformSettings.Create(AOwner: TPersistent);
+begin
+  inherited Create(AOwner, TTaurusTLSPlatformSetting);
+end;
+
+function TTaurusTLSPlatformSettings.Add: TTaurusTLSPlatformSetting;
+begin
+  Result := TTaurusTLSPlatformSetting(inherited Add);
+end;
+
+function TTaurusTLSPlatformSettings.GetItem(Index: Integer): TTaurusTLSPlatformSetting;
+begin
+  Result := TTaurusTLSPlatformSetting(inherited Items[Index]);
+end;
+
+procedure TTaurusTLSPlatformSettings.SetItem(Index: Integer; const Value: TTaurusTLSPlatformSetting);
+begin
+  Items[Index].Assign(Value);
+end;
+
+procedure TTaurusTLSPlatformSettings.Validate;
+var
+  I: Integer;
+  LSeen: set of TTaurusTLSPlatform;
+begin
+  LSeen := [];
+  for I := 0 to Count - 1 do
+  begin
+    if Items[I].Target in LSeen then
+      raise ETaurusTLSLoaderError.CreateFmt(RSOSSLDuplicatePlatformSetting,
+        [Items[I].DisplayName]);
+    Include(LSeen, Items[I].Target);
+  end;
+end;
+
+function TTaurusTLSPlatformSettings.FindTarget(ATarget: TTaurusTLSPlatform): TTaurusTLSPlatformSetting;
+var
+  I: Integer;
+begin
+  Validate;
+  Result := nil;
+  for I := 0 to Count - 1 do
+    if Items[I].Target = ATarget then
+    begin
+      Result := Items[I];
+      Exit;
+    end;
+end;
+
+{ TTaurusTLSLoader }
+
+class function TTaurusTLSLoader.CurrentTarget: TTaurusTLSPlatform;
+begin
+{$IF DEFINED(WINDOWS) AND DEFINED(ARM64EC)}
+  Result := tlpWinARM64EC;
+{$ELSEIF DEFINED(WINDOWS) AND DEFINED(CPU64) AND NOT (DEFINED(CPUARM64) OR DEFINED(CPUAARCH64))}
+  Result := tlpWin64;
+{$ELSEIF DEFINED(WINDOWS) AND DEFINED(CPU32) AND (DEFINED(CPUX86) OR DEFINED(CPUI386))}
+  Result := tlpWin32;
+{$ELSEIF DEFINED(ANDROID) AND DEFINED(CPU64)}
+  Result := tlpAndroid64;
+{$ELSEIF DEFINED(ANDROID)}
+  Result := tlpAndroid32;
+{$ELSEIF (DEFINED(IOSSIMULATOR) OR DEFINED(IOSSIM)) AND (DEFINED(CPUARM64) OR DEFINED(CPUAARCH64))}
+  Result := tlpiOSSimulatorARM64;
+{$ELSEIF DEFINED(IOS) AND (DEFINED(CPUARM64) OR DEFINED(CPUAARCH64))}
+  Result := tlpiOSARM64;
+{$ELSEIF DEFINED(OSX) AND DEFINED(CPU64)}
+  Result := tlpMacOS64;
+{$ELSEIF DEFINED(LINUX) AND DEFINED(CPU64)}
+  Result := tlpLinux64;
+{$ELSE}
+  raise ETaurusTLSLoaderError.Create(RSOSSLUnsupportedComponentTarget);
+{$IFEND}
+end;
+
+constructor TTaurusTLSLoader.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  FLoader := GetOpenSSLLoader;
+  FPlatformSettings := TTaurusTLSPlatformSettings.Create(Self);
+  FLoadOnStart := True;
+end;
+
+destructor TTaurusTLSLoader.Destroy;
+begin
+  FPlatformSettings.Free;
+  inherited Destroy;
+end;
+
+procedure TTaurusTLSLoader.SetPlatformSettings(const Value: TTaurusTLSPlatformSettings);
+begin
+  FPlatformSettings.Assign(Value);
+end;
+
+procedure TTaurusTLSLoader.ApplyPlatformSettings;
+var
+  LSetting: TTaurusTLSPlatformSetting;
+  LPath, LConfig, LVersions: string;
+begin
+  // A later component must not reconfigure a ready runtime or reset a failure.
+  if FLoader.State <> lsNotLoaded then
+    Exit;
+  LPath := '';
+  LConfig := '';
+  LVersions := DefaultLibVersions;
+  LSetting := FPlatformSettings.FindTarget(CurrentTarget);
+  if LSetting <> nil then
+  begin
+    LPath := LSetting.OpenSSLPath;
+    LConfig := LSetting.ConfigFile;
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+    LVersions := LSetting.ResolveSSLLibVersions;
+{$ENDIF}
+  end;
+  FLoader.OpenSSLPath := LPath;
+  FLoader.SSLLibVersions := LVersions;
+  FLoader.ConfigFile := LConfig;
+end;
+
+procedure TTaurusTLSLoader.Loaded;
+begin
+  inherited Loaded;
+  if csDesigning in ComponentState then
+    Exit;
+  ApplyPlatformSettings;
+  if FLoadOnStart then
+    if not Load then
+      raise ETaurusTLSLoaderError.Create(RSOSSLCouldNotLoadSSLLibrary);
+end;
+
+procedure TTaurusTLSLoader.CheckRuntimeLoading;
+begin
+  if csDesigning in ComponentState then
+    raise ETaurusTLSLoaderError.Create(RSOSSLDesignTimeLoad);
+end;
+
+function TTaurusTLSLoader.Load: Boolean;
+begin
+  CheckRuntimeLoading;
+  Result := FLoader.Load;
+end;
+
+procedure TTaurusTLSLoader.Unload;
+begin
+  FLoader.Unload;
+end;
+
+function TTaurusTLSLoader.GetOpenSSLPath: string;
+begin
+  Result := FLoader.OpenSSLPath;
+end;
+
+function TTaurusTLSLoader.GetSSLLibVersions: string;
+begin
+  Result := FLoader.SSLLibVersions;
+end;
+
+function TTaurusTLSLoader.GetConfigFile: string;
+begin
+  Result := FLoader.ConfigFile;
+end;
+
+function TTaurusTLSLoader.GetVersion: string;
+begin
+  Result := FLoader.Version;
+end;
+
+function TTaurusTLSLoader.GetConfigDirectory: string;
+begin
+  Result := FLoader.ConfigDirectory;
+end;
+
+function TTaurusTLSLoader.GetModulesDirectory: string;
+begin
+  Result := FLoader.ModulesDirectory;
+end;
+
+function TTaurusTLSLoader.GetEnginesDirectory: string;
+begin
+  Result := FLoader.EnginesDirectory;
+end;
+
+function TTaurusTLSLoader.GetState: TTaurusTLSLoaderState;
+begin
+  Result := FLoader.State;
+end;
+
+function TTaurusTLSLoader.GetFailedToLoad: TStringList;
+begin
+  Result := FLoader.FailedToLoad;
+end;
+
+function TTaurusTLSLoader.GetIsLoaded: Boolean;
+begin
+  Result := FLoader.IsLoaded;
+end;
+
+procedure TTaurusTLSLoader.SetOpenSSLPath(const Value: string);
+begin
+  FLoader.OpenSSLPath := Value;
+end;
+
+procedure TTaurusTLSLoader.SetSSLLibVersions(const Value: string);
+begin
+  FLoader.SSLLibVersions := Value;
+end;
+
+procedure TTaurusTLSLoader.SetConfigFile(const Value: string);
+begin
+  FLoader.ConfigFile := Value;
+end;
+
 
 initialization
   TOpenSSLBaseLoader.Initialize;

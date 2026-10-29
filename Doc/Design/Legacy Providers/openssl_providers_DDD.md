@@ -715,10 +715,10 @@ vector, self-test, provider identity or loader status is not certification.
 
 ### Status, placement and storage
 
-Approved design revision: 2026-10-28; not yet implemented. Supersedes the
-published scalar configuration of the original facade. The component declaration
-and methods belong in Source/TaurusTLS.pas; Source/TaurusTLSLoader.pas retains
-the singleton and its low-level string configuration API.
+Design revision: 2026-10-29; implemented in IDE buffers, validation in progress.
+Supersedes the published scalar configuration of the original facade. The
+component, collection and helper implementations live in Source/TaurusTLSLoader.pas
+alongside the unchanged singleton interface. Source/TaurusTLS.pas uses this unit.
 
 The component caches FLoader: IOpenSSLLoader. Any number of components may
 retain the same singleton; these references preserve its Delphi object lifetime,
@@ -730,16 +730,21 @@ collection, plus LoadOnStart=True. Start with zero items. Each item identifies
 one exact compiler target and holds OpenSSLPath, ConfigFile and ordered library
 version preferences, with default/generated/custom-suffix selection.
 
-At minimum distinguish Win32, Win64 and Win64ARMEC. Other supported platforms
-must have exact target/architecture identities. Finalize the inventory against
-the supported compiler/linking matrix; collection membership does not establish
-new compiler or dynamic-loading support. Persisted target identities must remain
-readable on other design-time platforms: do not conditionally remove members or
-change their persisted meaning across compilers.
+TTaurusTLSPlatform has exactly nine entries: tlpAndroid32, tlpAndroid64,
+tlpiOSARM64 (device), tlpiOSSimulatorARM64, tlpMacOS64, tlpLinux64, tlpWin32,
+tlpWin64 and tlpWinARM64EC. MacOS64 covers Intel and ARM; it is deliberately
+not split by CPU. The same enum is compiled for Delphi and FPC so streamed
+target names are stable. Android32 remains supported pending a separate
+deprecation decision. Obsolete 32-bit desktop/iOS targets, native WinARM64,
+separate MacOSARM64 and Unknown are not published entries.
+CurrentTarget uses compiler symbols (including ARM64EC and IOSSIMULATOR), not
+the host OS. A compiler target outside this list raises ETaurusTLSLoaderError
+when target resolution is requested; it is not silently mapped to another item.
+Collection membership does not establish new compiler/toolchain support.
 
-Reject duplicate target entries, validating at least before Load. Item order has
-no target-selection priority. There are no OS-family defaults, inheritance rules
-or scalar design-time fallback values.
+Reject duplicate target entries when selecting settings during runtime streaming.
+Item order has no target-selection priority. There are no OS-family defaults,
+inheritance rules or scalar design-time fallback values.
 
 ### Resolution and default semantics
 
@@ -765,86 +770,106 @@ Version preferences are an ordered list, not a Pascal set. Preserve search order
 target delimiters and supported compound-version spellings. Existing conventions
 include -4/-3 for Win32, -4-x64/-3-x64 for Win64, and .4/.3 on POSIX. These are
 suffixes, not complete filenames; extensions/placement remain the loader's job.
-For Win64ARMEC use -<version>-arm64, matching the supplied ARM64X distribution;
+For WinARM64EC use -<version>-arm64, matching the supplied ARM64X distribution;
 do not invent an arm64ec suffix or imply official upstream ARM64EC support.
 
-Keep an escape hatch for custom distribution suffixes. Before implementing the
-version editor, finalize the streamed representation of compound versions such
-as 1.1 and how to express an intentional unversioned candidate. Numeric sets
-must not silently discard existing -1_1/.1.1 naming conventions. Blank/default
-configuration remains default discovery, not an unversioned-only instruction.
+TTaurusTLSPlatformSetting exposes VersionMode (lvmDefault/lvmVersions/lvmCustom),
+LibraryVersions (ordered TStrings) and CustomSSLLibVersions (raw suffix string).
+Only major versions 3 and above are accepted in generated preferences. Defaults
+contain OpenSSL 4 and 3 only; the normal low-level minimum is OpenSSL 3.0.0.
+The legacy OPENSSL_NO_MIN_VERSION override is not redefined by this revision.
+Numeric version lines accept dotted compounds such as 3.1; generated Windows
+suffixes substitute underscores while POSIX suffixes retain dots. Blank lists
+and blank custom strings select defaults. A custom quoted empty candidate (two
+double quotes) explicitly requests an unversioned name. Preserve the existing
+POSIX loader's unversioned-first search behavior; no new native search algorithm
+is introduced. This uses standard collection/string-list editors.
 
 For static/startup-linked builds, path and suffix settings follow the existing
 inert low-level property contract. ConfigFile still participates in lifecycle
 initialization. An item does not enable runtime dynamic loading on a static target.
 
+### Runtime mutation guards and standard editing
+
+Keep PlatformSettings published. Use the standard collection/string-list editors;
+no dedicated component editor or custom DefineProperties persistence is required.
+Collection mutation is allowed when its owner has csDesigning or csLoading.
+Otherwise raise ETaurusTLSLoaderError using RSOSSLPlatformSettingsDesignOnly
+before changing any values. Streaming permission ends with csLoading.
+
+Guard item construction before attachment, item setters and Assign, collection
+Assign and BeginUpdate (including inherited Clear/Sort), deletion through
+Notify(cnDeleting), item SetIndex and movement between collections through
+SetCollection. Both source and destination must permit editing. Override the
+nested TStringList.Changing method itself, so replacing OnChanging or batching
+with BeginUpdate does not bypass the check.
+
+Collection destruction permits internal cleanup; item destructors must never
+raise mutation errors after Free has begun. Collections, items and nested lists
+remain component-owned: independently freeing borrowed objects is unsupported.
+
 ### Public runtime properties
 
-Move OpenSSLPath, ConfigFile and SSLLibVersions to public, retaining runtime
-access but removing published RTTI/streaming. Keep IOpenSSLLoader unchanged.
-Runtime setters store component-local overrides, not immediate singleton changes.
+OpenSSLPath, ConfigFile and SSLLibVersions remain public with no published
+RTTI/streaming. Accessors delegate directly to FLoader. The singleton retains
+its existing changed-value rejection and same-value no-op behavior, including
+static-build inert library path/version properties. Getters expose shared
+configuration; ready ConfigFile exposes the effective filename.
 
-Resolve collection values/defaults first, then explicitly assigned runtime
-overrides. Track assignment separately from the string value: assigned empty
-requests defaults, while unassigned uses the selected item. Provide a clear way
-to clear an override and resume collection resolution; API spelling is an
-implementation detail to settle before coding.
-
-Getters remain passive. Specify resolved configured versus effective ConfigFile
-visibility consistently with the existing loader contract when finalizing the
-runtime accessor implementation. Readiness, metadata and borrowed FailedToLoad
-continue to come from the singleton and never load OpenSSL.
+Remove component-local runtime overrides, their assignment flags and
+ClearRuntimeOverrides. Remove OpenSSLLoaderConfigurationMatches and its
+path-equivalence machinery. IOpenSSLLoader stays unchanged.
 
 ### Applying settings and multiple components
 
-1. Reject component Load when csDesigning is present, before applying settings.
-2. Validate uniqueness and resolve the complete current-target request, including
-   runtime overrides, locally before mutating singleton properties.
-3. If already ready, allow equivalent requests and reject conflicting requests
-   with ETaurusTLSLoaderError. Preserve readiness and active configuration; do
-   not implicitly Unload or reset failure. Equality must respect path
-   normalization and configured versus effective configuration filenames.
-4. If inactive, apply resolved strings and call the existing Load. Preserve
-   Boolean returns, typed exceptions and failure/retry rules. Corrected
-   properties do not reset failed state; explicit Unload remains required.
+Loaded calls inherited, returns immediately in the designer, then applies the
+selected target settings only when the singleton reports lsNotLoaded. Resolve
+and validate the complete selected item before setting singleton properties.
+Empty/missing entries and blank fields produce the documented defaults.
+Apply configuration even when LoadOnStart=False; this permits an explicit Load
+after streaming and subsequent scalar configuration.
 
-An empty/default component cannot silently adopt another component's different
-ready configuration. Equivalent multiple instances share one initialization and
-one global Unload. Startup must coordinate components and direct singleton users.
-Local resolution is not a claim that separate singleton setters form an atomic
-transaction; review synchronization before offering concurrent configuration
-guarantees. Existing readiness snapshots do not protect against concurrent unload.
+If already ready or failed, leave configuration intact. When LoadOnStart=True,
+call Load and convert False to ETaurusTLSLoaderError; propagate other exceptions.
+Load itself rejects csDesigning then delegates directly to FLoader.Load.
+It neither reapplies collection values nor compares configurations. Consequently,
+scalar assignments after streaming remain effective and repeated ready loads
+retain existing idempotent singleton behavior.
+
+Any number of components may exist. The first successful startup determines the
+shared runtime configuration; later streamed components do not reconfigure it.
+Startup ordering and concurrent configuration remain application responsibilities.
+Separate property setters are not an atomic configuration transaction, and
+readiness snapshots do not protect against concurrent unloading.
 
 ### Streaming, contexts and shutdown
 
 Construction obtains the shared interface and sets LoadOnStart=True without
-loading. Collection edits and scalar assignments do not load or reconfigure.
-Loaded calls inherited, checks LoadOnStart and csDesigning, then calls Load.
-False becomes ETaurusTLSLoaderError; other exceptions propagate. Setting
-LoadOnStart=True after streaming is not an application-start event. Programmatic
-instances require explicit Load. Unload remains explicit/global with no new
-design-time guard; component destruction only releases its interface reference.
+loading. Design-time editing affects only collection storage. Runtime scalars
+configure the singleton immediately without loading. Programmatic components
+use those scalars followed by explicit Load; collection edits are design-only.
+Changing LoadOnStart after streaming does not initiate loading.
+
+Unload remains explicit/global with no new design-time guard. Destruction only
+releases owned settings and the retained interface reference.
 
 TTaurusTLSContext.Create remains inactive. InitContext checks readiness before
 DestroyContext, method selection or SSL_CTX_new_ex, raising ETaurusTLSLoaderError
-when non-ready in either linking model. Private method selection/certificate-store
-paths are reached through InitContext. Native contexts must be freed before Unload.
-
-Keep consumers inactive during streaming and activate after successful startup
-loading. Cross-form/data-module ordering remains application-owned.
+when non-ready in either linking model. Native contexts must be freed before Unload.
+Keep consumers inactive during streaming; cross-form ordering is application-owned.
 
 ### Acceptance for the platform-settings revision
 
-- Empty/missing/all-blank target settings resolve identically to defaults.
-- Defaults do not retain prior component/singleton configuration.
-- Exact target selection, duplicates and cross-host streaming are covered.
-- Ordered/generated/custom suffix rules and ARM64EC-to-arm64 mapping are covered.
-- Runtime scalars are public, not published; overrides distinguish empty from
-  unassigned and can be cleared without loading.
-- Streaming and setters do not mutate the singleton.
-- Equivalent multi-component requests share initialization; conflicts preserve
-  the ready configuration and report a clear error.
-- Existing designer rejection, explicit readiness, static inert properties,
-  failure/retry and destruction/global-Unload behavior remain covered.
-- Update migration examples and XMLDoc during implementation. Earlier facade
-  test totals are historical evidence, not validation of this collection design.
+- Empty/missing/all-blank settings select defaults during runtime streaming.
+- Exact target selection, duplicate validation and cross-host streaming are covered.
+- Generated/custom suffixes and ARM64EC-to-arm64 mapping remain covered.
+- Collection and nested item/list mutations fail before modification at runtime,
+  both before and after loading; design-time editing and runtime streaming work.
+- Collection assignment deep-copies lists; destruction releases them safely.
+- Runtime scalars are public, not published, and configure shared state directly.
+- Changed scalar values are rejected while ready; repeated Load is idempotent.
+- Multiple streamed components do not reconfigure an already-ready singleton.
+- Failure/retry, explicit readiness and global Unload semantics remain covered.
+
+Implementation messages are declared in TaurusTLS_ResourceStrings.pas; suffix
+fragments, separators and default lists are named constants in TaurusTLSConsts.pas.

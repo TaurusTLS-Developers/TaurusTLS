@@ -301,10 +301,10 @@ Per-operation approval indicators, provenance and certification remain separate.
 
 ## TTaurusTLSLoader component: platform settings and ownership
 
-Approved design revision: 2026-10-28; implementation is the next step.
+Design revision: 2026-10-29; implemented in IDE buffers, validation in progress.
 This supersedes the original published-scalar facade design.
 
-TTaurusTLSLoader lives with the other components in Source/TaurusTLS.pas.
+TTaurusTLSLoader and its collection/helpers live in Source/TaurusTLSLoader.pas.
 It derives from TComponent and retains the existing IOpenSSLLoader singleton.
 Platform selection belongs to the component; the singleton continues to accept
 resolved strings for the current process. No separate lifecycle or native-user
@@ -330,38 +330,55 @@ all-blank entry. Blank fields select their loader/system defaults:
 There are no Windows/POSIX fallback entries, scalar fallback defaults or
 inheritance rules. Defaults must not come from a previously configured component.
 The designer streams other targets' settings without probing those platforms;
-runtime selection uses the compiled application target and architecture.
+runtime selection uses the compiled application target. The shared Delphi/FPC
+enum contains Android32, Android64, iOSARM64 (device), iOSSimulatorARM64,
+MacOS64 (Intel and ARM together), Linux64, Win32, Win64 and WinARM64EC.
+There is no Unknown entry; unsupported compiler targets fail explicitly.
 
-Version preferences are ordered, not a Pascal set, and are translated through
+Only OpenSSL 3.x and newer are supported. Default suffix lists contain 4 and 3;
+generated preferences reject lower major versions. Version preferences are
+ordered, not a Pascal set, and are translated through
 explicit target naming rules. Retain a custom-suffix option for alternative
-distributions. Win64ARMEC maps to the arm64 suffix of the supplied ARM64X
+distributions. WinARM64EC maps to the arm64 suffix of the supplied ARM64X
 OpenSSL-Distribution binaries; this is not a claim of upstream ARM64EC support.
 
-### Runtime properties and loading
+### Runtime editing and shared configuration
 
-Move OpenSSLPath, ConfigFile and SSLLibVersions to public visibility: available
-programmatically but not published or streamed. These are runtime overrides,
-not design-time scalar defaults. Explicit assignments override this component's
-resolved collection settings on its next Load. Explicit empty assignments request
-defaults; assignment state distinguishes them from no override.
+Keep PlatformSettings published so the standard Object Inspector collection
+editor and automatic form streaming remain available. Collection/item edits are
+allowed only while the owning component is designing or being read by the
+streamer. Runtime mutation raises ETaurusTLSLoaderError before changing data,
+including nested LibraryVersions edits, assignment, insertion, deletion and
+reordering. Internal destruction remains permitted. Returned collections, items
+and string lists are owned objects; callers must not free them independently.
 
-Collection editing, streaming and runtime property assignment remain local to
-the component. Apply selected settings only when Load runs. Multiple instances
-are permitted. Equivalent requests share an already-ready singleton; conflicting
-requests raise an error without modifying or unloading the active configuration.
-An empty collection does not silently inherit a different component's settings.
+OpenSSLPath, ConfigFile and SSLLibVersions are public, not published or streamed.
+Their accessors delegate directly to the singleton. Runtime assignments use its
+existing mutation rules, including rejection of changed configuration while
+loading, ready or unloading. There are no component-local scalar overrides,
+override-reset API, or configuration-equivalence comparison helper.
 
-Runtime Loaded calls Load only when LoadOnStart=True; False becomes
-ETaurusTLSLoaderError and other exceptions propagate. Explicit Load rejects
-design time. Programmatic instances require explicit Load after configuration.
-Unload retains global semantics and has no new design-time guard. Destruction
-releases the cached interface reference without calling Unload.
+### Streaming and loading
 
-Keep TLS consumers inactive until startup loading succeeds. Streaming does not
-establish cross-form/data-module ordering. Context construction remains inactive;
-InitContext checks readiness before native calls in both linking models.
-Retire native objects and operations before Unload; readiness is only a snapshot.
+After runtime streaming, Loaded applies the selected target settings while the
+singleton is inactive, even when LoadOnStart=False. Empty/missing entries and
+blank fields select normal defaults. Designer streaming never configures or
+loads the singleton. An already-ready or failed singleton is not reconfigured.
 
-The [migration guide](explicit_loading_migration.md) currently describes the
-original facade. Update its examples and source XMLDoc with implementation of
-this revision; existing scalar-facade test passes do not validate the new design.
+When LoadOnStart=True, Loaded then calls Load; False becomes
+ETaurusTLSLoaderError and other exceptions propagate. Explicit Load delegates to
+the existing singleton after rejecting design-time calls. Repeated successful
+Load calls return True without comparing component settings or reinitializing.
+Multiple components are allowed; the first successful startup establishes the
+shared runtime configuration. Coordinate startup ordering across forms/modules.
+
+Programmatic instances use the public scalar properties followed by explicit
+Load; runtime collection editing is prohibited. Later scalar changes after
+streaming are shared immediately and are not overwritten by an explicit Load.
+Unload is global and retains its existing design-time behavior. Destruction
+releases owned settings and the cached interface without unloading OpenSSL.
+
+Keep TLS consumers inactive until startup loading succeeds. Context construction
+remains inactive; InitContext checks readiness before native calls in both linking
+models. Retire native objects and operations before Unload; readiness is a snapshot.
+See explicit_loading_migration.md for examples.
