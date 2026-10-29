@@ -59,6 +59,7 @@ uses
   LResources,
   {$ENDIF}
   TaurusTLS,
+  TaurusTLSLoader,
   TaurusTLS_Unicode_Log;
 
 {$IFNDEF FPC}

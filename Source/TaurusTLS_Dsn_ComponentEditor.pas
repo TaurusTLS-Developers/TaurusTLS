@@ -41,6 +41,7 @@ implementation
 uses
   IdGlobal,
   TaurusTLS,
+  TaurusTLSLoader,
   TaurusTLS_Dsn_AboutDlg,
   TaurusTLS_Dsn_ResourceStrings,
   TaurusTLS_Unicode_Log;
