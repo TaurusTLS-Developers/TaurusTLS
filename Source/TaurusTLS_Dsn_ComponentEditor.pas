@@ -69,6 +69,7 @@ begin
   RegisterComponentEditor(TTaurusTLSIOHandlerSocket, TTaurusTLSComponentEditor);
   RegisterComponentEditor(TTaurusTLSServerIOHandler, TTaurusTLSComponentEditor);
   RegisterComponentEditor(TTaurusTLSUnicodeLog, TTaurusTLSComponentEditor);
+  RegisterComponentEditor(TTaurusTLSLoader, TTaurusTLSComponentEditor);
 end;
 
 end.

@@ -128,7 +128,8 @@ begin
   RegisterComponents(RSTaurusTLS, [
     TTaurusTLSServerIOHandler,
     TTaurusTLSIOHandlerSocket,
-    TTaurusTLSUnicodeLog
+    TTaurusTLSUnicodeLog,
+    TTaurusTLSLoader
   ]);
 
   {$IFDEF HAS_TSelectionEditor}
