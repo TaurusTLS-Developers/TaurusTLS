@@ -484,43 +484,77 @@ procedure TdmodMain.UpdatePackage(const APkg: String;
   const ACompanyName, ACopyright: String);
 var
   LRoot, LXMLNode: IXMLNode;
+  LKeys: TStringList;
+  LVersion, LBundleVersion, LShortVersion, LCondition: string;
   i: Integer;
 
+  procedure SetKey(const AName, AValue: string);
+  begin
+    LKeys.Values[AName] := AValue;
+  end;
+
 begin
-  projFile.FileName := APkg;
-  projFile.Active := True;
+  LVersion := Format('%d.%d.%d.%d',
+    [AMajorVersion, AMinorVersion, ARelease, ABuild]);
+  LShortVersion := Format('%d.%d.%d',
+    [AMajorVersion, AMinorVersion, ARelease]);
+  LBundleVersion := Format('%d.%d.%d',
+    [AMajorVersion, AMinorVersion, ABuild]);
+  LKeys := TStringList.Create;
   try
-    LRoot := projFile.DocumentElement;
-    for i := 0 to LRoot.ChildNodes.Count - 1 do
-    begin
-      LXMLNode := LRoot.ChildNodes[i];
-      if LXMLNode.HasChildNodes then
+    LKeys.Delimiter := ';';
+    LKeys.StrictDelimiter := True;
+    LKeys.QuoteChar := #0;
+    projFile.FileName := APkg;
+    projFile.Active := True;
+    try
+      LRoot := projFile.DocumentElement;
+      for i := 0 to LRoot.ChildNodes.Count - 1 do
       begin
+        LXMLNode := LRoot.ChildNodes[i];
+        if LXMLNode.NodeName <> 'PropertyGroup' then
+          Continue;
+        LCondition := '';
+        if LXMLNode.HasAttribute('Condition') then
+          LCondition := VarToStr(LXMLNode.Attributes['Condition']);
         if not VarIsNull(LXMLNode['VerInfo_Build']) then
-        begin
           LXMLNode['VerInfo_Build'] := ABuild;
-        end;
-        if not VarIsNull(LXMLNode['VerInfo_Keys']) then
+        if VarIsNull(LXMLNode['VerInfo_Keys']) then
+          Continue;
+
+        LKeys.DelimitedText := VarToStr(LXMLNode['VerInfo_Keys']);
+        if (Pos('Android', LCondition) > 0) or
+          (LKeys.IndexOfName('versionCode') >= 0) or
+          (LKeys.IndexOfName('versionName') >= 0) or
+          (LKeys.IndexOfName('minSdkVersion') >= 0) then
         begin
-          if Pos('minSdkVersion', LXMLNode['VerInfo_Keys']) = 0 then
-          begin
-            LXMLNode['VerInfo_Keys'] := 'CompanyName=' + ACompanyName +
-              ';FileDescription=$(MSBuildProjectName);FileVersion=' +
-              IntToStr(AMajorVersion) + '.' + IntToStr(AMinorVersion) + '.' +
-              IntToStr(ARelease) + '.' + IntToStr(ABuild) + ';InternalName=' +
-              ChangeFileExt(ExtractFileName(APkg), '.bpl') + ';LegalCopyright=' +
-              ACopyright + ';LegalTrademarks=;OriginalFilename=' +
-              ChangeFileExt(ExtractFileName(APkg), '.bpl') +
-              ';ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion='
-              + IntToStr(AMajorVersion) + '.' + IntToStr(AMinorVersion) + '.' +
-              IntToStr(ARelease) + '.' + IntToStr(ABuild) + ';Comments=';
-          end;
+          SetKey('versionCode', IntToStr(ABuild));
+          SetKey('versionName', LVersion);
+        end
+        else if (Pos('iOS', LCondition) > 0) or
+          (Pos('OSX', LCondition) > 0) or
+          (LKeys.IndexOfName('CFBundleVersion') >= 0) or
+          (LKeys.IndexOfName('CFBundleIdentifier') >= 0) then
+        begin
+          SetKey('CFBundleVersion', LBundleVersion);
+          SetKey('CFBundleShortVersionString', LShortVersion);
+        end
+        else
+        begin
+          SetKey('CompanyName', ACompanyName);
+          SetKey('FileVersion', LVersion);
+          SetKey('ProductVersion', LVersion);
+          SetKey('LegalCopyright', ACopyright);
         end;
+        // Keep SDK levels, bundle identity and custom metadata from the template.
+        LXMLNode['VerInfo_Keys'] := LKeys.DelimitedText;
       end;
+      projFile.SaveToFile(APkg);
+    finally
+      projFile.Active := False;
     end;
-    projFile.SaveToFile(APkg);
   finally
-    projFile.Active := False;
+    LKeys.Free;
   end;
 end;
 
