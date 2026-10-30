@@ -1513,7 +1513,7 @@ end;
 function DoLoadLibrary(const FullLibName: string): TIdLibHandle;
 {$IFDEF USE_INLINE}inline; {$ENDIF}
 begin
-  Result := SafeLoadLibrary(FullLibName, {$IFDEF WINDOWS}SEM_FAILCRITICALERRORS{$ELSE}0{$ENDIF});
+  Result := SysUtils.SafeLoadLibrary(FullLibName, {$IFDEF WINDOWS}SEM_FAILCRITICALERRORS{$ELSE}0{$ENDIF});
 end;
 
 {$IF NOT DECLARED(rpos)}
@@ -1563,7 +1563,7 @@ begin
   FLibCrypto := IdNilHandle;
   FLibSSL := IdNilHandle;
   FSSLLibVersions := DefaultLibVersions;
-  OpenSSLPath := GetEnvironmentVariable(TaurusTLSLibraryPath);
+  OpenSSLPath := SysUtils.GetEnvironmentVariable(TaurusTLSLibraryPath);
 end;
 
 destructor TOpenSSLDynamicLoader.Destroy;

@@ -19,7 +19,7 @@ uses
   Borland.Vcl.Design.DesignEditors
   {$ELSE}
     {$IFDEF FPC}
-  PropEdits,
+//  PropEdits,
   ComponentEditors
     {$ELSE}
       {$IFDEF VCL_6_OR_ABOVE}
@@ -46,10 +46,10 @@ implementation
 
 uses
   TaurusTLS_Dsn_ResourceStrings, // for RSRegIndyIOHandlers in dclIndyCore package
+  SysUtils,
   {$IFDEF DCC}
     {$IFDEF VCL_2005_OR_ABOVE}
   ToolsAPI,
-  SysUtils,
     {$ENDIF}
   {$ENDIF}
   {$IFDEF WINDOWS}
