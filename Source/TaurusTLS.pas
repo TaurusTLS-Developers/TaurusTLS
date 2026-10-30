@@ -2660,6 +2660,7 @@ uses
   Posix.Time,
   Posix.Unistd,
 {$ENDIF}
+  SyncObjs,
   IdExceptionCore,
   IdFIPS,
   IdResourceStrings,
