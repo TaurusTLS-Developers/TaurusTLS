@@ -728,24 +728,23 @@ Do not use retained components after loader unit finalization.
 
 Publish PlatformSettings as an owned TCollection/TCollectionItem-compatible
 collection, plus LoadOnStart=True. Start with zero items. Each item identifies
-one exact compiler target and holds OpenSSLPath, ConfigFile and
+one platform group and holds OpenSSLPath, ConfigFile and
 CustomSSLLibVersions (an optional ordered raw suffix string).
 
-TTaurusTLSPlatform has exactly nine entries: tlpAndroid32, tlpAndroid64,
-tlpiOSARM64 (device), tlpiOSSimulatorARM64, tlpMacOS64, tlpLinux64, tlpWin32,
-tlpWin64 and tlpWinARM64EC. MacOS64 covers Intel and ARM; it is deliberately
-not split by CPU. The same enum is compiled for Delphi and FPC so streamed
-target names are stable. Android32 remains supported pending a separate
-deprecation decision. Obsolete 32-bit desktop/iOS targets, native WinARM64,
-separate MacOSARM64 and Unknown are not published entries.
-CurrentTarget uses compiler symbols (including ARM64EC and IOSSIMULATOR), not
-the host OS. A compiler target outside this list raises ETaurusTLSLoaderError
-when target resolution is requested; it is not silently mapped to another item.
-Collection membership does not establish new compiler/toolchain support.
+TTaurusTLSPlatform has six entries: tlpAndroid, tlpiOS, tlpMacOS, tlpLinux,
+tlpWindows32 and tlpWindows64. Android architectures share one item, as do iOS
+device/simulator targets and macOS architectures. Windows distinguishes process
+bitness; ARM64EC uses tlpWindows64. The same enum is compiled for Delphi and FPC.
+CurrentTarget maps SysUtils.TOSVersion.Platform whenever the RTL declares
+TOSVersion, for either compiler. FPC RTLs without that API (including the tested
+3.2.2 installation) use the FPCTARGETOS compiler-info string instead. Windows process bitness comes from SizeOf(Pointer), preserving
+32-bit settings on a 64-bit host. Older Delphi/Kylix retain a minimal fallback.
+Unsupported platforms raise ETaurusTLSLoaderError. Collection membership does
+not establish new compiler/toolchain support.
 
 Reject duplicate target entries when selecting settings during runtime streaming.
-Item order has no target-selection priority. There are no OS-family defaults,
-inheritance rules or scalar design-time fallback values.
+Item order has no target-selection priority. Each platform group has one item;
+there are no inheritance rules or scalar design-time fallback values.
 
 ### Resolution and default semantics
 
@@ -765,7 +764,8 @@ OpenSSL 3+ standard shared-library naming uses major versions only. Remove
 TTaurusTLSLibraryVersionMode, VersionMode and LibraryVersions. There is no
 numeric/dotted version parser or generated suffix conversion. Defaults retain
 existing major-version searches: -4;-3; for Win32, -4-x64;-3-x64; for Win64,
--4-arm64;-3-arm64; for WinARM64EC and .4:.3 on POSIX. ARM64EC names match the
+-4-arm64;-3-arm64; when Windows64 is compiled for ARM/ARM64EC, and .4:.3 on
+POSIX. ARM64EC names match the
 supplied ARM64X distribution and do not assert official upstream support.
 
 ResolveSSLLibVersions returns a nonempty CustomSSLLibVersions verbatim; empty
@@ -802,6 +802,19 @@ TFileNamePropertyEditor (Lazarus) for this class/property in the design-time
 registration unit. Manual entry and blank values remain supported; browsing
 uses the designer host filesystem. Runtime scalar ConfigFile remains string.
 DFM/LFM values remain strings and existing streaming/mutation guards apply.
+
+Designer item construction chooses Win32 when unused, otherwise the first unused
+target; reject construction before attachment when all targets are occupied.
+Check target uniqueness before changing Target, copying item fields or moving an
+item into another collection. A rejected edit leaves both collections and item
+values unchanged. Collection self-assignment preserves its contents.
+
+Publish Target with nodefault so every item writes its selected platform,
+including Windows32. During csLoading, retain Windows32 for older streams that
+omitted Target. Validate the completed collection
+in Loaded before the designer exit or ready/failed-runtime shortcut, including
+duplicates whose Target properties were omitted. Normal runtime mutation guards
+remain in force.
 
 ### Public runtime properties
 

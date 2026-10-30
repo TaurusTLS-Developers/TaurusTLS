@@ -315,8 +315,11 @@ reference counting is introduced.
 
 Publish PlatformSettings and LoadOnStart (default True). PlatformSettings is
 one component-owned collection, initially empty. Each item groups library path,
-configuration filename and optional custom library suffixes for one exact target.
+configuration filename and optional custom library suffixes for one platform group.
 Developers add only the targets they need; each target may appear at most once.
+Designer additions choose Win32 when available, otherwise the first unused target.
+After all six targets are present, further additions raise an error. Duplicate
+Target edits, item assignments and moves are rejected before mutation.
 The collection configures deployment and does not restrict application targets.
 
 An empty collection is valid. A missing running-target entry behaves like an
@@ -328,20 +331,21 @@ all-blank entry. Blank fields select their loader/system defaults:
 | ConfigFile | Standard OpenSSL configuration initialization |
 | CustomSSLLibVersions | Existing TaurusTLS suffix defaults for the running target |
 
-There are no Windows/POSIX fallback entries, scalar fallback defaults or
-inheritance rules. Defaults must not come from a previously configured component.
+There are no scalar fallback defaults or inheritance rules. Defaults must not come from a previously configured component.
 The designer streams other targets' settings without probing those platforms;
 runtime selection uses the compiled application target. The shared Delphi/FPC
-enum contains Android32, Android64, iOSARM64 (device), iOSSimulatorARM64,
-MacOS64 (Intel and ARM together), Linux64, Win32, Win64 and WinARM64EC.
-There is no Unknown entry; unsupported compiler targets fail explicitly.
+enum contains tlpAndroid, tlpiOS, tlpMacOS, tlpLinux, tlpWindows32 and
+tlpWindows64. Each non-Windows group shares settings across architectures;
+iOS includes device and simulator. Windows64 includes ARM64EC. Target uses
+nodefault so the selected group is always explicit in the form stream.
+Unsupported platforms fail explicitly.
 
 Only OpenSSL 3.x and newer are supported; standard library names use the major
 version. CustomSSLLibVersions is the only version-selection field: an ordered
 raw suffix string, passed unchanged to the loader. Empty uses existing target
 defaults (currently major versions 4 and 3). There is no VersionMode or numeric
-version list and no generated minor-version suffixes. WinARM64EC defaults use
-the arm64 suffix of supplied ARM64X binaries, not official upstream support.
+version list and no generated minor-version suffixes. Windows64 ARM/ARM64EC builds
+retain the arm64 suffix of supplied ARM64X binaries, not official upstream support.
 
 Platform-item ConfigFile uses SysUtils.TFileName and the standard filename
 editor. Developers can browse on the designer host, enter a target path manually,

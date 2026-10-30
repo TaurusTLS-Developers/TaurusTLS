@@ -339,14 +339,13 @@ function LoadLibFunction(const ALibHandle: TIdLibHandle; const AProcName: TIdLib
 {$ENDIF}
 
 type
-  /// <summary>Exact compiler targets; members are stable across design-time hosts.</summary>
+  /// <summary>Platform groups; Windows settings distinguish 32-bit and 64-bit processes.</summary>
   /// <remarks>Entries describe deployment settings, not a promise of target/toolchain support.</remarks>
-  TTaurusTLSPlatform = (tlpAndroid32, tlpAndroid64, tlpiOSARM64,
-    tlpiOSSimulatorARM64, tlpMacOS64, tlpLinux64, tlpWin32, tlpWin64,
-    tlpWinARM64EC);
+  TTaurusTLSPlatform = (tlpAndroid, tlpiOS, tlpMacOS, tlpLinux,
+    tlpWindows32, tlpWindows64);
 
   /// <summary>
-  ///   Component-local configuration for one exact target.
+  ///   Component-local configuration for one platform group.
   /// </summary>
   TTaurusTLSPlatformSetting = class(TCollectionItem)
   private
@@ -374,7 +373,7 @@ type
     /// </summary>
     function ResolveSSLLibVersions: string;
   published
-    property Target: TTaurusTLSPlatform read FTarget write SetTarget default tlpWin32;
+    property Target: TTaurusTLSPlatform read FTarget write SetTarget nodefault;
     /// <summary>
     ///   Blank selects the loader/platform search; ignored in static builds.
     /// </summary>
@@ -391,11 +390,15 @@ type
   end;
 
   /// <summary>
-  ///   Initially empty, owned collection of exact-target settings.
+  ///   Initially empty, owned collection of platform settings.
   /// </summary>
   TTaurusTLSPlatformSettings = class(TOwnedCollection)
   private
     FDestroying: Boolean;
+    function IsLoading: Boolean;
+    function NewTarget: TTaurusTLSPlatform;
+    procedure CheckTargetAvailable(ATarget: TTaurusTLSPlatform;
+      AItem: TTaurusTLSPlatformSetting);
     function GetItem(Index: Integer): TTaurusTLSPlatformSetting;
     procedure SetItem(Index: Integer; const Value: TTaurusTLSPlatformSetting);
   protected
@@ -1964,13 +1967,19 @@ end;
 function TaurusTLSDefaultVersions(ATarget: TTaurusTLSPlatform): string;
 begin
   case ATarget of
-    tlpWin32: Result := COpenSSLDefaultWin32Versions;
-    tlpWin64: Result := COpenSSLDefaultWin64Versions;
-    tlpWinARM64EC: Result := COpenSSLDefaultARM64Versions;
+    tlpWindows32: Result := COpenSSLDefaultWin32Versions;
+    tlpWindows64:
+      {$IF DEFINED(WINDOWS) AND (DEFINED(CPUARM64) OR DEFINED(CPUAARCH64) OR DEFINED(ARM64EC))}
+      Result := COpenSSLDefaultARM64Versions;
+      {$ELSE}
+      Result := COpenSSLDefaultWin64Versions;
+      {$IFEND}
   else
     Result := COpenSSLDefaultPosixVersions;
   end;
 end;
+
+{ TTaurusTLSPlatformSetting }
 
 procedure TTaurusTLSPlatformSetting.CheckMutable;
 begin
@@ -1987,8 +1996,10 @@ begin
     TTaurusTLSPlatformSettings(Collection).CheckMutable
   else
     raise ETaurusTLSLoaderError.Create(RSOSSLPlatformSettingsDesignOnly);
+  // Preserve Windows32 for older streams that omitted Target.
+  // Designer additions instead select an unused target before attachment.
+  FTarget := TTaurusTLSPlatformSettings(Collection).NewTarget;
   inherited Create(Collection);
-  FTarget := tlpWin32;
 end;
 
 destructor TTaurusTLSPlatformSetting.Destroy;
@@ -2004,7 +2015,11 @@ begin
     if Collection <> nil then
       CheckMutable;
     if Value is TTaurusTLSPlatformSettings then
-      TTaurusTLSPlatformSettings(Value).CheckMutable
+    begin
+      TTaurusTLSPlatformSettings(Value).CheckMutable;
+      if not TTaurusTLSPlatformSettings(Value).IsLoading then
+        TTaurusTLSPlatformSettings(Value).CheckTargetAvailable(FTarget, Self);
+    end
     else if Value <> nil then
       raise ETaurusTLSLoaderError.Create(RSOSSLPlatformSettingsDesignOnly);
   end;
@@ -2030,6 +2045,7 @@ begin
   if Source is TTaurusTLSPlatformSetting then
   begin
     LSource := TTaurusTLSPlatformSetting(Source);
+    TTaurusTLSPlatformSettings(Collection).CheckTargetAvailable(LSource.FTarget, Self);
     FTarget := LSource.FTarget;
     FOpenSSLPath := LSource.FOpenSSLPath;
     FConfigFile := LSource.FConfigFile;
@@ -2043,6 +2059,7 @@ end;
 procedure TTaurusTLSPlatformSetting.SetTarget(const Value: TTaurusTLSPlatform);
 begin
   CheckMutable;
+  TTaurusTLSPlatformSettings(Collection).CheckTargetAvailable(Value, Self);
   if FTarget <> Value then
   begin
     FTarget := Value;
@@ -2087,6 +2104,51 @@ begin
     Result := TaurusTLSDefaultVersions(FTarget);
 end;
 
+{ TTaurusTLSPlatformSettings}
+
+function TTaurusTLSPlatformSettings.IsLoading: Boolean;
+var
+  LOwner: TPersistent;
+begin
+  LOwner := GetOwner;
+  Result := (LOwner is TComponent) and
+    (csLoading in TComponent(LOwner).ComponentState);
+end;
+
+procedure TTaurusTLSPlatformSettings.CheckTargetAvailable(
+  ATarget: TTaurusTLSPlatform; AItem: TTaurusTLSPlatformSetting);
+var
+  I: Integer;
+begin
+  for I := 0 to Count - 1 do
+    if (Items[I] <> AItem) and (Items[I].Target = ATarget) then
+      raise ETaurusTLSLoaderError.CreateFmt(RSOSSLDuplicatePlatformSetting,
+        [GetEnumName(TypeInfo(TTaurusTLSPlatform), Ord(ATarget))]);
+end;
+
+function TTaurusTLSPlatformSettings.NewTarget: TTaurusTLSPlatform;
+var
+  LTarget: TTaurusTLSPlatform;
+  LUsed: set of TTaurusTLSPlatform;
+  I: Integer;
+begin
+  Result := tlpWindows32;
+  if IsLoading then
+    Exit;
+  LUsed := [];
+  for I := 0 to Count - 1 do
+    Include(LUsed, Items[I].Target);
+  if not (Result in LUsed) then
+    Exit;
+  for LTarget := Low(TTaurusTLSPlatform) to High(TTaurusTLSPlatform) do
+    if not (LTarget in LUsed) then
+    begin
+      Result := LTarget;
+      Exit;
+    end;
+  raise ETaurusTLSLoaderError.Create(RSOSSLPlatformSettingsFull);
+end;
+
 procedure TTaurusTLSPlatformSettings.CheckMutable;
 var
   LOwner: TPersistent;
@@ -2117,6 +2179,10 @@ end;
 procedure TTaurusTLSPlatformSettings.Assign(Source: TPersistent);
 begin
   CheckMutable;
+  if Source = Self then
+    Exit;
+  if Source is TTaurusTLSPlatformSettings then
+    TTaurusTLSPlatformSettings(Source).Validate;
   inherited Assign(Source);
 end;
 
@@ -2181,27 +2247,62 @@ end;
 { TTaurusTLSLoader }
 
 class function TTaurusTLSLoader.CurrentTarget: TTaurusTLSPlatform;
+{$IF DEFINED(FPC) AND NOT DECLARED(TOSVersion)}
+const
+  LTargetOS = {$I %FPCTARGETOS%};
+{$IFEND}
 begin
-{$IF DEFINED(WINDOWS) AND DEFINED(ARM64EC)}
-  Result := tlpWinARM64EC;
-{$ELSEIF DEFINED(WINDOWS) AND DEFINED(CPU64) AND NOT (DEFINED(CPUARM64) OR DEFINED(CPUAARCH64))}
-  Result := tlpWin64;
-{$ELSEIF DEFINED(WINDOWS) AND DEFINED(CPU32) AND (DEFINED(CPUX86) OR DEFINED(CPUI386))}
-  Result := tlpWin32;
-{$ELSEIF DEFINED(ANDROID) AND DEFINED(CPU64)}
-  Result := tlpAndroid64;
-{$ELSEIF DEFINED(ANDROID)}
-  Result := tlpAndroid32;
-{$ELSEIF (DEFINED(IOSSIMULATOR) OR DEFINED(IOSSIM)) AND (DEFINED(CPUARM64) OR DEFINED(CPUAARCH64))}
-  Result := tlpiOSSimulatorARM64;
-{$ELSEIF DEFINED(IOS) AND (DEFINED(CPUARM64) OR DEFINED(CPUAARCH64))}
-  Result := tlpiOSARM64;
-{$ELSEIF DEFINED(OSX) AND DEFINED(CPU64)}
-  Result := tlpMacOS64;
-{$ELSEIF DEFINED(LINUX) AND DEFINED(CPU64)}
-  Result := tlpLinux64;
+{$IF DECLARED(TOSVersion)}
+  case TOSVersion.Platform of
+    TOSVersion.TPlatform.pfWindows:
+      if SizeOf(Pointer) = 8 then
+        Result := tlpWindows64
+      else
+        Result := tlpWindows32;
+    TOSVersion.TPlatform.pfAndroid: Result := tlpAndroid;
+    TOSVersion.TPlatform.pfiOS
+      {$IFDEF FPC}, TOSVersion.TPlatform.pfIPhoneSim{$ENDIF}: Result := tlpiOS;
+    TOSVersion.TPlatform.pfMacOS
+      {$IFDEF FPC}, TOSVersion.TPlatform.pfDarwin{$ENDIF}: Result := tlpMacOS;
+    {$IF DEFINED(FPC) OR DEFINED(VCL_10_2_OR_ABOVE)}
+    TOSVersion.TPlatform.pfLinux: Result := tlpLinux;
+    {$IFEND}
+  else
+    raise ETaurusTLSLoaderError.Create(RSOSSLUnsupportedComponentTarget);
+  end;
+{$ELSEIF DEFINED(FPC)}
+  // Fallback for FPC RTLs without TOSVersion, including the tested 3.2.2 RTL.
+  if SameText(LTargetOS, 'win32') or SameText(LTargetOS, 'win64') then
+  begin
+    if SizeOf(Pointer) = 8 then
+      Result := tlpWindows64
+    else
+      Result := tlpWindows32;
+  end
+  else if SameText(LTargetOS, 'android') then
+    Result := tlpAndroid
+  else if SameText(LTargetOS, 'ios') or SameText(LTargetOS, 'iphonesim') then
+    Result := tlpiOS
+  else if SameText(LTargetOS, 'darwin') then
+    Result := tlpMacOS
+  else if SameText(LTargetOS, 'linux') then
+    Result := tlpLinux
+  else
+    raise ETaurusTLSLoaderError.Create(RSOSSLUnsupportedComponentTarget);
 {$ELSE}
+  // Older Delphi/Kylix RTLs do not expose TOSVersion.
+  {$IFDEF WINDOWS}
+  if SizeOf(Pointer) = 8 then
+    Result := tlpWindows64
+  else
+    Result := tlpWindows32;
+  {$ELSE}
+    {$IFDEF LINUX}
+  Result := tlpLinux;
+    {$ELSE}
   raise ETaurusTLSLoaderError.Create(RSOSSLUnsupportedComponentTarget);
+    {$ENDIF}
+  {$ENDIF}
 {$IFEND}
 end;
 
@@ -2252,6 +2353,8 @@ end;
 procedure TTaurusTLSLoader.Loaded;
 begin
   inherited Loaded;
+  // Validate even in the designer or when the shared runtime is already ready.
+  FPlatformSettings.Validate;
   if csDesigning in ComponentState then
     Exit;
   ApplyPlatformSettings;

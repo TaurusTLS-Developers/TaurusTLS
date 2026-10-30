@@ -85,19 +85,41 @@ type
     [TestCase('Current', '0')]
     [TestCase('OtherTarget', '1')]
     procedure Platform_DuplicateTargets(const AOther: Integer);
+    /// <summary>Allocates six distinct targets through all collection construction routes and rejects a seventh item.</summary>
+    [TestCase('Add', '0')]
+    [TestCase('BaseAdd', '1')]
+    [TestCase('Insert', '2')]
+    [TestCase('Constructor', '3')]
+    procedure Platform_UniqueAdditions(const AKind: Integer);
+    /// <summary>Rejects duplicate item assignment or collection movement before changing either collection.</summary>
+    [TestCase('Assign', '0')]
+    [TestCase('Move', '1')]
+    procedure Platform_DuplicateItemMutation(const AKind: Integer);
+    /// <summary>Rejects duplicate streamed targets, including omitted Win32 defaults, in every owner/runtime state.</summary>
+    [TestCase('RuntimeExplicit', 'False,0')]
+    [TestCase('RuntimeDefault', 'True,0')]
+    [TestCase('DesignerExplicit', 'False,1')]
+    [TestCase('DesignerDefault', 'True,1')]
+    [TestCase('ReadyExplicit', 'False,2')]
+    [TestCase('ReadyDefault', 'True,2')]
+    [TestCase('FailedExplicit', 'False,3')]
+    [TestCase('FailedDefault', 'True,3')]
+    procedure Platform_DuplicateStreaming(const AOmitted: Boolean; const AState: Integer);
+
     /// <summary>Verifies the stable target names, default suffix lists and minimum supported OpenSSL version.</summary>
     [Test]
     procedure Platform_SupportedTargets;
     /// <summary>Checks target defaults and verbatim custom suffix order without generated versions.</summary>
-    [TestCase('Win32', 'tlpWin32,-4;-3;')]
-    [TestCase('Win64', 'tlpWin64,-4-x64;-3-x64;')]
-    [TestCase('ARM64EC', 'tlpWinARM64EC,-4-arm64;-3-arm64;')]
-    [TestCase('Linux64', 'tlpLinux64,.4:.3')]
-    [TestCase('MacOS64', 'tlpMacOS64,.4:.3')]
-    [TestCase('Android32', 'tlpAndroid32,.4:.3')]
-    [TestCase('Android64', 'tlpAndroid64,.4:.3')]
-    [TestCase('iOSARM64', 'tlpiOSARM64,.4:.3')]
-    [TestCase('iOSSimulatorARM64', 'tlpiOSSimulatorARM64,.4:.3')]
+    [TestCase('Windows32', 'tlpWindows32,-4;-3;')]
+    {$IF DEFINED(WINDOWS) AND (DEFINED(CPUARM64) OR DEFINED(CPUAARCH64) OR DEFINED(ARM64EC))}
+    [TestCase('Windows64', 'tlpWindows64,-4-arm64;-3-arm64;')]
+    {$ELSE}
+    [TestCase('Windows64', 'tlpWindows64,-4-x64;-3-x64;')]
+    {$IFEND}
+    [TestCase('Linux', 'tlpLinux,.4:.3')]
+    [TestCase('MacOS', 'tlpMacOS,.4:.3')]
+    [TestCase('Android', 'tlpAndroid,.4:.3')]
+    [TestCase('iOS', 'tlpiOS,.4:.3')]
     procedure Platform_Versions(const ATargetName, AExpected: string);
     /// <summary>Verifies changed runtime paths or versions are rejected while loaded without altering configuration.</summary>
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
@@ -656,10 +678,10 @@ begin
     LSource.MarkDesigning;
     LSource.LoadOnStart := False;
     LSetting := LSource.PlatformSettings.Add;
-    if TTaurusTLSLoader.CurrentTarget = tlpWin32 then
-      LSetting.Target := tlpLinux64
+    if TTaurusTLSLoader.CurrentTarget = tlpWindows32 then
+      LSetting.Target := tlpLinux
     else
-      LSetting.Target := tlpWin32;
+      LSetting.Target := tlpWindows32;
     LSetting.ConfigFile := 'foreign-config.cnf';
     LSetting := LSource.PlatformSettings.Add;
     LSetting.Target := TTaurusTLSLoader.CurrentTarget;
@@ -713,6 +735,7 @@ procedure TLoaderComponentFixture.Platform_StreamingAndAssign;
 var
   LSource, LTarget: TLoaderComponentAccess;
   LStream: TMemoryStream;
+  LText: TStringStream;
   LPlatform: TTaurusTLSPlatform;
   LSetting: TTaurusTLSPlatformSetting;
   I: Integer;
@@ -735,6 +758,17 @@ begin
       LStream := TMemoryStream.Create;
       try
         LStream.WriteComponent(LSource);
+        LText := TStringStream.Create('');
+        try
+          LStream.Position := 0;
+          ObjectBinaryToText(LStream, LText);
+          for LPlatform := Low(TTaurusTLSPlatform) to High(TTaurusTLSPlatform) do
+            Assert.IsTrue(Pos('Target = ' + GetEnumName(TypeInfo(TTaurusTLSPlatform),
+              Ord(LPlatform)), LText.DataString) > 0,
+              'Every Target must be explicit in the form stream, including Windows32');
+        finally
+          LText.Free;
+        end;
         LStream.Position := 0;
         LStream.ReadComponent(LTarget);
       finally
@@ -769,22 +803,28 @@ end;
 procedure TLoaderComponentFixture.Platform_DuplicateTargets(const AOther: Integer);
 var
   LComponent: TLoaderComponentAccess;
-  LTarget: TTaurusTLSPlatform;
+  LTarget, LOriginalTarget: TTaurusTLSPlatform;
+  LItem: TTaurusTLSPlatformSetting;
 begin
   LComponent := TLoaderComponentAccess.Create(nil);
   try
     LComponent.MarkDesigning;
     LTarget := TTaurusTLSLoader.CurrentTarget;
     if AOther <> 0 then
-      if LTarget = tlpWin32 then LTarget := tlpLinux64 else LTarget := tlpWin32;
+      if LTarget = tlpWindows32 then LTarget := tlpLinux else LTarget := tlpWindows32;
     LComponent.PlatformSettings.Add.Target := LTarget;
-    LComponent.PlatformSettings.Add.Target := LTarget;
+    LItem := LComponent.PlatformSettings.Add;
+    LOriginalTarget := LItem.Target;
+    LItem.ConfigFile := 'original.cnf';
     Assert.WillRaise(
       procedure
       begin
-        LComponent.MarkRuntime;
-        LComponent.FinishStreaming;
+        LItem.Target := LTarget;
       end, ETaurusTLSLoaderError);
+    Assert.AreEqual(Ord(LOriginalTarget), Ord(LItem.Target));
+    Assert.AreEqual('original.cnf', LItem.ConfigFile);
+    Assert.AreEqual(2, LComponent.PlatformSettings.Count);
+    LComponent.PlatformSettings.Validate;
     Assert.IsFalse(Loader.IsLoaded);
     Assert.AreEqual('', Loader.ConfigFile);
   finally
@@ -792,11 +832,192 @@ begin
   end;
 end;
 
+procedure TLoaderComponentFixture.Platform_UniqueAdditions(const AKind: Integer);
+var
+  LComponent: TLoaderComponentAccess;
+  LItem: TTaurusTLSPlatformSetting;
+  LSeen: set of TTaurusTLSPlatform;
+  I, LCount: Integer;
+
+  function AddItem: TTaurusTLSPlatformSetting;
+  begin
+    case AKind of
+      0: Result := LComponent.PlatformSettings.Add;
+      1: Result := TTaurusTLSPlatformSetting(TCollection(LComponent.PlatformSettings).Add);
+      2: Result := TTaurusTLSPlatformSetting(LComponent.PlatformSettings.Insert(0));
+    else
+      Result := TTaurusTLSPlatformSetting.Create(LComponent.PlatformSettings);
+    end;
+  end;
+
+begin
+  LComponent := TLoaderComponentAccess.Create(nil);
+  try
+    LComponent.MarkDesigning;
+    LCount := Ord(High(TTaurusTLSPlatform)) - Ord(Low(TTaurusTLSPlatform)) + 1;
+    LSeen := [];
+    for I := 1 to LCount do
+    begin
+      LItem := AddItem;
+      if I = 1 then
+        Assert.AreEqual(Ord(tlpWindows32), Ord(LItem.Target));
+      Assert.IsFalse(LItem.Target in LSeen);
+      Include(LSeen, LItem.Target);
+    end;
+    Assert.WillRaise(
+      procedure
+      begin
+        case AKind of
+          0: LComponent.PlatformSettings.Add;
+          1: TCollection(LComponent.PlatformSettings).Add;
+          2: LComponent.PlatformSettings.Insert(0);
+        else
+          TTaurusTLSPlatformSetting.Create(LComponent.PlatformSettings);
+        end;
+      end, ETaurusTLSLoaderError);
+    Assert.AreEqual(LCount, LComponent.PlatformSettings.Count);
+    LComponent.PlatformSettings.Validate;
+    // A removed target becomes available again even when its item was not last.
+    LComponent.PlatformSettings.Delete(0);
+    LItem := AddItem;
+    Assert.IsTrue(LItem.Target in LSeen);
+    LComponent.PlatformSettings.Validate;
+    Assert.AreEqual(LCount, LComponent.PlatformSettings.Count);
+  finally
+    LComponent.Free;
+  end;
+end;
+
+procedure TLoaderComponentFixture.Platform_DuplicateItemMutation(const AKind: Integer);
+var
+  LComponent, LOther: TLoaderComponentAccess;
+  LItem, LSource: TTaurusTLSPlatformSetting;
+begin
+  LComponent := TLoaderComponentAccess.Create(nil);
+  LOther := TLoaderComponentAccess.Create(nil);
+  try
+    LComponent.MarkDesigning;
+    LOther.MarkDesigning;
+    LComponent.PlatformSettings.Add.Target := tlpWindows32;
+    LItem := LComponent.PlatformSettings.Add;
+    LItem.Target := tlpLinux;
+    LItem.ConfigFile := 'original.cnf';
+    LSource := LOther.PlatformSettings.Add;
+    LSource.Target := tlpWindows32;
+    LSource.ConfigFile := 'source.cnf';
+    Assert.WillRaise(
+      procedure
+      begin
+        if AKind = 0 then
+          LItem.Assign(LSource)
+        else
+          LSource.Collection := LComponent.PlatformSettings;
+      end, ETaurusTLSLoaderError);
+    Assert.AreEqual(2, LComponent.PlatformSettings.Count);
+    Assert.AreEqual(1, LOther.PlatformSettings.Count);
+    Assert.IsTrue(LSource.Collection = LOther.PlatformSettings);
+    Assert.AreEqual(Ord(tlpLinux), Ord(LItem.Target));
+    Assert.AreEqual('original.cnf', LItem.ConfigFile);
+    Assert.AreEqual('source.cnf', LSource.ConfigFile);
+    LComponent.PlatformSettings.Validate;
+    LOther.PlatformSettings.Validate;
+    // Same-item and same-collection assignment must preserve the contents.
+    LItem.Assign(LItem);
+    LComponent.PlatformSettings.Assign(LComponent.PlatformSettings);
+    Assert.AreEqual(2, LComponent.PlatformSettings.Count);
+    Assert.AreEqual('original.cnf', LComponent.PlatformSettings[1].ConfigFile);
+    // A nonconflicting move is still supported.
+    LSource.Target := tlpWindows64;
+    LSource.Collection := LComponent.PlatformSettings;
+    Assert.AreEqual(0, LOther.PlatformSettings.Count);
+    Assert.AreEqual(3, LComponent.PlatformSettings.Count);
+    LComponent.PlatformSettings.Validate;
+  finally
+    LOther.Free;
+    LComponent.Free;
+  end;
+end;
+
+procedure TLoaderComponentFixture.Platform_DuplicateStreaming(
+  const AOmitted: Boolean; const AState: Integer);
+var
+  LSource, LTarget: TLoaderComponentAccess;
+  LBinary: TMemoryStream;
+  LText: TStringStream;
+  LConfig: string;
+  LState: TTaurusTLSLoaderState;
+  LRejected: Boolean;
+begin
+  LSource := TLoaderComponentAccess.Create(nil);
+  LTarget := TLoaderComponentAccess.Create(nil);
+  LBinary := TMemoryStream.Create;
+  LText := TStringStream.Create('');
+  try
+    LSource.MarkDesigning;
+    LSource.LoadOnStart := False;
+    LSource.PlatformSettings.Add.Target := tlpWindows32;
+    LSource.PlatformSettings.Add.Target := tlpLinux;
+    LBinary.WriteComponent(LSource);
+    LBinary.Position := 0;
+    ObjectBinaryToText(LBinary, LText);
+    if AOmitted then
+      LConfig := ''
+    else
+      LConfig := 'Target = tlpWindows32';
+    LConfig := StringReplace(LText.DataString, 'Target = tlpLinux', LConfig, []);
+    LText.Free;
+    LText := nil;
+    LText := TStringStream.Create(LConfig);
+    LBinary.Clear;
+    ObjectTextToBinary(LText, LBinary);
+    LBinary.Position := 0;
+    case AState of
+      1: LTarget.MarkDesigning;
+      2:
+        begin
+          Loader.ConfigFile := FValidConfigFile;
+          Assert.IsTrue(Loader.Load);
+        end;
+      3:
+        begin
+          Loader.ConfigFile := FInvalidSyntaxConfigFile;
+          Assert.WillRaiseAny(
+            procedure
+            begin
+              Loader.Load;
+            end);
+          Assert.AreEqual(Ord(lsLoadedFailed), Ord(Loader.State));
+        end;
+    end;
+    LConfig := Loader.ConfigFile;
+    LState := Loader.State;
+    LRejected := False;
+    try
+      LBinary.ReadComponent(LTarget);
+    except
+      on E: Exception do
+      begin
+        LRejected := True;
+        Assert.IsTrue(Pos('Duplicate TaurusTLS platform setting:', E.Message) > 0,
+          'Streaming must report the duplicate target: ' + E.Message);
+      end;
+    end;
+    Assert.IsTrue(LRejected, 'Duplicate streamed targets must be rejected');
+    Assert.AreEqual(Ord(LState), Ord(Loader.State));
+    Assert.AreEqual(LConfig, Loader.ConfigFile);
+  finally
+    LText.Free;
+    LBinary.Free;
+    LTarget.Free;
+    LSource.Free;
+  end;
+end;
+
 procedure TLoaderComponentFixture.Platform_SupportedTargets;
 const
-  CExpectedTargets: array[0..8] of string = (
-    'tlpAndroid32', 'tlpAndroid64', 'tlpiOSARM64', 'tlpiOSSimulatorARM64',
-    'tlpMacOS64', 'tlpLinux64', 'tlpWin32', 'tlpWin64', 'tlpWinARM64EC');
+  CExpectedTargets: array[0..5] of string = (
+    'tlpAndroid', 'tlpiOS', 'tlpMacOS', 'tlpLinux',
+    'tlpWindows32', 'tlpWindows64');
 var
   I: Integer;
 begin
@@ -994,10 +1215,10 @@ begin
     LComponent.MarkDesigning;
     LOther.MarkDesigning;
     LItem := LComponent.PlatformSettings.Add;
-    LItem.Target := tlpWin32;
+    LItem.Target := tlpWindows32;
     LItem.ConfigFile := 'original.cnf';
-    LComponent.PlatformSettings.Add.Target := tlpLinux64;
-    LOther.PlatformSettings.Add.Target := tlpWin64;
+    LComponent.PlatformSettings.Add.Target := tlpLinux;
+    LOther.PlatformSettings.Add.Target := tlpWindows64;
     LComponent.MarkRuntime;
     LOther.MarkRuntime;
     for LReady := 0 to 1 do
@@ -1017,7 +1238,7 @@ begin
             3: LComponent.PlatformSettings.Clear;
             4: LComponent.PlatformSettings.Assign(LOther.PlatformSettings);
             5: LItem.Assign(LOther.PlatformSettings[0]);
-            6: LItem.Target := tlpWin64;
+            6: LItem.Target := tlpWindows64;
             7: LItem.OpenSSLPath := 'changed';
             8: LItem.ConfigFile := 'changed.cnf';
             10: LItem.CustomSSLLibVersions := 'changed';
@@ -1040,7 +1261,7 @@ begin
         end, ETaurusTLSLoaderError);
       Assert.AreEqual(2, LComponent.PlatformSettings.Count);
       Assert.IsTrue(LItem = LComponent.PlatformSettings[0]);
-      Assert.AreEqual(Ord(tlpWin32), Ord(LItem.Target));
+      Assert.AreEqual(Ord(tlpWindows32), Ord(LItem.Target));
       Assert.AreEqual('', LItem.OpenSSLPath);
       Assert.AreEqual('original.cnf', LItem.ConfigFile);
       Assert.AreEqual('', LItem.CustomSSLLibVersions);
