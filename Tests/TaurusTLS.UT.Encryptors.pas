@@ -14,7 +14,7 @@ type
 
   [TestFixture]
   [Category('Ciphers')]
-  TCipherFixture = class(TOsslBaseFixture)
+  TCipherFixture = class(TOsslAutoloadFixture)
   private
     FCipher: TTaurusTLS_Cipher;
     FCipherName: string;
@@ -84,7 +84,7 @@ type
 
   [TestFixture]
   [Category('Encryptor')]
-  TSimpleAESEncryptorFixture = class(TOsslBaseFixture)
+  TSimpleAESEncryptorFixture = class(TOsslAutoloadFixture)
   private var
     FKeySizeNames: array[TTaurusTLS_AESKeySize] of string;
     FEncoderModeNames: array[TTaurusTLS_EncodeMode] of string;
@@ -122,7 +122,7 @@ type
 
   [TestFixture]
   [Category('SimpleAESFactory')]
-  TSimpleAESFactoryFixture = class(TOsslBaseFixture)
+  TSimpleAESFactoryFixture = class(TOsslAutoloadFixture)
   public
     [Test]
     procedure KeySizeNameAll;

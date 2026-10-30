@@ -16,7 +16,7 @@ uses
 type
   [TestFixture]
   [Category('InputRanges')]
-  TTaurusTLSInputRangesFixture = class(TOsslBaseFixture)
+  TTaurusTLSInputRangesFixture = class(TOsslAutoloadFixture)
   public
     /// <summary>
     ///   A length past MaxInt gets no BIO. Narrowed to an int it became
@@ -44,10 +44,10 @@ type
     /// <summary>A name with no common name reads back empty, rather than raising.</summary>
     [Test]
     procedure Name_MissingEntry_IsEmpty;
+{$IFDEF MSWINDOWS}
     /// <summary>A person's name, as a client certificate carries, reads back as stated.</summary>
     [Test]
     procedure Name_PersonCommonName_ReadsBackUnchanged;
-{$IFDEF MSWINDOWS}
     /// <summary>A Punycode hostname is still converted to Unicode.</summary>
     [Test]
     procedure Name_PunycodeCommonName_IsConvertedToUnicode;
@@ -339,6 +339,8 @@ begin
   end;
 end;
 
+{$IFDEF MSWINDOWS}
+
 procedure TTaurusTLSInputRangesFixture.Name_PersonCommonName_ReadsBackUnchanged;
 const
   cPerson = 'Hans M'#$00FC'ller';
@@ -346,7 +348,6 @@ begin
   Assert.AreEqual(cPerson, CommonNameRoundTrip(cPerson), False);
 end;
 
-{$IFDEF MSWINDOWS}
 procedure TTaurusTLSInputRangesFixture.Name_PunycodeCommonName_IsConvertedToUnicode;
 begin
   // 'xn--mller-kva' is the Punycode form of 'muller' with u-umlaut.

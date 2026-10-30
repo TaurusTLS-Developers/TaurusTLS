@@ -16,6 +16,7 @@ uses
   IdStack,
   IdSSL,
   TaurusTLS,
+  TaurusTLSLoader,
   System.Classes,
   System.IniFiles,
   System.IOUtils,
@@ -827,7 +828,7 @@ begin
     app := TFTPServerApp.Create;
     try
       try
-        WriteLn(OpenSSLVersion);
+        WriteLn( GetOpenSSLLoader.Version );
         WriteLn('FTP Server App');
       except
         on E: Exception do

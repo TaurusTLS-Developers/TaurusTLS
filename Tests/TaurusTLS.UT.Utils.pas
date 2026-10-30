@@ -19,88 +19,10 @@ unit TaurusTLS.UT.Utils;
 interface
 
 uses
-  System.SysUtils, System.Classes, TaurusTLSLoader;
+  System.SysUtils, System.Classes;
 
+{$IFDEF USE_FASTMM5}
 type
-  ///  <summary>
-  ///  Wrapper for the <see cref="TaurusTLSLoader.IOpenSSLLoader" used by
-  ///  TestFixtures derived from <see cref="TaurusTLS.UT.TestClassesTOsslTestBase" class.
-  ///  </summary>
-  TOsslLoader = class
-  {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  public const
-    cEnvVarPathName = 'OPENSSL_PATH';
-    cShortOptPathName = 'osp';
-    cLongOptPathName = 'opensslpath';
-
-    cEnvVarModulesPathName = 'OPENSSL_MODULES';
-    cShortOptModulesPathName = 'osmp';
-    cLongOptModulesPathName = 'opensslmodulespath';
-  private class var
-    FLoader: IOpenSSLLoader;
-    FLoadCount: FixedUInt;
-    FLock: TObject;
-  private
-    class procedure Lock; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    class procedure Unlock; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    class procedure RegisterOptions; static;
-    class function GetFromEnvVar: string; static;
-    class procedure SetPath(const Value: string); static;
-    class function GetPath: string; static;
-    class function GetProvidersPath: string; static;
-    class procedure SetProvidersPath(const Value: string); static;
-    {$ENDIF}
-    class function GetLoaded: boolean; static;
-  public
-    {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-    class constructor Create;
-    class destructor Destroy;
-    {$ENDIF}
-    ///  <summary>
-    ///  Tries to load Openssl library. Can be called multiple times.
-    ///  <returns>
-    ///  - True, if loaded successfully, or already loaded by another caller.
-    ///  - False, if it coudn't load
-    ///  </returns
-    ///  </summary>
-    class function Load: boolean; static;
-    ///  <summary>
-    ///  Tries to load Openssl library. Can be called multiple times.
-    ///  <remarks>
-    ///  Openssl Library is unloaded when equal number of calls to Load and Unload
-    ///  has made.
-    ///  </remarks>
-    ///  </summary>
-    class procedure Unload; static;
-
-    ///  <summary>
-    ///  Openssl library loading status.
-    ///  <returns>
-    ///  - True, if loaded already.
-    ///  - False, if not loaded yet or exception happend during the load.
-    ///  </returns
-    ///  </summary>
-    class property Loaded: boolean read GetLoaded;
-  {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-    ///  <summary>
-    ///  Allows to change path to the Openssl library folder
-    ///  <remarks>
-    ///  Path can be changed if Openssl library unloaded, otherwise exception is rised.
-    ///  </remarks>
-    ///  </summary>
-    class property Path: string read GetPath write SetPath;
-    ///  <summary>
-    ///  Allows to change path to the Openssl module provider libraries folder
-    ///  <remarks>
-    ///  Path can be changed if Openssl library unloaded, otherwise exception is rised.
-    ///  </remarks>
-    ///  </summary>
-    class property ProvidersPath: string read GetProvidersPath
-      write SetProvidersPath;
-  {$ENDIF}
-  end;
-
-  {$IFDEF USE_FASTMM5}
   TFastMMDebugLog = class
   public const
     cEnvVarNameDll = 'FASTMM_DEBUG_DLL';
@@ -133,8 +55,6 @@ type
   {$ENDIF}
 
 resourcestring
-  rcOssLoaderPathHelp = 'Specify path to OpenSSL library folder';
-  rcOssLoaderModulesPathHelp = 'Specify path to OpenSSL module provider libraries'' folder';
   rcFastMMDebugEnableHelp = 'Enable or disable detailed memory leak';
   rcFastMMLogHelp = 'Memory leak report file name.';
   {$IFDEF USE_FASTMM5}
@@ -152,136 +72,7 @@ uses
   {$IFDEF USE_FASTMM5}
   FastMM5,
   {$ENDIF}
-  System.SyncObjs, DUnitX.CommandLine.Options;
-
-{ TOsslLoader }
-
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-class constructor TOsslLoader.Create;
-begin
-  FLock:=TObject.Create;
-  FLoader:=GetOpenSSLLoader;
-  Path:=GetFromEnvVar;
-  RegisterOptions;
-end;
-
-class destructor TOsslLoader.Destroy;
-begin
-  Unload;
-  FreeAndNil(FLock);
-end;
-
-class procedure TOsslLoader.Lock;
-begin
-  TMonitor.Enter(FLock);
-end;
-
-class procedure TOsslLoader.Unlock;
-begin
-  TMonitor.Exit(FLock);
-end;
-
-class function TOsslLoader.GetFromEnvVar: string;
-begin
-  Result:=GetEnvironmentVariable(cEnvVarPathName);
-end;
-
-class procedure TOsslLoader.RegisterOptions;
-begin
-  TOptionsRegistry.RegisterOption<string>(cLongOptPathName, cShortOptPathName,
-    rcOssLoaderPathHelp,
-    procedure(Value: string)
-    begin
-      Path:=Value;
-    end
-  );
-
-  TOptionsRegistry.RegisterOption<string>(cLongOptModulesPathName,
-    cShortOptModulesPathName, rcOssLoaderModulesPathHelp,
-    procedure(Value: string)
-    begin
-      ProvidersPath:=Value;
-    end
-  );
-end;
-
-class function TOsslLoader.GetPath: string;
-begin
-  Result:=FLoader.OpenSSLPath;
-end;
-
-class function TOsslLoader.GetProvidersPath: string;
-begin
-  Result:=FLoader.ProvidersPath;
-end;
-
-class procedure TOsslLoader.SetPath(const Value: string);
-begin
-  FLoader.OpenSSLPath:=Value;
-end;
-
-class procedure TOsslLoader.SetProvidersPath(const Value: string);
-begin
-  FLoader.ProvidersPath:=Value;
-end;
-{$ENDIF}
-
-class function TOsslLoader.GetLoaded: boolean;
-begin
-  {$IFDEF OPENSSL_STATIC_LINK_MODEL}
-  Result:=True;
-  {$ELSE}
-  Result:=FLoadCount > 0;
-  {$ENDIF}
-end;
-
-class function TOsslLoader.Load: boolean;
-begin
-  {$IFDEF OPENSSL_STATIC_LINK_MODEL}
-  Result:=True;
-  {$ELSE}
-  Lock;
-  try
-    if FLoadCount = 0 then
-    begin
-      if FLoader = nil then
-        FLoader:=GetOpenSSLLoader;
-
-      Result := FLoader.Load;
-      if not Result then
-        Exit(False);
-    end
-    else
-      Result := True;
-
-    Inc(FLoadCount);
-  finally
-    Unlock;
-  end;
-  {$ENDIF}
-end;
-
-class procedure TOsslLoader.Unload;
-begin
-  {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Lock;
-  try
-  if FLoadCount > 0 then
-    begin
-      Dec(FLoadCount);
-      if FLoadCount = 0 then
-      begin
-        if Assigned(FLoader) then
-        begin
-          FLoader.Unload;
-        end;
-      end;
-    end;
-  finally
-    Unlock;
-  end;
-  {$ENDIF}
-end;
+  DUnitX.CommandLine.Options;
 
 {$IFDEF USE_FASTMM5}
 

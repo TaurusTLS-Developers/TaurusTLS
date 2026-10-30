@@ -19,7 +19,7 @@ uses
   Borland.Vcl.Design.DesignEditors
   {$ELSE}
     {$IFDEF FPC}
-  PropEdits,
+//  PropEdits,
   ComponentEditors
     {$ELSE}
       {$IFDEF VCL_6_OR_ABOVE}
@@ -46,10 +46,10 @@ implementation
 
 uses
   TaurusTLS_Dsn_ResourceStrings, // for RSRegIndyIOHandlers in dclIndyCore package
+  SysUtils,
   {$IFDEF DCC}
     {$IFDEF VCL_2005_OR_ABOVE}
   ToolsAPI,
-  SysUtils,
     {$ENDIF}
   {$ENDIF}
   {$IFDEF WINDOWS}
@@ -58,7 +58,15 @@ uses
   {$IFDEF FPC}
   LResources,
   {$ENDIF}
+  {$IFDEF FPC}
+  PropEdits,
+  {$ELSE}
+    {$IFDEF VCL_6_OR_ABOVE}
+  VCLEditors,
+    {$ENDIF}
+  {$ENDIF}
   TaurusTLS,
+  TaurusTLSLoader,
   TaurusTLS_Unicode_Log;
 
 {$IFNDEF FPC}
@@ -128,12 +136,22 @@ begin
   RegisterComponents(RSTaurusTLS, [
     TTaurusTLSServerIOHandler,
     TTaurusTLSIOHandlerSocket,
-    TTaurusTLSUnicodeLog
+    TTaurusTLSUnicodeLog,
+    TTaurusTLSLoader
   ]);
 
   {$IFDEF HAS_TSelectionEditor}
   RegisterSelectionEditor(TTaurusTLSServerIOHandler, TTaurusTLSSelectionEditor);
   RegisterSelectionEditor(TTaurusTLSIOHandlerSocket, TTaurusTLSSelectionEditor);
+  {$ENDIF}
+  {$IFDEF FPC}
+  RegisterPropertyEditor(TypeInfo(TFileName), TTaurusTLSPlatformSetting,
+    'ConfigFile', TFileNamePropertyEditor);
+  {$ELSE}
+    {$IFDEF VCL_6_OR_ABOVE}
+  RegisterPropertyEditor(TypeInfo(TFileName), TTaurusTLSPlatformSetting,
+    'ConfigFile', TFileNameProperty);
+    {$ENDIF}
   {$ENDIF}
 end;
 

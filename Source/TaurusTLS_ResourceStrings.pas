@@ -1,4 +1,4 @@
-/// <exclude />
+﻿/// <exclude />
 { ****************************************************************************** }
 { *  TaurusTLS                                                                 * }
 { *           https://github.com/JPeterMugaas/TaurusTLS                        * }
@@ -24,6 +24,8 @@ resourcestring
   RSOSSLCouldNotLoadSSLLibrary = 'Could not load SSL library.';
 
   ROSSLCantGetSSLVersionNo = 'Unable to determine SSL Library Version number';
+  RSOSSLCantGetSSLVersionString = 'Cannot obtain OpenSSL version string';
+  RSOSSLUnsupportedCryptoLibrary = 'Unsupported cryptographic library detected';
   ROSSLAPIFunctionNotPresent =
     'TaurusTLS API Function/Procedure %s not found in SSL Library';
   ROSUnrecognisedLibName = 'Unrecognised SSL Library name (%s)';
@@ -63,6 +65,15 @@ resourcestring
   RSOSSLHMACInitExError = 'HMAC_Init_ex error';
   RSOSSLHMACUpdateError = 'HMAC_Update error';
   RSOSSLHMACFinalError = 'HMAC_Final error';
+  RSSSLMD2NotFound = 'MD2 not found';
+  RSSSLMD4NotFound = 'MD4 not found';
+  RSSSLMD5NotFound = 'MD5 not found';
+  RSSSLSHA1NotFound = 'SHA1 not found';
+  RSSSLSHA224NotFound = 'SHA224 not found';
+  RSSSLSHA256NotFound = 'SHA256 not found';
+  RSSSLSHA384NotFound = 'SHA384 not found';
+  RSSSLSHA512NotFound = 'SHA512 not found';
+  RSSSLDES_ECBNotFound = 'DES ECB not found';
   RSOSSLX509DigestFailed = 'X509_digest failed';
   
   RSOSSCouldNotCreateSSLObject = 'Could not create SSL object';
@@ -245,9 +256,42 @@ resourcestring
   RSMSG_X509_V_ERR_DUPLICATE_EXTENSION = 'Certificate verification failed '+
     'because a certificate extension appears more than once.';
 
+ 
+  RSLegacyProviderRegisterFailed = 'Registering the linked OpenSSL legacy provider failed.';
+
+  RSNTLMNotReady = 'OpenSSL must be explicitly loaded before computing NTLM responses.';
+  RSNTLMInvalidChallenge = 'An NTLM challenge must contain exactly 8 bytes.';
+  RSNTLMInvalidBuffer = 'NTLM input and output buffers must not be nil.';
+  RSNTLMSetPaddingFailed = 'Disabling DES padding for NTLM failed.';
+  RSNTLMUnexpectedOutputLength = 'OpenSSL returned an unexpected NTLM output length.';
+
+  RSMsg_DES_EVP_EncryptInit_ex2 = 'EVP_EncryptInit_ex2 failed';
+  RSMsg_DES_EVP_EncryptUpdate = 'EVP_EncryptUpdate failed';
+  RSMsg_DES_EVP_EncryptFinalEx = 'EVP_EncryptFinal_ex failed';
+  RSMsg_DES_EVP_CIPHER_CTX_new_failed = 'EVP_CIPHER_CTX_new failed';
   //NTLM Messages - DES_set_key
   RSMsg_DES_set_key_wrong_key_parity = 'DES_set_key: Wrong Key Parity';
   RSMsg_DES_weak_key = 'DES_set_key: Weak key';
+
+  // OpenSSL Loader Messages
+  RSOSSLLoaderLifecycleInProgress =
+    'Cannot call %s during an OpenSSL loader lifecycle transition or action registration/removal';
+  RSOSSLLoaderActionRegistrationInactive =
+    'OpenSSL loader action registration or removal is not allowed in the current lifecycle state';
+  RSOSSLInitCryptoFailed = 'OPENSSL_init_crypto failed';
+  RSOSSLDuplicatePlatformSetting = 'Duplicate TaurusTLS platform setting: %s';
+  RSOSSLPlatformSettingsFull = 'All TaurusTLS platform targets already have settings';
+  RSOSSLUnsupportedComponentTarget = 'The current compiler target is not supported by TTaurusTLSLoader';
+  RSOSSLDesignTimeLoad = 'OpenSSL cannot be loaded at design time';
+  RSOSSLContextNotReady = 'OpenSSL must be loaded before initializing a TLS context';
+  RSOSSLPlatformSettingsDesignOnly = 'Platform settings can only be edited at design time';
+
+  // OpenSSL Configuration Messages
+  RSOSSLConfigFilePathInvalid = 'Invalid OpenSSL configuration file path: %s';
+  RSOSSLConfigFileNotFound = 'OpenSSL configuration file not found: %s';
+  RSOSSLConfigFileIsDirectory = 'OpenSSL configuration file path is a directory: %s';
+  RSOSSLConfigFileLoadFailed = 'CONF_modules_load_file_ex failed for configuration file: %s';
+  RSOSSLConfigFileAlreadyLoaded = 'OpenSSL configuration file cannot be set after library has loaded.';
 
 
 implementation

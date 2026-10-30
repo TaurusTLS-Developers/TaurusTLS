@@ -13,6 +13,11 @@
 				<OtherUnitFiles Value="..\..\Source"/>
 				<UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
 			</SearchPaths>
+			<Parsing>
+				<SyntaxOptions>
+					<SyntaxMode Value="Delphi"/>
+				</SyntaxOptions>
+			</Parsing>
 			<Other>
 				<Verbosity>
 					<ShowDebugInfo Value="True"/>

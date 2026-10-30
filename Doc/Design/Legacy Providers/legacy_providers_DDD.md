@@ -1,325 +1,231 @@
-﻿# TaurusTLS — Detailed Design Document: Legacy Provider Integration (Adjusted)
+# TaurusTLS Legacy Provider Integration - DDD
 
-## 1. Introduction & Objectives
+Status: Registration-only provider and independent Indy adapters are committed; isolated Win64 dynamic provider tests pass. Archive/dependency isolation, Release and final non-Windows execution remain pending.
+Revision date: 2026-10-27.
+Architecture: [Legacy HLD](legacy_providers_HLD.md).
+General lifecycle: [OpenSSL DDD](openssl_providers_DDD.md).
+Tracking: [Provider plan](openssl_providers_plan.md) and
+[loader/readiness checklist](../../Plans/Unit-Tests/Loader-Status-and-Readiness.md).
 
-### 1.1 Purpose
-This document provides the detailed technical specification for integrating OpenSSL 3.x/4.x Legacy Provider support into **TaurusTLS**. It defines unit architectures, core loader extensions, static archive linking mechanics, dynamic symbol resolution, UTF-8 path configuration, and thread-safe lifetime management.
+## 1. Selected contract
 
-### 1.2 Scope
-* **Target Units:**
-  * `Source/TaurusTLSLoader.pas`: Adds `ProvidersPath` property to `IOpenSSLLoader` and applies `OSSL_PROVIDER_set_default_search_path` during engine load.
-  * `Source/TaurusTLS_LegacyProviders.pas`: Optional modular unit activating legacy and default providers.
-* **Prerequisites:** `Source/TaurusTLSHeaders_provider.pas` imports all `OSSL_PROVIDER_*` routines.
-* **Compilation Targets:** Dual support for Dynamic Linking (`{$IFNDEF OPENSSL_STATIC_LINK_MODEL}`) and Static Archive Linking (`{$IFDEF OPENSSL_STATIC_LINK_MODEL}`).
+Use the default context (`nil`) throughout. Configuration owns provider module
+paths, parameters and activation. The loader applies configuration using its
+existing `ConfigFile` contract before post-configuration actions.
 
----
+Retain `Source/TaurusTLS_ProviderLegacy.pas` for archive linking and builtin
+registration. Shared-library deployments need no reference to this unit merely
+to activate an external module from `openssl.cnf`.
 
-## 2. Technical Architecture & Unit Interactions
+There is no new public `ActivateProvider`, `LoadProvider`, provider registry,
+provider path property or FIPS-mode API in `IOpenSSLLoader`. The recent
+programmatic activation proposal is superseded by configuration-only activation.
 
-```
-+-----------------------------------------------------------------------------------+
-|                                  User Application                                 |
-|               (Includes TaurusTLS_LegacyProviders in project uses clause)         |
-+-----------------------------------------------------------------------------------+
-                                          |
-                                          v
-+-----------------------------------------------------------------------------------+
-|                           TaurusTLS_LegacyProviders.pas                           |
-|       TTaurusTLSLegacyProviderManager.OnLoadAction(AAction: TOpenSSLLoadAction)   |
-+-----------------------------------------------------------------------------------+
-          |                                                               |
-          | {$IFNDEF OPENSSL_STATIC_LINK_MODEL}                           | {$IFDEF OPENSSL_STATIC_LINK_MODEL}
-          v                                                               v
-+-----------------------------------------+             +-----------------------------------+
-| TaurusTLSLoader.pas                     |             | Static Linker                     |
-|-----------------------------------------|             |-----------------------------------|
-| 1. Bind symbols via GLibCryptoLoadList  |             | 1. Embeds liblegacy (.lib / .a)   |
-|    (TaurusTLSHeaders_provider)          |             | 2. Direct symbol linkage for      |
-| 2. Set default search path (UTF-8)      |             |    ossl_legacy_provider_init      |
-| 3. Execute GOnLoadActionList:           |             +-----------------------------------+
-|    └─ OnLoadAction(osaLoad)             |                               |
-|       ├─ OSSL_PROVIDER_load('default')  |                               v
-|       └─ OSSL_PROVIDER_load('legacy')   |             +-----------------------------------+
-+-----------------------------------------+             | Unit Initialization Stage         |
-          |                                             |-----------------------------------|
-          v                                             | OSSL_PROVIDER_add_builtin         |
-+-----------------------------------------+             | OSSL_PROVIDER_load('default')     |
-| Dynamic Shared Modules                  |             | OSSL_PROVIDER_load('legacy')      |
-| (libcrypto-3, legacy.dll/so)            |             +-----------------------------------+
-+-----------------------------------------+
-```
+## 2. Unit boundaries
 
----
+| Unit | Intended responsibilities |
+|---|---|
+| `TaurusTLSLoader` | Existing native lifecycle, explicit/default configuration, readiness, callback rollback and metadata |
+| `TaurusTLSHeaders_provider` | OpenSSL declarations/imports only |
+| `TaurusTLS_ProviderLegacy` | Optional archive reference and builtin entry-point registration before configuration |
+| `TaurusTLSIdNTLM` | Stable Indy callbacks, passive readiness/algorithm checks and LM/NT response operations |
+| `TaurusTLS_ProviderFIPS` | Cached native FIPS API validation and passive `IsFIPSProviderLoaded`; no activation or Indy hooks |
+| `TaurusTLSIdFIPS` | Independent Indy hash/HMAC hooks, configured FIPS reporting and a non-mutating policy setter |
 
-## 3. Core Loader Extensions (`Source/TaurusTLSLoader.pas`)
+The core loader and NTLM unit must not reference the optional legacy archive unit.
+Keep archive ABI declarations behind the existing artifact configuration
+(`STATICLOAD_OPENSSL` for Delphi). `OPENSSL_STATIC_LINK_MODEL` alone also selects
+startup shared-library imports and is not an archive discriminator.
 
-### 3.1 Interface Extensions (`IOpenSSLLoader`)
+The unit split is delivered in `43b6aa8`. Deprecated `TaurusTLSFIPS` and
+`TaurusTLS_NTLM` contain only interface uses of their replacement adapters.
+Deprecated `TaurusTLS_LegacyProviders` also forwards the old public status query.
+They remain in Source for compatibility and are excluded from current runtime
+package membership. Generated package files are rebuilt by the package tool,
+rather than edited as part of the source/test commits.
 
-```pascal
-  IOpenSSLLoader = interface
-    ['{BBB0F670-CC26-42BC-A9E0-33647361941A}']
-    // Existing accessors ...
-    function GetOpenSSLPath: string;
-    procedure SetOpenSSLPath(const Value: string);
+Retain the corrected `cdecl` declaration and parameter types for
+`ossl_legacy_provider_init` from the existing header/artifact contract. Keep
+the linked symbol reference in the optional unit; do not move it into the core.
 
-    // --- Provider Path Accessors ---
-    /// <summary>
-    ///   Property get function for ProvidersPath.
-    /// </summary>
-    function GetProvidersPath: string;
+## 3. Registration mechanism and lifetime
 
-    /// <summary>
-    ///   Property set procedure for ProvidersPath.
-    /// </summary>
-    procedure SetProvidersPath(const Value: string);
+Under STATICLOAD_OPENSSL, the optional unit registers in its initialization:
 
-    // Existing methods ...
-    function Load: Boolean;
-    procedure Unload;
-    function IsLoaded: Boolean;
+~~~pascal
+if OSSL_PROVIDER_add_builtin(nil, 'legacy', @ossl_legacy_provider_init) <> 1 then
+  ETaurusTLSAPICryptoError.RaiseException(RSLegacyProviderRegisterFailed);
+~~~
 
-    property OpenSSLPath: string read GetOpenSSLPath write SetOpenSSLPath;
+OpenSSL's add_builtin implementation stores the entry point. It does not load
+configuration or activate the provider. Therefore the existing unit initialization
+ordering suffices before application Load; no loader phase/API is added.
+The existing post-configuration osaLoad callback is removed from this unit.
 
-    /// <summary>
-    ///   Search path for OpenSSL external providers (such as legacy.dll/so).
-    ///   Can be an absolute path or relative to OpenSSLPath.
-    ///   If empty, the loader defaults to OpenSSLPath.
-    /// </summary>
-    property ProvidersPath: string read GetProvidersPath write SetProvidersPath;
-  end;
-```
+Initialization is once per Pascal unit lifetime. Static unload/reload and config
+failure/retry neither repeat registration nor attempt native unregister. The unit
+retains no provider handles and has no provider finalizer. Multiple consumers
+share the linked unit. Conflicting same-name registrations by other modules and
+already configured external default contexts are outside this ownership contract;
+the application must establish registration before its first config/crypto use.
 
-### 3.2 Path Normalization & UTF-8 Application in `TOpenSSLLoader`
+A registration failure raises the existing crypto exception with native error
+details and RSLegacyProviderRegisterFailed during startup. No loader transition
+has occurred, so this is not reported through its failure circuit breaker.
+The unit's compatibility status query returns False while the loader is inactive
+and otherwise uses OSSL_PROVIDER_available without acquiring a reference.
 
-`TOpenSSLLoader` manages `FProvidersPath` and resolves the effective path. OpenSSL requires paths to be **UTF-8 encoded** across all platforms.
+Native source review establishes absence of config/activation calls in this path.
+Fresh-process archive execution is still required to validate the actual artifact.
 
-```pascal
-function TOpenSSLLoader.IsAbsolutePath(const APath: string): Boolean;
-begin
-  if APath = '' then
-    Result := False
-  else
-  {$IFDEF WINDOWS}
-    Result := ((Length(APath) >= 2) and (APath[2] = ':')) or
-              ((Length(APath) >= 1) and ((APath[1] = '\') or (APath[1] = '/')));
-  {$ELSE}
-    Result := (Length(APath) >= 1) and (APath[1] = '/');
-  {$ENDIF}
-end;
+## 4. Acquisition, release and passive status
 
-function TOpenSSLLoader.GetEffectiveProvidersPath: string;
-begin
-  if FProvidersPath = '' then
-    Result := FOpenSSLPath
-  else if IsAbsolutePath(FProvidersPath) then
-    Result := FProvidersPath
-  else
-    Result := FOpenSSLPath + FProvidersPath;
-end;
-```
+The former manager's retained default/legacy handles, calls to
+`OSSL_PROVIDER_load`/`OSSL_PROVIDER_unload` and automatic activation have been
+removed. The provider unit performs archive-only registration and passive queries.
 
-### 3.3 Execution Sequence in `TOpenSSLLoader.Load`
+Do not replace these with activation in NTLM, FIPS/hash hooks, a readiness query,
+or a new public loader method. OpenSSL configuration supplies activation.
 
-During dynamic loading, after all library headers have bound their exported symbols (including `OSSL_PROVIDER_set_default_search_path`), the loader applies the search path prior to invoking registered action callbacks:
+Configuration-owned references stay owned by OpenSSL. A consumer fetches/releases
+its own digest, cipher or context objects. Never unload a borrowed handle, drain
+reference counts, or treat a reference-count decrease as proof of deactivation.
+Normal loader cleanup releases only resources it actually owns; this refactor
+does not add explicit provider handles to it.
 
-```pascal
-// Inside TOpenSSLLoader.Load:
-var
-  LEffectivePath: string;
-  LUTF8SearchPath: UTF8String;
-begin
-  // 1. Symbol resolution
-  for i := 0 to GLibCryptoLoadList.Count - 1 do
-    TOpenSSLLoadProc(GLibCryptoLoadList[i])(FLibCrypto, LSSLVersionNo, FFailed);
-  for i := 0 to GLibSSLLoadList.Count - 1 do
-    TOpenSSLLoadProc(GLibSSLLoadList[i])(FLibSSL, LSSLVersionNo, FFailed);
+`IsLegacyProviderLoaded` in TaurusTLS_ProviderLegacy returns False unless the
+loader is ready; otherwise it evaluates OSSL_PROVIDER_available(nil, 'legacy')
+without acquiring a reference. The deprecated wrapper forwards to that function.
+It never loads/resets the loader or activates a provider. Availability alone
+still does not guarantee MD4/DES permission under current properties.
 
-  // 2. Configure provider search path in UTF-8
-  LEffectivePath := GetEffectiveProvidersPath;
-  if (LEffectivePath <> '') and Assigned(OSSL_PROVIDER_set_default_search_path) then
-  begin
-    LUTF8SearchPath := UTF8Encode(LEffectivePath);
-    OSSL_PROVIDER_set_default_search_path(nil, PIdAnsiChar(LUTF8SearchPath));
-  end;
+## 5. Configuration and native initialization
 
-  // 3. Fire registered lifecycle actions (triggers legacy provider activation)
-  for i := 0 to GOnLoadActionList.Count - 1 do
-    GOnLoadActionList[i](osaLoad);
-end;
-```
+Use `activate = 1` for providers intended to be active. Configuration may include
+a matching module path or rely on OpenSSL discovery. Do not parse provider sections
+in Delphi, substitute `OpenSSLPath` as a hidden module path, or mutate customer
+environment variables.
 
----
+Archive configs omit external `module` and rely on the previously registered
+entry point. Shared-library configs use their matching deployed module.
+Explicitly activate default where ordinary non-FIPS applications require it;
+do not automatically add it to FIPS configurations.
 
-## 4. Legacy Provider Unit (`Source/TaurusTLS_LegacyProviders.pas`)
+Empty `ConfigFile` still requests standard configuration initialization.
+A discovered default filename does not prove that file was read. Existing
+initialization and static unload/reload may retain native configuration/policy.
+Rollback does not promise transactional reversal of native configuration.
 
-### 4.1 Specification
+Omitting a provider's `activate` avoids explicit activation by that config.
+Prefer omission to `activate = 0` in cross-version examples because older OpenSSL
+versions treated presence as activation. Deferred activation via a public API is
+outside the selected implementation scope.
 
-* **No Manual Symbol Resolution:** Uses declarations from `TaurusTLSHeaders_provider.pas`.
-* **Zero Allocation Callback:** Uses a `class procedure` of `TTaurusTLSLegacyProviderManager` as the `TTaurusTLSOnLoadAction` handler.
-* **Dual-Model Support:**
-  * In dynamic mode, registers with `Register_SSLLoaderAction` during `initialization`.
-  * In static mode, registers the built-in symbol `ossl_legacy_provider_init` during `initialization`.
+## 6. NTLM and FIPS behavior
 
-### 4.2 Implementation
+NTLM implementation is committed in `95e7bd2`:
 
-```pascal
-unit TaurusTLS_LegacyProviders;
+- Assign the four Indy callbacks once via initialization; never rewrite them on
+  load/unload. Preserve foreign assignments made afterward.
+- Retain `IdFIPS` for Indy declarations and policy, with no NTLM dependency on
+  `TaurusTLSIdFIPS` or `TaurusTLS_ProviderLegacy`.
+- Keep `LoadNTLMLibrary` status-only. Availability checks readiness, Indy policy,
+  and fetched MD4/DES-ECB under current default-context properties.
+- Preserve pre-existing native errors during a negative availability probe.
+- Use direct EVP MD4 over UTF-16LE for NT responses; DES uses expanded odd-parity
+  keys, no padding, exact block lengths and checked buffers/output.
+- Keep existing platform-default LM encoding and 14-byte truncation. A general
+  OEM encoding policy and NTLMv2 RC4 integration remain separate work.
 
-{$I TaurusTLSCompilerDefines.inc}
+An active FIPS provider is not proof that algorithm selection uses FIPS
+implementations. Distinguish native API support, provider availability, configured
+properties, Indy policy and actual operation permission. Preserve policy in
+availability/operation hooks; do not enable legacy to bypass restrictions.
 
-interface
+TaurusTLSIdFIPS reports mode only for a ready supported dynamic runtime with
+configured FIPS selection and an available FIPS provider. SetFIPSMode accepts
+only a no-op matching that policy. When FIPS is selected but unavailable,
+reporting is False and operations reject rather than fall back to default.
+Ordinary hashing/HMAC remains supported when FIPS is not selected.
+TaurusTLS_ProviderFIPS owns cached API validation and passive provider status;
+its loader action does not activate providers. Static FIPS remains unsupported.
+Per-operation approval indicators and certification provenance are separate;
+a loaded module, vector or readiness query is not a certification claim.
 
-uses
-  IdCTypes,
-  TaurusTLSHeaders_types,
-  TaurusTLSHeaders_provider,
-  TaurusTLSLoader;
+## 7. Test runner and package boundaries
 
-{$IFDEF OPENSSL_STATIC_LINK_MODEL}
-  {$IFDEF MSWINDOWS}
-    {$L liblegacy.lib}
-  {$ELSE}
-    {$L liblegacy.a}
-  {$ENDIF}
+The source split is committed in 43b6aa8; provider test extraction is committed
+in 90d409c. The ordinary TaurusTLS.UT project no longer includes the Legacy
+activation unit or TConfiguredFIPSProviderFixture. It retains loader/readiness,
+native-policy and Indy adapter behavior without installed FIPS prerequisites
+or a FIPS category exclusion.
 
-  // Static entry point exported by liblegacy archive
-  function ossl_legacy_provider_init(
-    const handle: POSSL_CORE_HANDLE;
-    const in_struct: POSSL_DISPATCH;
-    out out_struct: POSSL_DISPATCH;
-    prov_ctx: pointer
-  ): TIdC_INT; cdecl; external;
-{$ENDIF}
+TaurusTLS.UT.Providers.Legacy contains the moved positive configuration/availability
+and digest fixtures plus the dynamic no-activation fixture. Its reference to
+TaurusTLS_ProviderLegacy remains conditional on STATICLOAD_OPENSSL. The old
+TaurusTLS.UT.LegacyProviders file remains on disk but is not in the ordinary project.
 
-type
-  /// <summary>
-  ///   Manager class providing class methods for OpenSSL provider lifecycle hooks.
-  /// </summary>
-  TTaurusTLSLegacyProviderManager = class
-  public
-    class procedure OnLoadAction(AAction: TOpenSSLLoadAction);
-    class procedure InitLegacyProvider;
-    class procedure UninitLegacyProvider;
-  end;
+TaurusTLS.UT.Providers.Common extends TOsslBaseFixture from
+TaurusTLS.UT.TestClasses with temporary-config ownership and cleanup, reusing
+SetupFromCmd, Load, Unload and Loader. The Legacy fixture directly uses the same
+manual base. Do not reference TaurusTLS.UT.Loader merely for fixture helpers:
+its initialization registers ordinary-suite tests.
 
-implementation
+The provider runner requires -scenario:<known-name>. It lists supported cases
+with -scenario:list and rejects missing/unknown selectors or arbitrary DUnitX
+run/category filters. After selecting one exact case it rebuilds the DUnitX
+filter cached by CheckCommandLine, disables RTTI fixture discovery and requires
+one pass with no failures/errors/ignored/leaks. Each process handles one native
+configuration scenario. The tests have no process-launch or child-report code.
 
-uses
-  SysUtils;
+The external CMD/PowerShell/Bash launchers discover names from that executable,
+run each selected case with a deadline and retain logs/XML. PowerShell forwards
+-TestArguments arrays, CMD forwards testarg=VALUE tokens and Bash forwards
+arguments after --. Launcher-owned selectors, libraries/FIPS input, report
+filenames and exit behavior cannot be overridden through forwarded options.
+macOS runs only supported Legacy/default cases. Read
+[platform instructions](../../../Tests/TaurusTLS.UT.Providers.md); keep published
+examples relative or environment-based, with no private paths or identities.
 
-var
-  FDefaultProvider: POSSL_PROVIDER = nil;
-  FLegacyProvider: POSSL_PROVIDER = nil;
+Current runtime package membership includes the new adapter/provider units and
+excludes the three deprecated wrappers. Audit actual generated package/linker
+closure independently of source uses clauses. An NTLM-only or FIPS-only probe
+must not be accidentally supplied with another optional integration by the runner.
 
-class procedure TTaurusTLSLegacyProviderManager.InitLegacyProvider;
-begin
-  if FLegacyProvider <> nil then
-    Exit;
+## 8. Fixtures and acceptance matrix
 
-  {$IFDEF OPENSSL_STATIC_LINK_MODEL}
-  // Register static built-in initialization routine
-  OSSL_PROVIDER_add_builtin(nil, 'legacy', @ossl_legacy_provider_init);
-  {$ENDIF}
+Provider fixtures create their own temporary configuration before explicit Load,
+unload before settings/file cleanup and handle failed setup/destructor cleanup.
+The ordinary NTLM crypto fixture retains its controlled non-FIPS config through
+the shared manual infrastructure. These settings are test-owned, not customer
+policy defaults. Static unload/retry does not reset OpenSSL's native context.
 
-  // 1. Explicitly load 'default' provider to prevent disabling modern ciphers
-  if Assigned(OSSL_PROVIDER_load) then
-  begin
-    if FDefaultProvider = nil then
-      FDefaultProvider := OSSL_PROVIDER_load(nil, 'default');
+| Case | Evidence or remaining gate |
+|---|---|
+| Dynamic config activation without archive unit | 14/14 Win64 Legacy/default scenarios pass in separate processes |
+| Dynamic no-activation | Fresh case confirms Legacy/MD4/DES absence; included in those 14 |
+| FIPS selection/policy rejection | Covered by the 17 Win64 FIPS scenarios, including active Legacy under fips=yes |
+| Archive inclusion without activation | Pending fresh archive execution; registration alone must not supply active Legacy algorithms |
+| Archive config activation | Pending fresh archive execution using the linked provider with no external module |
+| Archive absence | Requires another executable without TaurusTLS_ProviderLegacy; not proven by the included-unit runner |
+| Unused or missing archive provider | Pending artifact-specific absence/failure scenarios |
+| Multiple consumers | Pending provider-specific acceptance; own fetched algorithms only, never borrowed provider handles |
+| Repeated Load and callback stability | Existing lifecycle/adapter coverage; retain final platform execution evidence |
+| Failure/retry and retained static context | Pending provider-specific archive execution; do not assume native reset |
+| Optional dependency isolation | Pending linker maps/package closure for adapters and unused archives |
+| Shutdown | Existing loader-only probes are separate evidence; all operations/objects must be retired before release |
 
-    // 2. Load 'legacy' provider
-    if FLegacyProvider = nil then
-      FLegacyProvider := OSSL_PROVIDER_load(nil, 'legacy');
-  end;
-end;
+Dynamic Win64/OpenSSL 4.1 total: 31/31 separate-process scenarios (14 Legacy/default,
+17 FIPS); each reports one pass, zero ignored/leaked/failed/errored and exit 0.
+The provider Win64 and ordinary Linux64 full builds succeed, with recorded
+dependency warnings/hints. Final ordinary-suite execution and actual Linux/macOS
+provider runs after extraction remain pending; simulated macOS script checks do
+not establish native execution. FPC, Release and remaining archive gates stay open.
+Earlier combined-runner/platform totals predate this extraction and are retained
+as historical evidence in the local plan, not as acceptance of these final projects.
 
-class procedure TTaurusTLSLegacyProviderManager.UninitLegacyProvider;
-begin
-  if Assigned(OSSL_PROVIDER_unload) then
-  begin
-    if FLegacyProvider <> nil then
-    begin
-      OSSL_PROVIDER_unload(FLegacyProvider);
-      FLegacyProvider := nil;
-    end;
+## 9. References
 
-    if FDefaultProvider <> nil then
-    begin
-      OSSL_PROVIDER_unload(FDefaultProvider);
-      FDefaultProvider := nil;
-    end;
-  end;
-end;
-
-class procedure TTaurusTLSLegacyProviderManager.OnLoadAction(AAction: TOpenSSLLoadAction);
-begin
-  case AAction of
-    osaLoad:   InitLegacyProvider;
-    osaUnload: UninitLegacyProvider;
-  end;
-end;
-
-initialization
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  // Register class procedure callback into loader action list
-  Register_SSLLoaderAction(TTaurusTLSLegacyProviderManager.OnLoadAction);
-{$ELSE}
-  // Static linking: Symbols are immediately available at startup
-  TTaurusTLSLegacyProviderManager.InitLegacyProvider;
-{$ENDIF}
-
-finalization
-  TTaurusTLSLegacyProviderManager.UninitLegacyProvider;
-
-end.
-```
-
----
-
-## 5. Path Encoding & String Safety (Unicode vs UTF-8)
-
-OpenSSL C-APIs expect UTF-8 encoded strings (`const char *`). Passing standard ANSI strings on Windows fails when the file system path contains characters outside the active system code page (e.g., non-Latin user profile directories).
-
-| Layer | Type | Encoding |
-| :--- | :--- | :--- |
-| **Delphi User Code** | `string` / `UnicodeString` | UTF-16 |
-| **Loader Property** | `IOpenSSLLoader.ProvidersPath` | UTF-16 |
-| **OpenSSL API Bridge** | `UTF8Encode(Path)` -> `PIdAnsiChar` | UTF-8 (`PAnsiChar`) |
-
----
-
-## 6. Execution Lifecycle Sequence
-
-```
-DYNAMIC LINKING LIFECYCLE:
-
-[ App Boot ] ─────────> TaurusTLS_LegacyProviders initialization
-                          │
-                          └──> Register_SSLLoaderAction(TTaurusTLSLegacyProviderManager.OnLoadAction)
-                          │
-[ Engine Load ] ──────> TOpenSSLLoader.Load
-                          │
-                          ├──> 1. Load DLLs (libcrypto, libssl)
-                          ├──> 2. Execute GLibCryptoLoadList -> Binds TaurusTLSHeaders_provider
-                          ├──> 3. Resolve EffectiveProvidersPath & convert to UTF-8
-                          ├──> 4. OSSL_PROVIDER_set_default_search_path(nil, UTF8Path)
-                          └──> 5. Dispatch GOnLoadActionList -> OnLoadAction(osaLoad)
-                                  │
-                                  ├──> OSSL_PROVIDER_load(nil, 'default')
-                                  └──> OSSL_PROVIDER_load(nil, 'legacy')
-                          │
-[ Engine Unload / ] ──> TOpenSSLLoader.Unload / Process Exit
-[ App Shutdown  ]         │
-                          └──> Dispatch GOnLoadActionList -> OnLoadAction(osaUnload)
-                                  │
-                                  ├──> OSSL_PROVIDER_unload(FLegacyProvider)
-                                  └──> OSSL_PROVIDER_unload(FDefaultProvider)
-```
-
----
-
-## 7. Verification & Safety Checklist
-
-1. **Modern Algorithm Integrity:** Verify TLS 1.3 / AES-256-GCM functions identically before and after adding `TaurusTLS_LegacyProviders` to ensure the `default` provider remains intact.
-2. **Missing `legacy.dll` Fault Tolerance:** If `legacy.dll` is not found, `FLegacyProvider` evaluates to `nil`. Standard OpenSSL operations must continue without crashing.
-3. **Shutdown Cleanliness:** Providers must unload during `osaUnload` before `FreeLibrary` is called on `libcrypto` to prevent shutdown Access Violations.
+- [OpenSSL provider API](https://docs.openssl.org/3.0/man3/OSSL_PROVIDER/)
+- [Provider configuration](https://docs.openssl.org/4.0/man5/config/#provider-configuration)
+- [FIPS guidance](https://docs.openssl.org/4.0/man7/fips_module/)

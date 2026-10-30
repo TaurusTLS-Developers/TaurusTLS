@@ -1,11 +1,11 @@
-{******************************************************************************}
+ï»¿{******************************************************************************}
 {*  TaurusTLS                                                                 *}
 {*           https://github.com/JPeterMugaas/TaurusTLS                        *}
 {*                                                                            *}
 {*  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              *}
 {*                                                                            *}
-{* Portions of this software are Copyright (c) 1993 – 2018,                   *}
-{* Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  *}
+{* Portions of this software are Copyright (c) 1993 â€“ 2018,                   *}
+{* Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  *}
 {******************************************************************************}
 {$I TaurusTLSCompilerDefines.inc}
 /// <summary>
@@ -157,7 +157,129 @@ type
     /// </summary>
     property ErrorCode : TIdC_ULONG read FErrorCode;
   end;
+  /// <summary>
+  ///   Base class for exceptions that are raised when the <c>EVP_MD_fetch</c>
+  ///   function. can not find an algorithm.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
+  ///   EVP_MD_fetch
+  /// </seealso>
+  ETaurusTLSAlgorithmNotFound = class(ETaurusTLSAPICryptoError)
+  public
+    /// <summary>
+    ///   Creates an an object of this class with a message from the <c>
+    ///   TaurusTLS_ResourceStrings</c> unit.
+    /// </summary>
+    constructor CreateResMsg; virtual;
+  end;
+  /// <summary>
+  ///   Defined for passing a <c>ETaurusTLSAlgorithmNotFound</c> class type to
+  ///   some common code. <br />
+  /// </summary>
+  ETaurusTLSAlgorithmNotFoundClass = class of ETaurusTLSAlgorithmNotFound;
+  /// <summary>
+  ///   Raised if the MD2 algorithm can not be found when attempting to use the
+  ///   EVP_MD_fetch function.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
+  ///   EVP_MD_fetch
+  /// </seealso>
+  ETaurusTLSMD2NotFound = class(ETaurusTLSAlgorithmNotFound)
+  public
+    constructor CreateResMsg; override;
+  end;
 
+  /// <summary>
+  ///   Raised if the MD4 algorithm can not be found when attempting to use the
+  ///   EVP_MD_fetch function.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
+  ///   EVP_MD_fetch
+  /// </seealso>
+  ETaurusTLSMD4NotFound = class(ETaurusTLSAlgorithmNotFound)
+  public
+    constructor CreateResMsg; override;
+  end;
+
+  /// <summary>
+  ///   Raised if the MD5 algorithm can not be found when attempting to use the
+  ///   EVP_MD_fetch function.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
+  ///   EVP_MD_fetch
+  /// </seealso>
+  ETaurusTLSMD5NotFound = class(ETaurusTLSAlgorithmNotFound)
+  public
+    constructor CreateResMsg; override;
+  end;
+  /// <summary>
+  ///   Raised if the SHA1 algorithm can not be found when attempting to use the
+  ///   EVP_MD_fetch function.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
+  ///   EVP_MD_fetch
+  /// </seealso>
+  ETaurusTLSSHA1NotFound = class(ETaurusTLSAlgorithmNotFound)
+  public
+    constructor CreateResMsg; override;
+  end;
+
+  /// <summary>
+  ///   Raised if the SHA2224 algorithm can not be found when attempting to use the
+  ///   EVP_MD_fetch function.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
+  ///   EVP_MD_fetch
+  /// </seealso>
+  ETaurusTLSSHA224NotFound = class(ETaurusTLSAlgorithmNotFound)
+  public
+    constructor CreateResMsg;  override;
+  end;
+
+  /// <summary>
+  ///   Raised if the SHA256 algorithm can not be found when attempting to use the
+  ///   EVP_MD_fetch function.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
+  ///   EVP_MD_fetch
+  /// </seealso>
+  ETaurusTLSSHA256NotFound = class(ETaurusTLSAlgorithmNotFound)
+  public
+    constructor CreateResMsg; override;
+  end;
+  /// <summary>
+  ///   Raised if the SHA384 algorithm can not be found when attempting to use the
+  ///   EVP_MD_fetch function.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
+  ///   EVP_MD_fetch
+  /// </seealso>
+  ETaurusTLSSHA384NotFound = class(ETaurusTLSAlgorithmNotFound)
+  public
+    constructor CreateResMsg; override;
+  end;
+  /// <summary>
+  ///   Raised if the SHA512 algorithm can not be found when attempting to use the
+  ///   EVP_MD_fetch function.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.3/man3/EVP_DigestInit/">
+  ///   EVP_MD_fetch
+  /// </seealso>
+  ETaurusTLSSHA512NotFound = class(ETaurusTLSAlgorithmNotFound)
+  public
+    constructor CreateResMsg; override;
+  end;
+  /// <summary>
+  ///   Raised if the DES ECB algorithm can not be found when attempting to use the
+  ///   EVP_CIPHER_fetch function.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.5/man3/EVP_EncryptInit/">
+  ///   EVP_CIPHER_fetch
+  /// </seealso>
+  ETaurusTLSDES_ECBNotFound = class(ETaurusTLSAlgorithmNotFound)
+  public
+    constructor CreateResMsg; override;
+  end;
   /// <summary>
   ///   Raised if the X509_digest function failed.
   /// </summary>
@@ -275,44 +397,58 @@ type
   ///   HMAC_Final
   /// </seealso>
   ETaurusTLSHMACFinal = class(ETaurusTLSHMACError);
-
   /// <summary>
   ///   Anscestor of exceptions that are raised if an EVP_CIPHER_* functions fails.
   /// </summary>
   ETaurusTLSEVPCipherError = class(ETaurusTLSAPICryptoError);
   /// <summary>
-  ///   Raised if the EVP_CipherInit_ex function failed.
-  /// </summary>
-  /// <seealso href="https://docs.openssl.org/1.0.2/man3/EVP_EncryptInit/">
-  /// EVP_CipherInit_ex
-  /// </seealso>
-  ETaurusTLSEVPCipherInitEx = class(ETaurusTLSEVPCipherError);
-  /// <summary>
-  ///   Raised if the EVP_CipherUpdate function failed.
-  /// </summary>
-  /// <seealso href="https://docs.openssl.org/3.0/man3/EVP_EncryptInit/">
-  ///  EVP_CipherUpdate
-  /// </seealso>
-  ETaurusTLSEVPCipherUpdate = class(ETaurusTLSEVPCipherError);
-  /// <summary>
-  ///   Raised if the EVP_CipherFinal_ex function failed.
-  /// </summary>
-  /// <seealso href="https://docs.openssl.org/3.0/man3/EVP_EncryptInit/">
-  ///  EVP_CipherFinal_ex
-  /// </seealso>
-  ETaurusTLSEVPCipherFinalEx = class(ETaurusTLSEVPCipherError);
-
-  /// <summary>
   ///   Anscestor of exceptions that are raised if an EVP_CIPHER_CTX_* functions fails.
   /// </summary>
   ETaurusTLSEVPCipherCTXError = class(ETaurusTLSAPICryptoError);
   /// <summary>
-  ///   Raised if the EVP_CIPHER_CTX_new function failed.
+  ///   Raised if the <c>EVP_CIPHER_CTX_new</c> function failed.
   /// </summary>
   /// <seealso href="https://docs.openssl.org/3.0/man3/EVP_EncryptInit/">
-  ///  EVP_CIPHER_CTX_new
+  ///   EVP_CIPHER_CTX_new
   /// </seealso>
-  EVPCipherCTXNew = class(ETaurusTLSEVPCipherCTXError);
+  ETaurusTLSEVPCipherCTXNewFailed   = class(ETaurusTLSEVPCipherCTXError);
+
+  /// <summary>
+  ///   Raised if a call to <c>EVP_EncryptInit_ex2</c> failed.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.0/man3/EVP_EncryptInit/">
+  ///   EVP_EncryptInit_ex2
+  /// </seealso>
+  ETaurusTLSEVPEncryptInitEx2Failed = class(ETaurusTLSAPICryptoError);
+  /// <summary>
+  ///   Raised if a call to <c>EVP_EncryptUpdate</c> failed.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.0/man3/EVP_EncryptInit/">
+  ///   EVP_EncryptUpdate
+  /// </seealso>
+  ETaurusTLSEVPEncryptUpdateFailed = class(ETaurusTLSAPICryptoError);
+  /// <summary>
+  ///   Raised if a call to <c>EVP_EncryptFinal_ex</c> failed.
+  /// </summary>
+  /// <seealso href="https://docs.openssl.org/3.0/man3/EVP_EncryptInit/">
+  ///   EVP_EncryptFinal_ex
+  /// </seealso>
+  ETaurusTLSEVPEncryptFinalExFailed = class(ETaurusTLSAPICryptoError);
+
+  /// <summary>
+  ///   Raised on OpenSSL Libray loading errors.
+  /// </summary>
+  ETaurusTLSLoaderError = class(ETaurusTLSError);
+
+  /// <summary>
+  ///   Raised if the OpenSSL configuration file path is invalid, missing, or a directory.
+  /// </summary>
+  ETaurusTLSConfigFilePathError = class(ETaurusTLSAPICryptoError);
+
+  /// <summary>
+  ///   Raised if OpenSSL failed to load the specified configuration file.
+  /// </summary>
+  ETaurusTLSConfigFileLoadError = class(ETaurusTLSAPICryptoError);
 
 implementation
 
@@ -470,6 +606,77 @@ class procedure ETaurusTLSError.RaiseWithMessage(const AMsg: String);
 {$IFDEF USE_NORETURN}noreturn;{$ENDIF}
 begin
   raise Create(AMsg);
+end;
+
+{ ETaurusTLSMD2NotFound }
+
+constructor ETaurusTLSMD2NotFound.CreateResMsg;
+begin
+  Create(RSSSLMD2NotFound);
+end;
+
+{ ETaurusTLSMD4NotFound }
+
+constructor ETaurusTLSMD4NotFound.CreateResMsg;
+begin
+  Create(RSSSLMD4NotFound);
+end;
+
+{ ETaurusTLSMD5NotFound }
+
+constructor ETaurusTLSMD5NotFound.CreateResMsg;
+begin
+  Create(RSSSLMD5NotFound);
+end;
+
+{ ETaurusTLSSHA1NotFound }
+
+constructor ETaurusTLSSHA1NotFound.CreateResMsg;
+begin
+  Create(RSSSLSHA1NotFound);
+end;
+
+{ ETaurusTLSSHA224NotFound }
+
+constructor ETaurusTLSSHA224NotFound.CreateResMsg;
+begin
+  inherited Create(RSSSLSHA224NotFound);
+end;
+
+{ ETaurusTLSSHA256NotFound }
+
+constructor ETaurusTLSSHA256NotFound.CreateResMsg;
+begin
+  inherited Create(RSSSLSHA256NotFound);
+end;
+
+{ ETaurusTLSAlgorithmNotFound }
+
+constructor ETaurusTLSAlgorithmNotFound.CreateResMsg;
+begin
+  inherited Create('');
+end;
+
+{ ETaurusTLSSHA384NotFound }
+
+constructor ETaurusTLSSHA384NotFound.CreateResMsg;
+begin
+  inherited Create(RSSSLSHA384NotFound);
+end;
+
+{ ETaurusTLSSHA512NotFound }
+
+constructor ETaurusTLSSHA512NotFound.CreateResMsg;
+begin
+  inherited Create(RSSSLSHA512NotFound);
+end;
+
+{ ETaurusTLSDES_ECBNotFound }
+
+constructor ETaurusTLSDES_ECBNotFound.CreateResMsg;
+begin
+  inherited Create(RSSSLDES_ECBNotFound);
+
 end;
 
 end.

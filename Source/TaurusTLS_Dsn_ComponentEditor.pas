@@ -39,8 +39,10 @@ procedure Register;
 
 implementation
 uses
+  SysUtils,
   IdGlobal,
   TaurusTLS,
+  TaurusTLSLoader,
   TaurusTLS_Dsn_AboutDlg,
   TaurusTLS_Dsn_ResourceStrings,
   TaurusTLS_Unicode_Log;
@@ -69,6 +71,7 @@ begin
   RegisterComponentEditor(TTaurusTLSIOHandlerSocket, TTaurusTLSComponentEditor);
   RegisterComponentEditor(TTaurusTLSServerIOHandler, TTaurusTLSComponentEditor);
   RegisterComponentEditor(TTaurusTLSUnicodeLog, TTaurusTLSComponentEditor);
+  RegisterComponentEditor(TTaurusTLSLoader, TTaurusTLSComponentEditor);
 end;
 
 end.

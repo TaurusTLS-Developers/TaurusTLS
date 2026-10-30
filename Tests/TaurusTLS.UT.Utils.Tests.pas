@@ -8,201 +8,237 @@
 { * Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  * }
 { ****************************************************************************** }
 
+unit TaurusTLS.UT.Utils.Tests;
+
 {$I ..\Source\TaurusTLSCompilerDefines.inc}
 {$I TaurusTLSUTCompilerDefines.inc}
-/// <summary>
-/// Unit-Test for the TaurusTLS.UT.Utils (DUnitX API extention framework)
-/// </summary>
-unit TaurusTLS.UT.Utils.Tests;
-{$i ..\Source\TaurusTLSLinkDefines.inc}
+{$I ..\Source\TaurusTLSLinkDefines.inc}
 
 interface
 
 uses
-  DUnitX.TestFramework;
+  DUnitX.TestFramework, TaurusTLS.UT.TestClasses;
 
 type
-  [TestFixture]
-  T00OsslLoaderTests = class
+  [TestFixture('', 'Checks manual and automatic OpenSSL fixture lifecycles, command-line defaults, exception propagation and failure cleanup. '
+    + 'Requires native-library settings matching the target; uses temporary controlled configuration files.')]
+  [Category('Fixtures,Loader.Fixtures')]
+  TFixtureLifecycleTests = class(TOsslBaseFixture)
   private
-    class function SetTrailingSlash(const APath: string): string; static;
-    class function CanExecLoadedFuncs: boolean; static;
-    procedure VerifyUnload(AMustUnload: boolean); overload;
+    FOriginalPath, FOriginalVersions, FOriginalConfig: string;
+    FCmdPath, FCmdConfig, FDir, FValidConfig: string;
+    FCaptured: Boolean;
   public
+    [Setup]
+    procedure Setup;
+    [TearDown]
+    procedure Teardown;
+    /// <summary>Applying defaults never loads OpenSSL.</summary>
     [Test]
-    [IgnoreMemoryLeaks(True)]
-    procedure VerifyPath;
+    procedure Manual_ConfigOnly;
+    /// <summary>Load preserves the loader's typed exception; Unload resets failure.</summary>
     [Test]
-    [IgnoreMemoryLeaks(True)]
-    procedure VerifyLoad;
+    procedure Manual_Exception;
+    /// <summary>Repeated Load does not acquire fixture reference counts.</summary>
+    [TestCase('OneLoad', '1')]
+    [TestCase('ThreeLoads', '3')]
+    procedure Manual_Repeated(const ACount: Integer);
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+    /// <summary>A missing dynamic library returns False without hiding the result.</summary>
     [Test]
-    [IgnoreMemoryLeaks(True)]
-    procedure VerifyUnload; overload;
-    [TestCase('MultipleLoadUnload#1', '1')]
-    [TestCase('MultipleLoadUnload#256', '8')]
-    [IgnoreMemoryLeaks(True)]
-    procedure StackedLoadUnload(ACount: cardinal);
+    procedure Manual_False;
+{$ENDIF}
+    /// <summary>The autoload fixture makes OpenSSL ready and then unloads it.</summary>
+    [Test]
+    procedure Auto_LoadUnload;
+    /// <summary>Failed automatic setup preserves its error and resets failed state.</summary>
+    [Test]
+    procedure Auto_FailureCleanup;
+    /// <summary>Destruction releases loading when normal fixture teardown was skipped.</summary>
+    [Test]
+    procedure Auto_DestructorCleanup;
   end;
 
 implementation
 
 uses
-  System.SysUtils, System.Classes, System.Generics.Collections, System.SyncObjs,
-  DUnitX.CommandLine.Options, TaurusTLS.UT.Utils,
-  TaurusTLSHeaders_types, TaurusTLSHeaders_buffer;
+  System.SysUtils, System.IOUtils, TaurusTLSLoader, TaurusTLSExceptionHandlers,
+  TaurusTLSHeaders_crypto;
 
-{ TOsslLoaderTests }
+type
+  TAutoloadProbe = class(TOsslAutoloadFixture)
+  protected
+    procedure SetupFromCmd; override;
+  public
+    ConfigOverride: string;
+  end;
 
-procedure T00OsslLoaderTests.VerifyPath;
-var
-  lLongOpt: string;
-  lShortOpt: string;
-  lEnvVar: string;
-
+procedure TAutoloadProbe.SetupFromCmd;
 begin
-  lLongOpt:='';
-  lShortOpt:='';
-  lEnvVar:='';
-
-  if FindCmdLineSwitch(TOsslLoader.cLongOptName, lLongOpt) then
-  begin
-    Log(TLogLevel.Information,
-      Format('Command-line switch "-%s" found with value "%s"',
-             [TOsslLoader.cLongOptName, lLongOpt]));
-      lLongOpt:=SetTrailingSlash(lLongOpt);
-  end;
-  if FindCmdLineSwitch(TOsslLoader.cShortOptName, lShortOpt) then
-  begin
-    Log(TLogLevel.Information,
-      Format('Command-line switch "-%s" found with value "%s"',
-             [TOsslLoader.cShortOptName, lShortOpt]));
-      lShortOpt:=SetTrailingSlash(lShortOpt);
-  end;
-  lEnvVar:=GetEnvironmentVariable(TOsslLoader.cEnvVarName);
-  if not lEnvVar.IsEmpty then
-  begin
-    Log(TLogLevel.Information,
-      Format('Environenment Variable "%s" found with value "%s"',
-             [TOsslLoader.cEnvVarName, lEnvVar]));
-      lEnvVar:=SetTrailingSlash(lEnvVar);
-  end;
-  if lLongOpt.IsEmpty and lShortOpt.IsEmpty and lEnvVar.IsEmpty then
-    Log('Nor command-line switch, nor environment variable provided.');
-
-  if not (lLongOpt.IsEmpty and lShortOpt.IsEmpty) then
-{$IFDEF MSWINDOWS}
-    Assert.IsTrue((CompareText(lLongOpt, TOsslLoader.Path) = 0) or
-      (CompareText(lShortOpt, TOsslLoader.Path) = 0),
-{$ELSE}
-    Assert.IsTrue((CompareStr(lLongOpt, TOsslLoader.Path) = 0) or
-      (CompareStr(lShortOpt, TOsslLoader.Path) = 0),
-{$ENDIF}
-      Format('Expected "%s" or "%s" from a command-line switch(es) value, got "%s"',
-        [TOsslLoader.cLongOptName, TOsslLoader.cShortOptName, TOsslLoader.Path]))
-  else if not lEnvVar.IsEmpty then
-    Assert.AreEqual(lEnvVar, TOsslLoader.Path,
-      'OpenSSL Path is not equal to "'+TOsslLoader.cEnvVarName+'" environment variable value.')
-  else
-    Assert.AreEqual('', TOsslLoader.Path,
-      'OpenSSL Path is not empty.')
+  inherited SetupFromCmd;
+  Loader.ConfigFile := ConfigOverride;
 end;
 
-class function T00OsslLoaderTests.CanExecLoadedFuncs: boolean;
-{$IFDEF OPENSSL_STATIC_LINK_MODEL}
-var
-  lPtr: PBUF_MEM;
-{$ENDIF}
-
+procedure TFixtureLifecycleTests.Setup;
 begin
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Result:=Assigned(BUF_MEM_new) and Assigned(BUF_MEM_free);
-{$ELSE}
-  Result:=True;
+  Assert.IsFalse(Loader.IsLoaded, 'Fixture contract tests require exclusive loader ownership');
+  FOriginalPath := Loader.OpenSSLPath;
+  FOriginalVersions := Loader.SSLLibVersions;
+  FOriginalConfig := Loader.ConfigFile;
+  FCaptured := True;
   try
-    lPtr := BUF_MEM_new;
-    BUF_MEM_free(lPtr);
+    Unload;
+    SetupFromCmd;
+    FCmdPath := Loader.OpenSSLPath;
+    FCmdConfig := Loader.ConfigFile;
+    FDir := TPath.Combine(TPath.GetTempPath, 'TaurusTLS_Fixtures_' + TGUID.NewGuid.ToString);
+    TDirectory.CreateDirectory(FDir);
+    FValidConfig := TPath.Combine(FDir, 'valid.cnf');
+    TFile.WriteAllText(FValidConfig,
+      'openssl_conf = init' + sLineBreak +
+      '[init]' + sLineBreak +
+      'ssl_conf = ssl_settings' + sLineBreak +
+      '[ssl_settings]' + sLineBreak +
+      'system_default = tls_defaults' + sLineBreak +
+      '[tls_defaults]' + sLineBreak +
+      'MinProtocol = TLSv1.2' + sLineBreak);
   except
-    Result:=False;
-  end;
-{$ENDIF}
-end;
-
-class function T00OsslLoaderTests.SetTrailingSlash(const APath: string): string;
-const
-{$IFDEF MSWINDOWS}
-  cTrailSlash = '\';
-{$ELSE}
-  cTrailSlash = '/';
-{$ENDIF}
-
-begin
-  Result:=APath;
-  if Result.IsEmpty then
-    Exit;
-  if not Result.EndsWith(cTrailSlash) then
-    Result:=Result+cTrailSlash;
-end;
-
-procedure T00OsslLoaderTests.VerifyLoad;
-begin
-  Assert.WillNotRaise(
-    procedure
-    begin
-      TOsslLoader.Load;
-    end,
-    nil,
-    'Openssl library fails to load.'
-  );
-  Assert.IsTrue(TOsslLoader.Loaded, 'Openssl library has not been loaded.');
-  Assert.IsTrue(CanExecLoadedFuncs, 'Openssl library function are not exported.');
-end;
-
-procedure T00OsslLoaderTests.VerifyUnload(AMustUnload: boolean);
-begin
-  Assert.WillNotRaise(
-    procedure
-    begin
-      TOsslLoader.UnLoad;
-    end
-  );
-  if AMustUnload then
-  begin
-    Assert.IsFalse(TOsslLoader.Loaded, 'Openssl library has not been unloaded.');
-    Assert.IsFalse(CanExecLoadedFuncs, 'Openssl library function are still be exported.');
+    try
+      Teardown;
+    except
+      on E: Exception do
+        Log(TLogLevel.Error, 'Fixture test setup cleanup: ' + E.Message);
+    end;
+    raise;
   end;
 end;
 
-procedure T00OsslLoaderTests.VerifyUnLoad;
+procedure TFixtureLifecycleTests.Teardown;
 begin
-  VerifyUnload(True);
+  try
+    if FCaptured then
+    try
+      Unload;
+    finally
+      Loader.ConfigFile := FOriginalConfig;
+      Loader.OpenSSLPath := FOriginalPath;
+      Loader.SSLLibVersions := FOriginalVersions;
+    end;
+  finally
+    FCaptured := False;
+    if (FDir <> '') and TDirectory.Exists(FDir) then
+      TDirectory.Delete(FDir, True);
+    FDir := '';
+  end;
 end;
 
-procedure T00OsslLoaderTests.StackedLoadUnload(ACount: cardinal);
+procedure TFixtureLifecycleTests.Manual_ConfigOnly;
+begin
+  Loader.ConfigFile := TPath.Combine(FDir, 'must_not_be_loaded.cnf');
+  SetupFromCmd;
+  Assert.AreEqual(FCmdPath, Loader.OpenSSLPath);
+  Assert.AreEqual(FCmdConfig, Loader.ConfigFile);
+  Assert.IsTrue(Loader.State = lsNotLoaded);
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  Assert.IsFalse(Assigned(OpenSSL_version_num));
+{$ENDIF}
+end;
+
+procedure TFixtureLifecycleTests.Manual_Exception;
+begin
+  Loader.ConfigFile := TPath.Combine(FDir, 'missing.cnf');
+  Assert.WillRaise(
+    procedure
+    begin
+      Load;
+    end, ETaurusTLSConfigFilePathError);
+  Assert.IsTrue(Loader.State = lsLoadedFailed);
+  Unload;
+  Assert.IsTrue(Loader.State = lsNotLoaded);
+  Loader.ConfigFile := FValidConfig;
+  Assert.IsTrue(Load, 'A previous expected failure must not poison subsequent loading');
+end;
+
+procedure TFixtureLifecycleTests.Manual_Repeated(const ACount: Integer);
 var
-  lCounter: cardinal;
-
+  I: Integer;
 begin
-  if ACount = 0 then
-  begin
-    Assert.Pass('Zero loads-unloads requested. Nothing to do.');
-    Exit;
+  Loader.ConfigFile := FValidConfig;
+  for I := 1 to ACount do
+    Assert.IsTrue(Load);
+  CheckLoaded;
+  Unload;
+  Assert.IsTrue(Loader.State = lsNotLoaded, 'One Unload must suffice after repeated Load calls');
+  Unload;
+  Assert.IsFalse(Loader.IsLoaded);
+end;
+
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+procedure TFixtureLifecycleTests.Manual_False;
+begin
+  Loader.OpenSSLPath := TPath.Combine(FDir, 'missing_libraries');
+  Loader.SSLLibVersions := 'missing_fixture_library_' + TGUID.NewGuid.ToString;
+  Assert.IsFalse(Load);
+  Assert.IsTrue(Loader.State = lsLoadedFailed);
+  Unload;
+  Assert.IsTrue(Loader.State = lsNotLoaded);
+end;
+{$ENDIF}
+
+procedure TFixtureLifecycleTests.Auto_LoadUnload;
+var
+  LProbe: TAutoloadProbe;
+begin
+  LProbe := TAutoloadProbe.Create;
+  try
+    LProbe.ConfigOverride := FValidConfig;
+    LProbe.SetupFixture;
+    Assert.IsTrue(Loader.IsLoaded);
+    LProbe.TearDownFixture;
+    Assert.IsTrue(Loader.State = lsNotLoaded);
+  finally
+    LProbe.Free;
   end;
+end;
 
-  lCounter := 0;
-  repeat
-    Inc(lCounter);
-    Log(Format('Load request #%d.', [lCounter]));
-    VerifyLoad;
-  until lCounter >= ACount;
+procedure TFixtureLifecycleTests.Auto_FailureCleanup;
+var
+  LProbe: TAutoloadProbe;
+begin
+  LProbe := TAutoloadProbe.Create;
+  try
+    LProbe.ConfigOverride := TPath.Combine(FDir, 'missing_autoload.cnf');
+    Assert.WillRaise(
+      procedure
+      begin
+        LProbe.SetupFixture;
+      end, ETaurusTLSConfigFilePathError);
+    Assert.IsTrue(Loader.State = lsNotLoaded, 'Setup failure must reset loader state');
+    LProbe.ConfigOverride := FValidConfig;
+    LProbe.SetupFixture;
+    Assert.IsTrue(Loader.IsLoaded, 'Expected setup failure must not block recovery');
+    LProbe.TearDownFixture;
+  finally
+    LProbe.Free;
+  end;
+end;
 
-  repeat
-    Log(Format('Unload request #%d.', [lCounter]));
-    VerifyUnload(lCounter = 1);
-    Dec(lCounter);
-  until lCounter = 0;
+procedure TFixtureLifecycleTests.Auto_DestructorCleanup;
+var
+  LProbe: TAutoloadProbe;
+begin
+  LProbe := TAutoloadProbe.Create;
+  try
+    LProbe.ConfigOverride := FValidConfig;
+    LProbe.SetupFixture;
+    Assert.IsTrue(Loader.IsLoaded);
+  finally
+    LProbe.Free;
+  end;
+  Assert.IsTrue(Loader.State = lsNotLoaded);
 end;
 
 initialization
-  TDUnitX.RegisterTestFixture(T00OsslLoaderTests);
+  TDUnitX.RegisterTestFixture(TFixtureLifecycleTests);
 
 end.

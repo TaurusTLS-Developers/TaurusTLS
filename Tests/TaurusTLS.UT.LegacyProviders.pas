@@ -1,50 +1,66 @@
 unit TaurusTLS.UT.LegacyProviders;
 
-
 interface
+
+{$I ..\Source\TaurusTLSCompilerDefines.inc}
+{$I ..\Source\TaurusTLSLinkDefines.inc}
 
 uses
   DUnitX.TestFramework, TaurusTLSHeaders_types, TaurusTLS.UT.TestClasses;
 
 type
+  /// <summary>Owns temporary provider config before explicit OpenSSL loading.</summary>
+  TProviderConfigFixture = class(TOsslBaseFixture)
+  private
+    FConfigDirectory, FOriginalPath, FOriginalConfig: string;
+    FStateCaptured: Boolean;
+    function LegacyModulePath: string;
+    function CreateProviderConfig(const AActivate: Boolean): string;
+  protected
+    procedure ConfigureProviders(const AActivate: Boolean);
+  public
+    destructor Destroy; override;
+    [SetupFixture]
+    procedure SetupFixture; virtual;
+    [TearDownFixture]
+    procedure TearDownFixture;
+  end;
 
-  /// <summary>
-  ///   The <c>TTaurusTLSLegacyProvidersLoaderFixture</c> Fixture verified
-  ///   Legacy and Default providers avalability.
-  ///   <list type="bullet">
-  ///     <item>
-  ///       In Dynamic linking mode the provders becomes available after loading
-  ///       the OpenSSL library when the
-  ///       <font face="Courier New">
-  ///         TaurusTLS_LegacyProviders
-  ///       </font>
-  ///       unit included into <c>uses</c> clause.
-  ///     </item>
-  ///     <item>
-  ///       In Static linking mode the providers must be statically linked into
-  ///       the application by including <c>TaurusTLS_LegacyProviders</c> unit
-  ///       into <c>uses</c> clause.
-  ///     </item>
-  ///   </list>
-  /// </summary>
-  [TestFixture]
-  [Category('LegacyProviders')]
-  TTaurusTLSLegacyProvidersLoaderFixture = class(TOsslBaseFixture)
+  [TestFixture('', 'Checks config-activated default/legacy availability. '
+    + 'Creates a temporary non-FIPS config before loading; requires a matching '
+    + 'deployed module in shared builds or linked registration in archive builds.')]
+  [Category('LegacyProviders,Providers.Configuration')]
+  TTaurusTLSLegacyProvidersLoaderFixture = class(TProviderConfigFixture)
   public
     [Test]
     procedure TestIsLegacyProviderLoaded;
     [TestCase('Legacy Providers', 'legacy')]
     [TestCase('Default Providers', 'default')]
     procedure TestProvidersAvailability(AProviderName: string);
+{$IFDEF STATICLOAD_OPENSSL}
+    [Test]
+    procedure StatusAfterUnload;
+{$ENDIF}
   end;
 
-  /// <remarks>
-  ///   The <c>TTaurusTLSHashes</c> verifies the <c>Legacy</c> and <c>Default</c> provider hash
-  ///   algorithms
-  /// </remarks>
-  [TestFixture]
-  [Category('LegacyProviders')]
-  TTaurusTLSHashes = class(TOsslBaseFixture)
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  [TestFixture('', 'Checks a configured but inactive legacy module stays unavailable '
+    + 'and MD4/DES cannot be fetched. Runtime-loaded shared libraries only; '
+    + 'archive/startup-shared default-context absence requires fresh-process validation.')]
+  [Category('LegacyProviders,Providers.NoActivation')]
+  TLegacyProviderInactiveFixture = class(TProviderConfigFixture)
+  public
+    [SetupFixture]
+    procedure SetupFixture; override;
+    [Test]
+    procedure LegacyIsNotActivated;
+  end;
+{$ENDIF}
+
+  [TestFixture('', 'Checks default/legacy digest vectors using fixture-owned config. '
+    + 'Requires matching shared provider deployment or archive registration.')]
+  [Category('LegacyProviders,Providers.Configuration')]
+  TTaurusTLSHashes = class(TProviderConfigFixture)
   public
     [TestCase('Provider.Legacy (MD4): ''''', 'MD4,,31d6cfe0d16ae931b73c59d7e0c089c0')]
     [TestCase('Provider.Legacy (MD4): ''abcd''', 'MD4,61626364,41decd8f579255c5200f86a4bb3ba740')]
@@ -71,16 +87,159 @@ implementation
 
 uses
   System.SysUtils,
+  System.IOUtils,
   IdCTypes,
   TaurusTLSHeaders_evp,
-  TaurusTLSHeaders_provider,
-  TaurusTLS_LegacyProviders;
+  TaurusTLSHeaders_err,
+  TaurusTLSHeaders_provider
+{$IFDEF STATICLOAD_OPENSSL}
+  , TaurusTLS_ProviderLegacy
+{$ENDIF}
+  ;
 
-{ TTaurusTLSLegacyProvidersLoaderFixture }
+function TProviderConfigFixture.LegacyModulePath: string;
+{$IFNDEF STATICLOAD_OPENSSL}
+const
+{$IFDEF MSWINDOWS}
+  ModuleName = 'legacy.dll';
+{$ELSE}
+  {$IFDEF MACOS}
+  ModuleName = 'legacy.dylib';
+  {$ELSE}
+  ModuleName = 'legacy.so';
+  {$ENDIF}
+{$ENDIF}
+var
+  LSubdirectories: array [0 .. 3] of string;
+  LRoot, LSubdirectory, LCandidate: string;
+{$ENDIF}
+begin
+  Result := '';
+{$IFNDEF STATICLOAD_OPENSSL}
+  // Prefer the module deployed with the selected native distribution.
+  // Otherwise omit "module" and let OpenSSL use its standard discovery.
+  if Loader.OpenSSLPath = '' then
+    Exit;
+  LRoot := TPath.GetFullPath(Loader.OpenSSLPath);
+  LSubdirectories[0] := 'providers';
+  LSubdirectories[1] := 'ossl-modules';
+  LSubdirectories[2] := TPath.Combine('lib', 'ossl-modules');
+  LSubdirectories[3] := '';
+  for LSubdirectory in LSubdirectories do
+  begin
+    LCandidate := TPath.Combine(TPath.Combine(LRoot, LSubdirectory), ModuleName);
+    if TFile.Exists(LCandidate) then
+      Exit(LCandidate);
+  end;
+{$ENDIF}
+end;
+
+function TProviderConfigFixture.CreateProviderConfig(const AActivate: Boolean): string;
+var
+  LContent, LModule: string;
+begin
+  LContent :=
+    'config_diagnostics = 1' + sLineBreak +
+    'openssl_conf = provider_test_init' + sLineBreak +
+    '[provider_test_init]' + sLineBreak +
+    'providers = provider_test_providers' + sLineBreak +
+    'alg_section = provider_test_properties' + sLineBreak +
+    '[provider_test_providers]' + sLineBreak +
+    'default = provider_test_default' + sLineBreak +
+    'legacy = provider_test_legacy' + sLineBreak +
+    '[provider_test_default]' + sLineBreak +
+    'activate = 1' + sLineBreak +
+    '[provider_test_legacy]' + sLineBreak;
+  if AActivate then
+    LContent := LContent + 'activate = 1' + sLineBreak;
+  LModule := LegacyModulePath;
+  if LModule <> '' then
+  begin
+    // Quote an actual filesystem path, including OpenSSL's variable/escape syntax.
+    LModule := StringReplace(LModule, '\', '\\', [rfReplaceAll]);
+    LModule := StringReplace(LModule, '"', '\"', [rfReplaceAll]);
+    LModule := StringReplace(LModule, '$', '\$', [rfReplaceAll]);
+    LModule := StringReplace(LModule, #13, '\r', [rfReplaceAll]);
+    LModule := StringReplace(LModule, #10, '\n', [rfReplaceAll]);
+    LContent := LContent + 'module = "' + LModule + '"' + sLineBreak;
+  end;
+  LContent := LContent +
+    '[provider_test_properties]' + sLineBreak +
+    'default_properties = ""' + sLineBreak;
+  Result := TPath.Combine(FConfigDirectory, 'providers.cnf');
+  TFile.WriteAllText(Result, LContent);
+end;
+
+procedure TProviderConfigFixture.ConfigureProviders(const AActivate: Boolean);
+begin
+  Assert.IsFalse(Loader.IsLoaded, 'Provider fixture requires exclusive loader ownership');
+  FOriginalPath := Loader.OpenSSLPath;
+  FOriginalConfig := Loader.ConfigFile;
+  FStateCaptured := True;
+  try
+    Unload;
+    SetupFromCmd;
+    FConfigDirectory := TPath.Combine(TPath.GetTempPath,
+      'TaurusTLS.Providers.' + TGUID.NewGuid.ToString);
+    TDirectory.CreateDirectory(FConfigDirectory);
+    Loader.ConfigFile := CreateProviderConfig(AActivate);
+    Assert.IsTrue(Load, 'Cannot load OpenSSL with the generated provider configuration');
+  except
+    // DUnitX does not call fixture teardown after setup fails.
+    try
+      TearDownFixture;
+    except
+      on E: Exception do
+        Log(TLogLevel.Error, 'Provider fixture setup cleanup: ' + E.Message);
+    end;
+    raise;
+  end;
+end;
+
+procedure TProviderConfigFixture.TearDownFixture;
+begin
+  try
+    if FStateCaptured then
+    try
+      Unload;
+    finally
+      try
+        Loader.ConfigFile := FOriginalConfig;
+      finally
+        Loader.OpenSSLPath := FOriginalPath;
+      end;
+    end;
+  finally
+    FStateCaptured := False;
+    if (FConfigDirectory <> '') and TDirectory.Exists(FConfigDirectory) then
+      TDirectory.Delete(FConfigDirectory, True);
+    FConfigDirectory := '';
+  end;
+end;
+
+destructor TProviderConfigFixture.Destroy;
+begin
+  try
+    if FStateCaptured or (FConfigDirectory <> '') then
+      TearDownFixture;
+  finally
+    inherited Destroy;
+  end;
+end;
+
+procedure TProviderConfigFixture.SetupFixture;
+begin
+  ConfigureProviders(True);
+end;
 
 procedure TTaurusTLSLegacyProvidersLoaderFixture.TestIsLegacyProviderLoaded;
 begin
+{$IFDEF STATICLOAD_OPENSSL}
   Assert.IsTrue(IsLegacyProviderLoaded);
+{$ELSE}
+  // Shared builds deliberately have no dependency on the legacy wrapper unit.
+  Assert.AreEqual(1, OSSL_PROVIDER_available(nil, 'legacy'));
+{$ENDIF}
 end;
 
 procedure TTaurusTLSLegacyProvidersLoaderFixture.TestProvidersAvailability(
@@ -88,12 +247,50 @@ procedure TTaurusTLSLegacyProvidersLoaderFixture.TestProvidersAvailability(
 begin
   Assert.AreEqual(1,
     OSSL_PROVIDER_available(nil, PAnsiChar(UTF8Encode(AProviderName))),
-    Format('OpenSSL reports that the provider ''%s'' is not available.',
-      [AProviderName])
-  );
+    Format('Configured provider %s is unavailable', [AProviderName]));
 end;
 
-{ TTaurusTLSHashes }
+{$IFDEF STATICLOAD_OPENSSL}
+procedure TTaurusTLSLegacyProvidersLoaderFixture.StatusAfterUnload;
+begin
+  Assert.IsTrue(IsLegacyProviderLoaded);
+  Unload;
+  try
+    Assert.IsFalse(IsLegacyProviderLoaded, 'Status must respect loader readiness');
+  finally
+    Assert.IsTrue(Load);
+  end;
+  Assert.IsTrue(IsLegacyProviderLoaded);
+end;
+{$ENDIF}
+
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+procedure TLegacyProviderInactiveFixture.SetupFixture;
+begin
+  ConfigureProviders(False);
+end;
+
+procedure TLegacyProviderInactiveFixture.LegacyIsNotActivated;
+var
+  LMD: PEVP_MD;
+  LCipher: PEVP_CIPHER;
+begin
+  Assert.AreEqual(1, OSSL_PROVIDER_available(nil, 'default'));
+  Assert.AreEqual(0, OSSL_PROVIDER_available(nil, 'legacy'),
+    'Listing a provider in config must not activate it without activate');
+  LMD := EVP_MD_fetch(nil, 'MD4', nil);
+  LCipher := nil;
+  try
+    LCipher := EVP_CIPHER_fetch(nil, 'DES-ECB', nil);
+    Assert.IsNull(LMD, 'Inactive legacy must not supply MD4');
+    Assert.IsNull(LCipher, 'Inactive legacy must not supply DES-ECB');
+  finally
+    EVP_MD_free(LMD);
+    EVP_CIPHER_free(LCipher);
+    ERR_clear_error;
+  end;
+end;
+{$ENDIF}
 
 procedure TTaurusTLSHashes.HashTestHex(const AHashName, AData,
   AResult: string);
@@ -133,6 +330,9 @@ begin
 end;
 
 initialization
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+  TDUnitX.RegisterTestFixture(TLegacyProviderInactiveFixture);
+{$ENDIF}
   TDUnitX.RegisterTestFixture(TTaurusTLSLegacyProvidersLoaderFixture);
   TDUnitX.RegisterTestFixture(TTaurusTLSHashes);
 end.

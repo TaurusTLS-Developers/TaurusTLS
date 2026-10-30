@@ -10,7 +10,7 @@ uses
   TaurusTLS_Encryptors, TaurusTLS_SSLContainers;
 
 type
-  TCustomBytesFixture = class(TOsslBaseFixture)
+  TCustomBytesFixture = class(TOsslAutoloadFixture)
     FData: TBytes;
     function GetDataLen: NativeUInt;
   protected
