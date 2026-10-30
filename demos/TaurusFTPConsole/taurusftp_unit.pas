@@ -513,11 +513,20 @@ begin
     ParseArgs(ACmd, LCmdParams);
     if LCmdParams.Count >= 2 then
     begin
+      if IdGlobal.PosInStrArray(LCmdParams[0],['ftps','ftpsi'],False) > -1 then
+      begin
+        if not GetOpenSSLLoader.Load then
+        begin
+          WriteLn('OpenSSL 3 or 4 is required for this operation.');
+          Exit;
+        end;
+      end;
       case IdGlobal.PosInStrArray(LCmdParams[0],
         ['ftp', 'ftps', 'ftpsi'], False) of
         0:
           begin
             FFTP.UseTLS := utNoTLSSupport;
+            FFTP.IOHandler := nil;
             if LCmdParams.Count > 2 then
             begin
               SetHostAndIPVersion(LCmdParams[1],FFTP);
@@ -540,6 +549,7 @@ begin
           end;
         1:
           begin
+            FFTP.IOHandler := FIO;
             FFTP.UseTLS := utUseExplicitTLS;
             FFTP.DataPortProtection := ftpdpsPrivate;
             if LCmdParams.Count > 2 then
@@ -564,6 +574,7 @@ begin
           end;
         2:
           begin
+            FFTP.IOHandler := FIO;
             FFTP.UseTLS := utUseImplicitTLS;
             FFTP.DataPortProtection := ftpdpsPrivate;
             if LCmdParams.Count > 2 then
@@ -922,9 +933,6 @@ end;
 procedure TFTPApplication.CmdDebugInfo;
 var
   i: Integer;
-{$IFNDEF USE_INLINE_VAR}
-  LVer: string;
-{$ENDIF}
 begin
 {$IFNDEF FPC}
   WriteLn('Operating System: ' + TOSVersion.ToString);
@@ -939,25 +947,16 @@ begin
   WriteLn('      Target CPU: ', {$I %FPCTARGETCPU%});
 {$ENDIF}
   WriteLn('    Indy Version: ' + gsIdVersion);
-  {$IFDEF USE_INLINE_VAR}
-  var
-     LVer: string;
-  {$ENDIF}
-  LVer := OpenSSLVersion;
+  if GetOpenSSLLoader.Load then
   begin
-    if LVer <> '' then
-    begin
-
-      WriteLn(' OpenSSL Version: ' + LVer);
-      PrintRightJustifyIfTextNotEmpty('Config Dir:', 20,OpenSSLDir);
-      PrintRightJustifyIfTextNotEmpty('Modules Dir:', 20,OpenSSLModulesDir);
-      PrintRightJustifyIfTextNotEmpty('Engines Dir:', 20,OpenSSLEnginesDir);
-
-    end
-    else
-    begin
-      WriteLn(' OpenSSL Version: OpenSSL NOT loaded.');
-    end;
+    WriteLn(' OpenSSL Version: ' + GetOpenSSLLoader.Version);
+    PrintRightJustifyIfTextNotEmpty('Config Dir:', 20,GetOpenSSLLoader.ConfigDirectory);
+    PrintRightJustifyIfTextNotEmpty('Modules Dir:', 20,GetOpenSSLLoader.ModulesDirectory);
+    PrintRightJustifyIfTextNotEmpty('Engines Dir:', 20,GetOpenSSLLoader.EnginesDirectory);
+  end
+  else
+  begin
+    WriteLn(' OpenSSL Version: OpenSSL NOT loaded.');
   end;
   if GetOpenSSLLoader.GetFailedToLoad.Count > 0 then
   begin

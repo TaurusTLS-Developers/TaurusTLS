@@ -7,7 +7,8 @@ interface
 uses
   Classes, SysUtils,
   IdHTTPServer,
-  TaurusTLS;
+  TaurusTLS,
+  TaurusTLSLoader;
 
 type
   THTTPServer = class(TObject)
@@ -50,7 +51,7 @@ procedure RunProgram;
 var
   LHTTP: THTTPServer;
 begin
-  TaurusTLS.LoadOpenSSLLibrary;
+  if GetOpenSSLLoader.Load then
   try
     LHTTP := THTTPServer.Create;
     try
