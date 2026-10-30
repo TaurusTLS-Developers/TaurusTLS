@@ -600,6 +600,7 @@ begin
       else
         begin
           FFTP.UseTLS := utNoTLSSupport;
+          FFTP.IOHandler := nil;
           SetHostAndIPVersion(LCmdParams[0],FFTP);
           FFTP.Username := LCmdParams[1];
           if LCmdParams.Count > 2 then
