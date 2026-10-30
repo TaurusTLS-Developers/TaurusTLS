@@ -157,6 +157,12 @@ Loaded callback is not a general application-start notification.
 
 ## Platform collection editing
 
+Platform-item ConfigFile uses SysUtils.TFileName with the standard filename
+editor. Use its ellipsis to browse the designer host, or type a deployment-target
+path manually. Clear the value for OpenSSL defaults. The dialog does not browse
+a remote target; the runtime component ConfigFile property remains string.
+
+
 In the Object Inspector, open PlatformSettings and add an item for each desired
 target. Set Target, OpenSSLPath, ConfigFile and optional CustomSSLLibVersions.
 These collections cannot be populated by application code.

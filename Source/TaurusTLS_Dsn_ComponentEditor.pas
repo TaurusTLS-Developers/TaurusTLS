@@ -39,6 +39,7 @@ procedure Register;
 
 implementation
 uses
+  SysUtils,
   IdGlobal,
   TaurusTLS,
   TaurusTLSLoader,

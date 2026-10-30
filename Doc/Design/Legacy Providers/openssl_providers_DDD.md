@@ -796,6 +796,13 @@ Collection destruction permits internal cleanup; item destructors must never
 raise mutation errors after Free has begun. Collections and items remain
 component-owned: independently freeing borrowed objects is unsupported.
 
+TTaurusTLSPlatformSetting.ConfigFile, its backing field and setter use
+SysUtils.TFileName. Register the standard TFileNameProperty (Delphi) or
+TFileNamePropertyEditor (Lazarus) for this class/property in the design-time
+registration unit. Manual entry and blank values remain supported; browsing
+uses the designer host filesystem. Runtime scalar ConfigFile remains string.
+DFM/LFM values remain strings and existing streaming/mutation guards apply.
+
 ### Public runtime properties
 
 OpenSSLPath, ConfigFile and SSLLibVersions remain public with no published

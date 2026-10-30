@@ -58,6 +58,13 @@ uses
   {$IFDEF FPC}
   LResources,
   {$ENDIF}
+  {$IFDEF FPC}
+  PropEdits,
+  {$ELSE}
+    {$IFDEF VCL_6_OR_ABOVE}
+  VCLEditors,
+    {$ENDIF}
+  {$ENDIF}
   TaurusTLS,
   TaurusTLSLoader,
   TaurusTLS_Unicode_Log;
@@ -136,6 +143,15 @@ begin
   {$IFDEF HAS_TSelectionEditor}
   RegisterSelectionEditor(TTaurusTLSServerIOHandler, TTaurusTLSSelectionEditor);
   RegisterSelectionEditor(TTaurusTLSIOHandlerSocket, TTaurusTLSSelectionEditor);
+  {$ENDIF}
+  {$IFDEF FPC}
+  RegisterPropertyEditor(TypeInfo(TFileName), TTaurusTLSPlatformSetting,
+    'ConfigFile', TFileNamePropertyEditor);
+  {$ELSE}
+    {$IFDEF VCL_6_OR_ABOVE}
+  RegisterPropertyEditor(TypeInfo(TFileName), TTaurusTLSPlatformSetting,
+    'ConfigFile', TFileNameProperty);
+    {$ENDIF}
   {$ENDIF}
 end;
 

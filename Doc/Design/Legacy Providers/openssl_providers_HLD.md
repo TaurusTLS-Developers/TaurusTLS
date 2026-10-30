@@ -343,6 +343,10 @@ defaults (currently major versions 4 and 3). There is no VersionMode or numeric
 version list and no generated minor-version suffixes. WinARM64EC defaults use
 the arm64 suffix of supplied ARM64X binaries, not official upstream support.
 
+Platform-item ConfigFile uses SysUtils.TFileName and the standard filename
+editor. Developers can browse on the designer host, enter a target path manually,
+or leave it blank for OpenSSL defaults. The picker does not browse remote targets.
+
 ### Runtime editing and shared configuration
 
 Keep PlatformSettings published so the standard Object Inspector collection
