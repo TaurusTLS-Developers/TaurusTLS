@@ -138,7 +138,9 @@ then releases it. There is no separate lazy registration-lock allocation.
 
 RegisterAction and UnRegisterAction share FLoaderLock with Load/Unload and
 header binding, registration and cleanup.
-Registration is accepted in lsNotLoaded and lsLoadedReady. The ready path adds
+Registration is accepted in lsNotLoaded, lsLoadedFailed and lsLoadedReady.
+Inactive/failed registrations queue without invoking callbacks or resetting the
+failure breaker. The ready path adds
 the action, invokes osaLoad while holding FLoaderLock and advances
 FLastLoadActionIdx only after successful initialization. Callback failure removes
 the appended entry and propagates the exception without disturbing existing
@@ -155,8 +157,9 @@ FActionChangingInProgress guards immediate callback dispatch. Recursive public
 Load/Unload, registration and unregistration are rejected during that dispatch.
 Normal loading/unloading also reject registry changes. Other threads wait on
 the lifecycle lock, preventing native release before immediate actions finish.
-Registration after failure still requires explicit Unload; unregistration is
-allowed so a failed runtime cannot retain a callback to a destroyed object.
+Registration after failure does not permit a retry: explicit Unload is still
+required before the next Load can initialize queued actions. Unregistration is
+also allowed while failed and invokes no callback.
 
 Unit initialization calls EnsureInstance and preserves an earlier winner and all
 early registrations. Lifecycle callback iteration and dynamic symbol binding/reset
@@ -335,8 +338,8 @@ escapes the lifecycle boundary and no readiness result leases OpenSSL resources.
 ### Lifecycle ownership and initialization ordering
 
 The core loader owns general OpenSSL initialization and configuration for both
-linking models. TaurusTLS owns only its runtime-specific resources through a
-private TTaurusTLSRuntime class. The implemented sequence is:
+linking models. The private TTaurusTLSRuntime class owns TaurusTLS callback
+locks independently of loader cycles. The implemented loader sequence is:
 
 1. Publish internal lsLoading; load and bind dynamic libraries, or validate the
    linked OpenSSL version.
@@ -349,7 +352,7 @@ private TTaurusTLSRuntime class. The implemented sequence is:
    effective configuration and metadata remain hidden until readiness.
 4. Call OPENSSL_init_ssl(OPENSSL_INIT_NO_LOAD_CONFIG, nil). A missing dynamic
    routine or failed initialization raises ETaurusTLSOpenSSLInitFailed.
-5. Run registered osaLoad actions, including TaurusTLS runtime resources.
+5. Run registered osaLoad consumer actions.
 6. Capture remaining metadata and publish lsLoadedReady after successful completion.
 
 Required linked legacy registration is implemented in TaurusTLS_ProviderLegacy
@@ -365,11 +368,11 @@ allocation callbacks.
 
 ### Private TaurusTLS runtime class
 
-TTaurusTLSRuntime owns TLS initialization resources through class vars and
-class methods in the TaurusTLS implementation section. Keep TaurusTLS
-socket/Indy dependencies out of TaurusTLSLoader. Register a load/unload action
-whose method is compatible with the existing procedure-of-object signature;
-use an ordinary class method where a static method would lose the method pointer.
+TTaurusTLSRuntime owns callback locks through class vars in the TaurusTLS
+implementation section. Its class constructor creates the locks and releases
+partial allocations if construction fails. Its class destructor frees the locks.
+These locks survive Load, Unload and rollback; the class registers no loader
+action. Keep TaurusTLS socket/Indy dependencies out of TaurusTLSLoader.
 
 The class owns the locks still required by TaurusTLS info/level/password/verify/
 SNI callbacks. It does not publish another ready Boolean or acquire a separate

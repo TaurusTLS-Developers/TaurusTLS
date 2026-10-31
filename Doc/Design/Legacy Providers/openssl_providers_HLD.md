@@ -31,7 +31,7 @@ Support OpenSSL 3.x/4.x in the refactored path; do not carry OpenSSL 0.9–1.1.1
 | TaurusTLSIdFIPS | Stable independent Indy hooks; configured FIPS reporting, non-mutating compatibility setter and policy-preserving EVP digest/MAC operations |
 | TaurusTLS_ProviderLegacy | Optional archive linking/registration before configuration; unnecessary for shared-library config activation; no provider acquisition/release in the selected design |
 | TaurusTLSIdNTLM | Stable independently installed Indy callbacks; passive readiness and MD4/DES availability; direct EVP LM/NT response computation respecting configured policy |
-| Private `TTaurusTLSRuntime` class | Own TaurusTLS TLS callback locks; register initialization/cleanup actions with the loader; no independent public readiness flag |
+| Private `TTaurusTLSRuntime` class | Own TaurusTLS TLS callback locks through class construction/destruction; no independent public readiness flag |
 
 Provider/adapter separation is committed in `43b6aa8`; dedicated provider tests
 and platform launchers are committed in `90d409c`.
@@ -64,12 +64,13 @@ lists with its single loader lock. Unit initialization preserves an earlier winn
 registrations. Constructing the singleton does not load or initialize OpenSSL;
 the application still calls Load explicitly. The singleton retains an ownership
 reference until unit finalization, which requires all application callers to
-have stopped. Lifecycle actions can be registered while inactive or ready.
+have stopped. Lifecycle actions can be registered while inactive, failed or ready.
 Ready registration immediately invokes osaLoad under the lifecycle lock, so a
 later unit cannot miss initialization. UnRegister_SSLLoaderAction removes the
 most recent matching method/instance and immediately invokes osaUnload when
 ready, while native APIs remain callable. Inactive/failed removal performs no
-callback. New registrations require explicit Unload after failure.
+callback. Failed-state registration queues the action without resetting the
+failure; explicit Unload is still required before the next Load can initialize it.
 
 Lifecycle and immediate callbacks reject recursive lifecycle/registry mutation.
 Other threads serialize through the lifecycle lock. A failed immediate osaLoad
@@ -148,12 +149,11 @@ compiled default-directory query to the directory of ConfigFile. TTaurusTLSConte
 
 TaurusTLSLoader owns general OpenSSL initialization for both linking models.
 The private TTaurusTLSRuntime class owns the TLS callback locks through class
-vars and class methods and participates through Register_SSLLoaderAction.
-Its action method matches the existing method-pointer type. SSLIsLoaded has been
-removed as a competing readiness source. A failed action cleans its own
-partially allocated resources; completed actions unwind in reverse order before
-unbinding. Readiness includes successful registered runtime actions, not socket
-creation or a guarantee that unloading is safe with live objects.
+construction and destruction, independently of loader cycles. Partial class
+construction failure releases every lock already allocated. Load, Unload and
+rollback do not create or destroy these locks. SSLIsLoaded has been removed as a
+competing readiness source. Readiness includes successful registered consumer
+actions, not socket creation or a guarantee that unloading is safe with live objects.
 
 Obsolete OpenSSL locking/thread-ID callbacks and explicit error-string setup
 have been removed from this path; TaurusTLS's own callback locks are retained.
