@@ -366,7 +366,7 @@ type
     procedure SetCollection(Value: TCollection); override;
     procedure SetIndex(Value: Integer); override;
   public
-    constructor Create(Collection: TCollection); override;
+    constructor Create(ACollection: TCollection); override;
     destructor Destroy; override;
     procedure Assign(Source: TPersistent); override;
     /// <summary>
@@ -1991,17 +1991,17 @@ begin
     raise ETaurusTLSLoaderError.Create(RSOSSLPlatformSettingsDesignOnly);
 end;
 
-constructor TTaurusTLSPlatformSetting.Create(Collection: TCollection);
+constructor TTaurusTLSPlatformSetting.Create(ACollection: TCollection);
 begin
   // Check before inherited attaches the item to its collection.
-  if Collection is TTaurusTLSPlatformSettings then
-    TTaurusTLSPlatformSettings(Collection).CheckMutable
+  if ACollection is TTaurusTLSPlatformSettings then
+    TTaurusTLSPlatformSettings(ACollection).CheckMutable
   else
     raise ETaurusTLSLoaderError.Create(RSOSSLPlatformSettingsDesignOnly);
   // Preserve Windows32 for older streams that omitted Target.
   // Designer additions instead select an unused target before attachment.
-  FTarget := TTaurusTLSPlatformSettings(Collection).NewTarget;
-  inherited Create(Collection);
+  FTarget := TTaurusTLSPlatformSettings(ACollection).NewTarget;
+  inherited Create(ACollection);
 end;
 
 destructor TTaurusTLSPlatformSetting.Destroy;
