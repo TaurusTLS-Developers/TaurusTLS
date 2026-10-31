@@ -822,27 +822,36 @@ begin
 end;
 
 begin
-  //Done this way because an exception can be raised ducring the
-  //FTPServerApp.Create
-  try
-    app := TFTPServerApp.Create;
+  //We have to explicitly load the
+  if GetOpenSSLLoader.Load then
+  begin
+    //Done this way because an exception can be raised ducring the
+    //FTPServerApp.Create
     try
+      app := TFTPServerApp.Create;
       try
-        WriteLn( GetOpenSSLLoader.Version );
-        WriteLn('FTP Server App');
-      except
-        on E: Exception do
-          WriteLn(E.ClassName, ': ', E.Message);
+        try
+          WriteLn( GetOpenSSLLoader.Version );
+          WriteLn('FTP Server App');
+        except
+          on E: Exception do
+            WriteLn(E.ClassName, ': ', E.Message);
+        end;
+        ReadLn;
+      finally
+        FreeAndNil(app);
       end;
-      ReadLn;
-    finally
-      FreeAndNil(app);
+    except
+      on E: Exception do
+      begin
+        WriteLn(E.ClassName, ': ', E.Message);
+        ReadLn;
+      end;
     end;
-  except
-    on E: Exception do
-    begin
-      WriteLn(E.ClassName, ': ', E.Message);
-      ReadLn;
-    end;
+  end
+  else
+  begin
+    WriteLn('OpenSSL must be available.');
+    ReadLn;
   end;
 end.
