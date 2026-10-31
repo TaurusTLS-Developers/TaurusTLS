@@ -2691,7 +2691,7 @@ uses
   TaurusTLS_Files;
 
 type
-  /// <summary>Owns TaurusTLS callback resources within the loader lifecycle.</summary>
+  /// <summary>Owns TaurusTLS callback locks for the lifetime of this class.</summary>
   TTaurusTLSRuntime = class
   private
     class var FInfoLock: TIdCriticalSection;
@@ -2699,10 +2699,10 @@ type
     class var FPasswordLock: TIdCriticalSection;
     class var FVerifyLock: TIdCriticalSection;
     class var FSNILock: TIdCriticalSection;
-    class procedure Initialize; static;
     class procedure ReleaseResources; static;
   public
-    class procedure OnLoadAction(AAction: TOpenSSLLoadAction);
+    class constructor Create;
+    class destructor Destroy;
   end;
 
 procedure GetStateVars(const SSLSocket: PSSL; const AWhere, Aret: TIdC_INT;
@@ -3194,7 +3194,7 @@ begin
 
 end;
 
-class procedure TTaurusTLSRuntime.Initialize;
+class constructor TTaurusTLSRuntime.Create;
 begin
   try
     FInfoLock := TIdCriticalSection.Create;
@@ -3203,7 +3203,7 @@ begin
     FVerifyLock := TIdCriticalSection.Create;
     FSNILock := TIdCriticalSection.Create;
   except
-    // A failed action is responsible for its own partial initialization.
+    // A failed class constructor must release any locks already created.
     ReleaseResources;
     raise;
   end;
@@ -3218,12 +3218,9 @@ begin
   FreeAndNil(FInfoLock);
 end;
 
-class procedure TTaurusTLSRuntime.OnLoadAction(AAction: TOpenSSLLoadAction);
+class destructor TTaurusTLSRuntime.Destroy;
 begin
-  case AAction of
-    osaLoad: Initialize;
-    osaUnload: ReleaseResources;
-  end;
+  ReleaseResources;
 end;
 
 function LoadOpenSSLLibrary: Boolean;
@@ -5572,8 +5569,6 @@ end;
 {$I TaurusTLSSymbolDeprecatedOff.inc}
 
 initialization
-
-Register_SSLLoaderAction(TTaurusTLSRuntime.OnLoadAction);
 
 {$I TaurusTLSSymbolDeprecatedOff.inc}
 RegisterSSL('TaurusTLS', 'TaurusTLS Developers', { do not localize }
