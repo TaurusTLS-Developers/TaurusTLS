@@ -261,8 +261,9 @@ function GetOpenSSLLoader: IOpenSSLLoader;
 ///   Case-sensitive library selector: LibCrypto or LibSSL.
 /// </param>
 /// <remarks>
-///   Call only from serialized unit initialization, before application threads
-///   use the loader. Runtime header registration is unsupported. The loader
+///   Call only from unit initialization/finalization or class constructors/
+///   destructors, serialized outside application runtime use. Runtime header
+///   registration is unsupported. The loader
 ///   lock protects the registry; it does not make late symbol binding
 ///   supported. Static loading does not invoke these procedures because its
 ///   external routines are linked directly.
@@ -277,8 +278,9 @@ procedure Register_SSLLoader(LoadProc: TOpenSSLLoadProc; const module_name: stri
 ///   Procedure that clears a header unit's procedural variables.
 /// </param>
 /// <remarks>
-///   Register only from serialized unit initialization, alongside the header
-///   loader. This registers cleanup; it does not perform cleanup at this call.
+///   Register only from unit initialization/finalization or class constructors/
+///   destructors, serialized outside application runtime use. This registers
+///   cleanup; it does not perform cleanup at this call.
 ///   The procedure runs after lifecycle cleanup actions and before dynamic
 ///   library release. Stop loader use before unit finalization; registered
 ///   procedures and their code must remain valid until loader cleanup has
@@ -302,11 +304,11 @@ procedure Register_SSLUnloader(UnloadProc: TOpenSSLUnloadProc);
 ///   the registration is removed and the original exception propagates; the
 ///   failing callback owns cleanup of its partial initialization. Repeated Load
 ///   calls do not redispatch actions. Duplicates are independent registrations;
-///   nil actions are ignored. Reentrant registration from load, unload or
-///   immediate callbacks, and registration while failed, raises
-///   ETaurusTLSLoaderError. Other threads wait for the current operation before
-///   registration is checked against the resulting state. Registrations do not
-///   retain callback objects.
+///   nil actions are ignored. Inactive/failed registration queues the action
+///   without invoking it or resetting a failure; explicit Unload is still needed
+///   before retrying a failed Load. Reentrant registration from load, unload or
+///   immediate callbacks raises ETaurusTLSLoaderError. Other threads wait for
+///   the current operation. Registrations do not retain callback objects.
 /// </remarks>
 procedure Register_SSLLoaderAction(const AActionProc: TTaurusTLSOnLoadAction);
 
@@ -806,7 +808,7 @@ begin
   LInstance.FLoaderLock.Enter;
   try
     if LInstance.FActionChangingInProgress or
-      not (LInstance.GetInternalState in [lsNotLoaded, lsLoadedReady]) then
+      (LInstance.GetInternalState in [lsLoading, lsUnloading]) then
       raise ETaurusTLSLoaderError.Create(RSOSSLLoaderActionRegistrationInactive);
     if not IsActionAssigned(AActionProc) then
       Exit;
