@@ -69,10 +69,11 @@ program TaurusTLS.Loader.Shutdown;
 uses
   System.SysUtils,
   System.IOUtils,
-  TaurusTLSLoader,
-  TaurusTLSHeaders_crypto,
   TaurusTLS.Loader.ConsoleSupport in 'TaurusTLS.Loader.ConsoleSupport.pas',
-  TaurusTLS.Loader.Shutdown.Observer in 'TaurusTLS.Loader.Shutdown.Observer.pas';
+  // Initialize before the loader so verification finalizes after its cleanup.
+  TaurusTLS.Loader.Shutdown.Observer in 'TaurusTLS.Loader.Shutdown.Observer.pas',
+  TaurusTLSLoader,
+  TaurusTLSHeaders_crypto;
 
 type
   EExpectedCleanupFailure = class(Exception);

@@ -47,10 +47,11 @@ program TaurusTLS.Loader.FirstCreation;
 
 uses
   System.SysUtils,
-  TaurusTLSLoader,
-  TaurusTLSHeaders_crypto,
+  // Install first-publication hooks before TaurusTLSLoader initializes.
   TaurusTLS.Loader.ConsoleSupport in 'TaurusTLS.Loader.ConsoleSupport.pas',
-  TaurusTLS.Loader.FirstCreation.Support in 'TaurusTLS.Loader.FirstCreation.Support.pas';
+  TaurusTLS.Loader.FirstCreation.Support in 'TaurusTLS.Loader.FirstCreation.Support.pas',
+  TaurusTLSLoader,
+  TaurusTLSHeaders_crypto;
 
 procedure Run;
 var

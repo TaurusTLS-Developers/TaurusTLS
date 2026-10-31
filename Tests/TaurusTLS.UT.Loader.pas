@@ -352,7 +352,7 @@ type
     [TestCase('UnregisterDuringUnload', '2,4')]
     procedure State_Recursive(const APhase, AOperation: Integer);
 
-    /// <summary>Ready registration runs immediately; failed registration requires reset.</summary>
+    /// <summary>Ready registration runs immediately; failed registration queues until reset.</summary>
     [TestCase('Ready', '0')]
     [TestCase('Failed', '1')]
     procedure CB_RegistrationState(const AFailed: Integer);
@@ -450,7 +450,7 @@ type
     [Test]
     procedure Runtime_SharedLifecycle;
 
-    /// <summary>Verifies TLS runtime resources are released when a later loader action fails.</summary>
+    /// <summary>Verifies loader failure rollback and TLS context recovery after an explicit reset.</summary>
     [Test]
     procedure Runtime_ActionFailure;
 
@@ -1029,7 +1029,8 @@ begin
   Assert.AreEqual('-4-arm64;-3-arm64;', COpenSSLDefaultARM64Versions);
   Assert.AreEqual('.4:.3', COpenSSLDefaultPosixVersions);
 {$IFNDEF OPENSSL_NO_MIN_VERSION}
-  Assert.IsTrue(min_supported_ssl_version >= $30000000);
+  Assert.IsTrue(min_supported_ssl_version >= $30000000,
+    'The minimum supported version must use OpenSSL encoding for 3.0.0 or later');
 {$ENDIF}
 end;
 
@@ -2712,13 +2713,18 @@ begin
           Loader.Load;
         end, Exception, 'The fixture must enter failed state before testing registration');
       TTestCallbackObserverB.ThrowOnLoad := False;
-      Assert.WillRaise(
-        procedure
-        begin
-          Register_SSLLoaderAction(LProbe.Action);
-        end, ETaurusTLSLoaderError, 'Failed state must reject new registrations until reset');
-      Assert.IsTrue(Loader.State = lsLoadedFailed, 'Rejected registration must preserve failure state');
-      Assert.AreEqual(0, LProbe.LoadCount, 'Rejected registration must not invoke the callback');
+      Register_SSLLoaderAction(LProbe.Action);
+      Assert.IsTrue(Loader.State = lsLoadedFailed, 'Registration must preserve failure state');
+      Assert.AreEqual(0, LProbe.LoadCount, 'Failed-state registration must defer initialization');
+      Assert.IsFalse(Loader.Load, 'Registration must not reset the failed-state breaker');
+      Assert.AreEqual(0, LProbe.LoadCount, 'A blocked retry must not invoke the queued callback');
+      UnRegister_SSLLoaderAction(LProbe.Action);
+      Assert.AreEqual(0, LProbe.UnloadCount, 'Removing an uninitialized action must not invoke cleanup');
+      Register_SSLLoaderAction(LProbe.Action);
+      Loader.Unload;
+      Assert.AreEqual(0, LProbe.UnloadCount, 'Reset must not clean up an action that never initialized');
+      Assert.IsTrue(Loader.Load, 'Explicit reset must initialize the queued action on the next load');
+      Assert.AreEqual(1, LProbe.LoadCount, 'The queued action must initialize exactly once');
     end
     else
     begin
@@ -2731,15 +2737,15 @@ begin
       Assert.AreEqual(1, LProbe.LoadCount, 'Repeated Load must not redispatch the added callback');
     end;
     UnRegister_SSLLoaderAction(LProbe.Action);
-    Assert.AreEqual(Integer(Ord(AFailed = 0)), LProbe.UnloadCount,
-      'Ready removal must clean up once; a rejected registration has no cleanup');
+    Assert.AreEqual(1, LProbe.UnloadCount,
+      'Ready removal must clean up the initialized action exactly once');
     if AFailed = 0 then
       Assert.IsTrue(LProbe.ReadyOnUnload and LProbe.NativeOnUnload,
         'Immediate cleanup must retain ready state and callable native APIs');
     Loader.Unload;
     Assert.IsTrue(Loader.Load, 'Explicit reset must allow the following load cycle');
-    Assert.AreEqual(Integer(Ord(AFailed = 0)), LProbe.LoadCount,
-      'Removed or rejected callbacks must not appear in a later load cycle');
+    Assert.AreEqual(1, LProbe.LoadCount,
+      'Removed callbacks must not appear in a later load cycle');
   finally
     UnRegister_SSLLoaderAction(LProbe.Action);
     LProbe.Free;
