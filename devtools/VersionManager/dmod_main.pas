@@ -26,6 +26,8 @@ type
     procedure UpdateLazPkg(const APkg: String;
       const AMajorVersion, AMinorVersion, ARelease, ABuild: Integer;
       const ACompanyName: String);
+    procedure UpdateDPSEC(const APkg : String;
+       const AMajorVersion, AMinorVersion, ABuild: Integer);
     procedure ReplaceInPAS(const AFileName : String);
     procedure ReplaceInLPK(const AFileName : String);
     procedure ReplaceInDPK(const AFileName : String);
@@ -558,6 +560,21 @@ begin
   end;
 end;
 
+procedure TdmodMain.UpdateDPSEC(const APkg: String; const AMajorVersion,
+  AMinorVersion, ABuild: Integer);
+var LBundleVersion,
+    LFileContents,
+    LFileToWrite : String;
+begin
+  LBundleVersion := Format('%d.%d.%d',
+    [AMajorVersion, AMinorVersion, ABuild]);
+  Self.DoOnDebugLog( 'Read: '+ APkg);
+  LFileContents :=  System.IOUtils.TFile.ReadAllText( APkg);
+  LFileToWrite := '..\..\..\..\'+ChangeFileExt(ExtractFileName(APkg),'.dspec');
+  LFileContents := StringReplace(LFileContents,'{$BUNDLEVERSION}',LBundleVersion,[rfReplaceAll]);
+  Self.DoOnDebugLog( 'Write: '+LFileToWrite );
+  System.IOUtils.TFile.WriteAllText( LFileToWrite, LFileContents );
+end;
 
 procedure TdmodMain.UpdatePackages(
   const AMajorVersion, AMinorVersion, ARelease, ABuild: Integer;
@@ -671,6 +688,8 @@ begin
             AMajorVersion, AMinorVersion, ARelease, ABuild, ACompanyName);
    UpdateLazPkg('..\..\..\..\Packages\Lazarus\taurustlsldsgn.lpk',
             AMajorVersion, AMinorVersion, ARelease, ABuild, ACompanyName);
+   UpdateDPSEC('..\..\templates\TaurusTLS_Developers.TaurusTLS.dspec-template',
+            AMajorVersion, AMinorVersion, ABuild);
 end;
 
 procedure TdmodMain.UpdateProductCopyright(
