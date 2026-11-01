@@ -28,6 +28,7 @@ uses
   IdFTP,
   IdFTPCommon,
   IdGlobal,
+  IdIOHandlerStack,
   IdZLibHeaders,
   TaurusTLS,
   TaurusTLS_X509,
@@ -47,7 +48,8 @@ type
   protected
     FFTP: TIdFTP;
     FComp: TIdCompressorZLib;
-    FIO: TTaurusTLSIOHandlerSocket;
+    FSSLIO: TTaurusTLSIOHandlerSocket;
+    FIO : TIdIOHandlerStack;
     FLog: TTaurusTLSUnicodeLog;
     function LoadValidConfig : Boolean;
     // log events
@@ -526,7 +528,7 @@ begin
         0:
           begin
             FFTP.UseTLS := utNoTLSSupport;
-            FFTP.IOHandler := nil;
+            FFTP.IOHandler := FIO;
             if LCmdParams.Count > 2 then
             begin
               SetHostAndIPVersion(LCmdParams[1],FFTP);
@@ -549,7 +551,7 @@ begin
           end;
         1:
           begin
-            FFTP.IOHandler := FIO;
+            FFTP.IOHandler := FSSLIO;
             FFTP.UseTLS := utUseExplicitTLS;
             FFTP.DataPortProtection := ftpdpsPrivate;
             if LCmdParams.Count > 2 then
@@ -574,7 +576,7 @@ begin
           end;
         2:
           begin
-            FFTP.IOHandler := FIO;
+            FFTP.IOHandler := FSSLIO;
             FFTP.UseTLS := utUseImplicitTLS;
             FFTP.DataPortProtection := ftpdpsPrivate;
             if LCmdParams.Count > 2 then
@@ -600,7 +602,7 @@ begin
       else
         begin
           FFTP.UseTLS := utNoTLSSupport;
-          FFTP.IOHandler := nil;
+          FFTP.IOHandler := FIO;
           SetHostAndIPVersion(LCmdParams[0],FFTP);
           FFTP.Username := LCmdParams[1];
           if LCmdParams.Count > 2 then
@@ -735,9 +737,9 @@ end;
 
 procedure TFTPApplication.CmdCertInfo;
 begin
-  if Assigned(FIO.SSLSocket) and Assigned(FIO.SSLSocket.PeerCert) then
+  if Assigned(FSSLIO.SSLSocket) and Assigned(FSSLIO.SSLSocket.PeerCert) then
   begin
-    WriteLn(FIO.SSLSocket.PeerCert.DisplayInfo.Text);
+    WriteLn(FSSLIO.SSLSocket.PeerCert.DisplayInfo.Text);
   end
   else
   begin
@@ -832,13 +834,13 @@ begin
     begin
       if IdGlobal.IsNumeric(LCmdParams[0]) then
       begin
-        FIO.SSLOptions.VerifyDepth := StrToInt(LCmdParams[0]);
+        FSSLIO.SSLOptions.VerifyDepth := StrToInt(LCmdParams[0]);
       end;
     end
   finally
     FreeAndNil(LCmdParams);
   end;
-  WriteLn('Verify Depth: '+IntToStr(FIO.SSLOptions.VerifyDepth));
+  WriteLn('Verify Depth: '+IntToStr(FSSLIO.SSLOptions.VerifyDepth));
 end;
 
 procedure TFTPApplication.CmdGet(const ACmd: string);
@@ -990,35 +992,35 @@ begin
       case PosInStrArray(LCmdParams[0], ['on', 'true', 'off', 'false'],
         False) of
         0, 1:
-          FIO.OnDebugMessage := OnDebugMsg;
+          FSSLIO.OnDebugMessage := OnDebugMsg;
 
         2, 3:
-          FIO.OnDebugMessage := nil;
+          FSSLIO.OnDebugMessage := nil;
       else
         begin
-          if Assigned(FIO.OnDebugMessage) then
+          if Assigned(FSSLIO.OnDebugMessage) then
           begin
-            FIO.OnDebugMessage := nil
+            FSSLIO.OnDebugMessage := nil
           end
           else
           begin
-            FIO.OnDebugMessage := OnDebugMsg;
+            FSSLIO.OnDebugMessage := OnDebugMsg;
           end;
         end;
       end;
     end
     else
     begin
-      if Assigned(FIO.OnDebugMessage) then
+      if Assigned(FSSLIO.OnDebugMessage) then
       begin
-        FIO.OnDebugMessage := nil
+        FSSLIO.OnDebugMessage := nil
       end
       else
       begin
-        FIO.OnDebugMessage := OnDebugMsg;
+        FSSLIO.OnDebugMessage := OnDebugMsg;
       end;
     end;
-    if Assigned(FIO.OnDebugMessage) then
+    if Assigned(FSSLIO.OnDebugMessage) then
     begin
       WriteLn('Debug-trace: True');
     end
@@ -1078,16 +1080,16 @@ var
 begin
   LIni := TIniFile.Create(CreateAndGetCOnfigDir + 'taurusftp.ini');
   try
-    LIni.WriteBool('debug', 'trace', Assigned(FIO.OnDebugMessage));
+    LIni.WriteBool('debug', 'trace', Assigned(FSSLIO.OnDebugMessage));
     LIni.WriteInteger('security', 'security_level',
-      FIO.SSLOptions.SecurityLevel);
-    LIni.WriteInteger('security','verify_depth',FIO.SSLOptions.VerifyDepth);
+      FSSLIO.SSLOptions.SecurityLevel);
+    LIni.WriteInteger('security','verify_depth',FSSLIO.SSLOptions.VerifyDepth);
     LIni.WriteBool('ftp', 'passive', FFTP.Passive);
     LIni.WriteBool('ftp', 'use_MLSD', FFTP.UseMLIS);
-    LIni.WriteString('certificate','public_key',FIO.ClientCert.PublicKey);
-    LIni.WriteString('certificate','private_key',FIO.ClientCert.PrivateKey);
-    LIni.WriteString('certificate','root_key',FIO.ClientCert.RootKey);
-    LIni.WriteString('certificate','dh_params',FIO.ClientCert.DHParamsFile);
+    LIni.WriteString('certificate','public_key',FSSLIO.ClientCert.PublicKey);
+    LIni.WriteString('certificate','private_key',FSSLIO.ClientCert.PrivateKey);
+    LIni.WriteString('certificate','root_key',FSSLIO.ClientCert.RootKey);
+    LIni.WriteString('certificate','dh_params',FSSLIO.ClientCert.DHParamsFile);
   finally
     FreeAndNil(LIni);
   end;
@@ -1104,14 +1106,14 @@ begin
     begin
       if PosInStrArray(LCmdParams[0], ['0', '1', '2', '3', '4', '5']) > -1 then
       begin
-        FIO.SSLOptions.SecurityLevel := StrToInt(LCmdParams[0]);
+        FSSLIO.SSLOptions.SecurityLevel := StrToInt(LCmdParams[0]);
       end;
     end;
   finally
     FreeAndNil(LCmdParams);
   end;
   Write('Security level is ');
-  case FIO.SSLOptions.SecurityLevel of
+  case FSSLIO.SSLOptions.SecurityLevel of
     0:
       WriteLn('0. Everything is permitted. ');
     1:
@@ -1679,16 +1681,16 @@ begin
   Result := True;
   LIni := TIniFile.Create(CreateAndGetCOnfigDir + 'taurusftp.ini');
   try
-    if LIni.ReadBool('debug', 'trace', Assigned(FIO.OnDebugMessage)) then
+    if LIni.ReadBool('debug', 'trace', Assigned(FSSLIO.OnDebugMessage)) then
     begin
-      FIO.OnDebugMessage := OnDebugMsg;
+      FSSLIO.OnDebugMessage := OnDebugMsg;
     end
     else
     begin
-      FIO.OnDebugMessage := nil;
+      FSSLIO.OnDebugMessage := nil;
     end;
-    FIO.SSLOptions.SecurityLevel := LIni.ReadInteger('security',
-      'security_level', FIO.SSLOptions.SecurityLevel);
+    FSSLIO.SSLOptions.SecurityLevel := LIni.ReadInteger('security',
+      'security_level', FSSLIO.SSLOptions.SecurityLevel);
 {
 IMPORTANT!!!
 
@@ -1697,7 +1699,7 @@ involve one root Certificate, one intermediate certificate, and the server or
 leaf certificate.  You might want to set this higher for something more elaborate
 but do not make it too lonmg.
 }
-    FIO.SSLOptions.VerifyDepth := LIni.ReadInteger('security','verify_depth',100);
+    FSSLIO.SSLOptions.VerifyDepth := LIni.ReadInteger('security','verify_depth',100);
     FFTP.Passive := LIni.ReadBool('ftp', 'passive', FFTP.Passive);
     FFTP.UseMLIS := LIni.ReadBool('ftp', 'use_MLSD', True);
     {$IFDEF USE_INLINE_VAR}
@@ -1707,9 +1709,9 @@ but do not make it too lonmg.
     LPrivKey := LIni.ReadString('certificate','private_key','');
     if (LPubKey <> '') and (LPrivKey <> '') then
     begin
-       FIO.SSLOptions.VerifyMode := FIO.SSLOptions.VerifyMode + [];
-       FIO.ClientCert.PublicKey := LPubKey;
-       FIO.ClientCert.PrivateKey := LPrivKey;
+       FSSLIO.SSLOptions.VerifyMode := FSSLIO.SSLOptions.VerifyMode + [];
+       FSSLIO.ClientCert.PublicKey := LPubKey;
+       FSSLIO.ClientCert.PrivateKey := LPrivKey;
        if not FileExists(LPubKey) then
        begin
          Result := False;
@@ -1720,14 +1722,14 @@ but do not make it too lonmg.
          Result := False;
          WriteLn('Error:  private key, "'+LPrivKey+'" does not exist');
        end;
-       FIO.ClientCert.RootKey := LIni.ReadString('certificate','root_key','');
-       if Result and (FIO.ClientCert.RootKey <> '') and not FileExists(FIO.ClientCert.RootKey) then
+       FSSLIO.ClientCert.RootKey := LIni.ReadString('certificate','root_key','');
+       if Result and (FSSLIO.ClientCert.RootKey <> '') and not FileExists(FSSLIO.ClientCert.RootKey) then
        begin
          Result := False;
          WriteLn('Error:  root key, "'+LPrivKey+'" does not exist');
        end;
-       FIO.ClientCert.DHParamsFile := LIni.ReadString('certificate','dh_params','');
-       if Result and (FIO.ClientCert.DHParamsFile <> '') and not FileExists(FIO.ClientCert.RootKey) then
+       FSSLIO.ClientCert.DHParamsFile := LIni.ReadString('certificate','dh_params','');
+       if Result and (FSSLIO.ClientCert.DHParamsFile <> '') and not FileExists(FSSLIO.ClientCert.RootKey) then
        begin
          Result := False;
          WriteLn('Error:  DH parameters, "'+LPrivKey+'" does not exist');
@@ -1751,18 +1753,20 @@ begin
   FFTP := TIdFTP.Create(nil);
   FComp := TIdCompressorZLib.Create(nil);
   FFTP.Compressor := FComp;
-  FIO := TTaurusTLSIOHandlerSocket.Create(nil);
-  FIO.OnSSLNegotiated := OnSSLNegotiated;
-  FIO.OnVerifyError := DoOnVerifyError;
+  FSSLIO := TTaurusTLSIOHandlerSocket.Create(nil);
+  FSSLIO.OnSSLNegotiated := OnSSLNegotiated;
+  FSSLIO.OnVerifyError := DoOnVerifyError;
   //prevent the peer from misinterpretting unidirectional studown as an ABORT.
-  FIO.SSLOptions.UseBidirectionalShutdown := True;
-  FFTP.IOHandler := FIO;
+  FSSLIO.SSLOptions.UseBidirectionalShutdown := True;
+  FIO := TIdIOHandlerStack.Create(nil);
+  FFTP.IOHandler := FSSLIO;
   FFTP.Passive := True;
   FFTP.UseExtensionDataPort := True;
   FLog := TTaurusTLSUnicodeLog.Create(nil);
   FLog.OnReceived := OnReceived;
   FLog.OnSent := OnSent;
   FLog.Active := True;
+  FSSLIO.Intercept := FLog;
   FIO.Intercept := FLog;
 {$IFDEF FPC}
   StopOnException := True;
@@ -1778,6 +1782,7 @@ begin
   end;
   FreeAndNil(FLog);
   FreeAndNil(FIO);
+  FreeAndNil(FSSLIO);
   FreeAndNil(FComp);
   FreeAndNil(FFTP);
   inherited Destroy;
