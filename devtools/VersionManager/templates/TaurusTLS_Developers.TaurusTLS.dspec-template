@@ -6,11 +6,11 @@ metadata:
   description: TaurusTLS provides OpenSSL 3.x and 4.x support for Indy - Internet Direct
   icon: logo\bullhead.png
   authors:
-    - TaurusTLS Developers
+    - {$COMPANY}
   projectUrl: https://taurustls.org/
   repositoryUrl: https://github.com/TaurusTLS-Developers/TaurusTLS
   license: Mozilla Public License 1.1
-  copyright: TaurusTLS Developers
+  copyright: {$COPYRIGHT}
   tags:
     - indy
     - TLS
