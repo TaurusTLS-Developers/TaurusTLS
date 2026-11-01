@@ -152,6 +152,46 @@
 		<DelphiCompile Include="$(MainSource)">
 			<MainSource>MainSource</MainSource>
 		</DelphiCompile>
+		<RcItem Include="..\..\icons\Delphi\TTaurusTLSLoader_24.BMP">
+			<ResourceType>BITMAP</ResourceType>
+			<ResourceId>TTaurusTLSLoader</ResourceId>
+		</RcItem>
+		<RcItem Include="..\..\icons\Delphi\TTaurusTLSLoader128.png">
+			<ResourceType>RCDATA</ResourceType>
+			<ResourceId>TTaurusTLSLoader128</ResourceId>
+		</RcItem>
+		<RcItem Include="..\..\icons\Delphi\TTaurusTLSServerIOHandler_24.BMP">
+			<ResourceType>BITMAP</ResourceType>
+			<ResourceId>TTaurusTLSServerIOHandler</ResourceId>
+		</RcItem>
+		<RcItem Include="..\..\icons\Delphi\TTaurusTLSServerIOHandler128.png">
+			<ResourceType>RCDATA</ResourceType>
+			<ResourceId>TTaurusTLSServerIOHandler128</ResourceId>
+		</RcItem>
+		<RcItem Include="..\..\icons\Delphi\TTaurusTLSIOHandlerSocket_24.BMP">
+			<ResourceType>BITMAP</ResourceType>
+			<ResourceId>TTaurusTLSIOHandlerSocket</ResourceId>
+		</RcItem>
+		<RcItem Include="..\..\icons\Delphi\TTaurusTLSIOHandlerSocket128.png">
+			<ResourceType>RCDATA</ResourceType>
+			<ResourceId>TTaurusTLSIOHandlerSocket128</ResourceId>
+		</RcItem>
+		<RcItem Include="..\..\icons\Delphi\TTaurusTLSUnicodeLog_24.BMP">
+			<ResourceType>BITMAP</ResourceType>
+			<ResourceId>TTaurusTLSUnicodeLog</ResourceId>
+		</RcItem>
+		<RcItem Include="..\..\icons\Delphi\TTaurusTLSUnicodeLog128.png">
+			<ResourceType>RCDATA</ResourceType>
+			<ResourceId>TTaurusTLSUnicodeLog128</ResourceId>
+		</RcItem>
+		<RcItem Include="..\..\icons\Delphi\SPLASH_24.BMP">
+			<ResourceType>BITMAP</ResourceType>
+			<ResourceId>SPLASH</ResourceId>
+		</RcItem>
+		<RcItem Include="..\..\icons\Delphi\SPLASH128.png">
+			<ResourceType>RCDATA</ResourceType>
+			<ResourceId>SPLASH128</ResourceId>
+		</RcItem>
 		<DCCReference Include="rtl.dcp"/>
 		<DCCReference Include="designide.dcp"/>
 		<DCCReference Include="IndyCore280.dcp"/>

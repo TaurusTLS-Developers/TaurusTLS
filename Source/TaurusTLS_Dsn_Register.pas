@@ -69,14 +69,6 @@ uses
   TaurusTLSLoader,
   TaurusTLS_Unicode_Log;
 
-{$IFNDEF FPC}
-  {$IFDEF Borland}
-  {$R ..\Source\TaurusTLS_Dsn_Register_16.dcr}
-  {$ELSE}
-  {$R ..\Source\TaurusTLS_Dsn_Register.dcr}
-  {$ENDIF}
-{$ENDIF}
-
 {$IFDEF DCC}
   {$IFDEF VCL_2005_OR_ABOVE}
   {$I TaurusTLS_Vers.inc}
