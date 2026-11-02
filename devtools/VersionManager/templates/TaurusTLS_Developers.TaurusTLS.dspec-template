@@ -4,7 +4,7 @@ metadata:
   id: TaurusTLS_Developers.TaurusTLS
   version: {$BUNDLEVERSION}
   description: TaurusTLS provides OpenSSL 3.x and 4.x support for Indy - Internet Direct
-  icon: logo\bullhead.png
+  icon: logo\favicon712x712.png
   authors:
     - {$COMPANY}
   projectUrl: https://taurustls.org/
