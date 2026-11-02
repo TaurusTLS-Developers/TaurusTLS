@@ -28,6 +28,10 @@
 		<License Value="TaurusTLS is dual licensed. You can review which license better suits your needs, and use that license. You can even change your mind later if you have previously chosen one.&#xA;&#xA;1) Modified BSD License - The TaurusTLS Modified BSD license is a very no nonsense license that allows you to do almost anything you want with TaurusTLS provided you provide proper attribution. &#xA;&#xA;2) MPL Mozilla Public License) License - To make it easier and consistent for JEDI users, we also offer an MPL license v1.1."/>
 		<Files>
 			<Item>
+				<Filename Value="..\..\Source\TaurusTLS_Dsn_Const.pas"/>
+				<UnitName Value="TaurusTLS_Dsn_Const"/>
+			</Item>
+			<Item>
 				<Filename Value="..\..\Source\TaurusTLS_Dsn_ResourceStrings.pas"/>
 				<UnitName Value="TaurusTLS_Dsn_ResourceStrings"/>
 			</Item>
@@ -44,6 +48,10 @@
 			<Item>
 				<Filename Value="..\..\Source\TaurusTLS_Dsn_AboutDlg.pas"/>
 				<UnitName Value="TaurusTLS_Dsn_AboutDlg"/>
+			</Item>
+			<Item>
+				<Filename Value="..\..\Source\TaurusTLS_Dsn_AboutDlg.lfm"/>
+				<Type Value="LFM"/>
 			</Item>
 		</Files>
 		<RequiredPkgs>

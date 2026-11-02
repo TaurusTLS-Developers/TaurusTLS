@@ -45,6 +45,7 @@ procedure Register;
 implementation
 
 uses
+  TaurusTLS_Dsn_Const,
   TaurusTLS_Dsn_ResourceStrings, // for RSRegIndyIOHandlers in dclIndyCore package
   SysUtils,
   {$IFDEF DCC}
@@ -71,7 +72,6 @@ uses
 
 {$IFDEF DCC}
   {$IFDEF VCL_2005_OR_ABOVE}
-  {$I TaurusTLS_Vers.inc}
 var
   AboutBoxServices: IOTAAboutBoxServices = nil;
   AboutBoxIndex: Integer = -1;
@@ -79,7 +79,7 @@ var
 procedure RegisterAboutBox;
 begin
   SplashScreenServices.AddPluginBitmap(
-    gsTaurusTLSProductName +': v' + gsTaurusTLSVersion,
+    gsTaurusTLSProductName +GetTaurusTLSVersion(': v'),
     LoadBitmap(HInstance, 'SPLASH'));
   if Supports(BorlandIDEServices, IOTAAboutBoxServices, AboutBoxServices) then
   begin
@@ -87,11 +87,7 @@ begin
       gsTaurusTLSProductName + ' ' + gsTaurusTLSVersion,
       RSTaurusTLSDescription + sLineBreak + sLineBreak
         + RSCopyright + sLineBreak + sLineBreak
-        + RSIndyPortionsOf + RSIndyPortionsOfTwo + sLineBreak
-        + RSIndyRedistributionOf + sLineBreak + sLineBreak
-        + RSDisclaimerCondOne + sLineBreak + slineBreak
-        + RSDisclaimerCondTwo + sLineBreak + sLineBreak
-        + RSIndyDisclaimer,
+        + GetThirdPartyAcknowlegements(False),
       LoadBitmap(HInstance,'SPLASH'),
       False,
       RSTAurusAboutBoxLicences);

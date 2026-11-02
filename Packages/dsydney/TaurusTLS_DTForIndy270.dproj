@@ -149,6 +149,7 @@
 		<DCCReference Include="IndyProtocols270.dcp"/>
 		<DCCReference Include="IndySystem270.dcp"/>
 		<DCCReference Include="TaurusTLS_RTForIndy270.dcp"/>
+		<DCCReference Include="..\..\Source\TaurusTLS_Dsn_Const.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLS_Dsn_ResourceStrings.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLS_Dsn_Register.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLS_Dsn_ComponentEditor.pas"/>

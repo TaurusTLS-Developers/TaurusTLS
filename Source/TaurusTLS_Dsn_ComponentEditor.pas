@@ -21,10 +21,8 @@ uses
   {$ENDIF}
   ;
 
-{$I TaurusTLS_Vers.inc}
-
 {$IFDEF DCC}
-  {$R 'TaurusTLS_DT.dres'}
+  {$R 'TaurusTLS_Dsn.dres'}
 {$ENDIF}
 
 type
@@ -45,6 +43,7 @@ implementation
 uses
   SysUtils,
   IdGlobal,
+  TaurusTLS_Dsn_Const,
   TaurusTLS,
   TaurusTLSLoader,
   TaurusTLS_Dsn_AboutDlg,
@@ -54,14 +53,14 @@ uses
 procedure TTaurusTLSComponentEditor.ExecuteVerb(Index: Integer);
 begin
   case Index of
-    0 : AboutDlg(gsTaurusTLSVersion);
+    0 : AboutDlg;
   end;
 end;
 
 function TTaurusTLSComponentEditor.GetVerb(Index: Integer): string;
 begin
   case Index of
-    0: Result := IndyFormat(RSAAboutMenuItemName, [gsTaurusTLSVersion]);
+    0: Result := GetTaurusTLSVersion(RSAAboutMenuItemName);
   end;
 end;
 

@@ -8,7 +8,7 @@ unit TaurusTLSLDsgn;
 interface
 
 uses
-  TaurusTLS_Dsn_ResourceStrings, TaurusTLS_Dsn_Register, 
+  TaurusTLS_Dsn_Const, TaurusTLS_Dsn_ResourceStrings, TaurusTLS_Dsn_Register, 
   TaurusTLS_Dsn_ComponentEditor, TaurusTLS_Dsn_AboutDlg, LazarusPackageIntf;
 
 implementation
