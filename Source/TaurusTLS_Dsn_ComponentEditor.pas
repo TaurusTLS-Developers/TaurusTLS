@@ -23,6 +23,10 @@ uses
 
 {$I TaurusTLS_Vers.inc}
 
+{$IFDEF DCC}
+  {$R 'TaurusTLS_DT.dres'}
+{$ENDIF}
+
 type
   {$IFDEF FPC}
   TTaurusTLSComponentEditor = class(TDefaultComponentEditor)
