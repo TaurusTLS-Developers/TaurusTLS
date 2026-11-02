@@ -14,7 +14,7 @@ interface
 resourcestring
   RSTaurusTLS = 'TaurusTLS';
   RSAAboutMenuItemName = 'About TaurusTLS ';
-  RSTaurusTLSVersion = '%s%s';
+  RSTaurusTLSVersion = '%s%s%s';
   RSTaurusTLSVersionPrefix = 'Version ';
   RSTaurusTLSDescription =
     'TaurusTLS provides OpenSSL 3.x and 4.x support for Indy - Internet Direct.';

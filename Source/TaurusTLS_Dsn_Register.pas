@@ -79,7 +79,7 @@ var
 procedure RegisterAboutBox;
 begin
   SplashScreenServices.AddPluginBitmap(
-    gsTaurusTLSProductName +GetTaurusTLSVersion(': v'),
+    gsTaurusTLSProductName +GetTaurusTLSVersion(': v', ''),
     LoadBitmap(HInstance, 'SPLASH'));
   if Supports(BorlandIDEServices, IOTAAboutBoxServices, AboutBoxServices) then
   begin

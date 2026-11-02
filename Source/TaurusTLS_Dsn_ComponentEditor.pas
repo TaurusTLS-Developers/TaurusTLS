@@ -60,7 +60,7 @@ end;
 function TTaurusTLSComponentEditor.GetVerb(Index: Integer): string;
 begin
   case Index of
-    0: Result := GetTaurusTLSVersion(RSAAboutMenuItemName);
+    0: Result := GetTaurusTLSVersion(RSAAboutMenuItemName, ' ...'); //Do not localize
   end;
 end;
 

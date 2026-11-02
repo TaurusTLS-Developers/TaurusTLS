@@ -69,7 +69,7 @@ begin
   SetLogo;
   {$ENDIF}
   lblHeader.Caption:=gsTaurusTLSProductName;
-  lblVersion.Caption:=GetTaurusTLSVersion(RSTaurusTLSVersionPrefix);
+  lblVersion.Caption:=GetTaurusTLSVersion(RSTaurusTLSVersionPrefix, '');
   lblCopyright.Caption:=RSCopyright;
   lblLicense.Caption:=RSLicense;
   memAcknowledgements.Lines.Text:=GetThirdPartyAcknowlegements(True);

@@ -5,7 +5,7 @@ interface
 
 {$I TaurusTLS_Vers.inc}
 
-function GetTaurusTLSVersion(const APrefix: string): string;
+function GetTaurusTLSVersion(const APrefix, ASuffix: string): string;
 
 function GetThirdPartyAcknowlegements(AAbout: boolean): string;
 
@@ -15,9 +15,9 @@ uses
   SysUtils,
   TaurusTLS_Dsn_ResourceStrings;
 
-function GetTaurusTLSVersion(const APrefix: string): string;
+function GetTaurusTLSVersion(const APrefix, ASuffix: string): string;
 begin
-  Result:=Format(RSTaurusTLSVersion, [APrefix, gsTaurusTLSVersion]);
+  Result:=Format(RSTaurusTLSVersion, [APrefix, gsTaurusTLSVersion, ASuffix]);
 end;
 
 function GetThirdPartyAcknowlegements(AAbout: boolean): string;
