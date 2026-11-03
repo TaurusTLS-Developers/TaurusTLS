@@ -115,8 +115,11 @@ templates:
       - src: ./Modified_BSD_LICENSE.md
       - src: ./DifferencesBetweenIndyOpenSSLAndTaurusTLS.md
       - src: ./What_needs_to_be_done.MD
+      - src: ./Migration_to_1_1.md
       - src: ./Source/*.inc
       - src: ./Source/*.pas
+      - src: ./Source/*.dfm
+      - src: ./Source/*.lfm
       - src: ./Source/*.dcr
       - src: ./Packages/$packageSource$/*.dpk
       - src: ./Packages/$packageSource$/*.dproj
