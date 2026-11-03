@@ -145,6 +145,12 @@ function MDAsString(const AMD: TTaurusTLSLEVP_MD): String;  {$IFDEF USE_INLINE} 
 /// <param name="sec">
 /// Returns the second of the minute.
 /// </param>
+/// <param name="tz_hour">
+/// Returns the Time Zone offset hour
+/// </param>
+/// <param name="tz_min">
+/// Returns the Time Zone offset minute.
+/// </param>
 /// <returns>
 /// True if parsing was successful or False if failed.
 /// </returns>
