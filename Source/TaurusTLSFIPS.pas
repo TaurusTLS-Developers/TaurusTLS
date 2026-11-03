@@ -4,8 +4,8 @@
 { *                                                                            * }
 { *  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              * }
 { *                                                                            * }
-{ * Portions of this software are Copyright (c) 1993 – 2018,                   * }
-{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  * }
+{ * Portions of this software are Copyright (c) 1993 â€“ 2018,                   * }
+{ * Chad Z. Hower (Kudzu) and the Indy Pit Crew â€“ http://www.IndyProject.org/  * }
 { ****************************************************************************** }
 {$I TaurusTLSCompilerDefines.inc}
 /// <summary>
@@ -74,7 +74,9 @@ uses
   TaurusTLSHeaders_crypto,
   TaurusTLSHeaders_err,
   TaurusTLSHeaders_hmac,
-  TaurusTLSHeaders_types;
+  TaurusTLSHeaders_types,
+  TaurusTLS_LegacyProviders,
+  TaurusTLSLoader;
 
 {$I TaurusTLSUnusedParamOff.inc}
 
@@ -149,6 +151,11 @@ end;
 function TaurusTLSGetFIPSMode: Boolean;
 begin
   Result := FIPS_mode <> 0;
+end;
+
+function TaurusTLSLoadHashLibrary: Boolean;
+begin
+  Result := IsLegacyProviderLoaded;
 end;
 
 function TaurusTLSSetFIPSMode(const AMode: Boolean): Boolean;
@@ -602,6 +609,7 @@ begin
   GetHMACSHA512HashInst := TaurusTLSGetHMACSHA512Inst;
   UpdateHMACInst := TaurusTLSUpdateHMACInst;
   FinalHMACInst := TaurusTLSFinalHMACInst;
+  LoadHashLibrary := TaurusTLSLoadHashLibrary;
 
   CallFIPSHooksInstallers;
 end;
