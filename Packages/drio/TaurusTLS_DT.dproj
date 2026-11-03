@@ -108,7 +108,7 @@
 		<DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
 		<BT_BuildType>Debug</BT_BuildType>
 		<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-		<VerInfo_Keys>CompanyName=TaurusTLS Developers;FileDescription=$(MSBuildProjectName);FileVersion=1.1.0.53;InternalName=TaurusTLS_DT.bpl;LegalCopyright=Copyright (c) 2026 TaurusTLS Developers.  All Rights Reserved.;LegalTrademarks=;OriginalFilename=TaurusTLS_DT.bpl;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.1.0.53;Comments=</VerInfo_Keys>
+		<VerInfo_Keys>CompanyName=TaurusTLS Developers;FileDescription=$(MSBuildProjectName);FileVersion=1.1.0.54;InternalName=TaurusTLS_DT.bpl;LegalCopyright=Copyright (c) 2026 TaurusTLS Developers.  All Rights Reserved.;LegalTrademarks=;OriginalFilename=TaurusTLS_DT.bpl;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.1.0.54;Comments=</VerInfo_Keys>
 		<VerInfo_Locale>1033</VerInfo_Locale>
 		<DCC_UsePackage>rtl;TaurusTLS_RT;$(DCC_UsePackage)</DCC_UsePackage>
 	</PropertyGroup>
@@ -124,7 +124,7 @@
 		<DCC_RemoteDebug>true</DCC_RemoteDebug>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
-		<VerInfo_Build>53</VerInfo_Build>
+		<VerInfo_Build>54</VerInfo_Build>
 		<DllSuffix>260</DllSuffix>
 		<DCC_RemoteDebug>false</DCC_RemoteDebug>
 		<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
@@ -143,11 +143,11 @@
 		<DCCReference Include="rtl.dcp"/>
 		<DCCReference Include="designide.dcp"/>
 		<DCCReference Include="TaurusTLS_RT.dcp"/>
-		<DCCReference Include="..\..\Source\TaurusTLS_Dsn_Const.pas"/>
-		<DCCReference Include="..\..\Source\TaurusTLS_Dsn_ResourceStrings.pas"/>
-		<DCCReference Include="..\..\Source\TaurusTLS_Dsn_Register.pas"/>
-		<DCCReference Include="..\..\Source\TaurusTLS_Dsn_ComponentEditor.pas"/>
 		<DCCReference Include="..\..\Source\TaurusTLS_Dsn_AboutDlg.pas"/>
+		<DCCReference Include="..\..\Source\TaurusTLS_Dsn_ComponentEditor.pas"/>
+		<DCCReference Include="..\..\Source\TaurusTLS_Dsn_Const.pas"/>
+		<DCCReference Include="..\..\Source\TaurusTLS_Dsn_Register.pas"/>
+		<DCCReference Include="..\..\Source\TaurusTLS_Dsn_ResourceStrings.pas"/>
 		<BuildConfiguration Include="Release">
 			<Key>Cfg_2</Key>
 			<CfgParent>Base</CfgParent>

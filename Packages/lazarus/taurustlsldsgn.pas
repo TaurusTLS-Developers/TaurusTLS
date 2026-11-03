@@ -8,16 +8,20 @@ unit TaurusTLSLDsgn;
 interface
 
 uses
-  TaurusTLS_Dsn_Const, TaurusTLS_Dsn_ResourceStrings, TaurusTLS_Dsn_Register, 
-  TaurusTLS_Dsn_ComponentEditor, TaurusTLS_Dsn_AboutDlg, LazarusPackageIntf;
+  LazarusPackageIntf,
+  TaurusTLS_Dsn_AboutDlg,
+  TaurusTLS_Dsn_ComponentEditor,
+  TaurusTLS_Dsn_Const,
+  TaurusTLS_Dsn_Register,
+  TaurusTLS_Dsn_ResourceStrings;
 
 implementation
 
 procedure Register;
 begin
-  RegisterUnit('TaurusTLS_Dsn_Register', @TaurusTLS_Dsn_Register.Register);
   RegisterUnit('TaurusTLS_Dsn_ComponentEditor', 
     @TaurusTLS_Dsn_ComponentEditor.Register);
+  RegisterUnit('TaurusTLS_Dsn_Register', @TaurusTLS_Dsn_Register.Register);
 end;
 
 initialization
