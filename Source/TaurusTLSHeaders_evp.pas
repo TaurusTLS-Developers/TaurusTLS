@@ -2038,11 +2038,11 @@ var
   {$EXTERNALSYM EVP_PKEY_encrypt_init}
   EVP_PKEY_encrypt_init: function (ctx: PEVP_PKEY_CTX): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_PKEY_encrypt}
-  EVP_PKEY_encrypt: function (ctx: PEVP_PKEY_CTX; var out_; var outlen: TIdC_SIZET; const in_; inlen: TIdC_SIZET): TIdC_INT; cdecl = nil;
+  EVP_PKEY_encrypt: function (ctx: PEVP_PKEY_CTX; out_ : PByte; var outlen: TIdC_SIZET; const in_; inlen: TIdC_SIZET): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_PKEY_decrypt_init}
   EVP_PKEY_decrypt_init: function (ctx: PEVP_PKEY_CTX): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM EVP_PKEY_decrypt}
-  EVP_PKEY_decrypt: function (ctx: PEVP_PKEY_CTX; var out_; var outlen: TIdC_SIZET; const in_; inlen: TIdC_SIZET): TIdC_INT; cdecl = nil;
+  EVP_PKEY_decrypt: function (ctx: PEVP_PKEY_CTX; out_ : PByte; var outlen: TIdC_SIZET; const in_; inlen: TIdC_SIZET): TIdC_INT; cdecl = nil;
 
   {$EXTERNALSYM EVP_PKEY_derive_init}
   EVP_PKEY_derive_init: function (ctx: PEVP_PKEY_CTX): TIdC_INT; cdecl = nil;
@@ -3319,11 +3319,11 @@ var
   {$EXTERNALSYM EVP_PKEY_encrypt_init}
   function EVP_PKEY_encrypt_init(ctx: PEVP_PKEY_CTX): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM EVP_PKEY_encrypt}
-  function EVP_PKEY_encrypt(ctx: PEVP_PKEY_CTX; var out_; var outlen: TIdC_SIZET; const in_; inlen: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
+  function EVP_PKEY_encrypt(ctx: PEVP_PKEY_CTX; out_ : PByte; var outlen: TIdC_SIZET; const in_; inlen: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM EVP_PKEY_decrypt_init}
   function EVP_PKEY_decrypt_init(ctx: PEVP_PKEY_CTX): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM EVP_PKEY_decrypt}
-  function EVP_PKEY_decrypt(ctx: PEVP_PKEY_CTX; var out_; var outlen: TIdC_SIZET; const in_; inlen: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
+  function EVP_PKEY_decrypt(ctx: PEVP_PKEY_CTX; out_ : PByte; var outlen: TIdC_SIZET; const in_; inlen: TIdC_SIZET): TIdC_INT cdecl; external CLibCrypto;
 
   {$EXTERNALSYM EVP_PKEY_derive_init}
   function EVP_PKEY_derive_init(ctx: PEVP_PKEY_CTX): TIdC_INT cdecl; external CLibCrypto;
@@ -8141,7 +8141,7 @@ begin
 end;
 
 
-function  ERR_EVP_PKEY_encrypt(ctx: PEVP_PKEY_CTX; var out_; var outlen: TIdC_SIZET; const in_; inlen: TIdC_SIZET): TIdC_INT; cdecl;
+function  ERR_EVP_PKEY_encrypt(ctx: PEVP_PKEY_CTX; out_ : PByte; var outlen: TIdC_SIZET; const in_; inlen: TIdC_SIZET): TIdC_INT; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_encrypt_procname);
 end;
@@ -8153,7 +8153,7 @@ begin
 end;
 
 
-function  ERR_EVP_PKEY_decrypt(ctx: PEVP_PKEY_CTX; var out_; var outlen: TIdC_SIZET; const in_; inlen: TIdC_SIZET): TIdC_INT; cdecl;
+function  ERR_EVP_PKEY_decrypt(ctx: PEVP_PKEY_CTX; out_ : PByte; var outlen: TIdC_SIZET; const in_; inlen: TIdC_SIZET): TIdC_INT; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(EVP_PKEY_decrypt_procname);
 end;
