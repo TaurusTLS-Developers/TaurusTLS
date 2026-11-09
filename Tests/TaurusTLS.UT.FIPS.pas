@@ -187,7 +187,7 @@ begin
     'Passive availability probes must preserve existing loader diagnostics');
   Assert.AreEqual('', Loader.Version, 'Inactive availability probes must leave runtime version metadata empty');
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Assert.IsFalse(Assigned(OpenSSL_version_num), 'Queries must not bind native APIs');
+  Assert.IsTrue(@OpenSSL_version_num = @ErrUnBound, 'Queries must not bind native APIs');
 {$ENDIF}
   if AState = 1 then
     Assert.IsFalse(Loader.Load, 'Query must not reset failed-state retry blocking');

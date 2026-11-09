@@ -246,7 +246,7 @@ begin
   Assert.AreEqual(0, TNTLMReadinessObserver.LoadCount);
   Assert.AreEqual(0, TNTLMReadinessObserver.UnloadCount);
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Assert.IsFalse(Assigned(OpenSSL_version_num), 'Query must not bind native APIs');
+  Assert.IsTrue(@OpenSSL_version_num = @ErrUnBound, 'Query must not bind native APIs');
 {$ENDIF}
 end;
 

@@ -20,9 +20,7 @@ uses
   TaurusTLS.UT.TestClasses;
 
 type
-  /// <summary>
-  ///   Base fixture providing shared setup, teardown, and temporary configuration file helpers.
-  /// </summary>
+  // Base fixture providing shared setup, teardown, and temporary configuration file helpers.
   TLoaderBaseFixture = class(TOsslBaseFixture)
   protected
     FTempDir: string;
@@ -39,17 +37,17 @@ type
     FStateCaptured: Boolean;
     FLockHeld: Boolean;
 
-    /// <summary>Writes a configuration into the fixture's temporary directory.</summary>
+    // Writes a configuration into the fixture's temporary directory.
     function CreateTempConfigFile(const AContent: string; const AFileName: string = ''): string;
-    /// <summary>Decodes validated hexadecimal byte pairs.</summary>
+    // Decodes validated hexadecimal byte pairs.
     function HexToBytes(const AHexStr: string): TBytes;
-    /// <summary>Decodes UTF-16LE test data, including embedded null characters.</summary>
+    // Decodes UTF-16LE test data, including embedded null characters.
     function HexToUnicodeString(const AHexStr: string): string;
   public
-    /// <summary>Captures state and establishes an isolated loader environment.</summary>
+    // Captures state and establishes an isolated loader environment.
     [Setup]
     procedure Setup;
-    /// <summary>Unloads and restores configuration, paths, and environment.</summary>
+    // Unloads and restores configuration, paths, and environment.
     [TearDown]
     procedure Teardown;
   end;
@@ -58,44 +56,44 @@ type
   [Category('Loader,Loader.Component')]
   TLoaderComponentFixture = class(TLoaderBaseFixture)
   public
-    /// <summary>Verifies context construction stays inactive and native initialization requires explicit loading.</summary>
+    // Verifies context construction stays inactive and native initialization requires explicit loading.
     [Test]
     procedure Context_ExplicitReadiness;
-    /// <summary>Verifies components share status, metadata and global Unload; destruction does not unload.</summary>
+    // Verifies components share status, metadata and global Unload; destruction does not unload.
     [Test]
     procedure Facade_SharedLifecycle;
-    /// <summary>Round-trips a component through a stream and checks automatic, disabled and designer loading.</summary>
+    // Round-trips a component through a stream and checks automatic, disabled and designer loading.
     [TestCase('Automatic', '0')]
     [TestCase('Disabled', '1')]
     [TestCase('Designer', '2')]
     procedure Facade_Startup(const AKind: Integer);
-    /// <summary>Verifies automatic startup converts a blocked Load returning False into an exception.</summary>
+    // Verifies automatic startup converts a blocked Load returning False into an exception.
     [Test]
     procedure Facade_StartupFailure;
-    /// <summary>Streams settings and verifies only the running target is applied before an explicit Load.</summary>
+    // Streams settings and verifies only the running target is applied before an explicit Load.
     [Test]
     procedure Platform_DefaultsAndSelection;
-    /// <summary>Verifies scalar properties are public, share singleton configuration and reject changes while ready.</summary>
+    // Verifies scalar properties are public, share singleton configuration and reject changes while ready.
     [Test]
     procedure Platform_RuntimeConfiguration;
-    /// <summary>Round-trips all target settings and verifies collection assignment copies independent item values.</summary>
+    // Round-trips all target settings and verifies collection assignment copies independent item values.
     [Test]
     procedure Platform_StreamingAndAssign;
-    /// <summary>Rejects duplicate current or foreign targets before applying startup configuration.</summary>
+    // Rejects duplicate current or foreign targets before applying startup configuration.
     [TestCase('Current', '0')]
     [TestCase('OtherTarget', '1')]
     procedure Platform_DuplicateTargets(const AOther: Integer);
-    /// <summary>Allocates six distinct targets through all collection construction routes and rejects a seventh item.</summary>
+    // Allocates six distinct targets through all collection construction routes and rejects a seventh item.
     [TestCase('Add', '0')]
     [TestCase('BaseAdd', '1')]
     [TestCase('Insert', '2')]
     [TestCase('Constructor', '3')]
     procedure Platform_UniqueAdditions(const AKind: Integer);
-    /// <summary>Rejects duplicate item assignment or collection movement before changing either collection.</summary>
+    // Rejects duplicate item assignment or collection movement before changing either collection.
     [TestCase('Assign', '0')]
     [TestCase('Move', '1')]
     procedure Platform_DuplicateItemMutation(const AKind: Integer);
-    /// <summary>Rejects duplicate streamed targets, including omitted Win32 defaults, in every owner/runtime state.</summary>
+    // Rejects duplicate streamed targets, including omitted Win32 defaults, in every owner/runtime state.
     [TestCase('RuntimeExplicit', 'False,0')]
     [TestCase('RuntimeDefault', 'True,0')]
     [TestCase('DesignerExplicit', 'False,1')]
@@ -106,10 +104,12 @@ type
     [TestCase('FailedDefault', 'True,3')]
     procedure Platform_DuplicateStreaming(const AOmitted: Boolean; const AState: Integer);
 
-    /// <summary>Verifies the stable target names, default suffix lists and minimum supported OpenSSL version.</summary>
+    // Verifies the stable target names, default suffix lists and minimum supported OpenSSL version.
     [Test]
     procedure Platform_SupportedTargets;
-    /// <summary>Checks target defaults and verbatim custom suffix order without generated versions.</summary>
+    // Checks stored suffix settings for every platform group, without loading OpenSSL.
+    // All groups are editable on any host; static builds ignore these values at runtime.
+    // These cases do not establish dynamic-loading support for the selected platform.
     [TestCase('Windows32', 'tlpWindows32,-4;-3;')]
     {$IF DEFINED(WINDOWS) AND (DEFINED(CPUARM64) OR DEFINED(CPUAARCH64) OR DEFINED(ARM64EC))}
     [TestCase('Windows64', 'tlpWindows64,-4-arm64;-3-arm64;')]
@@ -121,25 +121,25 @@ type
     [TestCase('Android', 'tlpAndroid,.4:.3')]
     [TestCase('iOS', 'tlpiOS,.4:.3')]
     procedure Platform_Versions(const ATargetName, AExpected: string);
-    /// <summary>Verifies changed runtime paths or versions are rejected while loaded without altering configuration.</summary>
+    // Verifies changed runtime paths or versions are rejected while loaded without altering configuration.
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
     [TestCase('Path', '0')]
     [TestCase('Versions', '1')]
 {$ENDIF}
     [TestCase('Config', '2')]
     procedure Platform_ReadyMutation(const AKind: Integer);
-    /// <summary>Checks repeated Load shares readiness and failed loads require explicit Unload before retry.</summary>
+    // Checks repeated Load shares readiness and failed loads require explicit Unload before retry.
     [Test]
     procedure Platform_DefaultReadyAndFailureReset;
-    /// <summary>Reads a second component from a stream and verifies ready or failed singleton state is preserved.</summary>
+    // Reads a second component from a stream and verifies ready or failed singleton state is preserved.
     [TestCase('Ready', 'False')]
     [TestCase('Failed', 'True')]
     procedure Platform_StreamingPreservesState(const AFailed: Boolean);
-    /// <summary>Streams empty or blank settings and verifies normal defaults replace inactive configuration.</summary>
+    // Streams empty or blank settings and verifies normal defaults replace inactive configuration.
     [TestCase('Empty', 'False')]
     [TestCase('BlankEntry', 'True')]
     procedure Platform_StreamingDefaults(const AEntry: Boolean);
-    /// <summary>Rejects runtime collection and item edits without mutation, both inactive and ready.</summary>
+    // Rejects runtime collection and item edits without mutation, both inactive and ready.
     [TestCase('Add', '0')]
     [TestCase('Insert', '1')]
     [TestCase('Delete', '2')]
@@ -160,22 +160,20 @@ type
     procedure Platform_RuntimeMutation(const AOperation: Integer);
   end;
 
-  /// <summary>
-  ///   Group 1: Configuration file path validation, syntax errors, and expansion tests.
-  /// </summary>
+  // Group 1: Configuration file path validation, syntax errors, and expansion tests.
   [TestFixture]
   [Category('Loader,Loader.Config')]
   TLoaderConfigFixture = class(TLoaderBaseFixture)
   public
-    /// <summary>Tests that ConfigFile is initially empty and loader is not loaded.</summary>
+    // Tests that ConfigFile is initially empty and loader is not loaded.
     [Test]
     procedure Config_Initial;
 
-    /// <summary>Tests that ConfigFile accepts valid path formats prior to loading.</summary>
+    // Tests that ConfigFile accepts valid path formats prior to loading.
     [Test]
     procedure Config_SetValid;
 
-    /// <summary>Tests that ConfigFile rejects invalid platform path characters.</summary>
+    // Tests that ConfigFile rejects invalid platform path characters.
     // 'bad'#0'path.cnf'
     [TestCase('EmbeddedNull', '620061006400000070006100740068002E0063006E006600')]
     {$IFDEF MSWINDOWS}
@@ -194,69 +192,67 @@ type
     {$ENDIF}
     procedure Config_InvalidChars(const AHexPath: string);
 
-    /// <summary>Tests that passing a directory path to ConfigFile is rejected on Load.</summary>
+    // Tests that passing a directory path to ConfigFile is rejected on Load.
     [Test]
     procedure Config_RejectDir;
 
-    /// <summary>Tests that passing a non-existent file path to ConfigFile is rejected on Load.</summary>
+    // Tests that passing a non-existent file path to ConfigFile is rejected on Load.
     [Test]
     procedure Config_RejectMissing;
 
-    /// <summary>Tests that loading with a valid configuration file succeeds.</summary>
+    // Tests that loading with a valid configuration file succeeds.
     [Test]
     procedure Config_ValidLoad;
 
-    /// <summary>Tests that malformed configuration syntax raises ETaurusTLSConfigFileLoadError.</summary>
+    // Tests that malformed configuration syntax raises ETaurusTLSConfigFileLoadError.
     [Test]
     procedure Config_InvalidSyntax;
 
-    /// <summary>Verifies recovery from missing-file and directory path failures.</summary>
+    // Verifies recovery from missing-file and directory path failures.
     [TestCase('MissingFile', '0')]
     [TestCase('Directory', '1')]
     procedure Config_PathFailureRecovery(const APathKind: Integer);
 
-    /// <summary>Tests that Unload clears the active effective configuration filename.</summary>
+    // Tests that Unload clears the active effective configuration filename.
     [Test]
     procedure Config_UnloadClears;
 
-    /// <summary>Tests that relative configuration paths expand to absolute paths on Load.</summary>
+    // Tests that relative configuration paths expand to absolute paths on Load.
     [TestCase('SubDir', 'sub/test.cnf')]
     [TestCase('CurrentDir', './test.cnf')]
     procedure Config_RelativePath(const ARelPath: string);
 
-    /// <summary>Tests that configuration paths containing Unicode characters are supported.</summary>
+    // Tests that configuration paths containing Unicode characters are supported.
     [TestCase('Accents', 'Conf_éà_Üñîçødé.cnf')]
     [TestCase('Cyrillic', 'Конфиг_Тест.cnf')]
     procedure Config_UnicodePath(const AUnicodeFileName: string);
   end;
 
-  /// <summary>
-  ///   Group 2: Repeated load/unload calls, state persistence, mutation guards, and circuit breaker tests.
-  /// </summary>
+  // Group 2: Repeated load/unload calls, state persistence, mutation guards, and circuit breaker tests.
   [TestFixture]
   [Category('Loader,Loader.Lifecycle')]
   TLoaderLifecycleFixture = class(TLoaderBaseFixture)
   public
     {$IFDEF OPENSSL_STATIC_LINK_MODEL}
-    /// <summary>Verifies that the static loader instance is non-nil, uninitialized, and inert.</summary>
+    // Verifies that the static loader instance is non-nil, uninitialized, and inert.
     [Test]
     procedure Static_State;
     {$ENDIF}
 
-    /// <summary>Tests that a second Load succeeds without repeating initialization.</summary>
+    // Tests that a second Load succeeds without repeating initialization.
     [Test]
     procedure Life_DoubleLoad;
 
-    /// <summary>Verifies stable readiness states through failure, reset, and successful loading.</summary>
+    // Verifies stable readiness states through failure, reset, and successful loading.
     [Test]
     procedure State_Lifecycle;
 
-    /// <summary>Verifies concurrent queries share one loader and concurrent action registrations are retained.</summary>
+    // Verifies concurrent queries share one loader and concurrent action registrations are retained.
     [TestCase('Queries', '0')]
     [TestCase('Registrations', '1')]
     procedure Life_ConcurrentSingleton(const ARegister: Integer);
 
-    /// <summary>Competing Load callers wait for one initialization and share its ready result.</summary>
+    // Competing Load callers wait for one initialization and share its ready result.
     [TestCase('Workers2', '2')]
     [TestCase('Workers3', '3')]
     [TestCase('Workers15', '15')]
@@ -264,33 +260,52 @@ type
     procedure Life_ConcurrentLoad(const AWorkerCount: Integer);
 
     {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-    /// <summary>Verifies missing libraries fail without dispatching actions and permit explicit recovery.</summary>
+    // Each header's aliases raise while unloaded and work after loading/reloading.
+    [TestCase('Native', '0')]
+    [TestCase('ASN1', '1')]
+    [TestCase('Configuration', '2')]
+    [TestCase('CertificateTransparency', '3')]
+    [TestCase('PKCS7', '4')]
+    [TestCase('SSL', '5')]
+    [TestCase('X509', '6')]
+    [TestCase('X509Verification', '7')]
+    [TestCase('X509Extensions', '8')]
+    [TestCase('X509Policy', '9')]
+    procedure Stack_AliasesLifecycle(const AHeader: Integer);
+    // Restores native and legacy stack routines from nil or the unloaded stub.
+    [TestCase('NilBindings', 'False')]
+    [TestCase('UnboundStubBindings', 'True')]
+    procedure Stack_Rebind(const AStartWithStub: Boolean);
+    // A repeated binding pass preserves a caller's valid replacement routine.
+    [Test]
+    procedure Stack_PreservesExistingBindings;
+    // Verifies missing libraries fail without dispatching actions and permit explicit recovery.
     [Test]
     procedure Life_MissingLibraries;
     {$IFDEF MSWINDOWS}
-    /// <summary>Verifies a crypto-only deployment releases its partial library handle after failure.</summary>
+    // Verifies a crypto-only deployment releases its partial library handle after failure.
     [Test]
     procedure Life_PartialLibrary;
     {$ENDIF}
     {$ENDIF}
 
-    /// <summary>Tests that successive Unload calls are safe no-ops.</summary>
+    // Tests that successive Unload calls are safe no-ops.
     [Test]
     procedure Life_DoubleUnload;
 
-    /// <summary>Tests that repeated Load calls preserve the active configuration.</summary>
+    // Tests that repeated Load calls preserve the active configuration.
     [Test]
     procedure Life_PreserveConfig;
 
-    /// <summary>Tests that failure circuit breaker persists until explicit Unload.</summary>
+    // Tests that failure circuit breaker persists until explicit Unload.
     [Test]
     procedure Life_CircuitBreaker;
 
-    /// <summary>Tests that ConfigFile modification is rejected while loaded.</summary>
+    // Tests that ConfigFile modification is rejected while loaded.
     [Test]
     procedure Life_RejectConfigWhenLoaded;
 
-    /// <summary>Tests that property mutation while failed is accepted, but Load remains blocked.</summary>
+    // Tests that property mutation while failed is accepted, but Load remains blocked.
     [TestCase('ConfigFile', '0')]
     {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
     [TestCase('OpenSSLPath', '1')]
@@ -299,47 +314,45 @@ type
     procedure Life_MutateWhenFailed(const APropId: Integer);
   end;
 
-  /// <summary>
-  ///   Group 3: Lifecycle action callbacks, execution ordering, and rollback tests.
-  /// </summary>
+  // Group 3: Lifecycle action callbacks, execution ordering, and rollback tests.
   [TestFixture]
   [Category('Loader,Loader.Callbacks')]
   TLoaderCallbacksFixture = class(TLoaderBaseFixture)
   public
-    /// <summary>Initializes the base fixture and resets callback observers and diagnostics injection.</summary>
+    // Initializes the base fixture and resets callback observers and diagnostics injection.
     [Setup]
     procedure Setup;
-    /// <summary>Disables callback observers before restoring the base fixture state.</summary>
+    // Disables callback observers before restoring the base fixture state.
     [TearDown]
     procedure Teardown;
 
-    /// <summary>Verifies that OpenSSL routines remain callable during load and unload callbacks in both linking models.</summary>
+    // Verifies that OpenSSL routines remain callable during load and unload callbacks in both linking models.
     [Test]
     procedure CB_DispatchLive;
 
-    /// <summary>Tests that action callbacks execute in strict reverse registration order on unload.</summary>
+    // Tests that action callbacks execute in strict reverse registration order on unload.
     [Test]
     procedure CB_ReverseUnload;
 
-    /// <summary>Tests that double load and unload cycles do not duplicate callback triggers.</summary>
+    // Tests that double load and unload cycles do not duplicate callback triggers.
     [Test]
     procedure CB_NoDuplicates;
 
-    /// <summary>Tests that granular rollback fires only for executed callbacks on load failure.</summary>
+    // Tests that granular rollback fires only for executed callbacks on load failure.
     [Test]
     procedure CB_RollbackOnFail;
 
-    /// <summary>Tests that internal failure teardown preserves FailedToLoad diagnostics.</summary>
+    // Tests that internal failure teardown preserves FailedToLoad diagnostics.
     {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
     [Test]
     procedure CB_PreserveDiag;
     {$ENDIF}
 
-    /// <summary>Verifies that callback failure blocks retries until explicit Unload.</summary>
+    // Verifies that callback failure blocks retries until explicit Unload.
     [Test]
     procedure CB_FailureRecovery;
 
-    /// <summary>Verifies recursive public lifecycle calls raise without altering the outer operation.</summary>
+    // Verifies recursive public lifecycle calls raise without altering the outer operation.
     [TestCase('LoadDuringLoad', '1,0')]
     [TestCase('UnloadDuringLoad', '1,1')]
     [TestCase('RollbackDuringLoad', '1,2')]
@@ -352,7 +365,7 @@ type
     [TestCase('UnregisterDuringUnload', '2,4')]
     procedure State_Recursive(const APhase, AOperation: Integer);
 
-    /// <summary>Ready registration runs immediately; failed registration queues until reset.</summary>
+    // Ready registration runs immediately; failed registration queues until reset.
     [TestCase('Ready', '0')]
     [TestCase('Failed', '1')]
     procedure CB_RegistrationState(const AFailed: Integer);
@@ -378,8 +391,8 @@ type
     [TestCase('Unregister', '1')]
     procedure CB_ConcurrentMutation(const ARemove: Integer);
 
-    /// <summary>Concurrent workers register/remove distinct actions once without changing readiness.</summary>
-    /// <remarks>Worker count and initial readiness are supplied by each test case; no stress loops.</remarks>
+    // Concurrent workers register/remove distinct actions once without changing readiness.
+    // Worker count and initial readiness are supplied by each test case; no stress loops.
     [TestCase('Inactive2', '2,0')]
     [TestCase('Ready2', '2,1')]
     [TestCase('Inactive3', '3,0')]
@@ -390,19 +403,19 @@ type
     [TestCase('Ready32', '32,1')]
     procedure CB_ConcurrentActions(const AWorkerCount, AReady: Integer);
 
-    /// <summary>Verifies an uncaught recursive-call error fails initialization and permits later recovery.</summary>
+    // Verifies an uncaught recursive-call error fails initialization and permits later recovery.
     [Test]
     procedure State_RecursiveFailure;
 
-    /// <summary>Verifies readiness queries on another thread do not wait for a loading callback.</summary>
+    // Verifies readiness queries on another thread do not wait for a loading callback.
     [Test]
     procedure State_ReadDuringLoad;
 
-    /// <summary>Verifies readiness queries on another thread do not wait for an unloading callback.</summary>
+    // Verifies readiness queries on another thread do not wait for an unloading callback.
     [Test]
     procedure State_ReadDuringUnload;
 
-    /// <summary>Verifies changed values are rejected and repeated inputs are safe during callbacks.</summary>
+    // Verifies changed values are rejected and repeated inputs are safe during callbacks.
     [TestCase('LoadConfigChange', '1,0,0')]
     [TestCase('UnloadConfigChange', '2,0,0')]
     [TestCase('RollbackConfigChange', '3,0,0')]
@@ -423,65 +436,65 @@ type
     [TestCase('RollbackVersionsRepeat', '3,2,1')]
     procedure Config_CallbackMutation(const APhase, AProperty, ARepeat: Integer);
 
-    /// <summary>Verifies effective filename publication follows successful readiness.</summary>
+    // Verifies effective filename publication follows successful readiness.
     [TestCase('Absolute', '0')]
     [TestCase('Relative', '1')]
     procedure Config_Publication(const ARelative: Integer);
 
-    /// <summary>Verifies rollback retains configured input without publishing a ready filename.</summary>
+    // Verifies rollback retains configured input without publishing a ready filename.
     [Test]
     procedure Config_RollbackPublication;
 
-    /// <summary>Verifies metadata and compatibility queries never initialize OpenSSL.</summary>
+    // Verifies metadata and compatibility queries never initialize OpenSSL.
     [Test]
     procedure Info_Passive;
 
-    /// <summary>Verifies modern metadata values, callback visibility, and cleanup.</summary>
+    // Verifies modern metadata values, callback visibility, and cleanup.
     [Test]
     procedure Info_NativeValues;
 
-    /// <summary>Verifies configuration directories remain fixed after changing the working directory.</summary>
+    // Verifies configuration directories remain fixed after changing the working directory.
     [TestCase('Absolute', '0')]
     [TestCase('Relative', '1')]
     [TestCase('UnicodeDirectory', '2')]
     procedure Info_ConfigDirectory(const AKind: Integer);
 
-    /// <summary>Verifies direct and compatibility loads share TLS initialization and ownership.</summary>
+    // Verifies direct and compatibility loads share TLS initialization and ownership.
     [Test]
     procedure Runtime_SharedLifecycle;
 
-    /// <summary>Verifies loader failure rollback and TLS context recovery after an explicit reset.</summary>
+    // Verifies loader failure rollback and TLS context recovery after an explicit reset.
     [Test]
     procedure Runtime_ActionFailure;
 
     {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-    /// <summary>Verifies unavailable native metadata is represented by empty values.</summary>
+    // Verifies unavailable native metadata is represented by empty values.
     [TestCase('NullResult', '0')]
     [TestCase('MissingSymbol', '1')]
     procedure Info_Unavailable(const AKind: Integer);
 
-    /// <summary>Verifies empty and relative native discovery filenames have stable directory semantics.</summary>
+    // Verifies empty and relative native discovery filenames have stable directory semantics.
     [TestCase('Empty', '0')]
     [TestCase('Relative', '1')]
     procedure Info_Discovery(const AKind: Integer);
 
-    /// <summary>Verifies native crypto/SSL initialization failure occurs before runtime callbacks.</summary>
+    // Verifies native crypto/SSL initialization failure occurs before runtime callbacks.
     [TestCase('Crypto', '0')]
     [TestCase('SSL', '1')]
     procedure Runtime_InitFailure(const AKind: Integer);
     {$ENDIF}
 
-    /// <summary>Verifies unload-action failures do not prevent later action cleanup.</summary>
+    // Verifies unload-action failures do not prevent later action cleanup.
     [Test]
     procedure Life_UnloadActionFailure;
 
     {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-    /// <summary>Verifies all symbol resetters run and readiness fails when cleanup raises.</summary>
+    // Verifies all symbol resetters run and readiness fails when cleanup raises.
     [TestCase('SingleFailure', '0')]
     [TestCase('MultipleFailures', '1')]
     procedure Life_UnloaderFailure(const ASecondFailure: Integer);
 
-    /// <summary>Verifies a load exception survives a subsequent header-cleanup exception.</summary>
+    // Verifies a load exception survives a subsequent header-cleanup exception.
     [Test]
     procedure Life_PreserveLoadError;
     {$ENDIF}
@@ -502,6 +515,13 @@ uses
   TaurusTLSHeaders_crypto,
   TaurusTLSHeaders_conf,
   TaurusTLSHeaders_ssl,
+  TaurusTLSHeaders_stack,
+  TaurusTLSHeaders_asn1,
+  TaurusTLSHeaders_ct,
+  TaurusTLSHeaders_pkcs7,
+  TaurusTLSHeaders_x509,
+  TaurusTLSHeaders_x509_vfy,
+  TaurusTLSHeaders_x509v3,
   TaurusTLSHeaders_types,
   TaurusTLS;
 
@@ -1899,6 +1919,9 @@ var
   GTestDiscoveryFile: string = '';
   GTestSSLInitFailure: Boolean = False;
   GTestCryptoInitFailure: Boolean = False;
+  // Borrow the binding context supplied by the loader, valid until header cleanup.
+  GTestCryptoLibrary: TIdLibHandle = IdNilHandle;
+  GTestHeaderVersion: TIdC_UINT = 0;
   {$ENDIF}
 
 type
@@ -2222,6 +2245,10 @@ end;
 procedure TestRuntimeBindings(const ADllHandle: TIdLibHandle;
   LibVersion: TIdC_UINT; const AFailed: TStringList);
 begin
+  // Capture the same handle and version passed to every crypto header binder.
+  // Stack tests can reuse this context without OS-specific module lookup.
+  GTestCryptoLibrary := ADllHandle;
+  GTestHeaderVersion := LibVersion;
   case GTestInfoUnavailable of
     1: OPENSSL_info := TestUnavailableInfo;
     2:
@@ -2247,6 +2274,8 @@ end;
 /// <summary>Records that cleanup continues past injected header-unloader failures.</summary>
 procedure TestCleanupTail;
 begin
+  GTestCryptoLibrary := IdNilHandle;
+  GTestHeaderVersion := 0;
   if GTestCleanupFaultActive then
     Inc(GTestCleanupTailCount);
 end;
@@ -2344,6 +2373,223 @@ begin
 end;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+procedure TLoaderLifecycleFixture.Stack_AliasesLifecycle(const AHeader: Integer);
+type
+  TCreateStack = function: Pointer; cdecl;
+  TCountItems = function(AStack: Pointer): TIdC_INT; cdecl;
+  TFreeStack = procedure(AStack: Pointer); cdecl;
+var
+  CreateStack: TCreateStack;
+  CountItems: TCountItems;
+  FreeStack: TFreeStack;
+  LCycle: Integer;
+
+  procedure ReadCurrentBindings;
+  begin
+    // Every header exposes the same C stack operations with different element
+    // pointer types. Normalize those signatures only for this shared test.
+    // Read them again after each transition: cached copies would hide a missing
+    // unload reset or retain the startup stub after a successful load.
+    case AHeader of
+      0:
+        begin
+          @CreateStack := @OPENSSL_sk_new_null;
+          @CountItems := @OPENSSL_sk_num;
+          @FreeStack := @OPENSSL_sk_free;
+        end;
+      1:
+        begin
+          @CreateStack := @sk_ASN1_OBJECT_new_null;
+          @CountItems := @sk_ASN1_OBJECT_num;
+          @FreeStack := @sk_ASN1_OBJECT_free;
+        end;
+      2:
+        begin
+          @CreateStack := @sk_CONF_VALUE_new_null;
+          @CountItems := @sk_CONF_VALUE_num;
+          @FreeStack := @sk_CONF_VALUE_free;
+        end;
+      3:
+        begin
+          @CreateStack := @sk_SCT_new_null;
+          @CountItems := @sk_SCT_num;
+          @FreeStack := @sk_SCT_free;
+        end;
+      4:
+        begin
+          @CreateStack := @sk_PKCS7_SIGNER_INFO_new_null;
+          @CountItems := @sk_PKCS7_SIGNER_INFO_num;
+          @FreeStack := @sk_PKCS7_SIGNER_INFO_free;
+        end;
+      5:
+        begin
+          @CreateStack := @sk_SSL_CIPHER_new_null;
+          @CountItems := @sk_SSL_CIPHER_num;
+          @FreeStack := @sk_SSL_CIPHER_free;
+        end;
+      6:
+        begin
+          @CreateStack := @sk_X509_new_null;
+          @CountItems := @sk_X509_num;
+          @FreeStack := @sk_X509_free;
+        end;
+      7:
+        begin
+          @CreateStack := @sk_X509_OBJECT_new_null;
+          @CountItems := @sk_X509_OBJECT_num;
+          @FreeStack := @sk_X509_OBJECT_free;
+        end;
+      8:
+        begin
+          @CreateStack := @sk_GENERAL_NAME_new_null;
+          @CountItems := @sk_GENERAL_NAME_num;
+          @FreeStack := @sk_GENERAL_NAME_free;
+        end;
+      9:
+        begin
+          @CreateStack := @sk_X509_POLICY_NODE_new_null;
+          @CountItems := @sk_X509_POLICY_NODE_num;
+          @FreeStack := @sk_X509_POLICY_NODE_free;
+        end;
+    else
+      Assert.Fail('Unknown stack header test case');
+    end;
+  end;
+
+  procedure AssertAliasesAreUnbound;
+  begin
+    ReadCurrentBindings;
+    Assert.IsTrue(@CreateStack = @ErrUnBound,
+      'Stack creation must point to ErrUnBound while unloaded');
+    Assert.IsTrue(@CountItems = @ErrUnBound,
+      'Stack counting must point to ErrUnBound while unloaded');
+    Assert.IsTrue(@FreeStack = @ErrUnBound,
+      'Stack cleanup must point to ErrUnBound while unloaded');
+    Assert.WillRaise(
+      procedure
+      begin
+        CreateStack();
+      end, ETaurusTLSLibraryNotLoaded,
+      'Calling an unloaded stack alias must raise a library-not-loaded exception');
+  end;
+
+  procedure AssertEmptyStackCanBeCreated;
+  var
+    LStack: Pointer;
+  begin
+    ReadCurrentBindings;
+    LStack := CreateStack();
+    Assert.IsNotNull(LStack, 'The loaded alias must create a stack');
+    try
+      Assert.AreEqual(0, CountItems(LStack), 'A new stack must be empty');
+    finally
+      FreeStack(LStack);
+    end;
+  end;
+
+begin
+  Loader.ConfigFile := FValidConfigFile;
+  AssertAliasesAreUnbound;
+
+  // The second cycle verifies that aliases recover after unloading, as well
+  // as during the first explicit load. Retire each stack before unloading.
+  for LCycle := 1 to 2 do
+  begin
+    Assert.IsTrue(Load, 'OpenSSL must load before using the stack aliases');
+    AssertEmptyStackCanBeCreated;
+
+    Unload;
+    AssertAliasesAreUnbound;
+  end;
+end;
+
+procedure TLoaderLifecycleFixture.Stack_Rebind(const AStartWithStub: Boolean);
+var
+  LDiagnostics: TStringList;
+  LOriginalNum, LOriginalZero, LOriginalSet: Pointer;
+  LStack: POPENSSL_STACK;
+begin
+  Loader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(Load, 'OpenSSL must be loaded before testing individual bindings');
+
+  // The loader's header callback records the binding context on every load.
+  // Use it directly so this test depends on dynamic binding, not the target OS.
+  Assert.IsTrue(GTestCryptoLibrary <> IdNilHandle,
+    'The loader must supply a crypto library handle to its header callbacks');
+  LOriginalNum := @OPENSSL_sk_num;
+  LOriginalZero := @OPENSSL_sk_zero;
+  LOriginalSet := @sk_set;
+  LDiagnostics := TStringList.Create;
+  try
+    // Simulate both possible starting states. These three entries cover a
+    // normal native binding, the formerly inverted zero guard, and a legacy alias.
+    if AStartWithStub then
+    begin
+      @OPENSSL_sk_num := @ErrUnBound;
+      @OPENSSL_sk_zero := @ErrUnBound;
+      @sk_set := @ErrUnBound;
+    end
+    else
+    begin
+      @OPENSSL_sk_num := nil;
+      @OPENSSL_sk_zero := nil;
+      @sk_set := nil;
+    end;
+
+    LoadStackFunctions(GTestCryptoLibrary, GTestHeaderVersion, LDiagnostics);
+
+    Assert.IsTrue(@OPENSSL_sk_num = LOriginalNum, 'Restore the native count routine');
+    Assert.IsTrue(@OPENSSL_sk_zero = LOriginalZero, 'Restore the native zero routine');
+    Assert.IsTrue(@sk_set = LOriginalSet, 'Restore the legacy compatibility routine');
+    Assert.AreEqual(0, LDiagnostics.Count, 'Rebinding supported APIs must succeed');
+
+    // Exercise the restored routines, rather than checking their addresses alone.
+    LStack := OPENSSL_sk_new_null();
+    Assert.IsNotNull(LStack, 'Create a stack for the rebound routines');
+    try
+      OPENSSL_sk_zero(LStack);
+      Assert.AreEqual(0, OPENSSL_sk_num(LStack), 'The rebound routines must be callable');
+    finally
+      OPENSSL_sk_free(LStack);
+    end;
+  finally
+    // Restore every changed global even when an assertion fails.
+    @OPENSSL_sk_num := LOriginalNum;
+    @OPENSSL_sk_zero := LOriginalZero;
+    @sk_set := LOriginalSet;
+    LDiagnostics.Free;
+  end;
+end;
+
+procedure TLoaderLifecycleFixture.Stack_PreservesExistingBindings;
+var
+  LDiagnostics: TStringList;
+  LOriginalSet: Pointer;
+begin
+  Loader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(Load, 'OpenSSL must be loaded before checking repeated binding');
+  Assert.IsTrue(GTestCryptoLibrary <> IdNilHandle,
+    'The loader must supply a crypto library handle to its header callbacks');
+
+  LOriginalSet := @sk_set;
+  LDiagnostics := TStringList.Create;
+  try
+    // The legacy alias normally uses a Pascal compatibility wrapper. Supply
+    // the equivalent native routine as an existing, valid binding instead.
+    // Rebinding it would replace this choice with the compatibility wrapper.
+    sk_set := OPENSSL_sk_set;
+
+    LoadStackFunctions(GTestCryptoLibrary, GTestHeaderVersion, LDiagnostics);
+
+    Assert.IsTrue(@sk_set = @OPENSSL_sk_set,
+      'Repeated binding must preserve an already assigned routine');
+    Assert.AreEqual(0, LDiagnostics.Count, 'Repeated binding must not add failures');
+  finally
+    @sk_set := LOriginalSet;
+    LDiagnostics.Free;
+  end;
+end;
+
 procedure TLoaderLifecycleFixture.Life_MissingLibraries;
 begin
   Loader.OpenSSLPath := FTempDir;
@@ -2351,7 +2597,7 @@ begin
   Assert.IsFalse(Loader.Load);
   Assert.IsTrue(Loader.State = lsLoadedFailed);
   Assert.IsFalse(Loader.IsLoaded);
-  Assert.IsFalse(Assigned(OpenSSL_version_num), 'Headers must remain unbound');
+  Assert.IsTrue(@OpenSSL_version_num = @ErrUnBound, 'Headers must remain unbound');
   Loader.OpenSSLPath := FOrigOpenSSLPath;
   Assert.IsFalse(Loader.Load, 'A path change must not reset failure state');
   Loader.Unload;
@@ -2381,7 +2627,7 @@ begin
   Assert.IsFalse(Loader.Load, 'Crypto without SSL is a partial load failure');
   Assert.IsTrue(Loader.State = lsLoadedFailed);
   Assert.IsFalse(Loader.IsLoaded);
-  Assert.IsFalse(Assigned(OpenSSL_version_num), 'Headers must not bind after partial discovery');
+  Assert.IsTrue(@OpenSSL_version_num = @ErrUnBound, 'Headers must not bind after partial discovery');
   Assert.IsTrue(Winapi.Windows.GetModuleHandle(PChar(LCopyFile)) = 0,
     'Rollback must release the partially loaded crypto DLL');
   TFile.Delete(LCopyFile);
@@ -3189,7 +3435,7 @@ begin
   Assert.AreEqual('A:Unload:Live', TTestCallbackLog[3],
     'Earlier actions still clean up with routines callable');
   {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Assert.IsFalse(Assigned(OpenSSL_version_num));
+  Assert.IsTrue(@OpenSSL_version_num = @ErrUnBound);
   {$ENDIF}
   TTestCallbackObserverB.ThrowOnUnload := False;
   Assert.IsTrue(Loader.Load);
@@ -3209,7 +3455,7 @@ begin
       Loader.Unload;
     end, ETaurusTLSLoaderError, 'Primary header cleanup failure');
   Assert.AreEqual(1, GTestCleanupTailCount, 'Remaining resetters must still execute');
-  Assert.IsFalse(Assigned(OpenSSL_version_num), 'Header reset must finish despite errors');
+  Assert.IsTrue(@OpenSSL_version_num = @ErrUnBound, 'Header reset must finish despite errors');
   Assert.IsTrue(Loader.State = lsLoadedFailed);
   Assert.IsFalse(Loader.Load, 'Cleanup failure must not leave the loader ready');
   GTestCleanupFaultActive := False;
@@ -3233,7 +3479,7 @@ begin
       Loader.Load;
     end, Exception, 'Simulated action failure in Observer B');
   Assert.AreEqual(1, GTestCleanupTailCount);
-  Assert.IsFalse(Assigned(OpenSSL_version_num));
+  Assert.IsTrue(@OpenSSL_version_num = @ErrUnBound);
   Assert.IsTrue(Loader.State = lsLoadedFailed);
   Assert.IsTrue(Loader.FailedToLoad.IndexOf('Fake_Diagnostic_Symbol') >= 0,
     'Failure cleanup must preserve binding diagnostics');

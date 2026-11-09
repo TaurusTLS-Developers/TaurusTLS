@@ -140,7 +140,8 @@ begin
   Assert.AreEqual(FCmdConfig, Loader.ConfigFile);
   Assert.IsTrue(Loader.State = lsNotLoaded);
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Assert.IsFalse(Assigned(OpenSSL_version_num));
+  Assert.IsTrue(@OpenSSL_version_num = @ErrUnBound,
+    'Configuration alone must leave native APIs pointing at ErrUnBound');
 {$ENDIF}
 end;
 
