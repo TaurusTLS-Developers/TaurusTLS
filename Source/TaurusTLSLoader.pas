@@ -467,6 +467,9 @@ type
     procedure Unload; {$IFDEF USE_INLINE}inline; {$ENDIF}
     /// <summary>Shared runtime configuration; changes follow the singleton's mutation rules.</summary>
     property OpenSSLPath: string read GetOpenSSLPath write SetOpenSSLPath;
+    /// <summary>
+    ///   Ordered filename suffixes used to find dynamic OpenSSL libraries.
+    /// </summary>
     property SSLLibVersions: string read GetSSLLibVersions write SetSSLLibVersions;
     /// <summary>Shared configured input, or the effective filename while ready.</summary>
     property ConfigFile: string read GetConfigFile write SetConfigFile;
