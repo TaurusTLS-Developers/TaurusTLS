@@ -165,14 +165,15 @@ end;
  {$I TaurusTLSUnusedParamOn.inc}
 procedure Unload;
 begin
-  ebcdic2ascii := nil;
-  ascii2ebcdic := nil;
+  @ebcdic2ascii := @ErrUnBound;
+  @ascii2ebcdic := @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

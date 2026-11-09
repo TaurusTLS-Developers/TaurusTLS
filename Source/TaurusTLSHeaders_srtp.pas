@@ -266,10 +266,10 @@ end;
 
 procedure Unload;
 begin
-  SSL_CTX_set_tlsext_use_srtp := nil;
-  SSL_set_tlsext_use_srtp := nil;
-  SSL_get_srtp_profiles := nil;
-  SSL_get_selected_srtp_profile := nil;
+  @SSL_CTX_set_tlsext_use_srtp := @ErrUnBound;
+  @SSL_set_tlsext_use_srtp := @ErrUnBound;
+  @SSL_get_srtp_profiles := @ErrUnBound;
+  @SSL_get_selected_srtp_profile := @ErrUnBound;
 end;
   {$I TaurusTLSUnusedParamOff.inc}
   {$ENDIF}
@@ -277,6 +277,7 @@ end;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

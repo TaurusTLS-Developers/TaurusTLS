@@ -841,27 +841,28 @@ end;
 
 procedure Unload;
 begin
-  ASYNC_init_thread := nil; {introduced 1.1.0}
-  ASYNC_cleanup_thread := nil; {introduced 1.1.0}
-  ASYNC_WAIT_CTX_new := nil; {introduced 1.1.0}
-  ASYNC_WAIT_CTX_free := nil; {introduced 1.1.0}
-  ASYNC_WAIT_CTX_set_wait_fd := nil; {introduced 1.1.0}
-  ASYNC_WAIT_CTX_get_fd := nil; {introduced 1.1.0}
-  ASYNC_WAIT_CTX_get_all_fds := nil; {introduced 1.1.0}
-  ASYNC_WAIT_CTX_get_changed_fds := nil; {introduced 1.1.0}
-  ASYNC_WAIT_CTX_clear_fd := nil; {introduced 1.1.0}
-  ASYNC_is_capable := nil; {introduced 1.1.0}
-  ASYNC_start_job := nil; {introduced 1.1.0}
-  ASYNC_pause_job := nil; {introduced 1.1.0}
-  ASYNC_get_current_job := nil; {introduced 1.1.0}
-  ASYNC_get_wait_ctx := nil; {introduced 1.1.0}
-  ASYNC_block_pause := nil; {introduced 1.1.0}
-  ASYNC_unblock_pause := nil; {introduced 1.1.0}
+  @ASYNC_init_thread := @ErrUnBound; {introduced 1.1.0}
+  @ASYNC_cleanup_thread := @ErrUnBound; {introduced 1.1.0}
+  @ASYNC_WAIT_CTX_new := @ErrUnBound; {introduced 1.1.0}
+  @ASYNC_WAIT_CTX_free := @ErrUnBound; {introduced 1.1.0}
+  @ASYNC_WAIT_CTX_set_wait_fd := @ErrUnBound; {introduced 1.1.0}
+  @ASYNC_WAIT_CTX_get_fd := @ErrUnBound; {introduced 1.1.0}
+  @ASYNC_WAIT_CTX_get_all_fds := @ErrUnBound; {introduced 1.1.0}
+  @ASYNC_WAIT_CTX_get_changed_fds := @ErrUnBound; {introduced 1.1.0}
+  @ASYNC_WAIT_CTX_clear_fd := @ErrUnBound; {introduced 1.1.0}
+  @ASYNC_is_capable := @ErrUnBound; {introduced 1.1.0}
+  @ASYNC_start_job := @ErrUnBound; {introduced 1.1.0}
+  @ASYNC_pause_job := @ErrUnBound; {introduced 1.1.0}
+  @ASYNC_get_current_job := @ErrUnBound; {introduced 1.1.0}
+  @ASYNC_get_wait_ctx := @ErrUnBound; {introduced 1.1.0}
+  @ASYNC_block_pause := @ErrUnBound; {introduced 1.1.0}
+  @ASYNC_unblock_pause := @ErrUnBound; {introduced 1.1.0}
 end;
   {$ENDIF}
 {$ENDIF}
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

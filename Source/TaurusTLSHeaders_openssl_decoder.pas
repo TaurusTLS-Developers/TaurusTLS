@@ -2098,65 +2098,66 @@ end;
 
 procedure Unload;
 begin
-  OSSL_DECODER_fetch := nil;
-  OSSL_DECODER_up_ref := nil;
-  OSSL_DECODER_free := nil;
-  OSSL_DECODER_get0_provider := nil;
-  OSSL_DECODER_get0_properties := nil;
-  OSSL_DECODER_get0_name := nil;
-  OSSL_DECODER_get0_description := nil;
-  OSSL_DECODER_is_a := nil;
-  OSSL_DECODER_do_all_provided := nil;
-  OSSL_DECODER_names_do_all := nil;
-  OSSL_DECODER_gettable_params := nil;
-  OSSL_DECODER_get_params := nil;
-  OSSL_DECODER_settable_ctx_params := nil;
-  OSSL_DECODER_CTX_new := nil;
-  OSSL_DECODER_CTX_set_params := nil;
-  OSSL_DECODER_CTX_free := nil;
+  @OSSL_DECODER_fetch := @ErrUnBound;
+  @OSSL_DECODER_up_ref := @ErrUnBound;
+  @OSSL_DECODER_free := @ErrUnBound;
+  @OSSL_DECODER_get0_provider := @ErrUnBound;
+  @OSSL_DECODER_get0_properties := @ErrUnBound;
+  @OSSL_DECODER_get0_name := @ErrUnBound;
+  @OSSL_DECODER_get0_description := @ErrUnBound;
+  @OSSL_DECODER_is_a := @ErrUnBound;
+  @OSSL_DECODER_do_all_provided := @ErrUnBound;
+  @OSSL_DECODER_names_do_all := @ErrUnBound;
+  @OSSL_DECODER_gettable_params := @ErrUnBound;
+  @OSSL_DECODER_get_params := @ErrUnBound;
+  @OSSL_DECODER_settable_ctx_params := @ErrUnBound;
+  @OSSL_DECODER_CTX_new := @ErrUnBound;
+  @OSSL_DECODER_CTX_set_params := @ErrUnBound;
+  @OSSL_DECODER_CTX_free := @ErrUnBound;
 
 //* Utilities that help set specific parameters */
-  OSSL_DECODER_CTX_set_passphrase := nil;
-  OSSL_DECODER_CTX_set_pem_password_cb := nil;
-  OSSL_DECODER_CTX_set_passphrase_cb := nil;
-  OSSL_DECODER_CTX_set_passphrase_ui := nil;
+  @OSSL_DECODER_CTX_set_passphrase := @ErrUnBound;
+  @OSSL_DECODER_CTX_set_pem_password_cb := @ErrUnBound;
+  @OSSL_DECODER_CTX_set_passphrase_cb := @ErrUnBound;
+  @OSSL_DECODER_CTX_set_passphrase_ui := @ErrUnBound;
 
 {*
  * Utilities to read the object to decode, with the result sent to cb.
  * These will discover all provided methods
  *}
 
-  OSSL_DECODER_CTX_set_selection := nil;
-  OSSL_DECODER_CTX_set_input_type := nil;
-  OSSL_DECODER_CTX_set_input_structure := nil;
-  OSSL_DECODER_CTX_add_decoder := nil;
-  OSSL_DECODER_CTX_add_extra := nil;
-  OSSL_DECODER_CTX_get_num_decoders := nil;
+  @OSSL_DECODER_CTX_set_selection := @ErrUnBound;
+  @OSSL_DECODER_CTX_set_input_type := @ErrUnBound;
+  @OSSL_DECODER_CTX_set_input_structure := @ErrUnBound;
+  @OSSL_DECODER_CTX_add_decoder := @ErrUnBound;
+  @OSSL_DECODER_CTX_add_extra := @ErrUnBound;
+  @OSSL_DECODER_CTX_get_num_decoders := @ErrUnBound;
 
-  OSSL_DECODER_INSTANCE_get_decoder := nil;
-  OSSL_DECODER_INSTANCE_get_decoder_ctx := nil;
-  OSSL_DECODER_INSTANCE_get_input_type := nil;
-  OSSL_DECODER_INSTANCE_get_input_structure := nil;
+  @OSSL_DECODER_INSTANCE_get_decoder := @ErrUnBound;
+  @OSSL_DECODER_INSTANCE_get_decoder_ctx := @ErrUnBound;
+  @OSSL_DECODER_INSTANCE_get_input_type := @ErrUnBound;
+  @OSSL_DECODER_INSTANCE_get_input_structure := @ErrUnBound;
 
-  OSSL_DECODER_CTX_set_construct := nil;
-  OSSL_DECODER_CTX_set_construct_data := nil;
-  OSSL_DECODER_CTX_set_cleanup := nil;
-  OSSL_DECODER_CTX_get_construct := nil;
-  OSSL_DECODER_CTX_get_construct_data := nil;
-  OSSL_DECODER_CTX_get_cleanup := nil;
+  @OSSL_DECODER_CTX_set_construct := @ErrUnBound;
+  @OSSL_DECODER_CTX_set_construct_data := @ErrUnBound;
+  @OSSL_DECODER_CTX_set_cleanup := @ErrUnBound;
+  @OSSL_DECODER_CTX_get_construct := @ErrUnBound;
+  @OSSL_DECODER_CTX_get_construct_data := @ErrUnBound;
+  @OSSL_DECODER_CTX_get_cleanup := @ErrUnBound;
 
-  OSSL_DECODER_export := nil;
-  OSSL_DECODER_from_bio := nil;
+  @OSSL_DECODER_export := @ErrUnBound;
+  @OSSL_DECODER_from_bio := @ErrUnBound;
 //#ifndef OPENSSL_NO_STDIO
 //int OSSL_DECODER_from_fp(OSSL_DECODER_CTX *ctx, FILE *in);
 //#endif
-  OSSL_DECODER_from_data := nil;
-  OSSL_DECODER_CTX_new_for_pkey := nil;
+  @OSSL_DECODER_from_data := @ErrUnBound;
+  @OSSL_DECODER_CTX_new_for_pkey := @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
 
 Register_SSLLoader(Load, 'LibCrypto');
 Register_SSLUnloader(Unload);

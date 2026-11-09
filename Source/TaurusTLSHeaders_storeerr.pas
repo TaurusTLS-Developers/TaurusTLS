@@ -249,13 +249,14 @@ end;
 
 procedure Unload;
 begin
-  ERR_load_OSSL_STORE_strings := nil;
+  @ERR_load_OSSL_STORE_strings := @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

@@ -1750,53 +1750,54 @@ end;
 
 procedure Unload;
 begin
-  EVP_KDF_up_ref := nil;
-  EVP_KDF_free := nil;
-  EVP_KDF_CTX_dup := nil;
-  EVP_KDF_get0_description := nil;
-  EVP_KDF_is_a := nil;
-  EVP_KDF_get0_name := nil;
-  EVP_KDF_get0_provider := nil;
-  EVP_KDF_CTX_get0_kdf := nil;
-  EVP_KDF_CTX_get1_kdf := nil;
-  EVP_KDF_CTX_kdf := nil;
-  EVP_KDF_CTX_reset := nil;
-  EVP_KDF_CTX_get_kdf_size := nil;
-  EVP_KDF_derive := nil;
-  EVP_KDF_CTX_set_SKEY := nil;
-  EVP_KDF_derive_SKEY := nil;
-  EVP_KDF_get_params := nil;
-  EVP_KDF_CTX_get_params := nil;
-  EVP_KDF_CTX_set_params := nil;
-  EVP_KDF_gettable_params := nil;
-  EVP_KDF_gettable_ctx_params := nil;
-  EVP_KDF_settable_ctx_params := nil;
-  EVP_KDF_CTX_gettable_params := nil;
-  EVP_KDF_settable_ctx_params := nil;
-  EVP_KDF_CTX_settable_params := nil;
-  EVP_KDF_do_all_provided := nil;
-  EVP_KDF_names_do_all := nil;
+  @EVP_KDF_up_ref := @ErrUnBound;
+  @EVP_KDF_free := @ErrUnBound;
+  @EVP_KDF_CTX_dup := @ErrUnBound;
+  @EVP_KDF_get0_description := @ErrUnBound;
+  @EVP_KDF_is_a := @ErrUnBound;
+  @EVP_KDF_get0_name := @ErrUnBound;
+  @EVP_KDF_get0_provider := @ErrUnBound;
+  @EVP_KDF_CTX_get0_kdf := @ErrUnBound;
+  @EVP_KDF_CTX_get1_kdf := @ErrUnBound;
+  @EVP_KDF_CTX_kdf := @ErrUnBound;
+  @EVP_KDF_CTX_reset := @ErrUnBound;
+  @EVP_KDF_CTX_get_kdf_size := @ErrUnBound;
+  @EVP_KDF_derive := @ErrUnBound;
+  @EVP_KDF_CTX_set_SKEY := @ErrUnBound;
+  @EVP_KDF_derive_SKEY := @ErrUnBound;
+  @EVP_KDF_get_params := @ErrUnBound;
+  @EVP_KDF_CTX_get_params := @ErrUnBound;
+  @EVP_KDF_CTX_set_params := @ErrUnBound;
+  @EVP_KDF_gettable_params := @ErrUnBound;
+  @EVP_KDF_gettable_ctx_params := @ErrUnBound;
+  @EVP_KDF_settable_ctx_params := @ErrUnBound;
+  @EVP_KDF_CTX_gettable_params := @ErrUnBound;
+  @EVP_KDF_settable_ctx_params := @ErrUnBound;
+  @EVP_KDF_CTX_settable_params := @ErrUnBound;
+  @EVP_KDF_do_all_provided := @ErrUnBound;
+  @EVP_KDF_names_do_all := @ErrUnBound;
 
-  EVP_PKEY_CTX_set_tls1_prf_md := nil;
-  EVP_PKEY_CTX_set1_tls1_prf_secret := nil;
-  EVP_PKEY_CTX_add1_tls1_prf_seed := nil;
-  EVP_PKEY_CTX_set_hkdf_md := nil;
-  EVP_PKEY_CTX_set1_hkdf_salt := nil;
-  EVP_PKEY_CTX_set1_hkdf_key := nil;
-  EVP_PKEY_CTX_add1_hkdf_info := nil;
-  EVP_PKEY_CTX_set_hkdf_mode := nil;
-  EVP_PKEY_CTX_set1_pbe_pass := nil;
-  EVP_PKEY_CTX_set1_scrypt_salt := nil;
-  EVP_PKEY_CTX_set_scrypt_N := nil;
-  EVP_PKEY_CTX_set_scrypt_r := nil;
-  EVP_PKEY_CTX_set_scrypt_p := nil;
-  EVP_PKEY_CTX_set_scrypt_maxmem_bytes := nil;
+  @EVP_PKEY_CTX_set_tls1_prf_md := @ErrUnBound;
+  @EVP_PKEY_CTX_set1_tls1_prf_secret := @ErrUnBound;
+  @EVP_PKEY_CTX_add1_tls1_prf_seed := @ErrUnBound;
+  @EVP_PKEY_CTX_set_hkdf_md := @ErrUnBound;
+  @EVP_PKEY_CTX_set1_hkdf_salt := @ErrUnBound;
+  @EVP_PKEY_CTX_set1_hkdf_key := @ErrUnBound;
+  @EVP_PKEY_CTX_add1_hkdf_info := @ErrUnBound;
+  @EVP_PKEY_CTX_set_hkdf_mode := @ErrUnBound;
+  @EVP_PKEY_CTX_set1_pbe_pass := @ErrUnBound;
+  @EVP_PKEY_CTX_set1_scrypt_salt := @ErrUnBound;
+  @EVP_PKEY_CTX_set_scrypt_N := @ErrUnBound;
+  @EVP_PKEY_CTX_set_scrypt_r := @ErrUnBound;
+  @EVP_PKEY_CTX_set_scrypt_p := @ErrUnBound;
+  @EVP_PKEY_CTX_set_scrypt_maxmem_bytes := @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

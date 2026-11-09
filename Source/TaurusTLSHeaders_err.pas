@@ -1897,39 +1897,39 @@ end;
 
 procedure Unload;
 begin
-  ERR_put_error := nil; {removed 3.0.0}
-  ERR_new := nil; {introduced 3.0.0}
-  ERR_set_debug := nil;  {introduced 3.0.0}
-  ERR_set_error := nil; {introduced 3.0.0}
-  ERR_set_error_data := nil;
-  ERR_get_error := nil;
-  ERR_get_error_line := nil;
-  ERR_get_error_line_data := nil;
-  ERR_peek_error := nil;
-  ERR_peek_error_line := nil;
-  ERR_peek_error_line_data := nil;
-  ERR_peek_last_error := nil;
-  ERR_peek_last_error_line := nil;
-  ERR_peek_last_error_line_data := nil;
-  ERR_clear_error := nil;
-  ERR_error_string := nil;
-  ERR_error_string_n := nil;
-  ERR_lib_error_string := nil;
-  ERR_func_error_string := nil;
-  ERR_reason_error_string := nil;
-  ERR_print_errors_cb := nil;
-  ERR_print_errors := nil;
-  ERR_load_strings := nil;
-  ERR_load_strings_const := nil; {introduced 1.1.0}
-  ERR_unload_strings := nil;
-  ERR_load_ERR_strings := nil;
-  ERR_get_state := nil;
-  ERR_get_next_error_library := nil;
-  ERR_set_mark := nil;
-  ERR_pop_to_mark := nil;
-  ERR_clear_last_mark := nil; {introduced 1.1.0}
-  SSLErr := nil; {removed 1.0.0}
-  X509err := nil; {removed 1.0.0}
+  @ERR_put_error := @ErrUnBound; {removed 3.0.0}
+  @ERR_new := @ErrUnBound; {introduced 3.0.0}
+  @ERR_set_debug := @ErrUnBound;  {introduced 3.0.0}
+  @ERR_set_error := @ErrUnBound; {introduced 3.0.0}
+  @ERR_set_error_data := @ErrUnBound;
+  @ERR_get_error := @ErrUnBound;
+  @ERR_get_error_line := @ErrUnBound;
+  @ERR_get_error_line_data := @ErrUnBound;
+  @ERR_peek_error := @ErrUnBound;
+  @ERR_peek_error_line := @ErrUnBound;
+  @ERR_peek_error_line_data := @ErrUnBound;
+  @ERR_peek_last_error := @ErrUnBound;
+  @ERR_peek_last_error_line := @ErrUnBound;
+  @ERR_peek_last_error_line_data := @ErrUnBound;
+  @ERR_clear_error := @ErrUnBound;
+  @ERR_error_string := @ErrUnBound;
+  @ERR_error_string_n := @ErrUnBound;
+  @ERR_lib_error_string := @ErrUnBound;
+  @ERR_func_error_string := @ErrUnBound;
+  @ERR_reason_error_string := @ErrUnBound;
+  @ERR_print_errors_cb := @ErrUnBound;
+  @ERR_print_errors := @ErrUnBound;
+  @ERR_load_strings := @ErrUnBound;
+  @ERR_load_strings_const := @ErrUnBound; {introduced 1.1.0}
+  @ERR_unload_strings := @ErrUnBound;
+  @ERR_load_ERR_strings := @ErrUnBound;
+  @ERR_get_state := @ErrUnBound;
+  @ERR_get_next_error_library := @ErrUnBound;
+  @ERR_set_mark := @ErrUnBound;
+  @ERR_pop_to_mark := @ErrUnBound;
+  @ERR_clear_last_mark := @ErrUnBound; {introduced 1.1.0}
+  @SSLErr := @ErrUnBound; {removed 1.0.0}
+  @X509err := @ErrUnBound; {removed 1.0.0}
 end;
   {$ENDIF}
 {$ELSE}
@@ -1959,6 +1959,7 @@ end;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

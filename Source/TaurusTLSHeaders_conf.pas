@@ -1766,70 +1766,71 @@ end;
 
 procedure Unload;
 begin
-  CONF_set_default_method := nil;
-  NCONF_new := nil;
-  NCONF_default := nil;
-  NCONF_WIN32 := nil;
-  NCONF_free := nil;
-  NCONF_free_data := nil;
-  NCONF_load := nil;
-  NCONF_load_bio := nil;
-  NCONF_get_string := nil;
-  NCONF_get_number_e := nil;
-  NCONF_dump_bio := nil;
-  CONF_modules_load := nil;
-  CONF_modules_load_file := nil;
-  CONF_modules_load_file_ex := nil;
-  CONF_modules_unload := nil;
-  CONF_modules_finish := nil;
-  CONF_module_add := nil;
-  CONF_imodule_get_usr_data := nil;
-  CONF_imodule_set_usr_data := nil;
-  CONF_imodule_get_module := nil;
-  CONF_imodule_get_flags := nil;
-  CONF_imodule_set_flags := nil;
-  CONF_module_get_usr_data := nil;
-  CONF_module_set_usr_data := nil;
-  CONF_get1_default_config_file := nil;
-  CONF_parse_list := nil;
-  OPENSSL_load_builtin_modules := nil;
+  @CONF_set_default_method := @ErrUnBound;
+  @NCONF_new := @ErrUnBound;
+  @NCONF_default := @ErrUnBound;
+  @NCONF_WIN32 := @ErrUnBound;
+  @NCONF_free := @ErrUnBound;
+  @NCONF_free_data := @ErrUnBound;
+  @NCONF_load := @ErrUnBound;
+  @NCONF_load_bio := @ErrUnBound;
+  @NCONF_get_string := @ErrUnBound;
+  @NCONF_get_number_e := @ErrUnBound;
+  @NCONF_dump_bio := @ErrUnBound;
+  @CONF_modules_load := @ErrUnBound;
+  @CONF_modules_load_file := @ErrUnBound;
+  @CONF_modules_load_file_ex := @ErrUnBound;
+  @CONF_modules_unload := @ErrUnBound;
+  @CONF_modules_finish := @ErrUnBound;
+  @CONF_module_add := @ErrUnBound;
+  @CONF_imodule_get_usr_data := @ErrUnBound;
+  @CONF_imodule_set_usr_data := @ErrUnBound;
+  @CONF_imodule_get_module := @ErrUnBound;
+  @CONF_imodule_get_flags := @ErrUnBound;
+  @CONF_imodule_set_flags := @ErrUnBound;
+  @CONF_module_get_usr_data := @ErrUnBound;
+  @CONF_module_set_usr_data := @ErrUnBound;
+  @CONF_get1_default_config_file := @ErrUnBound;
+  @CONF_parse_list := @ErrUnBound;
+  @OPENSSL_load_builtin_modules := @ErrUnBound;
 
   //stack of macros
-  sk_CONF_VALUE_new:= nil;
-  sk_CONF_VALUE_new_null := nil;
-  sk_CONF_VALUE_free := nil;
-  sk_CONF_VALUE_num := nil;
-  sk_CONF_VALUE_value := nil;
-  sk_CONF_VALUE_push := nil;
-  sk_CONF_VALUE_dup := nil;
-  sk_CONF_VALUE_find := nil;
-  sk_CONF_VALUE_pop_free :=  nil;
+  @sk_CONF_VALUE_new:= @ErrUnBound;
+  @sk_CONF_VALUE_new_null := @ErrUnBound;
+  @sk_CONF_VALUE_free := @ErrUnBound;
+  @sk_CONF_VALUE_num := @ErrUnBound;
+  @sk_CONF_VALUE_value := @ErrUnBound;
+  @sk_CONF_VALUE_push := @ErrUnBound;
+  @sk_CONF_VALUE_dup := @ErrUnBound;
+  @sk_CONF_VALUE_find := @ErrUnBound;
+  @sk_CONF_VALUE_pop_free :=  @ErrUnBound;
 
-  sk_CONF_MODULE_new:= nil;
-  sk_CONF_MODULE_new_null := nil;
-  sk_CONF_MODULE_free := nil;
-  sk_CONF_MODULE_num := nil;
-  sk_CONF_MODULE_value := nil;
-  sk_CONF_MODULE_push := nil;
-  sk_CONF_MODULE_dup := nil;
-  sk_CONF_MODULE_find := nil;
-  sk_CONF_MODULE_pop_free := nil;
+  @sk_CONF_MODULE_new:= @ErrUnBound;
+  @sk_CONF_MODULE_new_null := @ErrUnBound;
+  @sk_CONF_MODULE_free := @ErrUnBound;
+  @sk_CONF_MODULE_num := @ErrUnBound;
+  @sk_CONF_MODULE_value := @ErrUnBound;
+  @sk_CONF_MODULE_push := @ErrUnBound;
+  @sk_CONF_MODULE_dup := @ErrUnBound;
+  @sk_CONF_MODULE_find := @ErrUnBound;
+  @sk_CONF_MODULE_pop_free := @ErrUnBound;
 
-  sk_CONF_IMODULE_new:= nil;
-  sk_CONF_IMODULE_new_null := nil;
-  sk_CONF_IMODULE_free := nil;
-  sk_CONF_IMODULE_num := nil;
-  sk_CONF_IMODULE_value := nil;
-  sk_CONF_IMODULE_push := nil;
-  sk_CONF_IMODULE_dup := nil;
-  sk_CONF_IMODULE_find := nil;
-  sk_CONF_IMODULE_pop_free :=  nil;
+  @sk_CONF_IMODULE_new:= @ErrUnBound;
+  @sk_CONF_IMODULE_new_null := @ErrUnBound;
+  @sk_CONF_IMODULE_free := @ErrUnBound;
+  @sk_CONF_IMODULE_num := @ErrUnBound;
+  @sk_CONF_IMODULE_value := @ErrUnBound;
+  @sk_CONF_IMODULE_push := @ErrUnBound;
+  @sk_CONF_IMODULE_dup := @ErrUnBound;
+  @sk_CONF_IMODULE_find := @ErrUnBound;
+  @sk_CONF_IMODULE_pop_free :=  @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

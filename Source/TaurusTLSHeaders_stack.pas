@@ -1,4 +1,4 @@
-/// <exclude />
+﻿/// <exclude />
   (* This unit was generated using the script genTaurusTLSHdrs.sh from the source file TaurusTLSHeaders_stack.h2pas
      It should not be modified directly. All changes should be made to TaurusTLSHeaders_stack.h2pas
      and this file regenerated. TaurusTLSHeaders_stack.h2pas is distributed with the full Indy
@@ -842,7 +842,7 @@ var
   FuncLoadError: boolean;
 
 begin
-  if not Assigned(OPENSSL_sk_num) then
+  if not Assigned(OPENSSL_sk_num) or (@OPENSSL_sk_num = @ErrUnBound) then
   begin
 
     OPENSSL_sk_num := LoadLibFunction(ADllHandle, OPENSSL_sk_num_procname);
@@ -878,7 +878,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if not Assigned(OPENSSL_sk_value) then
+  if not Assigned(OPENSSL_sk_value) or (@OPENSSL_sk_value = @ErrUnBound) then
   begin
     OPENSSL_sk_value := LoadLibFunction(ADllHandle, OPENSSL_sk_value_procname);
     FuncLoadError := not Assigned(OPENSSL_sk_value);
@@ -913,7 +913,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if not Assigned(OPENSSL_sk_set) then
+  if not Assigned(OPENSSL_sk_set) or (@OPENSSL_sk_set = @ErrUnBound) then
   begin
     OPENSSL_sk_set := LoadLibFunction(ADllHandle, OPENSSL_sk_set_procname);
     FuncLoadError := not Assigned(OPENSSL_sk_set);
@@ -948,7 +948,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if not Assigned(OPENSSL_sk_new) then
+  if not Assigned(OPENSSL_sk_new) or (@OPENSSL_sk_new = @ErrUnBound) then
   begin
     OPENSSL_sk_new := LoadLibFunction(ADllHandle, OPENSSL_sk_new_procname);
     FuncLoadError := not Assigned(OPENSSL_sk_new);
@@ -982,7 +982,7 @@ begin
     end;
   end;
 
-  if not Assigned(OPENSSL_sk_set_thunks) then
+  if not Assigned(OPENSSL_sk_set_thunks) or (@OPENSSL_sk_set_thunks = @ErrUnBound) then
   begin
     OPENSSL_sk_set_thunks := LoadLibFunction(ADllHandle, OPENSSL_sk_set_thunks_procname);
     FuncLoadError := not Assigned(OPENSSL_sk_set_thunks);
@@ -1016,7 +1016,7 @@ begin
     end;
   end;
 
-  if not Assigned(OPENSSL_sk_set_cmp_thunks) then
+  if not Assigned(OPENSSL_sk_set_cmp_thunks) or (@OPENSSL_sk_set_cmp_thunks = @ErrUnBound) then
   begin
     OPENSSL_sk_set_cmp_thunks := LoadLibFunction(ADllHandle, OPENSSL_sk_set_cmp_thunks_procname);
     FuncLoadError := not Assigned(OPENSSL_sk_set_cmp_thunks);
@@ -1050,7 +1050,7 @@ begin
     end;
   end;
 
-  if not Assigned(OPENSSL_sk_set_copy_thunks) then
+  if not Assigned(OPENSSL_sk_set_copy_thunks) or (@OPENSSL_sk_set_copy_thunks = @ErrUnBound) then
   begin
     OPENSSL_sk_set_copy_thunks := LoadLibFunction(ADllHandle, OPENSSL_sk_set_copy_thunks_procname);
     FuncLoadError := not Assigned(OPENSSL_sk_set_copy_thunks);
@@ -1085,7 +1085,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if not Assigned(OPENSSL_sk_new_null) then
+  if not Assigned(OPENSSL_sk_new_null) or (@OPENSSL_sk_new_null = @ErrUnBound) then
   begin
     OPENSSL_sk_new_null := LoadLibFunction(ADllHandle,
       OPENSSL_sk_new_null_procname);
@@ -1121,7 +1121,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if not Assigned(OPENSSL_sk_new_reserve) then
+  if not Assigned(OPENSSL_sk_new_reserve) or (@OPENSSL_sk_new_reserve = @ErrUnBound) then
   begin
     OPENSSL_sk_new_reserve := LoadLibFunction(ADllHandle,
       OPENSSL_sk_new_reserve_procname);
@@ -1157,7 +1157,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if not Assigned(OPENSSL_sk_reserve) then
+  if not Assigned(OPENSSL_sk_reserve) or (@OPENSSL_sk_reserve = @ErrUnBound) then
   begin
     OPENSSL_sk_reserve := LoadLibFunction(ADllHandle,
       OPENSSL_sk_reserve_procname);
@@ -1193,7 +1193,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if not Assigned(OPENSSL_sk_free) then
+  if not Assigned(OPENSSL_sk_free) or (@OPENSSL_sk_free = @ErrUnBound) then
   begin
     OPENSSL_sk_free := LoadLibFunction(ADllHandle, OPENSSL_sk_free_procname);
     FuncLoadError := not Assigned(OPENSSL_sk_free);
@@ -1228,7 +1228,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if not Assigned(OPENSSL_sk_pop_free) then
+  if not Assigned(OPENSSL_sk_pop_free) or (@OPENSSL_sk_pop_free = @ErrUnBound) then
   begin
 
     OPENSSL_sk_pop_free := LoadLibFunction(ADllHandle,
@@ -1265,7 +1265,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if not Assigned(OPENSSL_sk_deep_copy) then
+  if not Assigned(OPENSSL_sk_deep_copy) or (@OPENSSL_sk_deep_copy = @ErrUnBound) then
   begin
     OPENSSL_sk_deep_copy := LoadLibFunction(ADllHandle,
       OPENSSL_sk_deep_copy_procname);
@@ -1301,7 +1301,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if not Assigned(OPENSSL_sk_insert) then
+  if not Assigned(OPENSSL_sk_insert) or (@OPENSSL_sk_insert = @ErrUnBound) then
   begin
     OPENSSL_sk_insert := LoadLibFunction(ADllHandle,
       OPENSSL_sk_insert_procname);
@@ -1337,7 +1337,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if not Assigned(OPENSSL_sk_delete) then
+  if not Assigned(OPENSSL_sk_delete) or (@OPENSSL_sk_delete = @ErrUnBound) then
   begin
     OPENSSL_sk_delete := LoadLibFunction(ADllHandle,
       OPENSSL_sk_delete_procname);
@@ -1373,7 +1373,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if not Assigned(OPENSSL_sk_delete_ptr) then
+  if not Assigned(OPENSSL_sk_delete_ptr) or (@OPENSSL_sk_delete_ptr = @ErrUnBound) then
   begin
     OPENSSL_sk_delete_ptr := LoadLibFunction(ADllHandle,
       OPENSSL_sk_delete_ptr_procname);
@@ -1409,7 +1409,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if not Assigned(OPENSSL_sk_find) then
+  if not Assigned(OPENSSL_sk_find) or (@OPENSSL_sk_find = @ErrUnBound) then
   begin
     OPENSSL_sk_find := LoadLibFunction(ADllHandle, OPENSSL_sk_find_procname);
     FuncLoadError := not Assigned(OPENSSL_sk_find);
@@ -1444,7 +1444,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if not Assigned(OPENSSL_sk_find_ex) then
+  if not Assigned(OPENSSL_sk_find_ex) or (@OPENSSL_sk_find_ex = @ErrUnBound) then
   begin
     OPENSSL_sk_find_ex := LoadLibFunction(ADllHandle,
       OPENSSL_sk_find_ex_procname);
@@ -1480,7 +1480,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if not Assigned(OPENSSL_sk_push) then
+  if not Assigned(OPENSSL_sk_push) or (@OPENSSL_sk_push = @ErrUnBound) then
   begin
     OPENSSL_sk_push := LoadLibFunction(ADllHandle, OPENSSL_sk_push_procname);
     FuncLoadError := not Assigned(OPENSSL_sk_push);
@@ -1515,7 +1515,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if not Assigned(OPENSSL_sk_unshift) then
+  if not Assigned(OPENSSL_sk_unshift) or (@OPENSSL_sk_unshift = @ErrUnBound) then
   begin
     OPENSSL_sk_unshift := LoadLibFunction(ADllHandle,
       OPENSSL_sk_unshift_procname);
@@ -1551,7 +1551,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if not Assigned(OPENSSL_sk_shift) then
+  if not Assigned(OPENSSL_sk_shift) or (@OPENSSL_sk_shift = @ErrUnBound) then
   begin
     OPENSSL_sk_shift := LoadLibFunction(ADllHandle, OPENSSL_sk_shift_procname);
     FuncLoadError := not Assigned(OPENSSL_sk_shift);
@@ -1586,7 +1586,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if not Assigned(OPENSSL_sk_pop) then
+  if not Assigned(OPENSSL_sk_pop) or (@OPENSSL_sk_pop = @ErrUnBound) then
   begin
     OPENSSL_sk_pop := LoadLibFunction(ADllHandle, OPENSSL_sk_pop_procname);
     FuncLoadError := not Assigned(OPENSSL_sk_pop);
@@ -1621,7 +1621,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if Assigned(OPENSSL_sk_zero) then
+  if not Assigned(OPENSSL_sk_zero) or (@OPENSSL_sk_zero = @ErrUnBound) then
   begin
     OPENSSL_sk_zero := LoadLibFunction(ADllHandle, OPENSSL_sk_zero_procname);
     FuncLoadError := not Assigned(OPENSSL_sk_zero);
@@ -1656,7 +1656,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if not Assigned(OPENSSL_sk_set_cmp_func) then
+  if not Assigned(OPENSSL_sk_set_cmp_func) or (@OPENSSL_sk_set_cmp_func = @ErrUnBound) then
   begin
     OPENSSL_sk_set_cmp_func := LoadLibFunction(ADllHandle,
       OPENSSL_sk_set_cmp_func_procname);
@@ -1692,7 +1692,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if not Assigned(OPENSSL_sk_dup) then
+  if not Assigned(OPENSSL_sk_dup) or (@OPENSSL_sk_dup = @ErrUnBound) then
   begin
     OPENSSL_sk_dup := LoadLibFunction(ADllHandle, OPENSSL_sk_dup_procname);
     FuncLoadError := not Assigned(OPENSSL_sk_dup);
@@ -1727,7 +1727,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if not Assigned(OPENSSL_sk_sort) then
+  if not Assigned(OPENSSL_sk_sort) or (@OPENSSL_sk_sort = @ErrUnBound) then
   begin
     OPENSSL_sk_sort := LoadLibFunction(ADllHandle, OPENSSL_sk_sort_procname);
     FuncLoadError := not Assigned(OPENSSL_sk_sort);
@@ -1762,7 +1762,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if not Assigned(OPENSSL_sk_is_sorted) then
+  if not Assigned(OPENSSL_sk_is_sorted) or (@OPENSSL_sk_is_sorted = @ErrUnBound) then
   begin
     OPENSSL_sk_is_sorted := LoadLibFunction(ADllHandle,
       OPENSSL_sk_is_sorted_procname);
@@ -1798,7 +1798,7 @@ begin
   end;
 
   { introduced 1.1.0 }
-  if not Assigned(sk_num) then
+  if not Assigned(sk_num) or (@sk_num = @ErrUnBound) then
   begin
     sk_num := LoadLibFunction(ADllHandle, sk_num_procname);
     FuncLoadError := not Assigned(sk_num);
@@ -1832,7 +1832,7 @@ begin
     end;
   end;
 
-  if not Assigned(sk_value) then
+  if not Assigned(sk_value) or (@sk_value = @ErrUnBound) then
   begin
     sk_value := LoadLibFunction(ADllHandle, sk_value_procname);
     FuncLoadError := not Assigned(sk_value);
@@ -1866,37 +1866,40 @@ begin
     end;
   end;
 
-  sk_set := LoadLibFunction(ADllHandle, sk_set_procname);
-  FuncLoadError := not Assigned(sk_set);
-  if FuncLoadError then
+  if not Assigned(sk_set) or (@sk_set = @ErrUnBound) then
   begin
+    sk_set := LoadLibFunction(ADllHandle, sk_set_procname);
+    FuncLoadError := not Assigned(sk_set);
+    if FuncLoadError then
+    begin
 {$IF not defined(sk_set_allownil)}
-    sk_set := ERR_sk_set;
+      sk_set := ERR_sk_set;
 {$IFEND}
 {$IF declared(sk_set_introduced)}
-    if LibVersion < sk_set_introduced then
-    begin
+      if LibVersion < sk_set_introduced then
+      begin
 {$IF declared(FC_sk_set)}
-      sk_set := FC_sk_set;
+        sk_set := FC_sk_set;
 {$IFEND}
-      FuncLoadError := false;
-    end;
+        FuncLoadError := false;
+      end;
 {$IFEND}
 {$IF declared(sk_set_removed)}
-    if sk_set_removed <= LibVersion then
-    begin
+      if sk_set_removed <= LibVersion then
+      begin
 {$IF declared(_sk_set)}
-      sk_set := _sk_set;
+        sk_set := _sk_set;
 {$IFEND}
-      FuncLoadError := false;
-    end;
+        FuncLoadError := false;
+      end;
 {$IFEND}
 {$IF not defined(sk_set_allownil)}
-    if FuncLoadError then
-      AFailed.Add('sk_set');
+      if FuncLoadError then
+        AFailed.Add('sk_set');
 {$IFEND}
+    end;
   end;
-  if not Assigned(sk_new) then
+  if not Assigned(sk_new) or (@sk_new = @ErrUnBound) then
   begin
     sk_new := LoadLibFunction(ADllHandle, sk_new_procname);
     FuncLoadError := not Assigned(sk_new);
@@ -1930,7 +1933,7 @@ begin
     end;
   end;
 
-  if not Assigned(sk_new_null) then
+  if not Assigned(sk_new_null) or (@sk_new_null = @ErrUnBound) then
   begin
     sk_new_null := LoadLibFunction(ADllHandle, sk_new_null_procname);
     FuncLoadError := not Assigned(sk_new_null);
@@ -1964,7 +1967,7 @@ begin
     end;
   end;
 
-  if not Assigned(sk_new_reserve) then
+  if not Assigned(sk_new_reserve) or (@sk_new_reserve = @ErrUnBound) then
   begin
     sk_new_reserve := LoadLibFunction(ADllHandle, sk_new_reserve_procname);
     FuncLoadError := not Assigned(sk_new_reserve);
@@ -1997,7 +2000,7 @@ begin
 {$IFEND}
     end;
   end;
-  if not Assigned(sk_reserve) then
+  if not Assigned(sk_reserve) or (@sk_reserve = @ErrUnBound) then
   begin
     sk_reserve := LoadLibFunction(ADllHandle, sk_reserve_procname);
     FuncLoadError := not Assigned(sk_reserve);
@@ -2030,7 +2033,7 @@ begin
 {$IFEND}
     end;
   end;
-  if not Assigned(sk_free) then
+  if not Assigned(sk_free) or (@sk_free = @ErrUnBound) then
   begin
     sk_free := LoadLibFunction(ADllHandle, sk_free_procname);
     FuncLoadError := not Assigned(sk_free);
@@ -2063,7 +2066,7 @@ begin
 {$IFEND}
     end;
   end;
-  if not Assigned(sk_pop_free) then
+  if not Assigned(sk_pop_free) or (@sk_pop_free = @ErrUnBound) then
   begin
     sk_pop_free := LoadLibFunction(ADllHandle, sk_pop_free_procname);
     FuncLoadError := not Assigned(sk_pop_free);
@@ -2096,7 +2099,7 @@ begin
 {$IFEND}
     end;
   end;
-  if not Assigned(sk_deep_copy) then
+  if not Assigned(sk_deep_copy) or (@sk_deep_copy = @ErrUnBound) then
   begin
     sk_deep_copy := LoadLibFunction(ADllHandle, sk_deep_copy_procname);
     FuncLoadError := not Assigned(sk_deep_copy);
@@ -2129,7 +2132,7 @@ begin
 {$IFEND}
     end;
   end;
-  if not Assigned(sk_insert) then
+  if not Assigned(sk_insert) or (@sk_insert = @ErrUnBound) then
   begin
     sk_insert := LoadLibFunction(ADllHandle, sk_insert_procname);
     FuncLoadError := not Assigned(sk_insert);
@@ -2162,7 +2165,7 @@ begin
 {$IFEND}
     end;
   end;
-  if not Assigned(sk_delete) then
+  if not Assigned(sk_delete) or (@sk_delete = @ErrUnBound) then
   begin
     sk_delete := LoadLibFunction(ADllHandle, sk_delete_procname);
     FuncLoadError := not Assigned(sk_delete);
@@ -2195,7 +2198,7 @@ begin
 {$IFEND}
     end;
   end;
-  if not Assigned(sk_delete_ptr) then
+  if not Assigned(sk_delete_ptr) or (@sk_delete_ptr = @ErrUnBound) then
   begin
     sk_delete_ptr := LoadLibFunction(ADllHandle, sk_delete_ptr_procname);
     FuncLoadError := not Assigned(sk_delete_ptr);
@@ -2228,7 +2231,7 @@ begin
 {$IFEND}
     end;
   end;
-  if not Assigned(sk_find) then
+  if not Assigned(sk_find) or (@sk_find = @ErrUnBound) then
   begin
     sk_find := LoadLibFunction(ADllHandle, sk_find_procname);
     FuncLoadError := not Assigned(sk_find);
@@ -2261,7 +2264,7 @@ begin
 {$IFEND}
     end;
   end;
-  if not Assigned(sk_find_ex) then
+  if not Assigned(sk_find_ex) or (@sk_find_ex = @ErrUnBound) then
   begin
     sk_find_ex := LoadLibFunction(ADllHandle, sk_find_ex_procname);
     FuncLoadError := not Assigned(sk_find_ex);
@@ -2294,7 +2297,7 @@ begin
 {$IFEND}
     end;
   end;
-  if not Assigned(sk_push) then
+  if not Assigned(sk_push) or (@sk_push = @ErrUnBound) then
   begin
     sk_push := LoadLibFunction(ADllHandle, sk_push_procname);
     FuncLoadError := not Assigned(sk_push);
@@ -2327,7 +2330,7 @@ begin
 {$IFEND}
     end;
   end;
-  if not Assigned(sk_unshift) then
+  if not Assigned(sk_unshift) or (@sk_unshift = @ErrUnBound) then
   begin
     sk_unshift := LoadLibFunction(ADllHandle, sk_unshift_procname);
     FuncLoadError := not Assigned(sk_unshift);
@@ -2360,7 +2363,7 @@ begin
 {$IFEND}
     end;
   end;
-  if not Assigned(sk_shift) then
+  if not Assigned(sk_shift) or (@sk_shift = @ErrUnBound) then
   begin
     sk_shift := LoadLibFunction(ADllHandle, sk_shift_procname);
     FuncLoadError := not Assigned(sk_shift);
@@ -2393,7 +2396,7 @@ begin
 {$IFEND}
     end;
   end;
-  if not Assigned(sk_pop) then
+  if not Assigned(sk_pop) or (@sk_pop = @ErrUnBound) then
   begin
     sk_pop := LoadLibFunction(ADllHandle, sk_pop_procname);
     FuncLoadError := not Assigned(sk_pop);
@@ -2426,7 +2429,7 @@ begin
 {$IFEND}
     end;
   end;
-  if not Assigned(sk_zero) then
+  if not Assigned(sk_zero) or (@sk_zero = @ErrUnBound) then
   begin
     sk_zero := LoadLibFunction(ADllHandle, sk_zero_procname);
     FuncLoadError := not Assigned(sk_zero);
@@ -2459,7 +2462,7 @@ begin
 {$IFEND}
     end;
   end;
-  if not Assigned(sk_set_cmp_func) then
+  if not Assigned(sk_set_cmp_func) or (@sk_set_cmp_func = @ErrUnBound) then
   begin
     sk_set_cmp_func := LoadLibFunction(ADllHandle, sk_set_cmp_func_procname);
     FuncLoadError := not Assigned(sk_set_cmp_func);
@@ -2492,7 +2495,7 @@ begin
 {$IFEND}
     end;
   end;
-  if not Assigned(sk_dup) then
+  if not Assigned(sk_dup) or (@sk_dup = @ErrUnBound) then
   begin
     sk_dup := LoadLibFunction(ADllHandle, sk_dup_procname);
     FuncLoadError := not Assigned(sk_dup);
@@ -2525,7 +2528,7 @@ begin
 {$IFEND}
     end;
   end;
-  if not Assigned(sk_sort) then
+  if not Assigned(sk_sort) or (@sk_sort = @ErrUnBound) then
   begin
     sk_sort := LoadLibFunction(ADllHandle, sk_sort_procname);
     FuncLoadError := not Assigned(sk_sort);
@@ -2558,7 +2561,7 @@ begin
 {$IFEND}
     end;
   end;
-  if not Assigned(sk_is_sorted) then
+  if not Assigned(sk_is_sorted) or (@sk_is_sorted = @ErrUnBound) then
   begin
     sk_is_sorted := LoadLibFunction(ADllHandle, sk_is_sorted_procname);
     FuncLoadError := not Assigned(sk_is_sorted);
@@ -2600,57 +2603,57 @@ end;
 
 procedure Unload;
 begin
-  OPENSSL_sk_num := nil; {introduced 1.1.0}
-  OPENSSL_sk_value := nil; {introduced 1.1.0}
-  OPENSSL_sk_set := nil; {introduced 1.1.0}
-  OPENSSL_sk_new := nil; {introduced 1.1.0}
-  OPENSSL_sk_new_null := nil; {introduced 1.1.0}
-  OPENSSL_sk_new_reserve := nil; {introduced 1.1.0}
-  OPENSSL_sk_set_thunks := nil;
-  OPENSSL_sk_set_cmp_thunks := nil;
-  OPENSSL_sk_set_copy_thunks := nil;
-  OPENSSL_sk_reserve := nil; {introduced 1.1.0}
-  OPENSSL_sk_free := nil; {introduced 1.1.0}
-  OPENSSL_sk_pop_free := nil; {introduced 1.1.0}
-  OPENSSL_sk_deep_copy := nil; {introduced 1.1.0}
-  OPENSSL_sk_insert := nil; {introduced 1.1.0}
-  OPENSSL_sk_delete := nil; {introduced 1.1.0}
-  OPENSSL_sk_delete_ptr := nil; {introduced 1.1.0}
-  OPENSSL_sk_find := nil; {introduced 1.1.0}
-  OPENSSL_sk_find_ex := nil; {introduced 1.1.0}
-  OPENSSL_sk_push := nil; {introduced 1.1.0}
-  OPENSSL_sk_unshift := nil; {introduced 1.1.0}
-  OPENSSL_sk_shift := nil; {introduced 1.1.0}
-  OPENSSL_sk_pop := nil; {introduced 1.1.0}
-  OPENSSL_sk_zero := nil; {introduced 1.1.0}
-  OPENSSL_sk_set_cmp_func := nil; {introduced 1.1.0}
-  OPENSSL_sk_dup := nil; {introduced 1.1.0}
-  OPENSSL_sk_sort := nil; {introduced 1.1.0}
-  OPENSSL_sk_is_sorted := nil; {introduced 1.1.0}
-  sk_num := nil; {removed 1.1.0}
-  sk_value := nil; {removed 1.1.0}
-  sk_set := nil; {removed 1.1.0}
-  sk_new := nil; {removed 1.1.0}
-  sk_new_null := nil; {removed 1.1.0}
-  sk_new_reserve := nil; {removed 1.0.0}
-  sk_reserve := nil; {removed 1.0.0}
-  sk_free := nil; {removed 1.1.0}
-  sk_pop_free := nil; {removed 1.1.0}
-  sk_deep_copy := nil; {removed 1.1.0}
-  sk_insert := nil; {removed 1.1.0}
-  sk_delete := nil; {removed 1.1.0}
-  sk_delete_ptr := nil; {removed 1.1.0}
-  sk_find := nil; {removed 1.1.0}
-  sk_find_ex := nil; {removed 1.1.0}
-  sk_push := nil; {removed 1.1.0}
-  sk_unshift := nil; {removed 1.1.0}
-  sk_shift := nil; {removed 1.1.0}
-  sk_pop := nil; {removed 1.1.0}
-  sk_zero := nil; {removed 1.1.0}
-  sk_set_cmp_func := nil; {removed 1.1.0}
-  sk_dup := nil; {removed 1.1.0}
-  sk_sort := nil; {removed 1.1.0}
-  sk_is_sorted := nil; {removed 1.1.0}
+  @OPENSSL_sk_num := @ErrUnBound; {introduced 1.1.0}
+  @OPENSSL_sk_value := @ErrUnBound; {introduced 1.1.0}
+  @OPENSSL_sk_set := @ErrUnBound; {introduced 1.1.0}
+  @OPENSSL_sk_new := @ErrUnBound; {introduced 1.1.0}
+  @OPENSSL_sk_new_null := @ErrUnBound; {introduced 1.1.0}
+  @OPENSSL_sk_new_reserve := @ErrUnBound; {introduced 1.1.0}
+  @OPENSSL_sk_set_thunks := @ErrUnBound;
+  @OPENSSL_sk_set_cmp_thunks := @ErrUnBound;
+  @OPENSSL_sk_set_copy_thunks := @ErrUnBound;
+  @OPENSSL_sk_reserve := @ErrUnBound; {introduced 1.1.0}
+  @OPENSSL_sk_free := @ErrUnBound; {introduced 1.1.0}
+  @OPENSSL_sk_pop_free := @ErrUnBound; {introduced 1.1.0}
+  @OPENSSL_sk_deep_copy := @ErrUnBound; {introduced 1.1.0}
+  @OPENSSL_sk_insert := @ErrUnBound; {introduced 1.1.0}
+  @OPENSSL_sk_delete := @ErrUnBound; {introduced 1.1.0}
+  @OPENSSL_sk_delete_ptr := @ErrUnBound; {introduced 1.1.0}
+  @OPENSSL_sk_find := @ErrUnBound; {introduced 1.1.0}
+  @OPENSSL_sk_find_ex := @ErrUnBound; {introduced 1.1.0}
+  @OPENSSL_sk_push := @ErrUnBound; {introduced 1.1.0}
+  @OPENSSL_sk_unshift := @ErrUnBound; {introduced 1.1.0}
+  @OPENSSL_sk_shift := @ErrUnBound; {introduced 1.1.0}
+  @OPENSSL_sk_pop := @ErrUnBound; {introduced 1.1.0}
+  @OPENSSL_sk_zero := @ErrUnBound; {introduced 1.1.0}
+  @OPENSSL_sk_set_cmp_func := @ErrUnBound; {introduced 1.1.0}
+  @OPENSSL_sk_dup := @ErrUnBound; {introduced 1.1.0}
+  @OPENSSL_sk_sort := @ErrUnBound; {introduced 1.1.0}
+  @OPENSSL_sk_is_sorted := @ErrUnBound; {introduced 1.1.0}
+  @sk_num := @ErrUnBound; {removed 1.1.0}
+  @sk_value := @ErrUnBound; {removed 1.1.0}
+  @sk_set := @ErrUnBound; {removed 1.1.0}
+  @sk_new := @ErrUnBound; {removed 1.1.0}
+  @sk_new_null := @ErrUnBound; {removed 1.1.0}
+  @sk_new_reserve := @ErrUnBound; {removed 1.0.0}
+  @sk_reserve := @ErrUnBound; {removed 1.0.0}
+  @sk_free := @ErrUnBound; {removed 1.1.0}
+  @sk_pop_free := @ErrUnBound; {removed 1.1.0}
+  @sk_deep_copy := @ErrUnBound; {removed 1.1.0}
+  @sk_insert := @ErrUnBound; {removed 1.1.0}
+  @sk_delete := @ErrUnBound; {removed 1.1.0}
+  @sk_delete_ptr := @ErrUnBound; {removed 1.1.0}
+  @sk_find := @ErrUnBound; {removed 1.1.0}
+  @sk_find_ex := @ErrUnBound; {removed 1.1.0}
+  @sk_push := @ErrUnBound; {removed 1.1.0}
+  @sk_unshift := @ErrUnBound; {removed 1.1.0}
+  @sk_shift := @ErrUnBound; {removed 1.1.0}
+  @sk_pop := @ErrUnBound; {removed 1.1.0}
+  @sk_zero := @ErrUnBound; {removed 1.1.0}
+  @sk_set_cmp_func := @ErrUnBound; {removed 1.1.0}
+  @sk_dup := @ErrUnBound; {removed 1.1.0}
+  @sk_sort := @ErrUnBound; {removed 1.1.0}
+  @sk_is_sorted := @ErrUnBound; {removed 1.1.0}
 end;
   {$ENDIF}
 {$ELSE}
@@ -2777,6 +2780,7 @@ end;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

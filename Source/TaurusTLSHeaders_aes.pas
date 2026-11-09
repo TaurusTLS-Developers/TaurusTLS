@@ -782,27 +782,28 @@ end;
 
 procedure Unload;
 begin
-  AES_options := nil;
-  AES_set_encrypt_key := nil;
-  AES_set_decrypt_key := nil;
-  AES_encrypt := nil;
-  AES_decrypt := nil;
-  AES_ecb_encrypt := nil;
-  AES_cbc_encrypt := nil;
-  AES_cfb128_encrypt := nil;
-  AES_cfb1_encrypt := nil;
-  AES_cfb8_encrypt := nil;
-  AES_ofb128_encrypt := nil;
-  AES_ige_encrypt := nil;
-  AES_bi_ige_encrypt := nil;
-  AES_wrap_key := nil;
-  AES_unwrap_key := nil;
+  @AES_options := @ErrUnBound;
+  @AES_set_encrypt_key := @ErrUnBound;
+  @AES_set_decrypt_key := @ErrUnBound;
+  @AES_encrypt := @ErrUnBound;
+  @AES_decrypt := @ErrUnBound;
+  @AES_ecb_encrypt := @ErrUnBound;
+  @AES_cbc_encrypt := @ErrUnBound;
+  @AES_cfb128_encrypt := @ErrUnBound;
+  @AES_cfb1_encrypt := @ErrUnBound;
+  @AES_cfb8_encrypt := @ErrUnBound;
+  @AES_ofb128_encrypt := @ErrUnBound;
+  @AES_ige_encrypt := @ErrUnBound;
+  @AES_bi_ige_encrypt := @ErrUnBound;
+  @AES_wrap_key := @ErrUnBound;
+  @AES_unwrap_key := @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

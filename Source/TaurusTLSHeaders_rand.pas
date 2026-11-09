@@ -925,26 +925,26 @@ end;
   {$I TaurusTLSUnusedParamOn.inc}
 procedure Unload;
 begin
-  RAND_set_rand_method := nil;
-  RAND_get_rand_method := nil;
-  RAND_set_rand_engine := nil;
-  RAND_OpenSSL := nil;
-  RAND_bytes := nil;
-  RAND_bytes_ex := nil;
-  RAND_priv_bytes := nil;
-  RAND_priv_bytes_ex := nil;
-  RAND_seed := nil;
-  RAND_keep_random_devices_open := nil;
-  RAND_add := nil;
-  RAND_load_file := nil;
-  RAND_write_file := nil;
-  RAND_status := nil;
+  @RAND_set_rand_method := @ErrUnBound;
+  @RAND_get_rand_method := @ErrUnBound;
+  @RAND_set_rand_engine := @ErrUnBound;
+  @RAND_OpenSSL := @ErrUnBound;
+  @RAND_bytes := @ErrUnBound;
+  @RAND_bytes_ex := @ErrUnBound;
+  @RAND_priv_bytes := @ErrUnBound;
+  @RAND_priv_bytes_ex := @ErrUnBound;
+  @RAND_seed := @ErrUnBound;
+  @RAND_keep_random_devices_open := @ErrUnBound;
+  @RAND_add := @ErrUnBound;
+  @RAND_load_file := @ErrUnBound;
+  @RAND_write_file := @ErrUnBound;
+  @RAND_status := @ErrUnBound;
    {$IFNDEF OPENSSL_NO_EGD}
-  RAND_query_egd_bytes := nil;
-  RAND_egd := nil;
-  RAND_egd_bytes := nil;
+  @RAND_query_egd_bytes := @ErrUnBound;
+  @RAND_egd := @ErrUnBound;
+  @RAND_egd_bytes := @ErrUnBound;
    {$ENDIF}
-  RAND_poll := nil;
+  @RAND_poll := @ErrUnBound;
 end;
   {$ENDIF}
 {$ELSE}
@@ -952,6 +952,7 @@ end;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

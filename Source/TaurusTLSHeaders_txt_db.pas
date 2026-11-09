@@ -334,17 +334,18 @@ end;
 
 procedure Unload;
 begin
-  TXT_DB_read := nil;
-  TXT_DB_write := nil;
-  TXT_DB_free := nil;
-  TXT_DB_get_by_index := nil;
-  TXT_DB_insert := nil;
+  @TXT_DB_read := @ErrUnBound;
+  @TXT_DB_write := @ErrUnBound;
+  @TXT_DB_free := @ErrUnBound;
+  @TXT_DB_get_by_index := @ErrUnBound;
+  @TXT_DB_insert := @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

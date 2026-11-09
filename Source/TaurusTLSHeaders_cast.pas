@@ -407,18 +407,19 @@ end;
   {$I TaurusTLSUnusedParamOn.inc}
 procedure Unload;
 begin
-  CAST_set_key := nil;
-  CAST_ecb_encrypt := nil;
-  CAST_encrypt := nil;
-  CAST_decrypt := nil;
-  CAST_cbc_encrypt := nil;
-  CAST_cfb64_encrypt := nil;
-  CAST_ofb64_encrypt := nil;
+  @CAST_set_key := @ErrUnBound;
+  @CAST_ecb_encrypt := @ErrUnBound;
+  @CAST_encrypt := @ErrUnBound;
+  @CAST_decrypt := @ErrUnBound;
+  @CAST_cbc_encrypt := @ErrUnBound;
+  @CAST_cfb64_encrypt := @ErrUnBound;
+  @CAST_ofb64_encrypt := @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

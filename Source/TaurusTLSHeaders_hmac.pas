@@ -668,19 +668,19 @@ end;
 
 procedure Unload;
 begin
-  HMAC_CTX_init := nil; {removed 1.1.0}
-  HMAC_size := nil; {introduced 1.1.0}
-  HMAC_CTX_new := nil; {introduced 1.1.0}
-  HMAC_CTX_reset := nil; {introduced 1.1.0}
-  HMAC_CTX_cleanup := nil; {removed 1.1.0}
-  HMAC_CTX_free := nil; {introduced 1.1.0}
-  HMAC_Init_ex := nil;
-  HMAC_Update := nil;
-  HMAC_Final := nil;
-  HMAC := nil;
-  HMAC_CTX_copy := nil;
-  HMAC_CTX_set_flags := nil;
-  HMAC_CTX_get_md := nil; {introduced 1.1.0}
+  @HMAC_CTX_init := @ErrUnBound; {removed 1.1.0}
+  @HMAC_size := @ErrUnBound; {introduced 1.1.0}
+  @HMAC_CTX_new := @ErrUnBound; {introduced 1.1.0}
+  @HMAC_CTX_reset := @ErrUnBound; {introduced 1.1.0}
+  @HMAC_CTX_cleanup := @ErrUnBound; {removed 1.1.0}
+  @HMAC_CTX_free := @ErrUnBound; {introduced 1.1.0}
+  @HMAC_Init_ex := @ErrUnBound;
+  @HMAC_Update := @ErrUnBound;
+  @HMAC_Final := @ErrUnBound;
+  @HMAC := @ErrUnBound;
+  @HMAC_CTX_copy := @ErrUnBound;
+  @HMAC_CTX_set_flags := @ErrUnBound;
+  @HMAC_CTX_get_md := @ErrUnBound; {introduced 1.1.0}
 end;
   {$ENDIF}
 {$ELSE}
@@ -688,6 +688,7 @@ end;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

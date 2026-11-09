@@ -318,7 +318,7 @@ end;
 
 procedure Unload;
 begin
-  ERR_load_TS_strings := nil;
+  @ERR_load_TS_strings := @ErrUnBound;
 end;
   {$I TaurusTLSUnusedParamOff.inc}
   {$ENDIF}
@@ -326,6 +326,7 @@ end;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

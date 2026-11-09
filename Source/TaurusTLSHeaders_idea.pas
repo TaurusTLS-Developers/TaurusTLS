@@ -445,20 +445,21 @@ end;
   {$I TaurusTLSUnusedParamOn.inc}
 procedure Unload;
 begin
-  IDEA_options := nil;
-  IDEA_ecb_encrypt := nil;
-  IDEA_set_encrypt_key := nil;
-  IDEA_set_decrypt_key := nil;
-  IDEA_cbc_encrypt := nil;
-  IDEA_cfb64_encrypt := nil;
-  IDEA_ofb64_encrypt := nil;
-  IDEA_encrypt := nil;
+  @IDEA_options := @ErrUnBound;
+  @IDEA_ecb_encrypt := @ErrUnBound;
+  @IDEA_set_encrypt_key := @ErrUnBound;
+  @IDEA_set_decrypt_key := @ErrUnBound;
+  @IDEA_cbc_encrypt := @ErrUnBound;
+  @IDEA_cfb64_encrypt := @ErrUnBound;
+  @IDEA_ofb64_encrypt := @ErrUnBound;
+  @IDEA_encrypt := @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

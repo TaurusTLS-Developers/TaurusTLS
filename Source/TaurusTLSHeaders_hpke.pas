@@ -1128,26 +1128,26 @@ end;
 
 procedure Unload;
 begin
-  OSSL_HPKE_CTX_new := nil;
-  OSSL_HPKE_CTX_free := nil;
-  OSSL_HPKE_encap := nil;
-  OSSL_HPKE_seal := nil;
-  OSSL_HPKE_keygen := nil;
-  OSSL_HPKE_decap := nil;
-  OSSL_HPKE_open := nil;
-  OSSL_HPKE_export := nil;
-  OSSL_HPKE_CTX_set1_authpriv := nil;
-  OSSL_HPKE_CTX_set1_authpub := nil;
-  OSSL_HPKE_CTX_set1_psk := nil;
-  OSSL_HPKE_CTX_set1_ikme := nil;
-  OSSL_HPKE_CTX_set_seq := nil;
-  OSSL_HPKE_CTX_get_seq  := nil;
-  OSSL_HPKE_suite_check := nil;
-  OSSL_HPKE_get_grease_value := nil;
-  OSSL_HPKE_str2suite := nil;
-  OSSL_HPKE_get_ciphertext_size := nil;
-  OSSL_HPKE_get_public_encap_size  := nil;
-  OSSL_HPKE_get_recommended_ikmelen := nil;
+  @OSSL_HPKE_CTX_new := @ErrUnBound;
+  @OSSL_HPKE_CTX_free := @ErrUnBound;
+  @OSSL_HPKE_encap := @ErrUnBound;
+  @OSSL_HPKE_seal := @ErrUnBound;
+  @OSSL_HPKE_keygen := @ErrUnBound;
+  @OSSL_HPKE_decap := @ErrUnBound;
+  @OSSL_HPKE_open := @ErrUnBound;
+  @OSSL_HPKE_export := @ErrUnBound;
+  @OSSL_HPKE_CTX_set1_authpriv := @ErrUnBound;
+  @OSSL_HPKE_CTX_set1_authpub := @ErrUnBound;
+  @OSSL_HPKE_CTX_set1_psk := @ErrUnBound;
+  @OSSL_HPKE_CTX_set1_ikme := @ErrUnBound;
+  @OSSL_HPKE_CTX_set_seq := @ErrUnBound;
+  @OSSL_HPKE_CTX_get_seq  := @ErrUnBound;
+  @OSSL_HPKE_suite_check := @ErrUnBound;
+  @OSSL_HPKE_get_grease_value := @ErrUnBound;
+  @OSSL_HPKE_str2suite := @ErrUnBound;
+  @OSSL_HPKE_get_ciphertext_size := @ErrUnBound;
+  @OSSL_HPKE_get_public_encap_size  := @ErrUnBound;
+  @OSSL_HPKE_get_recommended_ikmelen := @ErrUnBound;
 end;
   {$ENDIF}
 {$ELSE}
@@ -1155,6 +1155,7 @@ end;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

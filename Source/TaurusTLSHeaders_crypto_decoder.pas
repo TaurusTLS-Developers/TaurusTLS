@@ -745,26 +745,27 @@ end;
 
 procedure Unload;
 begin
-   ossl_decoder_from_algorithm := nil;
-   ossl_decoder_instance_new_forprov := nil;
-   ossl_decoder_instance_new := nil;
-   ossl_decoder_instance_free := nil;
-   ossl_decoder_ctx_get_harderr := nil;
-   ossl_decoder_ctx_set_harderr := nil;
-   ossl_decoder_instance_dup := nil;
-   ossl_decoder_ctx_add_decoder_inst := nil;
-   ossl_decoder_get_number := nil;
-   ossl_decoder_store_cache_flush := nil;
-   ossl_decoder_store_remove_all_provided := nil;
-   ossl_decoder_cache_new := nil;
-   ossl_decoder_cache_free := nil;
-   ossl_decoder_cache_flush := nil;
+   @ossl_decoder_from_algorithm := @ErrUnBound;
+   @ossl_decoder_instance_new_forprov := @ErrUnBound;
+   @ossl_decoder_instance_new := @ErrUnBound;
+   @ossl_decoder_instance_free := @ErrUnBound;
+   @ossl_decoder_ctx_get_harderr := @ErrUnBound;
+   @ossl_decoder_ctx_set_harderr := @ErrUnBound;
+   @ossl_decoder_instance_dup := @ErrUnBound;
+   @ossl_decoder_ctx_add_decoder_inst := @ErrUnBound;
+   @ossl_decoder_get_number := @ErrUnBound;
+   @ossl_decoder_store_cache_flush := @ErrUnBound;
+   @ossl_decoder_store_remove_all_provided := @ErrUnBound;
+   @ossl_decoder_cache_new := @ErrUnBound;
+   @ossl_decoder_cache_free := @ErrUnBound;
+   @ossl_decoder_cache_flush := @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
 
 Register_SSLLoader(Load, 'LibCrypto');
 Register_SSLUnloader(Unload);

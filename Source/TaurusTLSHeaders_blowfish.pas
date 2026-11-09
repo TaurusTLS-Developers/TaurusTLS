@@ -463,20 +463,21 @@ end;
   {$I TaurusTLSUnusedParamOn.inc}
 procedure Unload;
 begin
-  BF_set_key := nil;
-  BF_encrypt := nil;
-  BF_decrypt := nil;
-  BF_ecb_encrypt := nil;
-  BF_cbc_encrypt := nil;
-  BF_cfb64_encrypt := nil;
-  BF_ofb64_encrypt := nil;
-  BF_options := nil;
+  @BF_set_key := @ErrUnBound;
+  @BF_encrypt := @ErrUnBound;
+  @BF_decrypt := @ErrUnBound;
+  @BF_ecb_encrypt := @ErrUnBound;
+  @BF_cbc_encrypt := @ErrUnBound;
+  @BF_cfb64_encrypt := @ErrUnBound;
+  @BF_ofb64_encrypt := @ErrUnBound;
+  @BF_options := @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

@@ -208,14 +208,15 @@ end;
 
 procedure Unload;
 begin
-  ossl_encoder_get_number := nil;
-  ossl_encoder_store_cache_flush := nil;
-  ossl_encoder_store_remove_all_provided := nil;
+  @ossl_encoder_get_number := @ErrUnBound;
+  @ossl_encoder_store_cache_flush := @ErrUnBound;
+  @ossl_encoder_store_remove_all_provided := @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
 
 Register_SSLLoader(Load, 'LibCrypto');
 Register_SSLUnloader(Unload);
