@@ -80,7 +80,17 @@ type
     property RetCode : TIdC_INT read FRetCode;
   end;
 
+  /// <summary>
+  ///   Raised when an attempt is made to directly call an OpenSSL function
+  ///   before the OpenSSL library is loaded.
+  /// </summary>
+  /// <remarks>
+  ///   This exception type is only available if OpenSSL is dynamically loaded.
+  /// </remarks>
   ETaurusTLSLibraryNotLoaded = class(ETaurusTLSError)
+    /// <summary>
+    ///   Creates an aception of this class with a message.
+    /// </summary>
     constructor Create; reintroduce;
   end;
 
