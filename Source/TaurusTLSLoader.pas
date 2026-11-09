@@ -250,7 +250,7 @@ type
 /// </remarks>
 function GetOpenSSLLoader: IOpenSSLLoader;
 
-
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 /// <summary>
 ///   Registers a header symbol-binding procedure for dynamic loads.
 /// </summary>
@@ -287,6 +287,9 @@ procedure Register_SSLLoader(LoadProc: TOpenSSLLoadProc; const module_name: stri
 ///   completed.
 /// </remarks>
 procedure Register_SSLUnloader(UnloadProc: TOpenSSLUnloadProc);
+
+procedure ErrUnBound; cdecl;
+{$ENDIF}
 
 /// <summary>
 ///   Registers initialization and cleanup actions for both linking models.
@@ -1962,6 +1965,11 @@ end;
 procedure UnRegister_SSLLoaderAction(const AActionProc: TTaurusTLSOnLoadAction);
 begin
   TOpenSSLBaseLoader.UnRegisterAction(AActionProc);
+end;
+
+procedure ErrUnBound; cdecl; {$IFDEF USE_NORETURN}noreturn; {$ENDIF}
+begin
+  raise ETaurusTLSLibraryNotLoaded.Create at ReturnAddress;
 end;
 
 { Platform configuration }

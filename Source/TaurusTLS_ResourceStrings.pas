@@ -16,6 +16,7 @@ interface
 resourcestring
   { TaurusTLS }
   RSOSSLInitFailed = 'OPENSSL_init_ssl failed';
+  RSOSSLLibNotLoaded = 'OpenSSL shared library not loaded.';
   RSOSSSessionCanNotBeNul = 'Session can not be nul.';
   RSOSSInvalidSessionValue = 'Invalid Session Value.';
   RSOSSUnsupportedVersion = 'Unsupported SSL Library version: %.8x.';

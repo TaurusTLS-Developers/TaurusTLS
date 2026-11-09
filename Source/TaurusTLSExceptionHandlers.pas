@@ -80,6 +80,10 @@ type
     property RetCode : TIdC_INT read FRetCode;
   end;
 
+  ETaurusTLSLibraryNotLoaded = class(ETaurusTLSError)
+    constructor Create; reintroduce;
+  end;
+
   /// <summary>
   ///   raised if the OPENSSL_init_ssl libSSL API call failed.
   /// </summary>
@@ -606,6 +610,13 @@ class procedure ETaurusTLSError.RaiseWithMessage(const AMsg: String);
 {$IFDEF USE_NORETURN}noreturn;{$ENDIF}
 begin
   raise Create(AMsg);
+end;
+
+{ ETaurusTLSLibraryNotLoaded }
+
+constructor ETaurusTLSLibraryNotLoaded.Create;
+begin
+  inherited Create(RSOSSLLibNotLoaded);
 end;
 
 { ETaurusTLSMD2NotFound }
