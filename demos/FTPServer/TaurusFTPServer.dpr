@@ -339,6 +339,7 @@ var
   i: Integer;
 begin
   Result := TTaurusTLSServerIOHandler.Create(nil);
+  Result.AutoLoad := True;
   Result.SSLOptions.MinTLSVersion := TLSv1_2;
   Result.DefaultCert.PublicKey := AIni.ReadString('Certificate',
     'CertificateFile', GetCurrentDir + '\localhost.crt');
@@ -822,36 +823,25 @@ begin
 end;
 
 begin
-  //We have to explicitly load the
-  if GetOpenSSLLoader.Load then
-  begin
-    //Done this way because an exception can be raised ducring the
-    //FTPServerApp.Create
+  try
+    app := TFTPServerApp.Create;
     try
-      app := TFTPServerApp.Create;
       try
-        try
-          WriteLn( GetOpenSSLLoader.Version );
-          WriteLn('FTP Server App');
-        except
-          on E: Exception do
-            WriteLn(E.ClassName, ': ', E.Message);
-        end;
-        ReadLn;
-      finally
-        FreeAndNil(app);
+        WriteLn( GetOpenSSLLoader.Version );
+        WriteLn('FTP Server App');
+      except
+        on E: Exception do
+          WriteLn(E.ClassName, ': ', E.Message);
       end;
-    except
-      on E: Exception do
-      begin
-        WriteLn(E.ClassName, ': ', E.Message);
-        ReadLn;
-      end;
+      ReadLn;
+    finally
+      FreeAndNil(app);
     end;
-  end
-  else
-  begin
-    WriteLn('OpenSSL must be available.');
-    ReadLn;
+  except
+    on E: Exception do
+    begin
+      WriteLn(E.ClassName, ': ', E.Message);
+      ReadLn;
+    end;
   end;
 end.
