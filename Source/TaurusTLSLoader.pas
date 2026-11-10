@@ -1969,7 +1969,12 @@ end;
 
 procedure ErrUnBound; cdecl; {$IFDEF USE_NORETURN}noreturn; {$ENDIF}
 begin
-  raise ETaurusTLSLibraryNotLoaded.Create at ReturnAddress;
+  raise ETaurusTLSLibraryNotLoaded.Create at
+{$IFDEF FPC}
+    get_caller_addr(get_frame), get_caller_frame(get_frame);
+{$ELSE}
+    ReturnAddress;
+{$ENDIF}
 end;
 
 { Platform configuration }

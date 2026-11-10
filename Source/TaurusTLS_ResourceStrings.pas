@@ -285,6 +285,7 @@ resourcestring
   RSOSSLUnsupportedComponentTarget = 'The current compiler target is not supported by TTaurusTLSLoader';
   RSOSSLDesignTimeLoad = 'OpenSSL cannot be loaded at design time';
   RSOSSLContextNotReady = 'OpenSSL must be loaded before initializing a TLS context';
+  RSOSSLUnreadPlaintext = 'Cannot start TLS with unread plaintext in the input buffer';
   RSOSSLPlatformSettingsDesignOnly = 'Platform settings can only be edited at design time';
 
   // OpenSSL Configuration Messages

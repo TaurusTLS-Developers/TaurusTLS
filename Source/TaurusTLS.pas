@@ -1691,6 +1691,11 @@ type
       //so we can set it in the clone method for FTP data
       //channel SNI.
       fHostname : String;
+      // OpenSSL Autoloading/Autoinitialization flag
+      // Added in TaurusTLS 1.1
+      // Allows to simplify backward compatibility with 1.0
+      fAutoLoad: Boolean;
+      fInitializing: Boolean;
 {$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} protected
     //20260116 xjikka:
     //  OnContextLoaderCustom allows custom TLS context initialization/loading
@@ -1725,6 +1730,7 @@ type
     function SendEnc(const ABuffer: TIdBytes; const AOffset, ALength: Integer)
       : Integer; override;
     procedure Init;
+    function TryAutoLoad: boolean;
     procedure OpenEncodedConnection;
     // some overrides from base classes
     procedure InitComponent; override;
@@ -1819,6 +1825,7 @@ type
     /// Properties and methods for dealing with the TLS Connection.
     /// </summary>
     property SSLSocket: TTaurusTLSSocket read fSSLSocket write fSSLSocket;
+
     /// <summary>
     /// Occurs before TLS negotiation begins.
     /// </summary>
@@ -1860,6 +1867,19 @@ type
     property OnDebugMessage: TOnDebugMessageEvent read FOnDebugMessage
       write FOnDebugMessage;
   published
+    /// <summary>
+    ///   Automatically loads shared OpenSSL libraries or initializes statically
+    ///   linked OpenSSL when the IOHandler is initialized.
+    /// </summary>
+    /// <remarks>
+    ///   Defaults to False, requiring explicit initialization through the <see
+    ///   cref="TaurusTLSLoader|IOpenSSLLoader">IOpenSSLloader</see> interface.
+    ///   When True, initialization calls the loader if it is not ready. Loading
+    ///   and TLS context initialization errors propagate even when the
+    ///   connection starts in plaintext mode. This property does not select TLS
+    ///   mode or unload OpenSSL when the IOHandler is destroyed.
+    /// </remarks>
+    property AutoLoad: Boolean read fAutoLoad write fAutoLoad default False;
     /// <summary>
     /// Client certificate to send to the TLS Server.
     /// </summary>
@@ -2032,6 +2052,8 @@ type
   TTaurusTLSServerIOHandler = class(TIdServerIOHandlerSSLBase,
     ITaurusTLSCallbackHelper)
   private
+    fAutoLoad: Boolean;
+    fInitializing: Boolean;
 {$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} protected
     //20260116 xjikka:
     //  OnContextLoaderCustom allows custom TLS context initialization/loading
@@ -2059,6 +2081,7 @@ type
     //
     procedure InitComponent; override;
     procedure SetCertificates(const AValue: TTaurusTLSX509Files);
+    function TryAutoLoad: Boolean;
     { ITaurusTLSCallbackHelper }
     procedure DoOnDebugMessage(const AWrite: Boolean; AVersion: TTaurusMsgCBVer;
       AContentType: TIdC_INT; const buf: TIdBytes; SSL: PSSL);
@@ -2188,6 +2211,19 @@ type
     ///   is empty.
     /// </summary>
     property DefaultCert: TTaurusTLSX509File read fDefaultCert;
+    /// <summary>
+    ///   Automatically loads shared OpenSSL libraries or initializes statically
+    ///   linked OpenSSL when the IOHandler is initialized.
+    /// </summary>
+    /// <remarks>
+    ///   Defaults to False, requiring explicit initialization through the <see
+    ///   cref="TaurusTLSLoader|IOpenSSLLoader">IOpenSSLloader</see> interface.
+    ///   When True, initialization calls the loader if it is not ready. Loading
+    ///   and TLS context initialization errors propagate even when the
+    ///   connection starts in plaintext mode. This property does not select TLS
+    ///   mode or unload OpenSSL when the IOHandler is destroyed.
+    /// </remarks>
+    property AutoLoad: Boolean read fAutoLoad write fAutoLoad default False;
     /// <summary>
     ///   Certificates for domains that the TLS Client may request from the
     ///   server through a SNI (Server Name Indicator).  Leave empty if you do
@@ -2431,10 +2467,6 @@ type
     property MACDigest : String read GetMACDigest;
   end;
 
-  /// <summary>
-  /// Raised if the OpenSSL library failed to load.
-  /// </summary>
-  ETaurusTLSCouldNotLoadSSLLibrary = class(ETaurusTLSError);
   /// <summary>
   /// Raised if the Mode property is sslmUnassigned when the GetSSLMethod is
   /// called.
@@ -3416,10 +3448,26 @@ begin
   end;
 end;
 
+{$IFOPT B+}{$B-}{$DEFINE FORCE_OPT_B_MINUS}{$ENDIF}
+function TTaurusTLSServerIOHandler.TryAutoLoad: Boolean;
+var
+  {$IFDEF DCC}[unsafe]{$ENDIF}
+  LLoader: IOpenSSLLoader;
+
+begin
+  LLoader := GetOpenSSLLoader;
+  Result:=LLoader.IsLoaded or (fAutoLoad and LLoader.Load);
+end;
+{$IFDEF FORCE_OPT_B_MINUS}{$B+}{$UNDEF FORCE_OPT_B_MINUS}{$ENDIF}
+
 procedure TTaurusTLSServerIOHandler.Init; //FI:C103 surpress too many variables warnings.
 // see also TTaurusTLSIOHandlerSocket.Init
 var
   i: Integer;
+  LDefaultContext: TTaurusTLSContext;
+  // Each certificate item owns its context after the entire set is ready.
+  LCandidates: array of TTaurusTLSContext;
+  LCertificates: array of TTaurusTLSX509File;
   LContext: TTaurusTLSContext;  //PALOFF - Unbalanced Create/Free, Created and freed objects
   LCertificate: TTaurusTLSX509File;
   LVerifyDepth : Integer;
@@ -3432,89 +3480,130 @@ var
   LCipherSuites : String;
   LSecurityLevel : TTaurusTLSSecurityLevel;
 begin
-  // ensure Init isn't called twice
-  Assert(fSSLContext = nil);
-  fSSLContext := TTaurusTLSContext.Create;
-  fSSLContext.Parent := Self;
-  fSSLContext.RootPublicKey := DefaultCert.RootKey;
-  fSSLContext.PublicKey := DefaultCert.PublicKey;
-  fSSLContext.PrivateKey := DefaultCert.PrivateKey;
-  fSSLContext.DHParamsFile := DefaultCert.DHParamsFile;
-  LVerifyDepth := SSLOptions.VerifyDepth;
-  LVersion := SSLOptions.MinTLSVersion;
-  LMode :=  SSLOptions.Mode;
-  LVerifyMode :=  SSLOptions.VerifyMode;
-  LUseSystemRootCACertificateStore := SSLOptions.UseSystemRootCACertificateStore;
-  LVerifyHostname := SSLOptions.VerifyHostname;
-  LCipherList := SSLOptions.CipherList;
-  LCipherSuites := SSLOptions.CipherSuites;
-  LSecurityLevel := SSLOptions.SecurityLevel;
-  fSSLContext.VerifyDepth := LVerifyDepth;
-  fSSLContext.VerifyMode := LVerifyMode;
-  // fSSLContext.fVerifyFile := SSLOptions.fVerifyFile;
-  fSSLContext.UseSystemRootCACertificateStore :=
-    LUseSystemRootCACertificateStore;
-  fSSLContext.VerifyDirs := SSLOptions.VerifyDirs;
-  fSSLContext.VerifyHostname := LVerifyHostname;
-  fSSLContext.UseBidirectionalShutdown := SSLOptions.UseBidirectionalShutdown;
-  fSSLContext.CipherList := LCipherList;
-  fSSLContext.CipherSuites := LCipherSuites;
-  fSSLContext.CipherServerPreference := SSLOptions.CipherServerPreference;
-  fSSLContext.VerifyOn := Assigned(fOnVerifyCallback);
-  fSSLContext.StatusInfoOn := Assigned(FOnStatusInfo);
-  fSSLContext.SecurityLevelCBOn := Assigned(fOnSecurityLevel);
-  fSSLContext.MessageCBOn := Assigned(FOnDebugMessage);
-
-  fSSLContext.MinTLSVersion := LVersion;
-
-  fSSLContext.Mode := LMode;
-  fSSLContext.SecurityLevel := LSecurityLevel;
-  fSSLContext.OnContextLoaderCustom:=self.OnContextLoaderCustom;
-  fSSLContext.InitContext(sslCtxServer);
-  // This must be after the Context is initialized so it does not AV.
-  // It avs if the Context property is nil.
-  if Certificates.Count > 0 then
-  begin
-    if SSL_CTX_set_tlsext_servername_callback(fSSLContext.Context,
-      g_tlsext_SNI_callback) = 0 then
+  if fInitializing then
+    raise ETaurusTLSLoaderError.Create(RSOSSLContextNotReady);
+  fInitializing := True;
+  LDefaultContext := nil;
+  try
+    if Assigned(fSSLContext) then
     begin
-      raise ETaurusTLSSSL_CTX_set_tlsext_servername_callback.Create(RSSSL_CTX_set_tlsext_servername_callback);
+      if not GetOpenSSLLoader.IsLoaded then
+        raise ETaurusTLSLibraryNotLoaded.Create;
+      if fSSLContext.Context = nil then
+        raise ETaurusTLSLoaderError.Create(RSOSSLContextNotReady);
+      Exit;
     end;
-    {$IFDEF DCC}{$WARN UNSAFE_CAST OFF}{$ENDIF}
-    if SSL_CTX_set_tlsext_servername_arg(fSSLContext.Context, Self) = 0 then
-    {$IFDEF DCC}{$WARN UNSAFE_CAST DEFAULT}{$ENDIF}
+    if not TryAutoLoad then
     begin
-       raise ETaurusTLSSSL_CTX_set_tlsext_servername_arg.Create(RSSSL_CTX_set_tlsext_servername_arg);
+      if AutoLoad then
+        raise ETaurusTLSCouldNotLoadSSLLibrary.Create(RSOSSLCouldNotLoadSSLLibrary);
+      raise ETaurusTLSLibraryNotLoaded.Create;
     end;
+    SetLength(LCandidates, Certificates.Count);
+    SetLength(LCertificates, Certificates.Count);
     for i := 0 to Certificates.Count - 1 do
+      LCertificates[i] := Certificates[i];
+    LDefaultContext := TTaurusTLSContext.Create;
+    LDefaultContext.Parent := Self;
+    LDefaultContext.RootPublicKey := DefaultCert.RootKey;
+    LDefaultContext.PublicKey := DefaultCert.PublicKey;
+    LDefaultContext.PrivateKey := DefaultCert.PrivateKey;
+    LDefaultContext.DHParamsFile := DefaultCert.DHParamsFile;
+    LVerifyDepth := SSLOptions.VerifyDepth;
+    LVersion := SSLOptions.MinTLSVersion;
+    LMode :=  SSLOptions.Mode;
+    LVerifyMode :=  SSLOptions.VerifyMode;
+    LUseSystemRootCACertificateStore := SSLOptions.UseSystemRootCACertificateStore;
+    LVerifyHostname := SSLOptions.VerifyHostname;
+    LCipherList := SSLOptions.CipherList;
+    LCipherSuites := SSLOptions.CipherSuites;
+    LSecurityLevel := SSLOptions.SecurityLevel;
+    LDefaultContext.VerifyDepth := LVerifyDepth;
+    LDefaultContext.VerifyMode := LVerifyMode;
+    // LDefaultContext.fVerifyFile := SSLOptions.fVerifyFile;
+    LDefaultContext.UseSystemRootCACertificateStore :=
+      LUseSystemRootCACertificateStore;
+    LDefaultContext.VerifyDirs := SSLOptions.VerifyDirs;
+    LDefaultContext.VerifyHostname := LVerifyHostname;
+    LDefaultContext.UseBidirectionalShutdown := SSLOptions.UseBidirectionalShutdown;
+    LDefaultContext.CipherList := LCipherList;
+    LDefaultContext.CipherSuites := LCipherSuites;
+    LDefaultContext.CipherServerPreference := SSLOptions.CipherServerPreference;
+    LDefaultContext.VerifyOn := Assigned(fOnVerifyCallback);
+    LDefaultContext.StatusInfoOn := Assigned(FOnStatusInfo);
+    LDefaultContext.SecurityLevelCBOn := Assigned(fOnSecurityLevel);
+    LDefaultContext.MessageCBOn := Assigned(FOnDebugMessage);
+  
+    LDefaultContext.MinTLSVersion := LVersion;
+  
+    LDefaultContext.Mode := LMode;
+    LDefaultContext.SecurityLevel := LSecurityLevel;
+    LDefaultContext.OnContextLoaderCustom:=self.OnContextLoaderCustom;
+    LDefaultContext.InitContext(sslCtxServer);
+    // This must be after the Context is initialized so it does not AV.
+    // It avs if the Context property is nil.
+    if Certificates.Count > 0 then
     begin
-      LCertificate := Certificates[i];
-      LContext := TTaurusTLSContext.Create;
-      LContext.Parent := Self;
-      LContext.PrivateKey := LCertificate.PrivateKey;
-      LContext.PublicKey := LCertificate.PublicKey;
-      LContext.RootPublicKey := LCertificate.RootKey;
-      LContext.DHParamsFile := LCertificate.DHParamsFile;
-      LCertificate.Context := LContext;
-      LContext.VerifyDepth := LVerifyDepth;
-      LContext.VerifyMode := LVerifyMode;
-      LContext.UseSystemRootCACertificateStore :=
-        LUseSystemRootCACertificateStore;
-      LContext.VerifyHostname := LVerifyHostname;
-      LContext.UseBidirectionalShutdown := SSLOptions.UseBidirectionalShutdown;
-      LContext.CipherList := LCipherList;
-      LContext.CipherSuites := LCipherSuites;
-      LContext.CipherServerPreference := SSLOptions.CipherServerPreference;
-      LContext.VerifyOn := Assigned(fOnVerifyCallback);
-      LContext.StatusInfoOn := Assigned(FOnStatusInfo);
-      LContext.SecurityLevelCBOn := Assigned(fOnSecurityLevel);
-      LContext.MessageCBOn := Assigned(FOnDebugMessage);
-      LContext.MinTLSVersion := LVersion;
-      LContext.Mode := LMode;
-      LContext.SecurityLevel := LSecurityLevel;
-      LContext.OnContextLoaderCustom:=OnContextLoaderCustom;
-      LContext.InitContext(sslCtxServer);
+      if SSL_CTX_set_tlsext_servername_callback(LDefaultContext.Context,
+        g_tlsext_SNI_callback) = 0 then
+      begin
+        raise ETaurusTLSSSL_CTX_set_tlsext_servername_callback.Create(RSSSL_CTX_set_tlsext_servername_callback);
+      end;
+      {$IFDEF DCC}{$WARN UNSAFE_CAST OFF}{$ENDIF}
+      if SSL_CTX_set_tlsext_servername_arg(LDefaultContext.Context, Self) = 0 then
+      {$IFDEF DCC}{$WARN UNSAFE_CAST DEFAULT}{$ENDIF}
+      begin
+         raise ETaurusTLSSSL_CTX_set_tlsext_servername_arg.Create(RSSSL_CTX_set_tlsext_servername_arg);
+      end;
+      for i := 0 to High(LCandidates) do
+      begin
+        LCertificate := LCertificates[i];
+        LContext := TTaurusTLSContext.Create;
+        LCandidates[i] := LContext;
+        LContext.Parent := Self;
+        LContext.PrivateKey := LCertificate.PrivateKey;
+        LContext.PublicKey := LCertificate.PublicKey;
+        LContext.RootPublicKey := LCertificate.RootKey;
+        LContext.DHParamsFile := LCertificate.DHParamsFile;
+        LContext.VerifyDepth := LVerifyDepth;
+        LContext.VerifyMode := LVerifyMode;
+        LContext.UseSystemRootCACertificateStore :=
+          LUseSystemRootCACertificateStore;
+        LContext.VerifyHostname := LVerifyHostname;
+        LContext.UseBidirectionalShutdown := SSLOptions.UseBidirectionalShutdown;
+        LContext.CipherList := LCipherList;
+        LContext.CipherSuites := LCipherSuites;
+        LContext.CipherServerPreference := SSLOptions.CipherServerPreference;
+        LContext.VerifyOn := Assigned(fOnVerifyCallback);
+        LContext.StatusInfoOn := Assigned(FOnStatusInfo);
+        LContext.SecurityLevelCBOn := Assigned(fOnSecurityLevel);
+        LContext.MessageCBOn := Assigned(FOnDebugMessage);
+        LContext.MinTLSVersion := LVersion;
+        LContext.Mode := LMode;
+        LContext.SecurityLevel := LSecurityLevel;
+        LContext.OnContextLoaderCustom:=OnContextLoaderCustom;
+        LContext.InitContext(sslCtxServer);
+      end;
     end;
+    // A custom loader must not change the certificate collection during Init.
+    if Certificates.Count <> Length(LCertificates) then
+      raise ETaurusTLSLoaderError.Create(RSOSSLContextNotReady);
+    for i := 0 to High(LCertificates) do
+      if Certificates[i] <> LCertificates[i] then
+        raise ETaurusTLSLoaderError.Create(RSOSSLContextNotReady);
+    // No allocation or callbacks during ownership transfer.
+    for i := 0 to High(LCandidates) do
+    begin
+      LCertificates[i].Context := LCandidates[i];
+      LCandidates[i] := nil;
+    end;
+    fSSLContext := LDefaultContext;
+    LDefaultContext := nil;
+  finally
+    for i := 0 to High(LCandidates) do
+      LCandidates[i].Free;
+    LDefaultContext.Free;
+    fInitializing := False;
   end;
 end;
 
@@ -3528,12 +3617,18 @@ var
 begin
   // using a custom scheduler, AYarn may be nil, so don't assert
   Assert(ASocket <> nil);
-  Assert(fSSLContext <> nil);
+  if not GetOpenSSLLoader.IsLoaded then
+    raise ETaurusTLSLibraryNotLoaded.Create;
+  if not Assigned(fSSLContext) then
+    raise ETaurusTLSLoaderError.Create(RSOSSLContextNotReady);
+  if fSSLContext.Context = nil then
+    raise ETaurusTLSLoaderError.Create(RSOSSLContextNotReady);
   Assert(AListenerThread <> nil);
 
   Result := nil;
   LIO := TTaurusTLSIOHandlerSocket.Create(nil);
   try
+    LIO.AutoLoad := AutoLoad;
     LIO.PassThrough := True;
     LIO.Open;
     while not AListenerThread.Stopped do
@@ -3548,21 +3643,7 @@ begin
           LIO.SSLSocket := TTaurusTLSSocket.Create(Self);
           LIO.SSLSocket.VerifyHostname := SSLOptions.VerifyHostname;
           LIO.SSLContext := fSSLContext;
-          // TODO: to enable server-side SNI, we need to:
-          // - Set up an additional SSL_CTX for each different certificate;
-          // - Add a servername callback to each SSL_CTX using SSL_CTX_set_tlsext_servername_callback();
-          // - In the callback, retrieve the client-supplied servername with
-          // SSL_get_servername(ssl, TLSEXT_NAMETYPE_host_name). Figure out the right
-          // SSL_CTX to go with that host name, then switch the SSL object to that
-          // SSL_CTX with SSL_set_SSL_CTX().
-
-          // RLebeau 2/1/2022: note, the following call is basically a no-op for TaurusTLS,
-          // because PassThrough=True and fSSLContext are both assigned above, so there
-          // is really nothing for TTaurusTLSIOHandlerSocket.Init() or
-          // TTaurusTLSIOHandlerSocket.StartSSL() to do when called by
-          // TTaurusTLSIOHandlerSocket.AfterAccept().  If anything, all this will
-          // really do is update the Binding's IPVersion.  But, calling this is consistent
-          // with other server Accept() implementations, so we should do it here, too...
+          // Reuse the server's prepared context; AfterAccept does not rebuild it.
           LIO.AfterAccept;
 
           Result := LIO;
@@ -3583,6 +3664,7 @@ function TTaurusTLSServerIOHandler.MakeDataChannelIOHandler
 begin
   Result := TTaurusTLSIOHandlerSocket.Create(nil);
   try
+    Result.AutoLoad := AutoLoad;
     Result.PassThrough := True;
     Result.OnGetPassword := fOnGetPassword;
     Result.OnDebugMessage := FOnDebugMessage;
@@ -3625,7 +3707,18 @@ begin
 end;
 
 procedure TTaurusTLSServerIOHandler.Shutdown;
+var
+  I: Integer;
+  LContext: TTaurusTLSContext;
 begin
+  // Indy has retired accepted connections before calling Shutdown.
+  if Assigned(fCertificates) then
+    for I := 0 to fCertificates.Count - 1 do
+    begin
+      LContext := fCertificates[I].Context;
+      fCertificates[I].Context := nil;
+      LContext.Free;
+    end;
   FreeAndNil(fSSLContext);
   inherited Shutdown;
 end;
@@ -3719,6 +3812,7 @@ var
 begin
   LIO := TTaurusTLSIOHandlerSocket.Create(nil);
   try
+    LIO.AutoLoad := AutoLoad;
     LIO.PassThrough := True;
     // LIO.SSLOptions.Free;
     // LIO.SSLOptions := SSLOptions;
@@ -3772,15 +3866,7 @@ var
   LPassThrough: Boolean;            //PALOFF
 begin
   // RLebeau: initialize TaurusTLS before connecting the socket...
-  try
-    Init;
-  except
-    on ETaurusTLSCouldNotLoadSSLLibrary do
-    begin
-      if not PassThrough then
-        raise;
-    end;
-  end;
+  Init;
   // RLebeau 1/11/07: In case a proxy is being used, pass through
   // any data from the base class unencrypted when setting up that
   // connection.  We should do this anyway since SSL hasn't been
@@ -3880,15 +3966,7 @@ begin
     begin
       if BindingAllocated then
       begin
-        if Assigned(fSSLContext) then
-        begin
-          OpenEncodedConnection;
-        end
-        else
-        begin
-          raise ETaurusTLSCouldNotLoadSSLLibrary.Create
-            (RSOSSLCouldNotLoadSSLLibrary);
-        end;
+        OpenEncodedConnection;
       end;
     end
     else
@@ -3953,20 +4031,26 @@ begin
   Result := fSSLSocket.Send(ABuffer, AOffset, ALength); //PALOFF
 end;
 
+function TTaurusTLSIOHandlerSocket.TryAutoLoad: boolean;
+var
+  {$IFDEF DCC}[unsafe]{$ENDIF}
+  LLoader: IOpenSSLLoader;
+begin
+  LLoader := GetOpenSSLLoader;
+  if LLoader.IsLoaded then
+    Result := True
+  else if fAutoLoad then
+    Result := LLoader.Load
+  else
+    Result := False;
+end;
+
 procedure TTaurusTLSIOHandlerSocket.AfterAccept;
 begin
   try
     inherited AfterAccept;
     // RLebeau: initialize TaurusTLS after accepting a client socket...
-    try
-      Init;
-    except
-      on ETaurusTLSCouldNotLoadSSLLibrary do
-      begin
-        if not PassThrough then
-          raise;
-      end;
-    end;
+    Init;
     StartSSL;
   except
     Close;
@@ -3975,38 +4059,64 @@ begin
 end;
 
 procedure TTaurusTLSIOHandlerSocket.Init;
-// see also TTaurusTLSServerIOHandler.Init
+var
+  LContext: TTaurusTLSContext;
 begin
-  if not Assigned(fSSLContext) then
-  begin
-    fSSLContext := TTaurusTLSContext.Create;
-    fSSLContext.Parent := Self;
-    fSSLContext.PublicKey := ClientCert.PublicKey;
-    fSSLContext.PrivateKey := ClientCert.PrivateKey;
-    fSSLContext.RootPublicKey := ClientCert.RootKey;
-    fSSLContext.DHParamsFile := ClientCert.DHParamsFile;
-    fSSLContext.VerifyDepth := SSLOptions.VerifyDepth;
-    fSSLContext.VerifyMode := SSLOptions.VerifyMode;
-    fSSLContext.VerifyHostname := SSLOptions.VerifyHostname;
-    fSSLContext.UseBidirectionalShutdown := SSLOptions.UseBidirectionalShutdown;
-    // fSSLContext.fVerifyFile := SSLOptions.fVerifyFile;
-    fSSLContext.UseSystemRootCACertificateStore :=
-      SSLOptions.UseSystemRootCACertificateStore;
-    fSSLContext.VerifyDirs := SSLOptions.VerifyDirs;
-    fSSLContext.CipherList := SSLOptions.CipherList;
-    fSSLContext.CipherSuites := SSLOptions.CipherSuites;
-    fSSLContext.CipherServerPreference := SSLOptions.CipherServerPreference;
-    fSSLContext.VerifyOn := Assigned(fOnVerifyCallback);
-    fSSLContext.StatusInfoOn := Assigned(FOnStatusInfo);
-    fSSLContext.SecurityLevelCBOn := Assigned(fOnSecurityLevel);
-    fSSLContext.MessageCBOn := Assigned(FOnDebugMessage);
-
-    // fSSLContext.PasswordRoutineOn := Assigned(fOnGetPassword);
-    fSSLContext.MinTLSVersion := SSLOptions.MinTLSVersion;
-    fSSLContext.Mode := SSLOptions.Mode;
-    fSSLContext.SecurityLevel := SSLOptions.SecurityLevel;
-    fSSLContext.OnContextLoaderCustom:=self.OnContextLoaderCustom;
-    fSSLContext.InitContext(sslCtxClient);
+  if fInitializing then
+    raise ETaurusTLSLoaderError.Create(RSOSSLContextNotReady);
+  fInitializing := True;
+  try
+    if Assigned(fSSLContext) then
+    begin
+      if not GetOpenSSLLoader.IsLoaded then
+        raise ETaurusTLSLibraryNotLoaded.Create;
+      if fSSLContext.Context = nil then
+        raise ETaurusTLSLoaderError.Create(RSOSSLContextNotReady);
+      Exit;
+    end;
+    if not TryAutoLoad then
+    begin
+      if AutoLoad then
+        raise ETaurusTLSCouldNotLoadSSLLibrary.Create(RSOSSLCouldNotLoadSSLLibrary);
+      raise ETaurusTLSLibraryNotLoaded.Create;
+    end;
+    // Publish only after the native context and all custom loading succeed.
+    LContext := TTaurusTLSContext.Create;
+    try
+      LContext.Parent := Self;
+      LContext.PublicKey := ClientCert.PublicKey;
+      LContext.PrivateKey := ClientCert.PrivateKey;
+      LContext.RootPublicKey := ClientCert.RootKey;
+      LContext.DHParamsFile := ClientCert.DHParamsFile;
+      LContext.VerifyDepth := SSLOptions.VerifyDepth;
+      LContext.VerifyMode := SSLOptions.VerifyMode;
+      LContext.VerifyHostname := SSLOptions.VerifyHostname;
+      LContext.UseBidirectionalShutdown := SSLOptions.UseBidirectionalShutdown;
+      // LContext.fVerifyFile := SSLOptions.fVerifyFile;
+      LContext.UseSystemRootCACertificateStore :=
+        SSLOptions.UseSystemRootCACertificateStore;
+      LContext.VerifyDirs := SSLOptions.VerifyDirs;
+      LContext.CipherList := SSLOptions.CipherList;
+      LContext.CipherSuites := SSLOptions.CipherSuites;
+      LContext.CipherServerPreference := SSLOptions.CipherServerPreference;
+      LContext.VerifyOn := Assigned(fOnVerifyCallback);
+      LContext.StatusInfoOn := Assigned(FOnStatusInfo);
+      LContext.SecurityLevelCBOn := Assigned(fOnSecurityLevel);
+      LContext.MessageCBOn := Assigned(FOnDebugMessage);
+  
+      // LContext.PasswordRoutineOn := Assigned(fOnGetPassword);
+      LContext.MinTLSVersion := SSLOptions.MinTLSVersion;
+      LContext.Mode := SSLOptions.Mode;
+      LContext.SecurityLevel := SSLOptions.SecurityLevel;
+      LContext.OnContextLoaderCustom:=self.OnContextLoaderCustom;
+      LContext.InitContext(sslCtxClient);
+      fSSLContext := LContext;
+      LContext := nil;
+    finally
+      LContext.Free;
+    end;
+  finally
+    fInitializing := False;
   end;
 end;
 
@@ -4082,113 +4192,141 @@ var
   // under ARC, convert a weak reference to a strong reference before working with it
   LTransparentProxy, LNextTransparentProxy: TIdCustomTransparentProxy;
 begin
-  Assert(Binding <> nil);
-  if not Assigned(fSSLSocket) then
-  begin
-    fSSLSocket := TTaurusTLSSocket.Create(Self);
-    fSSLSocket.VerifyHostname := SSLOptions.VerifyHostname;
-  end;
-  Assert(fSSLSocket.SSLContext = nil);
-  fSSLSocket.SSLContext := fSSLContext;
-  SetSocketTimeout(FReadTimeOut);
-{ TODO : To remove commented out legacy code }
-(*
-{$IFDEF WIN32_OR_WIN64}
-  // begin bug fix
-  if IndyCheckWindowsVersion(6) then
-  begin
-    // Note: Fix needed to allow SSL_Read and SSL_Write to timeout under
-    // Vista+ when connection is dropped
-    LTimeout := FReadTimeOut;
-    if LTimeout <= 0 then
+  // Once TLS is requested, neither callbacks nor error recovery may use plaintext.
+  fPassThrough := False;
+  try
+    // Readahead from the plaintext protocol must never become trusted TLS input.
+    if not InputBufferIsEmpty then
+      raise ETaurusTLSError.Create(RSOSSLUnreadPlaintext);
+    if not GetOpenSSLLoader.IsLoaded then
+      raise ETaurusTLSLibraryNotLoaded.Create;
+    if not Assigned(fSSLContext) then
+      raise ETaurusTLSLoaderError.Create(RSOSSLContextNotReady);
+    if fSSLContext.Context = nil then
+      raise ETaurusTLSLoaderError.Create(RSOSSLContextNotReady);
+    Assert(Binding <> nil);
+    if not Assigned(fSSLSocket) then
     begin
-      LTimeout := 30000; // 30 seconds
+      fSSLSocket := TTaurusTLSSocket.Create(Self);
+      fSSLSocket.VerifyHostname := SSLOptions.VerifyHostname;
     end;
-    Binding.SetSockOpt(Id_SOL_SOCKET, Id_SO_RCVTIMEO, LTimeout);
-    Binding.SetSockOpt(Id_SOL_SOCKET, Id_SO_SNDTIMEO, LTimeout);
-  end;
-  // end bug fix
-{$ENDIF}
-*)
-  // RLebeau 7/2/2015: do not rely on IsPeer to decide whether to call Connect()
-  // or Accept(). SSLContext.Mode controls whether a client or server method is
-  // used to handle the connection, so that same value should be used here as well.
-  // A user encountered a scenario where he needed to connect a TIdTCPClient to a
-  // TCP server on a hardware device, but run the client's SSLIOHandler as an SSL
-  // server because the device was initiating the SSL handshake as an SSL client.
-  // IsPeer was not designed to handle that scenario.  Setting IsPeer to True
-  // allowed Accept() to be called here, but at the cost of causing memory leaks
-  // in TTaurusTLSIOHandlerSocket.Destroy() and TTaurusTLSIOHandlerSocket.Close()
-  // in client components!  IsPeer is intended to be set to True only in server
-  // components...
-  LMode := fSSLContext.Mode;
-  if not(LMode in [sslmClient, sslmServer]) then
-  begin
-    // Mode must be sslmBoth (or else TTaurusTLSContext.GetSSLMethod() would have
-    // raised an exception), so just fall back to previous behavior for now,
-    // until we can figure out a better way to handle this scenario...
-    if IsPeer then
+    Assert(fSSLSocket.SSLContext = nil);
+    fSSLSocket.SSLContext := fSSLContext;
+    SetSocketTimeout(FReadTimeOut);
+  { TODO : To remove commented out legacy code }
+  (*
+  {$IFDEF WIN32_OR_WIN64}
+    // begin bug fix
+    if IndyCheckWindowsVersion(6) then
     begin
-      LMode := sslmServer;
+      // Note: Fix needed to allow SSL_Read and SSL_Write to timeout under
+      // Vista+ when connection is dropped
+      LTimeout := FReadTimeOut;
+      if LTimeout <= 0 then
+      begin
+        LTimeout := 30000; // 30 seconds
+      end;
+      Binding.SetSockOpt(Id_SOL_SOCKET, Id_SO_RCVTIMEO, LTimeout);
+      Binding.SetSockOpt(Id_SOL_SOCKET, Id_SO_SNDTIMEO, LTimeout);
+    end;
+    // end bug fix
+  {$ENDIF}
+  *)
+    // RLebeau 7/2/2015: do not rely on IsPeer to decide whether to call Connect()
+    // or Accept(). SSLContext.Mode controls whether a client or server method is
+    // used to handle the connection, so that same value should be used here as well.
+    // A user encountered a scenario where he needed to connect a TIdTCPClient to a
+    // TCP server on a hardware device, but run the client's SSLIOHandler as an SSL
+    // server because the device was initiating the SSL handshake as an SSL client.
+    // IsPeer was not designed to handle that scenario.  Setting IsPeer to True
+    // allowed Accept() to be called here, but at the cost of causing memory leaks
+    // in TTaurusTLSIOHandlerSocket.Destroy() and TTaurusTLSIOHandlerSocket.Close()
+    // in client components!  IsPeer is intended to be set to True only in server
+    // components...
+    LMode := fSSLContext.Mode;
+    if not(LMode in [sslmClient, sslmServer]) then
+    begin
+      // Mode must be sslmBoth (or else TTaurusTLSContext.GetSSLMethod() would have
+      // raised an exception), so just fall back to previous behavior for now,
+      // until we can figure out a better way to handle this scenario...
+      if IsPeer then
+      begin
+        LMode := sslmServer;
+      end
+      else
+      begin
+        LMode := sslmClient;
+      end;
+    end;
+    if LMode = sslmClient then
+    begin
+      if fHostname = '' then
+      begin
+        if URIToCheck <> '' then
+        begin
+          LURI := TIdURI.Create(URIToCheck);
+          try
+            fHostname := LURI.Host;
+          finally
+            LURI.Free;
+          end;
+        end;
+  
+        if fHostname = '' then
+        begin
+           // RLebeau: not reading from the property as it will create a
+           // default Proxy object if one is not already assigned...
+           LTransparentProxy := FTransparentProxy;
+           if Assigned(LTransparentProxy) then
+           begin
+             if LTransparentProxy.Enabled then
+             begin
+               repeat
+                 LNextTransparentProxy := LTransparentProxy.ChainedProxy;
+                 if not Assigned(LNextTransparentProxy) then
+                   break;
+                 if not LNextTransparentProxy.Enabled then
+                   break;
+                LTransparentProxy := LNextTransparentProxy;
+               until False;  //PALOFF - Condition evaluates to constant value
+               fHostname := LTransparentProxy.Host;
+             end;
+          end;
+          if fHostname = '' then
+          begin
+            fHostname := Host;
+          end;
+        end;
+      end;
+      fSSLSocket.HostName := fHostName;
+      fSSLSocket.Connect(Binding.Handle);
     end
     else
     begin
-      LMode := sslmClient;
+      fSSLSocket.HostName := '';
+      fSSLSocket.Accept(Binding.Handle);
     end;
-  end;
-  if LMode = sslmClient then
-  begin
-    if fHostname = '' then
+    if Assigned(FOnSSLNegotiated) then
     begin
-      if URIToCheck <> '' then
-      begin
-        LURI := TIdURI.Create(URIToCheck);
-        try
-          fHostname := LURI.Host;
-        finally
-          LURI.Free;
-        end;
-      end;
-
-      if fHostname = '' then
-      begin
-         // RLebeau: not reading from the property as it will create a
-         // default Proxy object if one is not already assigned...
-         LTransparentProxy := FTransparentProxy;
-         if Assigned(LTransparentProxy) then
-         begin
-           if LTransparentProxy.Enabled then
-           begin
-             repeat
-               LNextTransparentProxy := LTransparentProxy.ChainedProxy;
-               if not Assigned(LNextTransparentProxy) then
-                 break;
-               if not LNextTransparentProxy.Enabled then
-                 break;
-              LTransparentProxy := LNextTransparentProxy;
-             until False;  //PALOFF - Condition evaluates to constant value
-             fHostname := LTransparentProxy.Host;
-           end;
-        end;
-        if fHostname = '' then
-        begin
-          fHostname := Host;
-        end;
+      FOnSSLNegotiated(Self);
+    end;
+    fPassThrough := False;
+  except
+    // Indy normally preserves unread input after Close. Discard it at this
+    // security boundary and keep the original negotiation/callback exception.
+    InputBuffer.Clear;
+    try
+      Close;
+    except
+      // Native cleanup callbacks may raise. Still release the Indy transport,
+      // preserving the original exception that caused the upgrade to fail.
+      try
+        inherited Close;
+      except
       end;
     end;
-    fSSLSocket.HostName := fHostName;
-    fSSLSocket.Connect(Binding.Handle);
-  end
-  else
-  begin
-    fSSLSocket.HostName := '';
-    fSSLSocket.Accept(Binding.Handle);
+    raise;
   end;
-  if Assigned(FOnSSLNegotiated) then
-  begin
-    FOnSSLNegotiated(Self);
-  end;
-  fPassThrough := False;
 end;
 
 // TODO: add an AOwner parameter
@@ -4198,6 +4336,7 @@ var
 begin
   LIO := TTaurusTLSIOHandlerSocket.Create(nil);
   try
+    LIO.AutoLoad := AutoLoad;
     LIO.fHostname := fHostname;
     LIO.SSLOptions.Assign(SSLOptions);
     LIO.OnStatusInfo := FOnStatusInfo;

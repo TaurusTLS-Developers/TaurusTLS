@@ -80,10 +80,6 @@ type
     property RetCode : TIdC_INT read FRetCode;
   end;
 
-  ETaurusTLSLibraryNotLoaded = class(ETaurusTLSError)
-    constructor Create; reintroduce;
-  end;
-
   /// <summary>
   ///   raised if the OPENSSL_init_ssl libSSL API call failed.
   /// </summary>
@@ -445,6 +441,15 @@ type
   ETaurusTLSLoaderError = class(ETaurusTLSError);
 
   /// <summary>
+  /// Raised if the OpenSSL library failed to load.
+  /// </summary>
+  ETaurusTLSCouldNotLoadSSLLibrary = class(ETaurusTLSLoaderError);
+
+  ETaurusTLSLibraryNotLoaded = class(ETaurusTLSLoaderError)
+    constructor Create; reintroduce;
+  end;
+
+  /// <summary>
   ///   Raised if the OpenSSL configuration file path is invalid, missing, or a directory.
   /// </summary>
   ETaurusTLSConfigFilePathError = class(ETaurusTLSAPICryptoError);
@@ -453,6 +458,7 @@ type
   ///   Raised if OpenSSL failed to load the specified configuration file.
   /// </summary>
   ETaurusTLSConfigFileLoadError = class(ETaurusTLSAPICryptoError);
+
 
 implementation
 
