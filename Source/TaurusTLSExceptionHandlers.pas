@@ -445,7 +445,18 @@ type
   /// </summary>
   ETaurusTLSCouldNotLoadSSLLibrary = class(ETaurusTLSLoaderError);
 
+  /// <summary>
+  ///   Raised when an operation requires OpenSSL but the shared loader is not ready.
+  /// </summary>
+  /// <remarks>
+  ///   In dynamic builds, this includes calls to unbound OpenSSL routines before
+  ///   loading or after unloading the shared libraries. In static builds, the
+  ///   exception indicates that the loader lifecycle has not been initialized.
+  /// </remarks>
   ETaurusTLSLibraryNotLoaded = class(ETaurusTLSLoaderError)
+    /// <summary>
+    ///   Creates the exception with the readiness message for the linking model.
+    /// </summary>
     constructor Create; reintroduce;
   end;
 
