@@ -9,6 +9,7 @@
 { * Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  * }
 { ****************************************************************************** }
 {$I TaurusTLSCompilerDefines.inc}
+{$I TaurusTLSLinkDefines.inc}
 unit TaurusTLS_ResourceStrings;
 
 interface
@@ -16,13 +17,20 @@ interface
 resourcestring
   { TaurusTLS }
   RSOSSLInitFailed = 'OPENSSL_init_ssl failed';
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   RSOSSLLibNotLoaded = 'OpenSSL shared library not loaded.';
+  RSOSSLCouldNotLoadSSLLibrary = 'Could not load SSL library.';
+  RSNTLMNotReady = 'OpenSSL must be explicitly loaded before computing NTLM responses.';
+{$ELSE}
+  RSOSSLLibNotLoaded = 'OpenSSL library not initialized.';
+  RSOSSLCouldNotLoadSSLLibrary = 'Could not initialize SSL library.';
+  RSNTLMNotReady = 'OpenSSL must be explicitly initialized before computing NTLM responses.';
+{$ENDIF}
   RSOSSSessionCanNotBeNul = 'Session can not be nul.';
   RSOSSInvalidSessionValue = 'Invalid Session Value.';
   RSOSSUnsupportedVersion = 'Unsupported SSL Library version: %.8x.';
   RSOSSLModeNotSet = 'Mode has not been set.';
 
-  RSOSSLCouldNotLoadSSLLibrary = 'Could not load SSL library.';
 
   ROSSLCantGetSSLVersionNo = 'Unable to determine SSL Library Version number';
   RSOSSLCantGetSSLVersionString = 'Cannot obtain OpenSSL version string';
@@ -260,7 +268,6 @@ resourcestring
  
   RSLegacyProviderRegisterFailed = 'Registering the linked OpenSSL legacy provider failed.';
 
-  RSNTLMNotReady = 'OpenSSL must be explicitly loaded before computing NTLM responses.';
   RSNTLMInvalidChallenge = 'An NTLM challenge must contain exactly 8 bytes.';
   RSNTLMInvalidBuffer = 'NTLM input and output buffers must not be nil.';
   RSNTLMSetPaddingFailed = 'Disabling DES padding for NTLM failed.';
