@@ -18,10 +18,16 @@ type
   private
     FDir, FCert, FKey, FError: string;
     FStop: TEvent;
+    FServerUpgradeDone: TEvent;
     FGuard: TThread;
     FExpired, FVerifyError, FAlert: Integer;
     FReject: Boolean;
+    FStartTLS, FRejectNegotiated: Boolean;
+    FPeerAction: Integer;
     FClientVer, FServerVer: Integer;
+    procedure Negotiated(ASender: TTaurusTLSIOHandlerSocket);
+    procedure BeginUpgrade(AVersion: Integer; ATrust: Boolean = True);
+    procedure CheckUpgradeClosed;
     procedure BeforeTLS(ASender: TTaurusTLSIOHandlerSocket);
     procedure Connected(AContext: TIdContext);
     procedure Execute(AContext: TIdContext);
@@ -106,6 +112,28 @@ type
     procedure Versions(AClientVer, AServerVer: Integer);
   end;
 
+// These tests exchange plaintext before requesting TLS on the same TCP connection.
+  [TestFixture]
+  [Category('Integration,IOHandlers,Integration.STARTTLS')]
+  TIOStartTLS = class(TIOFixture)
+  public
+    [TestCase('MinTLS12', '12')]
+    [TestCase('MinTLS13', '13')]
+    procedure Upgrade(AVersion: Integer);
+    [TestCase('MinTLS12', '12')]
+    [TestCase('MinTLS13', '13')]
+    procedure Untrusted(AVersion: Integer);
+    [TestCase('Disconnect', '1')]
+    [TestCase('InvalidTLS', '2')]
+    procedure PeerFailure(AAction: Integer);
+    [Test]
+    procedure NegotiatedCallbackFailure;
+    [Test]
+    procedure UnreadPlaintext;
+    [Test]
+    procedure ServerFailure;
+  end;
+
 const
   cLocalhostTldCrt =
     '-----BEGIN CERTIFICATE-----'+sLineBreak+
@@ -133,6 +161,7 @@ implementation
 
 uses
   System.IOUtils, IdIOHandler, IdStack, IdStackConsts, IdException,
+  TaurusTLS_ResourceStrings,
   TaurusTLSExceptionHandlers, TaurusTLSHeaders_ssl,
   TaurusTLSHeaders_x509_vfy, TaurusTLSHeaders_tls1,
   TaurusTLSHeaders_err, TaurusTLSHeaders_sslerr;
@@ -163,9 +192,13 @@ begin
   FVerifyError := 0;
   FAlert := 0;
   FReject := False;
+  FStartTLS := False;
+  FRejectNegotiated := False;
+  FPeerAction := 0;
   FError := '';
   try
     FStop := TEvent.Create(nil, True, False, '');
+    FServerUpgradeDone := TEvent.Create(nil, True, False, '');
     FDir := TPath.Combine(TPath.GetTempPath,
       'TaurusTLS_IT_IO_' + TGuid.NewGuid.ToString);
     TDirectory.CreateDirectory(FDir);
@@ -213,6 +246,7 @@ begin
         FServerIO := nil;
       end;
     finally
+      FreeAndNil(FServerUpgradeDone);
       FreeAndNil(FStop);
       if (FDir <> '') and TDirectory.Exists(FDir) then
         TDirectory.Delete(FDir, True);
@@ -318,6 +352,12 @@ begin
   LIO := AContext.Connection.IOHandler as TTaurusTLSIOHandlerSocket;
   LIO.ReadTimeout := cWait;
   LIO.DefStringEncoding := IndyTextEncoding_UTF8;
+  if FStartTLS then
+  begin
+    LIO.OnSSLNegotiated := Negotiated;
+    LIO.WriteLn('PLAIN');
+    Exit;
+  end;
   // Generic TIdTCPServer does not start TLS automatically.
   LIO.PassThrough := False;
   // The greeting synchronizes server handshake completion with the test thread.
@@ -333,6 +373,38 @@ var
 begin
   LIO := AContext.Connection.IOHandler;
   case LIO.ReadByte of
+    3:
+      begin
+        // The reply is the last plaintext message. Both peers then start TLS.
+        LIO.WriteLn('READY');
+        if FPeerAction = 1 then
+          AContext.Connection.Disconnect
+        else if FPeerAction = 2 then
+        begin
+          LIO.WriteLn('NOT TLS');
+          AContext.Connection.Disconnect;
+        end
+        else
+        begin
+          try
+            TTaurusTLSIOHandlerSocket(LIO).PassThrough := False;
+          except
+            on E: ETaurusTLSAPICryptoError do
+            begin
+              if (FPeerAction <> 3) or
+                not IsSSLReason(E.ErrorCode, SSL_R_WRONG_VERSION_NUMBER) then
+                raise;
+              Assert.IsFalse(TTaurusTLSIOHandlerSocket(LIO).PassThrough);
+              Assert.IsFalse(AContext.Connection.Connected, 'Server upgrade failure must close TCP');
+              Assert.IsNull(TTaurusTLSIOHandlerSocket(LIO).SSLSocket);
+              FServerUpgradeDone.SetEvent;
+              Exit;
+            end;
+          end;
+          Assert.AreEqual('EVENT', LIO.ReadLn, 'Client callback writes must be encrypted');
+          LIO.WriteLn('SECURE');
+        end;
+      end;
     1:
       begin
         LText := LIO.ReadLn;
@@ -360,6 +432,11 @@ procedure TIOFixture.Failed(AContext: TIdContext; AException: Exception);
 begin
   if AException is EIdConnClosedGracefully then
     Exit;
+  if FRejectNegotiated and (AException is EIdSocketError) then
+    with EIdSocketError(AException) do
+      if (LastError = Id_WSAECONNABORTED) or (LastError = Id_WSAECONNRESET) or
+        (LastError = Id_WSAESHUTDOWN) then
+        Exit;
   if FReject and (AException is ETaurusTLSAcceptError) then
     Exit;
   // Require the SSL library and scenario-specific reason.
@@ -471,6 +548,182 @@ begin
   // No application data is sent before the failed handshake.
 end;
 
+procedure TIOFixture.Negotiated(ASender: TTaurusTLSIOHandlerSocket);
+begin
+  Assert.IsFalse(ASender.PassThrough, 'Negotiation callback must already use TLS');
+  Assert.AreEqual(1, Integer(SSL_is_init_finished(ASender.SSLSocket.SSL)));
+  if FRejectNegotiated and (ASender = FClientIO) then
+    raise EInvalidOp.Create('Injected negotiation callback failure');
+  // Writing in this callback must also travel through SSL_write.
+  ASender.WriteLn('EVENT');
+end;
+
+procedure TIOFixture.BeginUpgrade(AVersion: Integer; ATrust: Boolean);
+begin
+  FStartTLS := True;
+  Start(AVersion, AVersion, ATrust);
+  FClientIO.PassThrough := True;
+  FClientIO.OnSSLNegotiated := Negotiated;
+  FClient.Connect;
+  Assert.IsTrue(FClientIO.PassThrough);
+  Assert.IsNotNull(FClientIO.SSLContext.Context, 'Init prepares TLS before plaintext use');
+  Assert.AreEqual('PLAIN', FClientIO.ReadLn);
+  if AVersion = 12 then
+  begin
+    // Bound both prepared contexts before either peer creates its SSL session.
+    Assert.AreEqual(1, Integer(SSL_CTX_set_max_proto_version(
+      FServerIO.SSLContext.Context, TLS1_2_VERSION)));
+    Assert.AreEqual(1, Integer(SSL_CTX_set_max_proto_version(
+      FClientIO.SSLContext.Context, TLS1_2_VERSION)));
+  end;
+  Exchange('Plaintext before STARTTLS');
+  FClientIO.Write(Byte(3));
+  Assert.AreEqual('READY', FClientIO.ReadLn);
+end;
+
+procedure TIOFixture.CheckUpgradeClosed;
+begin
+  Assert.IsFalse(FClientIO.PassThrough, 'A failed upgrade must not restore plaintext');
+  Assert.IsFalse(FClient.Connected, 'A failed upgrade must close its transport');
+  Assert.IsNull(FClientIO.SSLSocket, 'A failed TLS session must be released');
+  Assert.WillRaiseAny(
+    procedure
+    begin
+      FClientIO.WriteLn('This must never be sent in plaintext');
+    end, 'Application writes must fail after an upgrade failure');
+end;
+
+procedure TIOStartTLS.Upgrade(AVersion: Integer);
+begin
+  BeginUpgrade(AVersion);
+  FClientIO.PassThrough := False;
+  Assert.IsFalse(FClientIO.PassThrough);
+  Assert.AreEqual(Ord(TLSVersion(AVersion)), Ord(FClientIO.SSLSocket.SSLProtocolVersion));
+  Assert.AreEqual(1, Integer(SSL_is_init_finished(FClientIO.SSLSocket.SSL)));
+  Assert.AreEqual('EVENT', FClientIO.ReadLn, 'Server callback writes must be encrypted');
+  Assert.AreEqual('SECURE', FClientIO.ReadLn);
+  Exchange('Application data after STARTTLS');
+  StopGuard;
+  CheckWorker;
+end;
+
+procedure TIOStartTLS.Untrusted(AVersion: Integer);
+var
+  LRejected: Boolean;
+begin
+  FReject := True;
+  BeginUpgrade(AVersion, False);
+  LRejected := False;
+  try
+    FClientIO.PassThrough := False;
+  except
+    on E: ETaurusTLSConnectError do
+      LRejected := True;
+    on E: ETaurusTLSAPICryptoError do
+    begin
+      if not IsSSLReason(E.ErrorCode, SSL_R_CERTIFICATE_VERIFY_FAILED) then
+        raise;
+      LRejected := True;
+    end;
+  end;
+  Assert.IsTrue(LRejected, 'Untrusted certificate must reject STARTTLS');
+  CheckUpgradeClosed;
+  StopGuard;
+  CheckWorker;
+end;
+
+procedure TIOStartTLS.PeerFailure(AAction: Integer);
+var
+  LRejected: Boolean;
+begin
+  FPeerAction := AAction;
+  BeginUpgrade(12);
+  LRejected := False;
+  try
+    FClientIO.PassThrough := False;
+  except
+    on E: EIdSocketError do
+    begin
+      // A peer reset can surface as an Indy transport error on either platform.
+      if (E.LastError <> Id_WSAECONNABORTED) and
+        (E.LastError <> Id_WSAECONNRESET) and (E.LastError <> Id_WSAESHUTDOWN) then
+        raise;
+      LRejected := True;
+    end;
+    on E: ETaurusTLSConnectError do
+      LRejected := True;
+    on E: ETaurusTLSAPICryptoError do
+    begin
+      if AAction = 1 then
+      begin
+        if not IsSSLReason(E.ErrorCode, SSL_R_UNEXPECTED_EOF_WHILE_READING) then
+          raise;
+      end
+      else if not IsSSLReason(E.ErrorCode, SSL_R_WRONG_VERSION_NUMBER) then
+        raise;
+      LRejected := True;
+    end;
+    on E: ETaurusTLSError do
+    begin
+      // READY and the invalid response may arrive in the same TCP read.
+      // Rejecting that buffered plaintext before SSL_connect is also correct.
+      if (AAction <> 2) or (E.ClassType <> ETaurusTLSError) or
+        (E.Message <> RSOSSLUnreadPlaintext) then
+        raise;
+      LRejected := True;
+    end;
+  end;
+  Assert.IsTrue(LRejected, 'A peer that does not complete TLS must reject the upgrade');
+  CheckUpgradeClosed;
+  StopGuard;
+  CheckWorker;
+end;
+
+procedure TIOStartTLS.ServerFailure;
+var
+  LCompleted: TWaitResult;
+begin
+  FPeerAction := 3;
+  BeginUpgrade(12);
+  // Send a plaintext response where the server is now expecting a TLS record.
+  FClientIO.WriteLn('NOT TLS');
+  LCompleted := FServerUpgradeDone.WaitFor(cWait);
+  CheckWorker;
+  Assert.AreEqual(Ord(wrSignaled), Ord(LCompleted),
+    'The server must report the expected TLS error and close the accepted connection');
+  StopGuard;
+end;
+
+procedure TIOStartTLS.UnreadPlaintext;
+begin
+  BeginUpgrade(12);
+  // Model plaintext already read ahead by Indy at the protocol boundary.
+  // It must never be returned as application data after a successful upgrade.
+  FClientIO.InputBuffer.Write(ToBytes('Untrusted plaintext', IndyTextEncoding_ASCII));
+  Assert.WillRaise(
+    procedure
+    begin
+      FClientIO.PassThrough := False;
+    end, ETaurusTLSError);
+  CheckUpgradeClosed;
+  Assert.IsTrue(FClientIO.InputBufferIsEmpty, 'Failed upgrade must discard plaintext');
+  StopGuard;
+end;
+
+procedure TIOStartTLS.NegotiatedCallbackFailure;
+begin
+  BeginUpgrade(12);
+  FRejectNegotiated := True;
+  Assert.WillRaise(
+    procedure
+    begin
+      FClientIO.PassThrough := False;
+    end, EInvalidOp, 'The original callback exception must propagate');
+  CheckUpgradeClosed;
+  StopGuard;
+  CheckWorker;
+end;
+
 procedure TIOHandshake.Handshake(AVersion: Integer);
 begin
   Start(AVersion, AVersion);
@@ -544,6 +797,7 @@ begin
 end;
 
 initialization
+  TDUnitX.RegisterTestFixture(TIOStartTLS);
   TDUnitX.RegisterTestFixture(TIOHandshake);
   TDUnitX.RegisterTestFixture(TIOTransfer);
   TDUnitX.RegisterTestFixture(TIORejection);

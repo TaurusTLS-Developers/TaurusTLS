@@ -13,11 +13,13 @@ uses
   DUnitX.Types,
   IdGlobal,
   IdCTypes,
+  IdContext,
   TaurusTLSLoader,
   TaurusTLSExceptionHandlers,
   TaurusTLS_ResourceStrings,
   TaurusTLSConsts,
-  TaurusTLS.UT.TestClasses;
+  TaurusTLS.UT.TestClasses,
+  TaurusTLS;
 
 type
   // Base fixture providing shared setup, teardown, and temporary configuration file helpers.
@@ -55,7 +57,42 @@ type
   [TestFixture]
   [Category('Loader,Loader.Component')]
   TLoaderComponentFixture = class(TLoaderBaseFixture)
+  private
+    FContextLoadCount: Integer;
+    FFailContextAt: Integer;
+    procedure UnexpectedServerExecute(AContext: TIdContext);
+    procedure LoadTestContext(ASender: TObject; AContext: TTaurusTLSContext;
+      var ASkipDefaultLoader: Boolean);
   public
+    // Fail a custom loader before publication, then retry without resetting OpenSSL.
+    [Test]
+    procedure Client_ContextFailureRetry;
+    // Real Indy entry points must reject TLS setup errors before transport startup.
+    [TestCase('ClientNotLoaded', 'False,False')]
+    [TestCase('ServerNotLoaded', 'True,False')]
+    [TestCase('ClientMisconfigured', 'False,True')]
+    [TestCase('ServerMisconfigured', 'True,True')]
+    procedure IOHandler_StartupFailure(const AServer, ALoaded: Boolean);
+    // Default and SNI contexts form one transaction; Shutdown permits a fresh Init.
+    [TestCase('Default', '1')]
+    [TestCase('FirstSNI', '2')]
+    [TestCase('LastSNI', '3')]
+    procedure Server_ContextFailureRetry(const AFailAt: Integer);
+    // AutoLoad is opt-in; an already initialized runtime works with either setting.
+    [TestCase('Disabled', 'False')]
+    [TestCase('Enabled', 'True')]
+    procedure Client_AutoLoad(const AEnabled: Boolean);
+    [TestCase('Disabled', 'False')]
+    [TestCase('Enabled', 'True')]
+    procedure Server_AutoLoad(const AEnabled: Boolean);
+    // Clones and server-created handlers inherit the owner's loading policy.
+    [TestCase('Disabled', 'False')]
+    [TestCase('Enabled', 'True')]
+    procedure IOHandler_AutoLoadCopies(const AEnabled: Boolean);
+    // A failed automatic load leaves no server context and permits an explicit reset.
+    [Test]
+    procedure Server_AutoLoadFailure;
+
     // Verifies context construction stays inactive and native initialization requires explicit loading.
     [Test]
     procedure Context_ExplicitReadiness;
@@ -511,6 +548,8 @@ uses
   {$ENDIF}
   System.SyncObjs,
   System.TypInfo,
+  IdTCPClient,
+  IdTCPServer,
   TaurusTLS.UT.Utils,
   TaurusTLSHeaders_crypto,
   TaurusTLSHeaders_conf,
@@ -522,16 +561,31 @@ uses
   TaurusTLSHeaders_x509,
   TaurusTLSHeaders_x509_vfy,
   TaurusTLSHeaders_x509v3,
-  TaurusTLSHeaders_types,
-  TaurusTLS;
+  TaurusTLSHeaders_types;
 
 type
+  TAutoLoadIOHandlerAccess = class(TTaurusTLSIOHandlerSocket)
+  public
+    function LoadIfEnabled: Boolean;
+    procedure InitializeTLS;
+  end;
+
   TLoaderComponentAccess = class(TTaurusTLSLoader)
   public
     procedure FinishStreaming;
     procedure MarkDesigning;
     procedure MarkRuntime;
   end;
+
+function TAutoLoadIOHandlerAccess.LoadIfEnabled: Boolean;
+begin
+  Result := TryAutoLoad;
+end;
+
+procedure TAutoLoadIOHandlerAccess.InitializeTLS;
+begin
+  Init;
+end;
 
 procedure TLoaderComponentAccess.FinishStreaming;
 begin
@@ -1052,6 +1106,299 @@ begin
   Assert.IsTrue(min_supported_ssl_version >= $30000000,
     'The minimum supported version must use OpenSSL encoding for 3.0.0 or later');
 {$ENDIF}
+end;
+
+procedure TLoaderComponentFixture.LoadTestContext(ASender: TObject;
+  AContext: TTaurusTLSContext; var ASkipDefaultLoader: Boolean);
+var
+  I: Integer;
+  LServer: TTaurusTLSServerIOHandler;
+begin
+  Inc(FContextLoadCount);
+  Assert.IsNotNull(AContext.Context, 'The candidate already has a native context');
+  // Callbacks see their candidate, but no context is published on the owner yet.
+  if ASender is TTaurusTLSServerIOHandler then
+  begin
+    LServer := TTaurusTLSServerIOHandler(ASender);
+    Assert.IsNull(LServer.SSLContext);
+    for I := 0 to LServer.Certificates.Count - 1 do
+      Assert.IsNull(LServer.Certificates[I].Context);
+  end
+  else
+    Assert.IsNull(TTaurusTLSIOHandlerSocket(ASender).SSLContext);
+  ASkipDefaultLoader := True;
+  if FContextLoadCount = FFailContextAt then
+    raise EInvalidOperation.Create('Injected context loading failure');
+end;
+
+procedure TLoaderComponentFixture.UnexpectedServerExecute(AContext: TIdContext);
+begin
+  Assert.Fail('A startup failure must not create a connection worker');
+end;
+
+procedure TLoaderComponentFixture.IOHandler_StartupFailure(
+  const AServer, ALoaded: Boolean);
+var
+  LClient: TIdTCPClient;
+  LServer: TIdTCPServer;
+  LClientIO: TTaurusTLSIOHandlerSocket;
+  LServerIO: TTaurusTLSServerIOHandler;
+  LExpected: ExceptClass;
+begin
+  Loader.ConfigFile := FValidConfigFile;
+  FContextLoadCount := 0;
+  FFailContextAt := 1;
+  if ALoaded then
+  begin
+    Assert.IsTrue(Load);
+    LExpected := EInvalidOperation;
+  end
+  else
+    LExpected := ETaurusTLSLibraryNotLoaded;
+  if AServer then
+  begin
+    LServer := TIdTCPServer.Create(nil);
+    try
+      LServerIO := TTaurusTLSServerIOHandler.Create(LServer);
+      LServerIO.OnContextLoaderCustom := LoadTestContext;
+      LServer.IOHandler := LServerIO;
+      LServer.DefaultPort := 0;
+      LServer.OnExecute := UnexpectedServerExecute;
+      Assert.WillRaise(
+        procedure
+        begin
+          LServer.Active := True;
+        end, LExpected);
+      Assert.IsFalse(LServer.Active, 'The server must fail before starting listeners');
+      Assert.IsNull(LServerIO.SSLContext);
+    finally
+      LServer.Free;
+    end;
+  end
+  else
+  begin
+    LClient := TIdTCPClient.Create(nil);
+    try
+      LClientIO := TTaurusTLSIOHandlerSocket.Create(LClient);
+      LClientIO.PassThrough := True;
+      LClientIO.OnContextLoaderCustom := LoadTestContext;
+      LClient.IOHandler := LClientIO;
+      LClient.Host := '127.0.0.1';
+      LClient.Port := 1;
+      Assert.WillRaise(
+        procedure
+        begin
+          LClient.Connect;
+        end, LExpected);
+      Assert.IsFalse(LClient.Connected, 'Plaintext must not suppress TLS initialization errors');
+      Assert.IsNull(LClientIO.SSLContext);
+    finally
+      LClient.Free;
+    end;
+  end;
+end;
+
+procedure TLoaderComponentFixture.Client_ContextFailureRetry;
+var
+  LHandler: TAutoLoadIOHandlerAccess;
+  LContext: TTaurusTLSContext;
+begin
+  Loader.ConfigFile := FValidConfigFile;
+  FContextLoadCount := 0;
+  FFailContextAt := 1;
+  LHandler := TAutoLoadIOHandlerAccess.Create(nil);
+  try
+    LHandler.AutoLoad := True;
+    LHandler.PassThrough := True;
+    LHandler.OnContextLoaderCustom := LoadTestContext;
+    Assert.WillRaise(
+      procedure
+      begin
+        LHandler.InitializeTLS;
+      end, EInvalidOperation);
+    Assert.IsNull(LHandler.SSLContext, 'A failed candidate must not be retained');
+    Assert.IsTrue(Loader.IsLoaded, 'Context failure must not unload OpenSSL');
+
+    FFailContextAt := 0;
+    LHandler.InitializeTLS;
+    LContext := LHandler.SSLContext;
+    Assert.IsNotNull(LContext.Context);
+    LHandler.InitializeTLS;
+    Assert.IsTrue(LHandler.SSLContext = LContext, 'Repeated Init reuses a complete context');
+    Assert.AreEqual(2, FContextLoadCount, 'Repeated Init must not repeat custom loading');
+  finally
+    LHandler.Free;
+  end;
+end;
+
+procedure TLoaderComponentFixture.Server_ContextFailureRetry(const AFailAt: Integer);
+var
+  LHandler: TTaurusTLSServerIOHandler;
+  I: Integer;
+begin
+  Loader.ConfigFile := FValidConfigFile;
+  FContextLoadCount := 0;
+  FFailContextAt := AFailAt;
+  LHandler := TTaurusTLSServerIOHandler.Create(nil);
+  try
+    LHandler.AutoLoad := True;
+    LHandler.OnContextLoaderCustom := LoadTestContext;
+    LHandler.Certificates.AddX509File;
+    LHandler.Certificates.AddX509File;
+    Assert.WillRaise(
+      procedure
+      begin
+        LHandler.Init;
+      end, EInvalidOperation);
+    Assert.IsNull(LHandler.SSLContext);
+    for I := 0 to LHandler.Certificates.Count - 1 do
+      Assert.IsNull(LHandler.Certificates[I].Context, 'All SNI candidates must roll back');
+    Assert.IsTrue(Loader.IsLoaded);
+
+    FFailContextAt := 0;
+    FContextLoadCount := 0;
+    LHandler.Init;
+    Assert.IsNotNull(LHandler.SSLContext.Context);
+    for I := 0 to LHandler.Certificates.Count - 1 do
+      Assert.IsNotNull(LHandler.Certificates[I].Context.Context);
+    LHandler.Init;
+    Assert.AreEqual(3, FContextLoadCount, 'Repeated Init reuses the complete set');
+    LHandler.Shutdown;
+    Assert.IsNull(LHandler.SSLContext);
+    for I := 0 to LHandler.Certificates.Count - 1 do
+      Assert.IsNull(LHandler.Certificates[I].Context);
+    LHandler.Init;
+    Assert.AreEqual(6, FContextLoadCount, 'Reactivation builds a fresh complete set');
+  finally
+    LHandler.Free;
+  end;
+end;
+
+procedure TLoaderComponentFixture.Client_AutoLoad(const AEnabled: Boolean);
+var
+  LHandler: TAutoLoadIOHandlerAccess;
+begin
+  Loader.ConfigFile := FValidConfigFile;
+  LHandler := TAutoLoadIOHandlerAccess.Create(nil);
+  try
+    Assert.IsFalse(LHandler.AutoLoad, 'Client autoload must default to False');
+    LHandler.AutoLoad := AEnabled;
+    if AEnabled then
+      LHandler.InitializeTLS
+    else
+    begin
+      Assert.WillRaise(
+        procedure
+        begin
+          LHandler.InitializeTLS;
+        end, ETaurusTLSLibraryNotLoaded);
+      Assert.IsNull(LHandler.SSLContext, 'Rejected initialization must leave no context');
+      Assert.IsFalse(Loader.IsLoaded, 'The shared runtime must remain inactive');
+      Assert.IsTrue(Load, 'Explicit initialization must still be supported');
+      LHandler.InitializeTLS;
+    end;
+    Assert.IsTrue(Loader.IsLoaded, 'OpenSSL must be ready before creating a context');
+    Assert.IsNotNull(LHandler.SSLContext, 'The handler must create its TLS context');
+  finally
+    // Destroy native consumers before the base fixture unloads the shared runtime.
+    LHandler.Free;
+  end;
+end;
+
+procedure TLoaderComponentFixture.Server_AutoLoad(const AEnabled: Boolean);
+var
+  LHandler: TTaurusTLSServerIOHandler;
+begin
+  Loader.ConfigFile := FValidConfigFile;
+  LHandler := TTaurusTLSServerIOHandler.Create(nil);
+  try
+    Assert.IsFalse(LHandler.AutoLoad, 'Server autoload must default to False');
+    LHandler.AutoLoad := AEnabled;
+    if not AEnabled then
+    begin
+      Assert.WillRaise(
+        procedure
+        begin
+          LHandler.Init;
+        end, ETaurusTLSLibraryNotLoaded, 'Disabled autoload requires explicit initialization');
+      Assert.IsFalse(Loader.IsLoaded, 'A rejected initialization must not load OpenSSL');
+      Assert.IsNull(LHandler.SSLContext, 'Readiness failure must not allocate a context');
+      Assert.IsTrue(Load, 'Explicit initialization must still be supported');
+    end;
+    // This is the entry point Indy invokes before socket binding and listener events.
+    LHandler.Init;
+    Assert.IsTrue(Loader.IsLoaded, 'The runtime must be ready after server initialization');
+    Assert.IsNotNull(LHandler.SSLContext, 'The server must create its TLS context');
+  finally
+    LHandler.Free;
+  end;
+end;
+
+procedure TLoaderComponentFixture.IOHandler_AutoLoadCopies(const AEnabled: Boolean);
+var
+  LClient, LCopy: TTaurusTLSIOHandlerSocket;
+  LServer: TTaurusTLSServerIOHandler;
+
+  procedure CheckAndFree(const AHandler: TTaurusTLSIOHandlerSocket);
+  begin
+    try
+      Assert.IsTrue(AHandler.AutoLoad = AEnabled,
+        'A generated handler must preserve the source AutoLoad setting');
+    finally
+      AHandler.Free;
+    end;
+  end;
+
+begin
+  LClient := TTaurusTLSIOHandlerSocket.Create(nil);
+  try
+    LClient.AutoLoad := AEnabled;
+    LCopy := TTaurusTLSIOHandlerSocket(LClient.Clone);
+    CheckAndFree(LCopy);
+  finally
+    LClient.Free;
+  end;
+
+  LServer := TTaurusTLSServerIOHandler.Create(nil);
+  try
+    LServer.AutoLoad := AEnabled;
+    CheckAndFree(TTaurusTLSIOHandlerSocket(LServer.MakeClientIOHandler));
+    CheckAndFree(TTaurusTLSIOHandlerSocket(LServer.MakeFTPSvrPort));
+    CheckAndFree(TTaurusTLSIOHandlerSocket(LServer.MakeFTPSvrPasv));
+  finally
+    LServer.Free;
+  end;
+  Assert.IsFalse(Loader.IsLoaded, 'Copying loading policy must not initialize OpenSSL');
+end;
+
+procedure TLoaderComponentFixture.Server_AutoLoadFailure;
+var
+  LHandler: TTaurusTLSServerIOHandler;
+begin
+  Loader.ConfigFile := TPath.Combine(FTempDir, 'missing-autoload.cnf');
+  LHandler := TTaurusTLSServerIOHandler.Create(nil);
+  try
+    LHandler.AutoLoad := True;
+    Assert.WillRaise(
+      procedure
+      begin
+        LHandler.Init;
+      end, ETaurusTLSConfigFilePathError, 'Configuration errors must propagate');
+    Assert.IsNull(LHandler.SSLContext, 'Failed autoload must not leave a partial context');
+
+    // Keep the loader's normal failure/reset contract; AutoLoad does not bypass it.
+    Loader.ConfigFile := FValidConfigFile;
+    Assert.WillRaise(
+      procedure
+      begin
+        LHandler.Init;
+      end, ETaurusTLSCouldNotLoadSSLLibrary, 'The failed loader must block automatic retry');
+    Unload;
+    LHandler.Init;
+    Assert.IsNotNull(LHandler.SSLContext, 'Initialization must recover after an explicit reset');
+  finally
+    LHandler.Free;
+  end;
 end;
 
 procedure TLoaderComponentFixture.Platform_Versions(const ATargetName, AExpected: string);
