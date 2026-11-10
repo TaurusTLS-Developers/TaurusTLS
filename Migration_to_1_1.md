@@ -202,6 +202,91 @@ fetched EVP algorithms use it. See the
 
 FIPS and Legacy providers require additional configuration, described next.
 
+### Approach 5: opt in to IOHandler AutoLoad
+
+Both TaurusTLS IOHandlers expose an optional AutoLoad property, default False.
+Enable it before starting the connection or listener:
+
+```pascal
+ClientTLSIOHandler.AutoLoad := True;
+TLSClient.Connect;
+
+// For a listening server:
+ServerTLSIOHandler.AutoLoad := True;
+TLSServer.Active := True;
+```
+
+ClientTLSIOHandler denotes a TTaurusTLSIOHandlerSocket; ServerTLSIOHandler
+denotes a TTaurusTLSServerIOHandler. These are application component names.
+
+AutoLoad uses the same shared IOpenSSLLoader. Configure its library path,
+suffixes and ConfigFile before connecting or activating the server. The option
+does not select configuration files, activate providers independently, or replace
+TTaurusTLSLoader.PlatformSettings. Repeated successful loads reuse the ready
+runtime; copying an IOHandler's AutoLoad setting does not itself load OpenSSL.
+
+The loading check runs during IOHandler initialization, before its native TLS
+context is created. Server startup therefore initializes OpenSSL before bind or
+listener events. Client clones and server-created connection/data-channel
+handlers inherit AutoLoad. These operations do not acquire loader leases or
+unload the shared runtime when a handler is destroyed.
+
+With AutoLoad=False, explicitly initialize OpenSSL using one of the earlier
+approaches. With AutoLoad=True, initialization still uses the normal failure
+state and retry rules: configuration exceptions propagate, and a failed load
+requires an explicit Unload reset before retrying. Destroy active consumers
+before that reset.
+### Initializing an Indy server before its IOHandler
+
+With server IOHandler AutoLoad=False, initialize OpenSSL before setting
+`Server.Active := True`. This applies both to shared-library loading and to
+initialization of linked static libraries.
+
+In Indy 10.6.3.15, server activation runs in this order:
+
+1. `TIdCustomTCPServer.Startup` calls `IOHandler.Init`.
+2. `TTaurusTLSServerIOHandler.Init` calls `TTaurusTLSContext.InitContext`,
+   which requires the OpenSSL loader to be ready.
+3. Indy binds the listening sockets and fires the bind events.
+4. Listener threads start and fire `OnBeforeListenerRun`.
+5. Accepted client connections later reach `OnConnect`.
+
+Consequently, `OnBeforeBind`, `OnAfterBind`, `OnBeforeListenerRun` and
+`OnConnect` are too late for the server's first OpenSSL initialization.
+`TIdCustomTCPServer` does not expose an `OnBeforeConnect` event in this
+Indy version. The similarly named event on `TIdMappedPortTCP` concerns its
+mapped outbound connection, after the server has already started.
+
+If an application-owned server class should initialize OpenSSL on activation,
+override its protected `Startup` method and load before calling inherited:
+
+```pascal
+uses
+  IdTCPServer, TaurusTLSLoader, TaurusTLSExceptionHandlers;
+
+type
+  TApplicationTCPServer = class(TIdTCPServer)
+  protected
+    procedure Startup; override;
+  end;
+
+procedure TApplicationTCPServer.Startup;
+begin
+  if not GetOpenSSLLoader.Load then
+    raise ETaurusTLSLoaderError.Create('OpenSSL initialization failed');
+
+  inherited Startup;
+end;
+```
+
+Configure the shared loader before activating the server. Repeated successful
+`Load` calls reuse the ready runtime. Do not unload it when an individual
+client disconnects or server stops if other OpenSSL consumers remain active.
+
+This example is an application-defined descendant, not a new TaurusTLS
+component. For an existing server component, keep the explicit initialization
+immediately before `Active := True` shown in approaches 2 and 3.
+
 ## 3. FIPS support for Indy
 
 OpenSSL 3.x/4.x implements FIPS algorithms through a provider, replacing the
