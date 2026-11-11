@@ -1,87 +1,95 @@
 # Migrating from TaurusTLS 1.0 to 1.1
 
-This migration aligns TaurusTLS with the OpenSSL 3.x/4.x APIs and their
-provider-based cryptography model. OpenSSL 3 introduced providers and deprecated
-older engine, FIPS-mode and low-level crypto APIs; OpenSSL 4 removes additional
-legacy APIs, including engine support. TaurusTLS 1.1 uses modern EVP/provider
-operations and configuration rather than the older initialization and FIPS-mode
-patterns. See the [OpenSSL migration guide](https://docs.openssl.org/4.0/man7/ossl-guide-migration/).
+TaurusTLS 1.1 supports OpenSSL 3.x and 4.x and drops support for OpenSSL 1.1.1
+and earlier. It uses OpenSSL's newer cryptographic APIs and providers.
 
-## 1. Incompatibility: OpenSSL initialization is now explicit
+The main change for your application is when OpenSSL is initialized. Choose
+one of the approaches below, configure any providers you need, and initialize
+OpenSSL before making connections or using its cryptographic functions.
 
-TaurusTLS 1.1 no longer loads and initializes OpenSSL implicitly when a TLS
-context is created. An application that previously relied on this behavior must
-now initialize the shared runtime before its first TLS, hash/HMAC or NTLM
-operation. Native TLS context initialization raises `ETaurusTLSLoaderError` if
-the loader is not ready. The normal minimum supported OpenSSL version is 3.0.0.
+OpenSSL 3 introduced providers and deprecated several older APIs. OpenSSL 4
+removes more of those APIs, including engine support. For background, see the
+[OpenSSL migration guide](https://docs.openssl.org/4.0/man7/ossl-guide-migration/).
 
-### Why this changed
+## 1. Initialize OpenSSL before using it
 
-With OpenSSL 3.x/4.x, configuration determines which providers and algorithm
-properties are available. Implicit initialization can occur before the application
-has selected its library path, `openssl.cnf` file and security policy. The first
-operation could then use an unintended library or default provider configuration,
-including processing data before the application's required FIPS selection has
-been established. This is a security-policy risk, not just a startup-order issue.
+By default, TaurusTLS 1.1 no longer loads OpenSSL automatically when it creates
+a TLS context. Call the loader before your first TLS connection, hash, HMAC or
+NTLM operation. You can also enable the IOHandler's optional `AutoLoad`
+property, described in approach 4.
 
-Once another component has initialized the shared runtime, changing those
-settings is too late. Explicit loading gives the application a controlled point
-to apply its configuration and check initialization before handling sensitive
-data. Applications must also coordinate with other libraries using the same
-OpenSSL runtime; TaurusTLS cannot replace policy established by an earlier user.
+This applies to both shared and statically linked libraries. With shared
+libraries, the loader loads the files and initializes OpenSSL. With static
+libraries, it initializes the OpenSSL code already linked into your application.
+The minimum supported OpenSSL version is 3.0.0.
 
-### What to change
+### Why initialization order matters
 
-Initialize through the `IOpenSSLLoader` interface's `Load` method, or through
-`TTaurusTLSLoader`, which delegates to that same interface. `GetOpenSSLLoader`
-is the accessor that returns the shared `IOpenSSLLoader` instance; obtaining the
-interface does not initialize OpenSSL.
+OpenSSL configuration controls which providers and algorithms your application
+can use. Set the library path, configuration file and security policy before
+initializing OpenSSL. This is especially important when the application
+requires FIPS: that policy must be in place before processing data.
 
-Configure the loader first, then call `Load` and handle False and exceptions.
-Only start OpenSSL-dependent operations after success. Configuration and passive
-readiness queries may be used before loading.
+Other libraries in your application may also use OpenSSL. Coordinate their
+initialization so they use the intended configuration. TaurusTLS cannot
+guarantee that it can replace settings established by another library first.
 
-## 2. Migration approaches
+### What you need to change
 
-Choose the simplest approach that fits your application. All approaches use the
-same shared runtime; applications do not need a separate loader for each socket.
+Use `IOpenSSLLoader.Load` or the `TTaurusTLSLoader` component. Both work with
+the same OpenSSL loader for the application.
 
-### Approach 1: add TTaurusTLSLoader with LoadOnStart checked
+`GetOpenSSLLoader` returns the shared interface. Getting the interface, setting
+its properties or checking its state does not initialize OpenSSL.
 
-1. Place `TTaurusTLSLoader` on the startup form or data module.
-2. Review its `PlatformSettings` collection. Add an entry for each deployment
-   platform that needs settings different from the defaults.
-3. Leave `LoadOnStart=True` checked.
-4. Keep TLS clients and listeners inactive in their saved properties.
-5. Start those consumers after the startup owner has finished loading.
+Set the properties you need, call `Load`, and handle both a False result and
+any exceptions. Start connections and cryptographic operations only after
+initialization succeeds. Low-level TLS context initialization raises
+`ETaurusTLSLoaderError` if OpenSSL is not ready.
 
-Each `PlatformSettings` item groups the following settings for one target:
+## 2. Choose how to initialize OpenSSL
 
-| Setting | What to enter |
+You need one loader setup for the application, rather than one for each socket.
+
+### Approach 1: initialize at startup with TTaurusTLSLoader
+
+1. Place a `TTaurusTLSLoader` component on your startup form or data module.
+2. Open its `PlatformSettings` collection. Add entries for platforms that need
+   settings different from the defaults.
+3. Leave `LoadOnStart=True`.
+4. Keep TLS clients and servers inactive in the designer.
+5. Start them after the form or data module has finished loading.
+
+Each entry in `PlatformSettings` contains these properties:
+
+| Property | What to enter |
 |---|---|
-| `Target` | The platform group to which this item applies. |
-| `OpenSSLPath` | The directory containing the runtime-loaded OpenSSL libraries. |
-| `ConfigFile` | The deployment's main `openssl.cnf` filename, when explicitly selected. |
-| `CustomSSLLibVersions` | Optional custom library-name suffixes; normally leave blank. |
+| `Target` | The platform these settings apply to. |
+| `OpenSSLPath` | The directory containing the shared OpenSSL libraries. |
+| `ConfigFile` | The main OpenSSL configuration file, usually `openssl.cnf`. |
+| `CustomSSLLibVersions` | Custom library-name suffixes, if needed. Usually leave this blank. |
 
-An empty collection is valid: the loader uses the normal platform library search,
-standard OpenSSL configuration discovery and TaurusTLS's default library-name
-suffixes. A missing target entry, or blank fields in its entry, also selects
-these defaults. Empty `ConfigFile` does not disable OpenSSL configuration or
-activate FIPS/Legacy by itself. More detail is in the Platform settings reference
-at the end of this guide. For explicit provider policy, use approach 4.
+You can leave the collection empty to use the defaults. A missing platform
+entry or an empty property also uses the corresponding default: the platform's
+library search, OpenSSL's configuration discovery, or TaurusTLS's library-name
+suffixes.
 
-The component calls `Load` after its runtime form/data-module properties have
-been streamed. It does not load OpenSSL in the designer.
+An empty `ConfigFile` lets OpenSSL find its configuration. It does not disable
+configuration or activate FIPS or Legacy by itself. Use approach 5 if your
+application needs specific provider settings.
 
-Create the startup owner before any other form or data module uses OpenSSL.
-Component order does not establish initialization order across different owners.
+The component initializes OpenSSL after the form or data module's saved
+properties have been loaded. It does not load OpenSSL in the designer.
 
-### Approach 2: call the component's Load method
+Create this startup form or data module before any other form or data module
+uses OpenSSL. The order of components on separate forms does not control
+which form is created first.
 
-Use this when application settings must be read first, or when initialization
-should wait until the user starts a network operation. Set `LoadOnStart=False`
-on the streamed component, then call its `Load` before using a TLS consumer:
+### Approach 2: call the loader component yourself
+
+Use this approach when you need to read application settings first, or want to
+wait until the user starts a connection. Set the component's `LoadOnStart`
+property to False, then call `Load`:
 
 ```pascal
 uses
@@ -96,18 +104,20 @@ begin
 end;
 ```
 
-`TaurusTLSLoader1` is the component on the form; `TLSClient` is an Indy client
-with a TaurusTLS IOHandler assigned. For a server, use the same check immediately
-before `TLSServer.Active := True`.
+Replace `TaurusTLSLoader1` with your loader component's name. `TLSClient` is
+your Indy client with a TaurusTLS IOHandler assigned. For a server, make the
+same check before setting `TLSServer.Active := True`.
 
-Check the Boolean result and let initialization exceptions reach the application's
-error handler. A component created in code also needs an explicit `Load` call;
-its `LoadOnStart` property is acted on during form streaming, not construction.
+Handle a False result and let initialization exceptions reach your application's
+error handler.
 
-### Approach 3: initialize through IOpenSSLLoader
+If you create the loader component in code, call `Load` yourself.
+`LoadOnStart` is used when loading a form or data module's saved properties;
+creating a component does not trigger it.
 
-Applications without a loader component can use `IOpenSSLLoader` directly.
-Obtain the shared instance with `GetOpenSSLLoader`, then call the interface:
+### Approach 3: use IOpenSSLLoader directly
+
+You can initialize OpenSSL without placing a loader component on a form:
 
 ```pascal
 uses
@@ -123,38 +133,82 @@ begin
 end;
 ```
 
-Call this during application startup, or immediately before `Client.Connect` or
-`Server.Active := True`. It must also precede any earlier hash/HMAC or NTLM use.
-Repeated successful `Load` calls return True without repeating initialization.
+Call this procedure at startup or before `Client.Connect` or
+`Server.Active := True`. If the application uses OpenSSL for hashes, HMAC or
+NTLM earlier, initialize it before those operations.
 
-### Approach 4: customize library paths and openssl.cnf
+Calling `Load` again after success returns True without repeating initialization.
 
-Use explicit `openssl.cnf` configuration when the application requires Indy's
-FIPS support, LM/NTLMv1 algorithms from the Legacy provider, or algorithms from a
-custom OpenSSL provider. These are OpenSSL 3.x/4.x provider configurations. This
-approach also lets the application select a specific native-library directory.
+### Approach 4: let the IOHandler initialize OpenSSL
 
-The selected configuration must activate the required providers and define the
-intended algorithm properties. Set `ConfigFile` to that deployment's file before
-the first load; do not change provider policy separately for each connection.
-FIPS and NTLMv1 use different algorithm policies, detailed in the next sections.
+`AutoLoad` was added to make migration easier for applications that do not need
+any additional OpenSSL configuration. Both TaurusTLS IOHandlers have this
+property, and its default value is False.
 
-With a designer component, open `PlatformSettings`, add the required platform
-group, and set:
+Set it to True before starting the connection or server:
 
-| Setting | Purpose |
+```pascal
+ClientTLSIOHandler.AutoLoad := True;
+TLSClient.Connect;
+
+// For a listening server:
+ServerTLSIOHandler.AutoLoad := True;
+TLSServer.Active := True;
+```
+
+Replace `ClientTLSIOHandler` and `ServerTLSIOHandler` with the names of the
+TaurusTLS IOHandler components in your application.
+
+If you configure OpenSSL through a `TTaurusTLSLoader` component or the
+`IOpenSSLLoader` interface, leave `AutoLoad=False` and initialize OpenSSL there
+before starting connections. Otherwise, the IOHandler may initialize OpenSSL
+before the component applies its `PlatformSettings` or your code sets the
+intended configuration. OpenSSL would then start with the settings available
+at that moment, which may not be the ones your application requires.
+Applying your settings afterward is too late for that initialization.
+
+`AutoLoad` uses the same shared loader as the other approaches. If OpenSSL is
+already ready, it reuses it without changing its configuration.
+
+The IOHandler initializes OpenSSL and prepares its TLS context even when the
+connection starts in plaintext mode. Handle loading and configuration errors
+when starting the client or server.
+
+Client clones and handlers created by the server inherit `AutoLoad`.
+Copying this property does not load OpenSSL.
+
+A failed load still needs an explicit `Unload` before retrying. Stop operations
+and free objects that use OpenSSL before calling `Unload`. Destroying an
+IOHandler does not unload OpenSSL.
+
+### Approach 5: choose your libraries and configuration file
+
+Use this approach when you need FIPS, the Legacy provider for LM/NTLMv1, or a
+custom provider. You can also use it to load shared libraries from a particular
+directory.
+
+Prepare an `openssl.cnf` file that activates the required providers and selects
+the algorithms your application needs. Set `ConfigFile` before the first
+`Load`. Keep this configuration consistent across the application's connections.
+The FIPS and NTLM sections below explain their different requirements.
+
+With a `TTaurusTLSLoader` component, enter the settings in `PlatformSettings`:
+
+| Property | Purpose |
 |---|---|
-| `Target` | Platform group to which this entry applies. |
-| `OpenSSLPath` | Directory used to find runtime-loaded libcrypto/libssl. |
-| `ConfigFile` | Path to the main OpenSSL configuration, usually `openssl.cnf`. |
-| `CustomSSLLibVersions` | Optional ordered library-name suffixes; blank uses defaults. |
+| `Target` | The platform these settings apply to. |
+| `OpenSSLPath` | Where TaurusTLS looks for shared libcrypto and libssl libraries. |
+| `ConfigFile` | The main OpenSSL configuration file. |
+| `CustomSSLLibVersions` | Library-name suffixes to try, in order. Leave blank for the defaults. |
 
-Keep `LoadOnStart=True` if these design-time settings are sufficient. Otherwise,
-set it False and apply application-supplied runtime settings before calling Load.
-The component's public runtime properties are `OpenSSLPath`, `ConfigFile` and
-`SSLLibVersions`; `CustomSSLLibVersions` belongs to a platform-settings item.
+Leave `LoadOnStart=True` if those settings are enough. Otherwise, set it to
+False, apply your settings in code, and call `Load`.
 
-For interface-based configuration:
+When configuring the component in code, use its `OpenSSLPath`, `ConfigFile`
+and `SSLLibVersions` properties. The name `CustomSSLLibVersions` is used only
+for entries in `PlatformSettings`.
+
+With the interface, set the properties before calling `Load`:
 
 ```pascal
 uses
@@ -172,93 +226,134 @@ begin
 end;
 ```
 
-The paths are application-supplied deployment settings. Set them before any
-OpenSSL-dependent consumer runs. Library discovery and provider discovery are
-separate: `OpenSSLPath` locates libcrypto/libssl, not provider modules.
+Use the paths from your application's installation. `OpenSSLPath` tells
+TaurusTLS where to find libcrypto and libssl. OpenSSL locates provider modules
+separately.
 
-`ConfigFile` is available in both linking models. TaurusTLS passes that file to
-OpenSSL before consumer initialization; OpenSSL handles provider activation,
-module paths, included configuration files and algorithm properties. An explicit
-file can have a relative or Unicode path. Missing/invalid paths raise
-`ETaurusTLSConfigFilePathError`; native configuration failures raise
-`ETaurusTLSConfigFileLoadError` with available diagnostics.
+`ConfigFile` works with shared and statically linked libraries. During `Load`,
+TaurusTLS passes the selected file to OpenSSL before running the application's
+registered load callbacks. OpenSSL reads the provider settings, module paths,
+included files and algorithm properties.
 
-Leaving `ConfigFile` blank requests standard OpenSSL configuration initialization
-and discovery. It does not disable configuration. A discovered filename alone
-does not prove that the file was applied. Setting a filename does not itself
-initialize OpenSSL or activate a provider; that happens during `Load`.
+The filename can contain Unicode characters or be relative. Invalid or missing
+paths raise `ETaurusTLSConfigFilePathError`. If OpenSSL cannot apply the
+configuration, TaurusTLS raises `ETaurusTLSConfigFileLoadError` with the
+available error details.
 
-Use the OpenSSL documentation matching the deployed native version:
+Leaving `ConfigFile` empty lets OpenSSL find its configuration in the usual
+way. A filename returned by discovery does not prove that the file was read.
+Setting `ConfigFile` alone does not initialize OpenSSL; call `Load` afterward.
+
+Use the documentation for the OpenSSL version you deploy:
 
 - [Configuration syntax](https://docs.openssl.org/3.0/man5/config/).
 - [Provider configuration](https://docs.openssl.org/3.0/man5/config/#provider-configuration).
 - [Engine configuration for OpenSSL 3](https://docs.openssl.org/3.0/man5/config/#engine-configuration).
 
-Engine configuration requires an engine-enabled OpenSSL 3 build; engines are
-deprecated there and are no longer supported in OpenSSL 4. Prefer providers for
-new deployments. An engine's configuration does not establish that the adapters'
-fetched EVP algorithms use it. See the
+Engines require an engine-enabled OpenSSL 3 build. They are deprecated in
+OpenSSL 3 and removed in OpenSSL 4, so use providers for new deployments.
+Configuring an engine does not guarantee that TaurusTLS's EVP-based Indy
+adapters will use it. See the
 [OpenSSL migration guide](https://docs.openssl.org/4.0/man7/ossl-guide-migration/).
 
-FIPS and Legacy providers require additional configuration, described next.
+### Configure paths for your installation
 
-### Approach 5: opt in to IOHandler AutoLoad
+Choose an OpenSSL distribution that suits your application and follow its
+configuration instructions. TaurusTLS uses OpenSSL's own configuration rules.
+It does not require the OpenSSL-Distribution package layout, look beside
+libcrypto for a missing configuration file, or change paths inside that file.
 
-Both TaurusTLS IOHandlers expose an optional AutoLoad property, default False.
-Enable it before starting the connection or listener:
+Use absolute paths if your application may start from different working
+directories. TaurusTLS resolves a relative `ConfigFile` against the working
+directory when loading. Loading libcrypto from another directory does not
+change that base.
 
-```pascal
-ClientTLSIOHandler.AutoLoad := True;
-TLSClient.Connect;
+OpenSSL has separate rules for provider paths and `.include` files. Those
+paths are not automatically relative to the main configuration file. See
+[OpenSSL's include-path rules](https://docs.openssl.org/3.0/man5/config/#directives).
 
-// For a listening server:
-ServerTLSIOHandler.AutoLoad := True;
-TLSServer.Active := True;
+You can set the environment before starting your application. For example,
+a PowerShell launcher on Windows could contain:
+
+```powershell
+$env:OPENSSL_CONF = 'C:\Apps\Example\config\openssl.cnf'
+$env:OPENSSL_MODULES = 'C:\Apps\Example\crypto\providers'
+$env:OPENSSL_CONF_INCLUDE = 'C:\Apps\Example\config'
+& 'C:\Apps\Example\Example.exe'
 ```
 
-ClientTLSIOHandler denotes a TTaurusTLSIOHandlerSocket; ServerTLSIOHandler
-denotes a TTaurusTLSServerIOHandler. These are application component names.
+Replace these paths with the locations you use for your application.
 
-AutoLoad uses the same shared IOpenSSLLoader. Configure its library path,
-suffixes and ConfigFile before connecting or activating the server. The option
-does not select configuration files, activate providers independently, or replace
-TTaurusTLSLoader.PlatformSettings. Repeated successful loads reuse the ready
-runtime; copying an IOHandler's AutoLoad setting does not itself load OpenSSL.
+You can also choose the configuration file through either the `IOpenSSLLoader`
+interface or the `TTaurusTLSLoader` component. Set `ConfigFile` to the file you
+want to use; this takes priority over `OPENSSL_CONF`.
 
-The loading check runs during IOHandler initialization, before its native TLS
-context is created. Server startup therefore initializes OpenSSL before bind or
-listener events. Client clones and server-created connection/data-channel
-handlers inherit AutoLoad. These operations do not acquire loader leases or
-unload the shared runtime when a handler is destroyed.
+Leave `ConfigFile` empty to let OpenSSL use `OPENSSL_CONF` or its default
+configuration location. Set `OpenSSLPath` separately if you need to choose
+where TaurusTLS loads shared libraries.
 
-With AutoLoad=False, explicitly initialize OpenSSL using one of the earlier
-approaches. With AutoLoad=True, initialization still uses the normal failure
-state and retry rules: configuration exceptions propagate, and a failed load
-requires an explicit Unload reset before retrying. Destroy active consumers
-before that reset.
-### Initializing an Indy server before its IOHandler
+| Environment variable | What it controls |
+|---|---|
+| `OPENSSL_CONF` | The main configuration file. An empty value disables configuration-file loading through OpenSSL's normal discovery. |
+| `OPENSSL_MODULES` | The directory for external provider modules. Providers still need to be activated. |
+| `OPENSSL_CONF_INCLUDE` | The directory OpenSSL prepends to relative `.include` paths. |
+| `OPENSSL_ENGINES` | The dynamic engine directory for engine-enabled OpenSSL 3 builds. |
 
-With server IOHandler AutoLoad=False, initialize OpenSSL before setting
-`Server.Active := True`. This applies both to shared-library loading and to
-initialization of linked static libraries.
+Check the deployed version's
+[environment-variable documentation](https://docs.openssl.org/3.0/man7/openssl-env/),
+including the rules for privileged processes. Setting these variables before
+starting the application also avoids differences between Delphi's environment
+and the C runtime used by OpenSSL.
 
-In Indy 10.6.3.15, server activation runs in this order:
+Configure OpenSSL before any library in the process initializes it. Some
+[initialization settings last for the lifetime of the process](https://docs.openssl.org/3.0/man3/OPENSSL_init_crypto/).
 
-1. `TIdCustomTCPServer.Startup` calls `IOHandler.Init`.
-2. `TTaurusTLSServerIOHandler.Init` calls `TTaurusTLSContext.InitContext`,
-   which requires the OpenSSL loader to be ready.
-3. Indy binds the listening sockets and fires the bind events.
-4. Listener threads start and fire `OnBeforeListenerRun`.
-5. Accepted client connections later reach `OnConnect`.
+This minimal configuration explicitly activates the default provider:
 
-Consequently, `OnBeforeBind`, `OnAfterBind`, `OnBeforeListenerRun` and
-`OnConnect` are too late for the server's first OpenSSL initialization.
-`TIdCustomTCPServer` does not expose an `OnBeforeConnect` event in this
-Indy version. The similarly named event on `TIdMappedPortTCP` concerns its
-mapped outbound connection, after the server has already started.
+```ini
+config_diagnostics = 1
+openssl_conf = openssl_init
 
-If an application-owned server class should initialize OpenSSL on activation,
-override its protected `Startup` method and load before calling inherited:
+[openssl_init]
+providers = provider_section
+
+[provider_section]
+default = default_section
+
+[default_section]
+activate = 1
+```
+
+Add other providers only when your application needs them, following the
+[provider configuration instructions](https://docs.openssl.org/3.0/man5/config/#provider-configuration).
+The FIPS and NTLM sections below give more specific examples. You still need
+to configure certificate verification and the TLS policy for your application.
+
+The example enables `config_diagnostics`. This makes configuration errors
+visible, but an error can prevent the application from initializing OpenSSL.
+Read OpenSSL's explanation of
+[configuration diagnostics](https://docs.openssl.org/3.0/man5/config/)
+when choosing how to handle these errors.
+
+Protect the configuration files and provider/engine directories from changes
+by untrusted users. These files can control which native modules OpenSSL loads
+and which cryptographic settings it uses. Keep your distribution updated and
+follow [OpenSSL security advisories](https://www.openssl-library.org/news/vulnerabilities/),
+its [security policy](https://www.openssl-library.org/policies/general/security-policy/),
+and its [installation guidance](https://github.com/openssl/openssl/blob/master/INSTALL.md).
+
+Test the application using its deployment account and working directory. Check
+certificate-chain and hostname verification, the TLS protocols you allow, and
+the providers your application needs. A successful library load alone does not
+confirm that these settings are correct.
+
+### Initialize OpenSSL before starting a server
+
+If the server IOHandler has `AutoLoad=False`, initialize OpenSSL before setting
+`Server.Active := True`. This applies to shared and statically linked libraries.
+
+If you maintain your own server class, you can initialize OpenSSL in `Startup`
+before calling the inherited method:
 
 ```pascal
 uses
@@ -279,20 +374,18 @@ begin
 end;
 ```
 
-Configure the shared loader before activating the server. Repeated successful
-`Load` calls reuse the ready runtime. Do not unload it when an individual
-client disconnects or server stops if other OpenSSL consumers remain active.
+Set the loader's properties before activating the server. For an existing
+server component, you can simply call the loader immediately before
+`Active := True`, as shown in approaches 2 and 3.
 
-This example is an application-defined descendant, not a new TaurusTLS
-component. For an existing server component, keep the explicit initialization
-immediately before `Active := True` shown in approaches 2 and 3.
+The class above is an example you can add to your application. Do not unload
+OpenSSL each time a client disconnects or a server stops; other parts of the
+application may still be using it.
 
-## 3. FIPS support for Indy
+## 3. Using FIPS with Indy
 
-OpenSSL 3.x/4.x implements FIPS algorithms through a provider, replacing the
-older FIPS-mode API approach. TaurusTLS's FIPS support requires the
-`TaurusTLS_ProviderFIPS` unit. For FIPS-backed Indy hash/HMAC operations and mode
-reporting, include both units in the application's `uses` clause:
+OpenSSL 3.x and 4.x provide FIPS support through a provider. For FIPS-backed
+Indy hashes, HMAC and FIPS-mode reporting, add these units:
 
 ```pascal
 uses
@@ -300,40 +393,40 @@ uses
   TaurusTLSIdFIPS;
 ```
 
-`TaurusTLS_ProviderFIPS` supplies TaurusTLS's native FIPS API validation and
-provider-availability reporting. `TaurusTLSIdFIPS` installs Indy's hash/HMAC and
-mode callbacks; it also depends on that provider-support unit. Listing both
-makes the two responsibilities explicit. Neither unit activates the native
-provider: the selected custom `openssl.cnf` and its included installation data
-must do that when the loader initializes OpenSSL.
+`TaurusTLS_ProviderFIPS` checks the required OpenSSL APIs and provider
+availability. `TaurusTLSIdFIPS` connects Indy's hash, HMAC and FIPS callbacks
+to TaurusTLS. It also uses the provider-support unit internally.
 
-Despite its name, `TaurusTLSIdFIPS` also supplies ordinary OpenSSL-backed
-hash/HMAC without FIPS selection. It uses modern EVP digest contexts and the
-EVP_MAC HMAC API; availability follows the configured OpenSSL 3.x/4.x providers
-and properties.
+Choose an `openssl.cnf` file that activates FIPS and includes the installation's
+FIPS configuration data. OpenSSL applies it when the loader initializes the
+library. Adding the units alone does not activate FIPS.
 
-The unit installs callbacks once during Pascal unit initialization. `Load` and
-`Unload` do not reinstall the backend or replace callbacks selected later by
-another unit. Avoid competing Indy OpenSSL backend initializers when choosing the
-TaurusTLS backend. The adapter's loading/availability callback checks readiness;
-it does not load Indy's separate OpenSSL backend or initialize TaurusTLS.
+Despite its name, `TaurusTLSIdFIPS` also provides ordinary OpenSSL-backed
+hashes and HMAC without FIPS enabled. It uses the newer EVP digest and EVP_MAC
+APIs. The available algorithms depend on your provider configuration.
 
-### Dynamic-binding FIPS requirements
+The unit installs its Indy callbacks once, during unit initialization.
+Calling `Load` or `Unload` does not reinstall them or replace callbacks assigned
+by another unit later. Avoid installing another Indy OpenSSL backend alongside
+the TaurusTLS backend.
 
-1. Include `TaurusTLS_ProviderFIPS` and `TaurusTLSIdFIPS` in the application.
-2. Deploy matching OpenSSL shared libraries, the FIPS provider module and its
-   installed `fipsmodule.cnf` data for the process architecture. Follow the
-   distribution's installation procedure; do not invent or copy integrity data
-   from another installation.
-3. Prepare a custom `openssl.cnf` that selects a provider initialization section,
-   includes that installed FIPS configuration, activates FIPS and any supporting
-   provider needed by the application, and sets `default_properties = fips=yes`.
-4. Set the loader's `ConfigFile` to this main `openssl.cnf`, then call `Load`
-   before any protected operation.
-5. After success, verify `IdFIPS.GetFIPSMode()` and algorithm availability before
-   operations that require configured FIPS selection.
+Indy's availability callbacks check whether TaurusTLS is ready. They do not
+initialize it or load Indy's separate OpenSSL backend.
 
-For a Linux-style deployment, the configuration structure can be:
+### FIPS with runtime-loaded shared libraries
+
+1. Add `TaurusTLS_ProviderFIPS` and `TaurusTLSIdFIPS`.
+2. Install matching OpenSSL shared libraries, the FIPS provider and its
+   `fipsmodule.cnf` data for your application's architecture. Follow the
+   distribution's installation instructions.
+3. Prepare a main `openssl.cnf` that includes the installed FIPS configuration,
+   activates FIPS and any supporting provider, and sets
+   `default_properties = fips=yes`.
+4. Set `ConfigFile` to that main file and call `Load` before using OpenSSL.
+5. Check `IdFIPS.GetFIPSMode()` and the required algorithms before starting
+   operations that require FIPS.
+
+For a Linux installation, the main configuration can have this structure:
 
 ```ini
 config_diagnostics = 1
@@ -359,89 +452,94 @@ module = "/deployment/openssl/providers/fips.so"
 default_properties = fips=yes
 ```
 
-Replace the example paths with the installed files; the included provider data
-must define the installation's FIPS section and activation. This is a structural
-example, not a portable module filename or a FIPS installation recipe. Follow
-OpenSSL's [FIPS module documentation](https://docs.openssl.org/3.0/man7/fips_module/)
-and the documentation for the actual module/distribution you deploy.
+Replace the paths with your installed files. Use the FIPS configuration and
+integrity data generated for that installation; do not invent the values or
+copy them from another installation. The included file must define the
+installation's FIPS section and activation settings.
 
-`IdFIPS.GetFIPSMode()` returns True only when the dynamic-binding runtime is ready,
-the required modern APIs are available, native FIPS properties are selected and
-the FIPS provider is available. Provider availability alone is insufficient.
-`IsFIPSProviderLoaded` is a passive query and does not acquire a provider handle.
+Follow the [OpenSSL FIPS module instructions](https://docs.openssl.org/3.0/man7/fips_module/)
+and your distribution's documentation for installation. The example shows how
+the configuration fits together, rather than providing an installation recipe
+or a module filename that works on every platform.
 
-`IdFIPS.SetFIPSMode` is a compatibility no-op. It cannot activate providers, change
-selection, or clear a restrictive policy. It returns True only when the requested
-mode already matches the configured policy; a True request also requires an
-available FIPS provider. It returns False for a requested policy change.
+`IdFIPS.GetFIPSMode()` returns True only when the loader is ready, the required
+APIs are available, OpenSSL has FIPS properties enabled, and the FIPS provider
+is available. `IsFIPSProviderLoaded` checks availability without taking ownership
+of a provider handle.
 
-When FIPS is selected, the adapter requires provider=fips for fetched hash/HMAC
-implementations, including the HMAC's nested digest. Failure does not trigger a
-retry with weaker properties or another backend. Mode reporting is not a
-certification statement or proof that every operation is approved.
+`IdFIPS.SetFIPSMode` is kept for compatibility. It cannot activate a provider or
+change the policy selected in your configuration. It returns True only when
+the requested mode already matches that policy. Requesting True also requires
+the FIPS provider to be available.
 
-### Static/direct-import limits
+With FIPS enabled, the adapter requests `provider=fips` for hashes and HMAC,
+including the digest used inside HMAC. If the required algorithm is unavailable,
+the operation fails rather than retrying with weaker settings or another backend.
 
-TaurusTLS does not support the FIPS provider in statically linked applications.
-This includes the standard Delphi archive deployments for both macOS Intel and
-Apple Silicon, and all supported mobile targets (iOS and Android). The linked
-Legacy provider described below does not change that FIPS limitation.
+These checks do not certify the application or prove that every operation
+meets FIPS requirements.
 
-For `OPENSSL_STATIC_LINK_MODEL`, including startup shared-library direct imports,
-FIPS mode/provider reporting and both setter requests return False. These are
-TaurusTLS implementation limits; OpenSSL 3.x/4.x provider APIs do not imply that
-TaurusTLS supports static FIPS deployment.
+### FIPS limitations with linked libraries
 
-Ordinary hash/HMAC callbacks still require explicit TaurusTLS initialization and
-fetch algorithms under the native default-context properties. Keep all hash/MAC
-objects and operations inside the initialized runtime's lifetime.
+TaurusTLS does not support FIPS in statically linked applications. This includes
+the standard Delphi macOS builds for Intel and Apple Silicon, and the supported
+iOS and Android builds. Linking the Legacy provider does not add FIPS support.
 
-## 4. NTLMv1 support for Indy
+The current implementation also reports False for FIPS mode, FIPS provider
+availability and both `SetFIPSMode` requests when using
+`OPENSSL_STATIC_LINK_MODEL`. This includes shared libraries imported at startup.
+These are TaurusTLS limitations.
 
-In OpenSSL 3.x/4.x, the Legacy provider supplies the MD4/DES algorithms used by
-Indy's LM/NTLMv1 adapter. This follows the provider API model rather than older
-low-level crypto/backend assumptions. Legacy is an algorithm provider, not an
-NTLM authentication provider itself.
+Ordinary hashes and HMAC still work when their algorithms are available under
+the configured OpenSSL policy. Initialize TaurusTLS first, and free all hash
+and HMAC objects before unloading it.
 
-Include `TaurusTLSIdNTLM` in the application's `uses` clause to install the
-LM/NTLMv1 response callbacks. Shared-library deployments activate the external
-Legacy provider using a custom `openssl.cnf`; archive deployments additionally
-include `TaurusTLS_ProviderLegacy` to link/register the builtin implementation.
-Configure the appropriate path before calling `Load` and starting authentication.
-The FIPS adapter is independent and is not required for NTLMv1.
+## 4. Using LM/NTLMv1 with Indy
 
-The adapter uses EVP MD4 and DES-ECB operations. LM responses require DES-ECB; NT
-responses require both MD4 and DES-ECB. Its loading hook is readiness-only;
-`IsNTLMFuncsAvail` also checks algorithm fetches under the current native
-properties and the Indy FIPS policy. Direct response operations reject a
-non-ready loader. Enabling legacy does not override selected FIPS restrictions.
+OpenSSL's Legacy provider supplies the MD4 and DES algorithms needed by Indy's
+LM/NTLMv1 callbacks. It supplies the cryptographic algorithms; Indy handles
+the authentication protocol.
 
-An application can include both Indy adapters, but that does not make NTLMv1
-available under a FIPS-only algorithm policy. Activating both FIPS and Legacy
-providers does not override `fips=yes` or Indy's prohibiting FIPS policy. Choose
-the intended policy at application initialization and handle unavailable NTLM
-without silently weakening it.
+Add `TaurusTLSIdNTLM` to install those callbacks. For shared libraries, activate
+the external Legacy provider in `openssl.cnf`. For static Delphi builds, also
+add `TaurusTLS_ProviderLegacy` to link and register the provider.
 
-This work covers the LM/NTLMv1 callbacks. It does not establish NTLMv2 support,
-including separate RC4/backend dependencies. Non-ASCII LM OEM policy is also
-outside these changes. Validate the authentication variant your application uses.
+Select your configuration and call `Load` before starting authentication.
+The FIPS adapter is separate and is not required for NTLMv1.
 
-### Dynamic binding and startup-loaded shared libraries
+LM responses require DES-ECB. NT responses require both MD4 and DES-ECB.
+`IsNTLMFuncsAvail` checks whether the configured OpenSSL providers and Indy
+policy allow the required operations. The loading callback checks readiness
+only; it does not initialize OpenSSL. Calling the response functions before
+initialization fails.
 
-For OpenSSL 3.x/4.x shared-library deployment:
+You can include both Indy adapters, but NTLMv1 remains unavailable under a
+FIPS-only policy or when Indy's FIPS policy prohibits it. Activating Legacy
+does not override those restrictions. Select the policy at startup and handle
+unavailable authentication without weakening it automatically.
 
-1. Include `TaurusTLSIdNTLM` in the application.
-2. Deploy the matching external Legacy provider module with the native libraries.
-3. Prepare a custom `openssl.cnf` that activates Legacy and Default and permits
-   the required MD4/DES-ECB algorithms under the application's policy.
-4. Set `ConfigFile` to that file before `Load`, then check NTLM availability before
-   beginning authentication.
+This support covers LM/NTLMv1 callbacks. It does not establish NTLMv2 support,
+which can have separate RC4/backend requirements. Handling non-ASCII text for
+LM's OEM encoding is also outside these changes. Check which authentication
+variant your application actually uses.
 
- The
-[OpenSSL legacy-provider reference](https://docs.openssl.org/3.0/man7/OSSL_PROVIDER-legacy/)
-lists these algorithm families; build options still affect availability.
+### LM/NTLMv1 with shared libraries
 
-The following configuration activates default and legacy providers:
+This applies both when TaurusTLS loads the libraries and when the operating
+system imports them at startup:
+
+1. Add `TaurusTLSIdNTLM`.
+2. Install the matching Legacy provider module with your OpenSSL libraries.
+3. Prepare an `openssl.cnf` that activates Default and Legacy and allows the
+   required MD4 and DES-ECB algorithms.
+4. Set `ConfigFile`, call `Load`, and check
+   `IdFIPS.IsNTLMFuncsAvail()` before authenticating.
+
+The [OpenSSL Legacy provider reference](https://docs.openssl.org/3.0/man7/OSSL_PROVIDER-legacy/)
+lists the algorithms it supplies. Availability also depends on how your
+OpenSSL distribution was built.
+
+This configuration activates Default and Legacy:
 
 ```ini
 config_diagnostics = 1
@@ -461,16 +559,16 @@ activate = 1
 activate = 1
 ```
 
-This example relies on OpenSSL's module discovery. If needed, add an actual
-`module = "..."` path inside `legacy_sect`. Select this file using `ConfigFile`
-before `Load`, then check `IdFIPS.IsNTLMFuncsAvail()` before starting authentication.
-Do not weaken an application's FIPS selection to make this availability test pass.
+OpenSSL uses its module search rules to find Legacy. If necessary, add the
+installed module's path as `module = "..."` in `legacy_sect`.
+Select this file with `ConfigFile` before calling `Load`.
 
-### Static macOS/mobile deployment with STATICLOAD_OPENSSL
+Keep the application's FIPS policy intact if the NTLM availability check fails.
 
-The standard Delphi macOS (Intel and Apple Silicon) and mobile (iOS/Android)
-archive deployments use a statically linked OpenSSL 3.x/4.x Legacy implementation.
-Include both units:
+### LM/NTLMv1 with static macOS and mobile libraries
+
+Standard Delphi builds for macOS, iOS and Android use linked OpenSSL archives.
+To include Legacy, add both units:
 
 ```pascal
 uses
@@ -478,143 +576,154 @@ uses
   TaurusTLSIdNTLM;
 ```
 
-Deploy the OpenSSL archives for the target to the linker, including Legacy.
-The current TaurusTLS archive names are `libcrypto.a`, `libssl.a` and
-**`liblegacy.a`**. `CLibLegacyProvider` selects `liblegacy.a` in this target
-configuration, and the optional unit references `ossl_legacy_provider_init`
-from that archive.
+Make these archives available to the linker: `libcrypto.a`, `libssl.a` and
+**`liblegacy.a`**. In this configuration, `CLibLegacyProvider` selects
+`liblegacy.a`, and the optional provider unit references its
+`ossl_legacy_provider_init` entry point.
 
-The unit registers the linked legacy implementation in the default OpenSSL
-context during unit initialization. Registration does not activate it. Use a
-configuration activating default and legacy, as above, and explicitly call Load.
-For this built-in provider path, omit the external legacy `module` setting.
-Linking the registration unit alone does not make the provider available.
+The unit registers the provider during Pascal unit initialization. To activate
+it, choose a configuration that enables Default and Legacy, as shown above,
+then call `Load`. Omit the external Legacy `module` setting when using this
+linked provider.
 
-This is Legacy-provider support for OpenSSL 3.x/4.x; it does not enable static
-FIPS. Configure Default and Legacy activation in the application's main
-`openssl.cnf` and select it with `ConfigFile` before explicit initialization.
+This adds Legacy support, not FIPS support.
 
-The registration guard is specifically `STATICLOAD_OPENSSL`. FPC's separate
-`OPENSSL_USE_STATIC_LIBRARY` selection alone does not run that registration.
-Its supported archive/provider setup needs maintainer confirmation before this
-guide can give enablement instructions for that combination.
+The registration unit uses `STATICLOAD_OPENSSL`. Selecting FPC's
+`OPENSSL_USE_STATIC_LIBRARY` alone does not run that registration. The supported
+FPC setup for linked Legacy still needs maintainer confirmation before we can
+give instructions for it here.
 
 ## Reference and deployment notes
 
 ### Platform settings
 
-The component supports six groups: `tlpAndroid`, `tlpiOS`, `tlpMacOS`,
-`tlpLinux`, `tlpWindows32` and `tlpWindows64`. Each group can occur only once.
-Non-Windows groups share settings across architectures; Windows64 includes
-ARM64EC while native library defaults still follow the compiled architecture.
-Missing entries and blank fields use loader defaults:
+`PlatformSettings` supports six groups: `tlpAndroid`, `tlpiOS`, `tlpMacOS`,
+`tlpLinux`, `tlpWindows32` and `tlpWindows64`. Add at most one entry per group.
 
-| Empty setting | Effective behavior |
+Non-Windows settings apply across architectures. Windows64 includes ARM64EC;
+the default library filenames still match the application's architecture.
+
+Missing entries and empty properties use these defaults:
+
+| Setting left empty | What happens |
 |---|---|
-| Collection or running-target entry | Resolve all fields using the defaults below. |
-| `OpenSSLPath` | Normal library discovery for that platform/linking model. |
-| `ConfigFile` | Request standard OpenSSL 3.x/4.x configuration initialization and filename discovery. |
-| `CustomSSLLibVersions` | Use TaurusTLS's target-specific default library-name suffixes for OpenSSL 4 and 3. |
+| Collection or target entry | The loader uses the defaults listed below. |
+| `OpenSSLPath` | Libraries are found through the platform's normal search. This property is ignored for directly imported or static libraries. |
+| `ConfigFile` | OpenSSL uses its usual configuration discovery and initialization. |
+| `CustomSSLLibVersions` | TaurusTLS tries its default library-name suffixes for OpenSSL 4 and 3. |
 
-Defaults do not mean a new isolated OpenSSL context. Provider activation still
-comes from the configuration selected/discovered at initialization, and missing
-FIPS/Legacy/custom provider configuration is not supplied automatically. Use an
-explicit `ConfigFile` when the application must control that policy.
+All these approaches use OpenSSL's default library context. An empty setting
+does not create a separate configuration for each component or activate a
+missing provider. Set `ConfigFile` when you need to choose the provider policy.
 
-`PlatformSettings` is editable in the designer or during streaming. Runtime
-collection/item mutation raises `ETaurusTLSLoaderError`; use the public scalar
-properties for runtime configuration. The filename picker browses the designer
-host, so remote deployment paths may need manual entry.
+Edit `PlatformSettings` in the designer. The component can also restore it when
+loading saved properties. Changing the collection in a running application
+raises `ETaurusTLSLoaderError`; use `OpenSSLPath`, `ConfigFile` and
+`SSLLibVersions` instead. A filename selected in the designer is a path on the
+development machine, so check it when deploying to another machine.
 
-For a streamed component, selected settings are applied while the singleton is
-inactive even when `LoadOnStart=False`. An already ready/failed singleton is not
-reconfigured. Explicit `Load` does not reapply the collection. Later scalar
-assignments therefore remain effective. Separate setters are not an atomic
-configuration transaction; coordinate configuration before concurrent use.
+When a saved component loads and the shared loader is inactive, it applies its
+platform settings even with `LoadOnStart=False`. Calling `Load` later does not
+apply them again, so changes you make through the runtime properties are kept.
 
-### Failure, retry and shutdown
+A component does not reconfigure a loader that is already ready or has failed.
+Set all properties during startup, before other threads start using the loader.
+Several property assignments are separate operations, not one combined update.
 
-`Load` may return False or raise an exception. Failure leaves a circuit breaker:
-changing properties alone does not permit a retry. After retiring consumers,
-call `Unload`, correct the configuration and load again.
+### Handle failures and shut down safely
 
-Repeated successful loads acquire no leases or initialization reference counts.
-One `Unload` performs global cleanup. Before calling it, stop workers, finish
-operations and free every native consumer. Do not unload in a connection's
-bind/disconnect event while other connections may still need the runtime.
-Freeing a component or releasing an interface does not unload OpenSSL.
+`Load` can return False or raise an exception. After a failed load, further
+attempts are blocked until you call `Unload`. Changing a property alone does
+not clear that failure.
 
-In archive/direct-import builds, Load is still required for configuration and
-TaurusTLS readiness even though the code is already linked/imported. Cleanup
-neither removes linked code nor guarantees reset of OpenSSL's own initialization
-policy. Coordinate startup with other OpenSSL users in the process: TaurusTLS
-cannot promise to replace configuration established by another library first.
+Before retrying, stop operations and free objects that use OpenSSL. Call
+`Unload`, correct the settings, and call `Load` again.
 
-### Upgrade checks
+Repeated `Load` calls do not need matching `Unload` calls. A single `Unload`
+cleans up the shared loader for the whole application. Stop workers, finish
+operations and free all OpenSSL objects before calling it.
 
-- Select paths and provider policy before the first Load.
-- Initialize before TLS, hash/HMAC and NTLM operations; handle False and exceptions.
-- Keep streamed TLS consumers inactive until startup initialization completes.
-- Rebuild packages and consumers together after the loader interface changes.
-- Validate native library/provider files for each process architecture.
-- Test missing/invalid configuration and missing-provider failures.
-- Check FIPS selection and algorithm availability separately from readiness.
-- Keep NTLMv1 requirements distinct from FIPS policy and NTLMv2 dependencies.
-- Finish native operations before global Unload.
+Destroying a component or releasing its loader interface does not unload
+OpenSSL. Avoid calling `Unload` from a connection event while other connections
+or cryptographic operations may still be running.
 
-### Linking-mode requirements
+With linked libraries, `Unload` leaves the code linked into the application.
+It also cannot guarantee a reset of OpenSSL's earlier initialization choices.
+Coordinate configuration with other libraries that use the same OpenSSL
+instance.
 
-| Build selection | Library binding | Explicit TaurusTLS Load | FIPS mode reporting | LM/NTLMv1 requirements |
+### Before you finish migrating
+
+- Choose library paths and provider settings before the first `Load`.
+- Initialize before TLS, hash, HMAC and NTLM operations; handle False and exceptions.
+- Keep TLS clients and servers inactive in the designer until startup is ready.
+- Rebuild TaurusTLS packages and your application together.
+- Install matching library and provider files for each process architecture.
+- Test invalid or missing configurations and missing provider modules.
+- Check FIPS settings and algorithm availability separately from loader readiness.
+- Check your application's NTLM variant and its compatibility with the chosen policy.
+- Finish all OpenSSL operations and free their objects before `Unload`.
+
+### Linking options
+
+| Build setting | How OpenSSL is linked | Call the TaurusTLS loader? | FIPS reporting | LM/NTLMv1 setup |
 |---|---|---|---|---|
-| Runtime binding, no linking override | TaurusTLS loads shared libcrypto/libssl | Required | Implemented when configured FIPS module and APIs are available | Configured MD4 and DES-ECB, normally from a deployed legacy module |
-| `OPENSSL_USE_SHARED_LIBRARY` | Direct external imports; OS startup loading | Required for readiness/configuration | Unsupported by the current `OPENSSL_STATIC_LINK_MODEL` implementation | MD4/DES-ECB available to the imported library through configuration |
-| `STATICLOAD_OPENSSL` | Linked archives | Required | Unsupported | Include the optional legacy-provider registration unit and link its archive when legacy algorithms are needed; activate through configuration |
-| FPC `OPENSSL_USE_STATIC_LIBRARY` | Existing FPC archive-linking path | Required | Unsupported | FPC-specific legacy-provider deployment instructions pending maintainer confirmation |
+| No linking override | TaurusTLS loads shared libcrypto and libssl | Yes | Available with a correctly configured FIPS provider and required APIs | Activate the deployed Legacy provider and allow MD4/DES-ECB. |
+| `OPENSSL_USE_SHARED_LIBRARY` | The operating system imports shared libraries at startup | Yes | Unsupported by the current implementation | Configure the imported libraries to provide MD4/DES-ECB. |
+| `STATICLOAD_OPENSSL` | Archives are linked into the application | Yes | Unsupported | Link/register Legacy when needed, then activate it through configuration. |
+| FPC `OPENSSL_USE_STATIC_LIBRARY` | FPC's archive-linking option | Yes | Unsupported | FPC-specific linked Legacy instructions still need maintainer confirmation. |
 
-`STATICLOAD_OPENSSL` and `OPENSSL_USE_SHARED_LIBRARY` are mutually exclusive.
-`OPENSSL_USE_STATIC_LIBRARY` is FPC-only. `OPENSSL_STATIC_LINK_MODEL` is an internal
-category covering direct API imports and does not by itself mean archive linking.
+`STATICLOAD_OPENSSL` and `OPENSSL_USE_SHARED_LIBRARY` cannot be used together.
+`OPENSSL_USE_STATIC_LIBRARY` is for FPC only.
+
+`OPENSSL_STATIC_LINK_MODEL` is an internal symbol for direct API calls. It
+covers both imported shared libraries and linked archives.
+
 The compiler include already selects archive linking for some Delphi targets,
-including desktop macOS; inspect the effective build selection rather than
-assuming a linking model from the platform name.
+including desktop macOS. Check the effective compiler settings rather than
+assuming the linking mode from the platform name alone.
 
-### Loader interface and compatibility routines
+### Loader interface
 
-The exact before/after comparison is pending confirmation of the 1.0 baseline.
-The current interface is defined in
+The current interface is declared in
 [`Source/TaurusTLSLoader.pas`](Source/TaurusTLSLoader.pas).
+The exact comparison with the 1.0 API still needs maintainer confirmation.
 
-| Member | 1.1 contract |
+| Member | What it does |
 |---|---|
-| `Load: Boolean` | Performs initialization or returns True if already ready; False and exceptions must be handled. |
-| `Unload` | Performs global cleanup, clears failure/binding diagnostics and permits retry. |
-| `Unload(AResetFailState: Boolean)` | False preserves the failed-state breaker/diagnostics; parameterless Unload is the normal application reset/shutdown entry point. |
-| `IsLoaded: Boolean` | True only after configuration and every load action complete successfully. |
-| `State` / `GetState` | `lsNotLoaded`, `lsLoadedReady` or `lsLoadedFailed`; load/unload/rollback transitions report not loaded. |
-| `ConfigFile` / `GetConfigFile` / `SetConfigFile` | Configures initialization in both linking models; see the next section. |
-| `Version` / `GetVersion` | Cached loaded OpenSSL version text; empty while not ready. |
-| `ConfigDirectory` / `GetConfigDirectory` | Directory of the effective configuration filename; empty while not ready. |
-| `ModulesDirectory` / `GetModulesDirectory` | OpenSSL's compiled provider-module directory; not a report of configured module paths or `OPENSSL_MODULES`. |
-| `EnginesDirectory` / `GetEnginesDirectory` | Compiled engine directory on OpenSSL 3; empty on OpenSSL 4 or while not ready. |
-| `OpenSSLPath` | Runtime-binding library directory; empty uses platform discovery. Direct-import/archive builds return empty and ignore assignments. |
-| `SSLLibVersions` | Ordered runtime-binding filename suffixes; direct-import/archive builds return empty and ignore assignments. |
-| `FailedToLoad` | Borrowed singleton-owned list of unresolved dynamic symbols. Never free it; an empty list does not prove readiness. |
+| `Load: Boolean` | Initializes OpenSSL, or returns True if already ready. Handle False and exceptions. |
+| `Unload` | Cleans up the shared loader, clears failures and allows another load attempt. |
+| `Unload(AResetFailState: Boolean)` | Passing False keeps the failure state and error list. Use the parameterless method for normal shutdown or reset. |
+| `IsLoaded: Boolean` | Returns True after configuration and all registered load callbacks have completed. |
+| `State` / `GetState` | Reports `lsNotLoaded`, `lsLoadedReady` or `lsLoadedFailed`. During loading or unloading it reports `lsNotLoaded`. |
+| `ConfigFile` / `GetConfigFile` / `SetConfigFile` | Selects the main OpenSSL configuration file for either linking model. |
+| `Version` / `GetVersion` | Returns the cached OpenSSL version, or an empty string while not ready. |
+| `ConfigDirectory` / `GetConfigDirectory` | Returns the directory of the selected or discovered configuration filename, or an empty string while not ready. |
+| `ModulesDirectory` / `GetModulesDirectory` | Reports OpenSSL's default provider-module directory, rather than the configured module paths or `OPENSSL_MODULES`. Empty while not ready or unavailable. |
+| `EnginesDirectory` / `GetEnginesDirectory` | Reports OpenSSL's default engine directory on OpenSSL 3. Returns an empty string on OpenSSL 4 or while not ready. |
+| `OpenSSLPath` | Sets the shared-library search directory. Empty uses the platform search; imported/static builds return empty and ignore assignments. |
+| `SSLLibVersions` | Lists the library-name suffixes to try. Imported/static builds return empty and ignore assignments. |
+| `FailedToLoad` | Returns the loader's list of unresolved dynamic symbols. Do not free this list. An empty list does not prove that loading succeeded. |
 
-`State` and `IsLoaded` are nonblocking snapshots. Cached string metadata is read
-under the lifecycle lock. Metadata queries do not initialize OpenSSL.
+`State` and `IsLoaded` return immediately without waiting for the loader lock.
+They describe the state at the time you read them; they do not keep OpenSSL
+loaded while you use it. The string properties return cached information under
+the loader lock. Reading these properties does not initialize OpenSSL.
 
-Changed configuration is rejected while loading, ready, unloading or holding an
-active dynamic handle. Reassigning the exact configured value is a no-op.
-Changes after failure do not reset the failure state. Coordinate multi-property
-configuration in application startup; separate setters are not one transaction.
+You cannot change configuration while the loader is loading, ready, unloading
+or still holds a dynamic library handle. Assigning the value already stored has
+no effect. After a failure, reset the loader with `Unload` before retrying.
 
-The interface GUID remains `{BBB0F670-CC26-42BC-A9E0-33647361941A}`. This does not
-preserve the old binary interface layout: rebuild affected packages and consumers
-together rather than mixing old and new BPL/DCP/DCU artifacts.
+The interface GUID is still `{BBB0F670-CC26-42BC-A9E0-33647361941A}`, but its
+method layout has changed. Rebuild packages and applications together.
+Do not mix old and new BPL, DCP or DCU files.
 
-The compatibility functions in `TaurusTLS` are deprecated forwards:
+### Older helper functions
 
-| Compatibility function | Preferred interface member |
+The following functions in `TaurusTLS` are deprecated. Use the loader interface
+in new code:
+
+| Older function | Use instead |
 |---|---|
 | `LoadOpenSSLLibrary` | `Load` |
 | `UnLoadOpenSSLLibrary` | `Unload` |
@@ -623,26 +732,28 @@ The compatibility functions in `TaurusTLS` are deprecated forwards:
 | `OpenSSLModulesDir` | `ModulesDirectory` |
 | `OpenSSLEnginesDir` | `EnginesDirectory` |
 
-The current `OpenSSLDir` reports the directory of the effective configuration
-filename. It is not the compiled default directory query. The final comparison
-with 1.0 will identify which old query behavior must be changed.
+`OpenSSLDir` now returns the directory of the selected or discovered configuration
+filename. It does not query the compiled default directory. The final comparison
+with TaurusTLS 1.0 still needs review.
 
-## Implementation references
+## Source references
 
-These sources establish the TaurusTLS behavior described here:
+For implementation details, see:
 
-- [Loader interface, component, configuration and lifecycle](Source/TaurusTLSLoader.pas)
-- [Core context readiness and compatibility functions](Source/TaurusTLS.pas)
-- [Linking selections](Source/TaurusTLSLinkDefines.inc) and [library names](Source/TaurusTLSConsts.pas)
+- [Loader interface, component and configuration](Source/TaurusTLSLoader.pas)
+- [TLS contexts and compatibility functions](Source/TaurusTLS.pas)
+- [Linking options](Source/TaurusTLSLinkDefines.inc) and [library names](Source/TaurusTLSConsts.pas)
 - [Indy hash/HMAC and FIPS adapter](Source/TaurusTLSIdFIPS.pas)
-- [FIPS provider/API reporting](Source/TaurusTLS_ProviderFIPS.pas)
+- [FIPS provider checks](Source/TaurusTLS_ProviderFIPS.pas)
 - [Indy LM/NTLMv1 adapter](Source/TaurusTLSIdNTLM.pas)
-- [Optional archive legacy-provider registration](Source/TaurusTLS_ProviderLegacy.pas)
-- [Configured FIPS tests](Tests/TaurusTLS.UT.Providers.FIPS.pas) and [NTLM tests](Tests/TaurusTLS.UT.NTLM.pas)
+- [Linked Legacy provider registration](Source/TaurusTLS_ProviderLegacy.pas)
+- [FIPS tests](Tests/TaurusTLS.UT.Providers.FIPS.pas) and [NTLM tests](Tests/TaurusTLS.UT.NTLM.pas)
 
-## Maintainer review before publication
+## Notes for maintainers before publishing
 
-This remains a draft. Confirm the exact 1.0 baseline for the API comparison and
-the supported FPC archive NTLM setup before publishing instructions for
-`OPENSSL_USE_STATIC_LIBRARY`. Do not infer runtime/static execution coverage
-from successful compilation or from another linking model's results.
+This guide is still a draft. Confirm the comparison with the 1.0 API and the
+supported FPC setup for linked Legacy before publishing those instructions.
+
+Record build and runtime test results separately. A successful compilation or
+a passing test on one platform does not establish support for another platform
+or linking mode.
