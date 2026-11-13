@@ -5,11 +5,12 @@ All Rights Reserved
 
 ## General Information
 
-TaurusTLS provides 3.x and 4.x support for Indy - Internet Direct.  It includes headers plus three components for Delphi and C++Builder.  Those components are:
+TaurusTLS provides 3.x and 4.x support for Indy - Internet Direct.  It includes headers plus four components for Delphi and C++Builder.  Those components are:
 
 - TTaurusTLSIOHandlerSocket - Enables TLS in a TIdTCPClientCustom descendant.
 - TTaurusTLSServerIOHandler - Enables TLS in a TIdCustomTCPServer descendant.
 - TTaurusTLSUnicodeLog - Triggers events when data is sent and received and data is provided in Unicode form if supported.
+- TTaurusTLSLoader - Platform-aware component over the shared OpenSSL singleton.
 
 The components are available on the IDE palette page, “TaurusTLS”.
 
@@ -75,23 +76,25 @@ I suggest that you have 2 separate packages; a runtime only package and a design
 The run-time package should depend upon your Indy package files and include the following:
 
 - Source\TaurusTLS.pas
-- Source\TaurusTLS_Files.pas
-- Source\TaurusTLS_LegacyProviders.pas
-- Source\TaurusTLS_NTLM.pas
-- Source\TaurusTLS_ResourceStrings.pas
-- Source\TaurusTLS_Utils.pas
-- Source\TaurusTLS_X509.pas
 - Source\TaurusTLSConsts.pas
 - Source\TaurusTLSExceptionHandlers.pas
-- Source\TaurusTLSFIPS.pas
-- Source\TaurusTLS_Unicode_Log.pas
 - Source\TaurusTLSHeaders_*.pas
+- Source\TaurusTLSIdFIPS.pas
+- Source\TaurusTLSIdNTLM.pas
 - Source\TaurusTLSLoader.pas
+- Source\TaurusTLS_Files.pas
+- Source\TaurusTLS_ProviderFIPS.pas
+- Source\TaurusTLS_ProviderLegacy.pas
+- Source\TaurusTLS_ResourceStrings.pas
+- Source\TaurusTLS_Unicode_Log.pas
+- Source\TaurusTLS_Utils.pas
+- Source\TaurusTLS_X509.pas
 
 The design-time package should depend upon the run-time package and include the following files:
 
 - Source\TaurusTLS_Dsn_AboutDlg.pas
 - Source\TaurusTLS_Dsn_ComponentEditor.pas
+- Source\TaurusTLS_Dsn_Const.pas
 - Source\TaurusTLS_Dsn_Register.pas
 - Source\TaurusTLS_Dsn_ResourceStrings.pas
 
