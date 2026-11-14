@@ -2,9 +2,9 @@
 min dpm client version: 1.0.0
 metadata:
   id: TaurusTLS_Developers.TaurusTLS
-  version: 1.1.53
+  version: 1.1.56
   description: TaurusTLS provides OpenSSL 3.x and 4.x support for Indy - Internet Direct
-  icon: logo\bullhead.png
+  icon: logo\favicon712x712.png
   authors:
     - TaurusTLS Developers
   projectUrl: https://taurustls.org/
@@ -115,8 +115,11 @@ templates:
       - src: ./Modified_BSD_LICENSE.md
       - src: ./DifferencesBetweenIndyOpenSSLAndTaurusTLS.md
       - src: ./What_needs_to_be_done.MD
+      - src: ./Migration_to_1_1.md
       - src: ./Source/*.inc
       - src: ./Source/*.pas
+      - src: ./Source/*.dfm
+      - src: ./Source/*.lfm
       - src: ./Source/*.dcr
       - src: ./Packages/$packageSource$/*.dpk
       - src: ./Packages/$packageSource$/*.dproj
