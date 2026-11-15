@@ -21,6 +21,12 @@ TaurusTLS supports the following operating systems:
 - MacOS
 - Windows
 
+## Upgrading to TaurusTLS 1.1
+
+TaurusTLS 1.1 supports OpenSSL 3.x and 4.x and requires OpenSSL to be
+loaded or initialized before use. See the [migration guide](Migration_to_1_1.md)
+for initialization options, provider configuration and changes to existing applications.
+
 ## License
 
 TaurusTLS is dual licensed. You can review which license better suits your needs, and use that license.  You can even change your mind later if you have previously chosen one.
@@ -111,7 +117,16 @@ TaurusTLS includes a component reference in "Compiled HTML Help file (.chm)" for
 
 ## Demo Programs
 
-Taurus TLS includes 3 demo programs.  
+### FireMonkey HTTP and FTP client demo
+
+The [TaurusTLS 1.1 FireMonkey demo](https://github.com/TaurusTLS-Developers/taurustls_demos/tree/main/Delphi/TaurusFMXDemo)
+shows how to configure and initialize OpenSSL, download files over HTTPS and
+FTPS, and inspect certificate details and protocol logs. It also demonstrates
+the IOHandler's optional `AutoLoad` property and why OpenSSL must remain
+initialized until all connections have finished.
+
+See the demo's README for build instructions and configuration examples.
+The following three demos are included in this repository.
 
 ### TaurusTLS\src\demos\FTPServer\TaurusFTPServer.dproj
 

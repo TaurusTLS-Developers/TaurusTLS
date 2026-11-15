@@ -227,8 +227,16 @@ end;
 ```
 
 Use the paths from your application's installation. `OpenSSLPath` tells
-TaurusTLS where to find libcrypto and libssl. OpenSSL locates provider modules
-separately.
+TaurusTLS where to find libcrypto and libssl. It loads libcrypto first, then
+requires libssl from the same directory with the same filename suffix. A missing
+matching libssl or a different loaded directory raises `ETaurusTLSLoaderError`.
+OpenSSL locates provider modules separately.
+
+While OpenSSL is ready, `OpenSSLPath` returns the actual loaded directory and
+`SSLLibVersions` returns the selected suffix. After `Unload` or a failed load,
+they return your configured directory and full suffix list again. `ConfigFile`
+likewise returns the effective filename while ready and your configured input
+otherwise. Keep your own settings if you need to save them while OpenSSL is loaded.
 
 `ConfigFile` works with shared and statically linked libraries. During `Load`,
 TaurusTLS passes the selected file to OpenSSL before running the application's
@@ -701,8 +709,8 @@ The exact comparison with the 1.0 API still needs maintainer confirmation.
 | `ConfigDirectory` / `GetConfigDirectory` | Returns the directory of the selected or discovered configuration filename, or an empty string while not ready. |
 | `ModulesDirectory` / `GetModulesDirectory` | Reports OpenSSL's default provider-module directory, rather than the configured module paths or `OPENSSL_MODULES`. Empty while not ready or unavailable. |
 | `EnginesDirectory` / `GetEnginesDirectory` | Reports OpenSSL's default engine directory on OpenSSL 3. Returns an empty string on OpenSSL 4 or while not ready. |
-| `OpenSSLPath` | Sets the shared-library search directory. Empty uses the platform search; imported/static builds return empty and ignore assignments. |
-| `SSLLibVersions` | Lists the library-name suffixes to try. Imported/static builds return empty and ignore assignments. |
+| `OpenSSLPath` | Sets the shared-library search directory. While loaded, returns the actual library directory. Empty input uses the platform search; imported/static builds return empty and ignore assignments. |
+| `SSLLibVersions` | Sets the library-name suffixes to try. While loaded, returns the selected suffix. Imported/static builds return empty and ignore assignments. |
 | `FailedToLoad` | Returns the loader's list of unresolved dynamic symbols. Do not free this list. An empty list does not prove that loading succeeded. |
 
 `State` and `IsLoaded` return immediately without waiting for the loader lock.
