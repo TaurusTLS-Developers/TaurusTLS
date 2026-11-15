@@ -124,7 +124,7 @@ begin
     rcFastMMLogHelp,
     procedure(Value: string)
     begin
-      FDebudDLLName:=Value;
+      FReportFileName:=Value;
     end
   );
 end;
