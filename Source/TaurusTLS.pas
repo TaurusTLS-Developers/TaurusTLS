@@ -3432,6 +3432,9 @@ end;
 
 destructor TTaurusTLSServerIOHandler.Destroy;
 begin
+  // Standalone handlers may be freed without Indy's Shutdown call. The default
+  // context is owned here; certificate items own only their individual contexts.
+  FreeAndNil(fSSLContext);
   FreeAndNil(fCertificates);
   FreeAndNil(fDefaultCert);
   FreeAndNil(fSSLOptions);
