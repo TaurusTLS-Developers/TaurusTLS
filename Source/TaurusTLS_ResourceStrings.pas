@@ -287,6 +287,9 @@ resourcestring
   RSOSSLLoaderActionRegistrationInactive =
     'OpenSSL loader action registration or removal is not allowed in the current lifecycle state';
   RSOSSLInitCryptoFailed = 'OPENSSL_init_crypto failed';
+  RSOSSLLoadedLibraryPathUnavailable = 'Cannot determine the loaded OpenSSL library filename';
+  RSOSSLPairedLibraryLoadFailed = 'Cannot load the matching OpenSSL SSL library: %s';
+  RSOSSLPairedLibraryPathMismatch = 'OpenSSL crypto and SSL libraries were loaded from different directories: %s and %s';
   RSOSSLDuplicatePlatformSetting = 'Duplicate TaurusTLS platform setting: %s';
   RSOSSLPlatformSettingsFull = 'All TaurusTLS platform targets already have settings';
   RSOSSLUnsupportedComponentTarget = 'The current compiler target is not supported by TTaurusTLSLoader';

@@ -98,9 +98,9 @@ type
   /// </remarks>
   IOpenSSLLoader = interface
     ['{BBB0F670-CC26-42BC-A9E0-33647361941A}']
-    /// <summary>Returns the dynamic library search directory, or an empty string in static builds.</summary>
+    /// <summary>Returns the loaded library directory while ready, otherwise the configured search directory; empty in static builds.</summary>
     function GetOpenSSLPath: string;
-    /// <summary>Returns dynamic library filename suffixes, or an empty string in static builds.</summary>
+    /// <summary>Returns the selected filename suffix while ready, otherwise the configured suffix list; empty in static builds.</summary>
     function GetSSLLibVersions: string;
     /// <summary>Sets the dynamic library directory; ignored in static builds.</summary>
     procedure SetOpenSSLPath(const Value: string);
@@ -168,8 +168,10 @@ type
     /// <summary>Current stable readiness state; independent of library-handle presence.</summary>
     property State: TTaurusTLSLoaderState read GetState;
 
-    /// <summary>Ordered filename suffixes used to find dynamic OpenSSL libraries.</summary>
+    /// <summary>Selected dynamic library suffix while ready; configured candidate list otherwise.</summary>
     /// <remarks>
+    ///   The configured list is retained across load cycles. Both libraries use the
+    ///   selected crypto suffix. Load/unload callbacks see the configured list.
     ///   Entries use the platform directory-list delimiter (semicolon on Windows,
     ///   colon on POSIX). In dynamic builds, changes are rejected while loading,
     ///   ready, unloading, or holding a crypto handle. Assigning the stored value
@@ -177,8 +179,10 @@ type
     ///   Changing values after a failed load does not reset the failure state.
     /// </remarks>
     property SSLLibVersions: string read GetSSLLibVersions write SetSSLLibVersions;
-    /// <summary>Directory searched for dynamic OpenSSL libraries.</summary>
+    /// <summary>Actual loaded library directory while ready; configured search directory otherwise.</summary>
     /// <remarks>
+    ///   Both libraries must resolve to the same directory. The configured search
+    ///   directory is retained across load cycles; load/unload callbacks see that input.
     ///   Nonempty values receive a trailing path delimiter. An empty value uses
     ///   the platform library search. In dynamic builds, changes are rejected while
     ///   loading, ready, unloading, or holding a crypto handle. Assigning the exact
@@ -516,8 +520,12 @@ uses
   {$ENDIF}
   {$IFDEF FPC}
     dynlibs,
+    {$IFNDEF WINDOWS}dl,{$ENDIF}
   {$ENDIF}
 {$ENDIF}
+{$IF DEFINED(POSIX) AND NOT DEFINED(FPC)}
+  Posix.Dlfcn, Posix.Stdlib,
+{$IFEND}
 {$IFDEF VCL_2010_OR_ABOVE}
   System.IOUtils,
   System.AnsiStrings,
@@ -1240,9 +1248,13 @@ begin
     end;
   end;
 
+  // Native discovery may return a relative filename. Resolve it once, using
+  // the load-time working directory, so ready metadata cannot drift afterward.
+  if LNormalizedConfig <> '' then
+    LNormalizedConfig := ExpandFileName(LNormalizedConfig);
   FEffectiveConfigFile := LNormalizedConfig;
   if LNormalizedConfig <> '' then
-    FMetadata[omConfigDirectory] := ExtractFileDir(ExpandFileName(LNormalizedConfig));
+    FMetadata[omConfigDirectory] := ExtractFileDir(LNormalizedConfig);
 end;
 
 procedure TOpenSSLBaseLoader.DispatchLoadActions;
@@ -1430,10 +1442,17 @@ type
     FLibSSL: TIdLibHandle;
     FOpenSSLPath: string;
     FSSLLibVersions: string;
+    // Effective values are separate: unload must retain the caller's search settings.
+    FLoadedPath: string;
+    FLoadedSuffix: string;
     FFailed: TStringList;
 
     /// <summary>Tries the configured directory and ordered platform filename suffixes.</summary>
-    function FindLibrary(const LibName, LibVersions: string): TIdLibHandle;
+    function FindLibrary(const LibName, LibVersions: string;
+      out ASelectedSuffix: string): TIdLibHandle;
+    // Resolve the loaded module itself, including POSIX symlinks, rather than the search input.
+    function LibraryFileName(const AHandle: TIdLibHandle;
+      const AOwnSymbol: TIdLibFuncName): string;
     /// <summary>Loads crypto and SSL libraries and validates the crypto library identity and version.</summary>
     function LoadAndVerifyLibraries: Boolean;
     /// <summary>Runs registered crypto and SSL header binders and collects diagnostics.</summary>
@@ -1583,12 +1602,28 @@ end;
 
 function TOpenSSLDynamicLoader.GetOpenSSLPath: string;
 begin
-  Result := FOpenSSLPath;
+  FLoaderLock.Enter;
+  try
+    if IsLoaded then
+      Result := FLoadedPath
+    else
+      Result := FOpenSSLPath;
+  finally
+    FLoaderLock.Leave;
+  end;
 end;
 
 function TOpenSSLDynamicLoader.GetSSLLibVersions: string;
 begin
-  Result := FSSLLibVersions;
+  FLoaderLock.Enter;
+  try
+    if IsLoaded then
+      Result := FLoadedSuffix
+    else
+      Result := FSSLLibVersions;
+  finally
+    FLoaderLock.Leave;
+  end;
 end;
 
 procedure TOpenSSLDynamicLoader.SetOpenSSLPath(const Value: string);
@@ -1656,7 +1691,72 @@ begin
   Result := (FLibCrypto <> IdNilHandle);
 end;
 
-function TOpenSSLDynamicLoader.FindLibrary(const LibName, LibVersions: string): TIdLibHandle;
+
+{$IF DEFINED(FPC) AND NOT DEFINED(WINDOWS)}
+// FPC's dl unit supplies dladdr; realpath is provided by the C runtime.
+function TaurusTLSRealPath(AName, AResolved: PAnsiChar): PAnsiChar; cdecl;
+  external 'c' name 'realpath';
+{$IFEND}
+
+function TOpenSSLDynamicLoader.LibraryFileName(const AHandle: TIdLibHandle;
+  const AOwnSymbol: TIdLibFuncName): string;
+var
+{$IFDEF WINDOWS}
+  LLength: Cardinal;
+  LBuffer: string;
+{$ELSE}
+  LInfo: dl_info;
+  LAddress: Pointer;
+  LResolved: array[0..4095] of AnsiChar;
+{$IFDEF FPC}
+  LResolvedName: PAnsiChar;
+{$ELSE}
+  LResolvedName: MarshaledAString;
+{$ENDIF}
+{$ENDIF}
+begin
+  Result := '';
+{$IFDEF WINDOWS}
+  // Grow the buffer rather than silently accepting a truncated module filename.
+  SetLength(LBuffer, 512);
+  repeat
+    LLength := GetModuleFileName(AHandle, PChar(LBuffer), Length(LBuffer));
+    if LLength = 0 then
+      Break;
+    if LLength < Cardinal(Length(LBuffer)) then
+    begin
+      SetString(Result, PChar(LBuffer), LLength);
+      Break;
+    end;
+    SetLength(LBuffer, Length(LBuffer) * 2);
+  until Length(LBuffer) > 32768;
+{$ELSE}
+  // Use a symbol owned by the requested library. A crypto symbol resolved through
+  // SSL's dependencies would identify crypto again and invalidate this check.
+  LAddress := LoadLibFunction(AHandle, AOwnSymbol);
+  if Assigned(LAddress) then
+  begin
+    FillChar(LInfo, SizeOf(LInfo), 0);
+    // Match the C buffer pointer type without casting the fixed array.
+    LResolvedName := @LResolved[0];
+{$IFDEF FPC}
+    if (dladdr(LAddress, @LInfo) <> 0) and Assigned(LInfo.dli_fname) then
+      if Assigned(TaurusTLSRealPath(LInfo.dli_fname, LResolvedName)) then
+{$ELSE}
+    if (dladdr(NativeUInt(LAddress), LInfo) <> 0) and Assigned(LInfo.dli_fname) then
+      if Assigned(realpath(LInfo.dli_fname, LResolvedName)) then
+{$ENDIF}
+      begin
+        Result := UTF8ToString(LResolvedName);
+      end;
+  end;
+{$ENDIF}
+  if Result = '' then
+    raise ETaurusTLSLoaderError.Create(RSOSSLLoadedLibraryPathUnavailable);
+end;
+
+function TOpenSSLDynamicLoader.FindLibrary(const LibName, LibVersions: string;
+  out ASelectedSuffix: string): TIdLibHandle;
 var
   LibVersionsList: TStringList;
   i: integer;
@@ -1664,8 +1764,9 @@ var
   LFileName, LExt: string;
   {$ENDIF}
 begin
+  ASelectedSuffix := '';
 {$IFNDEF WINDOWS}
-  Result := DoLoadLibrary(OpenSSLPath + LibName);
+  Result := DoLoadLibrary(FOpenSSLPath + LibName);
   if (Result = IdNilHandle) and (LibVersions <> '') then
   begin
 {$ELSE}
@@ -1683,12 +1784,15 @@ begin
     for i := 0 to LibVersionsList.Count - 1 do
     begin
       {$IFDEF OSX}
-      Result := DoLoadLibrary(OpenSSLPath + LFileName + LibVersionsList[i] + LExt);
+      Result := DoLoadLibrary(FOpenSSLPath + LFileName + LibVersionsList[i] + LExt);
       {$ELSE}
-      Result := DoLoadLibrary(OpenSSLPath + LibName + LibVersionsList[i]);
+      Result := DoLoadLibrary(FOpenSSLPath + LibName + LibVersionsList[i]);
       {$ENDIF}
       if Result <> IdNilHandle then
+      begin
+        ASelectedSuffix := LibVersionsList[i];
         Break;
+      end;
     end;
   finally
     LibVersionsList.Free;
@@ -1707,13 +1811,14 @@ var
   LOpenSSL_version: TOpenSSL_version;
   LSSLVersionNo: TIdC_ULONG;
   LVersionPChar: PIdAnsiChar;
+  LCryptoFile, LSSLFile, LSSLPath: string;
 begin
   Result := False;
 
-  FLibCrypto := FindLibrary(CLibCryptoBase + LibSuffix, FSSLLibVersions);
-  FLibSSL := FindLibrary(CLibSSLBase + LibSuffix, FSSLLibVersions);
-
-  if (FLibCrypto = IdNilHandle) or (FLibSSL = IdNilHandle) then
+  // Only crypto participates in discovery. SSL must come from the resulting
+  // installation and use the same candidate suffix; never search for it independently.
+  FLibCrypto := FindLibrary(CLibCryptoBase + LibSuffix, FSSLLibVersions, FLoadedSuffix);
+  if FLibCrypto = IdNilHandle then
     Exit;
 
   // 1. Verify genuine OpenSSL identity using zero-allocation PAnsiChar/PChar check
@@ -1734,6 +1839,29 @@ begin
 
   LSSLVersionNo := LOpenSSL_version_num();
   CheckOpenSSLVersion(LSSLVersionNo);
+
+  LCryptoFile := LibraryFileName(FLibCrypto, 'OpenSSL_version_num');
+  FLoadedPath := IncludeTrailingPathDelimiter(ExtractFileDir(LCryptoFile));
+{$IFDEF OSX}
+  LSSLFile := FLoadedPath + CLibSSLBase + FLoadedSuffix + LibSuffix;
+{$ELSE}
+  LSSLFile := FLoadedPath + CLibSSLBase + LibSuffix + FLoadedSuffix;
+{$ENDIF}
+  FLibSSL := DoLoadLibrary(LSSLFile);
+  if FLibSSL = IdNilHandle then
+    raise ETaurusTLSLoaderError.CreateFmt(RSOSSLPairedLibraryLoadFailed, [LSSLFile]);
+
+  // An absolute request alone does not establish where the OS loaded a module.
+  // Verify the result before binding headers or initializing OpenSSL.
+  LSSLPath := IncludeTrailingPathDelimiter(ExtractFileDir(
+    LibraryFileName(FLibSSL, 'SSL_new')));
+{$IFDEF WINDOWS}
+  if not SameText(FLoadedPath, LSSLPath) then
+{$ELSE}
+  if FLoadedPath <> LSSLPath then
+{$ENDIF}
+    raise ETaurusTLSLoaderError.CreateFmt(RSOSSLPairedLibraryPathMismatch,
+      [FLoadedPath, LSSLPath]);
 
   Result := True;
 end;
@@ -1780,6 +1908,9 @@ end;
 
 procedure TOpenSSLDynamicLoader.FreeDynamicLibraries;
 begin
+  // Effective metadata belongs to this load cycle, not to the next attempt.
+  FLoadedPath := '';
+  FLoadedSuffix := '';
   if FLibSSL <> IdNilHandle then
   begin
     FreeLibrary(FLibSSL);
