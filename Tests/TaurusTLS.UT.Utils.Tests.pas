@@ -81,6 +81,8 @@ end;
 
 procedure TFixtureLifecycleTests.Setup;
 begin
+  ResetRuntime;
+  SetupFromCmd;
   Assert.IsFalse(Loader.IsLoaded, 'Fixture contract tests require exclusive loader ownership');
   FOriginalPath := Loader.OpenSSLPath;
   FOriginalVersions := Loader.SSLLibVersions;
@@ -126,9 +128,20 @@ begin
     end;
   finally
     FCaptured := False;
-    if (FDir <> '') and TDirectory.Exists(FDir) then
-      TDirectory.Delete(FDir, True);
-    FDir := '';
+    try
+      if (FDir <> '') and TDirectory.Exists(FDir) then
+        TDirectory.Delete(FDir, True);
+    finally
+      // These belong to one test, even though DUnitX reuses the fixture object.
+      FDir := '';
+      FValidConfig := '';
+      FCmdPath := '';
+      FCmdConfig := '';
+      FOriginalPath := '';
+      FOriginalVersions := '';
+      FOriginalConfig := '';
+      ResetRuntime;
+    end;
   end;
 end;
 

@@ -12,6 +12,7 @@ type
   TLoaderTestFactory = function: IInterface;
   TLoaderAccessTestHook = procedure(AFactory: TLoaderTestFactory);
   TLoaderCandidateTestHook = procedure;
+  TLoaderLibraryFileNameTestHook = procedure(const ASymbol: string; var AFileName: string);
 
 var
   // Receives a factory for the real loader path; must guard recursive entry.
@@ -20,6 +21,9 @@ var
   OnLoaderCandidateReady: TLoaderCandidateTestHook;
   // Runs after the base loader's locks have been released during destruction.
   OnLoaderCandidateDestroyed: TLoaderCandidateTestHook;
+  // Lets a test model an OS loader returning a module from another directory.
+  // Assigned only while the lifecycle fixture owns the loader exclusively.
+  OnLoaderLibraryFileName: TLoaderLibraryFileNameTestHook;
 {$ENDIF}
 
 implementation

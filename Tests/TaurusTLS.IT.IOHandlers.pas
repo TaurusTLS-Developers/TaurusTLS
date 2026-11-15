@@ -248,9 +248,17 @@ begin
     finally
       FreeAndNil(FServerUpgradeDone);
       FreeAndNil(FStop);
-      if (FDir <> '') and TDirectory.Exists(FDir) then
-        TDirectory.Delete(FDir, True);
-      FDir := '';
+      try
+        if (FDir <> '') and TDirectory.Exists(FDir) then
+          TDirectory.Delete(FDir, True);
+      finally
+        // The fixture survives between cases. Release each case's paths and
+        // copied worker error after all workers have stopped.
+        FDir := '';
+        FCert := '';
+        FKey := '';
+        FError := '';
+      end;
     end;
   end;
 end;

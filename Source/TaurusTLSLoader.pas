@@ -254,6 +254,12 @@ type
 /// </remarks>
 function GetOpenSSLLoader: IOpenSSLLoader;
 
+{$IFDEF UNITTEST}
+// Reset per-test state without replacing the singleton or unit registrations.
+// Call only after retiring all native consumers and stopping loader workers.
+procedure ResetOpenSSLLoaderForTests;
+{$ENDIF}
+
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 /// <summary>
 ///   Registers a header symbol-binding procedure for dynamic loads.
@@ -551,6 +557,9 @@ type
 
     function Add(Item: TTaurusTLSOnLoadAction): NativeInt;
     procedure Delete(Index: NativeInt);
+{$IFDEF UNITTEST}
+    procedure TrimExcess;
+{$ENDIF}
 
     property Count: NativeInt read GetCount;
     property Items[Index: NativeInt]: TTaurusTLSOnLoadAction read Get write Put; default;
@@ -602,6 +611,13 @@ begin
     end;
   end;
 end;
+
+{$IFDEF UNITTEST}
+procedure TMethodList.TrimExcess;
+begin
+  FList.Capacity := FList.Count;
+end;
+{$ENDIF}
 
 function TMethodList.GetCount: NativeInt;
 begin
@@ -704,6 +720,9 @@ type
     class procedure Finalize; static;
     class procedure RegisterAction(const AActionProc: TTaurusTLSOnLoadAction); static;
     class procedure UnRegisterAction(const AActionProc: TTaurusTLSOnLoadAction); static;
+{$IFDEF UNITTEST}
+    class procedure ResetForTests; static;
+{$ENDIF}
   {$IFDEF USE_STRICT_PRIVATE_PROTECTED} strict{$ENDIF} protected
     /// <summary>Returns the shared loader lock owned by the published singleton.</summary>
     class function GetLoaderLock: TIdCriticalSection; static; {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -849,6 +868,12 @@ begin
       end;
     end;
   finally
+{$IFDEF UNITTEST}
+    // Keep registration storage proportional to its contents, including unit
+    // initialization before the first test snapshot is taken.
+    if Assigned(FLoadActions) then
+      FLoadActions.TrimExcess;
+{$ENDIF}
     LInstance.FLoaderLock.Leave;
   end;
 end;
@@ -1753,6 +1778,10 @@ begin
 {$ENDIF}
   if Result = '' then
     raise ETaurusTLSLoaderError.Create(RSOSSLLoadedLibraryPathUnavailable);
+{$IFDEF UNITTEST}
+  if Assigned(OnLoaderLibraryFileName) then
+    OnLoaderLibraryFileName(AOwnSymbol, Result);
+{$ENDIF}
 end;
 
 function TOpenSSLDynamicLoader.FindLibrary(const LibName, LibVersions: string;
@@ -2071,6 +2100,42 @@ function GetOpenSSLLoader: IOpenSSLLoader;
 begin
   Result := TOpenSSLBaseLoader.GetInstance;
 end;
+
+
+{$IFDEF UNITTEST}
+class procedure TOpenSSLBaseLoader.ResetForTests;
+var
+  LInstance: TOpenSSLBaseLoader;
+begin
+  LInstance := EnsureInstance;
+  LInstance.FLoaderLock.Enter;
+  try
+    if LInstance.FActionChangingInProgress or
+      (LInstance.GetInternalState in [lsLoading, lsUnloading]) then
+      raise ETaurusTLSLoaderError.CreateFmt(RSOSSLLoaderLifecycleInProgress, ['Reset']);
+
+    // Use the real lifecycle cleanup. Replacing the singleton would strand
+    // interfaces held by fixtures and bypass registered native cleanup actions.
+    LInstance.UnloadInternal(True);
+    LInstance.SetConfigFile('');
+    LInstance.SetOpenSSLPath('');
+    LInstance.SetSSLLibVersions(DefaultLibVersions);
+    LInstance.GetFailedToLoad.Capacity := 0;
+
+    // Unit callbacks remain registered. Only spare storage from temporary test
+    // registrations is released; each test must remove its own registrations.
+    if Assigned(FLoadActions) then
+      FLoadActions.TrimExcess;
+  finally
+    LInstance.FLoaderLock.Leave;
+  end;
+end;
+
+procedure ResetOpenSSLLoaderForTests;
+begin
+  TOpenSSLBaseLoader.ResetForTests;
+end;
+{$ENDIF}
 
 procedure Register_SSLLoader(LoadProc: TOpenSSLLoadProc; const module_name: string);
 begin

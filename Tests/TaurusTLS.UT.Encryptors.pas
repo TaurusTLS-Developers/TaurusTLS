@@ -231,6 +231,7 @@ end;
 procedure TCipherFixture.Teardown;
 begin
   FreeAndNil(FCipher);
+  FCipherName := '';
 end;
 
 function TCipherFixture.GetCipher(ACipherName: string): TTaurusTLS_Cipher;

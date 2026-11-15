@@ -645,6 +645,8 @@ end;
 
 procedure TOSSLNTLMFixture.SetupFixture;
 begin
+  ResetRuntime;
+  SetupFromCmd;
   Assert.IsFalse(Loader.IsLoaded, 'NTLM fixture requires exclusive loader ownership');
   FOriginalPath := Loader.OpenSSLPath;
   FOriginalConfig := Loader.ConfigFile;
@@ -685,9 +687,15 @@ begin
     end;
   finally
     FStateCaptured := False;
-    if (FConfigDirectory <> '') and TDirectory.Exists(FConfigDirectory) then
-      TDirectory.Delete(FConfigDirectory, True);
-    FConfigDirectory := '';
+    try
+      if (FConfigDirectory <> '') and TDirectory.Exists(FConfigDirectory) then
+        TDirectory.Delete(FConfigDirectory, True);
+    finally
+      FConfigDirectory := '';
+      FOriginalPath := '';
+      FOriginalConfig := '';
+      ResetRuntime;
+    end;
   end;
 end;
 

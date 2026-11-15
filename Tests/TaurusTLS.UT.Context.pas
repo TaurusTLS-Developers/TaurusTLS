@@ -91,6 +91,7 @@ begin
     if (FDir <> '') and TDirectory.Exists(FDir) then
       TDirectory.Delete(FDir, True);
   finally
+    FDir := '';
     inherited;
   end;
 end;

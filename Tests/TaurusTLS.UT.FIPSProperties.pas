@@ -130,7 +130,7 @@ var
   LEnable: TEnableFIPS;
   LQuery: TQueryFIPS;
   LLoader: IOpenSSLLoader;
-  LIndex: Integer;
+  LIndex, LCapacity: Integer;
   LName: string;
 begin
   LLoader := GetOpenSSLLoader;
@@ -140,6 +140,7 @@ begin
     LName := 'EVP_default_properties_enable_fips'
   else
     LName := 'EVP_default_properties_is_fips_enabled';
+  LCapacity := LLoader.FailedToLoad.Capacity;
   LIndex := LLoader.FailedToLoad.Add(LName);
   try
     GStubCallCount := 0;
@@ -158,6 +159,8 @@ begin
     EVP_default_properties_enable_fips := LEnable;
     EVP_default_properties_is_fips_enabled := LQuery;
     LLoader.FailedToLoad.Delete(LIndex);
+    // Delete removes the injected entry but retains the list's allocated buffer.
+    LLoader.FailedToLoad.Capacity := LCapacity;
     RevalidateFIPSPropertyAPIsForTests;
   end;
   Assert.IsTrue(FIPSPropertyAPIsAvailableForTests);
@@ -201,7 +204,7 @@ procedure TTaurusTLSFIPSPropertiesFixture.RepeatedReadsDoNotRevalidate;
 var
   LVersion: TOpenSSLVersion;
   LLoader: IOpenSSLLoader;
-  LIndex, I: Integer;
+  LIndex, I, LCapacity: Integer;
 begin
   LLoader := GetOpenSSLLoader;
   LVersion := OpenSSL_version_num;
@@ -211,6 +214,7 @@ begin
     OpenSSL_version_num := TestOpenSSLVersion;
     RevalidateFIPSPropertyAPIsForTests;
     Assert.AreEqual(1, GVersionQueryCount);
+    LCapacity := LLoader.FailedToLoad.Capacity;
     LIndex := LLoader.FailedToLoad.Add('EVP_default_properties_enable_fips');
     try
       for I := 1 to 100 do
@@ -222,6 +226,8 @@ begin
       Assert.AreEqual(2, GVersionQueryCount);
     finally
       LLoader.FailedToLoad.Delete(LIndex);
+      // Restore the diagnostic buffer as well as its contents.
+      LLoader.FailedToLoad.Capacity := LCapacity;
     end;
   finally
     OpenSSL_version_num := LVersion;

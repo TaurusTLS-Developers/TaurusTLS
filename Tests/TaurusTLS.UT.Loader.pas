@@ -22,6 +22,13 @@ uses
   TaurusTLS;
 
 type
+  // Expected failures injected by lifecycle observers; safe to filter by class in the debugger.
+  ELoaderObserverError = class(Exception);
+  // Unexpected worker failures stay distinct from deliberately injected exceptions.
+  ELoaderWorkerError = class(Exception);
+  // Header cleanup tests retain the loader-error ancestry and a separate debugger filter.
+  ELoaderHeaderCleanupError = class(ETaurusTLSLoaderError);
+
   // Base fixture providing shared setup, teardown, and temporary configuration file helpers.
   TLoaderBaseFixture = class(TOsslBaseFixture)
   protected
@@ -316,6 +323,18 @@ type
     // A repeated binding pass preserves a caller's valid replacement routine.
     [Test]
     procedure Stack_PreservesExistingBindings;
+    // Loaded values must describe the chosen installation and restore the original inputs.
+    [TestCase('AbsoluteDirectory', 'False')]
+    [TestCase('RelativeDirectory', 'True')]
+    procedure Life_EffectiveLibrarySettings(const ARelative: Boolean);
+    // A matching crypto library must not be paired with another suffix candidate.
+    [Test]
+    procedure Life_RejectMixedSuffixes;
+    {$IFDEF UNITTEST}
+    // Model an OS loader returning SSL from elsewhere despite an absolute request.
+    [Test]
+    procedure Life_RejectForeignSSLDirectory;
+    {$ENDIF}
     // Verifies missing libraries fail without dispatching actions and permit explicit recovery.
     [Test]
     procedure Life_MissingLibraries;
@@ -324,6 +343,12 @@ type
     [Test]
     procedure Life_PartialLibrary;
     {$ENDIF}
+    {$ENDIF}
+
+    {$IFDEF UNITTEST}
+    // Reset clears test state and spare buffers while preserving identity and unit actions.
+    [Test]
+    procedure Life_TestReset;
     {$ENDIF}
 
     // Tests that successive Unload calls are safe no-ops.
@@ -551,6 +576,9 @@ uses
   IdTCPClient,
   IdTCPServer,
   TaurusTLS.UT.Utils,
+  {$IFDEF UNITTEST}
+  TaurusTLSLoader.TestHooks,
+  {$ENDIF}
   TaurusTLSHeaders_crypto,
   TaurusTLSHeaders_conf,
   TaurusTLSHeaders_ssl,
@@ -1434,10 +1462,10 @@ var
 begin
   LComponent := TTaurusTLSLoader.Create(nil);
   try
-    LPath := Loader.OpenSSLPath;
-    LVersions := Loader.SSLLibVersions;
     LComponent.ConfigFile := FValidConfigFile;
     Assert.IsTrue(LComponent.Load);
+    LPath := Loader.OpenSSLPath;
+    LVersions := Loader.SSLLibVersions;
     Assert.WillRaise(
       procedure
       begin
@@ -1746,6 +1774,8 @@ begin
   TMonitor.Enter(GLoaderTestLock);
   FLockHeld := True;
   try
+    ResetRuntime;
+    SetupFromCmd;
     Assert.IsNotNull(Loader);
     Assert.IsFalse(Loader.IsLoaded, 'Loader fixtures require exclusive loader ownership');
     FOrigOpenSSLPath := Loader.OpenSSLPath;
@@ -1814,12 +1844,26 @@ begin
     try
       if (FTempDir <> '') and TDirectory.Exists(FTempDir) then
         TDirectory.Delete(FTempDir, True);
-      FTempDir := '';
     finally
-      if FLockHeld then
-      begin
-        FLockHeld := False;
-        TMonitor.Exit(GLoaderTestLock);
+      // DUnitX measures each test through teardown, not through fixture destruction.
+      // Release captured strings here so their lifetime belongs to this test.
+      FTempDir := '';
+      FValidConfigFile := '';
+      FInvalidSyntaxConfigFile := '';
+      FOrigOpenSSLPath := '';
+      FOrigSSLLibVersions := '';
+      FOrigConfigFile := '';
+      FOrigCurrentDir := '';
+      FOrigConfEnv := '';
+      FOrigModulesEnv := '';
+      try
+        ResetRuntime;
+      finally
+        if FLockHeld then
+        begin
+          FLockHeld := False;
+          TMonitor.Exit(GLoaderTestLock);
+        end;
       end;
     end;
   end;
@@ -1972,8 +2016,10 @@ begin
     finally
       OPENSSL_free(LDefaultConfig);
     end;
+    if LExpectedPath <> '' then
+      LExpectedPath := TPath.GetFullPath(LExpectedPath);
     Assert.AreEqual(LExpectedPath, Loader.ConfigFile,
-      'Loader must report the native discovery result');
+      'Loader must report the resolved native discovery result');
   finally
     Loader.Unload;
   end;
@@ -2113,6 +2159,7 @@ begin
     Loader.Unload;
   end;
 end;
+
 
 procedure TLoaderLifecycleFixture.Life_DoubleUnload;
 begin
@@ -2381,7 +2428,7 @@ begin
     if Assigned(Log) then
       Log.Add(Name + ':Load');
     if FailOnLoad then
-      raise EAbort.Create('Immediate load failure');
+      raise ELoaderObserverError.Create('Immediate load failure');
   end
   else
   begin
@@ -2391,7 +2438,7 @@ begin
     if Assigned(Log) then
       Log.Add(Name + ':Unload');
     if FailOnUnload then
-      raise EAbort.Create('Immediate unload failure');
+      raise ELoaderObserverError.Create('Immediate unload failure');
   end;
   if Reenter and (ReenterOnUnload = (AAction = osaUnload)) then
   try
@@ -2409,7 +2456,7 @@ begin
   begin
     Entered.SetEvent;
     if ReleaseGate.WaitFor(10000) <> wrSignaled then
-      raise Exception.Create('Immediate callback release timed out');
+      raise ELoaderWorkerError.Create('Immediate callback release timed out');
   end;
 end;
 
@@ -2419,7 +2466,7 @@ begin
     Exit;
   Inc(LoadCount);
   if ThrowOnLoad then
-    raise EAbort.Create('Simulated TLS runtime action failure');
+    raise ELoaderObserverError.Create('Simulated TLS runtime action failure');
 end;
 
 class procedure TTestCallbackObserverA.ActionProc(AAction: TOpenSSLLoadAction);
@@ -2544,7 +2591,7 @@ begin
     Exit;
 
   if (AAction = osaLoad) and ThrowOnLoad then
-    raise Exception.Create('Simulated action failure in Observer B');
+    raise ELoaderObserverError.Create('Simulated action failure in Observer B');
 
   if AAction = osaLoad then
     TTestCallbackLog.Add('B:Load')
@@ -2552,7 +2599,7 @@ begin
   begin
     TTestCallbackLog.Add('B:Unload');
     if ThrowOnUnload then
-      raise Exception.Create('Simulated unload action failure in Observer B');
+      raise ELoaderObserverError.Create('Simulated unload action failure in Observer B');
   end;
 end;
 
@@ -2631,14 +2678,14 @@ end;
 procedure TestSecondCleanupFault;
 begin
   if GTestSecondCleanupFaultActive then
-    raise ETaurusTLSLoaderError.Create('Secondary header cleanup failure');
+    raise ELoaderHeaderCleanupError.Create('Secondary header cleanup failure');
 end;
 
 /// <summary>Injects the first header cleanup error before the remaining resetters.</summary>
 procedure TestCleanupFault;
 begin
   if GTestCleanupFaultActive then
-    raise ETaurusTLSLoaderError.Create('Primary header cleanup failure');
+    raise ELoaderHeaderCleanupError.Create('Primary header cleanup failure');
 end;
 {$ENDIF}
 
@@ -2716,7 +2763,22 @@ begin
   TTestCallbackObserverA.VerifyHandlesLive := False;
   TTestCallbackObserverB.Active := False;
   TTestCallbackObserverB.ThrowOnLoad := False;
-  inherited Teardown;
+  try
+    inherited Teardown;
+  finally
+    // Observations are asserted in the test body. Do not retain them until the
+    // next setup, where their release would be charged to a different test.
+    TTestCallbackLog.Clear;
+    TTestCallbackObserverA.QueryError := '';
+    TTestCallbackObserverA.ConfigOnLoad := '';
+    TTestCallbackObserverA.ConfigOnUnload := '';
+    TTestCallbackObserverA.ProbeValue := '';
+    TTestCallbackObserverA.ProbeError := '';
+    TTestCallbackObserverA.ProbeResult := '';
+    {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+    GTestDiscoveryFile := '';
+    {$ENDIF}
+  end;
 end;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
@@ -2937,6 +2999,159 @@ begin
   end;
 end;
 
+
+procedure TLoaderLifecycleFixture.Life_EffectiveLibrarySettings(const ARelative: Boolean);
+var
+  LDirectory, LSuffix, LInputPath, LInputVersions: string;
+  LCandidates: TStringList;
+begin
+  Loader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(Loader.Load);
+  LDirectory := Loader.OpenSSLPath;
+  LSuffix := Loader.SSLLibVersions;
+  Loader.Unload;
+
+  Assert.IsTrue(TPath.IsPathRooted(LDirectory), 'Loaded directory must be absolute');
+  Assert.IsTrue(TDirectory.Exists(LDirectory), 'Loaded directory must exist');
+
+  LInputPath := LDirectory;
+  if ARelative then
+    LInputPath := ExtractRelativePath(IncludeTrailingPathDelimiter(GetCurrentDir), LDirectory);
+  LCandidates := TStringList.Create;
+  try
+    LCandidates.Delimiter := DirListDelimiter;
+    LCandidates.StrictDelimiter := True;
+    LCandidates.Add('_missing_taurustls_candidate');
+    LCandidates.Add(LSuffix);
+    LInputVersions := LCandidates.DelimitedText;
+  finally
+    LCandidates.Free;
+  end;
+
+  Loader.OpenSSLPath := LInputPath;
+  LInputPath := Loader.OpenSSLPath; // Setter retains its trailing-delimiter convention.
+  Loader.SSLLibVersions := LInputVersions;
+  Assert.IsTrue(Loader.Load);
+  Assert.AreEqual(LDirectory, Loader.OpenSSLPath, 'Ready state exposes the actual installation');
+  Assert.AreEqual(LSuffix, Loader.SSLLibVersions, 'Ready state exposes only the selected suffix');
+  // Repeating configured inputs is safe even when the getters expose effective values.
+  Loader.OpenSSLPath := LInputPath;
+  Loader.SSLLibVersions := LInputVersions;
+  Loader.Unload;
+  Assert.AreEqual(LInputPath, Loader.OpenSSLPath, 'Unload retains the search input');
+  Assert.AreEqual(LInputVersions, Loader.SSLLibVersions, 'Unload retains every suffix candidate');
+
+  Assert.IsTrue(Loader.Load, 'Reload must reuse the preserved configuration');
+  Assert.AreEqual(LDirectory, Loader.OpenSSLPath);
+  Assert.AreEqual(LSuffix, Loader.SSLLibVersions);
+end;
+
+procedure TLoaderLifecycleFixture.Life_RejectMixedSuffixes;
+var
+  LDirectory, LSuffix, LCryptoName, LSSLName, LOtherSSLName: string;
+  LInputVersions: string;
+  LCandidates: TStringList;
+begin
+  Loader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(Loader.Load);
+  LDirectory := Loader.OpenSSLPath;
+  LSuffix := Loader.SSLLibVersions;
+  Loader.Unload;
+
+  // Use copies of the same working binaries. Only their filenames differ, so
+  // this checks pairing policy without requiring a second OpenSSL distribution.
+{$IFDEF OSX}
+  LCryptoName := CLibCryptoBase + LSuffix + LibSuffix;
+  LSSLName := CLibSSLBase + LSuffix + LibSuffix;
+  LOtherSSLName := CLibSSLBase + '_other_candidate' + LibSuffix;
+{$ELSE}
+  LCryptoName := CLibCryptoBase + LibSuffix + LSuffix;
+  LSSLName := CLibSSLBase + LibSuffix + LSuffix;
+  LOtherSSLName := CLibSSLBase + LibSuffix + '_other_candidate';
+{$ENDIF}
+{$IFDEF WINDOWS}
+  // Windows appends .dll when loading these extensionless candidate names.
+  if ExtractFileExt(LCryptoName) = '' then
+    LCryptoName := LCryptoName + '.dll';
+  if ExtractFileExt(LSSLName) = '' then
+    LSSLName := LSSLName + '.dll';
+  LOtherSSLName := LOtherSSLName + '.dll';
+{$ENDIF}
+  TFile.Copy(TPath.Combine(LDirectory, LCryptoName), TPath.Combine(FTempDir, LCryptoName));
+  TFile.Copy(TPath.Combine(LDirectory, LSSLName), TPath.Combine(FTempDir, LOtherSSLName));
+  LCandidates := TStringList.Create;
+  try
+    LCandidates.Delimiter := DirListDelimiter;
+    LCandidates.StrictDelimiter := True;
+    LCandidates.Add(LSuffix);
+    LCandidates.Add('_other_candidate');
+    LInputVersions := LCandidates.DelimitedText;
+  finally
+    LCandidates.Free;
+  end;
+  Loader.OpenSSLPath := FTempDir;
+  Loader.SSLLibVersions := LInputVersions;
+  Assert.WillRaise(
+    procedure
+    begin
+      Loader.Load;
+    end, ETaurusTLSLoaderError, 'SSL must use the suffix selected for crypto');
+  Assert.IsTrue(Loader.State = lsLoadedFailed);
+  Assert.IsTrue(@OpenSSL_version_num = @ErrUnBound, 'Pairing failure must not publish bindings');
+  Assert.AreEqual(IncludeTrailingPathDelimiter(FTempDir), Loader.OpenSSLPath);
+  Assert.AreEqual(LInputVersions, Loader.SSLLibVersions, 'Failure must retain the candidate list');
+
+  // Supply the correct pair and explicitly reset the circuit breaker.
+  TFile.Copy(TPath.Combine(LDirectory, LSSLName), TPath.Combine(FTempDir, LSSLName));
+  Assert.IsFalse(Loader.Load, 'Changing the deployment does not reset a previous failure');
+  Loader.Unload;
+  Assert.IsTrue(Loader.Load, 'The correct pair must work after reset');
+  Assert.AreEqual(LSuffix, Loader.SSLLibVersions);
+end;
+
+
+{$IFDEF UNITTEST}
+procedure ReportForeignSSLFileName(const ASymbol: string; var AFileName: string);
+begin
+  // The OS may reuse an already loaded module. Model that result without
+  // depending on platform-specific reuse rules or requiring symlink privileges.
+  if ASymbol = 'SSL_new' then
+    AFileName := TPath.Combine(TPath.Combine(ExtractFileDir(AFileName),
+      'foreign-installation'), ExtractFileName(AFileName));
+end;
+
+procedure TLoaderLifecycleFixture.Life_RejectForeignSSLDirectory;
+var
+  LInputPath, LInputVersions, LDirectory: string;
+begin
+  Loader.ConfigFile := FValidConfigFile;
+  Assert.IsTrue(Loader.Load);
+  LDirectory := Loader.OpenSSLPath;
+  Loader.Unload;
+  LInputPath := Loader.OpenSSLPath;
+  LInputVersions := Loader.SSLLibVersions;
+  Loader.ConfigFile := FValidConfigFile;
+  OnLoaderLibraryFileName := ReportForeignSSLFileName;
+  try
+    Assert.WillRaiseWithMessage(
+      procedure
+      begin
+        Loader.Load;
+      end, ETaurusTLSLoaderError, Format(RSOSSLPairedLibraryPathMismatch,
+        [LDirectory, IncludeTrailingPathDelimiter(TPath.Combine(LDirectory, 'foreign-installation'))]));
+  finally
+    OnLoaderLibraryFileName := nil;
+  end;
+  Assert.IsTrue(Loader.State = lsLoadedFailed);
+  Assert.IsTrue(@OpenSSL_version_num = @ErrUnBound, 'No headers may bind to a rejected pair');
+  Assert.AreEqual(LInputPath, Loader.OpenSSLPath);
+  Assert.AreEqual(LInputVersions, Loader.SSLLibVersions);
+  Assert.IsFalse(Loader.Load, 'A rejected installation must trip the circuit breaker');
+  Loader.Unload;
+  Assert.IsTrue(Loader.Load, 'Reset must permit recovery after the foreign module is gone');
+end;
+{$ENDIF}
+
 procedure TLoaderLifecycleFixture.Life_MissingLibraries;
 begin
   Loader.OpenSSLPath := FTempDir;
@@ -2971,7 +3186,11 @@ begin
   TFile.Copy(LSourceFile, LCopyFile);
   Loader.OpenSSLPath := FTempDir;
   Loader.ConfigFile := FValidConfigFile;
-  Assert.IsFalse(Loader.Load, 'Crypto without SSL is a partial load failure');
+  Assert.WillRaise(
+    procedure
+    begin
+      Loader.Load;
+    end, ETaurusTLSLoaderError, 'Crypto without matching SSL must raise a loader error');
   Assert.IsTrue(Loader.State = lsLoadedFailed);
   Assert.IsFalse(Loader.IsLoaded);
   Assert.IsTrue(@OpenSSL_version_num = @ErrUnBound, 'Headers must not bind after partial discovery');
@@ -2984,6 +3203,54 @@ begin
   Assert.IsTrue(Loader.Load, 'Recovery must work after the partial load is cleaned up');
 end;
 {$ENDIF}
+{$ENDIF}
+
+{$IFDEF UNITTEST}
+procedure TLoaderLifecycleFixture.Life_TestReset;
+var
+  LOriginal: IOpenSSLLoader;
+  LPath, LVersions: string;
+  LProbe: TActionRegistrationProbe;
+begin
+  LOriginal := Loader;
+  LPath := Loader.OpenSSLPath;
+  LVersions := Loader.SSLLibVersions;
+  LProbe := TActionRegistrationProbe.Create;
+  try
+    Register_SSLLoaderAction(LProbe.Action);
+    Loader.ConfigFile := FValidConfigFile;
+    Assert.IsTrue(Loader.Load);
+    Loader.FailedToLoad.Add('Test-only diagnostic');
+
+    ResetOpenSSLLoaderForTests;
+    Assert.IsTrue(LOriginal = GetOpenSSLLoader, 'Existing interfaces must still refer to the singleton');
+    Assert.IsTrue(Loader.State = lsNotLoaded);
+    Assert.AreEqual('', Loader.ConfigFile);
+    Assert.AreEqual('', Loader.Version);
+    Assert.AreEqual('', Loader.ConfigDirectory);
+    Assert.AreEqual('', Loader.ModulesDirectory);
+    Assert.AreEqual('', Loader.EnginesDirectory);
+    Assert.AreEqual(0, Loader.FailedToLoad.Count);
+    Assert.AreEqual(0, Loader.FailedToLoad.Capacity, 'Reset must release the diagnostic buffer');
+    Assert.AreEqual('', Loader.OpenSSLPath);
+{$IFDEF OPENSSL_STATIC_LINK_MODEL}
+    Assert.AreEqual('', Loader.SSLLibVersions);
+{$ELSE}
+    Assert.AreEqual(DefaultLibVersions, Loader.SSLLibVersions);
+    Assert.IsTrue(@OpenSSL_version_num = @ErrUnBound);
+{$ENDIF}
+    Assert.AreEqual(1, LProbe.UnloadCount, 'Reset must dispatch normal cleanup');
+
+    Loader.OpenSSLPath := LPath;
+    Loader.SSLLibVersions := LVersions;
+    Loader.ConfigFile := FValidConfigFile;
+    Assert.IsTrue(Loader.Load, 'Header registrations must survive a reset');
+    Assert.AreEqual(2, LProbe.LoadCount, 'Registered lifecycle actions must survive a reset');
+  finally
+    UnRegister_SSLLoaderAction(LProbe.Action);
+    LProbe.Free;
+  end;
+end;
 {$ENDIF}
 
 procedure TLoaderCallbacksFixture.CB_DispatchLive;
@@ -3139,7 +3406,7 @@ begin
     begin
       Loader.Load;
     end,
-    Exception, 'Simulated action failure in Observer B');
+    ELoaderObserverError, 'Simulated action failure in Observer B');
   Assert.IsFalse(Loader.IsLoaded);
   Assert.AreEqual(2, TTestCallbackLog.Count);
   TTestCallbackObserverB.ThrowOnLoad := False;
@@ -3190,7 +3457,7 @@ begin
       procedure
       begin
         Loader.Load;
-      end, Exception, 'Simulated action failure in Observer B');
+      end, ELoaderObserverError, 'Simulated action failure in Observer B');
     Assert.IsTrue(Loader.State = lsLoadedFailed);
     Assert.IsFalse(Loader.Load, 'Rejected mutation must not permit a retry');
   end
@@ -3259,7 +3526,7 @@ begin
     procedure
     begin
       Loader.Load;
-    end, Exception, 'Simulated action failure in Observer B');
+    end, ELoaderObserverError, 'Simulated action failure in Observer B');
   Assert.IsTrue(Loader.State = lsLoadedFailed);
   Assert.AreEqual(LInput, TTestCallbackObserverA.ConfigOnLoad);
   Assert.AreEqual(LInput, TTestCallbackObserverA.ConfigOnUnload);
@@ -3304,7 +3571,7 @@ begin
         procedure
         begin
           Loader.Load;
-        end, Exception, 'The fixture must enter failed state before testing registration');
+        end, ELoaderObserverError, 'The fixture must enter failed state before testing registration');
       TTestCallbackObserverB.ThrowOnLoad := False;
       Register_SSLLoaderAction(LProbe.Action);
       Assert.IsTrue(Loader.State = lsLoadedFailed, 'Registration must preserve failure state');
@@ -3363,7 +3630,7 @@ begin
         procedure
         begin
           Loader.Load;
-        end, Exception, 'The earlier action must fail before the new probe is initialized');
+        end, ELoaderObserverError, 'The earlier action must fail before the new probe is initialized');
       TTestCallbackObserverB.ThrowOnLoad := False;
     end;
     UnRegister_SSLLoaderAction(LProbe.Action);
@@ -3437,7 +3704,7 @@ begin
         procedure
         begin
           Register_SSLLoaderAction(LProbe.Action);
-        end, EAbort, 'Immediate initialization must propagate the original callback exception');
+        end, ELoaderObserverError, 'Immediate initialization must propagate the original callback exception');
       UnRegister_SSLLoaderAction(LProbe.Action);
       Assert.AreEqual(0, LProbe.UnloadCount, 'An initialization that failed must not leave a registered action');
       LProbe.FailOnLoad := False;
@@ -3450,7 +3717,7 @@ begin
         procedure
         begin
           UnRegister_SSLLoaderAction(LProbe.Action);
-        end, EAbort, 'Immediate cleanup must propagate the original callback exception');
+        end, ELoaderObserverError, 'Immediate cleanup must propagate the original callback exception');
       LProbe.FailOnUnload := False;
       UnRegister_SSLLoaderAction(LProbe.Action);
       Assert.AreEqual(1, LProbe.UnloadCount, 'Cleanup failure must still detach the callback');
@@ -3514,7 +3781,7 @@ var
         try
           try
             if LStart.WaitFor(CWaitMilliseconds) <> wrSignaled then
-              raise Exception.Create('Action worker start timed out');
+              raise ELoaderWorkerError.Create('Action worker start timed out');
             Register_SSLLoaderAction(LProbes[AIndex].Action);
             UnRegister_SSLLoaderAction(LProbes[AIndex].Action);
           except
@@ -3800,7 +4067,7 @@ begin
     procedure
     begin
       Loader.Unload;
-    end, ETaurusTLSLoaderError, 'Primary header cleanup failure');
+    end, ELoaderHeaderCleanupError, 'Primary header cleanup failure');
   Assert.AreEqual(1, GTestCleanupTailCount, 'Remaining resetters must still execute');
   Assert.IsTrue(@OpenSSL_version_num = @ErrUnBound, 'Header reset must finish despite errors');
   Assert.IsTrue(Loader.State = lsLoadedFailed);
@@ -3824,7 +4091,7 @@ begin
     procedure
     begin
       Loader.Load;
-    end, Exception, 'Simulated action failure in Observer B');
+    end, ELoaderObserverError, 'Simulated action failure in Observer B');
   Assert.AreEqual(1, GTestCleanupTailCount);
   Assert.IsTrue(@OpenSSL_version_num = @ErrUnBound);
   Assert.IsTrue(Loader.State = lsLoadedFailed);
@@ -3890,7 +4157,7 @@ begin
     procedure
     begin
       Loader.Load;
-    end, Exception);
+    end, ELoaderObserverError);
   Assert.IsTrue(Loader.State = lsLoadedFailed);
   Assert.IsTrue(LoaderMetadataIsEmpty);
   Assert.IsTrue(TTestCallbackObserverA.MetadataEmptyOnLoad);
@@ -3964,7 +4231,7 @@ begin
     procedure
     begin
       Loader.Load;
-    end, EAbort, 'Simulated TLS runtime action failure');
+    end, ELoaderObserverError, 'Simulated TLS runtime action failure');
   Assert.IsTrue(Loader.State = lsLoadedFailed);
   Assert.IsTrue(LoaderMetadataIsEmpty);
   Assert.AreEqual(0, TTestCallbackLog.Count, 'Later load actions must not run');
@@ -4004,7 +4271,7 @@ end;
 
 procedure TLoaderCallbacksFixture.Info_Discovery(const AKind: Integer);
 var
-  LExpectedDirectory: string;
+  LExpectedDirectory, LExpectedFile: string;
 begin
   GTestDiscoveryOverride := True;
   if AKind = 0 then
@@ -4015,12 +4282,18 @@ begin
     GTestDiscoveryFile := 'sub' + PathDelim + 'test.cnf';
     LExpectedDirectory := TPath.Combine(GetCurrentDir, 'sub');
   end;
+  LExpectedFile := '';
+  if GTestDiscoveryFile <> '' then
+    LExpectedFile := TPath.GetFullPath(GTestDiscoveryFile);
   Loader.ConfigFile := '';
   Assert.IsTrue(Loader.Load);
-  Assert.AreEqual(GTestDiscoveryFile, Loader.ConfigFile);
+  Assert.AreEqual(LExpectedFile, Loader.ConfigFile);
   Assert.AreEqual(LExpectedDirectory, Loader.ConfigDirectory);
   Assert.IsTrue(SetCurrentDir(FOrigCurrentDir));
+  Assert.AreEqual(LExpectedFile, Loader.ConfigFile, 'Discovery must retain the load-time filename');
   Assert.AreEqual(LExpectedDirectory, Loader.ConfigDirectory);
+  Loader.Unload;
+  Assert.AreEqual('', Loader.ConfigFile, 'Discovery must not replace the configured empty input');
 end;
 
 procedure TLoaderCallbacksFixture.Runtime_InitFailure(const AKind: Integer);
@@ -4045,6 +4318,11 @@ begin
     begin
       Loader.Load;
     end, LExceptionClass);
+  // Failed initialization must remove injected routines through header rollback.
+  Assert.IsTrue(@OPENSSL_init_crypto = @ErrUnBound,
+    'Rollback must clear the injected crypto initializer');
+  Assert.IsTrue(@OPENSSL_init_ssl = @ErrUnBound,
+    'Rollback must clear the injected SSL initializer');
   Assert.IsTrue(Loader.State = lsLoadedFailed);
   Assert.IsTrue(LoaderMetadataIsEmpty);
   Assert.AreEqual(0, TTestCallbackLog.Count);
@@ -4054,6 +4332,10 @@ begin
   GTestCryptoInitFailure := False;
   Loader.Unload;
   Assert.IsTrue(Loader.Load);
+  Assert.IsTrue(@OPENSSL_init_crypto = LoadLibFunction(GTestCryptoLibrary, 'OPENSSL_init_crypto'),
+    'Retry must bind the crypto initializer exported by the loaded library');
+  Assert.IsFalse(@OPENSSL_init_ssl = @TestSSLInit,
+    'Retry must not retain the injected SSL initializer');
   Assert.AreEqual(1, TTestRuntimeObserver.LoadCount,
     'Failed-state retries must not rerun the action; reset permits one successful load');
 end;
@@ -4193,12 +4475,12 @@ var
         try
           try
             if LStart.WaitFor(10000) <> wrSignaled then
-              raise Exception.Create('Singleton worker start timed out');
+              raise ELoaderWorkerError.Create('Singleton worker start timed out');
             for J := 1 to CQueryCount do
             begin
               LLoader := GetOpenSSLLoader;
               if LLoader <> Loader then
-                raise Exception.Create('Concurrent query returned a different loader');
+                raise ELoaderWorkerError.Create('Concurrent query returned a different loader');
             end;
             LResults[AIndex] := LLoader;
             if ARegister <> 0 then
@@ -4264,10 +4546,15 @@ begin
     end;
   finally
     LStart.Free;
-    // Registrations persist for the process; later fixtures observe inert callbacks.
+    // Each worker owns one registration. Remove them after all workers finish.
+    // A worker that failed before registering leaves nothing to remove.
     TConcurrentRegistrationObserver.Active := False;
+    if ARegister <> 0 then
+      for I := 1 to CWorkerCount do
+        UnRegister_SSLLoaderAction(TConcurrentRegistrationObserver.ActionProc);
   end;
 end;
+
 
 initialization
   GLoaderTestLock := TObject.Create;
