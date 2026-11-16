@@ -308,6 +308,11 @@ procedure Register_SSLLoader(LoadProc: TOpenSSLLoadProc; const module_name: stri
 /// </remarks>
 procedure Register_SSLUnloader(UnloadProc: TOpenSSLUnloadProc);
 
+/// <summary>
+///   This procedure is called when an OpenSSL function is called without
+///   OpenSSL being loaded. It simply raises an exception returning the caller's
+///   address.
+/// </summary>
 procedure ErrUnBound; cdecl;
 {$ENDIF}
 
