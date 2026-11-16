@@ -313,6 +313,10 @@ procedure Register_SSLUnloader(UnloadProc: TOpenSSLUnloadProc);
 ///   OpenSSL being loaded. It simply raises an exception returning the caller's
 ///   address.
 /// </summary>
+/// <remarks>
+///   This procedure is only available when dynamically loaded. This procedure
+///   should not be called by your code.
+/// </remarks>
 procedure ErrUnBound; cdecl;
 {$ENDIF}
 
