@@ -291,6 +291,10 @@ type
     [Test]
     procedure State_Lifecycle;
 
+    // Check raw numeric metadata and repeat loading after native cleanup.
+    [Test]
+    procedure Life_VersionNumber;
+
     // Verifies concurrent queries share one loader and concurrent action registrations are retained.
     [TestCase('Queries', '0')]
     [TestCase('Registrations', '1')]
@@ -2147,6 +2151,27 @@ begin
   Assert.IsFalse(Loader.IsLoaded);
 end;
 
+procedure TLoaderLifecycleFixture.Life_VersionNumber;
+var
+  I: Integer;
+  LVersion: TIdC_ULONG;
+begin
+  Loader.ConfigFile := FValidConfigFile;
+  for I := 1 to 3 do
+  begin
+    Assert.IsTrue(Loader.VersionNumber = 0, 'Inactive metadata must be zero');
+    Assert.IsTrue(Loader.Load, 'Each load must initialize a usable runtime');
+    try
+      LVersion := OpenSSL_version_num();
+      Assert.IsTrue(Loader.VersionNumber = LVersion,
+        'VersionNumber must retain the raw native value without shifting');
+    finally
+      Loader.Unload;
+    end;
+    Assert.IsTrue(Loader.VersionNumber = 0, 'Unload must clear numeric metadata');
+  end;
+end;
+
 procedure TLoaderLifecycleFixture.Life_DoubleLoad;
 begin
   Loader.ConfigFile := FValidConfigFile;
@@ -2410,7 +2435,8 @@ var
   LLoader: IOpenSSLLoader;
 begin
   LLoader := GetOpenSSLLoader;
-  Result := (LLoader.Version = '') and (LLoader.ConfigDirectory = '') and
+  Result := (LLoader.VersionNumber = 0) and
+    (LLoader.Version = '') and (LLoader.ConfigDirectory = '') and
     (LLoader.ModulesDirectory = '') and (LLoader.EnginesDirectory = '') and
     (OpenSSLVersion = '') and (OpenSSLDir = '') and
     (OpenSSLModulesDir = '') and (OpenSSLEnginesDir = '');
