@@ -58,6 +58,12 @@ const
   {$ENDIF}
 {$IFEND}
 
+const
+  /// <summary>OpenSSL 3.0 numeric version threshold, in OpenSSL_version_num format.</summary>
+  cVer3 = $30000000;
+  /// <summary>OpenSSL 4.0 numeric version threshold, in OpenSSL_version_num format.</summary>
+  cVer4 = $40000000;
+
 type
   /// <summary>Internal lifecycle states, including operations in progress.</summary>
   TTaurusTLSLoaderStateAll = (
@@ -148,6 +154,8 @@ type
     function GetState: TTaurusTLSLoaderState;
     /// <summary>Returns the loaded OpenSSL version text, or empty while not ready.</summary>
     function GetVersion: string;
+    /// <summary>Returns the raw OpenSSL_version_num value, or zero while not ready.</summary>
+    function GetVersionNumber: TIdC_ULONG;
     /// <summary>Returns the directory containing the effective ConfigFile, or empty while not ready.</summary>
     function GetConfigDirectory: string;
     /// <summary>Returns the compiled default module directory, or empty while not ready or unavailable.</summary>
@@ -157,6 +165,8 @@ type
 
     /// <summary>Copied version text; reading metadata never initializes OpenSSL.</summary>
     property Version: string read GetVersion;
+    /// <summary>Cached numeric version; reading it never calls or initializes OpenSSL.</summary>
+    property VersionNumber: TIdC_ULONG read GetVersionNumber;
     /// <summary>Directory of the effective configuration filename, resolved during loading.</summary>
     /// <remarks>A discovered filename does not prove that the file exists or was applied.</remarks>
     property ConfigDirectory: string read GetConfigDirectory;
@@ -453,6 +463,7 @@ type
     function GetSSLLibVersions: string;
     function GetConfigFile: string;
     function GetVersion: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetVersionNumber: TIdC_ULONG;
     function GetConfigDirectory: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetModulesDirectory: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetEnginesDirectory: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -489,6 +500,8 @@ type
     property State: TTaurusTLSLoaderState read GetState;
     /// <summary>Cached shared OpenSSL version text; empty while not ready.</summary>
     property Version: string read GetVersion;
+    /// <summary>Raw OpenSSL version while ready; zero otherwise.</summary>
+    property VersionNumber: TIdC_ULONG read GetVersionNumber;
     /// <summary>Directory of the effective singleton configuration filename; empty while not ready.</summary>
     property ConfigDirectory: string read GetConfigDirectory;
     /// <summary>Compiled default module directory, not a configured module-search path.</summary>
@@ -736,6 +749,7 @@ type
     FConfigFile: string;
     FEffectiveConfigFile: string;
     FMetadata: array[TOpenSSLMetadata] of string;
+    FVersionNumber: TIdC_ULONG;
     procedure CaptureMetadata;
     procedure ClearMetadata;
     function GetMetadata(const AKind: TOpenSSLMetadata): string;
@@ -800,6 +814,7 @@ type
     /// <summary>Reads the stable public state without taking the lifecycle lock.</summary>
     function GetState: TTaurusTLSLoaderState; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetVersion: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetVersionNumber: TIdC_ULONG;
     function GetConfigDirectory: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetModulesDirectory: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetEnginesDirectory: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -973,12 +988,14 @@ procedure TOpenSSLBaseLoader.ClearMetadata;
 var
   LKind: TOpenSSLMetadata;
 begin
+  FVersionNumber := 0;
   for LKind := Low(TOpenSSLMetadata) to High(TOpenSSLMetadata) do
     FMetadata[LKind] := '';
 end;
 
 procedure TOpenSSLBaseLoader.CaptureMetadata;
 begin
+  FVersionNumber := OpenSSL_version_num();
   FMetadata[omVersion] := UTF8ToString(OpenSSL_version(OPENSSL_VERSION_CONST));
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
   if not Assigned(OPENSSL_info) or (GetFailedToLoad.IndexOf('OPENSSL_info') >= 0) then
@@ -986,7 +1003,7 @@ begin
 {$ENDIF}
   FMetadata[omModulesDirectory] := UTF8ToString(OPENSSL_info(OPENSSL_INFO_MODULES_DIR));
   // OpenSSL 4 removed engine support; preserve the compatibility query as empty.
-  if OpenSSL_version_num() < $40000000 then
+  if OpenSSL_version_num() < cVer4 then
     FMetadata[omEnginesDirectory] := UTF8ToString(OPENSSL_info(OPENSSL_INFO_ENGINES_DIR));
 end;
 
@@ -1006,6 +1023,19 @@ end;
 function TOpenSSLBaseLoader.GetVersion: string;
 begin
   Result := GetMetadata(omVersion);
+end;
+
+function TOpenSSLBaseLoader.GetVersionNumber: TIdC_ULONG;
+begin
+  FLoaderLock.Enter;
+  try
+    if IsLoaded then
+      Result := FVersionNumber
+    else
+      Result := 0;
+  finally
+    FLoaderLock.Leave;
+  end;
 end;
 
 function TOpenSSLBaseLoader.GetConfigDirectory: string;
@@ -1470,7 +1500,10 @@ type
     // Effective values are separate: unload must retain the caller's search settings.
     FLoadedPath: string;
     FLoadedSuffix: string;
+    // Resolve from this crypto handle: rollback may precede header binding.
+    FCleanup: procedure; cdecl;
     FFailed: TStringList;
+    procedure CleanupOpenSSL;
 
     /// <summary>Tries the configured directory and ordered platform filename suffixes.</summary>
     function FindLibrary(const LibName, LibVersions: string;
@@ -1868,6 +1901,15 @@ begin
 
   LSSLVersionNo := LOpenSSL_version_num();
   CheckOpenSSLVersion(LSSLVersionNo);
+  // OpenSSL 4+ requires global cleanup before unloading. Resolve it before SSL
+  // acquisition so partial-load rollback also releases crypto resources.
+  // Keep 3.x unchanged: a resident instance cannot reinitialize after cleanup.
+  if LSSLVersionNo >= cVer4 then
+  begin
+    FCleanup := LoadLibFunction(FLibCrypto, 'OPENSSL_cleanup');
+    if not Assigned(FCleanup) then
+      ETaurusTLSAPIFunctionNotPresent.RaiseException('OPENSSL_cleanup');
+  end;
 
   LCryptoFile := LibraryFileName(FLibCrypto, 'OpenSSL_version_num');
   FLoadedPath := IncludeTrailingPathDelimiter(ExtractFileDir(LCryptoFile));
@@ -1935,8 +1977,21 @@ begin
     UnbindFrom(FUnloaders.Count - 1);
 end;
 
+procedure TOpenSSLDynamicLoader.CleanupOpenSSL;
+var
+  LCleanup: procedure; cdecl;
+begin
+  // Completed actions have released their native objects. Clear ownership first
+  // so the fallback handle-release path cannot call global cleanup twice.
+  LCleanup := FCleanup;
+  FCleanup := nil;
+  if Assigned(LCleanup) then
+    LCleanup();
+end;
+
 procedure TOpenSSLDynamicLoader.FreeDynamicLibraries;
 begin
+  CleanupOpenSSL;
   // Effective metadata belongs to this load cycle, not to the next attempt.
   FLoadedPath := '';
   FLoadedSuffix := '';
@@ -1989,7 +2044,12 @@ begin
     RollbackLoadActions;
   finally
     try
-      UnbindHeaderSymbols;
+      // Cleanup needs both handles alive; header reset must still run on error.
+      try
+        CleanupOpenSSL;
+      finally
+        UnbindHeaderSymbols;
+      end;
     finally
       FreeDynamicLibraries;
     end;
@@ -2607,6 +2667,11 @@ end;
 function TTaurusTLSLoader.GetConfigFile: string;
 begin
   Result := FLoader.ConfigFile;
+end;
+
+function TTaurusTLSLoader.GetVersionNumber: TIdC_ULONG;
+begin
+  Result := FLoader.VersionNumber;
 end;
 
 function TTaurusTLSLoader.GetVersion: string;

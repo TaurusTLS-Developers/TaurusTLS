@@ -119,6 +119,40 @@ initialization failures, including a 4.x suite run. This does not establish that
 the separate repeated-load retention has been resolved.
 
 Regression testing will use OpenSSL 3.x for now. Track the repeated-load issue at
-[OpenSSL #33756](https://github.com/openssl/openssl/issues/33756). No production
-OPENSSL_cleanup or OPENSSL_thread_stop behavior was added by this refactoring.
+[OpenSSL #33756](https://github.com/openssl/openssl/issues/33756). The original path refactoring did not add native cleanup. The extension below adds global cleanup for dynamic OpenSSL 4+.
 The standalone diagnostic experiments are separate from the loader implementation.
+## OpenSSL 4 cleanup extension
+
+CaptureMetadata stores the raw native version in FVersionNumber. ClearMetadata
+resets it to zero. GetVersionNumber holds FLoaderLock and exposes the cached value
+only when ready. TTaurusTLSLoader delegates its VersionNumber property to the
+same interface. Consumers must rebuild against the extended interface.
+
+LoadAndVerifyLibraries uses the raw version for cleanup selection, separately
+from the shifted header-binding version. After identity and version validation,
+versions >= $40000000 resolve OPENSSL_cleanup directly from FLibCrypto into
+FCleanup. A missing export raises ETaurusTLSAPIFunctionNotPresent. Resolution
+precedes SSL acquisition and header binding, covering failures in those stages.
+Cleanup therefore does not depend on a header variable that a test may replace
+or that rollback has not yet bound.
+
+DoUnload runs RollbackLoadActions, then CleanupOpenSSL, then UnbindHeaderSymbols,
+then FreeDynamicLibraries, preserving finally boundaries between stages.
+CleanupOpenSSL clears FCleanup before invoking its saved procedure pointer.
+FreeDynamicLibraries also calls this idempotent helper as a fallback before
+releasing SSL and crypto. No OpenSSL calls follow global cleanup. Public metadata
+is hidden throughout unloading and cleared by the common unload boundary.
+
+3.x never assigns FCleanup. The static loader does not use this dynamic cleanup
+path. No OPENSSL_thread_stop call is introduced; global unload still requires
+all consumers and their threads to have completed their native work.
+
+Life_VersionNumber compares the property with OpenSSL_version_num(), verifies
+zero before/after readiness, and repeats load/unload three times. Metadata-empty
+callback and rollback checks also include VersionNumber. Existing initialization
+failure and library-pair rollback cases exercise cleanup before retry.
+
+Win64 Debug loader-category validation: 257/257 passed against both OpenSSL
+3.6.5 and 4.0.2, with zero reported leaks, failures, or errors.
+Win32 Debug loader-category runs also passed 257/257 on both 3.6.5 and 4.0.2,
+with zero reported leaks, failures, or errors.

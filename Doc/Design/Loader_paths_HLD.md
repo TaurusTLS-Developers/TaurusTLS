@@ -76,3 +76,23 @@ Use OpenSSL 3.x as the current regression-test baseline. Repeated native DLL
 load/unload cycles have shown Windows thread-local-storage slot retention with
 4.x; this is tracked in [OpenSSL issue #33756](https://github.com/openssl/openssl/issues/33756).
 This test policy does not change the loader's supported version checks.
+## Numeric version and OpenSSL 4 cleanup
+
+IOpenSSLLoader.VersionNumber and the loader component return the raw
+OpenSSL_version_num() value as TIdC_ULONG while ready, and zero otherwise.
+The value is cached during loading; reading it never invokes a native routine.
+It is not the shifted version passed to header binders.
+
+For dynamically loaded OpenSSL 4.0 and later, unload and failure rollback call
+OPENSSL_cleanup() after completed lifecycle actions have released their native
+objects, before resetting headers and releasing SSL and crypto handles. This
+follows the requirement confirmed in [OpenSSL issue #33756](https://github.com/openssl/openssl/issues/33756#issuecomment-6904007002).
+Applications must retire all native consumers before unloading.
+
+OpenSSL 3.x unloading and statically linked runtime behavior remain unchanged.
+The Windows experiment found that 3.x crypto could remain resident after handle
+release; explicitly cleaning that instance prevented subsequent initialization.
+Static code also stays resident and cannot be reinitialized after global cleanup.
+The earlier repeated-load results omitted the required 4.x cleanup and do not
+establish an upstream leak. A separate remaining one-slot-per-cycle observation
+in the isolated 4.x experiment still needs investigation.
