@@ -3030,6 +3030,7 @@ procedure TLoaderLifecycleFixture.Life_EffectiveLibrarySettings(const ARelative:
 var
   LDirectory, LSuffix, LInputPath, LInputVersions: string;
   LCandidates: TStringList;
+  LOriginalDirectory: string;
 begin
   Loader.ConfigFile := FValidConfigFile;
   Assert.IsTrue(Loader.Load);
@@ -3040,36 +3041,48 @@ begin
   Assert.IsTrue(TPath.IsPathRooted(LDirectory), 'Loaded directory must be absolute');
   Assert.IsTrue(TDirectory.Exists(LDirectory), 'Loaded directory must exist');
 
-  LInputPath := LDirectory;
-  if ARelative then
-    LInputPath := ExtractRelativePath(IncludeTrailingPathDelimiter(GetCurrentDir), LDirectory);
-  LCandidates := TStringList.Create;
+  LOriginalDirectory := GetCurrentDir;
   try
-    LCandidates.Delimiter := DirListDelimiter;
-    LCandidates.StrictDelimiter := True;
-    LCandidates.Add('_missing_taurustls_candidate');
-    LCandidates.Add(LSuffix);
-    LInputVersions := LCandidates.DelimitedText;
+    LInputPath := LDirectory;
+    if ARelative then
+    begin
+      // Force the same drive: otherwise ExtractRelativePath can return an absolute
+      // path and the test silently skips the relative-directory behavior.
+      Assert.IsTrue(SetCurrentDir(ExtractFileDir(ExcludeTrailingPathDelimiter(LDirectory))));
+      LInputPath := ExtractRelativePath(IncludeTrailingPathDelimiter(GetCurrentDir), LDirectory);
+      Assert.IsFalse(TPath.IsPathRooted(LInputPath), 'This case must use a relative directory');
+    end;
+    LCandidates := TStringList.Create;
+    try
+      LCandidates.Delimiter := DirListDelimiter;
+      LCandidates.StrictDelimiter := True;
+      LCandidates.Add('_missing_taurustls_candidate');
+      LCandidates.Add(LSuffix);
+      LInputVersions := LCandidates.DelimitedText;
+    finally
+      LCandidates.Free;
+    end;
+
+    Loader.OpenSSLPath := LInputPath;
+    LInputPath := Loader.OpenSSLPath; // Setter retains its trailing-delimiter convention.
+    Loader.SSLLibVersions := LInputVersions;
+    Assert.IsTrue(Loader.Load);
+    Assert.AreEqual(LDirectory, Loader.OpenSSLPath, 'Ready state exposes the actual installation');
+    Assert.AreEqual(LSuffix, Loader.SSLLibVersions, 'Ready state exposes only the selected suffix');
+    // Repeating configured inputs is safe even when the getters expose effective values.
+    Loader.OpenSSLPath := LInputPath;
+    Loader.SSLLibVersions := LInputVersions;
+    Loader.Unload;
+    Assert.AreEqual(LInputPath, Loader.OpenSSLPath, 'Unload retains the search input');
+    Assert.AreEqual(LInputVersions, Loader.SSLLibVersions, 'Unload retains every suffix candidate');
+
+    Assert.IsTrue(Loader.Load, 'Reload must reuse the preserved configuration');
+    Assert.AreEqual(LDirectory, Loader.OpenSSLPath);
+    Assert.AreEqual(LSuffix, Loader.SSLLibVersions);
   finally
-    LCandidates.Free;
+    Loader.Unload;
+    Assert.IsTrue(SetCurrentDir(LOriginalDirectory));
   end;
-
-  Loader.OpenSSLPath := LInputPath;
-  LInputPath := Loader.OpenSSLPath; // Setter retains its trailing-delimiter convention.
-  Loader.SSLLibVersions := LInputVersions;
-  Assert.IsTrue(Loader.Load);
-  Assert.AreEqual(LDirectory, Loader.OpenSSLPath, 'Ready state exposes the actual installation');
-  Assert.AreEqual(LSuffix, Loader.SSLLibVersions, 'Ready state exposes only the selected suffix');
-  // Repeating configured inputs is safe even when the getters expose effective values.
-  Loader.OpenSSLPath := LInputPath;
-  Loader.SSLLibVersions := LInputVersions;
-  Loader.Unload;
-  Assert.AreEqual(LInputPath, Loader.OpenSSLPath, 'Unload retains the search input');
-  Assert.AreEqual(LInputVersions, Loader.SSLLibVersions, 'Unload retains every suffix candidate');
-
-  Assert.IsTrue(Loader.Load, 'Reload must reuse the preserved configuration');
-  Assert.AreEqual(LDirectory, Loader.OpenSSLPath);
-  Assert.AreEqual(LSuffix, Loader.SSLLibVersions);
 end;
 
 procedure TLoaderLifecycleFixture.Life_RejectMixedSuffixes;
