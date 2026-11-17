@@ -509,6 +509,10 @@
     {$DEFINE FPC_3_3_1_OR_ABOVE}
     {$DEFINE HAS_TInterlocked}
   {$IFEND}
+  // FPC 3.2.4 adds the Delphi-compatible System.IOUtils unit.
+  {$IF DEFINED(FPC_FULLVERSION) AND (FPC_FULLVERSION >= 30204)}
+    {$DEFINE HAS_UNIT_IOUtils}
+  {$IFEND}
   {$IF DEFINED(FPC_FULLVERSION) AND (FPC_FULLVERSION >= 30200)}
     {$DEFINE HAS_UNIT_Generics_Collections}
   {$IFEND}
@@ -861,6 +865,7 @@
 {$ENDIF}
 
 {$IFDEF VCL_2010_OR_ABOVE}
+  {$DEFINE HAS_UNIT_IOUtils}
   {$DEFINE VCL_2009_OR_ABOVE}
 {$ELSE}
   {$IFDEF VCL_2009}

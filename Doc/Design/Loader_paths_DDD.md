@@ -156,3 +156,27 @@ Win64 Debug loader-category validation: 257/257 passed against both OpenSSL
 3.6.5 and 4.0.2, with zero reported leaks, failures, or errors.
 Win32 Debug loader-category runs also passed 257/257 on both 3.6.5 and 4.0.2,
 with zero reported leaks, failures, or errors.
+
+
+## Relative-directory correction
+
+FindLibrary expands a nonempty FOpenSSLPath once into local LSearchPath, using
+TPath.GetFullPath and IncludeTrailingPathDelimiter when HAS_UNIT_IOUtils is
+available (Delphi 2010+ and FPC 3.2.4+); older compilers use ExpandFileName.
+It uses LSearchPath for every
+candidate; an empty value remains empty. This avoids passing relative filenames
+to Windows, where the relative part can be appended to DLL search directories.
+FOpenSSLPath is not modified. SSL continues to use crypto's actual directory.
+
+The relative settings test changes to the installation's parent directory and
+asserts that its input is relative. This avoids ExtractRelativePath returning
+an absolute path when the executable and installation are on different drives.
+The original working directory is restored after unloading in a finally block.
+
+
+LSearchPath is resolved before any candidate is attempted and is not recalculated
+inside the suffix loop. Later working-directory changes cannot redirect later
+crypto candidates. SSL discovery remains anchored to the resolved crypto module.
+This reduces the working-directory race window; it does not synchronize external
+SetCurrentDir calls or make the initial relative-path resolution independent of
+the process working directory. No process directory is changed by the loader.

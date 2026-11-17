@@ -193,8 +193,9 @@ type
     /// <remarks>
     ///   Both libraries must resolve to the same directory. The configured search
     ///   directory is retained across load cycles; load/unload callbacks see that input.
-    ///   Nonempty values receive a trailing path delimiter. An empty value uses
-    ///   the platform library search. In dynamic builds, changes are rejected while
+    ///   Nonempty values receive a trailing path delimiter and are expanded against
+    ///   the working directory at Load, without changing the configured input.
+    ///   An empty value uses the platform library search. In dynamic builds, changes are rejected while
     ///   loading, ready, unloading, or holding a crypto handle. Assigning the exact
     ///   stored value does nothing. Static builds return empty and ignore assignments.
     ///   Changing values after a failed load does not reset the failure state.
@@ -545,8 +546,10 @@ uses
 {$IF DEFINED(POSIX) AND NOT DEFINED(FPC)}
   Posix.Dlfcn, Posix.Stdlib,
 {$IFEND}
+{$IFDEF HAS_UNIT_IOUtils}
+  {$IF DEFINED(FPC) OR DEFINED(VCL_XE2_OR_ABOVE)}System.IOUtils{$ELSE}IOUtils{$IFEND},
+{$ENDIF}
 {$IFDEF VCL_2010_OR_ABOVE}
-  System.IOUtils,
   System.AnsiStrings,
 {$ENDIF}
   TaurusTLSConsts,
@@ -1261,7 +1264,7 @@ begin
   LNormalizedConfig := '';
   if FConfigFile <> '' then
   begin
-    {$IFDEF VCL_2010_OR_ABOVE}
+    {$IFDEF HAS_UNIT_IOUtils}
     LNormalizedConfig := TPath.GetFullPath(FConfigFile);
 
     if TDirectory.Exists(LNormalizedConfig) then
@@ -1306,7 +1309,11 @@ begin
   // Native discovery may return a relative filename. Resolve it once, using
   // the load-time working directory, so ready metadata cannot drift afterward.
   if LNormalizedConfig <> '' then
+{$IFDEF HAS_UNIT_IOUtils}
+    LNormalizedConfig := TPath.GetFullPath(LNormalizedConfig);
+{$ELSE}
     LNormalizedConfig := ExpandFileName(LNormalizedConfig);
+{$ENDIF}
   FEffectiveConfigFile := LNormalizedConfig;
   if LNormalizedConfig <> '' then
     FMetadata[omConfigDirectory] := ExtractFileDir(LNormalizedConfig);
@@ -1374,7 +1381,7 @@ begin
 
     if Value <> '' then
     begin
-      {$IFDEF VCL_2010_OR_ABOVE}
+      {$IFDEF HAS_UNIT_IOUtils}
       if not TPath.HasValidPathChars(Value, False) then
         raise ETaurusTLSConfigFilePathError.CreateFmt(
           RSOSSLConfigFilePathInvalid, [Value]);
@@ -1621,7 +1628,7 @@ end;
 function TaurusTLSExtractFileNameWithoutExt(const LibName: string): string;
 {$IFDEF USE_INLINE}inline; {$ENDIF}
 begin
-  {$IFDEF VCL_2010_OR_ABOVE}
+  {$IFDEF HAS_UNIT_IOUtils}
   Result := TPath.GetFileNameWithoutExtension(LibName);
   {$ELSE}
   if ExtractFileExt(LibName) <> '' then
@@ -1634,7 +1641,7 @@ end;
 function TaurusTLSExtractFileExt(const LibName: string): string;
 {$IFDEF USE_INLINE}inline; {$ENDIF}
 begin
-  {$IFDEF VCL_2010_OR_ABOVE}
+  {$IFDEF HAS_UNIT_IOUtils}
   Result := TPath.GetExtension(LibName);
   {$ELSE}
   Result := ExtractFileExt(LibName);
@@ -1821,14 +1828,25 @@ function TOpenSSLDynamicLoader.FindLibrary(const LibName, LibVersions: string;
   out ASelectedSuffix: string): TIdLibHandle;
 var
   LibVersionsList: TStringList;
+  LSearchPath: string;
   i: integer;
   {$IFDEF OSX}
   LFileName, LExt: string;
   {$ENDIF}
 begin
   ASelectedSuffix := '';
+  LSearchPath := '';
+  if FOpenSSLPath <> '' then
+    // Resolve once per load against the working directory. Passing a relative
+    // filename to Windows lets it append that path to every DLL search entry.
+    // Preserve the configured input; an empty path must retain native search.
+{$IFDEF HAS_UNIT_IOUtils}
+    LSearchPath := IncludeTrailingPathDelimiter(TPath.GetFullPath(FOpenSSLPath));
+{$ELSE}
+    LSearchPath := IncludeTrailingPathDelimiter(ExpandFileName(FOpenSSLPath));
+{$ENDIF}
 {$IFNDEF WINDOWS}
-  Result := DoLoadLibrary(FOpenSSLPath + LibName);
+  Result := DoLoadLibrary(LSearchPath + LibName);
   if (Result = IdNilHandle) and (LibVersions <> '') then
   begin
 {$ELSE}
@@ -1846,9 +1864,9 @@ begin
     for i := 0 to LibVersionsList.Count - 1 do
     begin
       {$IFDEF OSX}
-      Result := DoLoadLibrary(FOpenSSLPath + LFileName + LibVersionsList[i] + LExt);
+      Result := DoLoadLibrary(LSearchPath + LFileName + LibVersionsList[i] + LExt);
       {$ELSE}
-      Result := DoLoadLibrary(FOpenSSLPath + LibName + LibVersionsList[i]);
+      Result := DoLoadLibrary(LSearchPath + LibName + LibVersionsList[i]);
       {$ENDIF}
       if Result <> IdNilHandle then
       begin

@@ -96,3 +96,18 @@ Static code also stays resident and cannot be reinitialized after global cleanup
 The earlier repeated-load results omitted the required 4.x cleanup and do not
 establish an upstream leak. A separate remaining one-slot-per-cycle observation
 in the isolated 4.x experiment still needs investigation.
+
+## Relative library directories
+
+A nonempty OpenSSLPath is expanded against the working directory when Load
+starts library discovery. All crypto candidates use that absolute directory.
+The configured relative input remains available after Unload or failure.
+An empty input still requests the operating system's library search.
+
+
+Resolving the directory once keeps every crypto candidate anchored to the same
+absolute base if another thread later changes the process working directory.
+SSL is loaded from crypto's actual directory. The initial resolution still uses
+the working directory at that moment; an explicit absolute path avoids that
+dependency. Empty-path loading continues to follow the operating system's search
+rules and does not receive this protection.
