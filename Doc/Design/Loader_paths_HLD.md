@@ -155,3 +155,10 @@ Expected invalid edits to ConfigFile and RequireConfigFile in the Delphi Object
 Inspector are translated by design-time property editors into ordinary IDE
 property-validation exceptions. Runtime collection guards and loader exceptions
 remain independent of IDE APIs. Rejected edits preserve the original values.
+
+Lazarus uses a dedicated PlatformSettings collection editor and a nonvisual
+Object Inspector interface on the collection. The dialog disables Add, and the
+Object Inspector tree hides its separate Add Item menu, when all supported
+targets have entries. Both become available again after deletion. The dialog
+also checks capacity when its Add action executes. Runtime capacity validation
+remains in the collection, independently of these designer controls.

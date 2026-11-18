@@ -49,8 +49,18 @@
 				<Filename Value="..\..\Source\TaurusTLS_Dsn_ResourceStrings.pas"/>
 				<UnitName Value="TaurusTLS_Dsn_ResourceStrings"/>
 			</Item>
+			<Item>
+				<Filename Value="..\..\Source\TaurusTLS_Dsn_AboutDlg.lfm"/>
+				<Type Value="LFM"/>
+			</Item>
 		</Files>
 		<RequiredPkgs>
+			<Item>
+				<PackageName Value="IDEIntf"/>
+			</Item>
+			<Item>
+				<PackageName Value="LCL"/>
+			</Item>
 			<Item>
 				<PackageName Value="TaurusTLSRT"/>
 			</Item>

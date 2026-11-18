@@ -68,7 +68,8 @@ uses
   LResources,
   {$ENDIF}
   {$IFDEF FPC}
-  PropEdits,
+  PropEdits, TypInfo, TaurusTLSExceptionHandlers,
+  Forms, Controls, Dialogs, CollectionPropEditForm, IDEWindowIntf, TaurusTLS_ResourceStrings,
   {$ELSE}
     {$IFDEF VCL_6_OR_ABOVE}
   VCLEditors,
@@ -156,6 +157,150 @@ begin
 end;
 {$IFEND}
 
+{$IFDEF FPC}
+type
+  // Lazarus uses EPropertyError for expected Object Inspector validation errors.
+  // Keep this adapter in the design-time package, as with Delphi's editors above.
+  ETaurusTLSLazarusPropertyError = class(EPropertyError);
+
+  TTaurusTLSConfigFileProperty = class(TFileNamePropertyEditor)
+  public
+    procedure SetValue(const Value: ansistring); override;
+    procedure Edit; override;
+  end;
+
+  TTaurusTLSRequireConfigFileProperty = class(TBoolPropertyEditor)
+  public
+    procedure SetValue(const Value: ansistring); override;
+    procedure Edit; override;
+  end;
+
+  // The standard modeless editor calls Collection.Add outside Property.Edit.
+  // Guard its Add action here; the runtime collection still rejects excess items.
+  TTaurusTLSPlatformSettingsEditorForm = class(TCollectionPropertyEditorForm)
+  private
+    function CanAddItem: Boolean;
+    procedure AddItem(Sender: TObject);
+    procedure UpdateAddAction(Sender: TObject);
+  public
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+  end;
+
+  TTaurusTLSPlatformSettingsProperty = class(TCollectionPropertyEditor)
+  public
+    class function ShowCollectionEditor(ACollection: TCollection;
+      OwnerPersistent: TPersistent; const PropName: string): TCustomForm; override;
+  end;
+
+var
+  PlatformSettingsEditor: TTaurusTLSPlatformSettingsEditorForm = nil;
+
+constructor TTaurusTLSPlatformSettingsEditorForm.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  actAdd.OnExecute := AddItem;
+  actAdd.OnUpdate := UpdateAddAction;
+end;
+
+destructor TTaurusTLSPlatformSettingsEditorForm.Destroy;
+begin
+  if PlatformSettingsEditor = Self then
+    PlatformSettingsEditor := nil;
+  inherited Destroy;
+end;
+
+function TTaurusTLSPlatformSettingsEditorForm.CanAddItem: Boolean;
+var
+  LInspector: IObjInspInterface;
+begin
+  // Use the same capacity query as the Object Inspector context menu.
+  Result := (Collection is TTaurusTLSPlatformSettings) and
+    Collection.GetInterface(GUID_ObjInspInterface, LInspector) and LInspector.AllowAdd;
+end;
+
+procedure TTaurusTLSPlatformSettingsEditorForm.UpdateAddAction(Sender: TObject);
+begin
+  // Action updates also restore Add after deletion or a designer refresh.
+  actAdd.Enabled := CanAddItem;
+  if (Collection is TTaurusTLSPlatformSettings) and not actAdd.Enabled then
+    actAdd.Hint := RSOSSLPlatformSettingsFull
+  else
+    actAdd.Hint := actAdd.Caption;
+end;
+
+procedure TTaurusTLSPlatformSettingsEditorForm.AddItem(Sender: TObject);
+begin
+  // Recheck at execution too, even if the action has not updated since the last
+  // designer change. A full collection is an expected limit, not an IDE failure.
+  if not CanAddItem then
+  begin
+    if Collection is TTaurusTLSPlatformSettings then
+      MessageDlg(RSOSSLPlatformSettingsFull, mtInformation, [mbOK], 0);
+    UpdateAddAction(Sender);
+    Exit;
+  end;
+  inherited actAddExecute(Sender);
+  UpdateAddAction(Sender);
+end;
+
+class function TTaurusTLSPlatformSettingsProperty.ShowCollectionEditor(
+  ACollection: TCollection; OwnerPersistent: TPersistent;
+  const PropName: string): TCustomForm;
+begin
+  // Own a separate editor so our action handlers never alter Lazarus's shared
+  // collection editor used by unrelated components. Application owns its lifetime.
+  if PlatformSettingsEditor = nil then
+    PlatformSettingsEditor := TTaurusTLSPlatformSettingsEditorForm.Create(Application);
+  PlatformSettingsEditor.SetCollection(ACollection, OwnerPersistent, PropName);
+  SetPopupModeParentForPropertyEditor(PlatformSettingsEditor);
+  PlatformSettingsEditor.UpdateButtons;
+  PlatformSettingsEditor.UpdateAddAction(nil);
+  PlatformSettingsEditor.EnsureVisible;
+  Result := PlatformSettingsEditor;
+end;
+
+procedure TTaurusTLSConfigFileProperty.SetValue(const Value: ansistring);
+begin
+  try
+    inherited SetValue(Value);
+  except
+    on E: ETaurusTLSConfigFilePathError do
+      raise ETaurusTLSLazarusPropertyError.Create(E.Message);
+  end;
+end;
+
+procedure TTaurusTLSConfigFileProperty.Edit;
+begin
+  try
+    inherited Edit;
+  except
+    on E: ETaurusTLSConfigFilePathError do
+      raise ETaurusTLSLazarusPropertyError.Create(E.Message);
+  end;
+end;
+
+procedure TTaurusTLSRequireConfigFileProperty.SetValue(const Value: ansistring);
+begin
+  try
+    inherited SetValue(Value);
+  except
+    on E: ETaurusTLSConfigFilePathError do
+      raise ETaurusTLSLazarusPropertyError.Create(E.Message);
+  end;
+end;
+
+procedure TTaurusTLSRequireConfigFileProperty.Edit;
+begin
+  try
+    inherited Edit;
+  except
+    on E: ETaurusTLSConfigFilePathError do
+      raise ETaurusTLSLazarusPropertyError.Create(E.Message);
+  end;
+end;
+{$ENDIF}
+
 {$IFDEF DCC}
   {$IFDEF VCL_2005_OR_ABOVE}
 var
@@ -219,8 +364,12 @@ begin
   RegisterSelectionEditor(TTaurusTLSIOHandlerSocket, TTaurusTLSSelectionEditor);
   {$ENDIF}
   {$IFDEF FPC}
+  RegisterPropertyEditor(TypeInfo(TTaurusTLSPlatformSettings), TTaurusTLSLoader,
+    'PlatformSettings', TTaurusTLSPlatformSettingsProperty);
   RegisterPropertyEditor(TypeInfo(TFileName), TTaurusTLSPlatformSetting,
-    'ConfigFile', TFileNamePropertyEditor);
+    'ConfigFile', TTaurusTLSConfigFileProperty);
+  RegisterPropertyEditor(TypeInfo(Boolean), TTaurusTLSPlatformSetting,
+    'RequireConfigFile', TTaurusTLSRequireConfigFileProperty);
   {$ELSE}
     {$IFDEF VCL_6_OR_ABOVE}
       {$IFDEF VCL_2010_OR_ABOVE}

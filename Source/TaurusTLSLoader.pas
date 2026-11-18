@@ -445,12 +445,27 @@ type
     property CustomSSLLibVersions: string read FCustomSSLLibVersions write SetCustomSSLLibVersions;
   end;
 
-  /// <summary>
-  ///   Initially empty, owned collection of platform settings.
-  /// </summary>
-  TTaurusTLSPlatformSettings = class(TOwnedCollection)
+{$IFDEF FPC}
+  {$INTERFACES CORBA}
+  // Binary contract of Lazarus Controls.IObjInspInterface. Keep the same GUID,
+  // method order, and signatures without making this nonvisual unit depend on LCL.
+  // The Object Inspector queries it on the collection before offering Add Item.
+  ITaurusTLSObjectInspector = interface
+    ['{37417989-8C8F-4A2D-9D26-0FA377E8D8CC}']
+    function AllowAdd: Boolean;
+    function AllowDelete: Boolean;
+  end;
+  {$INTERFACES COM}
+{$ENDIF}
+
+  /// <summary>Initially empty, owned collection of platform settings.</summary>
+  TTaurusTLSPlatformSettings = class(TOwnedCollection{$IFDEF FPC}, ITaurusTLSObjectInspector{$ENDIF})
   private
     FDestroying: Boolean;
+{$IFDEF FPC}
+    function AllowAdd: Boolean;
+    function AllowDelete: Boolean;
+{$ENDIF}
     function IsLoading: Boolean;
     function NewTarget: TTaurusTLSPlatform;
     procedure CheckTargetAvailable(ATarget: TTaurusTLSPlatform;
@@ -2575,6 +2590,21 @@ constructor TTaurusTLSPlatformSettings.Create(AOwner: TPersistent);
 begin
   inherited Create(AOwner, TTaurusTLSPlatformSetting);
 end;
+
+{$IFDEF FPC}
+function TTaurusTLSPlatformSettings.AllowAdd: Boolean;
+begin
+  // The Object Inspector's context menu bypasses the property editor form.
+  // A False result hides Add Item before it can reach the capacity exception.
+  Result := Count < Ord(High(TTaurusTLSPlatform)) - Ord(Low(TTaurusTLSPlatform)) + 1;
+end;
+
+function TTaurusTLSPlatformSettings.AllowDelete: Boolean;
+begin
+  // Preserve the Object Inspector's default deletion policy.
+  Result := True;
+end;
+{$ENDIF}
 
 function TTaurusTLSPlatformSettings.Add: TTaurusTLSPlatformSetting;
 begin

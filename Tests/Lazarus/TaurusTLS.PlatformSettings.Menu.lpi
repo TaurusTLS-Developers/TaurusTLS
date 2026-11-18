@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectOptions>
+    <Version Value="12"/>
+    <General>
+      <MainUnit Value="0"/>
+      <Title Value="TaurusTLS PlatformSettings menu regression"/>
+    </General>
+    <RequiredPackages Count="2">
+      <Item1><PackageName Value="TaurusTLSRT"/></Item1>
+      <Item2><PackageName Value="LCL"/></Item2>
+    </RequiredPackages>
+    <Units Count="1">
+      <Unit0>
+        <Filename Value="TaurusTLS.PlatformSettings.Menu.lpr"/>
+        <IsPartOfProject Value="True"/>
+      </Unit0>
+    </Units>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="11"/>
+    <Target><Filename Value="lib/$(TargetCPU)-$(TargetOS)/PlatformSettingsMenu"/></Target>
+    <SearchPaths><UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/></SearchPaths>
+  </CompilerOptions>
+</CONFIG>

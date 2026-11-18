@@ -33,8 +33,18 @@
     <Version Major="1" Build="31"/>
     <Files>
 {$LPK_FILES_DT}
+      <Item>
+        <Filename Value="..\..\Source\TaurusTLS_Dsn_AboutDlg.lfm"/>
+        <Type Value="LFM"/>
+      </Item>
     </Files>
     <RequiredPkgs>
+      <Item>
+        <PackageName Value="IDEIntf"/>
+      </Item>
+      <Item>
+        <PackageName Value="LCL"/>
+      </Item>
       <Item>
         <PackageName Value="TaurusTLSRT"/>
       </Item>
