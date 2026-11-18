@@ -56,13 +56,13 @@ ETaurusTLSLoaderError and preserve the original exception through rollback.
 
 ## Configuration
 
-FConfigFile and FEffectiveConfigFile already separate input from effective
-configuration. After explicit configuration or native discovery, any nonempty
-effective filename is expanded against the load-time working directory. The
-cached filename and ConfigDirectory therefore remain stable if that directory
-changes later. An empty discovery result remains empty; the configured input
-is preserved. This is metadata normalization after native configuration, not
-a change to discovery precedence, provider activation, or library-relative paths.
+FConfigFile and FEffectiveConfigFile separate configured input from the applied
+configuration. A selected explicit or discovered filename is expanded against the
+load-time working directory before checking or applying it. Only a successful
+file application populates effective metadata. The cached path and ConfigDirectory
+remain stable if the working directory changes later. Configured inputs are never
+replaced by discovery or by skipping a missing optional file. Provider and engine
+paths are not rebased to the library directory.
 
 ## Tests
 
@@ -180,3 +180,90 @@ crypto candidates. SSL discovery remains anchored to the resolved crypto module.
 This reduces the working-directory race window; it does not synchronize external
 SetCurrentDir calls or make the initial relative-path resolution independent of
 the process working directory. No process directory is changed by the loader.
+
+
+## RequireConfigFile implementation
+
+FRequireConfigFile defaults to False. Getter and setter hold FLoaderLock. Identical
+assignments remain safe; changes are rejected while loading, ready, unloading,
+or retaining a crypto handle, consistently with ConfigFile. Unload preserves
+the flag; ResetOpenSSLLoaderForTests restores False.
+
+The common Load template rejects a required empty filename within its existing
+failure/rollback boundary before DoLoad. ApplyConfiguration normalizes a nonempty
+filename and rejects directories. If the file does not exist, the required policy
+raises RSOSSLConfigFileNotFound; the optional policy clears the local filename
+and initializes without configuration. FConfigFile is never changed by this skip.
+An existing malformed configuration still fails under either policy. Effective
+metadata records the selected explicit file or the default discovery result.
+
+The platform item setters reject enabling RequireConfigFile with an empty filename,
+and clearing the filename while required. During streaming they defer this check
+to collection Validate, called before automatic loading even with LoadOnStart=False
+or in the designer. Assign copies the filename and policy. Runtime access through
+TTaurusTLSLoader delegates to the shared interface.
+
+Tests cover the complete empty/valid/missing/malformed/directory policy matrix,
+preflight ordering, failed-state recovery, runtime and callback mutation rules,
+reset, component sharing, streaming and assignment, and rejected design-time edits.
+Existing missing-file failure tests explicitly enable RequireConfigFile.
+
+
+Revised-policy validation: full Win64/OpenSSL 4.0.2 and Win32/OpenSSL 3.6.5 runs
+passed 692/692, with zero reported leaks, failures, or errors. Native Linux and
+macOS runs require renewed validation after this policy correction.
+
+
+## Verified configuration selection
+
+ApplyConfiguration initializes crypto once with OPENSSL_INIT_NO_LOAD_CONFIG.
+It starts with FConfigFile and calls SslGet1DefaultConfigFile only if that configured
+input is empty. Discovery uses OpenSSL's own environment; its allocated return
+value is freed through SslFree. The chosen nonempty filename is normalized with
+TPath.GetFullPath (or the older-compiler fallback), checked for directories and
+existence, then applied with SslModulesLoadFileEx and flags 0. Existing invalid
+files therefore raise instead of relying on automatic discovery's ignore flags.
+
+A missing optional candidate clears only the local filename. No second filename
+is selected. FEffectiveConfigFile and ConfigDirectory are populated only after
+successful file application; they remain empty when no file was applied. Explicit
+missing inputs remain preserved in FConfigFile through readiness and unload.
+Required empty input is still rejected by the common preflight before DoLoad.
+
+The dynamic discovery hook tests empty, valid relative, missing, malformed, and
+directory candidates. No-fallback cases supply valid and malformed default files,
+select a different missing explicit file, and assert that discovery was never
+queried, automatic loading was disabled, and effective metadata is empty. The
+preserved configured input is checked after unload. Normal discovery expectations
+now exclude nonexistent candidate filenames.
+
+Final no-fallback validation: full Win64/OpenSSL 4.0.2 and Win32/OpenSSL 3.6.5
+runs each passed 697/697 with no reported leaks, failures, or errors. Native
+macOS and Linux validation is pending for this configuration-loading change.
+
+An empty effective filename means this load applied no configuration file. It
+does not erase configuration retained by an already-initialized native runtime,
+including statically linked builds; their existing lifecycle rules still apply.
+
+
+## Delphi Object Inspector validation
+
+For Delphi 2010+ the design-time registration unit installs dedicated editors for
+TTaurusTLSPlatformSetting.ConfigFile and RequireConfigFile. They translate only
+ETaurusTLSConfigFilePathError into ETaurusTLSDesignPropertyError, a descendant of
+EDesignPropertyError (ENonAIRException). Expected rejected edits can therefore use
+the IDE's normal validation reporting rather than its incident reporter.
+
+The filename editor wraps SetValue and Edit. The Boolean editor wraps SetValue,
+Edit, and the checkbox MouseUp path. Since the inherited MouseUp is nonvirtual,
+the descendant reimplements ICustomPropertyMessage so checkbox requests reach its
+translation code. Other mouse methods and drawing remain inherited.
+
+The runtime package does not reference designide, ToolsAPI, or IDE exception
+classes. Its guards and typed runtime exceptions remain unchanged. Setter checks
+still happen before modifying fields, and unexpected exceptions are not translated.
+Existing Lazarus and older Delphi editor registrations remain unchanged.
+
+The Delphi Win32 Release design-time package compiled and was regenerated.
+Object Inspector verification requires repeating both invalid edit operations
+with this updated package loaded.

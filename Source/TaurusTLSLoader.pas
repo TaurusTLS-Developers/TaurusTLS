@@ -168,7 +168,7 @@ type
     /// <summary>Cached numeric version; reading it never calls or initializes OpenSSL.</summary>
     property VersionNumber: TIdC_ULONG read GetVersionNumber;
     /// <summary>Directory of the effective configuration filename, resolved during loading.</summary>
-    /// <remarks>A discovered filename does not prove that the file exists or was applied.</remarks>
+    /// <remarks>Empty when no configuration file was applied during this load.</remarks>
     property ConfigDirectory: string read GetConfigDirectory;
     /// <summary>Compiled default module directory, not configured provider filenames or OPENSSL_MODULES.</summary>
     property ModulesDirectory: string read GetModulesDirectory;
@@ -204,12 +204,14 @@ type
     /// <summary>Explicit configuration filename, or the effective filename while loaded.</summary>
     /// <remarks>
     ///   Both models accept relative and Unicode paths. Load expands an explicit
-    ///   path, checks that it names an existing file, and applies it to the default
+    ///   path and applies an existing file to the default
     ///   OpenSSL context using UTF-8. Invalid paths and configuration load failures
-    ///   raise exceptions. An empty value requests standard OpenSSL configuration
-    ///   initialization and discovers its default filename. OpenSSL's first
+    ///   raise exceptions. A missing optional file is skipped without default discovery.
+    ///   An empty value requests standard OpenSSL configuration
+    ///   discovery when RequireConfigFile=False. Only existing discovered files are applied.
+    ///   RequireConfigFile=True rejects an empty input before native initialization. OpenSSL's first
     ///   initialization policy may persist across static load cycles or external
-    ///   initialization; the discovered filename alone does not prove it was read.
+    ///   initialization. Effective metadata records only a file applied during this load.
     ///   Discovery can reflect a C-runtime environment different from Delphi's process environment.
     ///   Changes are rejected while loading, ready, unloading, or holding a crypto
     ///   handle. Assigning the exact configured input does nothing, including
@@ -228,6 +230,17 @@ type
     ///   Do not free the returned list.
     /// </remarks>
     property FailedToLoad: TStringList read GetFailedToLoad;
+
+    /// <summary>Returns whether an explicit configuration file is required.</summary>
+    function GetRequireConfigFile: Boolean;
+    /// <summary>Changes the requirement while inactive; repeating the value is always safe.</summary>
+    procedure SetRequireConfigFile(const Value: Boolean);
+    /// <summary>Requires an existing explicit ConfigFile when True; defaults to False.</summary>
+    /// <remarks>
+    ///   False uses discovery only for an empty filename; a missing explicit file is skipped.
+    ///   Existing files must load successfully under either policy.
+    /// </remarks>
+    property RequireConfigFile: Boolean read GetRequireConfigFile write SetRequireConfigFile;
   end;
 
   /// <summary>
@@ -388,11 +401,13 @@ type
     FTarget: TTaurusTLSPlatform;
     FOpenSSLPath: string;
     FConfigFile: TFileName;
+    FRequireConfigFile: Boolean;
     FCustomSSLLibVersions: string;
     procedure CheckMutable;
     procedure SetTarget(const Value: TTaurusTLSPlatform);
     procedure SetOpenSSLPath(const Value: string);
     procedure SetConfigFile(const Value: TFileName);
+    procedure SetRequireConfigFile(const Value: Boolean);
     procedure SetCustomSSLLibVersions(const Value: string);
   protected
     function GetDisplayName: string; override;
@@ -417,6 +432,12 @@ type
     ///   Blank selects standard OpenSSL configuration initialization.
     /// </summary>
     property ConfigFile: TFileName read FConfigFile write SetConfigFile;
+    /// <summary>Requires this platform to select an explicit configuration file.</summary>
+    /// <remarks>
+    ///   False discovers defaults for an empty filename and skips a missing explicit file.
+    ///   True rejects an empty filename in the designer and requires the file at runtime.
+    /// </remarks>
+    property RequireConfigFile: Boolean read FRequireConfigFile write SetRequireConfigFile default False;
     /// <summary>
     ///   Raw suffix list; blank selects defaults. A quoted empty candidate
     ///   requests an unversioned name.
@@ -472,6 +493,8 @@ type
     function GetOpenSSLPath: string;
     function GetSSLLibVersions: string;
     function GetConfigFile: string;
+    function GetRequireConfigFile: Boolean;
+    procedure SetRequireConfigFile(const Value: Boolean);
     function GetVersion: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetVersionNumber: TIdC_ULONG;
     function GetConfigDirectory: string; {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -504,6 +527,12 @@ type
     property SSLLibVersions: string read GetSSLLibVersions write SetSSLLibVersions;
     /// <summary>Shared configured input, or the effective filename while ready.</summary>
     property ConfigFile: string read GetConfigFile write SetConfigFile;
+    /// <summary>Shared configuration-file requirement; False by default.</summary>
+    /// <remarks>
+    ///   True requires an existing explicit ConfigFile. False discovers defaults
+    ///   for an empty filename and skips a missing explicit file. Existing files remain strict.
+    /// </remarks>
+    property RequireConfigFile: Boolean read GetRequireConfigFile write SetRequireConfigFile;
     /// <summary>True only after all singleton load actions complete; transitions report False.</summary>
     property IsLoaded: Boolean read GetIsLoaded;
     /// <summary>Atomic readiness snapshot; not a lease protecting native objects against Unload.</summary>
@@ -759,6 +788,7 @@ type
     FLastLoadActionIdx: NativeInt;
     FActionChangingInProgress: Boolean;
     FConfigFile: string;
+    FRequireConfigFile: Boolean;
     FEffectiveConfigFile: string;
     FMetadata: array[TOpenSSLMetadata] of string;
     FVersionNumber: TIdC_ULONG;
@@ -819,6 +849,8 @@ type
     procedure SetSSLLibVersions(const AValue: string); virtual; abstract;
     /// <summary>Returns the effective filename while loaded, otherwise the configured filename.</summary>
     function GetConfigFile: string; virtual;
+    function GetRequireConfigFile: Boolean;
+    procedure SetRequireConfigFile(const Value: Boolean);
     /// <summary>Validates path characters and rejects configuration changes while active.</summary>
     procedure SetConfigFile(const Value: string); virtual;
     /// <summary>Returns the model-owned binding diagnostic list.</summary>
@@ -1185,6 +1217,10 @@ begin
     FLastLoadActionIdx := -1;
     ClearMetadata;
     try
+      // Reject a missing required selection before loading libraries or invoking
+      // native initialization. Keep the common rollback and failure-state rules.
+      if FRequireConfigFile and (FConfigFile = '') then
+        raise ETaurusTLSConfigFilePathError.Create(RSOSSLConfigFileRequired);
       Result := DoLoad;
       if Result then
         CaptureMetadata;
@@ -1270,42 +1306,15 @@ var
   LNormalizedConfig: string;
   LDefaultConfig: PIdAnsiChar;
 begin
-  LNormalizedConfig := '';
-  if FConfigFile <> '' then
+  // Select and apply configuration ourselves. Native automatic discovery can
+  // ignore missing files and would turn an optional explicit path into fallback.
+  if SslInitCrypto(OPENSSL_INIT_NO_LOAD_CONFIG, nil) <> 1 then
+    raise ETaurusTLSLoaderError.Create(RSOSSLInitCryptoFailed);
+
+  LNormalizedConfig := FConfigFile;
+  if FConfigFile = '' then
   begin
-    {$IFDEF HAS_UNIT_IOUtils}
-    LNormalizedConfig := TPath.GetFullPath(FConfigFile);
-
-    if TDirectory.Exists(LNormalizedConfig) then
-      raise ETaurusTLSConfigFilePathError.CreateFmt(
-        RSOSSLConfigFileIsDirectory, [LNormalizedConfig]);
-
-    if not TFile.Exists(LNormalizedConfig) then
-      raise ETaurusTLSConfigFilePathError.CreateFmt(
-        RSOSSLConfigFileNotFound, [LNormalizedConfig]);
-    {$ELSE}
-    LNormalizedConfig := ExpandFileName(FConfigFile);
-
-    if DirectoryExists(LNormalizedConfig) then
-      raise ETaurusTLSConfigFilePathError.CreateFmt(
-        RSOSSLConfigFileIsDirectory, [LNormalizedConfig]);
-
-    if not FileExists(LNormalizedConfig) then
-      raise ETaurusTLSConfigFilePathError.CreateFmt(
-        RSOSSLConfigFileNotFound, [LNormalizedConfig]);
-    {$ENDIF}
-
-    if SslInitCrypto(OPENSSL_INIT_NO_LOAD_CONFIG, nil) <> 1 then
-      raise ETaurusTLSLoaderError.Create(RSOSSLInitCryptoFailed);
-
-    if SslModulesLoadFileEx(nil, PIdAnsiChar(UTF8Encode(LNormalizedConfig)), nil, 0) <= 0 then
-      ETaurusTLSConfigFileLoadError.RaiseException(
-        Format(RSOSSLConfigFileLoadFailed, [LNormalizedConfig]));
-  end
-  else
-  begin
-    if SslInitCrypto(OPENSSL_INIT_LOAD_CONFIG, nil) <> 1 then
-      raise ETaurusTLSLoaderError.Create(RSOSSLInitCryptoFailed);
+    // Ask OpenSSL (including its own environment) only when no file was selected.
     LDefaultConfig := SslGet1DefaultConfigFile();
     if Assigned(LDefaultConfig) then
     try
@@ -1315,14 +1324,37 @@ begin
     end;
   end;
 
-  // Native discovery may return a relative filename. Resolve it once, using
-  // the load-time working directory, so ready metadata cannot drift afterward.
   if LNormalizedConfig <> '' then
+  begin
 {$IFDEF HAS_UNIT_IOUtils}
     LNormalizedConfig := TPath.GetFullPath(LNormalizedConfig);
+    if TDirectory.Exists(LNormalizedConfig) then
+      raise ETaurusTLSConfigFilePathError.CreateFmt(
+        RSOSSLConfigFileIsDirectory, [LNormalizedConfig]);
+    if not TFile.Exists(LNormalizedConfig) then
 {$ELSE}
     LNormalizedConfig := ExpandFileName(LNormalizedConfig);
+    if DirectoryExists(LNormalizedConfig) then
+      raise ETaurusTLSConfigFilePathError.CreateFmt(
+        RSOSSLConfigFileIsDirectory, [LNormalizedConfig]);
+    if not FileExists(LNormalizedConfig) then
 {$ENDIF}
+    begin
+      if FRequireConfigFile then
+        raise ETaurusTLSConfigFilePathError.CreateFmt(
+          RSOSSLConfigFileNotFound, [LNormalizedConfig]);
+      // Missing optional files mean no configuration, never another filename.
+      // Keep FConfigFile unchanged so future loads retain the caller's selection.
+      LNormalizedConfig := '';
+    end;
+  end;
+
+  if LNormalizedConfig <> '' then
+    if SslModulesLoadFileEx(nil, PIdAnsiChar(UTF8Encode(LNormalizedConfig)), nil, 0) <= 0 then
+      ETaurusTLSConfigFileLoadError.RaiseException(
+        Format(RSOSSLConfigFileLoadFailed, [LNormalizedConfig]));
+
+  // Publish only a filename that passed validation and was applied successfully.
   FEffectiveConfigFile := LNormalizedConfig;
   if LNormalizedConfig <> '' then
     FMetadata[omConfigDirectory] := ExtractFileDir(LNormalizedConfig);
@@ -1373,6 +1405,30 @@ begin
       Result := FEffectiveConfigFile
     else
       Result := FConfigFile;
+  finally
+    FLoaderLock.Leave;
+  end;
+end;
+
+function TOpenSSLBaseLoader.GetRequireConfigFile: Boolean;
+begin
+  FLoaderLock.Enter;
+  try
+    Result := FRequireConfigFile;
+  finally
+    FLoaderLock.Leave;
+  end;
+end;
+
+procedure TOpenSSLBaseLoader.SetRequireConfigFile(const Value: Boolean);
+begin
+  FLoaderLock.Enter;
+  try
+    if Value = FRequireConfigFile then
+      Exit;
+    if (GetInternalState in [lsLoading, lsUnloading, lsLoadedReady]) or IsActiveHandlePresent then
+      raise ETaurusTLSConfigFilePathError.Create(RSOSSLConfigFileAlreadyLoaded);
+    FRequireConfigFile := Value;
   finally
     FLoaderLock.Leave;
   end;
@@ -2205,6 +2261,7 @@ begin
     // interfaces held by fixtures and bypass registered native cleanup actions.
     LInstance.UnloadInternal(True);
     LInstance.SetConfigFile('');
+    LInstance.SetRequireConfigFile(False);
     LInstance.SetOpenSSLPath('');
     LInstance.SetSSLLibVersions(DefaultLibVersions);
     LInstance.GetFailedToLoad.Capacity := 0;
@@ -2350,6 +2407,7 @@ begin
     FTarget := LSource.FTarget;
     FOpenSSLPath := LSource.FOpenSSLPath;
     FConfigFile := LSource.FConfigFile;
+    FRequireConfigFile := LSource.FRequireConfigFile;
     FCustomSSLLibVersions := LSource.FCustomSSLLibVersions;
     Changed(False);
   end
@@ -2378,9 +2436,26 @@ begin
   end;
 end;
 
+procedure TTaurusTLSPlatformSetting.SetRequireConfigFile(const Value: Boolean);
+begin
+  CheckMutable;
+  // Streaming assigns properties in order; validate the completed item in Loaded.
+  if Value and (FConfigFile = '') and
+    not TTaurusTLSPlatformSettings(Collection).IsLoading then
+    raise ETaurusTLSConfigFilePathError.Create(RSOSSLConfigFileRequired);
+  if FRequireConfigFile <> Value then
+  begin
+    FRequireConfigFile := Value;
+    Changed(False);
+  end;
+end;
+
 procedure TTaurusTLSPlatformSetting.SetConfigFile(const Value: TFileName);
 begin
   CheckMutable;
+  if FRequireConfigFile and (Value = '') and
+    not TTaurusTLSPlatformSettings(Collection).IsLoading then
+    raise ETaurusTLSConfigFilePathError.Create(RSOSSLConfigFileRequired);
   if FConfigFile <> Value then
   begin
     FConfigFile := Value;
@@ -2528,6 +2603,8 @@ begin
       raise ETaurusTLSLoaderError.CreateFmt(RSOSSLDuplicatePlatformSetting,
         [Items[I].DisplayName]);
     Include(LSeen, Items[I].Target);
+    if Items[I].RequireConfigFile and (Items[I].ConfigFile = '') then
+      raise ETaurusTLSConfigFilePathError.Create(RSOSSLConfigFileRequired);
   end;
 end;
 
@@ -2630,18 +2707,21 @@ procedure TTaurusTLSLoader.ApplyPlatformSettings;
 var
   LSetting: TTaurusTLSPlatformSetting;
   LPath, LConfig, LVersions: string;
+  LRequireConfigFile: Boolean;
 begin
   // A later component must not reconfigure a ready runtime or reset a failure.
   if FLoader.State <> lsNotLoaded then
     Exit;
   LPath := '';
   LConfig := '';
+  LRequireConfigFile := False;
   LVersions := DefaultLibVersions;
   LSetting := FPlatformSettings.FindTarget(CurrentTarget);
   if LSetting <> nil then
   begin
     LPath := LSetting.OpenSSLPath;
     LConfig := LSetting.ConfigFile;
+    LRequireConfigFile := LSetting.RequireConfigFile;
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
     LVersions := LSetting.ResolveSSLLibVersions;
 {$ENDIF}
@@ -2649,6 +2729,7 @@ begin
   FLoader.OpenSSLPath := LPath;
   FLoader.SSLLibVersions := LVersions;
   FLoader.ConfigFile := LConfig;
+  FLoader.RequireConfigFile := LRequireConfigFile;
 end;
 
 procedure TTaurusTLSLoader.Loaded;
@@ -2689,6 +2770,16 @@ end;
 function TTaurusTLSLoader.GetSSLLibVersions: string;
 begin
   Result := FLoader.SSLLibVersions;
+end;
+
+function TTaurusTLSLoader.GetRequireConfigFile: Boolean;
+begin
+  Result := FLoader.RequireConfigFile;
+end;
+
+procedure TTaurusTLSLoader.SetRequireConfigFile(const Value: Boolean);
+begin
+  FLoader.RequireConfigFile := Value;
 end;
 
 function TTaurusTLSLoader.GetConfigFile: string;

@@ -48,6 +48,14 @@ uses
   TaurusTLS_Dsn_Const,
   TaurusTLS_Dsn_ResourceStrings, // for RSRegIndyIOHandlers in dclIndyCore package
   SysUtils,
+  {$IF DEFINED(DCC) AND DEFINED(VCL_2010_OR_ABOVE)}
+    {$IFDEF VCL_XE2_OR_ABOVE}
+  System.Types, Vcl.Controls,
+    {$ELSE}
+  Types, Controls,
+    {$ENDIF}
+  TaurusTLSExceptionHandlers,
+  {$IFEND}
   {$IFDEF DCC}
     {$IFDEF VCL_2005_OR_ABOVE}
   ToolsAPI,
@@ -69,6 +77,84 @@ uses
   TaurusTLS,
   TaurusTLSLoader,
   TaurusTLS_Unicode_Log;
+
+{$IF DEFINED(DCC) AND DEFINED(VCL_2010_OR_ABOVE)}
+type
+  // Expected Object Inspector validation errors must bypass the IDE's incident
+  // reporter. Keep the IDE exception class and translation in this package.
+  ETaurusTLSDesignPropertyError = class(EDesignPropertyError);
+
+  TTaurusTLSConfigFileProperty = class(TFileNameProperty)
+  public
+    procedure SetValue(const Value: string); override;
+    procedure Edit; override;
+  end;
+
+  // Reimplement the message interface: the inherited checkbox MouseUp is not
+  // virtual and writes through RTTI without calling SetValue.
+  TTaurusTLSRequireConfigFileProperty = class(TBooleanProperty, ICustomPropertyMessage)
+  public
+    procedure SetValue(const Value: string); override;
+    procedure Edit; override;
+    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer;
+      InNameRect: Boolean; const ItemRect: TRect; var Handled: Boolean); reintroduce;
+  end;
+
+procedure TTaurusTLSConfigFileProperty.SetValue(const Value: string);
+begin
+  try
+    inherited SetValue(Value);
+  except
+    on E: ETaurusTLSConfigFilePathError do
+      raise ETaurusTLSDesignPropertyError.Create(E.Message);
+  end;
+end;
+
+procedure TTaurusTLSConfigFileProperty.Edit;
+begin
+  try
+    inherited Edit;
+  except
+    on E: ETaurusTLSConfigFilePathError do
+      raise ETaurusTLSDesignPropertyError.Create(E.Message);
+  end;
+end;
+
+procedure TTaurusTLSRequireConfigFileProperty.SetValue(const Value: string);
+begin
+  try
+    inherited SetValue(Value);
+  except
+    on E: ETaurusTLSConfigFilePathError do
+      raise ETaurusTLSDesignPropertyError.Create(E.Message);
+  end;
+end;
+
+procedure TTaurusTLSRequireConfigFileProperty.Edit;
+begin
+  try
+    inherited Edit;
+  except
+    on E: ETaurusTLSConfigFilePathError do
+      raise ETaurusTLSDesignPropertyError.Create(E.Message);
+  end;
+end;
+
+procedure TTaurusTLSRequireConfigFileProperty.MouseUp(Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer; InNameRect: Boolean; const ItemRect: TRect;
+  var Handled: Boolean);
+begin
+  try
+    inherited MouseUp(Button, Shift, X, Y, InNameRect, ItemRect, Handled);
+  except
+    on E: ETaurusTLSConfigFilePathError do
+    begin
+      Handled := True;
+      raise ETaurusTLSDesignPropertyError.Create(E.Message);
+    end;
+  end;
+end;
+{$IFEND}
 
 {$IFDEF DCC}
   {$IFDEF VCL_2005_OR_ABOVE}
@@ -137,8 +223,15 @@ begin
     'ConfigFile', TFileNamePropertyEditor);
   {$ELSE}
     {$IFDEF VCL_6_OR_ABOVE}
+      {$IFDEF VCL_2010_OR_ABOVE}
+  RegisterPropertyEditor(TypeInfo(TFileName), TTaurusTLSPlatformSetting,
+    'ConfigFile', TTaurusTLSConfigFileProperty);
+  RegisterPropertyEditor(TypeInfo(Boolean), TTaurusTLSPlatformSetting,
+    'RequireConfigFile', TTaurusTLSRequireConfigFileProperty);
+      {$ELSE}
   RegisterPropertyEditor(TypeInfo(TFileName), TTaurusTLSPlatformSetting,
     'ConfigFile', TFileNameProperty);
+      {$ENDIF}
     {$ENDIF}
   {$ENDIF}
 end;

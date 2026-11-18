@@ -299,6 +299,7 @@ resourcestring
   RSOSSLPlatformSettingsDesignOnly = 'Platform settings can only be edited at design time';
 
   // OpenSSL Configuration Messages
+  RSOSSLConfigFileRequired = 'An explicit OpenSSL configuration file is required.';
   RSOSSLConfigFilePathInvalid = 'Invalid OpenSSL configuration file path: %s';
   RSOSSLConfigFileNotFound = 'OpenSSL configuration file not found: %s';
   RSOSSLConfigFileIsDirectory = 'OpenSSL configuration file path is a directory: %s';

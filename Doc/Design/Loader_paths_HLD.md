@@ -11,7 +11,7 @@ settings intact while reporting the installation actually in use.
 | --- | --- | --- |
 | OpenSSLPath | Configured search directory | Absolute directory of the loaded libraries, with trailing delimiter |
 | SSLLibVersions | Configured candidate list | Suffix selected when loading crypto; empty means the unversioned candidate |
-| ConfigFile | Configured filename | Absolute effective explicit or discovered filename, or empty if discovery returns none |
+| ConfigFile | Configured filename | Absolute filename successfully applied during loading, or empty if none |
 
 The component delegates to the same singleton interface. Static builds continue
 to return empty library paths and suffixes and ignore their setters. ConfigFile
@@ -52,9 +52,10 @@ accidental mixing; it is not a general guarantee about every dependency loaded
 by the operating system. Deployment directories still need appropriate access
 permissions.
 
-OpenSSL configuration behavior is unchanged. Explicit ConfigFile overrides
-default discovery. A discovered default filename does not prove that the file
-was read. Provider and engine paths are not rebased to the library directory.
+Explicit ConfigFile prevents default discovery. Only an empty configured value
+requests OpenSSL's default filename. Applied-file metadata is published only after
+existence checks and successful explicit configuration loading. Provider and engine
+paths are not rebased to the library directory.
 
 ## Validation
 
@@ -111,3 +112,46 @@ SSL is loaded from crypto's actual directory. The initial resolution still uses
 the working directory at that moment; an explicit absolute path avoids that
 dependency. Empty-path loading continues to follow the operating system's search
 rules and does not receive this protection.
+
+
+## Configuration requirement policy
+
+RequireConfigFile defaults to False on IOpenSSLLoader, TTaurusTLSLoader, and each
+TTaurusTLSPlatformSetting. With an empty ConfigFile, False uses normal OpenSSL
+discovery; True raises ETaurusTLSConfigFilePathError before library loading or
+native initialization. With an explicit filename, False permits a missing file
+and initializes without configuration; True requires the file to exist. Existing
+files must load successfully under both policies. A directory is an invalid file
+selection under either policy.
+
+Configured inputs are preserved on unload and failure, including missing optional
+filenames. Readiness reports the effective explicit or discovered filename.
+Changing policy after failure does not bypass the existing circuit breaker.
+
+Published platform items reject a required empty selection in the designer.
+Streaming defers checks until the complete collection is validated, avoiding
+property-order dependence. The component applies the current platform's filename
+and requirement together. Absent settings select False; old forms retain that
+default. Dependent applications and packages must rebuild the extended interface.
+
+
+## Explicit selection and verified discovery
+
+All initialization uses OPENSSL_INIT_NO_LOAD_CONFIG. For nonempty ConfigFile,
+only that filename is considered. A missing optional explicit file does not fall
+back to OPENSSL_CONF or the compiled default. Both effective ConfigFile and
+ConfigDirectory are empty when no file was applied, while the configured input
+is preserved for later loads.
+
+For empty ConfigFile with RequireConfigFile=False, TaurusTLS queries OpenSSL's
+default filename, resolves it to an absolute path, and checks it. An existing file
+is loaded explicitly; a missing candidate is skipped and is not reported as an
+applied configuration. Existing malformed files and directory selections raise
+exceptions. This avoids native automatic loading silently ignoring configuration
+errors and avoids reporting a nonexistent candidate as the effective file.
+
+
+Expected invalid edits to ConfigFile and RequireConfigFile in the Delphi Object
+Inspector are translated by design-time property editors into ordinary IDE
+property-validation exceptions. Runtime collection guards and loader exceptions
+remain independent of IDE APIs. Rejected edits preserve the original values.
