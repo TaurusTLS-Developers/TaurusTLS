@@ -243,14 +243,29 @@ TaurusTLS passes the selected file to OpenSSL before running the application's
 registered load callbacks. OpenSSL reads the provider settings, module paths,
 included files and algorithm properties.
 
-The filename can contain Unicode characters or be relative. Invalid or missing
-paths raise `ETaurusTLSConfigFilePathError`. If OpenSSL cannot apply the
-configuration, TaurusTLS raises `ETaurusTLSConfigFileLoadError` with the
-available error details.
+The filename can contain Unicode characters or be relative. Invalid paths and
+directory selections raise `ETaurusTLSConfigFilePathError`. A missing file raises
+that exception when `RequireConfigFile` is `True`; otherwise OpenSSL initializes
+without a configuration file. There is no fallback to another filename.
+If OpenSSL cannot apply an existing configuration, TaurusTLS raises
+`ETaurusTLSConfigFileLoadError` with the available error details.
 
 Leaving `ConfigFile` empty lets OpenSSL find its configuration in the usual
-way. A filename returned by discovery does not prove that the file was read.
+way. TaurusTLS checks the discovered file and loads it explicitly when it exists.
+A missing default file is skipped. The effective `ConfigFile` and `ConfigDirectory`
+are empty if no file was applied.
 Setting `ConfigFile` alone does not initialize OpenSSL; call `Load` afterward.
+
+If your application requires its own configuration, set `RequireConfigFile := True`
+and supply `ConfigFile` before calling `Load`. An empty filename then raises
+`ETaurusTLSConfigFilePathError` before OpenSSL initializes. This property is
+available through the loader interface and component, and in each component
+platform setting. It defaults to `False`, which allows normal OpenSSL discovery
+when `ConfigFile` is empty. When `RequireConfigFile` is `False`, a missing explicit
+file is skipped without default discovery. Only an empty configured filename
+allows discovery. An existing file must load successfully under either policy.
+Platform settings reject an empty required filename in the designer.
+
 
 Use the documentation for the OpenSSL version you deploy:
 
@@ -617,7 +632,7 @@ Missing entries and empty properties use these defaults:
 |---|---|
 | Collection or target entry | The loader uses the defaults listed below. |
 | `OpenSSLPath` | Libraries are found through the platform's normal search. This property is ignored for directly imported or static libraries. |
-| `ConfigFile` | OpenSSL uses its usual configuration discovery and initialization. |
+| `ConfigFile` | The loader queries OpenSSL for its default filename and explicitly loads the file if it exists. Missing defaults leave the runtime without configuration. |
 | `CustomSSLLibVersions` | TaurusTLS tries its default library-name suffixes for OpenSSL 4 and 3. |
 
 All these approaches use OpenSSL's default library context. An empty setting
@@ -706,7 +721,7 @@ The exact comparison with the 1.0 API still needs maintainer confirmation.
 | `State` / `GetState` | Reports `lsNotLoaded`, `lsLoadedReady` or `lsLoadedFailed`. During loading or unloading it reports `lsNotLoaded`. |
 | `ConfigFile` / `GetConfigFile` / `SetConfigFile` | Selects the main OpenSSL configuration file for either linking model. |
 | `Version` / `GetVersion` | Returns the cached OpenSSL version, or an empty string while not ready. |
-| `ConfigDirectory` / `GetConfigDirectory` | Returns the directory of the selected or discovered configuration filename, or an empty string while not ready. |
+| `ConfigDirectory` / `GetConfigDirectory` | Returns the directory of the configuration file applied during loading, or empty when none was applied or the loader is not ready. |
 | `ModulesDirectory` / `GetModulesDirectory` | Reports OpenSSL's default provider-module directory, rather than the configured module paths or `OPENSSL_MODULES`. Empty while not ready or unavailable. |
 | `EnginesDirectory` / `GetEnginesDirectory` | Reports OpenSSL's default engine directory on OpenSSL 3. Returns an empty string on OpenSSL 4 or while not ready. |
 | `OpenSSLPath` | Sets the shared-library search directory. While loaded, returns the actual library directory. Empty input uses the platform search; imported/static builds return empty and ignore assignments. |
