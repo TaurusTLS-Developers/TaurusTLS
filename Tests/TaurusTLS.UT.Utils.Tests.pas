@@ -71,12 +71,14 @@ type
     procedure SetupFromCmd; override;
   public
     ConfigOverride: string;
+    RequireConfigFileOverride: Boolean;
   end;
 
 procedure TAutoloadProbe.SetupFromCmd;
 begin
   inherited SetupFromCmd;
   Loader.ConfigFile := ConfigOverride;
+  Loader.RequireConfigFile := RequireConfigFileOverride;
 end;
 
 procedure TFixtureLifecycleTests.Setup;
@@ -161,6 +163,7 @@ end;
 procedure TFixtureLifecycleTests.Manual_Exception;
 begin
   Loader.ConfigFile := TPath.Combine(FDir, 'missing.cnf');
+  Loader.RequireConfigFile := True;
   Assert.WillRaise(
     procedure
     begin
@@ -222,6 +225,7 @@ begin
   LProbe := TAutoloadProbe.Create;
   try
     LProbe.ConfigOverride := TPath.Combine(FDir, 'missing_autoload.cnf');
+    LProbe.RequireConfigFileOverride := True;
     Assert.WillRaise(
       procedure
       begin

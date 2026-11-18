@@ -123,6 +123,13 @@ type
     // Round-trips all target settings and verifies collection assignment copies independent item values.
     [Test]
     procedure Platform_StreamingAndAssign;
+
+    // Reject required empty platform settings in the designer and after streaming.
+    [TestCase('EnableWithoutFile', '0')]
+    [TestCase('ClearRequiredFile', '1')]
+    [TestCase('InvalidStream', '2')]
+    procedure Platform_RequiredConfig(const AKind: Integer);
+
     // Rejects duplicate current or foreign targets before applying startup configuration.
     [TestCase('Current', '0')]
     [TestCase('OtherTarget', '1')]
@@ -212,6 +219,24 @@ type
     // Tests that ConfigFile is initially empty and loader is not loaded.
     [Test]
     procedure Config_Initial;
+
+    // Missing optional explicit files are skipped; required files and invalid contents remain strict.
+    [TestCase('OptionalEmpty', 'False,0')]
+    [TestCase('RequiredEmpty', 'True,0')]
+    [TestCase('OptionalValid', 'False,1')]
+    [TestCase('RequiredValid', 'True,1')]
+    [TestCase('OptionalMissing', 'False,2')]
+    [TestCase('RequiredMissing', 'True,2')]
+    [TestCase('OptionalInvalid', 'False,3')]
+    [TestCase('RequiredInvalid', 'True,3')]
+    [TestCase('OptionalDirectory', 'False,4')]
+    [TestCase('RequiredDirectory', 'True,4')]
+    procedure Config_RequiredPolicy(const ARequired: Boolean; const AKind: Integer);
+
+    // A failed preflight requires explicit reset; ready settings cannot change.
+    [Test]
+    procedure Config_RequiredRecovery;
+
 
     // Tests that ConfigFile accepts valid path formats prior to loading.
     [Test]
@@ -500,6 +525,12 @@ type
     [TestCase('LoadVersionsRepeat', '1,2,1')]
     [TestCase('UnloadVersionsRepeat', '2,2,1')]
     [TestCase('RollbackVersionsRepeat', '3,2,1')]
+    [TestCase('LoadRequiredChange', '1,3,0')]
+    [TestCase('UnloadRequiredChange', '2,3,0')]
+    [TestCase('RollbackRequiredChange', '3,3,0')]
+    [TestCase('LoadRequiredRepeat', '1,3,1')]
+    [TestCase('UnloadRequiredRepeat', '2,3,1')]
+    [TestCase('RollbackRequiredRepeat', '3,3,1')]
     procedure Config_CallbackMutation(const APhase, AProperty, ARepeat: Integer);
 
     // Verifies effective filename publication follows successful readiness.
@@ -542,7 +573,15 @@ type
     // Verifies empty and relative native discovery filenames have stable directory semantics.
     [TestCase('Empty', '0')]
     [TestCase('Relative', '1')]
+    [TestCase('Missing', '2')]
+    [TestCase('Malformed', '3')]
+    [TestCase('Directory', '4')]
     procedure Info_Discovery(const AKind: Integer);
+
+    // An explicit optional file must not invoke discovery, even if defaults exist.
+    [TestCase('ValidDefault', 'False')]
+    [TestCase('InvalidDefault', 'True')]
+    procedure Config_NoFallback(const AInvalidDefault: Boolean);
 
     // Verifies native crypto/SSL initialization failure occurs before runtime callbacks.
     [TestCase('Crypto', '0')]
@@ -754,6 +793,7 @@ begin
     LComponent.OpenSSLPath := Loader.OpenSSLPath;
     LComponent.SSLLibVersions := Loader.SSLLibVersions;
     LComponent.ConfigFile := TPath.Combine(FTempDir, 'missing.cnf');
+    LComponent.RequireConfigFile := True;
     Assert.WillRaise(
       procedure
       begin
@@ -837,6 +877,73 @@ begin
   end;
 end;
 
+procedure TLoaderComponentFixture.Platform_RequiredConfig(const AKind: Integer);
+var
+  LComponent: TLoaderComponentAccess;
+  LItem: TTaurusTLSPlatformSetting;
+  LText: TStringStream;
+  LBinary: TMemoryStream;
+begin
+  LComponent := TLoaderComponentAccess.Create(nil);
+  try
+    LComponent.MarkDesigning;
+    if AKind = 2 then
+    begin
+      // Property setters defer validation while a form is being streamed.
+      // Loaded must reject the completed invalid item even with loading disabled.
+      LText := TStringStream.Create('object Loader: TTaurusTLSLoader' + sLineBreak +
+        '  LoadOnStart = False' + sLineBreak +
+        '  PlatformSettings = <item' + sLineBreak +
+        '    RequireConfigFile = True' + sLineBreak +
+        '  end>' + sLineBreak + 'end');
+      try
+        LBinary := TMemoryStream.Create;
+        try
+          ObjectTextToBinary(LText, LBinary);
+          LBinary.Position := 0;
+          Assert.WillRaise(
+            procedure
+            begin
+              LBinary.ReadComponent(LComponent);
+            end, ETaurusTLSConfigFilePathError);
+        finally
+          LBinary.Free;
+        end;
+      finally
+        LText.Free;
+      end;
+    end
+    else
+    begin
+      LItem := LComponent.PlatformSettings.Add;
+      Assert.IsFalse(LItem.RequireConfigFile);
+      if AKind = 0 then
+      begin
+        Assert.WillRaise(
+          procedure
+          begin
+            LItem.RequireConfigFile := True;
+          end, ETaurusTLSConfigFilePathError);
+        Assert.IsFalse(LItem.RequireConfigFile, 'Rejected edits must preserve the item');
+      end
+      else
+      begin
+        LItem.ConfigFile := 'deployment.cnf';
+        LItem.RequireConfigFile := True;
+        Assert.WillRaise(
+          procedure
+          begin
+            LItem.ConfigFile := '';
+          end, ETaurusTLSConfigFilePathError);
+        Assert.AreEqual('deployment.cnf', LItem.ConfigFile);
+      end;
+    end;
+    Assert.IsFalse(Loader.IsLoaded, 'Design-time validation must not load OpenSSL');
+  finally
+    LComponent.Free;
+  end;
+end;
+
 procedure TLoaderComponentFixture.Platform_StreamingAndAssign;
 var
   LSource, LTarget: TLoaderComponentAccess;
@@ -857,7 +964,9 @@ begin
       begin
         LSetting := LSource.PlatformSettings.Add;
         LSetting.Target := LPlatform;
+        Assert.IsFalse(LSetting.RequireConfigFile, 'Missing streamed properties default to False');
         LSetting.ConfigFile := 'config-' + IntToStr(Ord(LPlatform)) + '.cnf';
+        LSetting.RequireConfigFile := Odd(Ord(LPlatform));
         LSetting.OpenSSLPath := 'library-' + IntToStr(Ord(LPlatform));
         LSetting.CustomSSLLibVersions := 'stored-even-if-inactive';
       end;
@@ -885,6 +994,7 @@ begin
       for I := 0 to LSource.PlatformSettings.Count - 1 do
       begin
         Assert.AreEqual(Ord(LSource.PlatformSettings[I].Target), Ord(LTarget.PlatformSettings[I].Target));
+        Assert.IsTrue(LSource.PlatformSettings[I].RequireConfigFile = LTarget.PlatformSettings[I].RequireConfigFile);
         Assert.AreEqual(LSource.PlatformSettings[I].ConfigFile, LTarget.PlatformSettings[I].ConfigFile);
         Assert.AreEqual(LSource.PlatformSettings[I].OpenSSLPath, LTarget.PlatformSettings[I].OpenSSLPath);
         Assert.AreEqual('stored-even-if-inactive', LTarget.PlatformSettings[I].CustomSSLLibVersions);
@@ -897,6 +1007,9 @@ begin
       Assert.AreEqual('stored-even-if-inactive', LTarget.PlatformSettings[0].CustomSSLLibVersions,
         'Assign must copy independent item values');
       Assert.IsFalse(Loader.IsLoaded);
+      Assert.IsTrue(LTarget.RequireConfigFile = Odd(Ord(TTaurusTLSLoader.CurrentTarget)));
+      Assert.IsTrue(LTarget.PlatformSettings[0].RequireConfigFile = LSource.PlatformSettings[0].RequireConfigFile,
+        'Assign must copy the configuration requirement');
       Assert.AreEqual(LTarget.ConfigFile, Loader.ConfigFile);
     finally
       LTarget.Free;
@@ -1408,6 +1521,7 @@ var
   LHandler: TTaurusTLSServerIOHandler;
 begin
   Loader.ConfigFile := TPath.Combine(FTempDir, 'missing-autoload.cnf');
+  Loader.RequireConfigFile := True;
   LHandler := TTaurusTLSServerIOHandler.Create(nil);
   try
     LHandler.AutoLoad := True;
@@ -1500,6 +1614,7 @@ begin
     Assert.IsTrue(LSecond.Load, 'Empty facade must reuse the ready singleton');
     LFirst.Unload;
     LFirst.ConfigFile := TPath.Combine(FTempDir, 'missing-retry.cnf');
+    LFirst.RequireConfigFile := True;
     Assert.WillRaise(
       procedure
       begin
@@ -1525,6 +1640,7 @@ begin
   if AFailed then
   begin
     Loader.ConfigFile := TPath.Combine(FTempDir, 'missing-streaming.cnf');
+    Loader.RequireConfigFile := True;
     Assert.WillRaise(
       procedure
       begin
@@ -1893,6 +2009,89 @@ begin
   Assert.IsNotNull(Loader);
   Assert.IsFalse(Loader.IsLoaded);
   Assert.AreEqual('', Loader.ConfigFile);
+  Assert.IsFalse(Loader.RequireConfigFile);
+end;
+
+procedure TLoaderConfigFixture.Config_RequiredPolicy(
+  const ARequired: Boolean; const AKind: Integer);
+var
+  LExpected: ExceptClass;
+  LConfigured: string;
+begin
+  Assert.IsFalse(Loader.RequireConfigFile, 'Old applications must retain the optional policy');
+  Loader.RequireConfigFile := ARequired;
+  case AKind of
+    0: Loader.ConfigFile := '';
+    1: Loader.ConfigFile := FValidConfigFile;
+    2: Loader.ConfigFile := TPath.Combine(FTempDir, 'missing.cnf');
+    3: Loader.ConfigFile := FInvalidSyntaxConfigFile;
+    4: Loader.ConfigFile := FTempDir;
+  end;
+  LConfigured := Loader.ConfigFile;
+  if ((AKind in [0, 2]) and not ARequired) or (AKind = 1) then
+    Assert.IsTrue(Loader.Load)
+  else
+  begin
+    LExpected := ETaurusTLSConfigFilePathError;
+    if AKind = 3 then
+      LExpected := ETaurusTLSConfigFileLoadError;
+    Assert.WillRaise(
+      procedure
+      begin
+        Loader.Load;
+      end, LExpected);
+    Assert.IsTrue(Loader.State = lsLoadedFailed);
+  end;
+  if (AKind = 2) and not ARequired then
+  begin
+    Assert.AreEqual('', Loader.ConfigFile, 'Missing explicit input must not select a default file');
+    Assert.AreEqual('', Loader.ConfigDirectory);
+  end;
+  Loader.Unload;
+  Assert.AreEqual(LConfigured, Loader.ConfigFile, 'Unload must preserve even a missing optional filename');
+  Assert.IsTrue(Loader.RequireConfigFile = ARequired,
+    'Unload must retain the configured requirement');
+end;
+
+procedure TLoaderConfigFixture.Config_RequiredRecovery;
+var
+  LComponent: TTaurusTLSLoader;
+begin
+  LComponent := TTaurusTLSLoader.Create(nil);
+  try
+    Assert.IsFalse(LComponent.RequireConfigFile);
+    LComponent.RequireConfigFile := True;
+    Assert.IsTrue(Loader.RequireConfigFile, 'The component must use the shared policy');
+    Loader.ConfigFile := '';
+{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
+    // A bad library path must not hide the missing required filename. This proves
+    // validation happens before library discovery as well as native initialization.
+    Loader.OpenSSLPath := TPath.Combine(FTempDir, 'no-libraries');
+{$ENDIF}
+    Assert.WillRaiseWithMessage(
+      procedure
+      begin
+        LComponent.Load;
+      end, ETaurusTLSConfigFilePathError, RSOSSLConfigFileRequired);
+    LComponent.RequireConfigFile := False;
+    Assert.IsFalse(Loader.Load, 'Changing policy must not bypass the failure circuit breaker');
+    ResetRuntime;
+    Assert.IsFalse(Loader.RequireConfigFile, 'Reset must restore the default policy');
+    SetupFromCmd;
+    Loader.ConfigFile := FValidConfigFile;
+    LComponent.RequireConfigFile := True;
+    Assert.IsTrue(Loader.Load);
+    LComponent.RequireConfigFile := True; // Repeating the configured value is safe.
+    Assert.WillRaise(
+      procedure
+      begin
+        LComponent.RequireConfigFile := False;
+      end, ETaurusTLSConfigFilePathError);
+    Assert.IsTrue(Loader.RequireConfigFile);
+  finally
+    LComponent.Free;
+    Loader.Unload;
+  end;
 end;
 
 procedure TLoaderConfigFixture.Config_SetValid;
@@ -1948,6 +2147,7 @@ begin
   LNonExistent := TPath.Combine(FTempDir, 'does_not_exist_' + TGuid.NewGuid.ToString + '.cnf');
   LNormalized := TPath.GetFullPath(LNonExistent);
   Loader.ConfigFile := LNonExistent;
+  Loader.RequireConfigFile := True;
   Assert.WillRaiseWithMessage(
     procedure
     begin
@@ -2009,7 +2209,8 @@ begin
   Assert.IsTrue(Loader.Load, 'Loader.Load failed');
   try
     Assert.IsTrue(Loader.IsLoaded);
-    // Discovery reports a filename; this does not read the machine's config.
+    // Query the candidate using the native environment, then expect metadata
+    // only if that file exists and was successfully applied.
     // Query the native API because its C-runtime environment may differ from
     // the environment seen by Delphi, especially when launched from the IDE.
     LExpectedPath := '';
@@ -2021,7 +2222,11 @@ begin
       OPENSSL_free(LDefaultConfig);
     end;
     if LExpectedPath <> '' then
+    begin
       LExpectedPath := TPath.GetFullPath(LExpectedPath);
+      if not TFile.Exists(LExpectedPath) then
+        LExpectedPath := '';
+    end;
     Assert.AreEqual(LExpectedPath, Loader.ConfigFile,
       'Loader must report the resolved native discovery result');
   finally
@@ -2077,6 +2282,7 @@ end;
 
 procedure TLoaderConfigFixture.Config_PathFailureRecovery(const APathKind: Integer);
 begin
+  Loader.RequireConfigFile := True;
   if APathKind = 0 then
     Loader.ConfigFile := TPath.Combine(FTempDir, 'missing.cnf')
   else
@@ -2336,6 +2542,12 @@ var
   GTestInfoUnavailable: Integer = 0;
   GTestDiscoveryOverride: Boolean = False;
   GTestDiscoveryFile: string = '';
+  GTestDiscoveryCalls: Integer = 0;
+  GTestTrackInitOptions: Boolean = False;
+  GTestInitOptions: TIdC_UINT64 = 0;
+  GTestNativeInitCrypto: function(opts: TIdC_UINT64;
+    const settings: POPENSSL_INIT_SETTINGS): TIdC_INT; cdecl;
+
   GTestSSLInitFailure: Boolean = False;
   GTestCryptoInitFailure: Boolean = False;
   // Borrow the binding context supplied by the loader, valid until header cleanup.
@@ -2546,6 +2758,7 @@ begin
         0: GetOpenSSLLoader.ConfigFile := ProbeValue;
         1: GetOpenSSLLoader.OpenSSLPath := ProbeValue;
         2: GetOpenSSLLoader.SSLLibVersions := ProbeValue;
+        3: GetOpenSSLLoader.RequireConfigFile := ProbeValue = 'True';
       end;
     except
       on E: ETaurusTLSConfigFilePathError do
@@ -2558,6 +2771,10 @@ begin
       0: ProbeResult := GetOpenSSLLoader.ConfigFile;
       1: ProbeResult := GetOpenSSLLoader.OpenSSLPath;
       2: ProbeResult := GetOpenSSLLoader.SSLLibVersions;
+      3: if GetOpenSSLLoader.RequireConfigFile then
+           ProbeResult := 'True'
+         else
+           ProbeResult := 'False';
     end;
     // Unload callbacks suppress unexpected errors; record completion explicitly.
     ProbeCompleted := True;
@@ -2650,10 +2867,18 @@ end;
 
 function TestDefaultConfigFile: PIdAnsiChar; cdecl;
 begin
+  Inc(GTestDiscoveryCalls);
   if GTestDiscoveryFile = '' then
     Result := nil
   else
     Result := CRYPTO_strdup(PIdAnsiChar(UTF8String(GTestDiscoveryFile)), nil, 0);
+end;
+
+function TestTrackedCryptoInit(opts: TIdC_UINT64;
+  const settings: POPENSSL_INIT_SETTINGS): TIdC_INT; cdecl;
+begin
+  GTestInitOptions := opts;
+  Result := GTestNativeInitCrypto(opts, settings);
 end;
 
 function TestSSLInit(opts: TIdC_UINT64;
@@ -2679,6 +2904,11 @@ begin
   end;
   if GTestDiscoveryOverride then
     CONF_get1_default_config_file := TestDefaultConfigFile;
+  if GTestTrackInitOptions then
+  begin
+    GTestNativeInitCrypto := OPENSSL_init_crypto;
+    OPENSSL_init_crypto := TestTrackedCryptoInit;
+  end;
   if GTestCryptoInitFailure then
     OPENSSL_init_crypto := TestSSLInit;
 end;
@@ -2694,6 +2924,7 @@ end;
 /// <summary>Records that cleanup continues past injected header-unloader failures.</summary>
 procedure TestCleanupTail;
 begin
+  GTestNativeInitCrypto := nil;
   GTestCryptoLibrary := IdNilHandle;
   GTestHeaderVersion := 0;
   if GTestCleanupFaultActive then
@@ -3472,6 +3703,10 @@ begin
     0: LOriginalValue := Loader.ConfigFile;
     1: LOriginalValue := Loader.OpenSSLPath;
     2: LOriginalValue := Loader.SSLLibVersions;
+    3: if Loader.RequireConfigFile then
+         LOriginalValue := 'True'
+       else
+         LOriginalValue := 'False';
   end;
   TTestCallbackObserverA.Active := True;
   if APhase = 1 then
@@ -3486,6 +3721,7 @@ begin
       0: TTestCallbackObserverA.ProbeValue := TPath.Combine(FTempDir, 'replacement.cnf');
       1: TTestCallbackObserverA.ProbeValue := FTempDir;
       2: TTestCallbackObserverA.ProbeValue := 'replacement-version';
+      3: TTestCallbackObserverA.ProbeValue := 'True';
     end;
 
   if APhase = 3 then
@@ -3511,7 +3747,7 @@ begin
   Assert.IsTrue(TTestCallbackObserverA.ProbeCompleted, 'Property probe must finish');
   LRejectExpected := ARepeat = 0;
   {$IFDEF OPENSSL_STATIC_LINK_MODEL}
-  LRejectExpected := LRejectExpected and (AProperty = 0);
+  LRejectExpected := LRejectExpected and (AProperty in [0, 3]);
   {$ENDIF}
   Assert.IsTrue(TTestCallbackObserverA.ProbeRejected = LRejectExpected,
     'Changed active properties are rejected; repeated inputs and static path/version setters are safe');
@@ -4313,26 +4549,76 @@ var
   LExpectedDirectory, LExpectedFile: string;
 begin
   GTestDiscoveryOverride := True;
-  if AKind = 0 then
-    LExpectedDirectory := ''
-  else
-  begin
-    Assert.IsTrue(SetCurrentDir(FTempDir));
-    GTestDiscoveryFile := 'sub' + PathDelim + 'test.cnf';
-    LExpectedDirectory := TPath.Combine(GetCurrentDir, 'sub');
-  end;
+  Assert.IsTrue(SetCurrentDir(FTempDir));
   LExpectedFile := '';
-  if GTestDiscoveryFile <> '' then
-    LExpectedFile := TPath.GetFullPath(GTestDiscoveryFile);
+  LExpectedDirectory := '';
+  if AKind <> 0 then
+  begin
+    TDirectory.CreateDirectory('sub');
+    GTestDiscoveryFile := 'sub' + PathDelim + 'test.cnf';
+    if AKind = 1 then
+      TFile.WriteAllText(GTestDiscoveryFile, cMinimalValidOpenSSLConfig)
+    else if AKind = 3 then
+      TFile.WriteAllText(GTestDiscoveryFile, cMinimalInvalidOpenSSLConfig)
+    else if AKind = 4 then
+      GTestDiscoveryFile := 'sub';
+  end;
   Loader.ConfigFile := '';
+  if AKind in [3, 4] then
+  begin
+    if AKind = 3 then
+      Assert.WillRaise(procedure begin Loader.Load; end, ETaurusTLSConfigFileLoadError)
+    else
+      Assert.WillRaise(procedure begin Loader.Load; end, ETaurusTLSConfigFilePathError);
+    Assert.IsTrue(Loader.State = lsLoadedFailed);
+    Assert.AreEqual('', Loader.ConfigFile);
+    Assert.AreEqual('', Loader.ConfigDirectory);
+    Exit;
+  end;
+  if AKind = 1 then
+  begin
+    LExpectedFile := TPath.GetFullPath(GTestDiscoveryFile);
+    LExpectedDirectory := ExtractFileDir(LExpectedFile);
+  end;
   Assert.IsTrue(Loader.Load);
   Assert.AreEqual(LExpectedFile, Loader.ConfigFile);
   Assert.AreEqual(LExpectedDirectory, Loader.ConfigDirectory);
   Assert.IsTrue(SetCurrentDir(FOrigCurrentDir));
-  Assert.AreEqual(LExpectedFile, Loader.ConfigFile, 'Discovery must retain the load-time filename');
+  Assert.AreEqual(LExpectedFile, Loader.ConfigFile, 'Applied config metadata must remain stable');
   Assert.AreEqual(LExpectedDirectory, Loader.ConfigDirectory);
   Loader.Unload;
   Assert.AreEqual('', Loader.ConfigFile, 'Discovery must not replace the configured empty input');
+end;
+
+procedure TLoaderCallbacksFixture.Config_NoFallback(const AInvalidDefault: Boolean);
+var
+  LSelected: string;
+begin
+  GTestDiscoveryOverride := True;
+  GTestDiscoveryCalls := 0;
+  if AInvalidDefault then
+    GTestDiscoveryFile := FInvalidSyntaxConfigFile
+  else
+    GTestDiscoveryFile := FValidConfigFile;
+  // Point discovery at a real file: neither it nor its contents may influence
+  // loading when the application selected a different optional filename.
+  LSelected := TPath.Combine(FTempDir, 'optional-missing.cnf');
+  Loader.ConfigFile := LSelected;
+  GTestTrackInitOptions := True;
+  GTestInitOptions := 0;
+  try
+    Assert.IsTrue(Loader.Load);
+    Assert.IsTrue((GTestInitOptions and OPENSSL_INIT_NO_LOAD_CONFIG) <> 0,
+      'Native initialization must disable automatic configuration loading');
+    Assert.IsTrue((GTestInitOptions and OPENSSL_INIT_LOAD_CONFIG) = 0);
+  finally
+    GTestTrackInitOptions := False;
+  end;
+  Assert.AreEqual(0, GTestDiscoveryCalls, 'Explicit input must not query default discovery');
+  Assert.AreEqual('', Loader.ConfigFile, 'No file was applied');
+  Assert.AreEqual('', Loader.ConfigDirectory);
+  Loader.Unload;
+  Assert.AreEqual(LSelected, Loader.ConfigFile, 'The configured selection must be retained');
 end;
 
 procedure TLoaderCallbacksFixture.Runtime_InitFailure(const AKind: Integer);

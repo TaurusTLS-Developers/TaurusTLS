@@ -301,6 +301,7 @@ begin
 {$ELSE}
     Loader.Unload;
     Loader.ConfigFile := '';
+    Loader.RequireConfigFile := False;
     Loader.OpenSSLPath := '';
     Loader.SSLLibVersions := DefaultLibVersions;
 {$ENDIF}
