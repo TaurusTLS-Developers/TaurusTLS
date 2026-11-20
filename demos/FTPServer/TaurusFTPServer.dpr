@@ -81,6 +81,17 @@ type
 var
   app: TFTPServerApp;
 
+procedure FileNotFound(const APathName: String); {$IFDEF USE_INLINE}inline;
+{$ENDIF}
+begin
+  raise Exception.Create(APathName + ' not found');
+end;
+
+procedure PermissionDenied; {$IFDEF USE_INLINE}inline; {$ENDIF}
+begin
+  raise Exception.Create('permission denied');
+end;
+
 function SetFileLastModifiedDateTime(const FileName: String;
   DateTime: TDateTime): Boolean; {$IFDEF USE_INLINE}inline; {$ENDIF}
 begin
@@ -117,6 +128,11 @@ end;
 function FTPPathToLocalPath(const APath: String; const AAnonymous: Boolean)
   : String; {$IFDEF USE_INLINE}inline; {$ENDIF}
 begin
+  {Weed out any path spec such as /../  }
+  if (Pos('/../',APath) = 1) or (APath = '/..') then
+  begin
+    PermissionDenied;
+  end;
   if AAnonymous then
   begin
     Result := StringReplace(System.IOUtils.TPath.GetSharedDocumentsPath + '\' +
@@ -233,17 +249,6 @@ begin
 {$ENDIF}
   AFTPItem.Size := ARec.Size;
   AFTPItem.WinAttribs := Cardinal(ARec.Attr);
-end;
-
-procedure FileNotFound(const APathName: String); {$IFDEF USE_INLINE}inline;
-{$ENDIF}
-begin
-  raise Exception.Create(APathName + ' not found');
-end;
-
-procedure PermissionDenied; {$IFDEF USE_INLINE}inline; {$ENDIF}
-begin
-  raise Exception.Create('permission denied');
 end;
 
 { TFTPServerApp }
