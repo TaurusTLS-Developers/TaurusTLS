@@ -124,7 +124,6 @@ templates:
       - src: ./Packages/$packageSource$/*.dpk
       - src: ./Packages/$packageSource$/*.dproj
       - src: ./Help/chm/TaurusForIndy290All.chm
-      - src: /demos/**.*
         exclude:
           - '**.dcu'
           - '**.obj'
