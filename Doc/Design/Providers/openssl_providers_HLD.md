@@ -78,6 +78,18 @@ removes its new registration; failed osaUnload still detaches the action and
 propagates its exception. Callback owners retain responsibility for partial
 initialization/cleanup and must unregister before destroying their objects.
 Duplicate registrations remain independent; removing a missing action is a no-op.
+Header units register symbol binding/reset automatically. The loader initializes
+header procedural variables on Load and clears them on Unload; applications do
+not manage those variables or their registrations. Applications still call Load
+explicitly after unit initialization.
+
+Action registrations follow the normal Delphi/Free Pascal event-handler
+ownership pattern: a stored method pointer does not own or retain its object.
+The owner must keep the object and all state accessed by its callback valid from
+registration until explicit UnRegister_SSLLoaderAction removal and synchronous
+cleanup have completed. Load/Unload do not remove registrations. This lifetime
+requirement also applies while inactive or failed; remove every duplicate
+registration before destroying the object or releasing callback state.
 
 TaurusTLS finalization calls the shared Unload operation. Loader finalization
 also runs full Unload while the singleton remains published, covering applications

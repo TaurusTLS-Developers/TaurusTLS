@@ -4,8 +4,6 @@ Status: Registration-only provider and independent Indy adapters are committed; 
 Revision date: 2026-10-27.
 Architecture: [Legacy HLD](legacy_providers_HLD.md).
 General lifecycle: [OpenSSL DDD](openssl_providers_DDD.md).
-Tracking: [Provider plan](openssl_providers_plan.md) and
-[loader/readiness checklist](../../Plans/Unit-Tests/Loader-Status-and-Readiness.md).
 
 ## 1. Selected contract
 

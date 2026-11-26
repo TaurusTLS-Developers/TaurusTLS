@@ -114,4 +114,4 @@ exceptions retain their crypto-error hierarchy.
 - [Shared loader](../../../Source/TaurusTLSLoader.pas)
 - [Central exceptions](../../../Source/TaurusTLSExceptionHandlers.pas)
 - [Migration guide](../../../Migration_to_1_1.md)
-- [Provider architecture](../Legacy%20Providers/openssl_providers_HLD.md)
+- [Provider architecture](../Providers/openssl_providers_HLD.md)

@@ -135,6 +135,19 @@ The registries remain class variables: FLoadActions in the base loader, and
 FCryptoLoaders/FSSLLoaders/FUnloaders in the dynamic loader. Registration obtains
 the published instance's FLoaderLock, holds that same lock for the update,
 then releases it. There is no separate lazy registration-lock allocation.
+Header units arrange their binding/reset registrations automatically during
+unit initialization. Dynamic Load binds their procedural variables; Unload
+clears them before releasing the libraries. No application management of header
+variables or header registrations is required. Static imports are linked directly.
+
+FLoadActions stores non-owning method pointers, following Delphi/Free Pascal
+event-handler lifetime rules. Registration does not retain the callback object.
+The caller must keep that object and all state accessed by its callback valid
+from registration through explicit UnRegister_SSLLoaderAction removal and any
+synchronous cleanup. Load/Unload leave registrations in place, including across
+inactive and failed states. Every duplicate entry must be removed before the
+object is destroyed or callback state is released. Serialized removal waits for
+an ongoing lifecycle callback; removal from within a callback remains forbidden.
 
 RegisterAction and UnRegisterAction share FLoaderLock with Load/Unload and
 header binding, registration and cleanup.

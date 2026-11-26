@@ -4,8 +4,6 @@ Status: Provider/Indy separation and dedicated provider tests are committed. Win
 Revision date: 2026-10-27.
 General architecture: [OpenSSL HLD](openssl_providers_HLD.md).
 Details: [Legacy DDD](legacy_providers_DDD.md).
-Tracking: [Provider plan](openssl_providers_plan.md) and
-[loader/readiness checklist](../../Plans/Unit-Tests/Loader-Status-and-Readiness.md).
 
 ## 1. Decision and scope
 
