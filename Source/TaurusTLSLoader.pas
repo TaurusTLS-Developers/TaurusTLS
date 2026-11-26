@@ -1883,7 +1883,7 @@ begin
   begin
     FillChar(LInfo, SizeOf(LInfo), 0);
     // Match the C buffer pointer type without casting the fixed array.
-    LResolvedName := @LResolved[0];
+    LResolvedName := PAnsiChar(LResolved[0]);
 {$IFDEF FPC}
     if (dladdr(LAddress, @LInfo) <> 0) and Assigned(LInfo.dli_fname) then
       if Assigned(TaurusTLSRealPath(LInfo.dli_fname, LResolvedName)) then
