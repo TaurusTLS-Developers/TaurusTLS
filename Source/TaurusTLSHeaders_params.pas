@@ -2563,78 +2563,78 @@ end;
 
 procedure Unload;
 begin
-  OSSL_PARAM_locate := nil;
-  OSSL_PARAM_locate_const := nil;
+  @OSSL_PARAM_locate := @ErrUnBound;
+  @OSSL_PARAM_locate_const := @ErrUnBound;
 
-  OSSL_PARAM_construct_int := nil;
-  OSSL_PARAM_construct_uint := nil;
-  OSSL_PARAM_construct_long := nil;
-  OSSL_PARAM_construct_ulong := nil;
-  OSSL_PARAM_construct_int32 := nil;
-  OSSL_PARAM_construct_uint32 := nil;
-  OSSL_PARAM_construct_int64 := nil;
-  OSSL_PARAM_construct_uint64 := nil;
-  OSSL_PARAM_construct_size_t := nil;
-  OSSL_PARAM_construct_time_t := nil;
-  OSSL_PARAM_construct_BN := nil;
-  OSSL_PARAM_construct_double := nil;
-  OSSL_PARAM_construct_utf8_string := nil;
-  OSSL_PARAM_construct_utf8_ptr := nil;
-  OSSL_PARAM_construct_octet_string := nil;
-  OSSL_PARAM_construct_octet_ptr := nil;
-  OSSL_PARAM_construct_end := nil;
+  @OSSL_PARAM_construct_int := @ErrUnBound;
+  @OSSL_PARAM_construct_uint := @ErrUnBound;
+  @OSSL_PARAM_construct_long := @ErrUnBound;
+  @OSSL_PARAM_construct_ulong := @ErrUnBound;
+  @OSSL_PARAM_construct_int32 := @ErrUnBound;
+  @OSSL_PARAM_construct_uint32 := @ErrUnBound;
+  @OSSL_PARAM_construct_int64 := @ErrUnBound;
+  @OSSL_PARAM_construct_uint64 := @ErrUnBound;
+  @OSSL_PARAM_construct_size_t := @ErrUnBound;
+  @OSSL_PARAM_construct_time_t := @ErrUnBound;
+  @OSSL_PARAM_construct_BN := @ErrUnBound;
+  @OSSL_PARAM_construct_double := @ErrUnBound;
+  @OSSL_PARAM_construct_utf8_string := @ErrUnBound;
+  @OSSL_PARAM_construct_utf8_ptr := @ErrUnBound;
+  @OSSL_PARAM_construct_octet_string := @ErrUnBound;
+  @OSSL_PARAM_construct_octet_ptr := @ErrUnBound;
+  @OSSL_PARAM_construct_end := @ErrUnBound;
 
-  OSSL_PARAM_allocate_from_text := nil;
+  @OSSL_PARAM_allocate_from_text := @ErrUnBound;
 
-  OSSL_PARAM_get_int := nil;
-  OSSL_PARAM_get_uint := nil;
-  OSSL_PARAM_get_long := nil;
-  OSSL_PARAM_get_ulong := nil;
-  OSSL_PARAM_get_int32 := nil;
-  OSSL_PARAM_get_uint32 := nil;
-  OSSL_PARAM_get_int64 := nil;
-  OSSL_PARAM_get_uint64 := nil;
-  OSSL_PARAM_get_size_t := nil;
-  OSSL_PARAM_get_time_t := nil;
+  @OSSL_PARAM_get_int := @ErrUnBound;
+  @OSSL_PARAM_get_uint := @ErrUnBound;
+  @OSSL_PARAM_get_long := @ErrUnBound;
+  @OSSL_PARAM_get_ulong := @ErrUnBound;
+  @OSSL_PARAM_get_int32 := @ErrUnBound;
+  @OSSL_PARAM_get_uint32 := @ErrUnBound;
+  @OSSL_PARAM_get_int64 := @ErrUnBound;
+  @OSSL_PARAM_get_uint64 := @ErrUnBound;
+  @OSSL_PARAM_get_size_t := @ErrUnBound;
+  @OSSL_PARAM_get_time_t := @ErrUnBound;
 
-  OSSL_PARAM_set_int := nil;
-  OSSL_PARAM_set_uint := nil;
-  OSSL_PARAM_set_long := nil;
-  OSSL_PARAM_set_ulong := nil;
-  OSSL_PARAM_set_int32  := nil;
-  OSSL_PARAM_set_uint32  := nil;
-  OSSL_PARAM_set_int64  := nil;
-  OSSL_PARAM_set_uint64 := nil;
-  OSSL_PARAM_set_size_t := nil;
-  OSSL_PARAM_set_time_t := nil;
+  @OSSL_PARAM_set_int := @ErrUnBound;
+  @OSSL_PARAM_set_uint := @ErrUnBound;
+  @OSSL_PARAM_set_long := @ErrUnBound;
+  @OSSL_PARAM_set_ulong := @ErrUnBound;
+  @OSSL_PARAM_set_int32  := @ErrUnBound;
+  @OSSL_PARAM_set_uint32  := @ErrUnBound;
+  @OSSL_PARAM_set_int64  := @ErrUnBound;
+  @OSSL_PARAM_set_uint64 := @ErrUnBound;
+  @OSSL_PARAM_set_size_t := @ErrUnBound;
+  @OSSL_PARAM_set_time_t := @ErrUnBound;
 
-  OSSL_PARAM_get_double := nil;
-  OSSL_PARAM_set_double := nil;
+  @OSSL_PARAM_get_double := @ErrUnBound;
+  @OSSL_PARAM_set_double := @ErrUnBound;
 
-  OSSL_PARAM_get_BN := nil;
-  OSSL_PARAM_set_BN := nil;
+  @OSSL_PARAM_get_BN := @ErrUnBound;
+  @OSSL_PARAM_set_BN := @ErrUnBound;
 
-  OSSL_PARAM_get_utf8_string := nil;
-  OSSL_PARAM_set_utf8_string := nil;
+  @OSSL_PARAM_get_utf8_string := @ErrUnBound;
+  @OSSL_PARAM_set_utf8_string := @ErrUnBound;
 
-  OSSL_PARAM_get_octet_string := nil;
-  OSSL_PARAM_set_octet_string := nil;
+  @OSSL_PARAM_get_octet_string := @ErrUnBound;
+  @OSSL_PARAM_set_octet_string := @ErrUnBound;
 
-  OSSL_PARAM_get_utf8_ptr := nil;
-  OSSL_PARAM_set_utf8_ptr := nil;
+  @OSSL_PARAM_get_utf8_ptr := @ErrUnBound;
+  @OSSL_PARAM_set_utf8_ptr := @ErrUnBound;
 
-  OSSL_PARAM_get_octet_ptr := nil;
-  OSSL_PARAM_set_octet_ptr := nil;
+  @OSSL_PARAM_get_octet_ptr := @ErrUnBound;
+  @OSSL_PARAM_set_octet_ptr := @ErrUnBound;
 
-  OSSL_PARAM_get_utf8_string_ptr := nil;
-  OSSL_PARAM_get_octet_string_ptr := nil;
+  @OSSL_PARAM_get_utf8_string_ptr := @ErrUnBound;
+  @OSSL_PARAM_get_octet_string_ptr := @ErrUnBound;
 
-  OSSL_PARAM_modified := nil;
-  OSSL_PARAM_set_all_unmodified := nil;
+  @OSSL_PARAM_modified := @ErrUnBound;
+  @OSSL_PARAM_set_all_unmodified := @ErrUnBound;
 
-  OSSL_PARAM_dup := nil;
-  OSSL_PARAM_merge := nil;
-  OSSL_PARAM_free := nil;
+  @OSSL_PARAM_dup := @ErrUnBound;
+  @OSSL_PARAM_merge := @ErrUnBound;
+  @OSSL_PARAM_free := @ErrUnBound;
 
 end;
   {$ENDIF}
@@ -2642,6 +2642,7 @@ end;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

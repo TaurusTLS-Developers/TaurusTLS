@@ -337,16 +337,17 @@ end;   //PALOFF Empty begin/end-blocks
 
 procedure Unload;
 begin
-  RC4_options := nil; {allow_nil}
-  RC4_set_key := nil; {allow_nil}
-  private_RC4_set_key := nil; {allow_nil}
-  RC4 := nil; {allow_nil}
+  @RC4_options := @ErrUnBound; {allow_nil}
+  @RC4_set_key := @ErrUnBound; {allow_nil}
+  @private_RC4_set_key := @ErrUnBound; {allow_nil}
+  @RC4 := @ErrUnBound; {allow_nil}
 end;
   {$ENDIF}
 {$ENDIF}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

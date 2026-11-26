@@ -16,11 +16,13 @@ cp -p Source/TaurusTLS_Dsn_ResourceStrings.pas ../git/TaurusTLS/Source/
 cp -p Source/TaurusTLS_Vers.inc ../git/TaurusTLS/Source/
 cp -p tmsbuild.yaml ../git/TaurusTLS/
 cp -p version.txt ../git/TaurusTLS/
+cp -p TaurusTLS_Developers.TaurusTLS.dspec ../git/TaurusTLS/
 
 cp -p Source/TaurusTLS_Dsn_ResourceStrings.pas ../git/TaurusTLS/Source/
 cp -p Source/TaurusTLS_Vers.inc ../git/indy_extras/TaurusTLS//Source/
 cp -p tmsbuild.yaml ../git/indy_extras/TaurusTLS/
 cp -p version.txt ../git/indy_extras/TaurusTLS/
+cp -p TaurusTLS_Developers.TaurusTLS.dspec ../git/indy_extras/TaurusTLS/
 
 cp -p devtools/VersionManager/Win32/Debug/*.ini ../git/TaurusTLS/devtools/VersionManager/Win32/Debug
 rm -rf ../git/TaurusTLS/devtools/VersionManager/templates/*

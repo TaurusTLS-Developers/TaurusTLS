@@ -9,7 +9,7 @@ uses
 type
   [TestFixture]
   [Category('BIO')]
-  TBioReadWriteFixture = class(TOsslBaseFixture)
+  TBioReadWriteFixture = class(TOsslAutoloadFixture)
   protected type
     TBIO_ReadProc = reference to function(const ABio: PBio;
       var AData; AChunkLen: TIdC_SIZET): TIdC_SIZET;

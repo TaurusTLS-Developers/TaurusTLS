@@ -44,10 +44,6 @@
 				<UnitName Value="TaurusTLSExceptionHandlers"/>
 			</Item>
 			<Item>
-				<Filename Value="..\..\Source\TaurusTLSFIPS.pas"/>
-				<UnitName Value="TaurusTLSFIPS"/>
-			</Item>
-			<Item>
 				<Filename Value="..\..\Source\TaurusTLSHeaders_aes.pas"/>
 				<UnitName Value="TaurusTLSHeaders_aes"/>
 			</Item>
@@ -432,6 +428,14 @@
 				<UnitName Value="TaurusTLSHeaders_x509_vfy"/>
 			</Item>
 			<Item>
+				<Filename Value="..\..\Source\TaurusTLSIdFIPS.pas"/>
+				<UnitName Value="TaurusTLSIdFIPS"/>
+			</Item>
+			<Item>
+				<Filename Value="..\..\Source\TaurusTLSIdNTLM.pas"/>
+				<UnitName Value="TaurusTLSIdNTLM"/>
+			</Item>
+			<Item>
 				<Filename Value="..\..\Source\TaurusTLSLoader.pas"/>
 				<UnitName Value="TaurusTLSLoader"/>
 			</Item>
@@ -440,12 +444,12 @@
 				<UnitName Value="TaurusTLS_Files"/>
 			</Item>
 			<Item>
-				<Filename Value="..\..\Source\TaurusTLS_LegacyProviders.pas"/>
-				<UnitName Value="TaurusTLS_LegacyProviders"/>
+				<Filename Value="..\..\Source\TaurusTLS_ProviderFIPS.pas"/>
+				<UnitName Value="TaurusTLS_ProviderFIPS"/>
 			</Item>
 			<Item>
-				<Filename Value="..\..\Source\TaurusTLS_NTLM.pas"/>
-				<UnitName Value="TaurusTLS_NTLM"/>
+				<Filename Value="..\..\Source\TaurusTLS_ProviderLegacy.pas"/>
+				<UnitName Value="TaurusTLS_ProviderLegacy"/>
 			</Item>
 			<Item>
 				<Filename Value="..\..\Source\TaurusTLS_ResourceStrings.pas"/>
@@ -479,5 +483,5 @@
 			<Version Value="2"/>
 			<UseFileFilters Value="True"/>
 		</PublishOptions>
-		<Version Major="1" Minor="1" Release="12" Build="54"/></Package>
+		<Version Major="1" Minor="1" Build="58"/></Package>
 </CONFIG>

@@ -475,7 +475,6 @@
   // is largely not UnicodeString-enabled yet.  Maybe we should enable
   // {$MODE DelphiUnicode} anyway, and then deal with any RTL function issues
   // on an as-needed basis...
-  {$mode delphi}
   {$IFDEF FPC_2_7_1_OR_ABOVE}
     {/$MODE DelphiUnicode}
     {/$MODESWITCH UnicodeStrings}
@@ -509,6 +508,13 @@
   {$IF DEFINED(FPC_FULLVERSION) AND (FPC_FULLVERSION >= 30301)}
     {$DEFINE FPC_3_3_1_OR_ABOVE}
     {$DEFINE HAS_TInterlocked}
+  {$IFEND}
+  // FPC 3.2.4 adds the Delphi-compatible System.IOUtils unit.
+  {$IF DEFINED(FPC_FULLVERSION) AND (FPC_FULLVERSION >= 30204)}
+    {$DEFINE HAS_UNIT_IOUtils}
+  {$IFEND}
+  {$IF DEFINED(FPC_FULLVERSION) AND (FPC_FULLVERSION >= 30200)}
+    {$DEFINE HAS_UNIT_Generics_Collections}
   {$IFEND}
   {$IF DEFINED(FPC_FULLVERSION) AND (FPC_FULLVERSION >= 30101)}
     {$DEFINE FPC_3_1_1_OR_ABOVE}
@@ -859,6 +865,7 @@
 {$ENDIF}
 
 {$IFDEF VCL_2010_OR_ABOVE}
+  {$DEFINE HAS_UNIT_IOUtils}
   {$DEFINE VCL_2009_OR_ABOVE}
 {$ELSE}
   {$IFDEF VCL_2009}
@@ -1187,9 +1194,8 @@
 {$UNDEF OPENSSL_USE_SHARED_LIBRARY}
 
 {$IFDEF WINDOWS}
-  //Define these two if you wish to have TaurusTLS staticly load the OpenSSL
-  //.DLL's instead of dynamically.
-    {/$DEFINE STATICLOAD_OPENSSL}
+  // Define only OPENSSL_USE_SHARED_LIBRARY to load the OpenSSL DLLs at startup.
+  // STATICLOAD_OPENSSL selects linked archives and cannot be combined with it.
     {/$DEFINE OPENSSL_USE_SHARED_LIBRARY}
 {$ENDIF}
 {$IFDEF IOS}

@@ -1,2 +1,2 @@
-brcc32 TaurusTLSRegister.rc -r -fo TaurusTLS_Dsn_Register_16.dcr
-copy TaurusTLS_Dsn_Register_16.dcr ..\..\Source
+brcc32 TaurusTLSRegister.rc -32 -fo TaurusTLS_Dsn.dres
+copy TaurusTLS_Dsn.dres ..\Source

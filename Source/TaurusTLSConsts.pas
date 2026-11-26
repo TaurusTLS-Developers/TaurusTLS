@@ -22,10 +22,17 @@ const
 
   TaurusTLSLibraryPath = 'OPENSSL_LIBRARY_PATH'; {environment variable name}
   {$IFNDEF OPENSSL_NO_MIN_VERSION}
-  min_supported_ssl_version =  (((byte(3) shl 8) + byte(0)) shl 8) shl 8 + byte(0); {3.0.0}
+  min_supported_ssl_version = $30000000; {OpenSSL 3.0.0: MNN00PP0}
   {$ELSE}
   min_supported_ssl_version = 0;
   {$ENDIF}
+  COpenSSLWindowsDirListDelimiter = ';';
+  COpenSSLPosixDirListDelimiter = ':';
+  COpenSSLDefaultWin32Versions = '-4;-3;';
+  COpenSSLDefaultWin64Versions = '-4-x64;-3-x64;';
+  COpenSSLDefaultARM64Versions = '-4-arm64;-3-arm64;';
+  COpenSSLDefaultPosixVersions = '.4:.3';
+  CVerStrOpenSSLPfx = 'OpenSSL ';
   CLibCryptoBase = 'libcrypto';
   CLibSSLBase = 'libssl';
 
@@ -44,8 +51,19 @@ const
     CLibSSL = 'ssl';
     {$ENDIF}
     {$IFDEF WINDOWS}
-    CLibCrypto = 'libcrypto.lib';
-    CLibSSL = 'libssl.lib';
+      {$IFDEF CPU64}
+        {$IF DEFINED(CPUARM64) OR DEFINED(CPUAARCH64) OR DEFINED(ARM64EC)}
+        CLibCrypto = 'libcrypto-3-arm64.dll';
+        CLibSSL = 'libssl-3-arm64.dll';
+        {$ELSE}
+        CLibCrypto = 'libcrypto-3-x64.dll';
+        CLibSSL = 'libssl-3-x64.dll';
+        {$IFEND}
+      {$ENDIF}
+      {$IFDEF CPU32}
+        CLibCrypto = 'libcrypto-3.dll';
+        CLibSSL = 'libssl-3.dll';
+      {$ENDIF}
     {$ENDIF}
   {$ELSE}
     {$IFDEF STATICLOAD_OPENSSL}
@@ -56,26 +74,26 @@ const
   {$ENDIF}
   
   {$IFDEF UNIX}
-  DirListDelimiter = ':';
+  DirListDelimiter = COpenSSLPosixDirListDelimiter;
     {$IFDEF OSX_OR_IOS}
   LibSuffix = '.dylib';
     {$ELSE}
   LibSuffix = '.so';
     {$ENDIF}
-  DefaultLibVersions = '.4:.3';
+  DefaultLibVersions = COpenSSLDefaultPosixVersions;
   {$ENDIF}
   {$IFDEF WINDOWS}
-  DirListDelimiter = ';';
+  DirListDelimiter = COpenSSLWindowsDirListDelimiter;
   LibSuffix = '';
     {$IFDEF CPU64}
-      {$IFDEF CPUARM64}
-    DefaultLibVersions = '-4-arm64;-3-arm64;';
+      {$IF DEFINED(CPUARM64) OR DEFINED(CPUAARCH64) OR DEFINED(ARM64EC)}
+    DefaultLibVersions = COpenSSLDefaultARM64Versions;
       {$ELSE}
-    DefaultLibVersions = '-4-x64;-3-x64;';
-      {$ENDIF}
+    DefaultLibVersions = COpenSSLDefaultWin64Versions;
+      {$IFEND}
     {$ENDIF}
     {$IFDEF CPU32}
-    DefaultLibVersions = '-4;-3;';
+    DefaultLibVersions = COpenSSLDefaultWin32Versions;
     {$ENDIF}
   {$ENDIF}
 

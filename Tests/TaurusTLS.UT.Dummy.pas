@@ -22,7 +22,7 @@ uses
 
 type
   [TestFixture]
-  TFixtureDummy = class(TOsslBaseFixture)
+  TFixtureDummy = class(TOsslAutoloadFixture)
   public
     [Test]
     procedure Dummy;

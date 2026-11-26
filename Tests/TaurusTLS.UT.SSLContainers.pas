@@ -10,7 +10,7 @@ uses
   TaurusTLS_Encryptors, TaurusTLS_SSLContainers;
 
 type
-  TCustomBytesFixture = class(TOsslBaseFixture)
+  TCustomBytesFixture = class(TOsslAutoloadFixture)
     FData: TBytes;
     function GetDataLen: NativeUInt;
   protected
@@ -31,7 +31,7 @@ type
     property DataLen: NativeUInt read GetDataLen;
   public
     [Teardown]
-    procedure TearDown;
+    procedure Teardown;
   end;
 
   [TestFixture]
@@ -188,7 +188,7 @@ uses
 
 { TCustomBytesFixture }
 
-procedure TCustomBytesFixture.TearDown;
+procedure TCustomBytesFixture.Teardown;
 begin
   FData:=nil;
 end;

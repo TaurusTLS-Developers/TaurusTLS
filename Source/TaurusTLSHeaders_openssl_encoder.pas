@@ -1420,41 +1420,42 @@ end;
 
 procedure Unload;
 begin
-  OSSL_ENCODER_fetch := nil;
-  OSSL_ENCODER_up_ref := nil;
-  OSSL_ENCODER_free := nil;
+  @OSSL_ENCODER_fetch := @ErrUnBound;
+  @OSSL_ENCODER_up_ref := @ErrUnBound;
+  @OSSL_ENCODER_free := @ErrUnBound;
 
-  OSSL_ENCODER_get0_provider := nil;
-  OSSL_ENCODER_get0_properties := nil;
-  OSSL_ENCODER_get0_name := nil;
-  OSSL_ENCODER_get0_description := nil;
-  OSSL_ENCODER_is_a := nil;
+  @OSSL_ENCODER_get0_provider := @ErrUnBound;
+  @OSSL_ENCODER_get0_properties := @ErrUnBound;
+  @OSSL_ENCODER_get0_name := @ErrUnBound;
+  @OSSL_ENCODER_get0_description := @ErrUnBound;
+  @OSSL_ENCODER_is_a := @ErrUnBound;
 
-  OSSL_ENCODER_do_all_provided := nil;
-  OSSL_ENCODER_names_do_all := nil;
-  OSSL_ENCODER_gettable_params := nil;
-  OSSL_ENCODER_get_params := nil;
+  @OSSL_ENCODER_do_all_provided := @ErrUnBound;
+  @OSSL_ENCODER_names_do_all := @ErrUnBound;
+  @OSSL_ENCODER_gettable_params := @ErrUnBound;
+  @OSSL_ENCODER_get_params := @ErrUnBound;
 
-  OSSL_ENCODER_CTX_set_passphrase := nil;
-  OSSL_ENCODER_CTX_set_pem_password_cb := nil;
-  OSSL_ENCODER_CTX_set_passphrase_cb := nil;
-  OSSL_ENCODER_CTX_set_passphrase_ui := nil;
-  OSSL_ENCODER_CTX_set_cipher := nil;
-  OSSL_ENCODER_CTX_set_selection := nil;
-  OSSL_ENCODER_CTX_set_output_type := nil;
-  OSSL_ENCODER_CTX_set_output_structure := nil;
+  @OSSL_ENCODER_CTX_set_passphrase := @ErrUnBound;
+  @OSSL_ENCODER_CTX_set_pem_password_cb := @ErrUnBound;
+  @OSSL_ENCODER_CTX_set_passphrase_cb := @ErrUnBound;
+  @OSSL_ENCODER_CTX_set_passphrase_ui := @ErrUnBound;
+  @OSSL_ENCODER_CTX_set_cipher := @ErrUnBound;
+  @OSSL_ENCODER_CTX_set_selection := @ErrUnBound;
+  @OSSL_ENCODER_CTX_set_output_type := @ErrUnBound;
+  @OSSL_ENCODER_CTX_set_output_structure := @ErrUnBound;
 
-  OSSL_ENCODER_to_bio := nil;
-  OSSL_ENCODER_to_data := nil;
+  @OSSL_ENCODER_to_bio := @ErrUnBound;
+  @OSSL_ENCODER_to_data := @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 
 initialization
+  Unload;
 
-Register_SSLLoader(Load, 'LibCrypto');
-Register_SSLUnloader(Unload);
+  Register_SSLLoader(Load, 'LibCrypto');
+  Register_SSLUnloader(Unload);
 {$ENDIF}
 
 end.

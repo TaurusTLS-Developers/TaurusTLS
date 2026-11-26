@@ -1291,16 +1291,17 @@ end;
 
 procedure Unload;
 begin
-  ASN1_item_ex_new := nil;
-  ASN1_item_ex_free := nil;
-  ASN1_item_ex_d2i := nil;
-  ASN1_item_ex_i2d := nil;
+  @ASN1_item_ex_new := @ErrUnBound;
+  @ASN1_item_ex_free := @ErrUnBound;
+  @ASN1_item_ex_d2i := @ErrUnBound;
+  @ASN1_item_ex_i2d := @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

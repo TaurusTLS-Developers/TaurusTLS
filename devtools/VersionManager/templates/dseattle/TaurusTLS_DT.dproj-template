@@ -3,8 +3,8 @@
 		<ProjectGuid>{812183B3-2843-4084-80EC-D5751037AF0B}</ProjectGuid>
 		<MainSource>TaurusTLS_DT.dpk</MainSource>
 		<Base>True</Base>
-		<Config Condition="'$(Config)'==''">Debug</Config>
-		<TargetedPlatforms>1025</TargetedPlatforms>
+		<Config Condition="'$(Config)'==''">Release</Config>
+		<TargetedPlatforms>1</TargetedPlatforms>
 		<AppType>Package</AppType>
 		<FrameworkType>None</FrameworkType>
 		<ProjectVersion>18.1</ProjectVersion>
@@ -15,6 +15,11 @@
 	</PropertyGroup>
 	<PropertyGroup Condition="('$(Platform)'=='Android' and '$(Base)'=='true') or '$(Base_Android)'!=''">
 		<Base_Android>true</Base_Android>
+		<CfgParent>Base</CfgParent>
+		<Base>true</Base>
+	</PropertyGroup>
+	<PropertyGroup Condition="('$(Platform)'=='iOSDevice64' and '$(Base)'=='true') or '$(Base_iOSDevice64)'!=''">
+		<Base_iOSDevice64>true</Base_iOSDevice64>
 		<CfgParent>Base</CfgParent>
 		<Base>true</Base>
 	</PropertyGroup>
@@ -69,9 +74,13 @@
         <DCC_UNSAFE_CAST>true</DCC_UNSAFE_CAST>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Base_Android)'!=''">
+		<DCC_UnitSearchPath>$(OSSL_LIB_ANDROID32);$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
 		<EnabledSysJars>android-support-v4.dex.jar;apk-expansion.dex.jar;cloud-messaging.dex.jar;fmx.dex.jar;google-analytics-v2.dex.jar;google-play-billing.dex.jar;google-play-licensing.dex.jar;google-play-services.dex.jar</EnabledSysJars>
 		<VerInfo_Keys>CompanyName=TaurusTLS Developers;FileDescription=$(MSBuildProjectName);FileVersion=1.0.10.52;InternalName=TaurusTLS_DT.bpl;LegalCopyright=Copyright (c) 2026 TaurusTLS Developers.  All Rights Reserved.;LegalTrademarks=;OriginalFilename=TaurusTLS_DT.bpl;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.10.52;Comments=</VerInfo_Keys>
 		<BT_BuildType>Debug</BT_BuildType>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Base_iOSDevice64)'!=''">
+		<DCC_UnitSearchPath>$(OSSL_LIB_IOS64);$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Base_Win32)'!=''">
 		<DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
@@ -141,7 +150,7 @@
 			<Platforms>
 				<Platform value="Android">False</Platform>
 				<Platform value="iOSDevice32">False</Platform>
-				<Platform value="iOSDevice64">True</Platform>
+				<Platform value="iOSDevice64">False</Platform>
 				<Platform value="iOSSimulator">False</Platform>
 				<Platform value="OSX32">False</Platform>
 				<Platform value="Win32">True</Platform>

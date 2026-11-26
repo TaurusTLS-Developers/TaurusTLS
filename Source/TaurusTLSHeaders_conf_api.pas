@@ -410,19 +410,20 @@ end;
 
 procedure Unload;
 begin
-  _CONF_new_section := nil;
-  _CONF_get_section := nil;
-  _CONF_add_string := nil;
-  _CONF_get_string := nil;
-  _CONF_get_number := nil;
-  _CONF_new_data := nil;
-  _CONF_free_data := nil;
+  @_CONF_new_section := @ErrUnBound;
+  @_CONF_get_section := @ErrUnBound;
+  @_CONF_add_string := @ErrUnBound;
+  @_CONF_get_string := @ErrUnBound;
+  @_CONF_get_number := @ErrUnBound;
+  @_CONF_new_data := @ErrUnBound;
+  @_CONF_free_data := @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

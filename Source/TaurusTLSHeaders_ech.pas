@@ -1337,33 +1337,33 @@ end;
 
 procedure Unload;
 begin
-  OSSL_ECHSTORE_new := nil;
-  OSSL_ECHSTORE_free := nil;
-  OSSL_ECHSTORE_new_config := nil;
-  OSSL_ECHSTORE_write_pem  := nil;
-  OSSL_ECHSTORE_read_echconfiglist := nil;
-  OSSL_ECHSTORE_get1_info := nil;
-  OSSL_ECHSTORE_downselect  := nil;
-  OSSL_ECHSTORE_set1_key_and_read_pem := nil;
-  OSSL_ECHSTORE_read_pem := nil;
-  OSSL_ECHSTORE_num_entries := nil;
-  OSSL_ECHSTORE_num_keys := nil;
-  OSSL_ECHSTORE_flush_keys  := nil;
-  SSL_CTX_set1_echstore  := nil;
-  SSL_set1_echstore  := nil;
-  SSL_CTX_get1_echstore  := nil;
-  SSL_get1_echstore  := nil;
-  SSL_ech_set1_server_names := nil;
-  SSL_ech_set1_outer_server_name := nil;
-  SSL_ech_set1_outer_alpn_protos  := nil;
-  SSL_ech_get1_status := nil;
-  SSL_ech_set1_grease_suite  := nil;
-  SSL_ech_set_grease_type  := nil;
-  SSL_ech_set_callback  := nil;
-  SSL_ech_get1_retry_config := nil;
-  SSL_CTX_ech_set1_outer_alpn_protos  := nil;
-  SSL_CTX_ech_set_callback := nil;
-  SSL_set1_ech_config_list := nil;
+  @OSSL_ECHSTORE_new := @ErrUnBound;
+  @OSSL_ECHSTORE_free := @ErrUnBound;
+  @OSSL_ECHSTORE_new_config := @ErrUnBound;
+  @OSSL_ECHSTORE_write_pem  := @ErrUnBound;
+  @OSSL_ECHSTORE_read_echconfiglist := @ErrUnBound;
+  @OSSL_ECHSTORE_get1_info := @ErrUnBound;
+  @OSSL_ECHSTORE_downselect  := @ErrUnBound;
+  @OSSL_ECHSTORE_set1_key_and_read_pem := @ErrUnBound;
+  @OSSL_ECHSTORE_read_pem := @ErrUnBound;
+  @OSSL_ECHSTORE_num_entries := @ErrUnBound;
+  @OSSL_ECHSTORE_num_keys := @ErrUnBound;
+  @OSSL_ECHSTORE_flush_keys  := @ErrUnBound;
+  @SSL_CTX_set1_echstore  := @ErrUnBound;
+  @SSL_set1_echstore  := @ErrUnBound;
+  @SSL_CTX_get1_echstore  := @ErrUnBound;
+  @SSL_get1_echstore  := @ErrUnBound;
+  @SSL_ech_set1_server_names := @ErrUnBound;
+  @SSL_ech_set1_outer_server_name := @ErrUnBound;
+  @SSL_ech_set1_outer_alpn_protos  := @ErrUnBound;
+  @SSL_ech_get1_status := @ErrUnBound;
+  @SSL_ech_set1_grease_suite  := @ErrUnBound;
+  @SSL_ech_set_grease_type  := @ErrUnBound;
+  @SSL_ech_set_callback  := @ErrUnBound;
+  @SSL_ech_get1_retry_config := @ErrUnBound;
+  @SSL_CTX_ech_set1_outer_alpn_protos  := @ErrUnBound;
+  @SSL_CTX_ech_set_callback := @ErrUnBound;
+  @SSL_set1_ech_config_list := @ErrUnBound;
 end;
   {$ENDIF}
 {$ELSE}
@@ -1371,6 +1371,7 @@ end;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibSSL');
   Register_SSLUnloader(Unload);
 {$ENDIF}

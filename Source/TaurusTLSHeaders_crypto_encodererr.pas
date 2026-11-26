@@ -101,12 +101,13 @@ end;
   {$I TaurusTLSUnusedParamOn.inc}
 procedure Unload;
 begin
-  ossl_err_load_OSSL_ENCODER_strings := nil;
+  @ossl_err_load_OSSL_ENCODER_strings := @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

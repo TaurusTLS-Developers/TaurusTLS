@@ -2158,44 +2158,44 @@ end;
 
 procedure Unload;
 begin
-  DES_ecb2_encrypt := nil; { removed 1.0.0 }
-  DES_ede2_cbc_encrypt := nil; { removed 1.0.0 }
-  DES_ede2_cfb64_encrypt := nil; { removed 1.0.0 }
-  DES_ede2_ofb64_encrypt := nil; { removed 1.0.0 }
-  DES_options := nil;
-  DES_ecb3_encrypt := nil;
-  DES_cbc_cksum := nil;
-  DES_cbc_encrypt := nil;
-  DES_ncbc_encrypt := nil;
-  DES_xcbc_encrypt := nil;
-  DES_cfb_encrypt := nil;
-  DES_ecb_encrypt := nil;
-  DES_encrypt1 := nil;
-  DES_encrypt2 := nil;
-  DES_encrypt3 := nil;
-  DES_decrypt3 := nil;
-  DES_ede3_cbc_encrypt := nil;
-  DES_ede3_cfb64_encrypt := nil;
-  DES_ede3_cfb_encrypt := nil;
-  DES_ede3_ofb64_encrypt := nil;
-  DES_fcrypt := nil;
-  DES_crypt := nil;
-  DES_ofb_encrypt := nil;
-  DES_pcbc_encrypt := nil;
-  DES_quad_cksum := nil;
-  DES_random_key := nil;
-  DES_set_odd_parity := nil;
-  DES_check_key_parity := nil;
-  DES_is_weak_key := nil;
-  DES_set_key := nil;
-  DES_key_sched := nil;
-  DES_set_key_checked := nil;
-  DES_set_key_unchecked := nil;
-  DES_string_to_key := nil;
-  DES_string_to_2keys := nil;
-  DES_cfb64_encrypt := nil;
-  DES_ofb64_encrypt := nil;
-  DES_fixup_key_parity := nil; { removed 1.0.0 }
+  @DES_ecb2_encrypt := @ErrUnBound; { removed 1.0.0 }
+  @DES_ede2_cbc_encrypt := @ErrUnBound; { removed 1.0.0 }
+  @DES_ede2_cfb64_encrypt := @ErrUnBound; { removed 1.0.0 }
+  @DES_ede2_ofb64_encrypt := @ErrUnBound; { removed 1.0.0 }
+  @DES_options := @ErrUnBound;
+  @DES_ecb3_encrypt := @ErrUnBound;
+  @DES_cbc_cksum := @ErrUnBound;
+  @DES_cbc_encrypt := @ErrUnBound;
+  @DES_ncbc_encrypt := @ErrUnBound;
+  @DES_xcbc_encrypt := @ErrUnBound;
+  @DES_cfb_encrypt := @ErrUnBound;
+  @DES_ecb_encrypt := @ErrUnBound;
+  @DES_encrypt1 := @ErrUnBound;
+  @DES_encrypt2 := @ErrUnBound;
+  @DES_encrypt3 := @ErrUnBound;
+  @DES_decrypt3 := @ErrUnBound;
+  @DES_ede3_cbc_encrypt := @ErrUnBound;
+  @DES_ede3_cfb64_encrypt := @ErrUnBound;
+  @DES_ede3_cfb_encrypt := @ErrUnBound;
+  @DES_ede3_ofb64_encrypt := @ErrUnBound;
+  @DES_fcrypt := @ErrUnBound;
+  @DES_crypt := @ErrUnBound;
+  @DES_ofb_encrypt := @ErrUnBound;
+  @DES_pcbc_encrypt := @ErrUnBound;
+  @DES_quad_cksum := @ErrUnBound;
+  @DES_random_key := @ErrUnBound;
+  @DES_set_odd_parity := @ErrUnBound;
+  @DES_check_key_parity := @ErrUnBound;
+  @DES_is_weak_key := @ErrUnBound;
+  @DES_set_key := @ErrUnBound;
+  @DES_key_sched := @ErrUnBound;
+  @DES_set_key_checked := @ErrUnBound;
+  @DES_set_key_unchecked := @ErrUnBound;
+  @DES_string_to_key := @ErrUnBound;
+  @DES_string_to_2keys := @ErrUnBound;
+  @DES_cfb64_encrypt := @ErrUnBound;
+  @DES_ofb64_encrypt := @ErrUnBound;
+  @DES_fixup_key_parity := @ErrUnBound; { removed 1.0.0 }
 end;
   {$ENDIF}
 {$ELSE}
@@ -2235,6 +2235,7 @@ end;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
 
 Register_SSLLoader(Load, 'LibCrypto');
 Register_SSLUnloader(Unload);

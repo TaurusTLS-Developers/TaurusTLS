@@ -15,7 +15,7 @@ type
   TOSSLRandomBytesClass = class of TTaurusTLS_CustomOSSLRandomBytes;
 
   [TestFixture]
-  TOSSLRandomBytesFixture = class(TOsslBaseFixture)
+  TOSSLRandomBytesFixture = class(TOsslAutoloadFixture)
   public
     class function GetRandomBytes(ASource: TRandomSrc; ACtx: POSSL_LIB_CTX;
       AStrength: TIdC_UINT): TTaurusTLS_CustomOSSLRandomBytes; static;
@@ -28,7 +28,7 @@ type
 
   [TestFixture]
   [Category('Random')]
-  TOSSLRandomFixture = class(TOsslBaseFixture)
+  TOSSLRandomFixture = class(TOsslAutoloadFixture)
   private
     function GetOSSLRandom(ASource: TRandomSrc): TTaurusTLS_OSSLRandom;
     procedure CheckOsslResult(AResult: TIdC_INT);
@@ -64,7 +64,7 @@ type
 
   [TestFixture]
   [Category('Random')]
-  TRandomFixture = class(TOsslBaseFixture)
+  TRandomFixture = class(TOsslAutoloadFixture)
   private
     function GetRandom(ASource: TRandomSrc): TTaurusTLS_Random;
     procedure RandomT<T: record>(Source: TRandomSrc; Items: TIdC_SIZET);

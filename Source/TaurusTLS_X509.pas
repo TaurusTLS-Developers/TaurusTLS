@@ -172,13 +172,13 @@ type
   /// </summary>
   TTaurusTLSX509Fingerprints = class(TTaurusTLSX509Info)
 {$IFDEF USE_STRICT_PRIVATE_PROTECTED}strict{$ENDIF} protected
-    function GetSHA224: TTaurusTLSLEVP_MD; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetSHA224: TTaurusTLSLEVP_MD;
     function GetSHA224AsString: String; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetSHA256: TTaurusTLSLEVP_MD; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetSHA256: TTaurusTLSLEVP_MD;
     function GetSHA256AsString: String; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetSHA384: TTaurusTLSLEVP_MD; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetSHA384: TTaurusTLSLEVP_MD;
     function GetSHA384AsString: String; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetSHA512: TTaurusTLSLEVP_MD; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetSHA512: TTaurusTLSLEVP_MD;
     function GetSHA512AsString: String; {$IFDEF USE_INLINE}inline; {$ENDIF}
   public
     { IMPORTANT!!!
@@ -647,7 +647,7 @@ type
     function GetIssuer: TTaurusTLSX509Name; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetnotBefore: TDateTime; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetnotAfter: TDateTime; {$IFDEF USE_INLINE}inline; {$ENDIF}
-    function GetFingerprint: TTaurusTLSLEVP_MD; {$IFDEF USE_INLINE}inline; {$ENDIF}
+    function GetFingerprint: TTaurusTLSLEVP_MD;
     function GetFingerprintAsString: String; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetSerialNumber: String; {$IFDEF USE_INLINE}inline; {$ENDIF}
     function GetSigInfo: TTaurusTLSX509SigInfo; {$IFDEF USE_INLINE}inline; {$ENDIF}
@@ -860,6 +860,31 @@ uses
   TaurusTLSHeaders_rsa,
   TaurusTLSHeaders_x509_vfy,
   SysUtils;
+
+function  CalcHash(const AHashName : PIdAnsiChar; ACert : PX509;
+  AExceptionClass : ETaurusTLSAlgorithmNotFoundClass): TTaurusTLSLEVP_MD;
+var LMD : PEVP_MD;
+begin
+  LMD := EVP_MD_fetch(nil,AHashName,nil);
+  if assigned(LMD) then
+  begin
+    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
+    if X509_digest(ACert, LMD, PByte(@Result.MD), Result._Length) = 0 then
+    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
+    begin
+      EVP_MD_Free(LMD);
+
+      raise ETaurusTLSX509DigestFailed.Create(RSOSSLX509DigestFailed);
+    end;
+     EVP_MD_Free(LMD);
+
+  end
+  else
+  begin
+    raise AExceptionClass.CreateResMsg;
+  end;
+end;
+
 /// ////////////////////////////////////////////////////////////
 // X509 Certificate
 /// ////////////////////////////////////////////////////////////
@@ -969,7 +994,7 @@ begin
   {$else}
   if fX509Name = nil then
   begin
-    FillChar(Result, SizeOf(Result), 0)
+    FillChar(Result, SizeOf(Result), 0);
   end
   else
   {$endif}
@@ -1026,166 +1051,42 @@ end;
 
 function TTaurusTLSX509Fingerprints.GetSHA224: TTaurusTLSLEVP_MD; //FI:W521 0 syroress return value might be undefined.
 begin
-{$IFDEF OPENSSL_STATIC_LINK_MODEL}
-  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-  if X509_digest(FX509, EVP_sha224, PByte(@Result.MD), Result._Length) = 0 then
-  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
-{$ELSE}
-  if Assigned(EVP_sha224) then
-  begin
-{$ENDIF}
-    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-    if X509_digest(FX509, EVP_sha224, PByte(@Result.MD), Result._Length) = 0 then
-    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
-    begin
-      raise ETaurusTLSX509DigestFailed.Create(RSOSSLX509DigestFailed);
-    end;
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  end
-  else
-  begin
-    FillChar(Result, SizeOf(Result), 0);
-  end;
-{$ENDIF}
+  Result := CalcHash('SHA224',FX509,ETaurusTLSSHA224NotFound);
 end;
 
 function TTaurusTLSX509Fingerprints.GetSHA224AsString: String;
 begin
-{$IFDEF OPENSSL_STATIC_LINK_MODEL}
   Result := MDAsString(SHA224);
-{$ELSE}
-  if Assigned(EVP_sha224) then
-  begin
-    Result := MDAsString(SHA224);
-  end
-  else
-  begin
-    Result := '';
-  end;
-{$ENDIF}
 end;
 
 function TTaurusTLSX509Fingerprints.GetSHA256: TTaurusTLSLEVP_MD; //FI:W521 0 syroress return value might be undefined.
 begin
-{$IFDEF OPENSSL_STATIC_LINK_MODEL}
-  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-  if X509_digest(FX509, EVP_sha256, PByte(@Result.MD), Result._Length) = 0 then
-  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
-{$ELSE}
-  if Assigned(EVP_sha256) then
-  begin
-{$ENDIF}
-    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-    if X509_digest(FX509, EVP_sha256, PByte(@Result.MD), Result._Length) = 0 then
-    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
-    begin
-      raise ETaurusTLSX509DigestFailed.Create(RSOSSLX509DigestFailed);
-    end;
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  end
-  else
-  begin
-    FillChar(Result, SizeOf(Result), 0);
-  end;
-{$ENDIF}
+  Result := CalcHash('SHA256',FX509,ETaurusTLSSHA256NotFound);
 end;
 
 function TTaurusTLSX509Fingerprints.GetSHA256AsString: String;
 begin
-{$IFDEF OPENSSL_STATIC_LINK_MODEL}
   Result := MDAsString(SHA256);
-{$ELSE}
-  if Assigned(EVP_sha256) then
-  begin
-    Result := MDAsString(SHA256);
-  end
-  else
-  begin
-    Result := '';
-  end;
-{$ENDIF}
 end;
 
 function TTaurusTLSX509Fingerprints.GetSHA384: TTaurusTLSLEVP_MD; //FI:W521 0 syroress return value might be undefined.
 begin
-{$IFDEF OPENSSL_STATIC_LINK_MODEL}
-  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-  if X509_digest(FX509, EVP_sha384, PByte(@Result.MD), Result._Length) = 0 then
-  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
-{$ELSE}
-  if Assigned(EVP_sha384) then
-  begin
-{$ENDIF}
-    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-    if X509_digest(FX509, EVP_sha512, PByte(@Result.MD), Result._Length) = 0 then
-    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
-    begin
-      raise ETaurusTLSX509DigestFailed.Create(RSOSSLX509DigestFailed);
-    end;
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  end
-  else
-  begin
-    FillChar(Result, SizeOf(Result), 0);
-  end;
-{$ENDIF}
+  Result := CalcHash('SHA384',FX509,ETaurusTLSSHA512NotFound);
 end;
 
 function TTaurusTLSX509Fingerprints.GetSHA384AsString: String;
 begin
-{$IFDEF OPENSSL_STATIC_LINK_MODEL}
   Result := MDAsString(SHA384);
-{$ELSE}
-  if Assigned(EVP_SHA384) then
-  begin
-    Result := MDAsString(SHA384);
-  end
-  else
-  begin
-    Result := '';
-  end;
-{$ENDIF}
 end;
 
 function TTaurusTLSX509Fingerprints.GetSHA512: TTaurusTLSLEVP_MD;  //FI:W521 0 syroress return value might be undefined.
 begin
-{$IFDEF OPENSSL_STATIC_LINK_MODEL}
-  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-  if X509_digest(FX509, EVP_sha512, PByte(@Result.MD), Result._Length) = 0 then
-  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
-{$ELSE}
-  if Assigned(EVP_sha512) then
-  begin
-{$ENDIF}
-    {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-    if X509_digest(FX509, EVP_sha512, PByte(@Result.MD), Result._Length) = 0 then
-    {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
-    begin
-      raise ETaurusTLSX509DigestFailed.Create(RSOSSLX509DigestFailed);
-    end;
-{$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  end
-  else
-  begin
-    FillChar(Result, SizeOf(Result), 0);
-  end;
-{$ENDIF}
+  Result := CalcHash('SHA512',FX509,ETaurusTLSSHA512NotFound);
 end;
 
 function TTaurusTLSX509Fingerprints.GetSHA512AsString: String;
 begin
-{$IFDEF OPENSSL_STATIC_LINK_MODEL}
   Result := MDAsString(SHA512);
-{$ELSE}
-  if Assigned(EVP_sha512) then
-  begin
-    Result := MDAsString(SHA512);
-  end
-  else
-  begin
-    Result := '';
-  end;
-{$ENDIF}
 end;
 
 { TTaurusTLSX509SigInfo }
@@ -1590,12 +1491,7 @@ end;
 
 function TTaurusTLSX509.GetFingerprint: TTaurusTLSLEVP_MD; //FI:W521 0 syroress return value might be undefined.
 begin
-  {$IFDEF DCC}{$WARN UNSAFE_CODE OFF}{$ENDIF}
-  if X509_digest(FX509, EVP_md5, PByte(@Result.MD), Result._Length) = 0 then
-  {$IFDEF DCC}{$WARN UNSAFE_CODE DEFAULT}{$ENDIF}
-  begin
-    raise ETaurusTLSX509DigestFailed.Create(RSOSSLX509DigestFailed);
-  end;
+  Result := CalcHash('SHA512',FX509,ETaurusTLSSHA512NotFound);
 end;
 
 function TTaurusTLSX509.GetFingerprintAsString: String;

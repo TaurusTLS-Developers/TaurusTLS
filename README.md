@@ -5,11 +5,12 @@ All Rights Reserved
 
 ## General Information
 
-TaurusTLS provides 3.x and 4.x support for Indy - Internet Direct.  It includes headers plus three components for Delphi and C++Builder.  Those components are:
+TaurusTLS provides 3.x and 4.x support for Indy - Internet Direct.  It includes headers plus four components for Delphi and C++Builder.  Those components are:
 
 - TTaurusTLSIOHandlerSocket - Enables TLS in a TIdTCPClientCustom descendant.
 - TTaurusTLSServerIOHandler - Enables TLS in a TIdCustomTCPServer descendant.
 - TTaurusTLSUnicodeLog - Triggers events when data is sent and received and data is provided in Unicode form if supported.
+- TTaurusTLSLoader - Platform-aware component over the shared OpenSSL singleton.
 
 The components are available on the IDE palette page, “TaurusTLS”.
 
@@ -20,6 +21,12 @@ TaurusTLS supports the following operating systems:
 - Linux
 - MacOS
 - Windows
+
+## Upgrading to TaurusTLS 1.1
+
+TaurusTLS 1.1 supports OpenSSL 3.x and 4.x and requires OpenSSL to be
+loaded or initialized before use. See the [migration guide](Migration_to_1_1.md)
+for initialization options, provider configuration and changes to existing applications.
 
 ## License
 
@@ -75,23 +82,25 @@ I suggest that you have 2 separate packages; a runtime only package and a design
 The run-time package should depend upon your Indy package files and include the following:
 
 - Source\TaurusTLS.pas
-- Source\TaurusTLS_Files.pas
-- Source\TaurusTLS_LegacyProviders.pas
-- Source\TaurusTLS_NTLM.pas
-- Source\TaurusTLS_ResourceStrings.pas
-- Source\TaurusTLS_Utils.pas
-- Source\TaurusTLS_X509.pas
 - Source\TaurusTLSConsts.pas
 - Source\TaurusTLSExceptionHandlers.pas
-- Source\TaurusTLSFIPS.pas
-- Source\TaurusTLS_Unicode_Log.pas
 - Source\TaurusTLSHeaders_*.pas
+- Source\TaurusTLSIdFIPS.pas
+- Source\TaurusTLSIdNTLM.pas
 - Source\TaurusTLSLoader.pas
+- Source\TaurusTLS_Files.pas
+- Source\TaurusTLS_ProviderFIPS.pas
+- Source\TaurusTLS_ProviderLegacy.pas
+- Source\TaurusTLS_ResourceStrings.pas
+- Source\TaurusTLS_Unicode_Log.pas
+- Source\TaurusTLS_Utils.pas
+- Source\TaurusTLS_X509.pas
 
 The design-time package should depend upon the run-time package and include the following files:
 
 - Source\TaurusTLS_Dsn_AboutDlg.pas
 - Source\TaurusTLS_Dsn_ComponentEditor.pas
+- Source\TaurusTLS_Dsn_Const.pas
 - Source\TaurusTLS_Dsn_Register.pas
 - Source\TaurusTLS_Dsn_ResourceStrings.pas
 
@@ -111,49 +120,64 @@ TaurusTLS includes a component reference in "Compiled HTML Help file (.chm)" for
 
 ## Demo Programs
 
-Taurus TLS includes 3 demo programs.  
+Demo applications are maintained in the
+[taurustls_demos repository](https://github.com/TaurusTLS-Developers/taurustls_demos)
+and included here as the `demos` Git submodule. Each TaurusTLS checkout records
+an exact demo revision.
 
-### TaurusTLS\src\demos\FTPServer\TaurusFTPServer.dproj
-
-This is a FTP Server with TLS enabled that runs in the Windows console.  This program has been tested with the following FTP clients:
-
-- FileZilla - <https://filezilla-project.org/>
-- SmartFTP - <https://www.smartftp.com/en-us/>
-- WinSCP - <https://winscp.net/eng/index.php>
-- WS_FTP Professional - <https://www.progress.com/resources/papers/ws-ftp-pro-data-sheet>
-
-This program requires a certificate to run.  Instructions for creating a self-signed certificate are available at [https://technotes.shemyak.com/posts/min-openssl-cnf/](https://technotes.shemyak.com/posts/min-openssl-cnf/).  You then need to create a server.ini file in the executable directory that enables the certificate that has the following lines:
+**To download the demos, clone with `--recursive` (or `--recurse-submodules`).**
+A plain `git clone` does not populate the `demos` submodule.
 
 ```text
-[Certificate]
-CertificateFile=[path to your public certificate file]
-KeyFile=[path to your private SSL key]
-Password=[password for your private SSL key]
-RootCertFile=[path to your root certificate file if applicable]
+git clone --recursive https://github.com/TaurusTLS-Developers/TaurusTLS.git
 ```
 
-You can also do the following:
+For an existing checkout, initialize or update the recorded demo revision:
 
-1. Copy the OpenSSL .dll's and openssl.exe to the directory where the FTP server demo .exe is built.  Usually that is \\$\(platform\)\\Debug or \\$\(platform\)\\Release.
-2. Run the makecert.bat to generate a self-signed certificate.  Just answer the prompts and the certificate is generated.
-3. Run the FTP Server .exe and it will create a default server.ini file that points to the certificate files generated in Step 2.
+```text
+git submodule update --init --recursive demos
+```
 
-### TaurusTLS\demos\TaurusFTPConsole\taurusftp.dpr and taurusftp.lpr
+Run this command after pulling TaurusTLS changes or switching releases to obtain
+the demo revision recorded by that checkout. It does not select the latest demo
+commit automatically. Preserve any local demo edits before changing revisions.
 
-This is a fully functional cross-platform console FTP client that can be built with both Delphi and Lazaurus.  It has been tested with the following servers:
+Source archives do not include submodule contents; obtain the demo repository
+separately when working without Git. See the
+[FireMonkey demo README](demos/Delphi/TaurusFMXDemo/README.md) for build,
+configuration and deployment instructions. That demo illustrates HTTP/FTP
+transfers, certificate details, optional IOHandler AutoLoad and OpenSSL lifetime.
+The cross-platform FTP console sample is under `demos/Both/FTP_Console`.
 
-- CompleteFTP Server - <https://enterprisedt.com/products/completeftp/>
-- FileZilla Server - <https://filezilla-project.org/>
-- ProFTPD - <http://www.proftpd.org/>
-- PureFTPD - <https://www.pureftpd.org/>
-- vsftpd - <https://security.appspot.com/vsftpd.html>
-- Xlight FTP Server - <https://www.xlightftpd.com/>
+DUnitX is an external test dependency, not a submodule. See the
+[test guide](Tests/Readme.md) for configuring its source path; it is not required
+to build applications using TaurusTLS.
 
-For help using the client, just use the "help" command.
+### Maintaining the recorded demo revision
 
-### TaurusTLS\Demos\TaurusHTTPServer\taurusHTTPServer.dpr and taurusHTTPServer.lpr
+TaurusTLS maintainers update the demo revision deliberately, for example when
+preparing a release or including a relevant demo fix. A commit in the separate
+demo repository does not require an immediate TaurusTLS update.
 
-This is a minimal HTTP Server that only replies with a 200 code and an empty page.  This program is used for testing the server component for cross-platform usage.  This program requires a certificate file (domain.crt) and a private key file (domain.key) that has to generated by the openssl.exe program.
+From the TaurusTLS repository root, fetch and select the reviewed demo commit
+(replace REVIEWED_DEMO_COMMIT with its commit ID):
+
+```text
+git -C demos fetch origin
+git -C demos checkout --detach REVIEWED_DEMO_COMMIT
+```
+
+Check the demos against the intended TaurusTLS version, then record the selected
+revision in a signed TaurusTLS commit:
+
+```text
+git add demos
+git commit -S -m "Update demo revision for TaurusTLS"
+```
+
+Commit and push demo source changes in the demo repository first. The selected
+commit must be available there before publishing the TaurusTLS revision that
+references it. Keep the submodule's working tree clean when recording the update.
 
 ## Tools I Use
 
