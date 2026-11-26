@@ -230,7 +230,10 @@ Use the paths from your application's installation. `OpenSSLPath` tells
 TaurusTLS where to find libcrypto and libssl. It loads libcrypto first, then
 requires libssl from the same directory with the same filename suffix. A missing
 matching libssl or a different loaded directory raises `ETaurusTLSLoaderError`.
-OpenSSL locates provider modules separately.
+OpenSSL locates provider modules separately. A nonempty relative library directory
+is resolved against the working directory once per search so candidate paths
+remain consistent if the working directory changes. An empty directory keeps the
+platform search behavior.
 
 While OpenSSL is ready, `OpenSSLPath` returns the actual loaded directory and
 `SSLLibVersions` returns the selected suffix. After `Unload` or a failed load,
@@ -673,7 +676,34 @@ or cryptographic operations may still be running.
 With linked libraries, `Unload` leaves the code linked into the application.
 It also cannot guarantee a reset of OpenSSL's earlier initialization choices.
 Coordinate configuration with other libraries that use the same OpenSSL
-instance.
+instance. For dynamically loaded OpenSSL 4+, TaurusTLS calls OPENSSL_cleanup
+before releasing library handles, after consumer cleanup callbacks. It does not
+add this global cleanup to OpenSSL 3.x or linked/imported unload cycles. Do not
+call global cleanup from an individual connection's teardown.
+
+### Custom lifecycle callbacks
+
+Applications do not manage header procedural variables or their automatic
+binding/reset registrations. Custom Register_SSLLoaderAction callbacks are
+different: registrations contain non-owning method pointers. Keep the callback
+object and its referenced state alive until UnRegister_SSLLoaderAction and any
+synchronous cleanup finish. Load/Unload retain registrations, including while
+inactive or failed. Remove every duplicate registration before destroying its
+owner. Registration/removal from within lifecycle callbacks is rejected.
+
+### IOHandler context and STARTTLS changes
+
+Configure the IOHandler before Connect or server activation. Init publishes
+contexts only after initialization and custom context loading succeed. Server
+default/SNI preparation is transactional; accepted handlers borrow the prepared
+server contexts. In OnContextLoaderCustom use the supplied AContext parameter,
+not the owner's SSLContext as a partially initialized object. Do not retain a
+candidate or recursively initialize/destroy its owner.
+
+STARTTLS uses the context already prepared for the initially plaintext
+connection. Unread plaintext input is rejected before TLS negotiation. A failed
+upgrade, including a negotiated callback failure, clears buffered input and closes
+the connection; do not continue the protocol in plaintext after that failure.
 
 ### Before you finish migrating
 
@@ -710,7 +740,11 @@ assuming the linking mode from the platform name alone.
 
 The current interface is declared in
 [`Source/TaurusTLSLoader.pas`](Source/TaurusTLSLoader.pas).
-The exact comparison with the 1.0 API still needs maintainer confirmation.
+Compared with the 1.0.11.53 source tag, 1.1 adds explicit readiness/state,
+configuration policy and cached runtime metadata to the loader API. The
+TTaurusTLSLoader component provides design-time platform settings and runtime
+access to the same singleton. Rebuild dependent packages and applications;
+retaining the interface GUID does not preserve binary compatibility.
 
 | Member | What it does |
 |---|---|
@@ -720,6 +754,8 @@ The exact comparison with the 1.0 API still needs maintainer confirmation.
 | `IsLoaded: Boolean` | Returns True after configuration and all registered load callbacks have completed. |
 | `State` / `GetState` | Reports `lsNotLoaded`, `lsLoadedReady` or `lsLoadedFailed`. During loading or unloading it reports `lsNotLoaded`. |
 | `ConfigFile` / `GetConfigFile` / `SetConfigFile` | Selects the main OpenSSL configuration file for either linking model. |
+| `VersionNumber` / `GetVersionNumber` | Returns the cached raw OpenSSL_version_num value while ready, or zero otherwise; compare with cVer3/cVer4 from TaurusTLSLoader. |
+| `RequireConfigFile` | Defaults to False. True requires a nonempty existing configuration filename; an existing invalid file fails under either policy. |
 | `Version` / `GetVersion` | Returns the cached OpenSSL version, or an empty string while not ready. |
 | `ConfigDirectory` / `GetConfigDirectory` | Returns the directory of the configuration file applied during loading, or empty when none was applied or the loader is not ready. |
 | `ModulesDirectory` / `GetModulesDirectory` | Reports OpenSSL's default provider-module directory, rather than the configured module paths or `OPENSSL_MODULES`. Empty while not ready or unavailable. |
@@ -755,9 +791,12 @@ in new code:
 | `OpenSSLModulesDir` | `ModulesDirectory` |
 | `OpenSSLEnginesDir` | `EnginesDirectory` |
 
-`OpenSSLDir` now returns the directory of the selected or discovered configuration
-filename. It does not query the compiled default directory. The final comparison
-with TaurusTLS 1.0 still needs review.
+In 1.0.11.53, `OpenSSLDir` could trigger library loading and reported the compiled
+configuration directory through OPENSSL_info or version-string fallback. In 1.1
+it returns the directory of the configuration file actually applied during Load,
+or empty when no file was applied or the loader is not ready. It does not query
+the compiled default directory. Treat these deprecated metadata helpers as queries,
+not initialization entry points.
 
 ## Source references
 
@@ -772,11 +811,13 @@ For implementation details, see:
 - [Linked Legacy provider registration](Source/TaurusTLS_ProviderLegacy.pas)
 - [FIPS tests](Tests/TaurusTLS.UT.Providers.FIPS.pas) and [NTLM tests](Tests/TaurusTLS.UT.NTLM.pas)
 
-## Notes for maintainers before publishing
+## Validation scope
 
-This guide is still a draft. Confirm the comparison with the 1.0 API and the
-supported FPC setup for linked Legacy before publishing those instructions.
+Use the [test guide](Tests/Readme.md) and
+[provider scenario instructions](Tests/TaurusTLS.UT.Providers.md) to verify your
+application's target, linking model and provider deployment. A successful build
+or test on one platform does not establish support for another. The FPC linked
+Legacy setup is not established by this guide; use the documented Delphi archive
+path or validate the FPC configuration separately before relying on it.
 
-Record build and runtime test results separately. A successful compilation or
-a passing test on one platform does not establish support for another platform
-or linking mode.
+See the [documentation index](Doc/README.md) for subsystem designs.
