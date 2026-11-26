@@ -619,6 +619,12 @@ The registration unit uses `STATICLOAD_OPENSSL`. Selecting FPC's
 FPC setup for linked Legacy still needs maintainer confirmation before we can
 give instructions for it here.
 
+## Provider configuration examples
+
+Adapt the [Legacy and FIPS configuration samples](Doc/examples/OpenSSL/README.md)
+to your deployment. The FIPS sample includes commands to generate and verify
+the required module installation data before loading its main configuration.
+
 ## Reference and deployment notes
 
 ### Platform settings

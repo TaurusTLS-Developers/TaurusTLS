@@ -14,3 +14,6 @@ documentation belongs alongside examples under `examples/`.
 | Legacy provider | [Optional Legacy provider](Design/Providers/legacy_providers_HLD.md) | [Detailed design](Design/Providers/legacy_providers_DDD.md) |
 
 [Explicit loading examples](Design/Providers/explicit_loading_migration.md) complement the migration guide.
+## Configuration examples
+
+[OpenSSL Legacy and FIPS provider configurations](examples/OpenSSL/README.md), including FIPS installation commands.
