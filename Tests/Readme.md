@@ -10,9 +10,10 @@ that every target, compiler version or OpenSSL distribution has been validated.
 - Delphi with the SDK/toolchain for the selected target. The sources use Delphi
   namespaces and System.IOUtils; project files contain target-specific settings.
 - A source version of [DUnitX](https://github.com/VSoftTechnologies/DUnitX)
-  supporting the test attributes used here, including AutoNameTestCase. The
-  repository declares `submodules/DUnitX`; initialize the submodule or configure
-  an appropriate source checkout in the compiler search path.
+  supporting the test attributes used here, including AutoNameTestCase.
+  DUnitX is an external dependency, not a TaurusTLS submodule. Obtain a separate
+  source checkout and configure its Source directory through the DUNITX path
+  macro used by the test project (or the compiler search path).
 - [Indy](https://github.com/IndySockets/Indy) and the matching TaurusTLS sources.
 - OpenSSL 3.x or 4.x matching the executable architecture and linking model.
   Dynamic builds need matching libcrypto/libssl installations; linked targets
