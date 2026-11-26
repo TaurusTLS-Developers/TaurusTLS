@@ -1882,8 +1882,10 @@ begin
   if Assigned(LAddress) then
   begin
     FillChar(LInfo, SizeOf(LInfo), 0);
-    // Match the C buffer pointer type without casting the fixed array.
-    LResolvedName := @LResolved[0];
+    // Cast the complete buffer, not its first character: realpath writes the
+    // resolved filename into this array.
+
+    LResolvedName := PAnsiChar(@LResolved);
 {$IFDEF FPC}
     if (dladdr(LAddress, @LInfo) <> 0) and Assigned(LInfo.dli_fname) then
       if Assigned(TaurusTLSRealPath(LInfo.dli_fname, LResolvedName)) then
