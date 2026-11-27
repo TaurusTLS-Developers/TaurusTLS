@@ -13,7 +13,7 @@ interface
 
 resourcestring
   RSTaurusTLS = 'TaurusTLS';
-  RSAAboutMenuItemName = 'About TaurusTLS ';
+  RSAAboutMenuItemName = '&About TaurusTLS %s...';
   RSTaurusTLSVersion = '%s%s%s';
   RSTaurusTLSVersionPrefix = 'Version ';
   RSTaurusTLSDescription =
