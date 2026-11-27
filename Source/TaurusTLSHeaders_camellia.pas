@@ -565,22 +565,23 @@ end;
   {$I TaurusTLSUnusedParamOn.inc}
 procedure Unload;
 begin
-  Camellia_set_key := nil;
-  Camellia_encrypt := nil;
-  Camellia_decrypt := nil;
-  Camellia_ecb_encrypt := nil;
-  Camellia_cbc_encrypt := nil;
-  Camellia_cfb128_encrypt := nil;
-  Camellia_cfb1_encrypt := nil;
-  Camellia_cfb8_encrypt := nil;
-  Camellia_ofb128_encrypt := nil;
-  Camellia_ctr128_encrypt := nil;
+  @Camellia_set_key := @ErrUnBound;
+  @Camellia_encrypt := @ErrUnBound;
+  @Camellia_decrypt := @ErrUnBound;
+  @Camellia_ecb_encrypt := @ErrUnBound;
+  @Camellia_cbc_encrypt := @ErrUnBound;
+  @Camellia_cfb128_encrypt := @ErrUnBound;
+  @Camellia_cfb1_encrypt := @ErrUnBound;
+  @Camellia_cfb8_encrypt := @ErrUnBound;
+  @Camellia_ofb128_encrypt := @ErrUnBound;
+  @Camellia_ctr128_encrypt := @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

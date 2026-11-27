@@ -968,31 +968,32 @@ end;
 
 procedure Unload;
 begin
-  OSSL_PROVIDER_set_default_search_path := nil; {introduced 3.0.0}
-  OSSL_PROVIDER_load := nil; {introduced 3.0.0}
-  OSSL_PROVIDER_try_load := nil; {introduced 3.0.0}
-  OSSL_PROVIDER_unload := nil; {introduced 3.0.0}
-  OSSL_PROVIDER_available := nil; {introduced 3.0.0}
-  OSSL_PROVIDER_do_all := nil; {introduced 3.0.0}
-  OSSL_PROVIDER_gettable_params := nil; {introduced 3.0.0}
-  OSSL_PROVIDER_get_params := nil; {introduced 3.0.0}
-  OSSL_PROVIDER_self_test := nil;{introduced 3.0.0}
-  OSSL_PROVIDER_get_capabilities := nil;{introduced 3.0.0}
-  OSSL_PROVIDER_query_operation := nil; {introduced 3.0.0}
-  OSSL_PROVIDER_unquery_operation := nil; {introduced 3.0.0}
-  OSSL_PROVIDER_get0_provider_ctx := nil; {introduced 3.0.0}
-  OSSL_PROVIDER_get0_dispatch := nil; {introduced 3.0.0}
-  OSSL_PROVIDER_add_builtin := nil; {introduced 3.0.0}
-  OSSL_PROVIDER_get0_name := nil; {introduced 3.0.0}
-  OSSL_PROVIDER_get0_default_search_path := nil; {introduced 3.2.0}
-  OSSL_PROVIDER_try_load_ex := nil; {introduced 3.2.0}
-  OSSL_PROVIDER_load_ex := nil; {introduced 3.2.0}
+  @OSSL_PROVIDER_set_default_search_path := @ErrUnBound; {introduced 3.0.0}
+  @OSSL_PROVIDER_load := @ErrUnBound; {introduced 3.0.0}
+  @OSSL_PROVIDER_try_load := @ErrUnBound; {introduced 3.0.0}
+  @OSSL_PROVIDER_unload := @ErrUnBound; {introduced 3.0.0}
+  @OSSL_PROVIDER_available := @ErrUnBound; {introduced 3.0.0}
+  @OSSL_PROVIDER_do_all := @ErrUnBound; {introduced 3.0.0}
+  @OSSL_PROVIDER_gettable_params := @ErrUnBound; {introduced 3.0.0}
+  @OSSL_PROVIDER_get_params := @ErrUnBound; {introduced 3.0.0}
+  @OSSL_PROVIDER_self_test := @ErrUnBound;{introduced 3.0.0}
+  @OSSL_PROVIDER_get_capabilities := @ErrUnBound;{introduced 3.0.0}
+  @OSSL_PROVIDER_query_operation := @ErrUnBound; {introduced 3.0.0}
+  @OSSL_PROVIDER_unquery_operation := @ErrUnBound; {introduced 3.0.0}
+  @OSSL_PROVIDER_get0_provider_ctx := @ErrUnBound; {introduced 3.0.0}
+  @OSSL_PROVIDER_get0_dispatch := @ErrUnBound; {introduced 3.0.0}
+  @OSSL_PROVIDER_add_builtin := @ErrUnBound; {introduced 3.0.0}
+  @OSSL_PROVIDER_get0_name := @ErrUnBound; {introduced 3.0.0}
+  @OSSL_PROVIDER_get0_default_search_path := @ErrUnBound; {introduced 3.2.0}
+  @OSSL_PROVIDER_try_load_ex := @ErrUnBound; {introduced 3.2.0}
+  @OSSL_PROVIDER_load_ex := @ErrUnBound; {introduced 3.2.0}
 end;
   {$ENDIF}
 {$ENDIF}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

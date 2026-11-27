@@ -1,0 +1,25 @@
+# OpenSSL 3.x/4.x: activate Default and Legacy (for example, LM/NTLMv1).
+# This is a compatibility policy, not a FIPS configuration.
+# Select this file with Loader.ConfigFile and RequireConfigFile=True before Load.
+config_diagnostics = 1
+openssl_conf = app_init
+
+[app_init]
+providers = app_providers
+
+[app_providers]
+default = default_sect
+legacy = legacy_sect
+
+[default_sect]
+activate = 1
+
+[legacy_sect]
+activate = 1
+# Normally OpenSSL finds the module through its module search path.
+# If needed, set an absolute path matching the deployed installation:
+# module = "/path/to/openssl/lib/ossl-modules/legacy.so"
+# Windows example (forward slashes avoid configuration escaping):
+# module = "C:/path/to/openssl/lib/ossl-modules/legacy.dll"
+# For linked Delphi Legacy support, include TaurusTLS_ProviderLegacy and
+# link liblegacy.a; omit module so the registered built-in provider is used.

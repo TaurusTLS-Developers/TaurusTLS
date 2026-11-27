@@ -5,9 +5,9 @@
 		<ProjectVersion>18.8</ProjectVersion>
 		<FrameworkType>FMX</FrameworkType>
 		<Base>True</Base>
-		<Config Condition="'$(Config)'==''">Debug</Config>
-		<Platform Condition="'$(Platform)'==''">Win64</Platform>
-		<TargetedPlatforms>7</TargetedPlatforms>
+		<Config Condition="'$(Config)'==''">Release</Config>
+		<Platform Condition="'$(Platform)'==''">Win32</Platform>
+		<TargetedPlatforms>3</TargetedPlatforms>
 		<AppType>Package</AppType>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
@@ -97,6 +97,7 @@
         <DCC_UNSAFE_CAST>true</DCC_UNSAFE_CAST>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Base_Android)'!=''">
+		<DCC_UnitSearchPath>$(OSSL_LIB_ANDROID32);$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
 		<DCC_CBuilderOutput>None</DCC_CBuilderOutput>
 		<EnabledSysJars>android-support-v4.dex.jar;cloud-messaging.dex.jar;com-google-android-gms.play-services-ads-base.17.2.0.dex.jar;com-google-android-gms.play-services-ads-identifier.16.0.0.dex.jar;com-google-android-gms.play-services-ads-lite.17.2.0.dex.jar;com-google-android-gms.play-services-ads.17.2.0.dex.jar;com-google-android-gms.play-services-analytics-impl.16.0.8.dex.jar;com-google-android-gms.play-services-analytics.16.0.8.dex.jar;com-google-android-gms.play-services-base.16.0.1.dex.jar;com-google-android-gms.play-services-basement.16.2.0.dex.jar;com-google-android-gms.play-services-gass.17.2.0.dex.jar;com-google-android-gms.play-services-identity.16.0.0.dex.jar;com-google-android-gms.play-services-maps.16.1.0.dex.jar;com-google-android-gms.play-services-measurement-base.16.4.0.dex.jar;com-google-android-gms.play-services-measurement-sdk-api.16.4.0.dex.jar;com-google-android-gms.play-services-stats.16.0.1.dex.jar;com-google-android-gms.play-services-tagmanager-v4-impl.16.0.8.dex.jar;com-google-android-gms.play-services-tasks.16.0.1.dex.jar;com-google-android-gms.play-services-wallet.16.0.1.dex.jar;com-google-firebase.firebase-analytics.16.4.0.dex.jar;com-google-firebase.firebase-common.16.1.0.dex.jar;com-google-firebase.firebase-iid-interop.16.0.1.dex.jar;com-google-firebase.firebase-iid.17.1.1.dex.jar;com-google-firebase.firebase-measurement-connector.17.0.1.dex.jar;com-google-firebase.firebase-messaging.17.5.0.dex.jar;fmx.dex.jar;google-play-billing.dex.jar;google-play-licensing.dex.jar</EnabledSysJars>
 	</PropertyGroup>
@@ -104,6 +105,7 @@
 		<DCC_CBuilderOutput>None</DCC_CBuilderOutput>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Base_iOSDevice64)'!=''">
+		<DCC_UnitSearchPath>$(OSSL_LIB_IOS64);$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
 		<DCC_CBuilderOutput>None</DCC_CBuilderOutput>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Base_iOSSimulator)'!=''">
@@ -927,7 +929,7 @@
 				<Platform value="iOSDevice32">False</Platform>
 				<Platform value="iOSDevice64">False</Platform>
 				<Platform value="iOSSimulator">False</Platform>
-				<Platform value="OSX32">True</Platform>
+				<Platform value="OSX32">False</Platform>
 				<Platform value="Win32">True</Platform>
 				<Platform value="Win64">True</Platform>
 			</Platforms>

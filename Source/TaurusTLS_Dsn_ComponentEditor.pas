@@ -1,3 +1,12 @@
+{******************************************************************************}
+{*  TaurusTLS                                                                 *}
+{*           https://github.com/JPeterMugaas/TaurusTLS                        *}
+{*                                                                            *}
+{*  Copyright (c) 2024 TaurusTLS Developers, All Rights Reserved              *}
+{*                                                                            *}
+{* Portions of this software are Copyright (c) 1993 – 2018,                   *}
+{* Chad Z. Hower (Kudzu) and the Indy Pit Crew – http://www.IndyProject.org/  *}
+{******************************************************************************}
 unit TaurusTLS_Dsn_ComponentEditor;
 
 {$I TaurusTLSCompilerDefines.inc}
@@ -21,7 +30,9 @@ uses
   {$ENDIF}
   ;
 
-{$I TaurusTLS_Vers.inc}
+{$IFDEF DCC}
+  {$R 'TaurusTLS_Dsn.dres'}
+{$ENDIF}
 
 type
   {$IFDEF FPC}
@@ -39,8 +50,11 @@ procedure Register;
 
 implementation
 uses
+  SysUtils,
   IdGlobal,
+  TaurusTLS_Dsn_Const,
   TaurusTLS,
+  TaurusTLSLoader,
   TaurusTLS_Dsn_AboutDlg,
   TaurusTLS_Dsn_ResourceStrings,
   TaurusTLS_Unicode_Log;
@@ -48,14 +62,14 @@ uses
 procedure TTaurusTLSComponentEditor.ExecuteVerb(Index: Integer);
 begin
   case Index of
-    0 : AboutDlg(gsTaurusTLSVersion);
+    0 : AboutDlg;
   end;
 end;
 
 function TTaurusTLSComponentEditor.GetVerb(Index: Integer): string;
 begin
   case Index of
-    0: Result := IndyFormat(RSAAboutMenuItemName, [gsTaurusTLSVersion]);
+    0: Result := GetTaurusTLSVersion(RSAAboutMenuItemName, ' ...'); //Do not localize
   end;
 end;
 
@@ -69,6 +83,7 @@ begin
   RegisterComponentEditor(TTaurusTLSIOHandlerSocket, TTaurusTLSComponentEditor);
   RegisterComponentEditor(TTaurusTLSServerIOHandler, TTaurusTLSComponentEditor);
   RegisterComponentEditor(TTaurusTLSUnicodeLog, TTaurusTLSComponentEditor);
+  RegisterComponentEditor(TTaurusTLSLoader, TTaurusTLSComponentEditor);
 end;
 
 end.

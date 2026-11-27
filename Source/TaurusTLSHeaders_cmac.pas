@@ -475,20 +475,21 @@ end;
 
 procedure Unload;
 begin
-  CMAC_CTX_new := nil;
-  CMAC_CTX_cleanup := nil;
-  CMAC_CTX_free := nil;
-  CMAC_CTX_get0_cipher_ctx := nil;
-  CMAC_CTX_copy := nil;
-  CMAC_Init := nil;
-  CMAC_Update := nil;
-  CMAC_Final := nil;
-  CMAC_resume := nil;
+  @CMAC_CTX_new := @ErrUnBound;
+  @CMAC_CTX_cleanup := @ErrUnBound;
+  @CMAC_CTX_free := @ErrUnBound;
+  @CMAC_CTX_get0_cipher_ctx := @ErrUnBound;
+  @CMAC_CTX_copy := @ErrUnBound;
+  @CMAC_Init := @ErrUnBound;
+  @CMAC_Update := @ErrUnBound;
+  @CMAC_Final := @ErrUnBound;
+  @CMAC_resume := @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

@@ -176,10 +176,11 @@ end;
   {$I TaurusTLSUnusedParamOn.inc}
 procedure Unload;
 begin
-  ERR_load_CRYPTO_strings := nil;
+  @ERR_load_CRYPTO_strings := @ErrUnBound;
 end;
 
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
   {$ENDIF}

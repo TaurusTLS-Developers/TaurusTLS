@@ -320,17 +320,18 @@ end;
 
 procedure Unload;
 begin
-  WHIRLPOOL_Init := nil;
-  WHIRLPOOL_Update := nil;
-  WHIRLPOOL_BitUpdate := nil;
-  WHIRLPOOL_Final := nil;
-  WHIRLPOOL := nil;
+  @WHIRLPOOL_Init := @ErrUnBound;
+  @WHIRLPOOL_Update := @ErrUnBound;
+  @WHIRLPOOL_BitUpdate := @ErrUnBound;
+  @WHIRLPOOL_Final := @ErrUnBound;
+  @WHIRLPOOL := @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

@@ -521,22 +521,23 @@ end;
 
 procedure Unload;
 begin
-  COMP_CTX_new := nil;
-  COMP_CTX_get_method := nil;
-  COMP_CTX_get_type := nil;
-  COMP_get_type := nil;
-  COMP_get_name := nil;
-  COMP_CTX_free := nil;
-  COMP_compress_block := nil;
-  COMP_expand_block := nil;
-  COMP_zlib := nil;
-  BIO_f_zlib := nil;
+  @COMP_CTX_new := @ErrUnBound;
+  @COMP_CTX_get_method := @ErrUnBound;
+  @COMP_CTX_get_type := @ErrUnBound;
+  @COMP_get_type := @ErrUnBound;
+  @COMP_get_name := @ErrUnBound;
+  @COMP_CTX_free := @ErrUnBound;
+  @COMP_compress_block := @ErrUnBound;
+  @COMP_expand_block := @ErrUnBound;
+  @COMP_zlib := @ErrUnBound;
+  @BIO_f_zlib := @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

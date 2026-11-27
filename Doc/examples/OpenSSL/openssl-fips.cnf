@@ -1,0 +1,41 @@
+# TaurusTLS dynamic OpenSSL builds: activate FIPS + Base and select fips=yes.
+# Replace all /path/to placeholders before selecting this configuration.
+# Use the OpenSSL CLI and FIPS module supplied for your approved deployment.
+# First generate the module installation data on the target installation:
+# openssl fipsinstall -module "/path/to/openssl/lib/ossl-modules/fips.so" -out "/path/to/app/conf/fipsmodule.cnf" -provider_name fips -section_name fips_sect
+# Windows equivalent (replace paths for your installation):
+# openssl fipsinstall -module "C:/path/to/openssl/lib/ossl-modules/fips.dll" -out "C:/path/to/app/conf/fipsmodule.cnf" -provider_name fips -section_name fips_sect
+# Run installation BEFORE setting OPENSSL_CONF to this not-yet-ready file.
+# If OPENSSL_CONF already selects it, use a working bootstrap configuration
+# for installation instead. Follow the module's Security Policy instructions.
+# Do not hand-write module-mac or ship a fabricated fipsmodule.cnf.
+# Then verify the generated data, using the same module and paths:
+# openssl fipsinstall -verify -module "/path/to/openssl/lib/ossl-modules/fips.so" -in "/path/to/app/conf/fipsmodule.cnf" -provider_name fips -section_name fips_sect
+# Select this main file with Loader.ConfigFile and RequireConfigFile=True.
+config_diagnostics = 1
+openssl_conf = app_init
+
+# Absolute include path: it does not depend on the application's working directory.
+# Windows: .include "C:/path/to/app/conf/fipsmodule.cnf"
+.include "/path/to/app/conf/fipsmodule.cnf"
+
+[app_init]
+providers = app_providers
+alg_section = app_algorithms
+
+[app_providers]
+fips = fips_sect
+base = base_sect
+
+[base_sect]
+activate = 1
+
+# Extend the section supplied by fipsinstall; keep its generated integrity and
+# activation settings intact. Match this path to the module used by fipsinstall.
+[fips_sect]
+module = "/path/to/openssl/lib/ossl-modules/fips.so"
+# Windows: replace the line above with:
+# module = "C:/path/to/openssl/lib/ossl-modules/fips.dll"
+
+[app_algorithms]
+default_properties = fips=yes

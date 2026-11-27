@@ -347,18 +347,19 @@ end;
   {$I TaurusTLSUnusedParamOn.inc}
 procedure Unload;
 begin
-  BUF_MEM_new := nil;
-  BUF_MEM_new_ex := nil;
-  BUF_MEM_free := nil;
-  BUF_MEM_grow := nil;
-  BUF_MEM_grow_clean := nil;
-  BUF_reverse := nil;
+  @BUF_MEM_new := @ErrUnBound;
+  @BUF_MEM_new_ex := @ErrUnBound;
+  @BUF_MEM_free := @ErrUnBound;
+  @BUF_MEM_grow := @ErrUnBound;
+  @BUF_MEM_grow_clean := @ErrUnBound;
+  @BUF_reverse := @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

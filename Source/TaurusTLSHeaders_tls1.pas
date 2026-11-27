@@ -2786,17 +2786,17 @@ end;
 
 procedure Unload;
 begin
-  SSL_set_tlsext_host_name := nil; {removed 1.0.0}
-  SSL_CTX_set_tlsext_max_fragment_length := nil; {introduced 1.1.0}
-  SSL_set_tlsext_max_fragment_length := nil; {introduced 1.1.0}
-  SSL_get_servername := nil;
-  SSL_get_servername_type := nil;
-  SSL_export_keying_material := nil;
-  SSL_export_keying_material_early := nil; {introduced 1.1.0}
-  SSL_get_peer_signature_type_nid := nil; {introduced 1.1.0}
-  SSL_get_signature_type_nid := nil; {introduced 1.1.0}
-  SSL_get_sigalgs := nil;
-  SSL_get_shared_sigalgs := nil;
+  @SSL_set_tlsext_host_name := @ErrUnBound; {removed 1.0.0}
+  @SSL_CTX_set_tlsext_max_fragment_length := @ErrUnBound; {introduced 1.1.0}
+  @SSL_set_tlsext_max_fragment_length := @ErrUnBound; {introduced 1.1.0}
+  @SSL_get_servername := @ErrUnBound;
+  @SSL_get_servername_type := @ErrUnBound;
+  @SSL_export_keying_material := @ErrUnBound;
+  @SSL_export_keying_material_early := @ErrUnBound; {introduced 1.1.0}
+  @SSL_get_peer_signature_type_nid := @ErrUnBound; {introduced 1.1.0}
+  @SSL_get_signature_type_nid := @ErrUnBound; {introduced 1.1.0}
+  @SSL_get_sigalgs := @ErrUnBound;
+  @SSL_get_shared_sigalgs := @ErrUnBound;
 end;
   {$ENDIF}
 {$ELSE}
@@ -2808,6 +2808,7 @@ end;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibSSL');
   Register_SSLUnloader(Unload);
 {$ENDIF}

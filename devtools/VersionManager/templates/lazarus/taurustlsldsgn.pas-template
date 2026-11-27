@@ -8,6 +8,7 @@ unit TaurusTLSLDsgn;
 interface
 
 uses
+  LazarusPackageIntf,
 {$PAS_FILES_DT}
 
 implementation

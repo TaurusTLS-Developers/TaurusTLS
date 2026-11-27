@@ -215,6 +215,8 @@ var
   CONF_modules_load: function (const cnf: PCONF; const appname: PIdAnsiChar; flags: TIdC_ULONG): TIdC_INT; cdecl = nil;
   {$EXTERNALSYM CONF_modules_load_file}
   CONF_modules_load_file: function (const filename: PIdAnsiChar; const appname: PIdAnsiChar; flags: TIdC_ULONG): TIdC_INT; cdecl = nil;
+  {$EXTERNALSYM CONF_modules_load_file_ex}
+  CONF_modules_load_file_ex: function (libctx: POSSL_LIB_CTX; const filename: PIdAnsiChar; const appname: PIdAnsiChar; flags: TIdC_ULONG): TIdC_INT; cdecl = nil; {introduced 3.0.0}
 
   {$EXTERNALSYM CONF_modules_unload}
   CONF_modules_unload: procedure (all: TIdC_INT); cdecl = nil;
@@ -323,6 +325,8 @@ var
   function CONF_modules_load(const cnf: PCONF; const appname: PIdAnsiChar; flags: TIdC_ULONG): TIdC_INT cdecl; external CLibCrypto;
   {$EXTERNALSYM CONF_modules_load_file}
   function CONF_modules_load_file(const filename: PIdAnsiChar; const appname: PIdAnsiChar; flags: TIdC_ULONG): TIdC_INT cdecl; external CLibCrypto;
+  {$EXTERNALSYM CONF_modules_load_file_ex}
+  function CONF_modules_load_file_ex(libctx: POSSL_LIB_CTX; const filename: PIdAnsiChar; const appname: PIdAnsiChar; flags: TIdC_ULONG): TIdC_INT cdecl; external CLibCrypto; {introduced 3.0.0}
 
   {$EXTERNALSYM CONF_modules_unload}
   procedure CONF_modules_unload(all: TIdC_INT) cdecl; external CLibCrypto;
@@ -605,9 +609,11 @@ const
   //#define NCONF_get_number(c,g,n,r) NCONF_get_number_e(c,g,n,r)
 
   //* Module functions */
+  CONF_modules_load_file_ex_introduced = (byte(3) shl 8 or byte(0)) shl 8 or byte(0); {introduced 3.0.0}
 
   CONF_modules_load_procname = 'CONF_modules_load';
   CONF_modules_load_file_procname = 'CONF_modules_load_file';
+  CONF_modules_load_file_ex_procname = 'CONF_modules_load_file_ex';
 
   CONF_modules_unload_procname = 'CONF_modules_unload';
   CONF_modules_finish_procname = 'CONF_modules_finish';
@@ -756,6 +762,12 @@ function  ERR_CONF_modules_load_file(const filename: PIdAnsiChar; const appname:
   flags: TIdC_ULONG): TIdC_INT; cdecl;
 begin
   ETaurusTLSAPIFunctionNotPresent.RaiseException(CONF_modules_load_file_procname);
+end;
+
+function  ERR_CONF_modules_load_file_ex(libctx: POSSL_LIB_CTX; const filename: PIdAnsiChar; const appname: PIdAnsiChar;
+  flags: TIdC_ULONG): TIdC_INT; cdecl;
+begin
+  ETaurusTLSAPIFunctionNotPresent.RaiseException(CONF_modules_load_file_ex_procname);
 end;
 
 
@@ -1268,6 +1280,37 @@ begin
     {$ifend}
   end;
 
+  CONF_modules_load_file_ex := LoadLibFunction(ADllHandle, CONF_modules_load_file_ex_procname);
+  FuncLoadError := not assigned(CONF_modules_load_file_ex);
+  if FuncLoadError then
+  begin
+    {$if not defined(CONF_modules_load_file_ex_allownil)}
+    CONF_modules_load_file_ex := ERR_CONF_modules_load_file_ex;
+    {$ifend}
+    {$if declared(CONF_modules_load_file_ex_introduced)}
+    if LibVersion < CONF_modules_load_file_ex_introduced then
+    begin
+      {$if declared(FC_CONF_modules_load_file_ex)}
+      CONF_modules_load_file_ex := FC_CONF_modules_load_file_ex;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if declared(CONF_modules_load_file_ex_removed)}
+    if CONF_modules_load_file_ex_removed <= LibVersion then
+    begin
+      {$if declared(_CONF_modules_load_file_ex)}
+      CONF_modules_load_file_ex := _CONF_modules_load_file_ex;
+      {$ifend}
+      FuncLoadError := false;
+    end;
+    {$ifend}
+    {$if not defined(CONF_modules_load_file_ex_allownil)}
+    if FuncLoadError then
+      AFailed.Add('CONF_modules_load_file_ex');
+    {$ifend}
+  end;
+
 
   CONF_modules_unload := LoadLibFunction(ADllHandle, CONF_modules_unload_procname);
   FuncLoadError := not assigned(CONF_modules_unload);
@@ -1723,69 +1766,71 @@ end;
 
 procedure Unload;
 begin
-  CONF_set_default_method := nil;
-  NCONF_new := nil;
-  NCONF_default := nil;
-  NCONF_WIN32 := nil;
-  NCONF_free := nil;
-  NCONF_free_data := nil;
-  NCONF_load := nil;
-  NCONF_load_bio := nil;
-  NCONF_get_string := nil;
-  NCONF_get_number_e := nil;
-  NCONF_dump_bio := nil;
-  CONF_modules_load := nil;
-  CONF_modules_load_file := nil;
-  CONF_modules_unload := nil;
-  CONF_modules_finish := nil;
-  CONF_module_add := nil;
-  CONF_imodule_get_usr_data := nil;
-  CONF_imodule_set_usr_data := nil;
-  CONF_imodule_get_module := nil;
-  CONF_imodule_get_flags := nil;
-  CONF_imodule_set_flags := nil;
-  CONF_module_get_usr_data := nil;
-  CONF_module_set_usr_data := nil;
-  CONF_get1_default_config_file := nil;
-  CONF_parse_list := nil;
-  OPENSSL_load_builtin_modules := nil;
+  @CONF_set_default_method := @ErrUnBound;
+  @NCONF_new := @ErrUnBound;
+  @NCONF_default := @ErrUnBound;
+  @NCONF_WIN32 := @ErrUnBound;
+  @NCONF_free := @ErrUnBound;
+  @NCONF_free_data := @ErrUnBound;
+  @NCONF_load := @ErrUnBound;
+  @NCONF_load_bio := @ErrUnBound;
+  @NCONF_get_string := @ErrUnBound;
+  @NCONF_get_number_e := @ErrUnBound;
+  @NCONF_dump_bio := @ErrUnBound;
+  @CONF_modules_load := @ErrUnBound;
+  @CONF_modules_load_file := @ErrUnBound;
+  @CONF_modules_load_file_ex := @ErrUnBound;
+  @CONF_modules_unload := @ErrUnBound;
+  @CONF_modules_finish := @ErrUnBound;
+  @CONF_module_add := @ErrUnBound;
+  @CONF_imodule_get_usr_data := @ErrUnBound;
+  @CONF_imodule_set_usr_data := @ErrUnBound;
+  @CONF_imodule_get_module := @ErrUnBound;
+  @CONF_imodule_get_flags := @ErrUnBound;
+  @CONF_imodule_set_flags := @ErrUnBound;
+  @CONF_module_get_usr_data := @ErrUnBound;
+  @CONF_module_set_usr_data := @ErrUnBound;
+  @CONF_get1_default_config_file := @ErrUnBound;
+  @CONF_parse_list := @ErrUnBound;
+  @OPENSSL_load_builtin_modules := @ErrUnBound;
 
   //stack of macros
-  sk_CONF_VALUE_new:= nil;
-  sk_CONF_VALUE_new_null := nil;
-  sk_CONF_VALUE_free := nil;
-  sk_CONF_VALUE_num := nil;
-  sk_CONF_VALUE_value := nil;
-  sk_CONF_VALUE_push := nil;
-  sk_CONF_VALUE_dup := nil;
-  sk_CONF_VALUE_find := nil;
-  sk_CONF_VALUE_pop_free :=  nil;
+  @sk_CONF_VALUE_new:= @ErrUnBound;
+  @sk_CONF_VALUE_new_null := @ErrUnBound;
+  @sk_CONF_VALUE_free := @ErrUnBound;
+  @sk_CONF_VALUE_num := @ErrUnBound;
+  @sk_CONF_VALUE_value := @ErrUnBound;
+  @sk_CONF_VALUE_push := @ErrUnBound;
+  @sk_CONF_VALUE_dup := @ErrUnBound;
+  @sk_CONF_VALUE_find := @ErrUnBound;
+  @sk_CONF_VALUE_pop_free :=  @ErrUnBound;
 
-  sk_CONF_MODULE_new:= nil;
-  sk_CONF_MODULE_new_null := nil;
-  sk_CONF_MODULE_free := nil;
-  sk_CONF_MODULE_num := nil;
-  sk_CONF_MODULE_value := nil;
-  sk_CONF_MODULE_push := nil;
-  sk_CONF_MODULE_dup := nil;
-  sk_CONF_MODULE_find := nil;
-  sk_CONF_MODULE_pop_free := nil;
+  @sk_CONF_MODULE_new:= @ErrUnBound;
+  @sk_CONF_MODULE_new_null := @ErrUnBound;
+  @sk_CONF_MODULE_free := @ErrUnBound;
+  @sk_CONF_MODULE_num := @ErrUnBound;
+  @sk_CONF_MODULE_value := @ErrUnBound;
+  @sk_CONF_MODULE_push := @ErrUnBound;
+  @sk_CONF_MODULE_dup := @ErrUnBound;
+  @sk_CONF_MODULE_find := @ErrUnBound;
+  @sk_CONF_MODULE_pop_free := @ErrUnBound;
 
-  sk_CONF_IMODULE_new:= nil;
-  sk_CONF_IMODULE_new_null := nil;
-  sk_CONF_IMODULE_free := nil;
-  sk_CONF_IMODULE_num := nil;
-  sk_CONF_IMODULE_value := nil;
-  sk_CONF_IMODULE_push := nil;
-  sk_CONF_IMODULE_dup := nil;
-  sk_CONF_IMODULE_find := nil;
-  sk_CONF_IMODULE_pop_free :=  nil;
+  @sk_CONF_IMODULE_new:= @ErrUnBound;
+  @sk_CONF_IMODULE_new_null := @ErrUnBound;
+  @sk_CONF_IMODULE_free := @ErrUnBound;
+  @sk_CONF_IMODULE_num := @ErrUnBound;
+  @sk_CONF_IMODULE_value := @ErrUnBound;
+  @sk_CONF_IMODULE_push := @ErrUnBound;
+  @sk_CONF_IMODULE_dup := @ErrUnBound;
+  @sk_CONF_IMODULE_find := @ErrUnBound;
+  @sk_CONF_IMODULE_pop_free :=  @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

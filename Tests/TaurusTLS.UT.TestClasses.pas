@@ -20,7 +20,7 @@ interface
 
 uses
   System.Classes, System.SysUtils, System.IOUtils,
-  DUnitX.TestFramework, TaurusTLS.UT.Utils;
+  DUnitX.TestFramework, TaurusTLSLoader, TaurusTLS.UT.Utils;
 
 type
   ///  <summary>
@@ -28,93 +28,51 @@ type
   ///  </summary
   EOsslBaseFixture = class(Exception);
 
-  ///  <summary>
-  ///  Base Test Fixture class for unit-tests used OpenSSL library.
-  ///  This fixture automatically load OpenSSL library if its not loaded yet.
-  ///  </summary
-  [TestFixture]
+  // Configures OpenSSL for fixtures that control its lifecycle explicitly.
+  // Tests execute serially and share the process-wide loader.
   TOsslBaseFixture = class
-  public type
-    TTestFlag = (tfOssLibLoaded, tfOssLibFailed, tfGlobalFail, tfBoundary=SizeOf(Cardinal)*8-1);
-    TTestFlags = set of TTestFlag;
-  private class var
-    FFlags: TTestFlags;
-  private
-    class function GetGlobalFail: boolean; static;
-    class function GetOssLibFailed: boolean; static;
-    class procedure SetOssLibLoaded(const Value: boolean); static;
-    class procedure SetFlag(const AFlag: TTestFlag; AEnable: boolean); static;
-  protected
-    class function GetOssLibLoaded: boolean; static;
-    class procedure SetGlobalFail(const Value: boolean); static;
-    class procedure SetOssLibFailed(const Value: boolean); static;
   public
+    class constructor Create;
+  private
+    FLoader: IOpenSSLLoader;
+    // Preload process-wide RTL caches before any per-test memory snapshot.
+    class procedure PrepareMemoryChecks; static;
+    function GetLoader: IOpenSSLLoader;
+  protected
+    // The shared loader; accessing it never initializes OpenSSL.
+    property Loader: IOpenSSLLoader read GetLoader;
+    // Applies parsed command-line options, falling back to startup environment defaults.
+    // Call while unloaded. This method does not call Load.
+    procedure SetupFromCmd; virtual;
+    // Calls Loader.Load directly, preserving its Boolean result and exceptions.
+    function Load: Boolean;
+    // Unloads OpenSSL and resets failed state, including partial initialization.
+    procedure Unload;
+    // Checks current loader readiness without retaining a separate failure flag.
+    procedure CheckLoaded;
+    // Reset loader state at the owning test or fixture boundary.
+    procedure ResetRuntime;
+  end;
+
+  // Loads OpenSSL once per fixture; each test still owns its native objects.
+  TOsslAutoloadFixture = class(TOsslBaseFixture)
+  private
+    FAutoCleanupNeeded: Boolean;
+  public
+    destructor Destroy; override;
+    // Configures and loads OpenSSL. Descendants call inherited SetupFixture first.
     [SetupFixture]
-    ///  <summary>
-    ///  The <c>SetupFixture</c> method loads the OpenSSL library
-    ///  and set internal library refrerence counter to <c>1</c>,
-    ///  or increments internal library refrerence counter otherwise.
-    ///  </summary>
-    ///  <remark>
-    ///  A descendant class can declare its own <c>SetupFixture</c> with the
-    ///  <c>[SetupFixture]</c> attribute. It must call <c>inherited</c> first
-    ///  so the OpenSSL library is loaded.
-    ///  </remark>
-    procedure SetupFixture;
+    procedure SetupFixture; virtual;
+    // Unloads even after a failed load. Descendants call inherited TearDownFixture last.
     [TearDownFixture]
-    ///  <summary>
-    ///  The <c>TearDownFixture</c> method decrements internal library refrerence counter
-    ///  and unloads the OpenSSL library when it reaches Zero.
-    ///  </summary>
-    ///  <remark>
-    ///  A descendant class can declare its own <c>TearDownFixture</c> with the
-    ///  <c>[TearDownFixture]</c> attribute. It must call <c>inherited</c> last
-    ///  so the OpenSSL library is unloaded.
-    ///  </remark>
-    procedure TearDownFixture;
-
-    ///  <summary>
-    ///  The <c>CheckLoaded</c> method checks if the OpenSSL library
-    ///  has loaded and raise <see ref="EOsslBaseFixture" /> if not.
-    ///  </summary>
-    class procedure CheckLoaded;
-    ///  <summary>
-    ///  The <c>CheckLoaded</c> method checks if any faulre registered which
-    ///  blocks any Test Fixture execution and raise <see ref="EOsslBaseFixture" />
-    ///  if any.
-    ///  </summary>
-    ///  <remark>
-    ///  This method can be overritten by inherited class
-    ///  </remark>
-    class procedure CheckFailed; virtual;
-    ///  <summary>
-    ///  The <c>CheckLoaded</c> method checks if any faulre registered
-    ///  and OpenSSL Library loased, and raise <see ref="EOsslBaseFixture" /> if any.
-    ///  </summary>
-    ///  <remark>
-    ///  This method can be overritten by inherited class
-    ///  </remark>
-    class procedure CheckAllFailures; virtual;
-
-    ///  <summary>
-    ///  Displays if OpenSSL library loaded.
-    ///  </summary>
-    class property OssLibLoaded: boolean read GetOssLibLoaded;
-    ///  <summary>
-    ///  Displays if OpenSSL library is inconsitance state.
-    ///  </summary>
-    class property OssLibFailed: boolean read GetOssLibFailed ;
-    ///  <summary>
-    ///  Displays if Test Fixtures has failure which blocks
-    ///  other Test Fixtures execution.
-    ///  </summary>
-    class property GlobalFail: boolean read GetGlobalFail;
+    procedure TearDownFixture; virtual;
   end;
 
 resourcestring
-  cOsslNotLoaded = 'Openssl library is not loaded. Skipping remaining tests(s)';
-  cOsslLoadFailed = 'Openssl library load failed. Skipping remaining tests(s)';
-  cOsslGlobalFail = 'Openssl global failure. Skipping remaining tests(s)';
+  cOsslNotLoaded = 'OpenSSL is not ready. Initialize it before this test.';
+  cOsslLoadFailed = 'OpenSSL could not be loaded.';
+  cOsslLoaderPathHelp = 'Specify path to OpenSSL library folder';
+  cOsslLoaderConfigHelp = 'Specify path to OpenSSL configuration file';
 
 type
   THexStrTestTool = record
@@ -238,124 +196,187 @@ type
 implementation
 
 uses
-  System.TypInfo, System.SyncObjs, System.NetEncoding;
+  System.TypInfo, System.NetEncoding, DUnitX.CommandLine.Options,
+  IdGlobal, TaurusTLSConsts
+  {$IFDEF MSWINDOWS}, Winapi.Windows{$ENDIF};
 
-{ TOsslTestBase }
-
-class procedure TOsslBaseFixture.CheckAllFailures;
-begin
-  CheckLoaded;
-  CheckFailed;
-end;
-
-class procedure TOsslBaseFixture.CheckFailed;
+{ Parsed options are configuration only; they do not own a loader or load count. }
 var
-  lReason: string;
+  GOpenSSLPath: string;
+  GOpenSSLConfigFile: string;
 
+procedure RegisterLoaderOptions;
 begin
-  lReason:='';
-  if GlobalFail then
-    lReason:=cOsslGlobalFail
-  else if OssLibFailed then
-    lReason:=cOsslLoadFailed;
-  if not lReason.IsEmpty then
-    raise EOsslBaseFixture.Create(lReason);
+  GOpenSSLPath := GetEnvironmentVariable('OPENSSL_PATH');
+  GOpenSSLConfigFile := GetEnvironmentVariable('OPENSSL_CONF');
+  TOptionsRegistry.RegisterOption<string>('opensslpath', 'osp',
+    cOsslLoaderPathHelp,
+    procedure(Value: string)
+    begin
+      GOpenSSLPath := Value;
+    end);
+  TOptionsRegistry.RegisterOption<string>('openssl-config-path', 'oscp',
+    cOsslLoaderConfigHelp,
+    procedure(Value: string)
+    begin
+      GOpenSSLConfigFile := Value;
+    end);
 end;
 
-class procedure TOsslBaseFixture.CheckLoaded;
-begin
-  if not OssLibLoaded then
-    raise EOsslBaseFixture.CreateRes(@cOsslNotLoaded);
-end;
+{ TOsslBaseFixture }
 
-class function TOsslBaseFixture.GetGlobalFail: boolean;
-begin
-  Result:=tfGlobalFail in FFlags;
-end;
-
-class function TOsslBaseFixture.GetOssLibFailed: boolean;
-begin
-  Result:=tfOssLibFailed in FFlags;
-end;
-
-class function TOsslBaseFixture.GetOssLibLoaded: boolean;
-begin
-  Result:=tfOssLibLoaded in FFlags;
-end;
-
-class procedure TOsslBaseFixture.SetOssLibLoaded(const Value: boolean);
-begin
-  SetFlag(tfOssLibLoaded, Value);
-end;
-
-class procedure TOsslBaseFixture.SetGlobalFail(const Value: boolean);
-begin
-  SetFlag(tfGlobalFail, Value);
-end;
-
-class procedure TOsslBaseFixture.SetOssLibFailed(const Value: boolean);
-begin
-  SetFlag(tfOssLibFailed, Value);
-  SetGlobalFail(True);
-end;
-
-class procedure TOsslBaseFixture.SetFlag(const AFlag: TTestFlag; AEnable: boolean);
+{$IF DEFINED(MEMLEAK_CHECK) AND DEFINED(MSWINDOWS)}
+function WarmResourceTable(AModule: HMODULE; AType, AName: PChar;
+  AParameter: NativeInt): BOOL; stdcall;
 var
-  lSpinW: TSpinWait;
-  lFlags: TTestFlags;
-  lNewFlags: TTestFlags;
-
+  I: Integer;
+  LResource: TResStringRec;
+  LFirstCharacter: array[0..1] of Char;
 begin
-  lSpinW.Reset;
-  repeat
-    lFlags:=FFlags;
-    lNewFlags:=lFlags;
-    if AEnable then
-      lNewFlags:=lFlags+[AFlag]
-    else
-      lNewFlags:=lFlags-[AFlag];
-    // Hack for SET Varibale atomic update
-    cardinal((@lFlags)^):=TInterlocked.CompareExchange(cardinal((@FFlags)^),
-      cardinal((@lNewFlags)^), cardinal((@lFlags)^));
-    if ((AFlag in FFlags) xor (not AEnable)) then
-      break;
-    lSpinW.SpinCycle;
-  until False;
+  Result := True;
+  if (NativeUInt(AName) = 0) or (NativeUInt(AName) > High(Word)) then
+    Exit;
+  // Windows stores 16 string IDs per resource table. Ignore empty entries;
+  // LoadResString populates the normal RTL cache for each real resource.
+  LResource.Module := @AModule;
+  for I := 0 to 15 do
+  begin
+    LResource.Identifier := (NativeUInt(AName) - 1) * 16 + NativeUInt(I);
+    if LResource.Identifier > High(Word) then
+      Exit; // Delphi resource-string identifiers are limited to 16 bits.
+    if LoadString(AModule, LResource.Identifier, @LFirstCharacter[0],
+      Length(LFirstCharacter)) <> 0 then
+      LoadResString(@LResource);
+  end;
+end;
+{$IFEND}
+
+class procedure TOsslBaseFixture.PrepareMemoryChecks;
+begin
+{$IF DEFINED(USE_FASTMM5) AND DEFINED(MEMLEAK_DETAILS)}
+  TFastMMDebugLog.DebugModeActive := True;
+{$IFEND}
+{$IF DEFINED(MEMLEAK_CHECK) AND DEFINED(MSWINDOWS)}
+  // SysUtils retains loaded resource strings until module finalization. Warm
+  // them once, outside test measurements; never flush that cache during tests.
+  // Enumeration is the Windows API needed to find the executable's string IDs.
+  EnumResourceNames(HInstance, RT_STRING, @WarmResourceTable, 0);
+
+  // These encodings and the streaming lock's main-thread record also live until
+  // finalization. Their first use must not be charged to an arbitrary test case.
+  TEncoding.Default.GetBytes('');
+  TEncoding.UTF8.GetBytes('');
+  TEncoding.Unicode.GetBytes('');
+  TEncoding.ASCII.GetBytes('');
+  TEncoding.BigEndianUnicode.GetBytes('');
+  IndyTextEncoding_UTF8.GetBytes('');
+  IndyTextEncoding_UTF16LE.GetBytes('');
+  IndyTextEncoding_ASCII.GetBytes('');
+  IndyTextEncoding_OSDefault.GetBytes('');
+  GlobalNameSpace.BeginWrite;
+  GlobalNameSpace.EndWrite;
+
+  // The RTL field-address cache owns dictionaries for component classes. Disable
+  // that optional optimization during allocation checks; lookups remain functional.
+  // Do this once before worker threads start, rather than clearing it in teardown.
+  SetComponentFieldAddressCache(True, 0);
+
+{$IFEND}
 end;
 
-procedure TOsslBaseFixture.SetupFixture;
-{$IFDEF USE_FASTMM5}
-  {$IFNDEF MEMLEAK_DETAILS}
-var
-  lDebugActive: boolean;
-  {$ENDIF MEMLEAK_DETAILS}
+class constructor TOsslBaseFixture.Create;
+begin
+  // Class initialization precedes fixture setup and happens once per process.
+  PrepareMemoryChecks;
+{$IFDEF UNITTEST}
+  ResetOpenSSLLoaderForTests;
 {$ENDIF}
+end;
 
+procedure TOsslBaseFixture.ResetRuntime;
 begin
-{$IFDEF USE_FASTMM5}
-  {$IFDEF MEMLEAK_DETAILS}
-  TFastMMDebugLog.DebugModeActive:=True;
-  {$ELSE}
-  lDebugActive:=TFastMMDebugLog.DebugModeActive; // To enforce linker add the TFastMMDebugLog class
-  {$ENDIF MEMLEAK_DETAILS}
-{$ENDIF}
   try
-    SetOssLibLoaded(TOsslLoader.Load);
-    CheckAllFailures;
-  except
-    SetGlobalFail(True);
-    raise
+{$IFDEF UNITTEST}
+    ResetOpenSSLLoaderForTests;
+{$ELSE}
+    Loader.Unload;
+    Loader.ConfigFile := '';
+    Loader.RequireConfigFile := False;
+    Loader.OpenSSLPath := '';
+    Loader.SSLLibVersions := DefaultLibVersions;
+{$ENDIF}
+  finally
+    FLoader := nil;
   end;
 end;
 
-procedure TOsslBaseFixture.TearDownFixture;
+function TOsslBaseFixture.GetLoader: IOpenSSLLoader;
 begin
-  if OssLibLoaded then
+  if FLoader = nil then
+    FLoader := GetOpenSSLLoader;
+  Result := FLoader;
+end;
+
+procedure TOsslBaseFixture.SetupFromCmd;
+begin
+  Loader.OpenSSLPath := GOpenSSLPath;
+  Loader.ConfigFile := GOpenSSLConfigFile;
+end;
+
+function TOsslBaseFixture.Load: Boolean;
+begin
+  Result := Loader.Load;
+end;
+
+procedure TOsslBaseFixture.Unload;
+begin
+  Loader.Unload;
+end;
+
+procedure TOsslBaseFixture.CheckLoaded;
+begin
+  if not Loader.IsLoaded then
+    raise EOsslBaseFixture.CreateRes(@cOsslNotLoaded);
+end;
+
+{ TOsslAutoloadFixture }
+
+procedure TOsslAutoloadFixture.SetupFixture;
+begin
+  FAutoCleanupNeeded := True;
   try
-    TOsslLoader.Unload;
+    ResetRuntime;
+    SetupFromCmd;
+    if not Load then
+      raise EOsslBaseFixture.CreateRes(@cOsslLoadFailed);
   except
-    SetGlobalFail(True);
+    // DUnitX skips fixture teardown after setup errors. Keep the original exception.
+    try
+      ResetRuntime;
+      FAutoCleanupNeeded := False;
+    except
+      on E: Exception do
+        Log(TLogLevel.Error, 'OpenSSL cleanup after fixture setup failure: ' +
+          E.ClassName + ': ' + E.Message);
+    end;
     raise;
+  end;
+end;
+
+procedure TOsslAutoloadFixture.TearDownFixture;
+begin
+  ResetRuntime;
+  FAutoCleanupNeeded := False;
+end;
+
+destructor TOsslAutoloadFixture.Destroy;
+begin
+  try
+    // Fallback for a descendant setup that failed after inherited SetupFixture succeeded.
+    if FAutoCleanupNeeded then
+      ResetRuntime;
+  finally
+    inherited Destroy;
   end;
 end;
 
@@ -679,5 +700,6 @@ begin
 end;
 
 initialization
+  RegisterLoaderOptions;
 
 end.

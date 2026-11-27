@@ -1599,32 +1599,32 @@ end;
 
 procedure Unload;
 begin
-  OBJ_NAME_init := nil;
-  OBJ_NAME_get := nil;
-  OBJ_NAME_add := nil;
-  OBJ_NAME_remove := nil;
-  OBJ_NAME_cleanup := nil;
-  OBJ_dup := nil;
-  OBJ_nid2obj := nil;
-  OBJ_nid2ln := nil;
-  OBJ_nid2sn := nil;
-  OBJ_obj2nid := nil;
-  OBJ_txt2obj := nil;
-  OBJ_obj2txt := nil;
-  OBJ_txt2nid := nil;
-  OBJ_ln2nid := nil;
-  OBJ_sn2nid := nil;
-  OBJ_cmp := nil;
-  OBJ_new_nid := nil;
-  OBJ_add_object := nil;
-  OBJ_create := nil;
-  OBJ_create_objects := nil;
-  OBJ_length := nil; {introduced 1.1.0}
-  OBJ_get0_data := nil; {introduced 1.1.0}
-  OBJ_find_sigid_algs := nil;
-  OBJ_find_sigid_by_algs := nil;
-  OBJ_add_sigid := nil;
-  OBJ_sigid_free := nil;
+  @OBJ_NAME_init := @ErrUnBound;
+  @OBJ_NAME_get := @ErrUnBound;
+  @OBJ_NAME_add := @ErrUnBound;
+  @OBJ_NAME_remove := @ErrUnBound;
+  @OBJ_NAME_cleanup := @ErrUnBound;
+  @OBJ_dup := @ErrUnBound;
+  @OBJ_nid2obj := @ErrUnBound;
+  @OBJ_nid2ln := @ErrUnBound;
+  @OBJ_nid2sn := @ErrUnBound;
+  @OBJ_obj2nid := @ErrUnBound;
+  @OBJ_txt2obj := @ErrUnBound;
+  @OBJ_obj2txt := @ErrUnBound;
+  @OBJ_txt2nid := @ErrUnBound;
+  @OBJ_ln2nid := @ErrUnBound;
+  @OBJ_sn2nid := @ErrUnBound;
+  @OBJ_cmp := @ErrUnBound;
+  @OBJ_new_nid := @ErrUnBound;
+  @OBJ_add_object := @ErrUnBound;
+  @OBJ_create := @ErrUnBound;
+  @OBJ_create_objects := @ErrUnBound;
+  @OBJ_length := @ErrUnBound; {introduced 1.1.0}
+  @OBJ_get0_data := @ErrUnBound; {introduced 1.1.0}
+  @OBJ_find_sigid_algs := @ErrUnBound;
+  @OBJ_find_sigid_by_algs := @ErrUnBound;
+  @OBJ_add_sigid := @ErrUnBound;
+  @OBJ_sigid_free := @ErrUnBound;
 end;
   {$ENDIF}
 {$ELSE}
@@ -1632,6 +1632,7 @@ end;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

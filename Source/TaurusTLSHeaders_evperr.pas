@@ -473,7 +473,7 @@ end;
 
 procedure Unload;
 begin
-  ERR_load_EVP_strings := nil;
+  @ERR_load_EVP_strings := @ErrUnBound;
 end;
   {$ENDIF}
 {$ELSE}
@@ -481,6 +481,7 @@ end;
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}

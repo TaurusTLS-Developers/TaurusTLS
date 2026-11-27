@@ -231,15 +231,16 @@ end;
 
 procedure Unload;
 begin
-  OSSL_QUIC_client_method := nil;
-  OSSL_QUIC_client_thread_method := nil;
-  OSSL_QUIC_server_method := nil;
+  @OSSL_QUIC_client_method := @ErrUnBound;
+  @OSSL_QUIC_client_thread_method := @ErrUnBound;
+  @OSSL_QUIC_server_method := @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibSSL');
   Register_SSLUnloader(Unload);
 {$ENDIF}

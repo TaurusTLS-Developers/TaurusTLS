@@ -1158,35 +1158,36 @@ end;
 
 procedure Unload;
 begin
-  SHA1_Init := nil;
-  SHA1_Update := nil;
-  SHA1_Final := nil;
-  SHA1 := nil;
-  SHA1_Transform := nil;
-  SHA224_Init := nil;
-  SHA224_Update := nil;
-  SHA224_Final := nil;
-  SHA224 := nil;
-  SHA256_Init := nil;
-  SHA256_Update := nil;
-  SHA256_Final := nil;
-  SHA256 := nil;
-  SHA256_Transform := nil;
-  SHA384_Init := nil;
-  SHA384_Update := nil;
-  SHA384_Final := nil;
-  SHA384 := nil;
-  SHA512_Init := nil;
-  SHA512_Update := nil;
-  SHA512_Final := nil;
-  SHA512 := nil;
-  SHA512_Transform := nil;
+  @SHA1_Init := @ErrUnBound;
+  @SHA1_Update := @ErrUnBound;
+  @SHA1_Final := @ErrUnBound;
+  @SHA1 := @ErrUnBound;
+  @SHA1_Transform := @ErrUnBound;
+  @SHA224_Init := @ErrUnBound;
+  @SHA224_Update := @ErrUnBound;
+  @SHA224_Final := @ErrUnBound;
+  @SHA224 := @ErrUnBound;
+  @SHA256_Init := @ErrUnBound;
+  @SHA256_Update := @ErrUnBound;
+  @SHA256_Final := @ErrUnBound;
+  @SHA256 := @ErrUnBound;
+  @SHA256_Transform := @ErrUnBound;
+  @SHA384_Init := @ErrUnBound;
+  @SHA384_Update := @ErrUnBound;
+  @SHA384_Final := @ErrUnBound;
+  @SHA384 := @ErrUnBound;
+  @SHA512_Init := @ErrUnBound;
+  @SHA512_Update := @ErrUnBound;
+  @SHA512_Final := @ErrUnBound;
+  @SHA512 := @ErrUnBound;
+  @SHA512_Transform := @ErrUnBound;
 end;
   {$ENDIF}
 {$ENDIF}
 
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
 initialization
+  Unload;
   Register_SSLLoader(Load,'LibCrypto');
   Register_SSLUnloader(Unload);
 {$ENDIF}
