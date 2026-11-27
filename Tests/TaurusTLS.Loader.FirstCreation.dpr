@@ -69,7 +69,8 @@ begin
     (Loader.ModulesDirectory <> '') or (Loader.EnginesDirectory <> '') then
     raise Exception.Create('Unloaded singleton published runtime metadata');
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  if Assigned(OpenSSL_version_num) then
+  // Header initialization installs ErrUnBound without loading native libraries.
+  if @OpenSSL_version_num <> @ErrUnBound then
     raise Exception.Create('First creation unexpectedly bound native APIs');
 {$ENDIF}
   Writeln('PASS: stable singleton identity; no implicit OpenSSL loading');

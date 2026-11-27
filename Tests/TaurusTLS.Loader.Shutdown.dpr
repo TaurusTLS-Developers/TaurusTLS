@@ -236,7 +236,9 @@ begin
     (FLoader.ModulesDirectory = '') and (FLoader.EnginesDirectory = ''),
     'Runtime metadata survived cleanup');
 {$IFNDEF OPENSSL_STATIC_LINK_MODEL}
-  Require(not Assigned(OpenSSL_version_num), 'Dynamic version symbol was not reset');
+  // Unloaded bindings retain the controlled library-not-loaded stub.
+  Require(@OpenSSL_version_num = @ErrUnBound,
+    'Dynamic version symbol was not reset to ErrUnBound');
 {$ENDIF}
   if FInjectFailure then
   begin
