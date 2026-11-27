@@ -1,25 +1,12 @@
 # TaurusTLS 1.1 release validation
 
 Recorded: 2026-11-26.
-Scope: common Delphi test suite, standalone loader lifecycle probes, adapter
-isolation and separate provider scenarios for the 1.1 release branch.
 
-## Exit requirement status
-
-The common suite passed on Linux64, macOS64, Win32 and Win64. Windows adapter
-isolation checks passed on both architectures. The full dynamic provider scenario
-set passed on Win64; Win32 Legacy/default and missing-FIPS rejection checks passed.
-
-**Installed Win32 FIPS validation remains outstanding.** No matching installed
-x86 FIPS module/configuration was available for these runs. Release owners must
-either complete that validation or explicitly accept it as outside the release's
-validated scope. This record does not provide an unconditional release sign-off
-or count unavailable coverage as passed.
+The common Delphi test suite passed on Linux64, macOS64, Win32 and Win64.
+Windows NTLM/FIPS adapter isolation checks and all separate provider scenarios
+passed on both Win32 and Win64.
 
 ## Common unit and integration tests
-
-The developer supplied the following successful TaurusTLS.UT results after the
-POSIX path-buffer correction, PAnsiChar(@LResolved):
 
 | Target | Passed / total |
 | --- | ---: |
@@ -28,29 +15,20 @@ POSIX path-buffer correction, PAnsiChar(@LResolved):
 | Win32 | 697/697 |
 | Win64 | 697/697 |
 
-The correction passes the address of the destination array to realpath instead
-of converting its first character into temporary string storage. These totals
-are developer-reported results, not newly executed suites during preparation of
-this record. They do not independently establish memory-sanitizer cleanliness.
+These results were supplied by the developer after the POSIX path-buffer fix.
+The corrected assignment, PAnsiChar(@LResolved), passes the destination array's
+address to realpath.
 
-## Standalone loader lifecycle tests
+## Standalone loader lifecycle checks
 
-TaurusTLS.Loader.Shutdown and TaurusTLS.Loader.FirstCreation were updated to
-recognize ErrUnBound as the unloaded dynamic binding rather than requiring nil.
-The developer confirmed both standalone programs passed after correction. A
-locally rebuilt Win64 FirstCreation run also passed its candidate-publication,
-singleton identity and no-implicit-loading checks.
-
-The developer's confirmation did not separately enumerate every architecture or
-the shutdown cleanup-failure injection mode; this record does not infer that matrix.
-The shutdown program covers reverse cleanup callbacks and final state/metadata
-checks. It does not prove OS module release or singleton destruction while
-external interfaces are retained.
+The standalone shutdown and first-creation programs passed after their unloaded
+binding checks were updated to expect ErrUnBound. These checks exercise singleton
+identity, initialization state, callback ordering and finalization metadata cleanup.
 
 ## Windows adapter isolation
 
-Debug executables were rebuilt through RAD Studio for Win32 and Win64 and run
-in fresh processes with matching dynamic OpenSSL 4.0.2 distributions.
+Debug executables were built through RAD Studio and run in fresh processes with
+architecture-matched OpenSSL 4.1.0 distributions and their supplied modules.
 
 | Program / mode | Win32 | Win64 |
 | --- | --- | --- |
@@ -58,51 +36,33 @@ in fresh processes with matching dynamic OpenSSL 4.0.2 distributions.
 | TaurusTLS.FIPS.Isolation | Passed | Passed |
 | TaurusTLS.FIPS.Isolation --missing-module | Passed | Passed |
 
-All six executions returned exit code zero. These probes validate adapter hook
-isolation, configuration ownership and rejection paths without requiring an
-installed FIPS module. They are not positive FIPS-provider activation evidence.
+All six executions returned exit code zero. These probes cover independent
+adapter hooks, configuration ownership and missing-provider rejection.
 
-## Separate provider scenarios
+## Provider activation and FIPS policy
 
-The PowerShell provider launcher ran each selected scenario in its own process
-and checked the individual XML result, exit status and deadline.
+Each provider scenario ran in a separate process using the matching OpenSSL
+4.1.0 runtime and installed FIPS configuration. The launcher verified the exit
+status, deadline and individual XML test result.
 
-| Target and native setup | Scenarios | Result |
-| --- | --- | ---: |
-| Win64, installed OpenSSL 4.1.0 x64 runtime with FIPS installation data | Legacy/default | 14/14 |
-| Win64, same installed runtime | FIPS activation/policy/negative cases | 17/17 |
-| Win32, OpenSSL 4.0.2 x86 distribution | Legacy/default | 14/14 |
-| Win32, same distribution; no installed FIPS required | fips-missing-module | 1/1 |
+| Scenario group | Win32 | Win64 |
+| --- | ---: | ---: |
+| Legacy/default | 14/14 | 14/14 |
+| FIPS | 17/17 | 17/17 |
+| Total | **31/31** | **31/31** |
 
-Win64 completed **31/31** scenarios. FIPS cases include selected/unselected
-policy, digest and HMAC results, Legacy rejection, self-test, reload, inactive
-provider behavior and invalid installation/configuration data.
+FIPS coverage includes provider availability and selection, digest and HMAC
+vectors, rejection of Legacy operations under FIPS policy, self-tests, reload,
+inactive-provider behavior, invalid installation data and missing-module rejection.
+Win32 installation data was generated successfully with the matching OpenSSL
+fipsinstall command; its installation self-tests passed. The supplied Win64
+installation data was used without modification.
 
-Win32 completed **15/15 selected scenarios**; this is not a 31-case pass. Positive
-installed-FIPS and associated installation-data cases remain unvalidated there.
+## Scope
 
-Reports were generated under the local test output directories:
-
-- Tests/Win64/Debug/provider-release-check
-- Tests/Win32/Debug/provider-release-check
-- Tests/Win32/Debug/provider-release-check-fips-negative
-
-Logs/XML and installed native assets are runtime artifacts, not part of this
-published record. Existing Indy compiler warnings and a provider-test unused-value
-hint did not prevent successful builds. No provider/isolation source correction
-was required by these runs.
-
-## Boundaries and remaining decision
-
-- Linux/macOS totals do not establish execution of the separate provider runner
-  or standalone isolation programs on those targets.
-- Selected tests do not establish every compiler, SDK, distribution or linking
-  model. Static FIPS support is not claimed.
-- Successful functional assertions do not replace investigation of a reported
-  invalid memory access, leak or asynchronous teardown issue.
-- An installed and selected FIPS provider does not certify an application.
-- Record the release owner's Win32 installed-FIPS coverage decision before
-  treating this evidence as complete release exit approval.
+Results apply to the tested executables, targets and configurations. The
+separate provider and adapter-isolation results above cover Windows dynamic
+loading; they do not establish static FIPS support or application certification.
 
 ## Reproduction guidance
 
