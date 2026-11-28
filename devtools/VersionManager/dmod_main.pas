@@ -68,36 +68,36 @@ begin
   LExclude := TStringList.Create;
   try
     LExclude.LoadFromFile(ExtractFilePath(ParamStr(0))+'exclude.txt');
-  if FindFirst('..\..\..\..\Source\*.pas', faAnyFile, LCurFile) = 0 then
-  begin
-    repeat
-      if (LCurFile.Attr and faDirectory) = 0 then
-      begin
-        if Pos('TaurusTLS_Dsn_', LCurFile.Name) = 1 then
-        begin
-          VDT_Units.Add(LCurFile.Name);
-          if Pos('procedure Register;', IOUtils.TFile.ReadAllText('..\..\..\..\Source\'+LCurFile.Name)) > 0 then
-          begin
-             VRegister.Add(LCurFile.Name);
-          end;
-        end
-        else
+    if FindFirst('..\..\..\..\Source\*.pas', faAnyFile, LCurFile) = 0 then
+    begin
+      repeat
+        if (LCurFile.Attr and faDirectory) = 0 then
         begin
           if LExclude.IndexOf(LCurFile.Name) = -1 then
           begin
-            VRT_Units.Add(LCurFile.Name);
+              VRT_Units.Add(LCurFile.Name);
           end;
         end;
-      end;
-    until FindNext(LCurFile) <> 0;
-    FindClose(LCurFile);
-  end;
+      until FindNext(LCurFile) <> 0;
+      FindClose(LCurFile);
+    end;
+    if FindFirst('..\..\..\..\Source\Design\*.pas', faAnyFile, LCurFile) = 0 then
+    begin
+      repeat
+        VDT_Units.Add(LCurFile.Name);
+        if Pos('procedure Register;', IOUtils.TFile.ReadAllText('..\..\..\..\Source\Design\'+LCurFile.Name)) > 0 then
+        begin
+          VRegister.Add(LCurFile.Name);
+        end;
+      until FindNext(LCurFile) <> 0;
+      FindClose(LCurFile);
+    end;
   finally
     FreeAndNil(LExclude);
   end;
 end;
 
-function ListUnitsForLPK(AUnits, ARegister: TStrings): string;
+function ListUnitsForLPK(AUnits, ARegister: TStrings; const APath : String): string;
 var
   i: Integer;
 begin
@@ -105,7 +105,7 @@ begin
   for i := 0 to AUnits.Count - 1 do
   begin
     Result := Result + #9#9#9+'<Item>' + sLineBreak;
-    Result := Result + #9#9#9#9+'<Filename Value="..\..\Source\' + AUnits[i] + '"/>' + sLineBreak;
+    Result := Result + #9#9#9#9+'<Filename Value="'+ APath + AUnits[i] + '"/>' + sLineBreak;
     if ARegister.IndexOf(AUnits[i]) > -1 then
     begin
       Result := Result + #9#9#9#9+'<HasRegisterProc Value="True"/>'  + sLineBreak;
@@ -140,25 +140,25 @@ begin
 end;
 
 
-function ListUnitsForDPROJ(AUnits : TStrings) : string;
+function ListUnitsForDPROJ(AUnits : TStrings; const APath : String) : string;
 var
   i: Integer;
 begin
   Result := '';
   for i := 0 to AUnits.Count - 1 do
   begin
-     Result := Result + '		<DCCReference Include="..\..\Source\' + AUnits[i] + '"/>' + sLineBreak;
+     Result := Result + '		<DCCReference Include="' + APath + AUnits[i] + '"/>' + sLineBreak;
   end;
 end;
 
-function ListUnitsForDPK(AUnits: TStrings): string;
+function ListUnitsForDPK(AUnits: TStrings; const APath : String): string;
 var
   i: Integer;
 begin
   Result := '';
   for i := 0 to AUnits.Count - 1 do
   begin
-    Result := Result + '  ' + ChangeFileExt(AUnits[i], '') + ' in ''..\..\Source\'
+    Result := Result + '  ' + ChangeFileExt(AUnits[i], '') + ' in '''+APath
       + AUnits[i] + '''';
     if i = AUnits.Count - 1 then
     begin
@@ -281,13 +281,13 @@ begin
    begin
      LWarn := False;
      Self.DoOnDebugLog('DPK - Writing design-timne source-code units');
-     LFileContents := StringReplace( LFileContents, DPK_DSGN, ListUnitsForDPK(FDT_Units),[rfReplaceAll]);
+     LFileContents := StringReplace( LFileContents, DPK_DSGN, ListUnitsForDPK(FDT_Units,'..\..\Source\Design\'),[rfReplaceAll]);
    end;
    if Pos(DPK_RTL,LFileContents) > 0 then
    begin
      LWarn := False;
      Self.DoOnDebugLog('DPK - Writing run-time-only source-code units');
-     LFileContents := StringReplace( LFileContents, DPK_RTL, ListUnitsForDPK(FRT_Units),[rfReplaceAll]);
+     LFileContents := StringReplace( LFileContents, DPK_RTL, ListUnitsForDPK(FRT_Units,'..\..\Source\'),[rfReplaceAll]);
    end;
    if LWarn then
    begin
@@ -315,13 +315,13 @@ begin
    begin
      LWarn := False;
      Self.DoOnDebugLog('DPROJ - Writing design-timne source-code units');
-     LFileContents := StringReplace( LFileContents, '{$DPROJ_FILES_DT}', ListUnitsForDPROJ(FDT_Units),[rfReplaceAll]);
+     LFileContents := StringReplace( LFileContents, '{$DPROJ_FILES_DT}', ListUnitsForDPROJ(FDT_Units,'..\..\Source\Design\'),[rfReplaceAll]);
    end;
    if Pos(DPROJ_RTL,LFileContents) > 0 then
    begin
      LWarn := False;
      Self.DoOnDebugLog('DPROJ - Writing run-time-only source-code units');
-     LFileContents := StringReplace( LFileContents, DPROJ_RTL, ListUnitsForDPROJ(FRT_Units),[rfReplaceAll]);
+     LFileContents := StringReplace( LFileContents, DPROJ_RTL, ListUnitsForDPROJ(FRT_Units,'..\..\Source\'),[rfReplaceAll]);
    end;
    if LWarn then
    begin
@@ -348,13 +348,13 @@ begin
    begin
      LWarn := False;
      Self.DoOnDebugLog('LPK - Writing design-timne source-code units');
-     LFileContents := StringReplace( LFileContents, LPK_DSGN, ListUnitsForLPK(FDT_Units, FRegister),[rfReplaceAll]);
+     LFileContents := StringReplace( LFileContents, LPK_DSGN, ListUnitsForLPK(FDT_Units, FRegister,'..\..\Source\Design\'),[rfReplaceAll]);
    end;
    if Pos(LPK_RTL,LFileContents) > 0 then
    begin
      LWarn := False;
      Self.DoOnDebugLog('LPK - Writing run-time-only source-code units');
-      LFileContents := StringReplace( LFileContents, LPK_RTL, ListUnitsForLPK(FRT_Units, FRegister),[rfReplaceAll]);
+      LFileContents := StringReplace( LFileContents, LPK_RTL, ListUnitsForLPK(FRT_Units, FRegister,'..\..\Source\'),[rfReplaceAll]);
    end;
    if LWarn then
    begin
@@ -702,7 +702,7 @@ var Lstr: TStringList; i: Integer;
 begin
   Lstr := TStringList.Create;
   try
-    Lstr.LoadFromFile('..\..\..\..\Source\TaurusTLS_Dsn_ResourceStrings.pas');
+    Lstr.LoadFromFile('..\..\..\..\Source\Design\TaurusTLS_Dsn_ResourceStrings.pas');
     for i := 0 to Lstr.Count - 1 do
     begin
       if Pos(' RSCopyright = ', Lstr[i]) > 0 then
@@ -719,7 +719,7 @@ begin
         Lstr[i] := '  RSAAboutMenuItemName = ''&About ' + AProduct + ' %s...'';'
       end;
     end;
-    Lstr.SaveToFile('..\..\..\..\Source\TaurusTLS_Dsn_ResourceStrings.pas');
+    Lstr.SaveToFile('..\..\..\..\Source\Design\TaurusTLS_Dsn_ResourceStrings.pas');
   finally
     FreeAndNil(Lstr);
   end;

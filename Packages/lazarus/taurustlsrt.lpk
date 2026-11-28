@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
-	<Package Version="5">
+	<Package Version="6">
 		<Name Value="TaurusTLSRT"/>
 		<Author Value="TaurusTLS Developers"/>
 		<CompilerOptions>
@@ -8,7 +8,7 @@
 			<SearchPaths>
 				<IncludeFiles Value="../../Source"/>
 				<OtherUnitFiles Value="../../Source"/>
-				<UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+				<UnitOutputDirectory Value="../../Source/lib/$(TargetCPU)-$(TargetOS)"/>
 			</SearchPaths>
 			<Parsing>
 				<SyntaxOptions>
@@ -25,7 +25,6 @@
 					<ShowCompProc Value="True"/>
 					<ShowCond Value="True"/>
 				</Verbosity>
-				<CustomOptions Value=""/>
 			</Other>
 		</CompilerOptions>
 		<Description Value="TaurusTLS provides OpenSSL 3.x and 4.x support for Indy - Internet Direct"/>

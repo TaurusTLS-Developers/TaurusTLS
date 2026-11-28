@@ -154,11 +154,11 @@
 		<DCCReference Include="IndyProtocols260.dcp"/>
 		<DCCReference Include="IndySystem260.dcp"/>
 		<DCCReference Include="TaurusTLS_RTForIndy260.dcp"/>
-		<DCCReference Include="..\..\Source\TaurusTLS_Dsn_AboutDlg.pas"/>
-		<DCCReference Include="..\..\Source\TaurusTLS_Dsn_ComponentEditor.pas"/>
-		<DCCReference Include="..\..\Source\TaurusTLS_Dsn_Const.pas"/>
-		<DCCReference Include="..\..\Source\TaurusTLS_Dsn_Register.pas"/>
-		<DCCReference Include="..\..\Source\TaurusTLS_Dsn_ResourceStrings.pas"/>
+		<DCCReference Include="..\..\Source\Design\TaurusTLS_Dsn_AboutDlg.pas"/>
+		<DCCReference Include="..\..\Source\Design\TaurusTLS_Dsn_ComponentEditor.pas"/>
+		<DCCReference Include="..\..\Source\Design\TaurusTLS_Dsn_Const.pas"/>
+		<DCCReference Include="..\..\Source\Design\TaurusTLS_Dsn_Register.pas"/>
+		<DCCReference Include="..\..\Source\Design\TaurusTLS_Dsn_ResourceStrings.pas"/>
 		<BuildConfiguration Include="Release">
 			<Key>Cfg_2</Key>
 			<CfgParent>Base</CfgParent>

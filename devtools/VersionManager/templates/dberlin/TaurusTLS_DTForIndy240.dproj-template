@@ -77,8 +77,9 @@
 		<VerInfo_Keys>CompanyName=TaurusTLS Developers;FileDescription=$(MSBuildProjectName);FileVersion=1.0.10.52;InternalName=TaurusTLS_DTForIndy240.bpl;LegalCopyright=Copyright (c) 2026 TaurusTLS Developers.  All Rights Reserved.;LegalTrademarks=;OriginalFilename=TaurusTLS_DTForIndy240.bpl;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.10.52;Comments=</VerInfo_Keys>
 		<DesignOnlyPackage>true</DesignOnlyPackage>
 		<DCC_UNSAFE_CODE>true</DCC_UNSAFE_CODE>
-        <DCC_UNSAFE_TYPE>true</DCC_UNSAFE_TYPE>
-        <DCC_UNSAFE_CAST>true</DCC_UNSAFE_CAST>
+		<DCC_UNSAFE_TYPE>true</DCC_UNSAFE_TYPE>
+		<DCC_UNSAFE_CAST>true</DCC_UNSAFE_CAST>
+		<DCC_UnitSearchPath>..\..\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Base_Android)'!=''">
 		<DCC_UnitSearchPath>$(OSSL_LIB_ANDROID32);$(DCC_UnitSearchPath)</DCC_UnitSearchPath>

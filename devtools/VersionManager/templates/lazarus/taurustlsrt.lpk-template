@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
-  <Package Version="5">
+  <Package Version="6">
     <Name Value="TaurusTLSRT"/>
     <Author Value="TaurusTLS Developers"/>
     <CompilerOptions>
@@ -8,7 +8,7 @@
       <SearchPaths>
         <IncludeFiles Value="../../Source"/>
         <OtherUnitFiles Value="../../Source"/>
-        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+        <UnitOutputDirectory Value="../../Source/lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
       <Parsing>
         <SyntaxOptions>
@@ -25,7 +25,6 @@
           <ShowCompProc Value="True"/>
           <ShowCond Value="True"/>
         </Verbosity>
-        <CustomOptions Value=""/>
       </Other>
     </CompilerOptions>
     <Description Value="TaurusTLS provides OpenSSL 3.x and 4.x support for Indy - Internet Direct"/>
@@ -34,7 +33,7 @@
 1) Modified BSD License - The TaurusTLS Modified BSD license is a very no nonsense license that allows you to do almost anything you want with TaurusTLS provided you provide proper attribution. 
 
 2) MPL Mozilla Public License) License - To make it easier and consistent for JEDI users, we also offer an MPL license v1.1."/>
-    <Version Major="1" Build="32"/>
+    <Version Major="1" Minor="1" Build="59"/>
     <Files>
     	{$LPK_FILES_RT}
     </Files>
