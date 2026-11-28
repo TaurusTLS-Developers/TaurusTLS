@@ -209,11 +209,11 @@
 		<DCCReference Include="IndySystem370.dcp"/>
 		<DCCReference Include="TaurusTLS_RTForIndy370.dcp"/>
 		<DCCReference Include="designide.dcp"/>
-		<DCCReference Include="..\..\Source\TaurusTLS_Dsn_AboutDlg.pas"/>
-		<DCCReference Include="..\..\Source\TaurusTLS_Dsn_ComponentEditor.pas"/>
-		<DCCReference Include="..\..\Source\TaurusTLS_Dsn_Const.pas"/>
-		<DCCReference Include="..\..\Source\TaurusTLS_Dsn_Register.pas"/>
-		<DCCReference Include="..\..\Source\TaurusTLS_Dsn_ResourceStrings.pas"/>
+		<DCCReference Include="..\..\Source\Design\TaurusTLS_Dsn_AboutDlg.pas"/>
+		<DCCReference Include="..\..\Source\Design\TaurusTLS_Dsn_ComponentEditor.pas"/>
+		<DCCReference Include="..\..\Source\Design\TaurusTLS_Dsn_Const.pas"/>
+		<DCCReference Include="..\..\Source\Design\TaurusTLS_Dsn_Register.pas"/>
+		<DCCReference Include="..\..\Source\Design\TaurusTLS_Dsn_ResourceStrings.pas"/>
 		<BuildConfiguration Include="Base">
 			<Key>Base</Key>
 		</BuildConfiguration>
